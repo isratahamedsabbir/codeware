@@ -21,7 +21,7 @@ class PostController extends Controller
         $perPage = min((int) $request->query('per_page', 15), 100);
 
         $posts = Post::published()
-            ->with(['category', 'user:id,name'])
+            ->with(['category', 'user:id,name', 'tags'])
             ->orderByDesc('published_at')
             ->when($request->query('category'), fn ($q, $slug) => $q->whereHas('category', fn ($c) => $c->where('slug', $slug)))
             ->when($request->query('search'), fn ($q, $search) => $q->where("title->{$locale}", 'like', "%{$search}%"))
@@ -43,7 +43,7 @@ class PostController extends Controller
         $locale = $this->resolveLocale($request);
 
         $post = Post::published()
-            ->with(['category', 'user:id,name'])
+            ->with(['category', 'user:id,name', 'tags'])
             ->where('slug', $slug)
             ->firstOrFail();
 
@@ -71,6 +71,11 @@ class PostController extends Controller
                 'slug' => $post->category->slug,
                 'name' => $post->category->getTranslation('name', $locale, useFallbackLocale: true),
             ] : null,
+            'tags' => $post->tags->map(fn ($tag) => [
+                'id' => $tag->id,
+                'slug' => $tag->slug,
+                'name' => $tag->getTranslation('name', $locale, useFallbackLocale: true),
+            ])->values(),
         ];
 
         if ($withContent) {

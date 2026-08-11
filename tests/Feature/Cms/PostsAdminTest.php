@@ -1,7 +1,6 @@
 <?php
 
 use App\Livewire\Admin\Posts\Index as PostsIndex;
-use App\Models\BlogCategory;
 use App\Models\Post;
 use App\Models\User;
 use Livewire\Livewire;

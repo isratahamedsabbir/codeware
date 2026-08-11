@@ -4,6 +4,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', \App\Livewire\Admin\Dashboard::class)->name('dashboard');
 
+// Profile
+Route::get('/profile', \App\Livewire\Admin\Profile::class)->name('profile');
+
 // Posts
 Route::get('/posts', \App\Livewire\Admin\Posts\Index::class)->name('posts');
 Route::get('/posts/create', \App\Livewire\Admin\Posts\Form::class)->name('posts.create');
@@ -14,10 +17,15 @@ Route::get('/pages', \App\Livewire\Admin\Pages\Index::class)->name('pages');
 Route::get('/pages/create', \App\Livewire\Admin\Pages\Form::class)->name('pages.create');
 Route::get('/pages/{id}/edit', \App\Livewire\Admin\Pages\Form::class)->name('pages.edit');
 
-// Blog Categories
-Route::get('/blog-categories', \App\Livewire\Admin\BlogCategories\Index::class)->name('blog-categories');
-Route::get('/blog-categories/create', \App\Livewire\Admin\BlogCategories\Form::class)->name('blog-categories.create');
-Route::get('/blog-categories/{id}/edit', \App\Livewire\Admin\BlogCategories\Form::class)->name('blog-categories.edit');
+// Post Categories
+Route::get('/post-categories', \App\Livewire\Admin\PostCategories\Index::class)->name('post-categories');
+Route::get('/post-categories/create', \App\Livewire\Admin\PostCategories\Form::class)->name('post-categories.create');
+Route::get('/post-categories/{id}/edit', \App\Livewire\Admin\PostCategories\Form::class)->name('post-categories.edit');
+
+// Post Tags
+Route::get('/tags', \App\Livewire\Admin\Tags\Index::class)->name('tags');
+Route::get('/tags/create', \App\Livewire\Admin\Tags\Form::class)->name('tags.create');
+Route::get('/tags/{id}/edit', \App\Livewire\Admin\Tags\Form::class)->name('tags.edit');
 
 // Media Library & Settings (no CRUD pages)
 Route::get('/media-library', \App\Livewire\Admin\MediaLibrary\Index::class)->name('media-library');

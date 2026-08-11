@@ -3,10 +3,10 @@
     {{-- Header --}}
     <div class="flex items-center justify-between gap-3 px-6 py-5 border-b border-zinc-100 flex-wrap">
         <div>
-            <h1 class="text-lg font-semibold text-zinc-900">Post Categories</h1>
-            <p class="text-sm text-zinc-600 mt-0.5">Organise posts by category. Drag to reorder.</p>
+            <h1 class="text-lg font-semibold text-zinc-900">Post Tags</h1>
+            <p class="text-sm text-zinc-600 mt-0.5">Organise posts by tags.</p>
         </div>
-        <a href="{{ route('admin.post-categories.create') }}" wire:navigate
+        <a href="{{ route('admin.tags.create') }}" wire:navigate
             class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors"
             style="background:#22c55e" onmouseover="this.style.background='#16a34a'"
             onmouseout="this.style.background='#22c55e'">
@@ -14,7 +14,7 @@
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
-            New category
+            New tag
         </a>
     </div>
 
@@ -26,7 +26,7 @@
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
-            <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search categories…"
+            <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search tags…"
                 class="w-full pl-9 pr-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all" />
         </div>
         <select wire:model.live="statusFilter"
@@ -38,31 +38,16 @@
         </select>
     </div>
 
-    {{-- Table with Sortable --}}
-    <div class="overflow-x-auto px-6 py-4"
-        x-data="{
-            init() {
-                if (typeof Sortable === 'undefined') return;
-                new Sortable(this.$refs.sortableRows, {
-                    animation: 150,
-                    handle: '.drag-handle',
-                    ghostClass: 'bg-blue-50',
-                    onEnd: (evt) => {
-                        const rows = [...this.$refs.sortableRows.querySelectorAll('[data-category-id]')];
-                        const order = rows.map(r => parseInt(r.dataset.categoryId));
-                        $wire.reorder(order);
-                    }
-                });
-            }
-        }">
+    {{-- Table --}}
+    <div class="overflow-x-auto px-6 py-4">
         <div class="border border-zinc-100 rounded-lg">
             <table class="w-full border-collapse" style="table-layout:fixed">
                 <colgroup>
                     <col style="width:5%">
-                    <col style="width:28%">
-                    <col style="width:25%">
+                    <col style="width:33%">
+                    <col style="width:27%">
                     <col style="width:12%">
-                    <col style="width:30%">
+                    <col style="width:23%">
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50 border-b border-zinc-100">
@@ -73,29 +58,23 @@
                         <th class="px-4 py-2.5 text-right text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
-                <tbody x-ref="sortableRows">
-                    @forelse ($categories as $category)
-                        <tr class="border-b border-zinc-50 hover:bg-indigo-50/30 transition-colors" data-category-id="{{ $category->id }}">
+                <tbody>
+                    @forelse ($tags as $tag)
+                        <tr class="border-b border-zinc-50 hover:bg-indigo-50/30 transition-colors">
 
-                            {{-- Drag handle --}}
-                            <td class="px-2 py-3.5 text-center">
-                                <div class="drag-handle cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-600 inline-flex">
-                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <line x1="3" y1="6" x2="21" y2="6" />
-                                        <line x1="3" y1="12" x2="21" y2="12" />
-                                        <line x1="3" y1="18" x2="21" y2="18" />
-                                    </svg>
-                                </div>
+                            {{-- Id --}}
+                            <td class="px-2 py-3.5 text-center text-xs text-zinc-500">
+                                {{ $tag->id }}
                             </td>
 
                             {{-- Name --}}
                             <td class="px-4 py-3.5">
                                 <div class="font-medium text-zinc-900 text-sm leading-snug">
-                                    {{ $category->getTranslation('name', 'en', false) }}
+                                    {{ $tag->getTranslation('name', 'en', false) }}
                                 </div>
-                                @if ($category->getTranslation('name', 'bn', false))
+                                @if ($tag->getTranslation('name', 'bn', false))
                                     <div class="text-xs text-zinc-600 mt-0.5">
-                                        {{ $category->getTranslation('name', 'bn', false) }}
+                                        {{ $tag->getTranslation('name', 'bn', false) }}
                                     </div>
                                 @endif
                             </td>
@@ -103,13 +82,13 @@
                             {{-- Slug --}}
                             <td class="px-4 py-3.5">
                                 <span class="font-mono text-xs text-zinc-600 truncate block">
-                                    {{ $category->slug }}
+                                    {{ $tag->slug }}
                                 </span>
                             </td>
 
                             {{-- Status --}}
                             <td class="px-4 py-3.5">
-                                @if ($category->status === 'active')
+                                @if ($tag->status === 'active')
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
                                         <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>
                                         Active
@@ -122,25 +101,14 @@
                                 @endif
                             </td>
 
-                            {{-- Posts count --}}
-                            {{-- <td class="px-4 py-3.5">
-                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500">
-                                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                                        <polyline points="14 2 14 8 20 8" />
-                                    </svg>
-                                    {{ $category->posts_count }}
-                                </span>
-                            </td> --}}
-
                             {{-- Actions --}}
                             <td class="px-4 py-3.5">
                                 <div class="flex items-center justify-end gap-1.5">
 
                                     {{-- Edit --}}
                                     <div class="relative group">
-                                        <a href="{{ route('admin.post-categories.edit', $category->id) }}" wire:navigate
-                                            aria-label="Edit category"
+                                        <a href="{{ route('admin.tags.edit', $tag->id) }}" wire:navigate
+                                            aria-label="Edit tag"
                                             class="inline-flex items-center justify-center w-8 h-8 rounded-lg border transition-all duration-150 bg-indigo-50 text-indigo-500 hover:bg-indigo-500 hover:text-white hover:-translate-y-px"
                                             style="box-shadow:none"
                                             onmouseover="this.style.boxShadow='0 3px 8px rgba(99,102,241,.35)'"
@@ -161,8 +129,8 @@
 
                                     {{-- Delete --}}
                                     <div class="relative group">
-                                        <button wire:click="confirmDelete({{ $category->id }})"
-                                            aria-label="Delete category"
+                                        <button wire:click="confirmDelete({{ $tag->id }})"
+                                            aria-label="Delete tag"
                                             class="inline-flex items-center justify-center w-8 h-8 rounded-lg border transition-all duration-150 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white hover:-translate-y-px"
                                             style="box-shadow:none"
                                             onmouseover="this.style.boxShadow='0 3px 8px rgba(225,29,72,.35)'"
@@ -195,7 +163,7 @@
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
                                 </svg>
-                                <p class="text-sm text-zinc-600">No categories found.</p>
+                                <p class="text-sm text-zinc-600">No tags found.</p>
                             </td>
                         </tr>
                     @endforelse
@@ -206,13 +174,13 @@
 
     {{-- Pagination --}}
     <div class="px-6 py-3 border-t border-zinc-100">
-        {{ $categories->links() }}
+        {{ $tags->links() }}
     </div>
 
     {{-- Delete Modal --}}
-    <flux:modal name="category-delete" class="md:w-80"
-        x-on:open-modal.window="if ($event.detail.name === 'category-delete') $flux.modal('category-delete').show()"
-        x-on:close-modal.window="if ($event.detail.name === 'category-delete') $flux.modal('category-delete').close()">
+    <flux:modal name="tag-delete" class="md:w-80"
+        x-on:open-modal.window="if ($event.detail.name === 'tag-delete') $flux.modal('tag-delete').show()"
+        x-on:close-modal.window="if ($event.detail.name === 'tag-delete') $flux.modal('tag-delete').close()">
         <div class="space-y-4">
             <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center shrink-0">
@@ -222,9 +190,10 @@
                         <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
                     </svg>
                 </div>
-                <flux:heading>Delete category?</flux:heading>
+                <flux:heading>Delete tag?</flux:heading>
             </div>
-            <flux:text class="text-sm text-zinc-500">This action cannot be undone. The category will be soft-deleted.
+            <flux:text class="text-sm text-zinc-500">This action cannot be undone. Posts will no longer reference this
+                tag.
             </flux:text>
             <div class="flex gap-2 pt-1">
                 <button wire:click="delete"

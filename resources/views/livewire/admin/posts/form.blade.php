@@ -150,6 +150,32 @@
                 </div>
             </div>
 
+            {{-- Tags --}}
+            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
+                <div
+                    class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                    Tags
+                </div>
+                <div class="px-4 py-3">
+                    @forelse ($this->tags as $tag)
+                        <label class="flex items-center gap-2.5 py-1.5 cursor-pointer group">
+                            <input type="checkbox" wire:model="tag_ids" value="{{ $tag->id }}"
+                                class="w-4 h-4 rounded border-zinc-300 text-indigo-500 focus:ring-indigo-400 cursor-pointer" />
+                            <span class="text-sm text-zinc-700 group-hover:text-zinc-900 transition-colors">
+                                {{ $tag->getTranslation('name', 'en', false) }}
+                            </span>
+                        </label>
+                    @empty
+                        <p class="text-xs text-zinc-400">No tags yet.
+                            <a href="{{ route('admin.tags.create') }}" wire:navigate class="text-indigo-500 hover:underline">
+                                Create one
+                            </a>.
+                        </p>
+                    @endforelse
+                    <flux:error name="tag_ids" />
+                </div>
+            </div>
+
             {{-- Featured Image --}}
             <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
                 <div

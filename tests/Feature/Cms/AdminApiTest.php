@@ -4,6 +4,7 @@ use App\Models\MediaLibrary;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\Setting;
+use App\Models\Tag;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 
@@ -54,6 +55,32 @@ it('admin can update post content via api', function () {
 
     $response->assertOk()->assertJsonPath('data.id', $post->id);
     expect(Post::find($post->id)->getTranslation('content', 'en'))->toBe('{"blocks":[{"type":"paragraph"}]}');
+});
+
+it('admin can attach tags to a post when creating via api', function () {
+    Sanctum::actingAs($this->admin);
+    $tags = Tag::factory()->count(2)->create();
+
+    $response = $this->postJson('/api/v1/admin/posts', [
+        'title' => ['en' => 'Tagged Post', 'bn' => ''],
+        'tag_ids' => $tags->pluck('id')->all(),
+    ]);
+
+    $response->assertCreated();
+
+    $post = Post::whereJsonContains('title->en', 'Tagged Post')->firstOrFail();
+    expect($post->tags()->pluck('tags.id')->all())->toEqualCanonicalizing($tags->pluck('id')->all());
+});
+
+it('admin post detail includes tags', function () {
+    Sanctum::actingAs($this->admin);
+    $tag = Tag::factory()->create(['name' => ['en' => 'Laravel', 'bn' => '']]);
+    $post = Post::factory()->create();
+    $post->tags()->attach($tag);
+
+    $this->getJson("/api/v1/admin/posts/{$post->id}")
+        ->assertOk()
+        ->assertJsonPath('data.tags.0.slug', $tag->slug);
 });
 
 it('admin can list all pages via api', function () {

@@ -3,7 +3,8 @@
 use Illuminate\Support\Facades\Schema;
 
 it('creates all cms tables', function () {
-    expect(Schema::hasTable('blog_categories'))->toBeTrue();
+    expect(Schema::hasTable('post_categories'))->toBeTrue();
+    expect(Schema::hasTable('tags'))->toBeTrue();
     expect(Schema::hasTable('posts'))->toBeTrue();
     expect(Schema::hasTable('post_tag'))->toBeTrue();
     expect(Schema::hasTable('pages'))->toBeTrue();

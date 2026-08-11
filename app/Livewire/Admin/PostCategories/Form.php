@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Livewire\Admin\BlogCategories;
+namespace App\Livewire\Admin\PostCategories;
 
-use App\Models\BlogCategory;
+use App\Models\PostCategory;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -47,7 +47,7 @@ class Form extends Component
     public function mount(?int $id = null): void
     {
         if ($id) {
-            $category = BlogCategory::findOrFail($id);
+            $category = PostCategory::findOrFail($id);
             $this->categoryId              = $id;
             $this->name_en                 = $category->getTranslation('name', 'en', false) ?? '';
             $this->name_bn                 = $category->getTranslation('name', 'bn', false) ?? '';
@@ -71,8 +71,8 @@ class Form extends Component
 
         $rules = $this->getRules();
         $rules['slug'] = $this->categoryId
-            ? 'required|string|max:255|unique:blog_categories,slug,' . $this->categoryId
-            : 'required|string|max:255|unique:blog_categories,slug';
+            ? 'required|string|max:255|unique:post_categories,slug,' . $this->categoryId
+            : 'required|string|max:255|unique:post_categories,slug';
 
         $this->validate($rules);
 
@@ -87,19 +87,19 @@ class Form extends Component
         ];
 
         if ($this->categoryId) {
-            BlogCategory::findOrFail($this->categoryId)->update($data);
+            PostCategory::findOrFail($this->categoryId)->update($data);
             $this->dispatch('notify', message: 'Category updated successfully');
         } else {
-            BlogCategory::create($data);
+            PostCategory::create($data);
             $this->dispatch('notify', message: 'Category created successfully');
         }
 
-        $this->redirect(route('admin.blog-categories'), navigate: true);
+        $this->redirect(route('admin.post-categories'), navigate: true);
     }
 
     public function render()
     {
-        return view('livewire.admin.blog-categories.form')
-            ->layout('layouts.admin', ['title' => $this->categoryId ? 'Edit Blog Category' : 'New Blog Category']);
+        return view('livewire.admin.post-categories.form')
+            ->layout('layouts.admin', ['title' => $this->categoryId ? 'Edit Post Category' : 'New Post Category']);
     }
 }

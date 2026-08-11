@@ -1,23 +1,6 @@
 <div class="max-w-[1600px] w-full mx-auto flex-1">
 
-    <style>
-        .jodit-fixed-wrap .jodit-container,
-        .jodit-fixed-wrap .jodit-wysiwyg_wrap,
-        .jodit-fixed-wrap .jodit-workplace,
-        .jodit-fixed-wrap .jodit-wysiwyg {
-            height: 180px !important;
-            min-height: 180px !important;
-            max-height: 180px !important;
-            resize: none !important;
-            overflow-y: auto !important;
-        }
-
-        .jodit-fixed-wrap .jodit-container {
-            border-radius: 6px;
-        }
-    </style>
-
-    <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.post-categories') }}" wire:navigate
+    <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.tags') }}" wire:navigate
         class="mb-4 border-2">
         Back
     </flux:button>
@@ -28,7 +11,7 @@
         <div class="flex-1 min-w-0 bg-white rounded-lg border border-zinc-100 shadow-sm p-6">
 
             <h1 class="text-lg font-semibold text-zinc-900 mb-5 pb-4 border-b border-zinc-100">
-                {{ $categoryId ? 'Edit Post Category' : 'New Post Category' }}
+                {{ $tagId ? 'Edit Tag' : 'New Tag' }}
             </h1>
 
             <div x-data="{ locale: 'en' }">
@@ -49,7 +32,7 @@
                 <div x-show="locale==='en'" class="space-y-4">
                     <flux:field>
                         <flux:label>Name <span class="text-red-500 ml-0.5">*</span></flux:label>
-                        <flux:input wire:model="name_en" placeholder="Category name in English" />
+                        <flux:input wire:model="name_en" placeholder="Tag name in English" />
                         <flux:error name="name_en" />
                     </flux:field>
                     <flux:field>
@@ -64,7 +47,7 @@
                 <div x-show="locale==='bn'" class="space-y-4">
                     <flux:field>
                         <flux:label>নাম</flux:label>
-                        <flux:input wire:model="name_bn" placeholder="বাংলায় বিভাগের নাম" />
+                        <flux:input wire:model="name_bn" placeholder="বাংলায় ট্যাগের নাম" />
                     </flux:field>
                     <flux:field>
                         <flux:label>Slug</flux:label>
@@ -85,7 +68,7 @@
                     class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
                     Settings
                 </div>
-                <div class="px-4 py-3 border-b border-zinc-50">
+                <div class="px-4 py-3">
                     <flux:field>
                         <flux:label>Status</flux:label>
                         <flux:select wire:model="status">
@@ -94,19 +77,11 @@
                         </flux:select>
                     </flux:field>
                 </div>
-                <div class="px-4 py-3">
-                    <flux:field>
-                        <flux:label>Sort Order</flux:label>
-                        <flux:input type="number" wire:model="sort_order" min="0" />
-                    </flux:field>
-                </div>
             </div>
-
-            <livewire:admin.media-library.picker-modal />
 
             {{-- Footer --}}
             <div class="flex justify-end items-center gap-3 border-t border-zinc-100 flex-wrap">
-                <a href="{{ route('admin.post-categories') }}" wire:navigate
+                <a href="{{ route('admin.tags') }}" wire:navigate
                     class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg border text-red-600 border-red-200 bg-white hover:bg-red-50 hover:border-red-400 transition-colors">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18" />
@@ -123,7 +98,7 @@
                         <polyline points="17 21 17 13 7 13 7 21" />
                         <polyline points="7 3 7 8 15 8" />
                     </svg>
-                    {{ $categoryId ? 'Update Category' : 'Create Category' }}
+                    {{ $tagId ? 'Update Tag' : 'Create Tag' }}
                 </button>
             </div>
 

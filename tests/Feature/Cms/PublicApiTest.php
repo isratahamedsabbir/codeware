@@ -1,9 +1,10 @@
 <?php
 
-use App\Models\BlogCategory;
 use App\Models\Page;
 use App\Models\Post;
+use App\Models\PostCategory;
 use App\Models\Setting;
+use App\Models\Tag;
 use App\Models\User;
 
 it('returns published posts only', function () {
@@ -100,11 +101,23 @@ it('returns layout header and footer', function () {
 });
 
 it('filters posts by category slug', function () {
-    $cat = BlogCategory::factory()->create(['slug' => 'news']);
+    $cat = PostCategory::factory()->create(['slug' => 'news']);
     Post::factory()->published()->create(['category_id' => $cat->id, 'title' => ['en' => 'News Post', 'bn' => '']]);
     Post::factory()->published()->create(['title' => ['en' => 'Other Post', 'bn' => '']]);
 
     $response = $this->getJson('/api/v1/posts?category=news');
 
     $response->assertOk()->assertJsonCount(1, 'data');
+});
+
+it('returns tags on published posts', function () {
+    $tag = Tag::factory()->create(['name' => ['en' => 'Laravel', 'bn' => 'লারাভেল']]);
+    $post = Post::factory()->published()->create(['title' => ['en' => 'Tagged Post', 'bn' => '']]);
+    $post->tags()->attach($tag);
+
+    $response = $this->getJson('/api/v1/posts?locale=bn');
+
+    $response->assertOk()
+        ->assertJsonPath('data.0.tags.0.name', 'লারাভেল')
+        ->assertJsonPath('data.0.tags.0.slug', $tag->slug);
 });

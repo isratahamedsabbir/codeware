@@ -14,7 +14,7 @@ class PostController extends Controller
         $perPage = min((int) $request->query('per_page', 15), 100);
 
         $posts = Post::withTrashed()
-            ->with(['category:id,slug', 'user:id,name'])
+            ->with(['category:id,slug', 'user:id,name', 'tags'])
             ->orderByDesc('updated_at')
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
             ->paginate($perPage);
@@ -32,6 +32,11 @@ class PostController extends Controller
                 'deleted_at' => $post->deleted_at?->toIso8601String(),
                 'category' => $post->category,
                 'author' => $post->user ? ['id' => $post->user->id, 'name' => $post->user->name] : null,
+                'tags' => $post->tags->map(fn ($tag) => [
+                    'id' => $tag->id,
+                    'slug' => $tag->slug,
+                    'name' => $tag->name,
+                ])->values(),
             ]),
             'meta' => [
                 'current_page' => $posts->currentPage(),
@@ -44,7 +49,7 @@ class PostController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $post = Post::withTrashed()->with(['category', 'user:id,name'])->findOrFail($id);
+        $post = Post::withTrashed()->with(['category', 'user:id,name', 'tags'])->findOrFail($id);
 
         return response()->json([
             'data' => [
@@ -63,6 +68,11 @@ class PostController extends Controller
                 'deleted_at' => $post->deleted_at?->toIso8601String(),
                 'category' => $post->category,
                 'author' => $post->user ? ['id' => $post->user->id, 'name' => $post->user->name] : null,
+                'tags' => $post->tags->map(fn ($tag) => [
+                    'id' => $tag->id,
+                    'slug' => $tag->slug,
+                    'name' => $tag->name,
+                ])->values(),
             ],
         ]);
     }
@@ -76,12 +86,15 @@ class PostController extends Controller
             'slug'      => 'nullable|string|unique:posts,slug',
             'status'    => 'sometimes|in:active,inactive',
             'puck_data' => 'nullable|array',
+            'tag_ids'   => 'sometimes|array',
+            'tag_ids.*' => 'exists:tags,id',
         ]);
 
         $validated['user_id'] = $request->user()->id;
         $validated['status']  = $validated['status'] ?? 'inactive';
 
         $post = Post::create($validated);
+        $post->tags()->sync($validated['tag_ids'] ?? []);
 
         return response()->json(['data' => ['id' => $post->id, 'slug' => $post->slug]], 201);
     }
@@ -109,11 +122,14 @@ class PostController extends Controller
             'status' => 'sometimes|in:active,inactive',
             'featured_image' => 'sometimes|nullable|string',
             'puck_data' => 'sometimes|nullable|array',
-            'category_id' => 'sometimes|nullable|exists:blog_categories,id',
+            'category_id' => 'sometimes|nullable|exists:post_categories,id',
             'slug' => 'sometimes|string|unique:posts,slug,' . $post->id,
+            'tag_ids' => 'sometimes|array',
+            'tag_ids.*' => 'exists:tags,id',
         ]);
 
         $post->update($validated);
+        $post->tags()->sync($validated['tag_ids'] ?? []);
 
         return response()->json(['data' => ['id' => $post->id, 'slug' => $post->slug]]);
     }

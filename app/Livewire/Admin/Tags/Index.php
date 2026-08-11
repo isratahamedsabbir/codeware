@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Livewire\Admin\PostCategories;
+namespace App\Livewire\Admin\Tags;
 
-use App\Models\PostCategory;
+use App\Models\Tag;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -24,40 +24,32 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function reorder(array $order): void
-    {
-        foreach ($order as $sortOrder => $categoryId) {
-            PostCategory::where('id', $categoryId)->update(['sort_order' => $sortOrder]);
-        }
-    }
-
     public function confirmDelete(int $id): void
     {
         $this->deletingId = $id;
-        $this->dispatch('open-modal', name: 'category-delete');
+        $this->dispatch('open-modal', name: 'tag-delete');
     }
 
     public function delete(): void
     {
         if ($this->deletingId) {
-            PostCategory::findOrFail($this->deletingId)->delete();
-            $this->dispatch('notify', message: 'Category deleted successfully');
+            Tag::findOrFail($this->deletingId)->delete();
+            $this->dispatch('notify', message: 'Tag deleted successfully');
             $this->deletingId = null;
         }
-        $this->dispatch('close-modal', name: 'category-delete');
+        $this->dispatch('close-modal', name: 'tag-delete');
     }
 
     public function render()
     {
-        return view('livewire.admin.post-categories.index', [
-            'categories' => PostCategory::query()
+        return view('livewire.admin.tags.index', [
+            'tags' => Tag::query()
                 ->when($this->search, fn ($q) => $q->where('name->en', 'like', "%{$this->search}%")
                     ->orWhere('name->bn', 'like', "%{$this->search}%"))
                 ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
                 ->withCount('posts')
-                ->orderBy('sort_order')
                 ->orderBy('id')
                 ->paginate(15),
-        ])->layout('layouts.admin', ['title' => 'Post Categories']);
+        ])->layout('layouts.admin', ['title' => 'Post Tags']);
     }
 }

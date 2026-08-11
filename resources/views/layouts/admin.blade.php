@@ -78,10 +78,16 @@
                 <span>Overview</span>
             </a>
 
+            <a href="{{ route('admin.profile') }}" wire:navigate.hover
+                class="admin-nav-item {{ request()->routeIs('admin.profile') ? 'admin-nav-active' : '' }}">
+                <flux:icon.user-circle class="size-4.5 shrink-0" />
+                <span>My Profile</span>
+            </a>
+
             <div x-data="{
                 openGroup: '{{ request()->routeIs('admin.product-categories', 'admin.products')
                     ? 'products'
-                    : (request()->routeIs('admin.blog-categories', 'admin.posts')
+                    : (request()->routeIs('admin.post-categories', 'admin.posts', 'admin.tags')
                         ? 'blog'
                         : (request()->routeIs('admin.settings', 'admin.media-library')
                             ? 'library'
@@ -126,10 +132,15 @@
                     </button>
                     <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': openGroup !== 'blog' }"
                         :style="openGroup === 'blog' ? 'max-height: 500px; opacity: 1;' : ''">
-                        <a href="{{ route('admin.blog-categories') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.blog-categories') ? 'admin-nav-active' : '' }}">
+                        <a href="{{ route('admin.post-categories') }}" wire:navigate.hover
+                            class="admin-nav-item {{ request()->routeIs('admin.post-categories') ? 'admin-nav-active' : '' }}">
+                            <flux:icon.squares-2x2 class="size-4.5 shrink-0" />
+                            <span>Post Categories</span>
+                        </a>
+                        <a href="{{ route('admin.tags') }}" wire:navigate.hover
+                            class="admin-nav-item {{ request()->routeIs('admin.tags') ? 'admin-nav-active' : '' }}">
                             <flux:icon.tag class="size-4.5 shrink-0" />
-                            <span>Blog Categories</span>
+                            <span>Tags</span>
                         </a>
                         <a href="{{ route('admin.posts') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.posts') ? 'admin-nav-active' : '' }}">
@@ -214,16 +225,22 @@
         </div>
 
         {{-- User Profile Card --}}
-        <div class="shrink-0 border-t border-zinc-800/40 px-3 py-3.5 flex items-center gap-3">
-            <div
-                class="size-9 rounded-xl bg-gradient-to-br from-brand-green to-brand-blue flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-md">
-                {{ auth()->user()->initials() }}
-            </div>
+        <a href="{{ route('admin.profile') }}" wire:navigate.hover
+            class="shrink-0 border-t border-zinc-800/40 px-3 py-3.5 flex items-center gap-3 hover:bg-zinc-800/30 transition-colors">
+            @if (auth()->user()->photo_url)
+                <img src="{{ auth()->user()->photo_url }}" alt="{{ auth()->user()->name }}"
+                    class="size-9 rounded-xl object-cover shrink-0 shadow-md">
+            @else
+                <div
+                    class="size-9 rounded-xl bg-gradient-to-br from-brand-green to-brand-blue flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-md">
+                    {{ auth()->user()->initials() }}
+                </div>
+            @endif
             <div class="flex-1 min-w-0">
                 <p class="text-sm font-semibold text-zinc-100 truncate leading-tight">{{ auth()->user()->name }}</p>
                 <p class="text-xs text-zinc-500 truncate mt-0.5">{{ auth()->user()->email }}</p>
             </div>
-        </div>
+        </a>
 
     </flux:sidebar>
 

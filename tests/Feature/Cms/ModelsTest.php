@@ -1,14 +1,14 @@
 <?php
 
-use App\Models\BlogCategory;
 use App\Models\MediaLibrary;
 use App\Models\Page;
 use App\Models\Post;
+use App\Models\PostCategory;
 use App\Models\Setting;
 use App\Models\User;
 
 it('blog category auto-generates slug from name', function () {
-    $category = BlogCategory::factory()->create(['name' => ['en' => 'My Test Category', 'bn' => ''], 'slug' => '']);
+    $category = PostCategory::factory()->create(['name' => ['en' => 'My Test Category', 'bn' => ''], 'slug' => '']);
     expect($category->fresh()->slug)->toBe('my-test-category');
 });
 
@@ -52,7 +52,7 @@ it('media library url accessor returns storage url', function () {
 
 it('post has correct relationships', function () {
     $user = User::factory()->create();
-    $category = BlogCategory::factory()->create();
+    $category = PostCategory::factory()->create();
     $post = Post::factory()->create(['user_id' => $user->id, 'category_id' => $category->id]);
 
     expect($post->user->id)->toBe($user->id);

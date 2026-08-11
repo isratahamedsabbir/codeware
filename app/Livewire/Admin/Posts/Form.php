@@ -2,9 +2,10 @@
 
 namespace App\Livewire\Admin\Posts;
 
-use App\Models\BlogCategory;
 use App\Models\Page;
 use App\Models\Post;
+use App\Models\PostCategory;
+use App\Models\Tag;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
@@ -42,11 +43,14 @@ class Form extends Component
     #[Validate('nullable|string')]
     public string $seo_description_bn = '';
 
-    #[Validate('nullable|integer|exists:blog_categories,id')]
+    #[Validate('nullable|integer|exists:post_categories,id')]
     public ?int $category_id = null;
 
     #[Validate('in:active,inactive')]
     public string $status = 'inactive';
+
+    #[Validate('nullable|array')]
+    public array $tag_ids = [];
 
     public ?string $featured_image = null;
 
@@ -63,7 +67,7 @@ class Form extends Component
         $this->ogImagePickerId = 'og-image-picker-' . Str::uuid()->toString();
 
         if ($id) {
-            $post = Post::with('page')->findOrFail($id);
+            $post = Post::with('page', 'tags')->findOrFail($id);
             $this->postId              = $id;
             $this->title_en            = $post->getTranslation('title', 'en', false) ?? '';
             $this->title_bn            = $post->getTranslation('title', 'bn', false) ?? '';
@@ -79,13 +83,20 @@ class Form extends Component
             $this->featured_image      = $post->featured_image ?? '';
             $this->og_image            = $post->og_image ?? null;
             $this->pageId              = $post->page?->id;
+            $this->tag_ids             = $post->tags->pluck('id')->all();
         }
     }
 
     #[Computed]
     public function categories()
     {
-        return BlogCategory::orderBy('slug')->get();
+        return PostCategory::orderBy('slug')->get();
+    }
+
+    #[Computed]
+    public function tags()
+    {
+        return Tag::orderBy('id')->get();
     }
 
     public function openPuckEditor(): void
@@ -114,6 +125,7 @@ class Form extends Component
         $rules['slug'] = $this->postId
             ? 'required|string|max:255|unique:posts,slug,' . $this->postId
             : 'required|string|max:255|unique:posts,slug';
+        $rules['tag_ids.*'] = 'exists:tags,id';
 
         $this->validate($rules);
 
@@ -145,6 +157,7 @@ class Form extends Component
         $rules['slug'] = $this->postId
             ? 'required|string|max:255|unique:posts,slug,' . $this->postId
             : 'required|string|max:255|unique:posts,slug';
+        $rules['tag_ids.*'] = 'exists:tags,id';
 
         $this->validate($rules);
 
@@ -178,6 +191,8 @@ class Form extends Component
             $post = Post::create($data);
             $this->postId = $post->id;
         }
+
+        $post->tags()->sync($this->tag_ids);
 
         $page = Page::updateOrCreate(
             ['type' => 'post', 'post_id' => $post->id],

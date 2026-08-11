@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 use Spatie\Translatable\HasTranslations;
 
-class BlogCategory extends Model
+class PostCategory extends Model
 {
     use HasFactory, HasTranslations;
 
@@ -18,7 +18,7 @@ class BlogCategory extends Model
 
     protected static function booted(): void
     {
-        static::saving(function (BlogCategory $category) {
+        static::saving(function (PostCategory $category) {
             if (empty($category->slug)) {
                 $name = is_array($category->name)
                     ? ($category->name['en'] ?? reset($category->name))
