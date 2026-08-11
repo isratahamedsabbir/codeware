@@ -21,13 +21,16 @@ return new class extends Migration
             $table->json('specifications')->nullable();
             $table->json('benefits')->nullable();
             $table->json('usage_instructions')->nullable();
+            $table->json('faq')->nullable();
             $table->string('featured_image')->nullable();
+            $table->string('og_image')->nullable();
             $table->string('datasheet_url')->nullable();
-            $table->enum('status', ['draft', 'published'])->default('draft');
+            $table->string('status', 20)->default('active');
             $table->boolean('is_featured')->default(false);
             $table->unsignedSmallInteger('sort_order')->default(0);
             $table->json('seo_title')->nullable();
             $table->json('seo_description')->nullable();
+            $table->json('puck_data')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

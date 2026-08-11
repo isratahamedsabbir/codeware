@@ -14,17 +14,19 @@ return new class extends Migration
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('title');
+            $table->foreignId('category_id')->nullable()->constrained('blog_categories')->nullOnDelete();
+            $table->json('title');
             $table->string('slug')->unique();
-            $table->text('excerpt')->nullable();
-            $table->longText('content')->nullable();
+            $table->json('description')->nullable();
+            $table->json('content')->nullable();
             $table->string('featured_image')->nullable();
-            $table->enum('status', ['draft', 'published'])->default('draft');
+            $table->string('og_image')->nullable();
+            $table->string('status', 20)->default('inactive');
             $table->timestamp('published_at')->nullable();
             $table->unsignedSmallInteger('reading_time')->nullable();
-            $table->string('seo_title')->nullable();
-            $table->text('seo_description')->nullable();
+            $table->json('seo_title')->nullable();
+            $table->json('seo_description')->nullable();
+            $table->json('puck_data')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

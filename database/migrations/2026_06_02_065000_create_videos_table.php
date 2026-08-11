@@ -13,7 +13,7 @@ return new class extends Migration
             $table->json('title');
             $table->string('youtube_link');
             $table->string('thumbnail')->nullable();
-            $table->enum('status', ['published', 'draft'])->default('draft');
+            $table->string('status', 20)->default('active');
             $table->unsignedSmallInteger('sort_order')->default(0);
             $table->softDeletes();
             $table->timestamps();

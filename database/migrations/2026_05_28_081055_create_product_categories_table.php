@@ -17,6 +17,10 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->json('description')->nullable();
             $table->string('icon')->nullable();
+            $table->string('status', 20)->default('active');
+            $table->json('seo_title')->nullable();
+            $table->json('seo_description')->nullable();
+            $table->string('og_image')->nullable();
             $table->unsignedSmallInteger('sort_order')->default(0);
             $table->timestamps();
         });

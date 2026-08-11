@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('location', 255)->nullable();
             $table->string('type', 100)->nullable();
             $table->foreignId('product_id')->nullable()->constrained()->cascadeOnDelete();
-            $table->string('status', 20)->default('published');
+            $table->string('status', 20)->default('active');
             $table->integer('sort_order')->default(0);
             $table->softDeletes();
             $table->timestamps();

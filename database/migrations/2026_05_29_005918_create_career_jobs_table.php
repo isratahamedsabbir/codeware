@@ -16,12 +16,14 @@ return new class extends Migration
             $table->foreignId('department_id')->nullable()->constrained('departments')->nullOnDelete();
             $table->json('title');
             $table->string('slug')->unique();
+            $table->string('image')->nullable();
+            $table->string('document_file')->nullable();
             $table->json('description')->nullable();
             $table->string('position');
             $table->unsignedSmallInteger('vacancy')->default(1);
             $table->date('deadline')->nullable();
             $table->string('location')->nullable();
-            $table->enum('status', ['draft', 'open', 'closed'])->default('draft');
+            $table->string('status', 20)->default('inactive');
             $table->unsignedSmallInteger('sort_order')->default(0);
             $table->softDeletes();
             $table->timestamps();

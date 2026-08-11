@@ -13,6 +13,7 @@ return new class extends Migration
             $table->json('name');
             $table->string('slug')->unique();
             $table->unsignedSmallInteger('sort_order')->default(0);
+            $table->string('status', 20)->default('active');
             $table->softDeletes();
             $table->timestamps();
         });

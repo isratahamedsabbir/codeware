@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('tags', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->json('name');
             $table->string('slug')->unique();
+            $table->string('status', 20)->default('active');
             $table->timestamps();
         });
     }

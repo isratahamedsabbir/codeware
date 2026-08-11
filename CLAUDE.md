@@ -86,6 +86,15 @@ Public API supports `?locale=en|bn` query parameter for translated fields, and `
 
 `Setting::get($key)` is cached forever. Always use `Setting::set($key, $value)` (not direct `update()`) to write, as it busts the cache. If you update settings directly in migrations or seeders, manually call `Cache::forget("setting:{$key}")`.
 
+### Migrations
+
+**One migration file per table.** Each table's full final schema lives in a single `create_*_table` migration — never create separate `add_*`/`change_*`/`rename_*` migration files. To add/change a column, edit the table's existing create migration directly (then run `php artisan migrate:fresh` locally to replay).
+
+Notes:
+- All table migrations run in filename (timestamp) order, so FK-referenced tables must be created before their dependents (e.g. `pages` references `products`, so `pages` is timestamped after `products`).
+- Blog categories use the `blog_categories` table (via `BlogCategory` model), not `categories`.
+- If a schema change also needs a data backfill, put the `DB::table(...)` logic in the create migration too, or run a separate seeder.
+
 ### Frontend Stack (`agrosal-frontend/`)
 
 | Package | Purpose |
