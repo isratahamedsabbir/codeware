@@ -3,7 +3,6 @@
 use App\Livewire\Admin\Posts\Index as PostsIndex;
 use App\Models\BlogCategory;
 use App\Models\Post;
-use App\Models\Tag;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -55,17 +54,6 @@ it('can soft-delete a post', function () {
 
     expect(Post::find($post->id))->toBeNull();
     expect(Post::withTrashed()->find($post->id))->not->toBeNull();
-});
-
-it('syncs tags when saving', function () {
-    $tag = Tag::factory()->create();
-    Livewire::test(PostsIndex::class)
-        ->set('title_en', 'Tagged Post')
-        ->set('selectedTags', [$tag->id])
-        ->call('save');
-
-    $post = Post::whereJsonContains('title->en', 'Tagged Post')->first();
-    expect($post->tags->pluck('id')->toArray())->toContain($tag->id);
 });
 
 it('dispatches open-puck-editor event when opening puck editor for existing post', function () {

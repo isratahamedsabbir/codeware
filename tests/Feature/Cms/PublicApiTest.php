@@ -4,7 +4,6 @@ use App\Models\BlogCategory;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\Setting;
-use App\Models\Tag;
 use App\Models\User;
 
 it('returns published posts only', function () {
@@ -106,17 +105,6 @@ it('filters posts by category slug', function () {
     Post::factory()->published()->create(['title' => ['en' => 'Other Post', 'bn' => '']]);
 
     $response = $this->getJson('/api/v1/posts?category=news');
-
-    $response->assertOk()->assertJsonCount(1, 'data');
-});
-
-it('filters posts by tag slug', function () {
-    $tag = Tag::factory()->create(['slug' => 'featured']);
-    $post = Post::factory()->published()->create(['title' => ['en' => 'Featured Post', 'bn' => '']]);
-    $post->tags()->attach($tag);
-    Post::factory()->published()->create(['title' => ['en' => 'Normal Post', 'bn' => '']]);
-
-    $response = $this->getJson('/api/v1/posts?tag=featured');
 
     $response->assertOk()->assertJsonCount(1, 'data');
 });

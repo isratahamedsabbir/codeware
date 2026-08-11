@@ -5,7 +5,6 @@ namespace App\Livewire\Admin\Posts;
 use App\Models\BlogCategory;
 use App\Models\Page;
 use App\Models\Post;
-use App\Models\Tag;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
@@ -46,8 +45,6 @@ class Form extends Component
     #[Validate('nullable|integer|exists:blog_categories,id')]
     public ?int $category_id = null;
 
-    public array $selectedTags = [];
-
     #[Validate('in:active,inactive')]
     public string $status = 'inactive';
 
@@ -78,7 +75,6 @@ class Form extends Component
             $this->seo_description_en  = $post->getTranslation('seo_description', 'en', false) ?? '';
             $this->seo_description_bn  = $post->getTranslation('seo_description', 'bn', false) ?? '';
             $this->category_id         = $post->category_id;
-            $this->selectedTags        = $post->tags->pluck('id')->toArray();
             $this->status              = $post->status;
             $this->featured_image      = $post->featured_image ?? '';
             $this->og_image            = $post->og_image ?? null;
@@ -90,12 +86,6 @@ class Form extends Component
     public function categories()
     {
         return BlogCategory::orderBy('slug')->get();
-    }
-
-    #[Computed]
-    public function tags()
-    {
-        return Tag::orderBy('slug')->get();
     }
 
     public function openPuckEditor(): void
@@ -188,8 +178,6 @@ class Form extends Component
             $post = Post::create($data);
             $this->postId = $post->id;
         }
-
-        $post->tags()->sync($this->selectedTags);
 
         $page = Page::updateOrCreate(
             ['type' => 'post', 'post_id' => $post->id],

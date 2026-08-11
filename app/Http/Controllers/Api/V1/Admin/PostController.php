@@ -14,7 +14,7 @@ class PostController extends Controller
         $perPage = min((int) $request->query('per_page', 15), 100);
 
         $posts = Post::withTrashed()
-            ->with(['category:id,slug', 'tags:id,slug', 'user:id,name'])
+            ->with(['category:id,slug', 'user:id,name'])
             ->orderByDesc('updated_at')
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
             ->paginate($perPage);
@@ -31,7 +31,6 @@ class PostController extends Controller
                 'published_at' => $post->published_at?->toIso8601String(),
                 'deleted_at' => $post->deleted_at?->toIso8601String(),
                 'category' => $post->category,
-                'tags' => $post->tags->values(),
                 'author' => $post->user ? ['id' => $post->user->id, 'name' => $post->user->name] : null,
             ]),
             'meta' => [
@@ -45,7 +44,7 @@ class PostController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $post = Post::withTrashed()->with(['category', 'tags', 'user:id,name'])->findOrFail($id);
+        $post = Post::withTrashed()->with(['category', 'user:id,name'])->findOrFail($id);
 
         return response()->json([
             'data' => [
@@ -63,7 +62,6 @@ class PostController extends Controller
                 'puck_data'       => $post->puck_data,
                 'deleted_at' => $post->deleted_at?->toIso8601String(),
                 'category' => $post->category,
-                'tags' => $post->tags->values(),
                 'author' => $post->user ? ['id' => $post->user->id, 'name' => $post->user->name] : null,
             ],
         ]);

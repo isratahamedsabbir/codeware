@@ -19,11 +19,6 @@ Route::get('/blog-categories', \App\Livewire\Admin\BlogCategories\Index::class)-
 Route::get('/blog-categories/create', \App\Livewire\Admin\BlogCategories\Form::class)->name('blog-categories.create');
 Route::get('/blog-categories/{id}/edit', \App\Livewire\Admin\BlogCategories\Form::class)->name('blog-categories.edit');
 
-// Tags
-Route::get('/tags', \App\Livewire\Admin\Tags\Index::class)->name('tags');
-Route::get('/tags/create', \App\Livewire\Admin\Tags\Form::class)->name('tags.create');
-Route::get('/tags/{id}/edit', \App\Livewire\Admin\Tags\Form::class)->name('tags.edit');
-
 // Media Library & Settings (no CRUD pages)
 Route::get('/media-library', \App\Livewire\Admin\MediaLibrary\Index::class)->name('media-library');
 Route::get('/settings', \App\Livewire\Admin\Settings\Index::class)->name('settings');

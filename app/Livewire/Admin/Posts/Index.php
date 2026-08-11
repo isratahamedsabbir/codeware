@@ -63,7 +63,7 @@ class Index extends Component
     {
         return view('livewire.admin.posts.index', [
             'posts' => Post::query()
-                ->with(['category', 'tags'])
+                ->with(['category'])
                 ->when($this->search, fn ($q) => $q
                     ->where('title->en', 'like', "%{$this->search}%")
                     ->orWhere('title->bn', 'like', "%{$this->search}%")

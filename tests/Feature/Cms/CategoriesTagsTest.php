@@ -1,9 +1,7 @@
 <?php
 
 use App\Livewire\Admin\BlogCategories\Index as BlogCategoriesIndex;
-use App\Livewire\Admin\Tags\Index as TagsIndex;
 use App\Models\BlogCategory;
-use App\Models\Tag;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -47,27 +45,4 @@ it('can delete a blog category', function () {
         ->call('delete');
 
     expect(BlogCategory::find($category->id))->toBeNull();
-});
-
-// Tags
-it('renders tags component', function () {
-    Livewire::test(TagsIndex::class)
-        ->assertStatus(200);
-});
-
-it('can create a tag', function () {
-    Livewire::test(TagsIndex::class)
-        ->set('name_en', 'Tutorial')
-        ->call('save');
-
-    expect(Tag::whereJsonContains('name->en', 'Tutorial')->exists())->toBeTrue();
-});
-
-it('can delete a tag', function () {
-    $tag = Tag::factory()->create();
-    Livewire::test(TagsIndex::class)
-        ->call('confirmDelete', $tag->id)
-        ->call('delete');
-
-    expect(Tag::find($tag->id))->toBeNull();
 });

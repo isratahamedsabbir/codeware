@@ -150,26 +150,6 @@
                 </div>
             </div>
 
-            {{-- Tags --}}
-            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
-                <div
-                    class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                    Tags
-                </div>
-                <div class="px-4 py-3">
-                    <div class="flex flex-wrap gap-1.5">
-                        @foreach ($this->tags as $tag)
-                            <label
-                                class="flex items-center gap-1.5 text-xs text-zinc-600 px-2.5 py-1.5 rounded-md border border-zinc-200 bg-zinc-50 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-600 cursor-pointer transition-all">
-                                <input type="checkbox" wire:model="selectedTags" value="{{ $tag->id }}"
-                                    class="w-3 h-3 accent-indigo-600 rounded border-zinc-300" />
-                                {{ $tag->getTranslation('name', 'en', false) }}
-                            </label>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-
             {{-- Featured Image --}}
             <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
                 <div

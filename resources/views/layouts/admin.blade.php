@@ -81,7 +81,7 @@
             <div x-data="{
                 openGroup: '{{ request()->routeIs('admin.product-categories', 'admin.products')
                     ? 'products'
-                    : (request()->routeIs('admin.blog-categories', 'admin.tags', 'admin.posts')
+                    : (request()->routeIs('admin.blog-categories', 'admin.posts')
                         ? 'blog'
                         : (request()->routeIs('admin.settings', 'admin.media-library')
                             ? 'library'
@@ -130,11 +130,6 @@
                             class="admin-nav-item {{ request()->routeIs('admin.blog-categories') ? 'admin-nav-active' : '' }}">
                             <flux:icon.tag class="size-4.5 shrink-0" />
                             <span>Blog Categories</span>
-                        </a>
-                        <a href="{{ route('admin.tags') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.tags') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.hashtag class="size-4.5 shrink-0" />
-                            <span>Tags</span>
                         </a>
                         <a href="{{ route('admin.posts') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.posts') ? 'admin-nav-active' : '' }}">
