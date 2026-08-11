@@ -43,7 +43,7 @@ class Form extends Component
     #[Validate('nullable|string')]
     public string $seo_description_bn = '';
 
-    #[Validate('nullable|integer|exists:post_categories,id')]
+    #[Validate('nullable|integer|exists:categories,id,type,post')]
     public ?int $category_id = null;
 
     #[Validate('in:active,inactive')]

@@ -22,7 +22,7 @@ class Form extends Component
     public string $name_bn = '';
     #[Validate('nullable|string|max:255')]
     public string $slug = '';
-    #[Validate('nullable|integer|exists:product_categories,id')]
+    #[Validate('nullable|integer|exists:categories,id,type,product')]
     public ?int $product_category_id = null;
     #[Validate('in:active,inactive')]
     public string $status = 'active';

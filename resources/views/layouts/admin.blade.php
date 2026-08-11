@@ -93,9 +93,11 @@
                             ? 'library'
                             : (request()->routeIs('admin.contacts')
                                 ? 'inquiries'
-                                : (request()->routeIs('admin.pages')
-                                    ? 'content'
-                                    : 'products')))) }}',
+                            : (request()->routeIs('admin.pages')
+                                ? 'content'
+                                : (request()->routeIs('admin.roles', 'admin.roles.*', 'admin.permissions', 'admin.users', 'admin.users.*')
+                                    ? 'access'
+                                    : 'products'))))) }}',
                 toggle(group) { this.openGroup = this.openGroup === group ? null : group }
             }">
 
@@ -205,6 +207,34 @@
                             class="admin-nav-item {{ request()->routeIs('admin.pages') ? 'admin-nav-active' : '' }}">
                             <flux:icon.document class="size-4.5 shrink-0" />
                             <span>Pages</span>
+                        </a>
+                    </div>
+                </div>
+
+                {{-- Access Control Group --}}
+                <div class="nav-group">
+                    <button @click="toggle('access')"
+                        class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
+                        <span>Access Control</span>
+                        <span x-text="openGroup === 'access' ? '−' : '+'"
+                            class="text-zinc-500 text-sm font-bold leading-none"></span>
+                    </button>
+                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': openGroup !== 'access' }"
+                        :style="openGroup === 'access' ? 'max-height: 500px; opacity: 1;' : ''">
+                        <a href="{{ route('admin.roles') }}" wire:navigate.hover
+                            class="admin-nav-item {{ request()->routeIs('admin.roles', 'admin.roles.*') ? 'admin-nav-active' : '' }}">
+                            <flux:icon.shield-check class="size-4.5 shrink-0" />
+                            <span>Roles</span>
+                        </a>
+                        <a href="{{ route('admin.permissions') }}" wire:navigate.hover
+                            class="admin-nav-item {{ request()->routeIs('admin.permissions') ? 'admin-nav-active' : '' }}">
+                            <flux:icon.lock-closed class="size-4.5 shrink-0" />
+                            <span>Permissions</span>
+                        </a>
+                        <a href="{{ route('admin.users') }}" wire:navigate.hover
+                            class="admin-nav-item {{ request()->routeIs('admin.users', 'admin.users.*') ? 'admin-nav-active' : '' }}">
+                            <flux:icon.users class="size-4.5 shrink-0" />
+                            <span>Users</span>
                         </a>
                     </div>
                 </div>

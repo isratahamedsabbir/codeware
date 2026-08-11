@@ -122,7 +122,7 @@ class PostController extends Controller
             'status' => 'sometimes|in:active,inactive',
             'featured_image' => 'sometimes|nullable|string',
             'puck_data' => 'sometimes|nullable|array',
-            'category_id' => 'sometimes|nullable|exists:post_categories,id',
+            'category_id' => 'sometimes|nullable|exists:categories,id,type,post',
             'slug' => 'sometimes|string|unique:posts,slug,' . $post->id,
             'tag_ids' => 'sometimes|array',
             'tag_ids.*' => 'exists:tags,id',

@@ -43,3 +43,14 @@ Route::get('/product-categories/{id}/edit', \App\Livewire\Admin\ProductCategorie
 
 // Contacts (read-only)
 Route::get('/contacts', \App\Livewire\Admin\Contacts\Index::class)->name('contacts');
+
+// Roles & Permissions
+Route::get('/roles', \App\Livewire\Admin\Roles\Index::class)->name('roles');
+Route::get('/roles/create', \App\Livewire\Admin\Roles\Form::class)->name('roles.create');
+Route::get('/roles/{id}/edit', \App\Livewire\Admin\Roles\Form::class)->name('roles.edit');
+Route::get('/permissions', \App\Livewire\Admin\Permissions\Index::class)->name('permissions');
+
+// Users
+Route::get('/users', \App\Livewire\Admin\Users\Index::class)->name('users');
+Route::get('/users/create', \App\Livewire\Admin\Users\Form::class)->name('users.create');
+Route::get('/users/{id}/edit', \App\Livewire\Admin\Users\Form::class)->name('users.edit');

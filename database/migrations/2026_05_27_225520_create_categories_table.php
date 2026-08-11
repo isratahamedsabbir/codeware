@@ -11,16 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('post_categories', function (Blueprint $table) {
+        Schema::create('categories', function (Blueprint $table) {
             $table->id();
+            $table->string('type', 20)->index();
             $table->json('name');
-            $table->string('slug')->unique();
+            $table->string('slug');
             $table->json('description')->nullable();
-            $table->integer('sort_order')->default(0);
+            $table->string('icon')->nullable();
+            $table->string('status', 20)->default('active');
             $table->json('seo_title')->nullable();
             $table->json('seo_description')->nullable();
-            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->string('og_image')->nullable();
+            $table->unsignedSmallInteger('sort_order')->default(0);
             $table->timestamps();
+
+            $table->unique(['type', 'slug']);
         });
     }
 
@@ -29,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('post_categories');
+        Schema::dropIfExists('categories');
     }
 };

@@ -29,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
 
-        Gate::define('access-admin', fn ($user) => (bool) $user->is_admin);
+        Gate::define('access-admin', fn ($user) => (bool) $user->is_admin || $user->hasRole('admin'));
 
         Gate::policy(MediaLibrary::class, MediaLibraryPolicy::class);
 

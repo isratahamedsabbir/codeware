@@ -86,8 +86,8 @@ class Form extends Component
 
         $rules = $this->getRules();
         $rules['slug'] = $this->categoryId
-            ? 'required|string|max:255|unique:product_categories,slug,' . $this->categoryId
-            : 'required|string|max:255|unique:product_categories,slug';
+            ? 'required|string|max:255|unique:categories,slug,' . $this->categoryId . ',id,type,product'
+            : 'required|string|max:255|unique:categories,slug,NULL,id,type,product';
 
         $this->validate($rules);
 
