@@ -2,23 +2,14 @@
 
 namespace App\Livewire\Admin\Settings;
 
-use App\Concerns\PasswordValidationRules;
 use App\Models\Setting;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 class Index extends Component
 {
-    use PasswordValidationRules;
-
     public array $settings = [];
 
     public string $activeTab = 'general';
-
-    public string $current_password = '';
-    public string $password = '';
-    public string $password_confirmation = '';
 
     public function mount(): void
     {
@@ -50,28 +41,6 @@ class Index extends Component
         $baseUrl = config('cms.editor_base_url', 'http://localhost:3000');
 
         return "{$baseUrl}/editor?mode=layout&type={$type}&token={$token}";
-    }
-
-    public function updatePassword(): void
-    {
-        try {
-            $validated = $this->validate([
-                'current_password' => $this->currentPasswordRules(),
-                'password' => $this->passwordRules(),
-            ]);
-        } catch (ValidationException $e) {
-            $this->reset('current_password', 'password', 'password_confirmation');
-
-            throw $e;
-        }
-
-        Auth::user()->update([
-            'password' => $validated['password'],
-        ]);
-
-        $this->reset('current_password', 'password', 'password_confirmation');
-
-        session()->flash('success', 'Password updated.');
     }
 
     public function render()

@@ -12,7 +12,7 @@
         </div>
     @endif
 
-    {{-- Alpine tab switcher: General | Layout | Media | Security --}}
+    {{-- Alpine tab switcher: General | Layout | Media --}}
     <div x-data="{ tab: 'general' }">
 
         {{-- Tab nav --}}
@@ -26,9 +26,6 @@
             <button type="button" @click="tab = 'media'"
                 :class="tab==='media'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="px-5 py-3 text-sm -mb-px">Media Library</button>
-            <button type="button" @click="tab = 'security'"
-                :class="tab==='security'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
-                class="px-5 py-3 text-sm -mb-px">Security</button>
         </div>
 
         {{-- General tab --}}
@@ -119,51 +116,6 @@
         {{-- Media tab --}}
         <div x-show="tab === 'media'">
             <livewire:admin.media-library.index />
-        </div>
-
-        {{-- Security tab --}}
-        <div x-show="tab === 'security'">
-            <div class="max-w-2xl space-y-6">
-                <flux:heading size="sm">Update Password</flux:heading>
-                <flux:subheading>Ensure your account is using a strong password.</flux:subheading>
-
-                <form method="POST" wire:submit="updatePassword" class="space-y-4">
-                    <flux:input
-                        wire:model="current_password"
-                        label="Current password"
-                        type="password"
-                        required
-                        autocomplete="current-password"
-                        viewable
-                    />
-                    <flux:input
-                        wire:model="password"
-                        label="New password"
-                        type="password"
-                        required
-                        autocomplete="new-password"
-                        viewable
-                    />
-                    <flux:input
-                        wire:model="password_confirmation"
-                        label="Confirm password"
-                        type="password"
-                        required
-                        autocomplete="new-password"
-                        viewable
-                    />
-
-                    <div class="flex items-center gap-4">
-                        <flux:button variant="primary" type="submit">
-                            Save
-                        </flux:button>
-
-                        <x-action-message class="me-3" on="password-updated">
-                            Saved.
-                        </x-action-message>
-                    </div>
-                </form>
-            </div>
         </div>
 
     </div>
