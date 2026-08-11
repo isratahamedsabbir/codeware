@@ -1,0 +1,103 @@
+<?php
+
+namespace App\Http\Controllers\Api\V1\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Page;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class PageController extends Controller
+{
+    public function index(): JsonResponse
+    {
+        $pages = Page::withTrashed()
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn ($page) => [
+                'id' => $page->id,
+                'slug' => $page->slug,
+                'title' => $page->title,
+                'status' => $page->status,
+                'template' => $page->template,
+                'sort_order' => $page->sort_order,
+                'deleted_at' => $page->deleted_at?->toIso8601String(),
+            ]);
+
+        return response()->json(['data' => $pages]);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        $page = Page::withTrashed()->with('revisions')->findOrFail($id);
+
+        return response()->json([
+            'data' => [
+                'id' => $page->id,
+                'slug' => $page->slug,
+                'title' => $page->title,
+                'content' => $page->content,
+                'puck_data' => $page->puck_data,
+                'status' => $page->status,
+                'template' => $page->template,
+                'sort_order' => $page->sort_order,
+                'seo_title' => $page->seo_title,
+                'seo_description' => $page->seo_description,
+                'deleted_at' => $page->deleted_at?->toIso8601String(),
+                'revisions' => $page->revisions->map(fn ($r) => [
+                    'id' => $r->id,
+                    'created_at' => $r->created_at->toIso8601String(),
+                ]),
+            ],
+        ]);
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'title'     => 'required|array',
+            'title.en'  => 'required|string|max:255',
+            'title.bn'  => 'nullable|string|max:255',
+            'slug'      => 'nullable|string|unique:pages,slug',
+            'status'    => 'sometimes|in:draft,published',
+            'template'  => 'sometimes|nullable|string|max:100',
+            'puck_data' => 'nullable|array',
+        ]);
+
+        $validated['user_id']  = $request->user()->id;
+        $validated['status']   = $validated['status'] ?? 'draft';
+        $validated['template'] = $validated['template'] ?? 'puck';
+
+        $page = Page::create($validated);
+
+        return response()->json(['data' => ['id' => $page->id, 'slug' => $page->slug]], 201);
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $page = Page::withTrashed()->findOrFail($id);
+
+        $validated = $request->validate([
+            'title' => 'sometimes|array',
+            'title.en' => 'required_with:title|string|max:255',
+            'title.bn' => 'nullable|string|max:255',
+            'content' => 'sometimes|array',
+            'content.en' => 'nullable|string',
+            'content.bn' => 'nullable|string',
+            'seo_title' => 'sometimes|array',
+            'seo_title.en' => 'nullable|string|max:255',
+            'seo_title.bn' => 'nullable|string|max:255',
+            'seo_description' => 'sometimes|array',
+            'seo_description.en' => 'nullable|string',
+            'seo_description.bn' => 'nullable|string',
+            'puck_data' => 'sometimes|nullable|array',
+            'status' => 'sometimes|in:draft,published',
+            'template' => 'sometimes|nullable|string|max:100',
+            'slug' => 'sometimes|string|unique:pages,slug,' . $page->id,
+        ]);
+
+        $page->update($validated);
+
+        return response()->json(['data' => ['id' => $page->id, 'slug' => $page->slug]]);
+    }
+}

@@ -1,0 +1,63 @@
+{
+  "title": "Career - AgroSAL",
+  "description": "Join our team",
+  "root": { "props": {} },
+  "content": [
+    {
+      "type": "HeroSection",
+      "props": {
+        "title": "Cultivate Your Future",
+        "subtitle": "At AgroSAL, we are building the future of sustainable agriculture. We're looking for passionate individuals who want to make a real impact.",
+        "image": "/career.jpeg?w=1920"
+      }
+    },
+    {
+      "type": "JobsSection",
+      "props": {
+        "title": "Open Positions",
+        "subtitle": "Join Our Mission",
+        "jobs": [
+          {
+            "id": "1",
+            "title": "Agro-Engineer",
+            "department": "Engineering",
+            "location": "Khulna",
+            "type": "Full-time",
+            "responsibilities": ["Design and develop agricultural equipment", "Conduct field testing and analysis", "Collaborate with R&D team on product improvements"],
+            "qualifications": ["B.Sc. in Agricultural Engineering", "2+ years of experience in agro-equipment design", "Proficiency in CAD software"],
+            "deadline": "2026-04-30"
+          },
+          {
+            "id": "2",
+            "title": "Soil Scientist",
+            "department": "R&D",
+            "location": "Dhaka",
+            "type": "Full-time",
+            "responsibilities": ["Conduct soil analysis and research", "Develop soil health recommendations", "Publish research findings"],
+            "qualifications": ["M.Sc. in Soil Science or related field", "Experience in laboratory analysis", "Strong analytical skills"],
+            "deadline": "2026-04-25"
+          },
+          {
+            "id": "3",
+            "title": "Sales Representative",
+            "department": "Sales",
+            "location": "Chittagong",
+            "type": "Full-time",
+            "responsibilities": ["Manage dealer relationships", "Achieve sales targets", "Conduct product demonstrations"],
+            "qualifications": ["BBA or equivalent", "1+ years sales experience", "Excellent communication skills"],
+            "deadline": "2026-05-10"
+          }
+        ],
+        "applyLink": "/career",
+        "lifeAtCompany": {
+          "title": "Life at AgroSAL",
+          "description": "Join a team that values innovation, collaboration, and making a positive impact on the world.",
+          "images": [
+            "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400",
+            "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=400"
+          ]
+        }
+      }
+    }
+  ]
+}

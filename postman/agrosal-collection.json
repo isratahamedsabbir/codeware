@@ -1,0 +1,750 @@
+{
+  "info": {
+    "name": "AgroSAL API",
+    "_postman_id": "agrosal-api-v1",
+    "description": "Full REST API collection for AgroSAL. Public endpoints require no auth. Admin endpoints require a Bearer token — set {{admin_token}} in the environment.\n\nAuth flow: GET /sanctum/csrf-cookie → POST /login → session cookie; or create a Sanctum token via `php artisan tinker` and set it as {{admin_token}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Get CSRF Cookie",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/sanctum/csrf-cookie",
+              "host": ["{{base_url}}"],
+              "path": ["sanctum", "csrf-cookie"]
+            },
+            "description": "Must be called before session-based login to obtain the XSRF-TOKEN cookie. Postman will automatically attach it on subsequent requests."
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            },
+            "description": "Session-based login via Fortify. For API token auth instead, create a token in Tinker: `$user->createToken('postman')->plainTextToken` and paste the result into {{admin_token}}."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/logout",
+              "host": ["{{base_url}}"],
+              "path": ["logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public — Posts",
+      "item": [
+        {
+          "name": "List Posts",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{api_url}}/posts?locale={{locale}}&per_page=15",
+              "host": ["{{api_url}}"],
+              "path": ["posts"],
+              "query": [
+                { "key": "locale", "value": "{{locale}}", "description": "en or bn" },
+                { "key": "per_page", "value": "15" },
+                { "key": "category", "value": "", "disabled": true, "description": "Filter by category slug" },
+                { "key": "tag", "value": "", "disabled": true, "description": "Filter by tag slug" },
+                { "key": "search", "value": "", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Post by Slug",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{api_url}}/posts/:slug?locale={{locale}}",
+              "host": ["{{api_url}}"],
+              "path": ["posts", ":slug"],
+              "variable": [{ "key": "slug", "value": "my-post-slug" }],
+              "query": [
+                { "key": "locale", "value": "{{locale}}", "description": "en or bn" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public — Pages",
+      "item": [
+        {
+          "name": "List Pages",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{api_url}}/pages?locale={{locale}}",
+              "host": ["{{api_url}}"],
+              "path": ["pages"],
+              "query": [
+                { "key": "locale", "value": "{{locale}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Page by Slug",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{api_url}}/pages/:slug?locale={{locale}}",
+              "host": ["{{api_url}}"],
+              "path": ["pages", ":slug"],
+              "variable": [{ "key": "slug", "value": "about" }],
+              "query": [
+                { "key": "locale", "value": "{{locale}}" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public — Products",
+      "item": [
+        {
+          "name": "List Product Categories",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{api_url}}/product-categories?locale={{locale}}",
+              "host": ["{{api_url}}"],
+              "path": ["product-categories"],
+              "query": [
+                { "key": "locale", "value": "{{locale}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Products",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{api_url}}/products?locale={{locale}}&per_page=12",
+              "host": ["{{api_url}}"],
+              "path": ["products"],
+              "query": [
+                { "key": "locale", "value": "{{locale}}" },
+                { "key": "per_page", "value": "12" },
+                { "key": "category", "value": "", "disabled": true, "description": "Filter by category slug" },
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "featured", "value": "1", "disabled": true, "description": "Set to 1 for featured products only" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Product by Slug",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{api_url}}/products/:slug?locale={{locale}}",
+              "host": ["{{api_url}}"],
+              "path": ["products", ":slug"],
+              "variable": [{ "key": "slug", "value": "my-product-slug" }],
+              "query": [
+                { "key": "locale", "value": "{{locale}}" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public — Dealers",
+      "item": [
+        {
+          "name": "List Dealers",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{api_url}}/dealers?locale={{locale}}&per_page=15",
+              "host": ["{{api_url}}"],
+              "path": ["dealers"],
+              "query": [
+                { "key": "locale", "value": "{{locale}}" },
+                { "key": "per_page", "value": "15" },
+                { "key": "district", "value": "", "disabled": true },
+                { "key": "upazila", "value": "", "disabled": true },
+                { "key": "category", "value": "", "disabled": true, "description": "Filter by product category slug" },
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "lat", "value": "", "disabled": true, "description": "Latitude for geo search" },
+                { "key": "lng", "value": "", "disabled": true, "description": "Longitude for geo search" },
+                { "key": "radius", "value": "50", "disabled": true, "description": "Radius in km (max 200)" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Dealer by Slug",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{api_url}}/dealers/:slug?locale={{locale}}",
+              "host": ["{{api_url}}"],
+              "path": ["dealers", ":slug"],
+              "variable": [{ "key": "slug", "value": "dealer-slug" }],
+              "query": [
+                { "key": "locale", "value": "{{locale}}" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public — Career",
+      "item": [
+        {
+          "name": "List Departments",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{api_url}}/departments?locale={{locale}}",
+              "host": ["{{api_url}}"],
+              "path": ["departments"],
+              "query": [
+                { "key": "locale", "value": "{{locale}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Jobs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{api_url}}/jobs?locale={{locale}}&per_page=10",
+              "host": ["{{api_url}}"],
+              "path": ["jobs"],
+              "query": [
+                { "key": "locale", "value": "{{locale}}" },
+                { "key": "per_page", "value": "10" },
+                { "key": "department", "value": "", "disabled": true, "description": "Filter by department slug" },
+                { "key": "search", "value": "", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Job by Slug",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{api_url}}/jobs/:slug?locale={{locale}}",
+              "host": ["{{api_url}}"],
+              "path": ["jobs", ":slug"],
+              "variable": [{ "key": "slug", "value": "job-slug" }],
+              "query": [
+                { "key": "locale", "value": "{{locale}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Submit Job Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "job_id", "value": "1", "type": "text", "description": "ID of the open job" },
+                { "key": "name", "value": "John Doe", "type": "text" },
+                { "key": "email", "value": "john@example.com", "type": "text" },
+                { "key": "phone", "value": "+8801700000000", "type": "text" },
+                { "key": "resume", "type": "file", "description": "PDF or DOCX, max 5 MB" }
+              ]
+            },
+            "url": {
+              "raw": "{{api_url}}/applications",
+              "host": ["{{api_url}}"],
+              "path": ["applications"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public — Settings & Layout",
+      "item": [
+        {
+          "name": "Get Public Settings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{api_url}}/settings/public",
+              "host": ["{{api_url}}"],
+              "path": ["settings", "public"]
+            }
+          }
+        },
+        {
+          "name": "Get Layout (Header & Footer)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{api_url}}/layout",
+              "host": ["{{api_url}}"],
+              "path": ["layout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin — Posts",
+      "description": "Requires Bearer token in Authorization header. Set {{admin_token}} in the environment.",
+      "item": [
+        {
+          "name": "List Posts (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{api_url}}/admin/posts?per_page=15",
+              "host": ["{{api_url}}"],
+              "path": ["admin", "posts"],
+              "query": [
+                { "key": "per_page", "value": "15" },
+                { "key": "status", "value": "", "disabled": true, "description": "draft or published" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Post (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{api_url}}/admin/posts/:id",
+              "host": ["{{api_url}}"],
+              "path": ["admin", "posts", ":id"],
+              "variable": [{ "key": "id", "value": "1" }]
+            }
+          }
+        },
+        {
+          "name": "Create Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": {\n    \"en\": \"My New Post\",\n    \"bn\": \"\"\n  },\n  \"slug\": \"my-new-post\",\n  \"status\": \"draft\",\n  \"puck_data\": null\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/admin/posts",
+              "host": ["{{api_url}}"],
+              "path": ["admin", "posts"]
+            }
+          }
+        },
+        {
+          "name": "Update Post",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": {\n    \"en\": \"Updated Title\",\n    \"bn\": \"\"\n  },\n  \"excerpt\": {\n    \"en\": \"Short excerpt here.\",\n    \"bn\": \"\"\n  },\n  \"content\": {\n    \"en\": \"<p>Post content HTML.</p>\",\n    \"bn\": \"\"\n  },\n  \"seo_title\": {\n    \"en\": \"SEO Title\",\n    \"bn\": \"\"\n  },\n  \"seo_description\": {\n    \"en\": \"SEO description.\",\n    \"bn\": \"\"\n  },\n  \"status\": \"published\",\n  \"featured_image\": null,\n  \"category_id\": null,\n  \"puck_data\": null\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/admin/posts/:id",
+              "host": ["{{api_url}}"],
+              "path": ["admin", "posts", ":id"],
+              "variable": [{ "key": "id", "value": "1" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin — Pages",
+      "item": [
+        {
+          "name": "List Pages (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{api_url}}/admin/pages",
+              "host": ["{{api_url}}"],
+              "path": ["admin", "pages"]
+            }
+          }
+        },
+        {
+          "name": "Get Page (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{api_url}}/admin/pages/:id",
+              "host": ["{{api_url}}"],
+              "path": ["admin", "pages", ":id"],
+              "variable": [{ "key": "id", "value": "1" }]
+            }
+          }
+        },
+        {
+          "name": "Create Page",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": {\n    \"en\": \"About Us\",\n    \"bn\": \"\"\n  },\n  \"slug\": \"about\",\n  \"status\": \"draft\",\n  \"template\": \"puck\",\n  \"puck_data\": null\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/admin/pages",
+              "host": ["{{api_url}}"],
+              "path": ["admin", "pages"]
+            }
+          }
+        },
+        {
+          "name": "Update Page",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": {\n    \"en\": \"Updated Page Title\",\n    \"bn\": \"\"\n  },\n  \"content\": {\n    \"en\": \"<p>Page HTML content.</p>\",\n    \"bn\": \"\"\n  },\n  \"seo_title\": {\n    \"en\": \"SEO Title\",\n    \"bn\": \"\"\n  },\n  \"seo_description\": {\n    \"en\": \"SEO description.\",\n    \"bn\": \"\"\n  },\n  \"status\": \"published\",\n  \"template\": \"puck\",\n  \"puck_data\": null\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/admin/pages/:id",
+              "host": ["{{api_url}}"],
+              "path": ["admin", "pages", ":id"],
+              "variable": [{ "key": "id", "value": "1" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin — Media",
+      "item": [
+        {
+          "name": "List Media",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{api_url}}/admin/media?per_page=30",
+              "host": ["{{api_url}}"],
+              "path": ["admin", "media"],
+              "query": [
+                { "key": "per_page", "value": "30" },
+                { "key": "type", "value": "image", "disabled": true, "description": "image, video, application" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload Media",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "description": "jpg, jpeg, png, webp, gif, pdf, mp4 — max 20 MB" },
+                { "key": "alt_text", "value": "", "type": "text", "disabled": true }
+              ]
+            },
+            "url": {
+              "raw": "{{api_url}}/admin/media",
+              "host": ["{{api_url}}"],
+              "path": ["admin", "media"]
+            }
+          }
+        },
+        {
+          "name": "Delete Media",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{api_url}}/admin/media/:id",
+              "host": ["{{api_url}}"],
+              "path": ["admin", "media", ":id"],
+              "variable": [{ "key": "id", "value": "1" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin — Product Categories",
+      "item": [
+        {
+          "name": "List Product Categories (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{api_url}}/admin/product-categories",
+              "host": ["{{api_url}}"],
+              "path": ["admin", "product-categories"]
+            }
+          }
+        },
+        {
+          "name": "Create Product Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": {\n    \"en\": \"Fertilizers\",\n    \"bn\": \"\"\n  },\n  \"slug\": \"fertilizers\",\n  \"description\": {\n    \"en\": \"All fertilizer products.\",\n    \"bn\": \"\"\n  },\n  \"icon\": \"leaf\",\n  \"sort_order\": 0\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/admin/product-categories",
+              "host": ["{{api_url}}"],
+              "path": ["admin", "product-categories"]
+            }
+          }
+        },
+        {
+          "name": "Update Product Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": {\n    \"en\": \"Updated Category Name\",\n    \"bn\": \"\"\n  },\n  \"description\": {\n    \"en\": \"Updated description.\",\n    \"bn\": \"\"\n  },\n  \"icon\": \"seedling\",\n  \"sort_order\": 1\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/admin/product-categories/:id",
+              "host": ["{{api_url}}"],
+              "path": ["admin", "product-categories", ":id"],
+              "variable": [{ "key": "id", "value": "1" }]
+            }
+          }
+        },
+        {
+          "name": "Delete Product Category",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{api_url}}/admin/product-categories/:id",
+              "host": ["{{api_url}}"],
+              "path": ["admin", "product-categories", ":id"],
+              "variable": [{ "key": "id", "value": "1" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin — Products",
+      "item": [
+        {
+          "name": "List Products (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{api_url}}/admin/products?per_page=15",
+              "host": ["{{api_url}}"],
+              "path": ["admin", "products"],
+              "query": [
+                { "key": "per_page", "value": "15" },
+                { "key": "status", "value": "", "disabled": true, "description": "draft or published" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": {\n    \"en\": \"Super Fertilizer 5000\",\n    \"bn\": \"\"\n  },\n  \"slug\": \"super-fertilizer-5000\",\n  \"product_category_id\": 1,\n  \"excerpt\": {\n    \"en\": \"Short product description.\",\n    \"bn\": \"\"\n  },\n  \"description\": {\n    \"en\": \"<p>Full product description.</p>\",\n    \"bn\": \"\"\n  },\n  \"specifications\": [\n    {\n      \"label\": { \"en\": \"Weight\", \"bn\": \"\" },\n      \"value\": { \"en\": \"1 kg\", \"bn\": \"\" }\n    }\n  ],\n  \"benefits\": {\n    \"en\": [\"Improves yield\", \"Eco-friendly\"],\n    \"bn\": []\n  },\n  \"usage_instructions\": {\n    \"en\": \"Apply 50g per plant.\",\n    \"bn\": \"\"\n  },\n  \"faq\": [\n    {\n      \"question\": { \"en\": \"Is it organic?\", \"bn\": \"\" },\n      \"answer\": { \"en\": \"Yes, fully organic.\", \"bn\": \"\" }\n    }\n  ],\n  \"featured_image\": null,\n  \"datasheet_url\": null,\n  \"status\": \"draft\",\n  \"is_featured\": false,\n  \"sort_order\": 0,\n  \"seo_title\": { \"en\": \"\", \"bn\": \"\" },\n  \"seo_description\": { \"en\": \"\", \"bn\": \"\" },\n  \"puck_data\": null,\n  \"media_ids\": []\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/admin/products",
+              "host": ["{{api_url}}"],
+              "path": ["admin", "products"]
+            }
+          }
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": {\n    \"en\": \"Updated Product Name\",\n    \"bn\": \"\"\n  },\n  \"status\": \"published\",\n  \"is_featured\": true,\n  \"sort_order\": 1,\n  \"media_ids\": [1, 2, 3]\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/admin/products/:id",
+              "host": ["{{api_url}}"],
+              "path": ["admin", "products", ":id"],
+              "variable": [{ "key": "id", "value": "1" }]
+            }
+          }
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{api_url}}/admin/products/:id",
+              "host": ["{{api_url}}"],
+              "path": ["admin", "products", ":id"],
+              "variable": [{ "key": "id", "value": "1" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin — Layout",
+      "item": [
+        {
+          "name": "Update Layout (Header or Footer)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"header\",\n  \"content\": {\n    \"root\": {},\n    \"zones\": {}\n  }\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/admin/layout",
+              "host": ["{{api_url}}"],
+              "path": ["admin", "layout"]
+            },
+            "description": "Set `type` to `header` or `footer`. `content` can be a JSON object (Puck data) or a plain string."
+          }
+        }
+      ]
+    }
+  ]
+}

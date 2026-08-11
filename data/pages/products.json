@@ -1,0 +1,167 @@
+{
+  "title": "Products - AgroSAL",
+  "description": "Explore our agricultural products",
+  "root": { "props": {} },
+  "content": [
+    {
+      "type": "HeroSection",
+      "props": {
+        "title": "Products",
+        "subtitle": "Discover our comprehensive range of agricultural solutions designed to maximize your crop yield.",
+        "image": "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=1920"
+      }
+    },
+    {
+      "type": "ProductHighlights",
+      "props": {
+        "title": "All Products",
+        "subtitle": "Our Products",
+        "products": [
+          {
+            "id": "1",
+            "slug": "organic-fertilizer",
+            "name": "AgroSAL Organic Fertilizer",
+            "nameBn": "জেব সার",
+            "category": "Soil Health",
+            "image": "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800",
+            "description": "Premium organic fertilizer enriched with Trichoderma and Bacillus. Friend to the Farmer.",
+            "weight": "40kg",
+            "benefits": ["Reduces Acidity", "Improves Soil Health", "Eco-friendly", "Long-lasting"]
+          },
+          {
+            "id": "2",
+            "slug": "fortizem-gypsum",
+            "name": "Fortizem Gypsum",
+            "nameBn": "ফর্টিজেম জিপসাম",
+            "category": "Soil Health",
+            "image": "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=800",
+            "description": "Contains 20% Calcium and 16% Sulfur. Reduces soil acidity and improves structure.",
+            "weight": "5kg",
+            "benefits": ["Reduces Acidity", "Increases Nutrient Effectiveness", "Improves Soil Structure"]
+          },
+          {
+            "id": "3",
+            "slug": "humizem",
+            "name": "Humizem",
+            "nameBn": "হিউমিজেম",
+            "category": "Yield Booster",
+            "image": "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=800",
+            "description": "Unparalleled yield booster. Increases crop production and promotes root growth.",
+            "weight": "1kg",
+            "benefits": ["Increases Yield", "Promotes Root Growth", "Boosts Disease Resistance"]
+          },
+          {
+            "id": "4",
+            "slug": "agrozem-npk",
+            "name": "AgroZEM NPK Compound",
+            "nameBn": "এগ্রোজেম এনপিকে কম্পাউন্ড",
+            "category": "Fertilizer",
+            "image": "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=800",
+            "description": "Balanced NPK compound fertilizer for all major crops. Promotes vigorous vegetative growth and high yield.",
+            "weight": "25kg",
+            "benefits": ["Balanced Nutrition", "Vigorous Growth", "Higher Yield", "Suitable for All Crops"]
+          },
+          {
+            "id": "5",
+            "slug": "biozem-microbial",
+            "name": "BioZEM Microbial Inoculant",
+            "nameBn": "বায়োজেম মাইক্রোবিয়াল ইনোকুলেন্ট",
+            "category": "Bio-Stimulant",
+            "image": "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=800",
+            "description": "Advanced microbial inoculant containing beneficial bacteria and fungi. Enhances nutrient uptake and soil biology.",
+            "weight": "500g",
+            "benefits": ["Enhances Nutrient Uptake", "Improves Soil Biology", "Reduces Chemical Dependency", "Eco-friendly"]
+          },
+          {
+            "id": "6",
+            "slug": "zeozem-zeolite",
+            "name": "ZeoZEM Zeolite Conditioner",
+            "nameBn": "জিওজেম জিওলাইট কন্ডিশনার",
+            "category": "Soil Health",
+            "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800",
+            "description": "Natural zeolite-based soil conditioner that retains moisture and improves nutrient holding capacity.",
+            "weight": "10kg",
+            "benefits": ["Moisture Retention", "Reduces Leaching", "Improves CEC", "Long-lasting Effect"]
+          },
+          {
+            "id": "7",
+            "slug": "calzem-calcium-boron",
+            "name": "CalZEM Calcium-Boron",
+            "nameBn": "ক্যালজেম ক্যালসিয়াম-বোরন",
+            "category": "Micronutrient",
+            "image": "https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?w=800",
+            "description": "Chelated calcium and boron formulation for foliar application. Prevents tip burn, blossom end rot, and fruit cracking.",
+            "weight": "1L",
+            "benefits": ["Prevents Tip Burn", "Prevents Fruit Cracking", "Stronger Cell Walls", "Better Fruit Quality"]
+          },
+          {
+            "id": "8",
+            "slug": "rhizozem-root-stimulator",
+            "name": "RhizoZEM Root Stimulator",
+            "nameBn": "রাইজোজেম রুট স্টিমুলেটর",
+            "category": "Yield Booster",
+            "image": "https://images.unsplash.com/photo-1591857177580-dc82b9ac4e1e?w=800",
+            "description": "Powerful root-stimulating formula enriched with auxins, cytokinins, and mycorrhizal fungi.",
+            "weight": "250ml",
+            "benefits": ["Deeper Root Growth", "Better Transplant Survival", "Drought Tolerance", "Faster Establishment"]
+          },
+          {
+            "id": "9",
+            "slug": "seazem-seaweed-extract",
+            "name": "SeaZEM Seaweed Extract",
+            "nameBn": "সিজেম সিউইড এক্সট্রেক্ট",
+            "category": "Bio-Stimulant",
+            "image": "https://images.unsplash.com/photo-1504198453055-9f04ce07fb59?w=800",
+            "description": "100% natural seaweed extract concentrate rich in natural growth hormones, trace elements, and amino acids.",
+            "weight": "500ml",
+            "benefits": ["Stress Tolerance", "Improved Germination", "Natural Growth Hormones", "Increases Brix Level"]
+          },
+          {
+            "id": "10",
+            "slug": "sulfozem-sulphur",
+            "name": "SulfoZEM Sulphur 90%",
+            "nameBn": "সালফোজেম সালফার ৯০%",
+            "category": "Soil Health",
+            "image": "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=800",
+            "description": "Micronized elemental sulfur granule for soil acidification, fungal control, and sulfur nutrition in alkaline soils.",
+            "weight": "5kg",
+            "benefits": ["Soil Acidification", "Fungal Disease Control", "Sulfur Nutrition", "Improves Nutrient Availability"]
+          },
+          {
+            "id": "11",
+            "slug": "aquazem-water-soluble",
+            "name": "AquaZEM Water Soluble Fertilizer",
+            "nameBn": "অ্যাকুয়াজেম ওয়াটার সলিউবল ফার্টিলাইজার",
+            "category": "Fertilizer",
+            "image": "https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?w=800",
+            "description": "Fully water-soluble NPK fertilizer for drip irrigation and fertigation systems. Zero residue, 100% plant available.",
+            "weight": "2kg",
+            "benefits": ["100% Soluble", "Drip Compatible", "Fast Absorption", "No Clogging"]
+          },
+          {
+            "id": "12",
+            "slug": "silizem-silicon",
+            "name": "SiliZEM Silicon Booster",
+            "nameBn": "সিলিজেম সিলিকন বুস্টার",
+            "category": "Yield Booster",
+            "image": "https://images.unsplash.com/photo-1560493676-04071c5f467b?w=800",
+            "description": "Potassium silicate-based foliar booster that strengthens cell walls, improves lodging resistance, and enhances stress tolerance.",
+            "weight": "1L",
+            "benefits": ["Strengthens Cell Walls", "Lodging Resistance", "Pest & Disease Resistance", "Heat Stress Tolerance"]
+          },
+          {
+            "id": "13",
+            "slug": "ferrozem-iron-chelate",
+            "name": "FerroZEM Iron Chelate",
+            "nameBn": "ফেরোজেম আয়রন চিলেট",
+            "category": "Micronutrient",
+            "image": "https://images.unsplash.com/photo-1444021465936-c6ca81d39b84?w=800",
+            "description": "EDTA-chelated iron for foliar and soil application. Corrects iron deficiency chlorosis rapidly in high pH soils.",
+            "weight": "500g",
+            "benefits": ["Corrects Chlorosis", "Fast Acting", "Stable in High pH", "Foliar & Soil Use"]
+          }
+        ]
+      }
+    }
+  ]
+}

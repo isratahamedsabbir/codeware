@@ -1,0 +1,70 @@
+{
+  "title": "About Us - AgroSAL",
+  "description": "Learn about AgroSAL's mission and vision",
+  "root": { "props": {} },
+  "content": [
+    {
+      "type": "HeroSection",
+      "props": {
+        "title": "About AgroSAL",
+        "subtitle": "Transforming agriculture through innovation and sustainable solutions since 2010.",
+        "image": "/about.jpeg?w=1920"
+      }
+    },
+    {
+      "type": "TwoColumn",
+      "props": {
+        "leftContent": {
+          "title": "Corporate Profile",
+          "description": "AgroSAL was established in 2010 with a visionary mission to transform Bangladesh's agricultural landscape. We recognized the challenges faced by local farmers and committed ourselves to developing innovative solutions that would enhance productivity while promoting sustainable farming practices.",
+          "points": ["Serving 50,000+ farmers", "64 districts coverage", "5 product categories"]
+        },
+        "rightImage": "/corporate_profile.jpeg?w=800"
+      }
+    },
+    {
+      "type": "CardGrid",
+      "props": {
+        "title": "Vision, Mission & Values",
+        "subtitle": "Our Direction",
+        "columns": 3,
+        "dark": true,
+        "textAlign": "center",
+        "cards": [
+          { "icon": "Target", "title": "Our Vision", "description": "To be the leading catalyst in transforming Bangladesh's agriculture into a sustainable, productive, and prosperous sector." },
+          { "icon": "Trophy", "title": "Our Mission", "description": "To provide innovative agricultural solutions, empower farmers with knowledge and technology, and promote sustainable practices." },
+          { "icon": "Sprout", "title": "Our Values", "description": "Innovation, Sustainability, Integrity, and Excellence in every solution we provide." }
+        ]
+      }
+    },
+    {
+      "type": "TeamSection",
+      "props": {
+        "title": "Message from Leadership",
+        "subtitle": "Leadership",
+        "members": [
+          {
+            "name": "Dr. Mohammad Rahman",
+            "title": "Managing Director & CEO",
+            "image": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400",
+            "quote": "At AgroSAL, we believe that the future of Bangladesh lies in the hands of our farmers."
+          }
+        ]
+      }
+    },
+    {
+      "type": "TimelineSection",
+      "props": {
+        "title": "Company Milestones",
+        "subtitle": "Our Journey",
+        "items": [
+          { "year": "2010", "title": "Company Founded", "description": "AgroSAL was established with a vision to transform Bangladesh agriculture." },
+          { "year": "2014", "title": "First Product Line Launch", "description": "Introduced our initial range of organic fertilizers to the market." },
+          { "year": "2018", "title": "National Expansion", "description": "Expanded distribution network across all 64 districts of Bangladesh." },
+          { "year": "2022", "title": "Sustainability Initiative", "description": "Launched comprehensive CSR programs including buy-back and afforestation." },
+          { "year": "2026", "title": "Digital Transformation", "description": "Introduced digital platforms to better serve farmers and dealers." }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "title": "Our Initiatives - AgroSAL",
+  "description": "CSR and sustainability programs",
+  "root": { "props": {} },
+  "content": [
+    {
+      "type": "HeroSection",
+      "props": {
+        "title": "Our Initiatives",
+        "subtitle": "Driving positive change through sustainable programs and community development.",
+        "image": "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1920"
+      }
+    },
+    {
+      "type": "TextContent",
+      "props": {
+        "title": "Making a Difference",
+        "content": "At AgroSAL, we believe in giving back to the community and environment that sustains us. Our initiatives focus on empowering farmers, protecting the environment, and building stronger rural communities across Bangladesh.",
+        "align": "center"
+      }
+    },
+    {
+      "type": "InitiativesSection",
+      "props": {
+        "title": "Our Programs",
+        "initiatives": [
+          {
+            "id": "1",
+            "title": "Farmer Buy Back Program",
+            "type": "Buy Back Program",
+            "image": "/back_program.jpeg?w=800",
+            "description": "Supporting farmers by purchasing crops at fair prices, ensuring stable income and market access.",
+            "objectives": ["Ensure fair pricing for farmers", "Reduce market uncertainty", "Build sustainable farmer partnerships"],
+            "locations": ["Khulna", "Jessore", "Satkhira"],
+            "impactStats": [
+              { "label": "Farmers Supported", "value": "500+" },
+              { "label": "Crops Purchased", "value": "2000T" },
+              { "label": "Income Increase", "value": "30%" }
+            ]
+          },
+          {
+            "id": "2",
+            "title": "Green Bangladesh Afforestation",
+            "type": "Afforestation",
+            "image": "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800",
+            "description": "Large-scale tree plantation initiative to combat climate change and restore ecological balance.",
+            "objectives": ["Plant 100,000 trees by 2027", "Restore degraded forest areas", "Engage local communities in conservation"],
+            "locations": ["Sundarbans Buffer Zone", "Chittagong Hill Tracts", "Madhupur Forest"],
+            "impactStats": [
+              { "label": "Trees Planted", "value": "50K" },
+              { "label": "Area Restored", "value": "500A" },
+              { "label": "Volunteers", "value": "1K+" }
+            ]
+          },
+          {
+            "id": "3",
+            "title": "Farmer Training Workshop",
+            "type": "Community Program",
+            "image": "farmer_training.jpeg?w=800",
+            "description": "Educational workshops empowering farmers with modern agricultural techniques and best practices.",
+            "objectives": ["Train 1000 farmers annually", "Promote sustainable farming practices", "Introduce new technologies to rural communities"],
+            "locations": ["Dhaka", "Khulna", "Rajshahi", "Sylhet"]
+          }
+        ],
+        "viewAllLink": "/initiatives"
+      }
+    },
+    {
+      "type": "CTASection",
+      "props": {
+        "title": "Want to Get Involved?",
+        "subtitle": "Join us in our mission to create a sustainable and prosperous future for Bangladesh's agricultural community.",
+        "primaryButton": { "text": "Contact Us", "href": "/contact" },
+        "dark": false
+      }
+    }
+  ]
+}

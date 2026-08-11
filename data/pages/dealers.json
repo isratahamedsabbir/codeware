@@ -1,0 +1,33 @@
+{
+  "title": "Dealer & Distribution - AgroSAL",
+  "description": "Find dealers near you",
+  "root": { "props": {} },
+  "content": [
+    {
+      "type": "HeroSection",
+      "props": {
+        "title": "Find a Dealer Near You",
+        "subtitle": "Connect with our authorized dealers for expert advice and genuine agricultural products.",
+        "image": "find_dealer.jpeg?w=1920"
+      }
+    },
+    {
+      "type": "DealersSection",
+      "props": {
+        "title": "Our Dealers",
+        "subtitle": "Local Presence",
+        "dealers": [
+          { "id": "1", "name": "Apex Agri-Centers", "address": "123 Main Road, Dumuria", "district": "Khulna", "upazila": "Dumuria", "area": "Southwest Region", "phone": "01712-345678", "lat": 22.809, "lng": 89.412 },
+          { "id": "2", "name": "Global Seeds Ltd", "address": "456 Gazipur Highway", "district": "Dhaka", "upazila": "Gazipur", "area": "Central Region", "phone": "01923-456789", "lat": 23.999, "lng": 90.419 },
+          { "id": "3", "name": "Krishi Bhandar", "address": "789 Station Road, Jessore Sadar", "district": "Jessore", "upazila": "Jessore Sadar", "area": "Southwest Region", "phone": "01634-567890", "lat": 23.169, "lng": 89.213 },
+          { "id": "4", "name": "Agro Tech Solutions", "address": "321 College Road, Comilla", "district": "Comilla", "upazila": "Comilla Sadar", "area": "Eastern Region", "phone": "01845-678901", "lat": 23.468, "lng": 91.178 }
+        ],
+        "filters": [
+          { "label": "District", "options": ["Khulna", "Dhaka", "Jessore", "Comilla"] },
+          { "label": "Upazila", "options": ["Dumuria", "Gazipur", "Jessore Sadar", "Comilla Sadar"] }
+        ],
+        "showMap": true
+      }
+    }
+  ]
+}

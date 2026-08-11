@@ -1,0 +1,254 @@
+{
+  "title": "Home - AgroSAL",
+  "description": "Smart Agricultural Solutions",
+  "root": { "props": {} },
+  "content": [
+    {
+      "type": "HeroVideoBlock",
+      "props": {
+        "videoSource": "youtube",
+        "youtubeId": "R_InO9bxuwU",
+        "posterImage": "/agricultural_inputs.jpg?w=1920",
+        "eyebrow": "Empowering Bangladeshi Farmers",
+        "headline": "Practical agricultural inputs for healthier fields and stronger harvests.",
+        "subtext": "AgroSAL helps farmers and dealers make confident decisions with reliable crop nutrition, organic inputs, and field-ready support.",
+        "ctaPrimary": { "label": "Explore Products", "href": "/products" },
+        "ctaSecondary": { "label": "Find a Dealer", "href": "/dealers" },
+        "categoryLinks": [
+          { "icon": "🌿", "label": "Organic Fertilizer", "href": "/products/soil-health" },
+          { "icon": "🧪", "label": "Micronutrients", "href": "/products/smart-crop-management" },
+          { "icon": "🛡️", "label": "Bio Pesticide", "href": "/products/bio-pesticide" },
+          { "icon": "🌱", "label": "Nursery", "href": "/products/nursery-products" },
+          { "icon": "🏙️", "label": "Urban Gardening", "href": "/products/urban-gardening" },
+          { "icon": "📍", "label": "Find Dealers", "href": "/dealers" }
+        ]
+      }
+    },
+     {
+      "type": "FeaturesGrid",
+      "props": {
+        "title": "Why teams choose AgroSAL",
+        "subtitle": "Built around reliability and long-term productivity",
+        "features": [
+          { "icon": "🌱", "title": "Soil Health First", "description": "Every product is designed to improve long-term soil biology, not just short-term yield." },
+          { "icon": "🛡️", "title": "Proven Formulations", "description": "Backed by agronomic research and field-tested across Bangladesh's diverse growing conditions." },
+          { "icon": "📦", "title": "64-District Reach", "description": "Our dealer network ensures product availability from Rajshahi to Cox's Bazar." },
+          { "icon": "🤝", "title": "Farmer-First Support", "description": "Dedicated agronomy support helps growers get the most from every product." }
+        ]
+      }
+    },
+  
+    {
+      "type": "ProductShowcaseBlock",
+      "props": {
+        "categoryBadge": "Featured Product",
+        "productName": "AgroSAL Organic Fertilizer",
+        "description": "A premium organic solution enriched with Trichoderma and Bacillus. Brings life back to the soil and promotes sustainable farming across Bangladesh.",
+        "benefits": [
+          "Enriched with Trichoderma & Bacillus for natural disease resistance",
+          "Suitable for rice, chili, tomatoes, mangoes and vegetables",
+          "100% organic — improves soil health long-term"
+        ],
+        "productImage": "/organic_fertilizer.jpg?w=800",
+        "trustBadges": ["Govt. Approved", "ISO Certified", "Organic Certified"],
+        "backgroundTint": "green",
+        "ctaLabel": "View Product Details",
+        "ctaHref": "/products/organic-fertilizer"
+      }
+    },
+    {
+      "type": "ProductHighlights",
+      "props": {
+        "title": "Featured solutions for productive farming",
+        "subtitle": "Selected product range",
+        "viewAllLink": "/products",
+        "categories": ["Soil Health", "Micronutrients", "Yield Booster", "Bio Pesticide", "Nursery", "Urban Gardening"],
+        "products": [
+          {
+            "id": "1",
+            "slug": "organic-fertilizer",
+            "name": "AgroSAL Organic Fertilizer",
+            "nameBn": "জৈব সার",
+            "category": "Soil Health",
+            "image": "/humizem.jpeg",
+            "description": "Premium organic fertilizer enriched with Trichoderma and Bacillus. Friend to the Farmer.",
+            "weight": "40kg",
+            "benefits": ["Reduces Acidity", "Improves Soil Health", "Eco-friendly", "Long-lasting"]
+          },
+          {
+            "id": "2",
+            "slug": "fortizem-gypsum",
+            "name": "Fortizem Gypsum",
+            "nameBn": "ফর্টিজেম জিপসাম",
+            "category": "Soil Health",
+            "image": "/Organic_Fertilizer.jpeg",
+            "description": "Contains 20% Calcium and 16% Sulfur. Reduces soil acidity and improves structure.",
+            "weight": "5kg",
+            "benefits": ["Reduces Acidity", "Increases Nutrient Effectiveness", "Improves Soil Structure"]
+          },
+          {
+            "id": "3",
+            "slug": "humizem",
+            "name": "Humizem",
+            "nameBn": "হিউমিজেম",
+            "category": "Yield Booster",
+            "image": "/product.jpeg",
+            "description": "Unparalleled yield booster. Increases crop production and promotes root growth.",
+            "weight": "1kg",
+            "benefits": ["Increases Yield", "Promotes Root Growth", "Boosts Disease Resistance"]
+          },
+          {
+            "id": "4",
+            "slug": "smart-crop-management",
+            "name": "Smart Crop Management Pack",
+            "nameBn": "স্মার্ট ক্রপ ম্যানেজমেন্ট",
+            "category": "Micronutrients",
+            "image": "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800&auto=format&fit=crop",
+            "description": "Complete micronutrient package for balanced crop nutrition across all growth stages.",
+            "weight": "500g",
+            "benefits": ["Balanced Nutrition", "Prevents Deficiency", "Suitable for All Crops"]
+          },
+          {
+            "id": "5",
+            "slug": "bio-pesticide",
+            "name": "AgroSAL Bio Pesticide",
+            "nameBn": "বায়ো কীটনাশক",
+            "category": "Bio Pesticide",
+            "image": "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=800&auto=format&fit=crop",
+            "description": "Natural biological pest control. Safe for beneficial insects and the environment.",
+            "weight": "250ml",
+            "benefits": ["Eco-friendly", "Safe for Pollinators", "Effective Against Common Pests"]
+          },
+          {
+            "id": "6",
+            "slug": "nursery-starter-mix",
+            "name": "Nursery Starter Mix",
+            "nameBn": "নার্সারি স্টার্টার মিক্স",
+            "category": "Nursery",
+            "image": "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=800&auto=format&fit=crop",
+            "description": "Specially formulated growing medium for seedlings and transplants. High germination rate.",
+            "weight": "10kg",
+            "benefits": ["High Germination Rate", "Sterile Medium", "Ready to Use"]
+          },
+          {
+            "id": "7",
+            "slug": "urban-garden-kit",
+            "name": "Urban Garden Kit",
+            "nameBn": "আরবান গার্ডেন কিট",
+            "category": "Urban Gardening",
+            "image": "https://images.unsplash.com/photo-1591857177580-dc82b9ac4e1e?w=800&auto=format&fit=crop",
+            "description": "Complete kit for rooftop and container gardening. Perfect for urban homeowners.",
+            "weight": "2kg",
+            "benefits": ["Rooftop Ready", "No Garden Needed", "Beginner Friendly"]
+          },
+          {
+            "id": "8",
+            "slug": "zinc-sulphate",
+            "name": "Zinc Sulphate 21%",
+            "nameBn": "জিঙ্ক সালফেট",
+            "category": "Micronutrients",
+            "image": "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=800&auto=format&fit=crop",
+            "description": "High-purity zinc sulphate to correct zinc deficiency in rice, wheat, and vegetables.",
+            "weight": "1kg",
+            "benefits": ["Corrects Zinc Deficiency", "Boosts Grain Filling", "Works on All Soils"]
+          }
+        ]
+      }
+    },
+   
+    {
+      "type": "WeatherWidget",
+      "props": {
+        "defaultDistrict": "Dhaka",
+        "cropAdvisoryMap": {
+          "Clear": "Great conditions for spraying fertilizer. Early morning application recommended.",
+          "Clouds": "Good day for transplanting seedlings. Monitor soil moisture.",
+          "Rain": "Avoid pesticide application. Ensure drainage channels are clear.",
+          "Drizzle": "Light rain benefits germination. Check for fungal risk in paddy.",
+          "Thunderstorm": "Stay off the field. Secure equipment and check for waterlogging.",
+          "Mist": "High humidity. Watch for blight. Ventilate greenhouse crops.",
+          "Haze": "Reduce irrigation. Monitor crop stress levels."
+        }
+      }
+    },
+    {
+      "type": "VideoSection",
+      "props": {
+        "sectionTitle": "See AgroSAL in Action",
+        "featuredVideo": {
+          "youtubeId": "dQw4w9WgXcQ",
+          "title": "How AgroSAL Organic Fertilizer Transforms Bangladesh Farms",
+          "description": "Watch how our products are used in real field conditions across Bangladesh."
+        },
+        "thumbnails": [
+          { "youtubeId": "dQw4w9WgXcQ", "title": "Soil Health Demo", "category": "Education" },
+          { "youtubeId": "dQw4w9WgXcQ", "title": "Farmer Testimonial – Rajshahi", "category": "Testimonials" },
+          { "youtubeId": "dQw4w9WgXcQ", "title": "Dealer Training 2025", "category": "Training" },
+          { "youtubeId": "dQw4w9WgXcQ", "title": "Product Application Guide", "category": "Education" }
+        ],
+        "categories": ["Education", "Testimonials", "Training"]
+      }
+    },
+    {
+      "type": "TestimonialsBlock",
+      "props": {
+        "autoplayInterval": 5000,
+        "testimonials": [
+          {
+            "quote": "Using AgroSAL's organic fertilizer for two seasons now. My rice yield increased by 30% and the soil feels alive again.",
+            "farmerName": "Abdul Karim",
+            "district": "Rajshahi",
+            "cropType": "Rice (Boro)",
+            "productUsed": "AgroSAL Organic Fertilizer",
+            "productHref": "/products/organic-fertilizer",
+            "photo": "/farmer1.jpg",
+            "rating": 5
+          },
+          {
+            "quote": "Fortizem Gypsum fixed the acidity problem in my field that I struggled with for years. My tomato crop has never looked better.",
+            "farmerName": "Rina Begum",
+            "district": "Bogura",
+            "cropType": "Tomato",
+            "productUsed": "Fortizem Gypsum",
+            "productHref": "/products/fortizem-gypsum",
+            "photo": "/farmer2.jpg",
+            "rating": 5
+          },
+          {
+            "quote": "The AgroSAL team visited my field and gave me the right advice. The micronutrient package made a visible difference in 3 weeks.",
+            "farmerName": "Md. Hasan",
+            "district": "Mymensingh",
+            "cropType": "Vegetables",
+            "productUsed": "Smart Crop Management",
+            "productHref": "/products/smart-crop-management",
+            "photo": "/farmer3.jpg",
+            "rating": 4
+          }
+        ]
+      }
+    },
+    {
+      "type": "NewsSection",
+      "props": {
+        "title": "Latest from AgroSAL",
+        "subtitle": "Field reports, product news, and agronomy insights",
+        "articles": [
+          { "id": "1", "title": "AgroSAL Launches New Organic Compost Line", "category": "News", "image": "/organic_fertilizer.jpg?w=800", "excerpt": "Introducing our premium range of organic composts designed for sustainable agriculture.", "publishedAt": "2026-03-15", "author": "Media Team" },
+          { "id": "2", "title": "5 Benefits of Mulching Films in Modern Agriculture", "category": "Blog", "image": "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=800", "excerpt": "Discover how mulching films can transform your crop yield and reduce water consumption.", "publishedAt": "2026-03-10", "author": "Dr. Rahman" },
+          { "id": "3", "title": "AgroSAL Partners with Local Farmers for Buy Back Program", "category": "Announcement", "image": "/organic_fertilizer.jpg?w=800", "excerpt": "A new initiative to support farmers by ensuring fair prices for their harvest.", "publishedAt": "2026-03-01" }
+        ],
+        "viewAllLink": "#"
+      }
+    },
+    {
+      "type": "CTASection",
+      "props": {
+        "brandGreen": true,
+        "title": "Build a more dependable growing season with AgroSAL",
+        "subtitle": "Whether you need product guidance, dealer access, or a stronger supply relationship, our team is ready.",
+        "primaryButton": { "text": "Talk to Our Team", "href": "/contact" },
+        "secondaryButton": { "text": "Find an Authorized Dealer", "href": "/dealers" }
+      }
+    }
+  ]
+}

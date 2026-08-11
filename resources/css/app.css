@@ -1,0 +1,284 @@
+@import 'tailwindcss';
+@import '../../vendor/livewire/flux/dist/flux.css';
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
+@source '../../vendor/livewire/flux/stubs/**/*.blade.php';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --font-sans: 'Plus Jakarta Sans', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+
+    --color-zinc-50: #fafafa;
+    --color-zinc-100: #f5f5f5;
+    --color-zinc-200: #e5e5e5;
+    --color-zinc-300: #d4d4d4;
+    --color-zinc-400: #a3a3a3;
+    --color-zinc-500: #737373;
+    --color-zinc-600: #525252;
+    --color-zinc-700: #404040;
+    --color-zinc-800: #262626;
+    --color-zinc-900: #171717;
+    --color-zinc-950: #0a0a0a;
+
+    --color-brand-blue: #1e7bc4;
+    --color-brand-green: #7cc242;
+
+    --color-accent: #1e7bc4;
+    --color-accent-content: #1e7bc4;
+    --color-accent-foreground: var(--color-white);
+}
+
+@layer theme {
+    .dark {
+        --color-accent: #3d9be0;
+        --color-accent-content: #3d9be0;
+        --color-accent-foreground: var(--color-white);
+    }
+}
+
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
+    }
+    
+    body {
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* ── Admin Sidebar Redesign (Midnight Organic Forest Gradient) ── */
+
+.admin-sidebar {
+    background: radial-gradient(circle at 10% 20%, #0a1b14 0%, #040a08 100%) !important;
+    border-right: 1px solid rgba(124, 194, 66, 0.08) !important;
+    display: flex;
+    flex-direction: column;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+    box-shadow: 4px 0 25px rgba(0, 0, 0, 0.3);
+}
+
+.admin-main {
+    padding: 0 !important;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: radial-gradient(at 0% 0%, #f3f7f5 0%, #f8fafc 100%) !important;
+}
+
+.admin-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.875rem;
+    border-radius: 0.625rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #9ca3af; /* gray-400 */
+    text-decoration: none;
+    transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    margin-bottom: 0.125rem;
+}
+
+.admin-nav-item flux:icon,
+.admin-nav-item svg {
+    color: #6b7280;
+    transition: color 250ms ease;
+}
+
+.admin-nav-item:hover {
+    background-color: rgba(124, 194, 66, 0.08); /* brand-green alpha */
+    color: #f3f4f6; /* gray-100 */
+    transform: translateX(4px);
+}
+
+.admin-nav-item:hover flux:icon,
+.admin-nav-item:hover svg {
+    color: #7cc242; /* brand-green */
+}
+
+.admin-nav-active {
+    background: linear-gradient(135deg, rgba(30, 123, 196, 0.15) 0%, rgba(124, 194, 66, 0.15) 100%) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    border-left: 3px solid #7cc242 !important; /* brand-green active indicator */
+    padding-left: calc(0.875rem - 3px) !important;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05), 0 4px 12px rgba(124, 194, 66, 0.05);
+}
+
+.admin-nav-active flux:icon,
+.admin-nav-active svg {
+    color: #7cc242 !important; /* brand-green highlight */
+}
+
+.admin-nav-group-label {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.125em;
+    font-weight: 700;
+    color: #3f6250; /* Organic dark-green */
+    padding: 0 0.875rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.admin-nav-group-label:first-child {
+    margin-top: 0.5rem;
+}
+
+/* ── Sticky Glassmorphic Header ── */
+
+.admin-header {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.01), 0 10px 20px -12px rgba(0, 0, 0, 0.05);
+}
+
+/* ── Premium Admin Floating Cards ── */
+
+.admin-card {
+    background: #ffffff;
+    border-radius: 1rem;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.01), 0 2px 4px -1px rgba(0, 0, 0, 0.006), 0 20px 25px -5px rgba(0, 0, 0, 0.015);
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.admin-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(124, 194, 66, 0.05), 0 10px 10px -5px rgba(30, 123, 196, 0.02), 0 1px 3px rgba(0, 0, 0, 0.02);
+    border-color: rgba(124, 194, 66, 0.2);
+}
+
+/* ── Interactive Actions Redesign ── */
+
+.admin-quick-action {
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-quick-action:hover {
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: 0 12px 20px -8px rgba(30, 123, 196, 0.15);
+}
+
+/* ── Custom Tables Design ── */
+
+flux\:table, .flux-table-container {
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    background: #ffffff;
+}
+
+flux\:table\:row {
+    transition: background-color 200ms ease;
+}
+
+flux\:table\:row:hover {
+    background-color: rgba(248, 250, 252, 0.8) !important;
+}
+
+/* ── Auth Screen Custom Styling ── */
+
+.auth-glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 20px 50px -12px rgba(10, 27, 20, 0.15), 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.dark .auth-glass-card {
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.auth-hero-glow {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(124, 194, 66, 0.2) 0%, rgba(30, 123, 196, 0.1) 70%, transparent 100%);
+    filter: blur(40px);
+    z-index: 1;
+}
+
+/* ── Custom scrollbars ── */
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.2);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.4);
+}
+
+/* ── Flux Controls Beautiful Styling overrides ── */
+
+[data-flux-field]:not(ui-radio, ui-checkbox) {
+    @apply grid gap-1.5;
+}
+
+[data-flux-label] {
+    @apply !mb-0 !leading-tight font-medium text-zinc-700 dark:text-zinc-300;
+}
+
+input[data-flux-control],
+textarea[data-flux-control],
+select[data-flux-control] {
+    border-radius: 0.5rem !important;
+    transition: all 200ms ease !important;
+    border-color: rgba(209, 213, 219, 0.8) !important;
+}
+
+input:focus[data-flux-control],
+textarea:focus[data-flux-control],
+select:focus[data-flux-control] {
+    @apply outline-hidden;
+    border-color: #1e7bc4 !important;
+    box-shadow: 0 0 0 3px rgba(30, 123, 196, 0.15) !important;
+}
+
+button[data-flux-control][data-flux-variant="primary"] {
+    background: linear-gradient(135deg, #1e7bc4 0%, #1765a3 100%) !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(30, 123, 196, 0.2) !important;
+    transition: all 200ms ease !important;
+}
+
+button[data-flux-control][data-flux-variant="primary"]:hover {
+    opacity: 0.95 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 16px rgba(30, 123, 196, 0.3) !important;
+}
