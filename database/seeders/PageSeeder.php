@@ -13,11 +13,9 @@ class PageSeeder extends Seeder
         ['file' => 'home',        'sort_order' => 0],
         ['file' => 'about',       'sort_order' => 1],
         ['file' => 'products',    'sort_order' => 2],
-        ['file' => 'dealers',     'sort_order' => 3],
-        ['file' => 'career',      'sort_order' => 4],
-        ['file' => 'initiatives', 'sort_order' => 5],
-        ['file' => 'media',       'sort_order' => 6],
-        ['file' => 'contact',     'sort_order' => 7],
+        ['file' => 'initiatives', 'sort_order' => 3],
+        ['file' => 'media',       'sort_order' => 4],
+        ['file' => 'contact',     'sort_order' => 5],
     ];
 
     public function run(): void

@@ -79,21 +79,17 @@
             </a>
 
             <div x-data="{
-                openGroup: '{{ request()->routeIs('admin.product-categories', 'admin.products', 'admin.testimonials')
+                openGroup: '{{ request()->routeIs('admin.product-categories', 'admin.products')
                     ? 'products'
                     : (request()->routeIs('admin.blog-categories', 'admin.tags', 'admin.posts')
                         ? 'blog'
-                        : (request()->routeIs('admin.settings', 'admin.media-library', 'admin.videos')
+                        : (request()->routeIs('admin.settings', 'admin.media-library')
                             ? 'library'
-                            : (request()->routeIs('admin.districts', 'admin.upazilas', 'admin.dealers')
-                                ? 'dealer'
-                                : (request()->routeIs('admin.contacts')
-                                    ? 'inquiries'
-                                    : (request()->routeIs('admin.jobs', 'admin.applications', 'admin.departments')
-                                        ? 'careers'
-                                        : (request()->routeIs('admin.pages')
-                                            ? 'content'
-                                            : 'products')))))) }}',
+                            : (request()->routeIs('admin.contacts')
+                                ? 'inquiries'
+                                : (request()->routeIs('admin.pages')
+                                    ? 'content'
+                                    : 'products')))) }}',
                 toggle(group) { this.openGroup = this.openGroup === group ? null : group }
             }">
 
@@ -116,11 +112,6 @@
                             class="admin-nav-item {{ request()->routeIs('admin.products') ? 'admin-nav-active' : '' }}">
                             <flux:icon.cube class="size-4.5 shrink-0" />
                             <span>Products</span>
-                        </a>
-                        <a href="{{ route('admin.testimonials') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.testimonials') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.chat-bubble-left-right class="size-4.5 shrink-0" />
-                            <span>Testimonials</span>
                         </a>
                     </div>
                 </div>
@@ -173,39 +164,6 @@
                             <flux:icon.photo class="size-4.5 shrink-0" />
                             <span>Media Library</span>
                         </a>
-                        <a href="{{ route('admin.videos') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.videos') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.video-camera class="size-4.5 shrink-0" />
-                            <span>Videos</span>
-                        </a>
-                    </div>
-                </div>
-
-                {{-- Dealer Network Group --}}
-                <div class="nav-group">
-                    <button @click="toggle('dealer')"
-                        class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
-                        <span>Dealer Network</span>
-                        <span x-text="openGroup === 'dealer' ? '−' : '+'"
-                            class="text-zinc-500 text-sm font-bold leading-none"></span>
-                    </button>
-                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': openGroup !== 'dealer' }"
-                        :style="openGroup === 'dealer' ? 'max-height: 500px; opacity: 1;' : ''">
-                        <a href="{{ route('admin.districts') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.districts') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.map class="size-4.5 shrink-0" />
-                            <span>Districts</span>
-                        </a>
-                        <a href="{{ route('admin.upazilas') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.upazilas') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.map-pin class="size-4.5 shrink-0" />
-                            <span>Upazilas</span>
-                        </a>
-                        <a href="{{ route('admin.dealers') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.dealers') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.map-pin class="size-4.5 shrink-0" />
-                            <span>Dealers</span>
-                        </a>
                     </div>
                 </div>
 
@@ -223,34 +181,6 @@
                             class="admin-nav-item {{ request()->routeIs('admin.contacts') ? 'admin-nav-active' : '' }}">
                             <flux:icon.inbox class="size-4.5 shrink-0" />
                             <span>Contacts</span>
-                        </a>
-                    </div>
-                </div>
-
-                {{-- Careers Group --}}
-                <div class="nav-group">
-                    <button @click="toggle('careers')"
-                        class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
-                        <span>Careers</span>
-                        <span x-text="openGroup === 'careers' ? '−' : '+'"
-                            class="text-zinc-500 text-sm font-bold leading-none"></span>
-                    </button>
-                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': openGroup !== 'careers' }"
-                        :style="openGroup === 'careers' ? 'max-height: 500px; opacity: 1;' : ''">
-                        <a href="{{ route('admin.jobs') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.jobs') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.briefcase class="size-4.5 shrink-0" />
-                            <span>Jobs</span>
-                        </a>
-                        <a href="{{ route('admin.applications') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.applications') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.inbox class="size-4.5 shrink-0" />
-                            <span>Applications</span>
-                        </a>
-                        <a href="{{ route('admin.departments') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.departments') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.building-office class="size-4.5 shrink-0" />
-                            <span>Departments</span>
                         </a>
                     </div>
                 </div>

@@ -71,12 +71,10 @@ Public API supports `?locale=en|bn` query parameter for translated fields, and `
 |--------|--------|-------|
 | CMS | `Post`, `Page`, `Category`, `Tag`, `PageRevision` | Page auto-creates revisions on content update |
 | Products | `Product`, `ProductCategory` | Products have `puck_data` (JSON) for visual editor |
-| Commerce | `Dealer` | Has lat/lng, district/upazila; linked to `ProductCategory` via pivot |
-| Career | `Department`, `Job`, `JobApplication` | `Job` uses table `career_jobs` |
 | Media | `MediaLibrary` | Custom (not Spatie); exposes `url` via Storage accessor |
 | Settings | `Setting` | Key-value store, cached with `Cache::rememberForever` |
 
-**Soft deletes**: `Post`, `Page`, `Product`, `ProductCategory`, `Dealer`, `Job` all use `SoftDeletes`.
+**Soft deletes**: `Post`, `Page`, `Product`, `ProductCategory` all use `SoftDeletes`.
 
 **Translatable fields** (via `spatie/laravel-translatable`, locales `en`/`bn`): title/name, content/description, excerpt, SEO fields. Stored as JSON. When reading from a translatable field that may be an array, always check `is_array()` — see existing models for the pattern.
 
@@ -105,13 +103,12 @@ Notes:
 | Zustand | Client state |
 | Zod + React Hook Form | Form validation |
 | @measured/puck | Visual page editor (tied to `puck_data` on Product) |
-| React Leaflet | Dealer map |
 | Framer Motion | Animations |
 
 ## Testing Conventions
 
 - Tests use **Pest v4** with `pestphp/pest-plugin-laravel`
-- Organized by domain under `tests/Feature/`: `Auth/`, `Cms/`, `Career/`, `Dealers/`, `Products/`
+- Organized by domain under `tests/Feature/`: `Auth/`, `Cms/`, `Products/`
 - Factories support `->published()` and `->draft()` states for `Post`/`Product`
 - Translatable factory fields pass both locales: `['title' => ['en' => 'English', 'bn' => '']]`
 - API tests assert the `{data, meta}` envelope shape; single-resource tests assert `{data: {...}}`

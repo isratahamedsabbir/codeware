@@ -88,39 +88,6 @@
             <p class="text-xs text-zinc-400 mt-4 font-medium">Landing layouts &amp; live publishing revisions</p>
         </div>
 
-        {{-- Dealers Card --}}
-        <div class="admin-card p-6 relative overflow-hidden group">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-400 to-[#7cc242]"></div>
-            <div class="flex items-start justify-between">
-                <div class="space-y-1">
-                    <p class="text-xs font-bold text-zinc-400 uppercase tracking-widest select-none">Dealers Network</p>
-                    <p class="text-3xl font-extrabold text-zinc-900 tracking-tight transition-transform duration-300 group-hover:scale-105 origin-left">{{ $totalDealers }}</p>
-                </div>
-                <div class="size-12 rounded-xl bg-gradient-to-br from-teal-500/10 to-emerald-500/10 flex items-center justify-center shrink-0 border border-teal-500/20 shadow-sm shadow-teal-500/5 group-hover:from-teal-500/20 group-hover:to-emerald-500/20 transition-all duration-300">
-                    <flux:icon.map-pin class="size-6 text-teal-600" />
-                </div>
-            </div>
-            <p class="text-xs text-zinc-400 mt-4 font-medium flex items-center gap-1">
-                <span class="inline-flex size-2 rounded-full bg-teal-500"></span>
-                Active geolocation-mapped distribution hubs
-            </p>
-        </div>
-
-        {{-- Job Applications Card --}}
-        <div class="admin-card p-6 relative overflow-hidden group">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-[#7cc242]"></div>
-            <div class="flex items-start justify-between">
-                <div class="space-y-1">
-                    <p class="text-xs font-bold text-zinc-400 uppercase tracking-widest select-none">Applications</p>
-                    <p class="text-3xl font-extrabold text-zinc-900 tracking-tight transition-transform duration-300 group-hover:scale-105 origin-left">{{ $totalApplications }}</p>
-                </div>
-                <div class="size-12 rounded-xl bg-gradient-to-br from-amber-500/10 to-yellow-500/10 flex items-center justify-center shrink-0 border border-amber-500/20 shadow-sm shadow-amber-500/5 group-hover:from-amber-500/20 group-hover:to-yellow-500/20 transition-all duration-300">
-                    <flux:icon.inbox class="size-6 text-amber-600" />
-                </div>
-            </div>
-            <p class="text-xs text-zinc-400 mt-4 font-medium">Recruitment requests &amp; CV submissions</p>
-        </div>
-
         {{-- Media Card --}}
         <div class="admin-card p-6 relative overflow-hidden group">
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-[#7cc242]"></div>
@@ -167,18 +134,6 @@
                 <div class="min-w-0">
                     <p class="text-sm font-bold text-zinc-800 truncate group-hover:text-[#7cc242] transition-colors">Publish Post</p>
                     <p class="text-xs text-zinc-400 truncate mt-0.5">Write news article</p>
-                </div>
-            </a>
-
-            {{-- Applications Action --}}
-            <a href="{{ route('admin.applications') }}" wire:navigate.hover
-               class="admin-card p-5 flex flex-col sm:flex-row items-center gap-4 hover:border-amber-200 transition-all group no-underline text-center sm:text-left cursor-pointer">
-                <div class="size-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0 group-hover:bg-amber-100 group-hover:scale-105 transition-all duration-200 shadow-xs border border-amber-100">
-                    <flux:icon.inbox class="size-5 text-amber-600" />
-                </div>
-                <div class="min-w-0">
-                    <p class="text-sm font-bold text-zinc-800 truncate group-hover:text-amber-600 transition-colors">Review CVs</p>
-                    <p class="text-xs text-zinc-400 truncate mt-0.5">Check applicants</p>
                 </div>
             </a>
 

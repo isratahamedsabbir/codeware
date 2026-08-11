@@ -2,8 +2,6 @@
 
 namespace App\Livewire\Admin;
 
-use App\Models\Dealer;
-use App\Models\JobApplication;
 use App\Models\MediaLibrary;
 use App\Models\Page;
 use App\Models\Post;
@@ -20,8 +18,6 @@ class Dashboard extends Component
     public int $draftPosts       = 0;
     public int $totalPages       = 0;
     public int $totalMedia       = 0;
-    public int $totalDealers     = 0;
-    public int $totalApplications = 0;
     public string $totalMediaSize = '0 B';
 
     public function mount(): void
@@ -33,8 +29,6 @@ class Dashboard extends Component
         $this->draftPosts        = Post::draft()->count();
         $this->totalPages        = Page::count();
         $this->totalMedia        = MediaLibrary::count();
-        $this->totalDealers      = Dealer::count();
-        $this->totalApplications = JobApplication::count();
 
         $this->totalMediaSize = $this->formatBytes(MediaLibrary::sum('file_size'));
     }
