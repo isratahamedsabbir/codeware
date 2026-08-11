@@ -20,11 +20,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
-        User::factory()->create([
-            'name' => 'Admin User',
-            'email' => 'admin@agrosal.com',
-            'is_admin' => true,
-        ]);
+        $this->call(AdminSeeder::class);
 
         $this->call(SettingsSeeder::class);
         $this->call(ProductCategorySeeder::class);
