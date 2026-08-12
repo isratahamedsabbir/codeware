@@ -356,6 +356,8 @@
                     class="w-full bg-zinc-50 border border-zinc-200 rounded-lg pl-9 pr-3 py-2 text-sm text-zinc-700 placeholder:text-zinc-400 outline-none focus:border-[#7cc242]/60 focus:ring-1 focus:ring-[#7cc242]/40 transition">
             </div>
 
+            <livewire:admin.notifications.bell class="ml-3" />
+
             <x-admin-user-menu class="ml-3" />
         </flux:header>
 

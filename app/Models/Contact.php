@@ -11,6 +11,17 @@ class Contact extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected static function booted(): void
+    {
+        static::created(function (Contact $contact) {
+            AdminNotification::notifyAdmins(
+                'New contact message',
+                "{$contact->full_name}: {$contact->subject}",
+                route('admin.contacts'),
+            );
+        });
+    }
+
     protected $fillable = [
         'full_name',
         'phone_number',
