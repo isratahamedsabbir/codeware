@@ -1,15 +1,25 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+    class="{{ \App\Support\Theme::isDark() ? 'dark' : '' }}"
+    style="--color-accent: {{ \App\Support\Theme::accent() }}; --color-accent-content: {{ \App\Support\Theme::accent() }};">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ ($title ?? 'Admin') . ' — ' . config('app.name') }}</title>
-    <link rel="icon" href="/favicon/favicon.ico" sizes="any">
-    <link rel="icon" href="/favicon/favicon-32x32.png" type="image/png" sizes="32x32">
-    <link rel="icon" href="/favicon/favicon-16x16.png" type="image/png" sizes="16x16">
-    <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png">
+    @php
+        $siteIcon = \App\Models\Setting::get('site_icon');
+        $favicon = \App\Models\Setting::get('favicon');
+    @endphp
+    @if ($favicon)
+        <link rel="icon" href="{{ $favicon }}" sizes="any">
+    @else
+        <link rel="icon" href="/favicon/favicon.ico" sizes="any">
+        <link rel="icon" href="/favicon/favicon-32x32.png" type="image/png" sizes="32x32">
+        <link rel="icon" href="/favicon/favicon-16x16.png" type="image/png" sizes="16x16">
+    @endif
+    <link rel="apple-touch-icon" href="{{ $siteIcon ?: '/favicon/apple-touch-icon.png' }}">
     <link rel="manifest" href="/favicon/site.webmanifest">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -112,7 +122,7 @@
         <div class="px-4 py-5 border-b border-zinc-800/40 shrink-0">
             <a href="{{ route('admin.dashboard') }}" wire:navigate.hover class="flex items-center gap-3 admin-sidebar-logo">
                 <div class="bg-white/95 rounded-xl px-3 py-1.5 shadow-md border border-white/10">
-                    <img src="/agrosal_logo.png" alt="{{ config('app.name') }}" class="h-7 w-auto">
+                    <img src="{{ $siteIcon ?: '/agrosal_logo.png' }}" alt="{{ config('app.name') }}" class="h-7 w-auto">
                 </div>
             </a>
         </div>
@@ -341,6 +351,8 @@
                 </flux:breadcrumbs>
             </div>
 
+            <livewire:admin.theme-switcher class="ml-3" />
+
             <livewire:admin.notifications.bell class="ml-3" />
 
             <x-admin-user-menu class="ml-3" />
@@ -363,6 +375,30 @@
     </flux:main>
 
     <div x-data x-on:notify.window="toastr.success($event.detail.message)"></div>
+
+    {{-- Apply the global admin theme (dark class + accent color) --}}
+    <script>
+        function applyAdminTheme(mode, accent) {
+            const el = document.documentElement;
+            el.classList.toggle('dark', mode === 'dark');
+            if (accent) {
+                el.style.setProperty('--color-accent', accent);
+                el.style.setProperty('--color-accent-content', accent);
+            }
+        }
+
+        document.addEventListener('livewire:navigated', () => {
+            applyAdminTheme('{{ \App\Support\Theme::isDark() ? 'dark' : 'light' }}');
+        });
+
+        window.addEventListener('theme:toggled', (e) => {
+            applyAdminTheme(e.detail.mode);
+        });
+
+        window.addEventListener('admin-theme-changed', (e) => {
+            applyAdminTheme(e.detail.mode, e.detail.accent);
+        });
+    </script>
 
     @fluxScripts
 

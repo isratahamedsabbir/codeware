@@ -25,6 +25,20 @@ class SettingsSeeder extends Seeder
                 'is_public' => true,
             ],
             [
+                'key' => 'site_icon',
+                'value' => '',
+                'type' => 'string',
+                'group' => 'general',
+                'is_public' => true,
+            ],
+            [
+                'key' => 'favicon',
+                'value' => '',
+                'type' => 'string',
+                'group' => 'general',
+                'is_public' => true,
+            ],
+            [
                 'key' => 'contact_email',
                 'value' => '',
                 'type' => 'string',
@@ -96,12 +110,32 @@ class SettingsSeeder extends Seeder
             ['key' => 'applepay_merchant_name',   'value' => '', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
             ['key' => 'applepay_domain',          'value' => '', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
 
+            // ── Currency ──
+            ['key' => 'currency_code',          'value' => 'BDT', 'type' => 'string', 'group' => 'currency', 'is_public' => true],
+            ['key' => 'currency_symbol',        'value' => '৳', 'type' => 'string', 'group' => 'currency', 'is_public' => true],
+            ['key' => 'currency_position',      'value' => 'left', 'type' => 'string', 'group' => 'currency', 'is_public' => true],
+            ['key' => 'decimal_places',         'value' => '2', 'type' => 'number', 'group' => 'currency', 'is_public' => true],
+
             // ── SEO ──
             ['key' => 'seo_meta_title',           'value' => '', 'type' => 'string', 'group' => 'seo', 'is_public' => true],
             ['key' => 'seo_meta_description',     'value' => '', 'type' => 'textarea', 'group' => 'seo', 'is_public' => true],
             ['key' => 'seo_og_title',             'value' => '', 'type' => 'string', 'group' => 'seo', 'is_public' => true],
             ['key' => 'seo_og_description',       'value' => '', 'type' => 'textarea', 'group' => 'seo', 'is_public' => true],
             ['key' => 'seo_og_image',             'value' => '', 'type' => 'string', 'group' => 'seo', 'is_public' => true],
+
+            // ── Theme ──
+            ['key' => 'theme_mode',               'value' => 'light', 'type' => 'string', 'group' => 'theme', 'is_public' => false],
+            ['key' => 'theme_name',               'value' => 'Default', 'type' => 'string', 'group' => 'theme', 'is_public' => false],
+            ['key' => 'theme_accent',             'value' => '#1e7bc4', 'type' => 'color', 'group' => 'theme', 'is_public' => false],
+
+            // ── Social links ──
+            ['key' => 'facebook_url',        'value' => '', 'type' => 'string', 'group' => 'social', 'is_public' => true],
+            ['key' => 'twitter_url',         'value' => '', 'type' => 'string', 'group' => 'social', 'is_public' => true],
+            ['key' => 'instagram_url',       'value' => '', 'type' => 'string', 'group' => 'social', 'is_public' => true],
+            ['key' => 'youtube_url',         'value' => '', 'type' => 'string', 'group' => 'social', 'is_public' => true],
+            ['key' => 'linkedin_url',        'value' => '', 'type' => 'string', 'group' => 'social', 'is_public' => true],
+            ['key' => 'tiktok_url',          'value' => '', 'type' => 'string', 'group' => 'social', 'is_public' => true],
+            ['key' => 'whatsapp_number',     'value' => '', 'type' => 'string', 'group' => 'social', 'is_public' => true],
         ];
 
         foreach ($settings as $setting) {

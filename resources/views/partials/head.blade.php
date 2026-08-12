@@ -5,10 +5,16 @@
     {{ filled($title ?? null) ? $title.' - '.config('app.name', 'Laravel') : config('app.name', 'Laravel') }}
 </title>
 
-<link rel="icon" href="/favicon/favicon.ico" sizes="any">
-<link rel="icon" href="/favicon/favicon-32x32.png" type="image/png" sizes="32x32">
-<link rel="icon" href="/favicon/favicon-16x16.png" type="image/png" sizes="16x16">
-<link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png">
+@php($siteIcon = \App\Models\Setting::get('site_icon'))
+@php($favicon = \App\Models\Setting::get('favicon'))
+@if ($favicon)
+    <link rel="icon" href="{{ $favicon }}" sizes="any">
+@else
+    <link rel="icon" href="/favicon/favicon.ico" sizes="any">
+    <link rel="icon" href="/favicon/favicon-32x32.png" type="image/png" sizes="32x32">
+    <link rel="icon" href="/favicon/favicon-16x16.png" type="image/png" sizes="16x16">
+@endif
+<link rel="apple-touch-icon" href="{{ $siteIcon ?: '/favicon/apple-touch-icon.png' }}">
 <link rel="manifest" href="/favicon/site.webmanifest">
 
 <link rel="preconnect" href="https://fonts.bunny.net">

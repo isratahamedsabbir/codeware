@@ -34,7 +34,11 @@
 
             {{-- Slot: login/register form --}}
             <div class="px-8 py-7">
-                <img src="/agrosal_logo.png" alt="{{ config('app.name') }}" class="h-7 w-auto block mx-auto mb-6">
+                @php
+                    $siteIcon = \App\Models\Setting::get('site_icon');
+                @endphp
+                <img src="{{ $siteIcon ?: '/agrosal_logo.png' }}" alt="{{ config('app.name') }}"
+                    class="h-7 w-auto block mx-auto mb-6">
                 {{ $slot }}
             </div>
 

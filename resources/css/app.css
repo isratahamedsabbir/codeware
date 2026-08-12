@@ -109,21 +109,21 @@
 
 .admin-nav-item:hover flux:icon,
 .admin-nav-item:hover svg {
-    color: #7cc242; /* brand-green */
+    color: var(--color-accent, #7cc242);
 }
 
 .admin-nav-active {
     background: linear-gradient(135deg, rgba(30, 123, 196, 0.15) 0%, rgba(124, 194, 66, 0.15) 100%) !important;
     color: #ffffff !important;
     font-weight: 600;
-    border-left: 3px solid #7cc242 !important; /* brand-green active indicator */
+    border-left: 3px solid var(--color-accent, #7cc242) !important; /* accent active indicator */
     padding-left: calc(0.875rem - 3px) !important;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05), 0 4px 12px rgba(124, 194, 66, 0.05);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05), 0 4px 12px color-mix(in srgb, var(--color-accent, #7cc242) 20%, transparent);
 }
 
 .admin-nav-active flux:icon,
 .admin-nav-active svg {
-    color: #7cc242 !important; /* brand-green highlight */
+    color: var(--color-accent, #7cc242) !important; /* accent highlight */
 }
 
 .admin-nav-group-label {
@@ -303,19 +303,99 @@ input:focus[data-flux-control],
 textarea:focus[data-flux-control],
 select:focus[data-flux-control] {
     @apply outline-hidden;
-    border-color: #1e7bc4 !important;
-    box-shadow: 0 0 0 3px rgba(30, 123, 196, 0.15) !important;
+    border-color: var(--color-accent, #1e7bc4) !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent, #1e7bc4) 18%, transparent) !important;
 }
 
 button[data-flux-control][data-flux-variant="primary"] {
-    background: linear-gradient(135deg, #1e7bc4 0%, #1765a3 100%) !important;
+    background: linear-gradient(135deg, var(--color-accent, #1e7bc4) 0%, color-mix(in srgb, var(--color-accent, #1e7bc4) 78%, #000) 100%) !important;
     border: none !important;
-    box-shadow: 0 4px 12px rgba(30, 123, 196, 0.2) !important;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-accent, #1e7bc4) 30%, transparent) !important;
     transition: all 200ms ease !important;
 }
 
 button[data-flux-control][data-flux-variant="primary"]:hover {
     opacity: 0.95 !important;
     transform: translateY(-1px) !important;
-    box-shadow: 0 6px 16px rgba(30, 123, 196, 0.3) !important;
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--color-accent, #1e7bc4) 40%, transparent) !important;
+}
+
+/* ── Admin Day/Night Theme ── */
+
+html.dark body {
+    background-color: #0f172a;
+}
+
+html.dark .admin-main {
+    background: radial-gradient(at 0% 0%, #1e293b 0%, #0f172a 100%) !important;
+}
+
+html.dark .admin-header {
+    background: rgba(15, 23, 42, 0.85) !important;
+    border-bottom-color: rgba(51, 65, 85, 0.7) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 10px 20px -12px rgba(0, 0, 0, 0.5);
+}
+
+html.dark .admin-card {
+    background: #1e293b;
+    border-color: rgba(51, 65, 85, 0.8);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.35), 0 2px 4px -1px rgba(0, 0, 0, 0.3), 0 20px 25px -5px rgba(0, 0, 0, 0.25);
+}
+
+html.dark .admin-card:hover {
+    border-color: color-mix(in srgb, var(--color-accent, #1e7bc4) 40%, transparent);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.35), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+}
+
+html.dark flux\:table,
+html.dark .flux-table-container {
+    background: #1e293b;
+    border-color: rgba(51, 65, 85, 0.8);
+}
+
+html.dark flux\:table\:row:hover {
+    background-color: rgba(51, 65, 85, 0.45) !important;
+}
+
+html.dark flux\:text,
+html.dark [data-flux-text] {
+    color: #cbd5e1;
+}
+
+/* Adaptive dark: remap common hardcoded light utilities across admin views */
+
+html.dark .bg-white { background-color: #1f2937; }
+html.dark .bg-slate-50 { background-color: rgba(51, 65, 85, 0.4); }
+html.dark .bg-zinc-50 { background-color: rgba(51, 65, 85, 0.4); }
+
+html.dark .text-zinc-900 { color: #e2e8f0; }
+html.dark .text-zinc-800 { color: #e2e8f0; }
+html.dark .text-zinc-700 { color: #cbd5e1; }
+
+html.dark .border-zinc-100 { border-color: rgba(51, 65, 85, 0.8); }
+html.dark .border-zinc-200 { border-color: rgba(51, 65, 85, 0.8); }
+html.dark .border-slate-100 { border-color: rgba(51, 65, 85, 0.8); }
+html.dark .border-slate-200 { border-color: rgba(51, 65, 85, 0.8); }
+html.dark .border-slate-300 { border-color: rgba(100, 116, 139, 0.6); }
+
+html.dark .divide-zinc-100 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(51, 65, 85, 0.8); }
+html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(51, 65, 85, 0.8); }
+
+/* Soft status badges */
+
+html.dark .bg-emerald-50 { background-color: rgba(16, 185, 129, 0.15); }
+html.dark .text-emerald-700 { color: #34d399; }
+html.dark .bg-blue-50 { background-color: rgba(59, 130, 246, 0.15); }
+html.dark .text-blue-700 { color: #60a5fa; }
+html.dark .bg-sky-50 { background-color: rgba(14, 165, 233, 0.15); }
+html.dark .text-sky-700 { color: #38bdf8; }
+html.dark .text-indigo-600 { color: #818cf8; }
+
+/* Jodit editor stays readable on dark */
+
+html.dark .jodit-container,
+html.dark .jodit-workplace,
+html.dark .jodit-status-bar {
+    background: #1e293b !important;
+    color: #e2e8f0;
 }

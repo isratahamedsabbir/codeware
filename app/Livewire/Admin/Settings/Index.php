@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Settings;
 
 use App\Models\Setting;
+use App\Support\Theme;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 
@@ -33,6 +34,10 @@ class Index extends Component
             Cache::forget("setting:{$key}");
         }
 
+        if (array_key_exists('theme_mode', $this->settings) || array_key_exists('theme_accent', $this->settings)) {
+            $this->dispatch('admin-theme-changed', mode: $this->settings['theme_mode'] ?? Theme::mode(), accent: $this->settings['theme_accent'] ?? Theme::accent());
+        }
+
         session()->flash('success', 'Settings saved.');
     }
 
@@ -47,9 +52,11 @@ class Index extends Component
     public function render()
     {
         return view('livewire.admin.settings.index', [
-            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'payments', 'seo'])
+            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'payments', 'seo', 'theme', 'colors', 'currency'])
                 ->get()
                 ->groupBy('group'),
+            'colorSettings' => Setting::where('group', 'colors')->get(),
+            'currencySettings' => Setting::where('group', 'currency')->get(),
         ])->layout('layouts.admin', ['title' => 'Settings']);
     }
 }

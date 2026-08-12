@@ -26,9 +26,18 @@
             <button type="button" @click="tab = 'payments'"
                 :class="tab==='payments'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="px-5 py-3 text-sm -mb-px">Payments</button>
+            <button type="button" @click="tab = 'currency'"
+                :class="tab==='currency'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
+                class="px-5 py-3 text-sm -mb-px">Currency</button>
             <button type="button" @click="tab = 'seo'"
                 :class="tab==='seo'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="px-5 py-3 text-sm -mb-px">SEO</button>
+            <button type="button" @click="tab = 'theme'"
+                :class="tab==='theme'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
+                class="px-5 py-3 text-sm -mb-px">Theme</button>
+            <button type="button" @click="tab = 'colors'"
+                :class="tab==='colors'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
+                class="px-5 py-3 text-sm -mb-px">Other</button>
         </div>
 
         {{-- General tab --}}
@@ -56,6 +65,10 @@
                                                  :style="'background-color: ' + ($wire.settings['{{ $setting->key }}'] || '#ffffff')"></div>
                                             <flux:input wire:model="settings.{{ $setting->key }}" placeholder="#000000" class="flex-1 font-mono" />
                                         </div>
+                                    @elseif ($setting->key === 'site_icon' || $setting->key === 'favicon')
+                                        <x-media-picker model="settings.{{ $setting->key }}"
+                                            label="{{ $setting->key === 'favicon' ? 'Favicon' : 'Site Icon' }}"
+                                            placeholder="Choose a {{ $setting->key === 'favicon' ? 'favicon' : 'site icon' }} from the library" />
                                     @elseif ($setting->type === 'textarea')
                                         <flux:textarea wire:model="settings.{{ $setting->key }}" rows="3" />
                                     @else
@@ -276,6 +289,48 @@
 
         </div>
 
+        {{-- Currency tab --}}
+        <div x-show="tab === 'currency'">
+            <div class="max-w-2xl space-y-6">
+                <flux:text class="text-zinc-500">
+                    Set the currency used across the site for product pricing and payments.
+                </flux:text>
+
+                <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+                    <flux:heading size="sm">Currency</flux:heading>
+                    <flux:field>
+                        <flux:label>Currency Code</flux:label>
+                        <flux:input wire:model="settings.currency_code" placeholder="BDT, USD, EUR" class="uppercase" />
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>Currency Symbol</flux:label>
+                        <flux:input wire:model="settings.currency_symbol" placeholder="৳, $, €" />
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>Symbol Position</flux:label>
+                        <select wire:model="settings.currency_position"
+                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                            <option value="left">Left (৳1,250.00)</option>
+                            <option value="right">Right (1,250.00 ৳)</option>
+                        </select>
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>Decimal Places</flux:label>
+                        <flux:input type="number" wire:model="settings.decimal_places" min="0" max="4" />
+                    </flux:field>
+                </div>
+
+                {{-- Preview --}}
+                <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5">
+                    <flux:heading size="sm" class="mb-2">Preview</flux:heading>
+                    <div class="rounded-lg bg-zinc-50 dark:bg-zinc-800/50 px-4 py-6 text-center">
+                        <span class="text-2xl font-bold text-zinc-800 dark:text-zinc-100" x-data
+                            x-text="($wire.settings.currency_position || 'left') === 'right' ? '1,250.00 ' + ($wire.settings.currency_symbol || '৳') : ($wire.settings.currency_symbol || '৳') + '1,250.00'"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- SEO tab --}}
         <div x-show="tab === 'seo'">
             <div class="max-w-2xl space-y-6">
@@ -316,6 +371,128 @@
                     </flux:field>
                     <x-media-picker model="settings.seo_og_image" label="OG Image"
                         placeholder="Select OG image from library" />
+                </div>
+            </div>
+        </div>
+
+        {{-- Theme tab --}}
+        <div x-show="tab === 'theme'">
+            <div class="max-w-2xl space-y-6">
+                <flux:text class="text-zinc-500">
+                    Choose a light or dark theme for the admin panel and pick an accent color for buttons, links and menu highlights.
+                </flux:text>
+
+                {{-- Theme mode --}}
+                <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+                    <flux:heading size="sm">Theme Mode</flux:heading>
+                    <div class="grid grid-cols-2 gap-3 max-w-sm">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="theme_mode" value="light" wire:model="settings.theme_mode" class="sr-only peer">
+                            <div class="flex flex-col items-center gap-2 rounded-xl border border-zinc-200 dark:border-zinc-700 p-4 peer-checked:border-blue-600 peer-checked:ring-2 peer-checked:ring-blue-600/20 transition-all">
+                                <flux:icon.sun class="size-6 text-amber-500" />
+                                <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Light</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="theme_mode" value="dark" wire:model="settings.theme_mode" class="sr-only peer">
+                            <div class="flex flex-col items-center gap-2 rounded-xl border border-zinc-200 dark:border-zinc-700 p-4 peer-checked:border-blue-600 peer-checked:ring-2 peer-checked:ring-blue-600/20 transition-all">
+                                <flux:icon.moon class="size-6 text-indigo-400" />
+                                <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Dark</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                {{-- Accent color --}}
+                <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+                    <flux:heading size="sm">Accent Color</flux:heading>
+                    <flux:text class="text-xs text-zinc-500 -mt-2">
+                        This becomes your custom theme's primary color.
+                    </flux:text>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach (['#1e7bc4', '#2563eb', '#7cc242', '#7c3aed', '#db2777', '#ea580c', '#dc2626', '#0d9488'] as $color)
+                            <button type="button" wire:click="$set('settings.theme_accent', '{{ $color }}')"
+                                class="size-8 rounded-full border-2 border-white dark:border-zinc-800 shadow-sm transition-transform hover:scale-110"
+                                style="background-color: {{ $color }}"
+                                :class="($wire.settings.theme_accent ?? '') === '{{ $color }}' ? 'ring-2 ring-offset-2 ring-zinc-400 dark:ring-offset-zinc-900' : ''"></button>
+                        @endforeach
+                    </div>
+                    <flux:field>
+                        <flux:label>Custom hex</flux:label>
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg border border-zinc-300 dark:border-zinc-700 shrink-0"
+                                 x-data
+                                 :style="'background-color: ' + ($wire.settings.theme_accent || '#1e7bc4')"></div>
+                            <flux:input wire:model="settings.theme_accent" placeholder="#1e7bc4" class="flex-1 font-mono" />
+                        </div>
+                    </flux:field>
+                </div>
+
+                {{-- Theme name --}}
+                <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+                    <flux:heading size="sm">Theme Name</flux:heading>
+                    <flux:text class="text-xs text-zinc-500 -mt-2">
+                        A friendly label for your custom theme.
+                    </flux:text>
+                    <flux:input wire:model="settings.theme_name" placeholder="e.g. Forest Green" />
+                </div>
+            </div>
+        </div>
+
+        {{-- Other tab --}}
+        <div x-show="tab === 'colors'">
+            <div class="max-w-2xl space-y-6">
+                <flux:text class="text-zinc-500">
+                    Brand colors and social profile links for your site.
+                </flux:text>
+
+                <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+                    @foreach ($colorSettings as $setting)
+                        <flux:field>
+                            <flux:label>{{ ucwords(str_replace('_', ' ', $setting->key)) }}</flux:label>
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg border border-zinc-300 shrink-0"
+                                     style="background-color: {{ $settings[$setting->key] ?? '#ffffff' }}"
+                                     x-data
+                                     :style="'background-color: ' + ($wire.settings['{{ $setting->key }}'] || '#ffffff')"></div>
+                                <flux:input wire:model="settings.{{ $setting->key }}" placeholder="#000000" class="flex-1 font-mono" />
+                            </div>
+                        </flux:field>
+                    @endforeach
+                </div>
+
+                {{-- Social links --}}
+                <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+                    <flux:heading size="sm">Social Links</flux:heading>
+                    <flux:text class="text-xs text-zinc-500 -mt-2">
+                        Add links to your social media profiles. These appear across the site.
+                    </flux:text>
+                    @php
+                        $socials = [
+                            ['key' => 'facebook_url',    'label' => 'Facebook',     'color' => '#1877f2'],
+                            ['key' => 'twitter_url',     'label' => 'Twitter / X',  'color' => '#000000'],
+                            ['key' => 'instagram_url',   'label' => 'Instagram',    'color' => '#e4405f'],
+                            ['key' => 'youtube_url',     'label' => 'YouTube',      'color' => '#ff0000'],
+                            ['key' => 'linkedin_url',    'label' => 'LinkedIn',     'color' => '#0a66c2'],
+                            ['key' => 'tiktok_url',      'label' => 'TikTok',       'color' => '#000000'],
+                            ['key' => 'whatsapp_number', 'label' => 'WhatsApp',     'color' => '#25d366'],
+                        ];
+                    @endphp
+                    @foreach ($socials as $social)
+                        <flux:field>
+                            <flux:label>
+                                <span class="inline-flex items-center gap-2">
+                                    <span class="inline-flex size-5 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                                        style="background-color: {{ $social['color'] }}">
+                                        {{ strtoupper(substr($social['label'], 0, 1)) }}
+                                    </span>
+                                    {{ $social['label'] }}
+                                </span>
+                            </flux:label>
+                            <flux:input wire:model="settings.{{ $social['key'] }}"
+                                placeholder="{{ $social['key'] === 'whatsapp_number' ? '+8801XXXXXXXXX' : 'https://' }}" />
+                        </flux:field>
+                    @endforeach
                 </div>
             </div>
         </div>

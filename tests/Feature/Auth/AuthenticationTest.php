@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Setting;
 use App\Models\User;
 use Laravel\Fortify\Features;
 
@@ -7,6 +8,14 @@ test('login screen can be rendered', function () {
     $response = $this->get(route('login'));
 
     $response->assertOk();
+});
+
+test('login screen shows the uploaded site icon', function () {
+    Setting::set('site_icon', '/storage/site-icon.png');
+
+    $this->get(route('login'))
+        ->assertOk()
+        ->assertSee('src="/storage/site-icon.png"', false);
 });
 
 test('users can authenticate using the login screen', function () {
