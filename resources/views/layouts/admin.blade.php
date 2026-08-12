@@ -299,43 +299,71 @@
             </div>
 
         </nav>
-        {{-- Bottom Actions --}}
-        <div class="shrink-0 border-t border-zinc-800/40 px-2 py-3 space-y-0.5">
-            <button x-data x-on:click="document.getElementById('admin-logout-form').submit()"
-                class="admin-nav-item w-full text-left cursor-pointer">
-                <flux:icon.arrow-right-start-on-rectangle class="size-4.5 shrink-0" />
-                <span>Log out</span>
-            </button>
-            <form id="admin-logout-form" method="POST" action="{{ route('logout') }}" class="hidden">
-                @csrf
-            </form>
-        </div>
-
-        {{-- User Profile Card --}}
-        <a href="{{ route('admin.profile') }}" wire:navigate.hover
-            class="shrink-0 border-t border-zinc-800/40 px-3 py-3.5 flex items-center gap-3 hover:bg-zinc-800/30 transition-colors">
-            @if (auth()->user()->photo_url)
-                <img src="{{ auth()->user()->photo_url }}" alt="{{ auth()->user()->name }}"
-                    class="size-9 rounded-xl object-cover shrink-0 shadow-md">
-            @else
-                <div
-                    class="size-9 rounded-xl bg-gradient-to-br from-brand-green to-brand-blue flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-md">
-                    {{ auth()->user()->initials() }}
-                </div>
-            @endif
-            <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-zinc-100 truncate leading-tight">{{ auth()->user()->name }}</p>
-                <p class="text-xs text-zinc-500 truncate mt-0.5">{{ auth()->user()->email }}</p>
-            </div>
-        </a>
 
     </flux:sidebar>
 
     {{-- Main content --}}
     <flux:main class="admin-main">
-        <div class="p-4 md:p-6 max-w-[1600px] w-full mx-auto flex-1">
+        @php
+            $routeName = request()->route()?->getName() ?? 'admin.dashboard';
+            $segments  = explode('.', $routeName);
+            $resource  = $segments[1] ?? 'dashboard';
+            $pageTitle = $title ?? 'Admin';
+            $sectionMap = [
+                'product-categories' => ['Products', 'admin.product-categories'],
+                'products'           => ['Products', 'admin.products'],
+                'post-categories'    => ['Blog', 'admin.post-categories'],
+                'tags'               => ['Blog', 'admin.tags'],
+                'posts'              => ['Blog', 'admin.posts'],
+                'media-library'      => ['Library & System', 'admin.media-library'],
+                'settings'           => ['Library & System', 'admin.settings'],
+                'contacts'           => ['Inquiries', 'admin.contacts'],
+                'pages'              => ['Content', 'admin.pages'],
+                'roles'              => ['Access Control', 'admin.roles'],
+                'permissions'        => ['Access Control', 'admin.permissions'],
+                'users'              => ['Access Control', 'admin.users'],
+            ];
+            $section = $sectionMap[$resource] ?? null;
+        @endphp
+
+        <flux:header sticky class="admin-header shrink-0">
+            <flux:sidebar.toggle class="lg:hidden mr-2" icon="bars-2" inset="left" />
+
+            <div class="min-w-0 flex-1">
+                <flux:breadcrumbs class="mb-0.5">
+                    <flux:breadcrumbs.item :href="route('admin.dashboard')" wire:navigate.hover>Home</flux:breadcrumbs.item>
+                    @if ($section)
+                        <flux:breadcrumbs.item :href="route($section[1])" wire:navigate.hover>{{ $section[0] }}</flux:breadcrumbs.item>
+                    @endif
+                    <flux:breadcrumbs.item>{{ $pageTitle }}</flux:breadcrumbs.item>
+                </flux:breadcrumbs>
+                <h1 class="text-xl font-bold text-zinc-800 truncate leading-tight">{{ $pageTitle }}</h1>
+            </div>
+
+            <div class="relative hidden md:block w-64 lg:w-80 ml-4">
+                <flux:icon.magnifying-glass
+                    class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400 pointer-events-none" />
+                <input type="search" placeholder="Search..." autocomplete="off"
+                    class="w-full bg-zinc-50 border border-zinc-200 rounded-lg pl-9 pr-3 py-2 text-sm text-zinc-700 placeholder:text-zinc-400 outline-none focus:border-[#7cc242]/60 focus:ring-1 focus:ring-[#7cc242]/40 transition">
+            </div>
+
+            <x-admin-user-menu class="ml-3" />
+        </flux:header>
+
+        <div class="flex-1 p-4 md:p-6 max-w-[1600px] w-full mx-auto">
             {{ $slot }}
         </div>
+
+        <footer class="shrink-0 border-t border-zinc-200/80 bg-white/70 backdrop-blur px-6 py-4">
+            <div
+                class="max-w-[1600px] w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-zinc-500">
+                <p>© {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</p>
+                <p class="flex items-center gap-1.5">
+                    <flux:icon.cube class="size-3.5 text-zinc-400" />
+                    v{{ config('app.version') }}
+                </p>
+            </div>
+        </footer>
     </flux:main>
 
     <div x-data x-on:notify.window="toastr.success($event.detail.message)"></div>
