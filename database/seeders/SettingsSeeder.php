@@ -20,7 +20,7 @@ class SettingsSeeder extends Seeder
             [
                 'key'       => 'site_description',
                 'value'     => '',
-                'type'      => 'string',
+                'type'      => 'textarea',
                 'group'     => 'general',
                 'is_public' => true,
             ],
@@ -66,6 +66,35 @@ class SettingsSeeder extends Seeder
                 'group'     => 'layout',
                 'is_public' => false,
             ],
+
+            // ── Payment credentials ──
+            ['key' => 'paypal_enabled',           'value' => '0', 'type' => 'boolean', 'group' => 'payments', 'is_public' => false],
+            ['key' => 'paypal_mode',              'value' => 'sandbox', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
+            ['key' => 'paypal_client_id',         'value' => '', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
+            ['key' => 'paypal_client_secret',     'value' => '', 'type' => 'password', 'group' => 'payments', 'is_public' => false],
+
+            ['key' => 'stripe_enabled',           'value' => '0', 'type' => 'boolean', 'group' => 'payments', 'is_public' => false],
+            ['key' => 'stripe_mode',              'value' => 'test', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
+            ['key' => 'stripe_publishable_key',   'value' => '', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
+            ['key' => 'stripe_secret_key',        'value' => '', 'type' => 'password', 'group' => 'payments', 'is_public' => false],
+            ['key' => 'stripe_webhook_secret',    'value' => '', 'type' => 'password', 'group' => 'payments', 'is_public' => false],
+
+            ['key' => 'bkash_enabled',            'value' => '0', 'type' => 'boolean', 'group' => 'payments', 'is_public' => false],
+            ['key' => 'bkash_mode',               'value' => 'sandbox', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
+            ['key' => 'bkash_username',           'value' => '', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
+            ['key' => 'bkash_password',           'value' => '', 'type' => 'password', 'group' => 'payments', 'is_public' => false],
+            ['key' => 'bkash_app_key',            'value' => '', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
+            ['key' => 'bkash_app_secret',         'value' => '', 'type' => 'password', 'group' => 'payments', 'is_public' => false],
+
+            ['key' => 'sslcommerz_enabled',       'value' => '0', 'type' => 'boolean', 'group' => 'payments', 'is_public' => false],
+            ['key' => 'sslcommerz_mode',          'value' => 'sandbox', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
+            ['key' => 'sslcommerz_store_id',      'value' => '', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
+            ['key' => 'sslcommerz_store_password','value' => '', 'type' => 'password', 'group' => 'payments', 'is_public' => false],
+
+            ['key' => 'applepay_enabled',         'value' => '0', 'type' => 'boolean', 'group' => 'payments', 'is_public' => false],
+            ['key' => 'applepay_merchant_id',     'value' => '', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
+            ['key' => 'applepay_merchant_name',   'value' => '', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
+            ['key' => 'applepay_domain',          'value' => '', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
         ];
 
         foreach ($settings as $setting) {

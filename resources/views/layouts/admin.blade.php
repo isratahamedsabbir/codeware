@@ -60,7 +60,7 @@
         @endif
     </script>
 
-    <flux:sidebar sticky stashable class="admin-sidebar" x-data="{
+    <flux:sidebar sticky stashable collapsible="desktop" class="admin-sidebar" x-data="{
         search: '',
         openGroup: '{{ request()->routeIs('admin.product-categories', 'admin.products')
             ? 'products'
@@ -110,16 +110,15 @@
 
         {{-- Logo --}}
         <div class="px-4 py-5 border-b border-zinc-800/40 shrink-0">
-            <a href="{{ route('admin.dashboard') }}" wire:navigate.hover class="flex items-center gap-3">
+            <a href="{{ route('admin.dashboard') }}" wire:navigate.hover class="flex items-center gap-3 admin-sidebar-logo">
                 <div class="bg-white/95 rounded-xl px-3 py-1.5 shadow-md border border-white/10">
-                    <img src="/agrosal_logo.png" alt="{{ config('app.name') }}">
+                    <img src="/agrosal_logo.png" alt="{{ config('app.name') }}" class="h-7 w-auto">
                 </div>
-
             </a>
         </div>
 
         {{-- Menu search --}}
-        <div class="px-2 py-3 border-b border-zinc-800/40 shrink-0">
+        <div class="px-2 py-3 border-b border-zinc-800/40 shrink-0 admin-sidebar-search">
             <div class="relative">
                 <flux:icon.magnifying-glass
                     class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-500 pointer-events-none" />
@@ -328,16 +327,20 @@
 
         <flux:header sticky class="admin-header shrink-0">
             <flux:sidebar.toggle class="lg:hidden mr-2" icon="bars-2" inset="left" />
+            <flux:sidebar.collapse class="max-lg:hidden me-1" />
+            <flux:button variant="subtle" square x-data x-on:click="location.reload()" icon="arrow-path"
+                aria-label="Refresh" class="max-lg:hidden me-1" />
+            <flux:button variant="subtle" square :href="config('app.frontend_url')" icon="arrow-top-right-on-square"
+                target="_blank" aria-label="Open frontend" class="max-lg:hidden me-1" />
 
             <div class="min-w-0 flex-1">
-                <flux:breadcrumbs class="mb-0.5">
+                <flux:breadcrumbs>
                     <flux:breadcrumbs.item :href="route('admin.dashboard')" wire:navigate.hover>Home</flux:breadcrumbs.item>
                     @if ($section)
                         <flux:breadcrumbs.item :href="route($section[1])" wire:navigate.hover>{{ $section[0] }}</flux:breadcrumbs.item>
                     @endif
                     <flux:breadcrumbs.item>{{ $pageTitle }}</flux:breadcrumbs.item>
                 </flux:breadcrumbs>
-                <h1 class="text-xl font-bold text-zinc-800 truncate leading-tight">{{ $pageTitle }}</h1>
             </div>
 
             <div class="relative hidden md:block w-64 lg:w-80 ml-4">

@@ -1,6 +1,6 @@
 <flux:dropdown position="bottom" align="end">
     <flux:button variant="subtle" square class="!p-1.5">
-        <div class="flex items-center gap-2.5">
+        <div class="flex items-center">
             @if (auth()->user()->photo_url)
                 <img src="{{ auth()->user()->photo_url }}" alt="{{ auth()->user()->name }}"
                     class="size-8 rounded-xl object-cover shrink-0 shadow-sm">
@@ -10,11 +10,6 @@
                     {{ auth()->user()->initials() }}
                 </div>
             @endif
-            <div class="hidden lg:block text-start">
-                <p class="text-sm font-semibold text-zinc-800 leading-tight">{{ auth()->user()->name }}</p>
-                <p class="text-xs text-zinc-500 leading-tight">{{ auth()->user()->email }}</p>
-            </div>
-            <flux:icon.chevrons-up-down class="hidden lg:block size-4 text-zinc-400" />
         </div>
     </flux:button>
 
@@ -22,6 +17,15 @@
         <flux:menu.heading>Account</flux:menu.heading>
         <flux:menu.item :href="route('admin.profile')" icon="user-circle" wire:navigate>
             My Profile
+        </flux:menu.item>
+        <flux:menu.item
+            x-data
+            as="button"
+            x-on:click="location.reload()"
+            icon="arrow-path"
+            class="w-full cursor-pointer"
+        >
+            Refresh
         </flux:menu.item>
         <flux:menu.separator />
         <form method="POST" action="{{ route('logout') }}" class="w-full">

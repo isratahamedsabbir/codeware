@@ -46,7 +46,7 @@ class Index extends Component
     public function render()
     {
         return view('livewire.admin.settings.index', [
-            'groupedSettings' => Setting::where('group', '!=', 'layout')
+            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'payments'])
                 ->get()
                 ->groupBy('group'),
         ])->layout('layouts.admin', ['title' => 'Settings']);

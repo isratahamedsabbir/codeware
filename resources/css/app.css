@@ -141,6 +141,43 @@
     margin-top: 0.5rem;
 }
 
+/* ── Collapsed Sidebar (desktop) ── */
+
+.admin-sidebar[data-flux-sidebar-collapsed-desktop] {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    transition: width 0.2s ease;
+}
+
+.admin-sidebar[data-flux-sidebar-collapsed-desktop][data-flux-sidebar-active] {
+    width: 16rem !important;
+}
+
+.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-sidebar-logo,
+.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-sidebar-search,
+.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-nav-group-label {
+    display: none;
+}
+
+.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-nav-item {
+    justify-content: center;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+}
+
+.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-nav-active {
+    padding-left: 0.25rem !important;
+}
+
+.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-nav-item span {
+    display: none;
+}
+
+.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .nav-group-items {
+    max-height: none !important;
+    opacity: 1 !important;
+}
+
 /* ── Sticky Glassmorphic Header ── */
 
 .admin-header {

@@ -12,7 +12,7 @@
         </div>
     @endif
 
-    {{-- Alpine tab switcher: General | Layout | Media --}}
+    {{-- Alpine tab switcher: General | Layout | Payments --}}
     <div x-data="{ tab: 'general' }">
 
         {{-- Tab nav --}}
@@ -23,9 +23,9 @@
             <button type="button" @click="tab = 'layout'"
                 :class="tab==='layout'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="px-5 py-3 text-sm -mb-px">Layout</button>
-            <button type="button" @click="tab = 'media'"
-                :class="tab==='media'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
-                class="px-5 py-3 text-sm -mb-px">Media Library</button>
+            <button type="button" @click="tab = 'payments'"
+                :class="tab==='payments'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
+                class="px-5 py-3 text-sm -mb-px">Payments</button>
         </div>
 
         {{-- General tab --}}
@@ -53,6 +53,8 @@
                                                  :style="'background-color: ' + ($wire.settings['{{ $setting->key }}'] || '#ffffff')"></div>
                                             <flux:input wire:model="settings.{{ $setting->key }}" placeholder="#000000" class="flex-1 font-mono" />
                                         </div>
+                                    @elseif ($setting->type === 'textarea')
+                                        <flux:textarea wire:model="settings.{{ $setting->key }}" rows="3" />
                                     @else
                                         <flux:input wire:model="settings.{{ $setting->key }}" />
                                     @endif
@@ -62,9 +64,6 @@
                     </div>
                 @endforeach
 
-                <flux:button variant="primary" wire:click="save" wire:loading.attr="disabled">
-                    Save Settings
-                </flux:button>
             </div>
         </div>
 
@@ -113,9 +112,172 @@
             </div>
         </div>
 
-        {{-- Media tab --}}
-        <div x-show="tab === 'media'">
-            <livewire:admin.media-library.index />
+        {{-- Payments tab --}}
+        <div x-show="tab === 'payments'" class="max-w-2xl space-y-6">
+            <flux:text class="text-zinc-500">
+                Enter your payment gateway credentials. Credentials are stored privately and never exposed via the public API.
+            </flux:text>
+
+            {{-- PayPal --}}
+            <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <flux:heading size="sm">PayPal</flux:heading>
+                    <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
+                        <input type="checkbox" wire:model="settings.paypal_enabled" class="rounded border-zinc-300 text-blue-600" />
+                        Enable
+                    </label>
+                </div>
+                <div class="space-y-4">
+                    <flux:field>
+                        <flux:label>Mode</flux:label>
+                        <select wire:model="settings.paypal_mode"
+                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                            <option value="sandbox">Sandbox</option>
+                            <option value="live">Live</option>
+                        </select>
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>Client ID</flux:label>
+                        <flux:input wire:model="settings.paypal_client_id" />
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>Client Secret</flux:label>
+                        <flux:input type="password" wire:model="settings.paypal_client_secret" />
+                    </flux:field>
+                </div>
+            </div>
+
+            {{-- Stripe --}}
+            <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <flux:heading size="sm">Stripe</flux:heading>
+                    <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
+                        <input type="checkbox" wire:model="settings.stripe_enabled" class="rounded border-zinc-300 text-blue-600" />
+                        Enable
+                    </label>
+                </div>
+                <div class="space-y-4">
+                    <flux:field>
+                        <flux:label>Mode</flux:label>
+                        <select wire:model="settings.stripe_mode"
+                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                            <option value="test">Test</option>
+                            <option value="live">Live</option>
+                        </select>
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>Publishable Key</flux:label>
+                        <flux:input wire:model="settings.stripe_publishable_key" />
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>Secret Key</flux:label>
+                        <flux:input type="password" wire:model="settings.stripe_secret_key" />
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>Webhook Secret</flux:label>
+                        <flux:input type="password" wire:model="settings.stripe_webhook_secret" />
+                    </flux:field>
+                </div>
+            </div>
+
+            {{-- bKash --}}
+            <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <flux:heading size="sm">bKash</flux:heading>
+                    <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
+                        <input type="checkbox" wire:model="settings.bkash_enabled" class="rounded border-zinc-300 text-blue-600" />
+                        Enable
+                    </label>
+                </div>
+                <div class="space-y-4">
+                    <flux:field>
+                        <flux:label>Mode</flux:label>
+                        <select wire:model="settings.bkash_mode"
+                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                            <option value="sandbox">Sandbox</option>
+                            <option value="live">Live</option>
+                        </select>
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>Username</flux:label>
+                        <flux:input wire:model="settings.bkash_username" />
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>Password</flux:label>
+                        <flux:input type="password" wire:model="settings.bkash_password" />
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>App Key</flux:label>
+                        <flux:input wire:model="settings.bkash_app_key" />
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>App Secret</flux:label>
+                        <flux:input type="password" wire:model="settings.bkash_app_secret" />
+                    </flux:field>
+                </div>
+            </div>
+
+            {{-- SSLCommerz --}}
+            <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <flux:heading size="sm">SSLCommerz</flux:heading>
+                    <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
+                        <input type="checkbox" wire:model="settings.sslcommerz_enabled" class="rounded border-zinc-300 text-blue-600" />
+                        Enable
+                    </label>
+                </div>
+                <div class="space-y-4">
+                    <flux:field>
+                        <flux:label>Mode</flux:label>
+                        <select wire:model="settings.sslcommerz_mode"
+                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                            <option value="sandbox">Sandbox</option>
+                            <option value="live">Live</option>
+                        </select>
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>Store ID</flux:label>
+                        <flux:input wire:model="settings.sslcommerz_store_id" />
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>Store Password</flux:label>
+                        <flux:input type="password" wire:model="settings.sslcommerz_store_password" />
+                    </flux:field>
+                </div>
+            </div>
+
+            {{-- Apple Pay --}}
+            <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <flux:heading size="sm">Apple Pay</flux:heading>
+                    <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
+                        <input type="checkbox" wire:model="settings.applepay_enabled" class="rounded border-zinc-300 text-blue-600" />
+                        Enable
+                    </label>
+                </div>
+                <div class="space-y-4">
+                    <flux:field>
+                        <flux:label>Merchant ID</flux:label>
+                        <flux:input wire:model="settings.applepay_merchant_id" placeholder="merchant.com.example" />
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>Merchant Name</flux:label>
+                        <flux:input wire:model="settings.applepay_merchant_name" />
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>Domain</flux:label>
+                        <flux:input wire:model="settings.applepay_domain" placeholder="example.com" />
+                    </flux:field>
+                </div>
+            </div>
+
+        </div>
+
+        {{-- Save --}}
+        <div class="mt-6">
+            <flux:button variant="primary" wire:click="save" wire:loading.attr="disabled">
+                Save Settings
+            </flux:button>
         </div>
 
     </div>
