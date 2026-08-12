@@ -66,7 +66,7 @@
             ? 'products'
             : (request()->routeIs('admin.post-categories', 'admin.posts', 'admin.tags')
                 ? 'blog'
-                : (request()->routeIs('admin.settings', 'admin.media-library')
+                : (request()->routeIs('admin.settings', 'admin.media-library', 'admin.email-templates')
                     ? 'library'
                     : (request()->routeIs('admin.contacts')
                         ? 'inquiries'
@@ -78,7 +78,7 @@
         groupItems: {
             products: ['Product Categories', 'Products'],
             blog: ['Post Categories', 'Tags', 'Posts'],
-            library: ['Settings', 'Media Library'],
+            library: ['Settings', 'Media Library', 'Email Templates'],
             inquiries: ['Contacts'],
             content: ['Pages'],
             access: ['Roles', 'Permissions', 'Users'],
@@ -223,6 +223,11 @@
                             <flux:icon.photo class="size-4.5 shrink-0" />
                             <span>Media Library</span>
                         </a>
+                        <a href="{{ route('admin.email-templates') }}" wire:navigate.hover
+                            class="admin-nav-item {{ request()->routeIs('admin.email-templates') ? 'admin-nav-active' : '' }}">
+                            <flux:icon.envelope class="size-4.5 shrink-0" />
+                            <span>Email Templates</span>
+                        </a>
                     </div>
                 </div>
 
@@ -316,6 +321,7 @@
                 'posts'              => ['Blog', 'admin.posts'],
                 'media-library'      => ['Library & System', 'admin.media-library'],
                 'settings'           => ['Library & System', 'admin.settings'],
+                'email-templates'    => ['Library & System', 'admin.email-templates'],
                 'contacts'           => ['Inquiries', 'admin.contacts'],
                 'pages'              => ['Content', 'admin.pages'],
                 'roles'              => ['Access Control', 'admin.roles'],

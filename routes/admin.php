@@ -31,6 +31,9 @@ Route::get('/tags/{id}/edit', \App\Livewire\Admin\Tags\Form::class)->name('tags.
 Route::get('/media-library', \App\Livewire\Admin\MediaLibrary\Index::class)->name('media-library');
 Route::get('/settings', \App\Livewire\Admin\Settings\Index::class)->name('settings');
 
+// Email Templates
+Route::get('/email-templates', \App\Livewire\Admin\EmailTemplates\Index::class)->name('email-templates');
+
 // Products
 Route::get('/products', \App\Livewire\Admin\Products\Index::class)->name('products');
 Route::get('/products/create', \App\Livewire\Admin\Products\Form::class)->name('products.create');
