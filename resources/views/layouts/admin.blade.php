@@ -36,6 +36,10 @@
             max-height: 0 !important;
             opacity: 0;
         }
+
+        [x-cloak] {
+            display: none !important;
+        }
     </style>
 </head>
 
@@ -56,7 +60,52 @@
         @endif
     </script>
 
-    <flux:sidebar sticky stashable class="admin-sidebar">
+    <flux:sidebar sticky stashable class="admin-sidebar" x-data="{
+        search: '',
+        openGroup: '{{ request()->routeIs('admin.product-categories', 'admin.products')
+            ? 'products'
+            : (request()->routeIs('admin.post-categories', 'admin.posts', 'admin.tags')
+                ? 'blog'
+                : (request()->routeIs('admin.settings', 'admin.media-library')
+                    ? 'library'
+                    : (request()->routeIs('admin.contacts')
+                        ? 'inquiries'
+                    : (request()->routeIs('admin.pages')
+                        ? 'content'
+                        : (request()->routeIs('admin.roles', 'admin.roles.*', 'admin.permissions', 'admin.users', 'admin.users.*')
+                            ? 'access'
+                            : 'products'))))) }}',
+        groupItems: {
+            products: ['Product Categories', 'Products'],
+            blog: ['Post Categories', 'Tags', 'Posts'],
+            library: ['Settings', 'Media Library'],
+            inquiries: ['Contacts'],
+            content: ['Pages'],
+            access: ['Roles', 'Permissions', 'Users'],
+        },
+        query() { return this.search.trim().toLowerCase(); },
+        searching() { return this.query() !== ''; },
+        matches(label) {
+            const q = this.query();
+            return !q || label.toLowerCase().includes(q);
+        },
+        groupMatches(group) {
+            const q = this.query();
+            if (!q) return true;
+            return this.groupItems[group].some(l => l.toLowerCase().includes(q));
+        },
+        groupOpen(group) {
+            return this.groupMatches(group) && (this.searching() ? true : this.openGroup === group);
+        },
+        anyMatch() {
+            const q = this.query();
+            if (!q) return true;
+            const singles = ['Overview', 'My Profile'];
+            return singles.some(l => l.toLowerCase().includes(q)) ||
+                Object.values(this.groupItems).flat().some(l => l.toLowerCase().includes(q));
+        },
+        toggle(group) { this.openGroup = this.openGroup === group ? null : group }
+    }">
         <flux:sidebar.toggle class="lg:hidden self-end m-2 text-zinc-400 hover:text-zinc-200" icon="x-mark" />
 
         {{-- Logo --}}
@@ -69,48 +118,51 @@
             </a>
         </div>
 
+        {{-- Menu search --}}
+        <div class="px-2 py-3 border-b border-zinc-800/40 shrink-0">
+            <div class="relative">
+                <flux:icon.magnifying-glass
+                    class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-500 pointer-events-none" />
+                <input type="text" x-model="search" placeholder="Search menu..." autocomplete="off"
+                    class="w-full bg-zinc-800/60 border border-zinc-700/60 rounded-lg pl-9 pr-8 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 outline-none focus:border-[#7cc242]/60 focus:ring-1 focus:ring-[#7cc242]/40 transition">
+                <button type="button" x-show="search" x-on:click="search = ''"
+                    class="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors">
+                    <flux:icon.x-mark class="size-4" />
+                </button>
+            </div>
+        </div>
+
         {{-- Navigation --}}
         <nav id="admin-sidebar-nav" class="flex-1 overflow-y-auto px-2 py-4 space-y-0.5 custom-sidebar-nav">
 
-            <a href="{{ route('admin.dashboard') }}" wire:navigate.hover
-                class="admin-nav-item {{ request()->routeIs('admin.dashboard') ? 'admin-nav-active' : '' }}">
-                <flux:icon.home class="size-4.5 shrink-0" />
-                <span>Overview</span>
-            </a>
+            <div x-show="matches('Overview')">
+                <a href="{{ route('admin.dashboard') }}" wire:navigate.hover
+                    class="admin-nav-item {{ request()->routeIs('admin.dashboard') ? 'admin-nav-active' : '' }}">
+                    <flux:icon.home class="size-4.5 shrink-0" />
+                    <span>Overview</span>
+                </a>
+            </div>
 
-            <a href="{{ route('admin.profile') }}" wire:navigate.hover
-                class="admin-nav-item {{ request()->routeIs('admin.profile') ? 'admin-nav-active' : '' }}">
-                <flux:icon.user-circle class="size-4.5 shrink-0" />
-                <span>My Profile</span>
-            </a>
+            <div x-show="matches('My Profile')">
+                <a href="{{ route('admin.profile') }}" wire:navigate.hover
+                    class="admin-nav-item {{ request()->routeIs('admin.profile') ? 'admin-nav-active' : '' }}">
+                    <flux:icon.user-circle class="size-4.5 shrink-0" />
+                    <span>My Profile</span>
+                </a>
+            </div>
 
-            <div x-data="{
-                openGroup: '{{ request()->routeIs('admin.product-categories', 'admin.products')
-                    ? 'products'
-                    : (request()->routeIs('admin.post-categories', 'admin.posts', 'admin.tags')
-                        ? 'blog'
-                        : (request()->routeIs('admin.settings', 'admin.media-library')
-                            ? 'library'
-                            : (request()->routeIs('admin.contacts')
-                                ? 'inquiries'
-                            : (request()->routeIs('admin.pages')
-                                ? 'content'
-                                : (request()->routeIs('admin.roles', 'admin.roles.*', 'admin.permissions', 'admin.users', 'admin.users.*')
-                                    ? 'access'
-                                    : 'products'))))) }}',
-                toggle(group) { this.openGroup = this.openGroup === group ? null : group }
-            }">
+            <div>
 
                 {{-- Products Group --}}
-                <div class="nav-group">
+                <div class="nav-group" x-show="groupMatches('products')">
                     <button @click="toggle('products')"
                         class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
                         <span>Products</span>
-                        <span x-text="openGroup === 'products' ? '−' : '+'"
+                        <span x-text="groupOpen('products') ? '−' : '+'"
                             class="text-zinc-500 text-sm font-bold leading-none"></span>
                     </button>
-                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': openGroup !== 'products' }"
-                        :style="openGroup === 'products' ? 'max-height: 500px; opacity: 1;' : ''">
+                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': !groupOpen('products') }"
+                        :style="groupOpen('products') ? 'max-height: 500px; opacity: 1;' : ''">
                         <a href="{{ route('admin.product-categories') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.product-categories') ? 'admin-nav-active' : '' }}">
                             <flux:icon.squares-2x2 class="size-4.5 shrink-0" />
@@ -125,15 +177,15 @@
                 </div>
 
                 {{-- Blog Group --}}
-                <div class="nav-group">
+                <div class="nav-group" x-show="groupMatches('blog')">
                     <button @click="toggle('blog')"
                         class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
                         <span>Blog</span>
-                        <span x-text="openGroup === 'blog' ? '−' : '+'"
+                        <span x-text="groupOpen('blog') ? '−' : '+'"
                             class="text-zinc-500 text-sm font-bold leading-none"></span>
                     </button>
-                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': openGroup !== 'blog' }"
-                        :style="openGroup === 'blog' ? 'max-height: 500px; opacity: 1;' : ''">
+                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': !groupOpen('blog') }"
+                        :style="groupOpen('blog') ? 'max-height: 500px; opacity: 1;' : ''">
                         <a href="{{ route('admin.post-categories') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.post-categories') ? 'admin-nav-active' : '' }}">
                             <flux:icon.squares-2x2 class="size-4.5 shrink-0" />
@@ -153,15 +205,15 @@
                 </div>
 
                 {{-- Library & System Group --}}
-                <div class="nav-group">
+                <div class="nav-group" x-show="groupMatches('library')">
                     <button @click="toggle('library')"
                         class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
                         <span>Library & System</span>
-                        <span x-text="openGroup === 'library' ? '−' : '+'"
+                        <span x-text="groupOpen('library') ? '−' : '+'"
                             class="text-zinc-500 text-sm font-bold leading-none"></span>
                     </button>
-                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': openGroup !== 'library' }"
-                        :style="openGroup === 'library' ? 'max-height: 500px; opacity: 1;' : ''">
+                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': !groupOpen('library') }"
+                        :style="groupOpen('library') ? 'max-height: 500px; opacity: 1;' : ''">
                         <a href="{{ route('admin.settings') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.settings') ? 'admin-nav-active' : '' }}">
                             <flux:icon.cog-6-tooth class="size-4.5 shrink-0" />
@@ -176,15 +228,15 @@
                 </div>
 
                 {{-- Inquiries Group --}}
-                <div class="nav-group">
+                <div class="nav-group" x-show="groupMatches('inquiries')">
                     <button @click="toggle('inquiries')"
                         class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
                         <span>Inquiries</span>
-                        <span x-text="openGroup === 'inquiries' ? '−' : '+'"
+                        <span x-text="groupOpen('inquiries') ? '−' : '+'"
                             class="text-zinc-500 text-sm font-bold leading-none"></span>
                     </button>
-                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': openGroup !== 'inquiries' }"
-                        :style="openGroup === 'inquiries' ? 'max-height: 500px; opacity: 1;' : ''">
+                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': !groupOpen('inquiries') }"
+                        :style="groupOpen('inquiries') ? 'max-height: 500px; opacity: 1;' : ''">
                         <a href="{{ route('admin.contacts') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.contacts') ? 'admin-nav-active' : '' }}">
                             <flux:icon.inbox class="size-4.5 shrink-0" />
@@ -194,15 +246,15 @@
                 </div>
 
                 {{-- Content Group --}}
-                <div class="nav-group">
+                <div class="nav-group" x-show="groupMatches('content')">
                     <button @click="toggle('content')"
                         class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
                         <span>Content</span>
-                        <span x-text="openGroup === 'content' ? '−' : '+'"
+                        <span x-text="groupOpen('content') ? '−' : '+'"
                             class="text-zinc-500 text-sm font-bold leading-none"></span>
                     </button>
-                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': openGroup !== 'content' }"
-                        :style="openGroup === 'content' ? 'max-height: 500px; opacity: 1;' : ''">
+                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': !groupOpen('content') }"
+                        :style="groupOpen('content') ? 'max-height: 500px; opacity: 1;' : ''">
                         <a href="{{ route('admin.pages') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.pages') ? 'admin-nav-active' : '' }}">
                             <flux:icon.document class="size-4.5 shrink-0" />
@@ -212,15 +264,15 @@
                 </div>
 
                 {{-- Access Control Group --}}
-                <div class="nav-group">
+                <div class="nav-group" x-show="groupMatches('access')">
                     <button @click="toggle('access')"
                         class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
                         <span>Access Control</span>
-                        <span x-text="openGroup === 'access' ? '−' : '+'"
+                        <span x-text="groupOpen('access') ? '−' : '+'"
                             class="text-zinc-500 text-sm font-bold leading-none"></span>
                     </button>
-                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': openGroup !== 'access' }"
-                        :style="openGroup === 'access' ? 'max-height: 500px; opacity: 1;' : ''">
+                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': !groupOpen('access') }"
+                        :style="groupOpen('access') ? 'max-height: 500px; opacity: 1;' : ''">
                         <a href="{{ route('admin.roles') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.roles', 'admin.roles.*') ? 'admin-nav-active' : '' }}">
                             <flux:icon.shield-check class="size-4.5 shrink-0" />
@@ -240,6 +292,11 @@
                 </div>
 
             </div>{{-- end accordion wrapper --}}
+
+            <div x-show="searching() && !anyMatch()" x-cloak
+                class="px-3 py-8 text-center text-sm text-zinc-500">
+                No menu items found for "<span x-text="search" class="text-zinc-400 font-medium"></span>"
+            </div>
 
         </nav>
         {{-- Bottom Actions --}}
