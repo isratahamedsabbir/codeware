@@ -52,10 +52,10 @@ class AdminNotification extends Model
         $now = now();
 
         static::insert($adminIds->map(fn ($id) => [
-            'user_id'    => $id,
-            'title'      => $title,
-            'message'    => $message,
-            'link'       => $link,
+            'user_id' => $id,
+            'title' => $title,
+            'message' => $message,
+            'link' => $link,
             'created_at' => $now,
             'updated_at' => $now,
         ])->all());

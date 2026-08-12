@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Settings;
 
 use App\Models\Setting;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 
 class Index extends Component
@@ -29,7 +30,7 @@ class Index extends Component
     {
         foreach ($this->settings as $key => $value) {
             Setting::updateOrCreate(['key' => $key], ['value' => $value]);
-            \Illuminate\Support\Facades\Cache::forget("setting:{$key}");
+            Cache::forget("setting:{$key}");
         }
 
         session()->flash('success', 'Settings saved.');
@@ -46,7 +47,7 @@ class Index extends Component
     public function render()
     {
         return view('livewire.admin.settings.index', [
-            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'payments'])
+            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'payments', 'seo'])
                 ->get()
                 ->groupBy('group'),
         ])->layout('layouts.admin', ['title' => 'Settings']);

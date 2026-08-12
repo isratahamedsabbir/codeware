@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Admin\Notifications;
 
-use App\Models\AdminNotification;
 use Livewire\Component;
 
 class Bell extends Component
@@ -22,7 +21,7 @@ class Bell extends Component
     public function render()
     {
         return view('livewire.admin.notifications.bell', [
-            'unreadCount'   => auth()->user()->adminNotifications()->unread()->count(),
+            'unreadCount' => auth()->user()->adminNotifications()->unread()->count(),
             'notifications' => auth()->user()->adminNotifications()->latest()->limit(8)->get(),
         ]);
     }

@@ -21,7 +21,7 @@ it('shows the notification title and message in the dropdown', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     AdminNotification::factory()->create([
         'user_id' => $admin->id,
-        'title'   => 'New contact message',
+        'title' => 'New contact message',
         'message' => 'John: Please call me',
     ]);
 
@@ -78,11 +78,11 @@ it('creates notifications for all admins when a contact is submitted', function 
     User::factory()->count(2)->create(['is_admin' => true]);
 
     $this->postJson('/api/v1/contacts', [
-        'full_name'    => 'John Doe',
+        'full_name' => 'John Doe',
         'phone_number' => '+8801712345678',
-        'email'        => 'john@example.com',
-        'subject'      => 'Product Inquiry',
-        'message'      => 'I would like to know more.',
+        'email' => 'john@example.com',
+        'subject' => 'Product Inquiry',
+        'message' => 'I would like to know more.',
     ])->assertCreated();
 
     expect(AdminNotification::count())->toBe(2);
@@ -95,11 +95,11 @@ it('does not create notifications when no admins exist', function () {
     User::factory()->create(['is_admin' => false]);
 
     $this->postJson('/api/v1/contacts', [
-        'full_name'    => 'John Doe',
+        'full_name' => 'John Doe',
         'phone_number' => '+8801712345678',
-        'email'        => 'john@example.com',
-        'subject'      => 'Hello',
-        'message'      => 'Hi there.',
+        'email' => 'john@example.com',
+        'subject' => 'Hello',
+        'message' => 'Hi there.',
     ])->assertCreated();
 
     expect(AdminNotification::count())->toBe(0);
@@ -127,8 +127,8 @@ it('deletes notifications when the user is deleted', function () {
 it('renders the bell dropdown with relative time for notifications', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     AdminNotification::factory()->create([
-        'user_id'    => $admin->id,
-        'title'      => 'System update',
+        'user_id' => $admin->id,
+        'title' => 'System update',
         'created_at' => now()->subMinutes(5),
     ]);
 
@@ -142,11 +142,11 @@ it('keeps contact notification link pointing to the contacts page', function () 
     $admin = User::factory()->create(['is_admin' => true]);
 
     Contact::create([
-        'full_name'    => 'Jane Doe',
+        'full_name' => 'Jane Doe',
         'phone_number' => '+8801712345679',
-        'email'        => 'jane@example.com',
-        'subject'      => 'Support',
-        'message'      => 'Need help.',
+        'email' => 'jane@example.com',
+        'subject' => 'Support',
+        'message' => 'Need help.',
     ]);
 
     $notification = AdminNotification::where('user_id', $admin->id)->first();

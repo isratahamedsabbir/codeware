@@ -22,16 +22,16 @@ class NotificationsSeeder extends Seeder
         foreach ($admins as $admin) {
             AdminNotification::create([
                 'user_id' => $admin->id,
-                'title'   => 'Welcome to the admin panel',
+                'title' => 'Welcome to the admin panel',
                 'message' => 'This is where you will see updates about contacts, orders and system events.',
-                'link'    => route('admin.dashboard'),
+                'link' => route('admin.dashboard'),
             ]);
 
             AdminNotification::create([
                 'user_id' => $admin->id,
-                'title'   => 'New contact message',
+                'title' => 'New contact message',
                 'message' => 'Sample visitor: Please call me about pricing.',
-                'link'    => route('admin.contacts'),
+                'link' => route('admin.contacts'),
             ]);
         }
     }

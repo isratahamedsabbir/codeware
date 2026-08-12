@@ -100,7 +100,7 @@
         anyMatch() {
             const q = this.query();
             if (!q) return true;
-            const singles = ['Overview', 'My Profile'];
+            const singles = ['Overview'];
             return singles.some(l => l.toLowerCase().includes(q)) ||
                 Object.values(this.groupItems).flat().some(l => l.toLowerCase().includes(q));
         },
@@ -139,14 +139,6 @@
                     class="admin-nav-item {{ request()->routeIs('admin.dashboard') ? 'admin-nav-active' : '' }}">
                     <flux:icon.home class="size-4.5 shrink-0" />
                     <span>Overview</span>
-                </a>
-            </div>
-
-            <div x-show="matches('My Profile')">
-                <a href="{{ route('admin.profile') }}" wire:navigate.hover
-                    class="admin-nav-item {{ request()->routeIs('admin.profile') ? 'admin-nav-active' : '' }}">
-                    <flux:icon.user-circle class="size-4.5 shrink-0" />
-                    <span>My Profile</span>
                 </a>
             </div>
 
@@ -347,13 +339,6 @@
                     @endif
                     <flux:breadcrumbs.item>{{ $pageTitle }}</flux:breadcrumbs.item>
                 </flux:breadcrumbs>
-            </div>
-
-            <div class="relative hidden md:block w-64 lg:w-80 ml-4">
-                <flux:icon.magnifying-glass
-                    class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400 pointer-events-none" />
-                <input type="search" placeholder="Search..." autocomplete="off"
-                    class="w-full bg-zinc-50 border border-zinc-200 rounded-lg pl-9 pr-3 py-2 text-sm text-zinc-700 placeholder:text-zinc-400 outline-none focus:border-[#7cc242]/60 focus:ring-1 focus:ring-[#7cc242]/40 transition">
             </div>
 
             <livewire:admin.notifications.bell class="ml-3" />

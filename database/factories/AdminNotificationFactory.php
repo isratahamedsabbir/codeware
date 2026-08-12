@@ -17,9 +17,9 @@ class AdminNotificationFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'title'   => fake()->sentence(3),
+            'title' => fake()->sentence(3),
             'message' => fake()->sentence(),
-            'link'    => null,
+            'link' => null,
             'read_at' => null,
         ];
     }

@@ -26,6 +26,9 @@
             <button type="button" @click="tab = 'payments'"
                 :class="tab==='payments'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="px-5 py-3 text-sm -mb-px">Payments</button>
+            <button type="button" @click="tab = 'seo'"
+                :class="tab==='seo'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
+                class="px-5 py-3 text-sm -mb-px">SEO</button>
         </div>
 
         {{-- General tab --}}
@@ -273,6 +276,50 @@
 
         </div>
 
+        {{-- SEO tab --}}
+        <div x-show="tab === 'seo'">
+            <div class="max-w-2xl space-y-6">
+                <flux:text class="text-zinc-500">
+                    Control search engine visibility and social sharing metadata for your site.
+                </flux:text>
+
+                {{-- Meta tags --}}
+                <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+                    <flux:heading size="sm">Meta Tags</flux:heading>
+                    <flux:field>
+                        <flux:label>Meta Title</flux:label>
+                        <flux:input wire:model="settings.seo_meta_title"
+                            placeholder="Title shown in search engine results" />
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>Meta Description</flux:label>
+                        <flux:textarea wire:model="settings.seo_meta_description" rows="3"
+                            placeholder="Short summary shown in search engine results" />
+                    </flux:field>
+                </div>
+
+                {{-- Open Graph --}}
+                <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+                    <flux:heading size="sm">Open Graph</flux:heading>
+                    <flux:text class="text-xs text-zinc-500 -mt-2">
+                        Used when your site is shared on social media (Facebook, WhatsApp, etc.).
+                    </flux:text>
+                    <flux:field>
+                        <flux:label>OG Title</flux:label>
+                        <flux:input wire:model="settings.seo_og_title"
+                            placeholder="Title shown when shared on social media" />
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>OG Description</flux:label>
+                        <flux:textarea wire:model="settings.seo_og_description" rows="3"
+                            placeholder="Description shown when shared on social media" />
+                    </flux:field>
+                    <x-media-picker model="settings.seo_og_image" label="OG Image"
+                        placeholder="Select OG image from library" />
+                </div>
+            </div>
+        </div>
+
         {{-- Save --}}
         <div class="mt-6">
             <flux:button variant="primary" wire:click="save" wire:loading.attr="disabled">
@@ -281,4 +328,6 @@
         </div>
 
     </div>
+
+    <livewire:admin.media-library.picker-modal />
 </div>
