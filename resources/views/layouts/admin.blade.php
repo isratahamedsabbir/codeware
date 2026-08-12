@@ -310,29 +310,6 @@
 
     {{-- Main content --}}
     <flux:main class="admin-main">
-        @php
-            $routeName = request()->route()?->getName() ?? 'admin.dashboard';
-            $segments  = explode('.', $routeName);
-            $resource  = $segments[1] ?? 'dashboard';
-            $pageTitle = $title ?? 'Admin';
-            $sectionMap = [
-                'product-categories' => ['Products', 'admin.product-categories'],
-                'products'           => ['Products', 'admin.products'],
-                'post-categories'    => ['Blog', 'admin.post-categories'],
-                'tags'               => ['Blog', 'admin.tags'],
-                'posts'              => ['Blog', 'admin.posts'],
-                'media-library'      => ['Library & System', 'admin.media-library'],
-                'settings'           => ['Library & System', 'admin.settings'],
-                'email-templates'    => ['Library & System', 'admin.email-templates'],
-                'contacts'           => ['Inquiries', 'admin.contacts'],
-                'pages'              => ['Content', 'admin.pages'],
-                'roles'              => ['Access Control', 'admin.roles'],
-                'permissions'        => ['Access Control', 'admin.permissions'],
-                'users'              => ['Access Control', 'admin.users'],
-            ];
-            $section = $sectionMap[$resource] ?? null;
-        @endphp
-
         <flux:header sticky class="admin-header shrink-0">
             <flux:sidebar.toggle class="lg:hidden mr-2" icon="bars-2" inset="left" />
             <flux:sidebar.collapse class="max-lg:hidden me-1" />
@@ -341,15 +318,7 @@
             <flux:button variant="subtle" square :href="config('app.frontend_url')" icon="arrow-top-right-on-square"
                 target="_blank" aria-label="Open frontend" class="max-lg:hidden me-1" />
 
-            <div class="min-w-0 flex-1">
-                <flux:breadcrumbs>
-                    <flux:breadcrumbs.item :href="route('admin.dashboard')" wire:navigate.hover>Home</flux:breadcrumbs.item>
-                    @if ($section)
-                        <flux:breadcrumbs.item :href="route($section[1])" wire:navigate.hover>{{ $section[0] }}</flux:breadcrumbs.item>
-                    @endif
-                    <flux:breadcrumbs.item>{{ $pageTitle }}</flux:breadcrumbs.item>
-                </flux:breadcrumbs>
-            </div>
+            <div class="flex-1"></div>
 
             <livewire:admin.theme-switcher class="ml-3" />
 
@@ -359,6 +328,15 @@
         </flux:header>
 
         <div class="flex-1 p-4 md:p-6 max-w-[1600px] w-full mx-auto">
+            @unless ($hidePageHeading ?? false)
+                <div class="mb-6">
+                    <flux:heading size="xl">{{ $title ?? 'Admin' }}</flux:heading>
+                    <div class="mt-2">
+                        @include('partials.admin-breadcrumbs')
+                    </div>
+                </div>
+            @endunless
+
             {{ $slot }}
         </div>
 

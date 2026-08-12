@@ -1,9 +1,6 @@
 <div>
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <flux:heading size="xl">Settings</flux:heading>
-            <flux:subheading>Configure your site settings and layout.</flux:subheading>
-        </div>
+    <div class="mb-6">
+        <flux:subheading>Configure your site settings and layout.</flux:subheading>
     </div>
 
     @if (session('success'))

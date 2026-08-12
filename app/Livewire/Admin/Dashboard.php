@@ -49,6 +49,6 @@ class Dashboard extends Component
         return view('livewire.admin.dashboard', [
             'recentProducts' => Product::with('category')->latest()->take(5)->get(),
             'recentPosts'    => Post::with('category')->latest()->take(5)->get(),
-        ])->layout('layouts.admin', ['title' => 'Dashboard']);
+        ])->layout('layouts.admin', ['title' => 'Dashboard', 'hidePageHeading' => true]);
     }
 }

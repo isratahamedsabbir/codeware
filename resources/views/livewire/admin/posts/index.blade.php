@@ -3,7 +3,6 @@
     {{-- Header --}}
     <div class="flex items-center justify-between gap-3 px-6 py-5 border-b border-zinc-100 flex-wrap">
         <div>
-            <h1 class="text-lg font-semibold text-zinc-900">Posts</h1>
             <p class="text-sm text-zinc-600 mt-0.5">Manage blog posts and articles</p>
         </div>
         <a href="{{ route('admin.posts.create') }}" wire:navigate

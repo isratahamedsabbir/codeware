@@ -1,9 +1,6 @@
 <div class="max-w-3xl mx-auto">
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <flux:heading size="xl">My Profile</flux:heading>
-            <flux:subheading>Update your name, photo and password.</flux:subheading>
-        </div>
+    <div class="mb-6">
+        <flux:subheading>Update your name, photo and password.</flux:subheading>
     </div>
 
     {{-- Profile photo & name --}}

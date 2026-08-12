@@ -10,10 +10,6 @@
         {{-- ── MAIN ── --}}
         <div class="flex-1 min-w-0 bg-white rounded-lg border border-zinc-100 shadow-sm p-6">
 
-            <h1 class="text-lg font-semibold text-zinc-900 mb-5 pb-4 border-b border-zinc-100">
-                {{ $userId ? 'Edit User' : 'New User' }}
-            </h1>
-
             <div class="space-y-4">
                 <flux:field>
                     <flux:label>Name <span class="text-red-500 ml-0.5">*</span></flux:label>

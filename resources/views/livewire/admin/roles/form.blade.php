@@ -10,10 +10,6 @@
         {{-- ── MAIN ── --}}
         <div class="flex-1 min-w-0 bg-white rounded-lg border border-zinc-100 shadow-sm p-6">
 
-            <h1 class="text-lg font-semibold text-zinc-900 mb-5 pb-4 border-b border-zinc-100">
-                {{ $roleId ? 'Edit Role' : 'New Role' }}
-            </h1>
-
             <div class="space-y-5">
                 <flux:field>
                     <flux:label>Role name <span class="text-red-500 ml-0.5">*</span></flux:label>
