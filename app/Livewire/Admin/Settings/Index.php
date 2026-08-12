@@ -52,7 +52,7 @@ class Index extends Component
     public function render()
     {
         return view('livewire.admin.settings.index', [
-            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'payments', 'seo', 'theme', 'colors', 'currency'])
+            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'payments', 'seo', 'theme', 'colors', 'currency', 'social'])
                 ->get()
                 ->groupBy('group'),
             'colorSettings' => Setting::where('group', 'colors')->get(),
