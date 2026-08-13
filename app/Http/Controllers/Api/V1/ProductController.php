@@ -74,8 +74,8 @@ class ProductController extends Controller
             'is_featured' => $product->is_featured,
             'og_image' => $product->page?->og_image,
             // 'sort_order'      => $product->sort_order,
-            'seo_title' => $product->page?->getTranslation('seo_title', $locale, useFallbackLocale: true),
-            'seo_description' => $product->page?->getTranslation('seo_description', $locale, useFallbackLocale: true),
+            'seo_title' => $product->page?->seo_title,
+            'seo_description' => $product->page?->seo_description,
             'category' => $product->category ? [
                 'id' => $product->category->id,
                 'slug' => $product->category->slug,

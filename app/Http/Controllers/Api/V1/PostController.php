@@ -63,8 +63,8 @@ class PostController extends Controller
             'featured_image' => $post->featured_image,
             // 'reading_time' => $post->reading_time,
             // 'published_at' => $post->published_at?->toIso8601String(),
-            'seo_title' => $post->page?->getTranslation('seo_title', $locale, useFallbackLocale: true),
-            'seo_description' => $post->page?->getTranslation('seo_description', $locale, useFallbackLocale: true),
+            'seo_title' => $post->page?->seo_title,
+            'seo_description' => $post->page?->seo_description,
             'og_image' => $post->page?->og_image,
             // 'author' => $post->user ? ['id' => $post->user->id, 'name' => $post->user->name] : null,
             'category' => $post->category ? [

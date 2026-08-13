@@ -43,6 +43,10 @@ class PageController extends Controller
                 'sort_order' => $page->sort_order,
                 'seo_title' => $page->seo_title,
                 'seo_description' => $page->seo_description,
+                'og_title' => $page->og_title,
+                'og_description' => $page->og_description,
+                'no_index' => $page->no_index,
+                'no_follow' => $page->no_follow,
                 'deleted_at' => $page->deleted_at?->toIso8601String(),
                 'revisions' => $page->revisions->map(fn ($r) => [
                     'id' => $r->id,
@@ -55,17 +59,17 @@ class PageController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'title'     => 'required|array',
-            'title.en'  => 'required|string|max:255',
-            'title.bn'  => 'nullable|string|max:255',
-            'slug'      => 'nullable|string|unique:pages,slug',
-            'status'    => 'sometimes|in:draft,published',
-            'template'  => 'sometimes|nullable|string|max:100',
+            'title' => 'required|array',
+            'title.en' => 'required|string|max:255',
+            'title.bn' => 'nullable|string|max:255',
+            'slug' => 'nullable|string|unique:pages,slug',
+            'status' => 'sometimes|in:draft,published',
+            'template' => 'sometimes|nullable|string|max:100',
             'puck_data' => 'nullable|array',
         ]);
 
-        $validated['user_id']  = $request->user()->id;
-        $validated['status']   = $validated['status'] ?? 'draft';
+        $validated['user_id'] = $request->user()->id;
+        $validated['status'] = $validated['status'] ?? 'draft';
         $validated['template'] = $validated['template'] ?? 'puck';
 
         $page = Page::create($validated);
@@ -84,16 +88,16 @@ class PageController extends Controller
             'content' => 'sometimes|array',
             'content.en' => 'nullable|string',
             'content.bn' => 'nullable|string',
-            'seo_title' => 'sometimes|array',
-            'seo_title.en' => 'nullable|string|max:255',
-            'seo_title.bn' => 'nullable|string|max:255',
-            'seo_description' => 'sometimes|array',
-            'seo_description.en' => 'nullable|string',
-            'seo_description.bn' => 'nullable|string',
+            'seo_title' => 'sometimes|nullable|string|max:255',
+            'seo_description' => 'sometimes|nullable|string',
+            'og_title' => 'sometimes|nullable|string|max:255',
+            'og_description' => 'sometimes|nullable|string',
+            'no_index' => 'sometimes|boolean',
+            'no_follow' => 'sometimes|boolean',
             'puck_data' => 'sometimes|nullable|array',
             'status' => 'sometimes|in:draft,published',
             'template' => 'sometimes|nullable|string|max:100',
-            'slug' => 'sometimes|string|unique:pages,slug,' . $page->id,
+            'slug' => 'sometimes|string|unique:pages,slug,'.$page->id,
         ]);
 
         $page->update($validated);

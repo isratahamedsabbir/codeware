@@ -12,6 +12,7 @@ class PageFactory extends Factory
     {
         $title = fake()->words(3, true);
         $puckContent = ['root' => ['props' => []], 'content' => [], 'zones' => []];
+
         return [
             'user_id' => User::factory(),
             'title' => ['en' => ucwords($title), 'bn' => ucwords($title)],
@@ -20,8 +21,8 @@ class PageFactory extends Factory
             'status' => 'inactive',
             'template' => 'puck',
             'sort_order' => 0,
-            'seo_title' => ['en' => null, 'bn' => null],
-            'seo_description' => ['en' => null, 'bn' => null],
+            'seo_title' => null,
+            'seo_description' => null,
         ];
     }
 

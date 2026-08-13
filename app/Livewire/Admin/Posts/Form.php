@@ -34,16 +34,10 @@ class Form extends Component
     public string $description_bn = '';
 
     #[Validate('nullable|string|max:255')]
-    public string $seo_title_en = '';
-
-    #[Validate('nullable|string|max:255')]
-    public string $seo_title_bn = '';
+    public string $seo_title = '';
 
     #[Validate('nullable|string')]
-    public string $seo_description_en = '';
-
-    #[Validate('nullable|string')]
-    public string $seo_description_bn = '';
+    public string $seo_description = '';
 
     #[Validate('nullable|integer|exists:categories,id,type,post')]
     public ?int $category_id = null;
@@ -62,6 +56,16 @@ class Form extends Component
     public ?string $og_image = null;
 
     public string $ogImagePickerId = '';
+
+    #[Validate('nullable|string|max:255')]
+    public string $og_title = '';
+
+    #[Validate('nullable|string|max:255')]
+    public string $og_description = '';
+
+    public bool $no_index = false;
+
+    public bool $no_follow = false;
 
     public function mount(?int $id = null): void
     {
@@ -86,10 +90,12 @@ class Form extends Component
             $page = $post->page;
             $this->pageId = $page?->id;
             $this->og_image = $page?->og_image ?? null;
-            $this->seo_title_en = $page?->getTranslation('seo_title', 'en', false) ?? '';
-            $this->seo_title_bn = $page?->getTranslation('seo_title', 'bn', false) ?? '';
-            $this->seo_description_en = $page?->getTranslation('seo_description', 'en', false) ?? '';
-            $this->seo_description_bn = $page?->getTranslation('seo_description', 'bn', false) ?? '';
+            $this->seo_title = $page?->seo_title ?? '';
+            $this->seo_description = $page?->seo_description ?? '';
+            $this->og_title = $page?->og_title ?? '';
+            $this->og_description = $page?->og_description ?? '';
+            $this->no_index = (bool) $page?->no_index;
+            $this->no_follow = (bool) $page?->no_follow;
         }
     }
 
@@ -210,8 +216,12 @@ class Form extends Component
                 'status' => $this->status,
                 'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
                 'og_image' => $this->og_image ?: null,
-                'seo_title' => array_filter(['en' => $this->seo_title_en, 'bn' => $this->seo_title_bn]) ?: null,
-                'seo_description' => array_filter(['en' => $this->seo_description_en, 'bn' => $this->seo_description_bn]) ?: null,
+                'seo_title' => $this->seo_title ?: null,
+                'seo_description' => $this->seo_description ?: null,
+                'og_title' => $this->og_title ?: null,
+                'og_description' => $this->og_description ?: null,
+                'no_index' => $this->no_index,
+                'no_follow' => $this->no_follow,
             ]
         );
         $this->pageId = $page->id;

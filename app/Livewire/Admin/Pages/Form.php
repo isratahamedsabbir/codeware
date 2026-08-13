@@ -22,16 +22,10 @@ class Form extends Component
     public string $slug = '';
 
     #[Validate('nullable|string|max:255')]
-    public string $seo_title_en = '';
-
-    #[Validate('nullable|string|max:255')]
-    public string $seo_title_bn = '';
+    public string $seo_title = '';
 
     #[Validate('nullable|string')]
-    public string $seo_description_en = '';
-
-    #[Validate('nullable|string')]
-    public string $seo_description_bn = '';
+    public string $seo_description = '';
 
     #[Validate('in:active,inactive')]
     public string $status = 'active';
@@ -45,30 +39,44 @@ class Form extends Component
 
     public string $ogImagePickerId = '';
 
+    #[Validate('nullable|string|max:255')]
+    public string $og_title = '';
+
+    #[Validate('nullable|string|max:255')]
+    public string $og_description = '';
+
+    public bool $no_index = false;
+
+    public bool $no_follow = false;
+
     public function mount(?int $id = null): void
     {
-        $this->ogImagePickerId = 'page-og-image-picker-' . Str::uuid()->toString();
+        $this->ogImagePickerId = 'page-og-image-picker-'.Str::uuid()->toString();
 
         if ($id) {
             $page = Page::findOrFail($id);
-            $this->pageId              = $id;
-            $this->title_en            = $page->getTranslation('title', 'en', false) ?? '';
-            $this->title_bn            = $page->getTranslation('title', 'bn', false) ?? '';
-            $this->slug                = $page->slug;
-            $this->seo_title_en        = $page->getTranslation('seo_title', 'en', false) ?? '';
-            $this->seo_title_bn        = $page->getTranslation('seo_title', 'bn', false) ?? '';
-            $this->seo_description_en  = $page->getTranslation('seo_description', 'en', false) ?? '';
-            $this->seo_description_bn  = $page->getTranslation('seo_description', 'bn', false) ?? '';
-            $this->status              = $page->status;
-            $this->template            = $page->template ?? 'puck';
-            $this->sort_order          = $page->sort_order;
-            $this->og_image            = $page->og_image ?? null;
+            $this->pageId = $id;
+            $this->title_en = $page->getTranslation('title', 'en', false) ?? '';
+            $this->title_bn = $page->getTranslation('title', 'bn', false) ?? '';
+            $this->slug = $page->slug;
+            $this->seo_title = $page->seo_title ?? '';
+            $this->seo_description = $page->seo_description ?? '';
+            $this->status = $page->status;
+            $this->template = $page->template ?? 'puck';
+            $this->sort_order = $page->sort_order;
+            $this->og_image = $page->og_image ?? null;
+            $this->og_title = $page->og_title ?? '';
+            $this->og_description = $page->og_description ?? '';
+            $this->no_index = (bool) $page->no_index;
+            $this->no_follow = (bool) $page->no_follow;
         }
     }
 
     public function openPuckEditor(): void
     {
-        if (!$this->pageId) return;
+        if (! $this->pageId) {
+            return;
+        }
 
         auth()->user()->tokens()->where('name', 'puck-builder')->delete();
 
@@ -78,8 +86,8 @@ class Form extends Component
             now()->addMinutes(config('app.puck_session', 5))
         )->plainTextToken;
 
-        $url = config('cms.editor_base_url') . "/puck/edit/page/{$this->pageId}#token={$token}";
-        $this->js('window.open(' . json_encode($url) . ', \'_blank\')');
+        $url = config('cms.editor_base_url')."/puck/edit/page/{$this->pageId}#token={$token}";
+        $this->js('window.open('.json_encode($url).', \'_blank\')');
     }
 
     public function saveAndOpenPageBuilder(): void
@@ -90,21 +98,25 @@ class Form extends Component
 
         $rules = $this->getRules();
         $rules['slug'] = $this->pageId
-            ? 'required|string|max:255|unique:pages,slug,' . $this->pageId
+            ? 'required|string|max:255|unique:pages,slug,'.$this->pageId
             : 'required|string|max:255|unique:pages,slug';
 
         $this->validate($rules);
 
         $data = [
-            'user_id'         => auth()->id(),
-            'title'           => array_filter(['en' => $this->title_en, 'bn' => $this->title_bn]),
-            'slug'            => $this->slug,
-            'status'          => $this->status,
-            'template'        => $this->template ?: 'puck',
-            'sort_order'      => $this->sort_order,
-            'og_image'        => $this->og_image ?: null,
-            'seo_title'       => array_filter(['en' => $this->seo_title_en, 'bn' => $this->seo_title_bn]) ?: null,
-            'seo_description' => array_filter(['en' => $this->seo_description_en, 'bn' => $this->seo_description_bn]) ?: null,
+            'user_id' => auth()->id(),
+            'title' => array_filter(['en' => $this->title_en, 'bn' => $this->title_bn]),
+            'slug' => $this->slug,
+            'status' => $this->status,
+            'template' => $this->template ?: 'puck',
+            'sort_order' => $this->sort_order,
+            'og_image' => $this->og_image ?: null,
+            'seo_title' => $this->seo_title ?: null,
+            'seo_description' => $this->seo_description ?: null,
+            'og_title' => $this->og_title ?: null,
+            'og_description' => $this->og_description ?: null,
+            'no_index' => $this->no_index,
+            'no_follow' => $this->no_follow,
         ];
 
         $creating = $this->pageId === null;
@@ -131,8 +143,8 @@ class Form extends Component
             now()->addMinutes(config('app.puck_session', 5))
         )->plainTextToken;
 
-        $url = config('cms.editor_base_url') . "/puck/edit/page/{$this->pageId}#token={$token}";
-        $this->js('window.open(' . json_encode($url) . ', \'_blank\')');
+        $url = config('cms.editor_base_url')."/puck/edit/page/{$this->pageId}#token={$token}";
+        $this->js('window.open('.json_encode($url).', \'_blank\')');
     }
 
     public function save(): void
@@ -143,21 +155,25 @@ class Form extends Component
 
         $rules = $this->getRules();
         $rules['slug'] = $this->pageId
-            ? 'required|string|max:255|unique:pages,slug,' . $this->pageId
+            ? 'required|string|max:255|unique:pages,slug,'.$this->pageId
             : 'required|string|max:255|unique:pages,slug';
 
         $this->validate($rules);
 
         $data = [
-            'user_id'         => auth()->id(),
-            'title'           => array_filter(['en' => $this->title_en, 'bn' => $this->title_bn]),
-            'slug'            => $this->slug,
-            'status'          => $this->status,
-            'template'        => $this->template ?: 'puck',
-            'sort_order'      => $this->sort_order,
-            'og_image'        => $this->og_image ?: null,
-            'seo_title'       => array_filter(['en' => $this->seo_title_en, 'bn' => $this->seo_title_bn]) ?: null,
-            'seo_description' => array_filter(['en' => $this->seo_description_en, 'bn' => $this->seo_description_bn]) ?: null,
+            'user_id' => auth()->id(),
+            'title' => array_filter(['en' => $this->title_en, 'bn' => $this->title_bn]),
+            'slug' => $this->slug,
+            'status' => $this->status,
+            'template' => $this->template ?: 'puck',
+            'sort_order' => $this->sort_order,
+            'og_image' => $this->og_image ?: null,
+            'seo_title' => $this->seo_title ?: null,
+            'seo_description' => $this->seo_description ?: null,
+            'og_title' => $this->og_title ?: null,
+            'og_description' => $this->og_description ?: null,
+            'no_index' => $this->no_index,
+            'no_follow' => $this->no_follow,
         ];
 
         $creating = $this->pageId === null;

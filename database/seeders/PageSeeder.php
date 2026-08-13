@@ -28,6 +28,7 @@ class PageSeeder extends Seeder
 
             if (! file_exists($filePath)) {
                 $this->command->warn("PageSeeder: {$file}.json not found, skipping.");
+
                 continue;
             }
 
@@ -36,16 +37,16 @@ class PageSeeder extends Seeder
             Page::updateOrCreate(
                 ['slug' => $file],
                 [
-                    'user_id'         => $admin?->id,
-                    'title'           => ['en' => $json['title'] ?? Str::title($file), 'bn' => ''],
-                    'seo_description' => ['en' => $json['description'] ?? '', 'bn' => ''],
-                    'puck_data'       => [
-                        'root'    => $json['root'] ?? ['props' => []],
+                    'user_id' => $admin?->id,
+                    'title' => ['en' => $json['title'] ?? Str::title($file), 'bn' => ''],
+                    'seo_description' => $json['description'] ?? '',
+                    'puck_data' => [
+                        'root' => $json['root'] ?? ['props' => []],
                         'content' => $json['content'] ?? [],
                     ],
-                    'template'    => 'puck',
-                    'status'      => 'active',
-                    'sort_order'  => $sortOrder,
+                    'template' => 'puck',
+                    'status' => 'active',
+                    'sort_order' => $sortOrder,
                 ]
             );
         }

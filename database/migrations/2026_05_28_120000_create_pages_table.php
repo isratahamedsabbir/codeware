@@ -26,8 +26,12 @@ return new class extends Migration
             $table->foreignId('post_id')->nullable()->constrained('posts')->nullOnDelete();
             $table->string('og_image')->nullable();
             $table->unsignedInteger('sort_order')->default(0);
-            $table->json('seo_title')->nullable();
-            $table->json('seo_description')->nullable();
+            $table->string('seo_title')->nullable();
+            $table->text('seo_description')->nullable();
+            $table->string('og_title')->nullable();
+            $table->text('og_description')->nullable();
+            $table->boolean('no_index')->default(false);
+            $table->boolean('no_follow')->default(false);
             $table->softDeletes();
             $table->timestamps();
         });

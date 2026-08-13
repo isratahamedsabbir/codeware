@@ -12,6 +12,7 @@ class PageController extends Controller
     private function resolveLocale(Request $request): string
     {
         $locale = $request->query('locale');
+
         return in_array($locale, ['en', 'bn'], true) ? $locale : 'en';
     }
 
@@ -44,11 +45,15 @@ class PageController extends Controller
             'id' => $page->id,
             'slug' => $page->slug,
             'title' => $page->getTranslation('title', $locale, useFallbackLocale: true),
-            //'template' => $page->template,
-            //'sort_order' => $page->sort_order,
+            // 'template' => $page->template,
+            // 'sort_order' => $page->sort_order,
             'og_image' => $page->og_image,
-            'seo_title' => $page->getTranslation('seo_title', $locale, useFallbackLocale: true),
-            'seo_description' => $page->getTranslation('seo_description', $locale, useFallbackLocale: true),
+            'seo_title' => $page->seo_title,
+            'seo_description' => $page->seo_description,
+            'og_title' => $page->og_title,
+            'og_description' => $page->og_description,
+            'no_index' => $page->no_index,
+            'no_follow' => $page->no_follow,
         ];
 
         if ($withContent) {

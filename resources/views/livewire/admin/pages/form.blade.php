@@ -36,15 +36,6 @@
                         <p class="text-xs text-zinc-400 mt-1">Leave blank to auto-generate from the English title</p>
                         <flux:error name="slug" />
                     </flux:field>
-                    <flux:field>
-                        <flux:label>SEO Title</flux:label>
-                        <flux:input wire:model="seo_title_en" placeholder="SEO-optimized title" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>SEO Description</flux:label>
-                        <flux:textarea wire:model="seo_description_en" rows="2"
-                            placeholder="Brief description for search engines…" />
-                    </flux:field>
                 </div>
 
                 {{-- Bengali --}}
@@ -58,23 +49,6 @@
                         <flux:input wire:model="slug" placeholder="auto-generated-from-title" />
                         <p class="text-xs text-zinc-400 mt-1">Leave blank to auto-generate from the English title</p>
                         <flux:error name="slug" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>SEO শিরোনাম</flux:label>
-                        <flux:input wire:model="seo_title_bn" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>SEO বিবরণ</flux:label>
-                        <flux:textarea wire:model="seo_description_bn" rows="2" />
-                    </flux:field>
-                </div>
-
-                {{-- OG Image --}}
-                <div class="mt-5 pt-4 border-t border-zinc-100">
-                    <flux:field>
-                        <flux:label>OG Image (630×1200)</flux:label>
-                        <x-media-picker model="og_image" label="" placeholder="Select OG image from library"
-                            :picker-id="$ogImagePickerId" />
                     </flux:field>
                 </div>
 
@@ -138,30 +112,94 @@
 
             <livewire:admin.media-library.picker-modal />
 
-            {{-- Footer --}}
-            <div class="flex justify-end items-center gap-3 border-t border-zinc-100 flex-wrap pt-4">
-                <a href="{{ route('admin.pages') }}" wire:navigate
-                    class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg border text-red-600 border-red-200 bg-white hover:bg-red-50 hover:border-red-400 transition-colors">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                    Cancel
-                </a>
-                <button wire:click="save" wire:loading.attr="disabled"
-                    class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors"
-                    style="background:#28A745" onmouseover="this.style.background='#218838'"
-                    onmouseout="this.style.background='#28A745'">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                        <polyline points="17 21 17 13 7 13 7 21" />
-                        <polyline points="7 3 7 8 15 8" />
-                    </svg>
-                    {{ $pageId ? 'Update Page' : 'Create Page' }}
-                </button>
+        </div>
+
+    </div>
+
+    {{-- ── SEO ── --}}
+    <div class="bg-white rounded-lg border border-zinc-100 shadow-sm p-6 mt-5">
+
+        <div class="mb-4">
+            <h2 class="text-sm font-semibold text-zinc-800">Search Engine (SEO) Settings</h2>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4">
+
+            {{-- Left: meta fields --}}
+            <div class="space-y-4">
+                <flux:field>
+                    <flux:label>Meta Title</flux:label>
+                    <flux:input wire:model="seo_title" placeholder="SEO-optimized title" />
+                    <flux:error name="seo_title" />
+                </flux:field>
+                <flux:field>
+                    <flux:label>Meta Description</flux:label>
+                    <flux:textarea wire:model="seo_description" rows="3"
+                        placeholder="Brief description for search engines…" />
+                    <flux:error name="seo_description" />
+                </flux:field>
+                <flux:field>
+                    <flux:label>OG Title</flux:label>
+                    <flux:input wire:model="og_title" placeholder="Title shown when shared on social media" />
+                    <flux:error name="og_title" />
+                </flux:field>
+                <flux:field>
+                    <flux:label>OG Description</flux:label>
+                    <flux:textarea wire:model="og_description" rows="3"
+                        placeholder="Description shown when shared on social media" />
+                    <flux:error name="og_description" />
+                </flux:field>
+            </div>
+
+            {{-- Right: OG image + robots toggles --}}
+            <div class="space-y-4">
+                <flux:field>
+                    <flux:label>OG Image (1200×630)</flux:label>
+                    <x-media-picker model="og_image" label="" placeholder="Select OG image from library"
+                        :picker-id="$ogImagePickerId" />
+                </flux:field>
+
+                <div class="border-t border-zinc-100 pt-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-zinc-700">No-Index</p>
+                            <p class="text-xs text-zinc-400">Prevent search engines from indexing this page</p>
+                        </div>
+                        <flux:switch wire:model="no_index" />
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-zinc-700">No-Follow</p>
+                            <p class="text-xs text-zinc-400">Prevent search engines from following links on this page</p>
+                        </div>
+                        <flux:switch wire:model="no_follow" />
+                    </div>
+                </div>
             </div>
 
         </div>
+    </div>
 
+    {{-- Footer --}}
+    <div class="flex justify-end items-center gap-3 border-t border-zinc-100 flex-wrap pt-4 mt-5">
+        <a href="{{ route('admin.pages') }}" wire:navigate
+            class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg border text-red-600 border-red-200 bg-white hover:bg-red-50 hover:border-red-400 transition-colors">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+            Cancel
+        </a>
+        <button wire:click="save" wire:loading.attr="disabled"
+            class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors"
+            style="background:#28A745" onmouseover="this.style.background='#218838'"
+            onmouseout="this.style.background='#28A745'">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
+            </svg>
+            {{ $pageId ? 'Update Page' : 'Create Page' }}
+        </button>
     </div>
 </div>
