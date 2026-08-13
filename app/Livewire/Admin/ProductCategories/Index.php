@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\ProductCategories;
 
 use App\Models\ProductCategory;
+use App\Support\AdminActivity;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -34,7 +35,9 @@ class Index extends Component
     public function delete(): void
     {
         if ($this->deletingId) {
-            ProductCategory::findOrFail($this->deletingId)->delete();
+            $category = ProductCategory::findOrFail($this->deletingId);
+            AdminActivity::log('deleted', "Product Category: {$category->name}");
+            $category->delete();
             $this->dispatch('notify', message: 'Category deleted successfully');
             $this->deletingId = null;
         }

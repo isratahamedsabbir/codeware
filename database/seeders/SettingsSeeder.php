@@ -123,6 +123,9 @@ class SettingsSeeder extends Seeder
             ['key' => 'seo_og_description',       'value' => '', 'type' => 'textarea', 'group' => 'seo', 'is_public' => true],
             ['key' => 'seo_og_image',             'value' => '', 'type' => 'string', 'group' => 'seo', 'is_public' => true],
 
+            // ── Localization ──
+            ['key' => 'app_locale',               'value' => 'en', 'type' => 'string', 'group' => 'localization', 'is_public' => true],
+
             // ── Theme ──
             ['key' => 'theme_mode',               'value' => 'light', 'type' => 'string', 'group' => 'theme', 'is_public' => false],
             ['key' => 'theme_name',               'value' => 'Default', 'type' => 'string', 'group' => 'theme', 'is_public' => false],

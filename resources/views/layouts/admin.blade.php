@@ -70,29 +70,40 @@
         @endif
     </script>
 
+    @php
+        // Precomputed as JSON and echoed (rather than using @js()/@directive calls inside the
+        // x-data attribute below) because flux:sidebar is a Blade component tag — directives
+        // with parentheses embedded in a component tag's attribute value get mangled by Blade's
+        // attribute-string compilation and blow up Livewire's morph-marker precompiler regex.
+        $sidebarGroupItemsJson = json_encode([
+            'products'     => [__('Product Categories'), __('Products')],
+            'blog'         => [__('Post Categories'), __('Tags'), __('Posts')],
+            'library'      => [__('Settings'), __('Media Library'), __('Email Templates'), __('Admin History')],
+            'inquiries'    => [__('Contacts')],
+            'content'      => [__('Pages')],
+            'localization' => [__('Languages'), __('Translations')],
+            'access'       => [__('Roles'), __('Permissions'), __('Users')],
+        ]);
+        $sidebarSinglesJson = json_encode([__('Overview')]);
+    @endphp
     <flux:sidebar sticky stashable collapsible="desktop" class="admin-sidebar" x-data="{
         search: '',
         openGroup: '{{ request()->routeIs('admin.product-categories', 'admin.products')
             ? 'products'
             : (request()->routeIs('admin.post-categories', 'admin.posts', 'admin.tags')
                 ? 'blog'
-                : (request()->routeIs('admin.settings', 'admin.media-library', 'admin.email-templates')
+                : (request()->routeIs('admin.settings', 'admin.media-library', 'admin.email-templates', 'admin.history')
                     ? 'library'
                     : (request()->routeIs('admin.contacts')
                         ? 'inquiries'
                     : (request()->routeIs('admin.pages')
                         ? 'content'
-                        : (request()->routeIs('admin.roles', 'admin.roles.*', 'admin.permissions', 'admin.users', 'admin.users.*')
-                            ? 'access'
-                            : 'products'))))) }}',
-        groupItems: {
-            products: ['Product Categories', 'Products'],
-            blog: ['Post Categories', 'Tags', 'Posts'],
-            library: ['Settings', 'Media Library', 'Email Templates'],
-            inquiries: ['Contacts'],
-            content: ['Pages'],
-            access: ['Roles', 'Permissions', 'Users'],
-        },
+                        : (request()->routeIs('admin.languages', 'admin.languages.*', 'admin.translations')
+                            ? 'localization'
+                            : (request()->routeIs('admin.roles', 'admin.roles.*', 'admin.permissions', 'admin.users', 'admin.users.*')
+                                ? 'access'
+                                : 'products')))))) }}',
+        groupItems: {{ $sidebarGroupItemsJson }},
         query() { return this.search.trim().toLowerCase(); },
         searching() { return this.query() !== ''; },
         matches(label) {
@@ -110,7 +121,7 @@
         anyMatch() {
             const q = this.query();
             if (!q) return true;
-            const singles = ['Overview'];
+            const singles = {{ $sidebarSinglesJson }};
             return singles.some(l => l.toLowerCase().includes(q)) ||
                 Object.values(this.groupItems).flat().some(l => l.toLowerCase().includes(q));
         },
@@ -132,7 +143,7 @@
             <div class="relative">
                 <flux:icon.magnifying-glass
                     class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-500 pointer-events-none" />
-                <input type="text" x-model="search" placeholder="Search menu..." autocomplete="off"
+                <input type="text" x-model="search" placeholder="{{ __('Search menu...') }}" autocomplete="off"
                     class="w-full bg-zinc-800/60 border border-zinc-700/60 rounded-lg pl-9 pr-8 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 outline-none focus:border-[#7cc242]/60 focus:ring-1 focus:ring-[#7cc242]/40 transition">
                 <button type="button" x-show="search" x-on:click="search = ''"
                     class="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors">
@@ -230,6 +241,11 @@
                             <flux:icon.envelope class="size-4.5 shrink-0" />
                             <span>Email Templates</span>
                         </a>
+                        <a href="{{ route('admin.history') }}" wire:navigate.hover
+                            class="admin-nav-item {{ request()->routeIs('admin.history') ? 'admin-nav-active' : '' }}">
+                            <flux:icon.clock class="size-4.5 shrink-0" />
+                            <span>Admin History</span>
+                        </a>
                     </div>
                 </div>
 
@@ -265,6 +281,29 @@
                             class="admin-nav-item {{ request()->routeIs('admin.pages') ? 'admin-nav-active' : '' }}">
                             <flux:icon.document class="size-4.5 shrink-0" />
                             <span>Pages</span>
+                        </a>
+                    </div>
+                </div>
+
+                {{-- Localization Group --}}
+                <div class="nav-group" x-show="groupMatches('localization')">
+                    <button @click="toggle('localization')"
+                        class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
+                        <span>Localization</span>
+                        <span x-text="groupOpen('localization') ? '−' : '+'"
+                            class="text-zinc-500 text-sm font-bold leading-none"></span>
+                    </button>
+                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': !groupOpen('localization') }"
+                        :style="groupOpen('localization') ? 'max-height: 500px; opacity: 1;' : ''">
+                        <a href="{{ route('admin.languages') }}" wire:navigate.hover
+                            class="admin-nav-item {{ request()->routeIs('admin.languages', 'admin.languages.*') ? 'admin-nav-active' : '' }}">
+                            <flux:icon.language class="size-4.5 shrink-0" />
+                            <span>Languages</span>
+                        </a>
+                        <a href="{{ route('admin.translations') }}" wire:navigate.hover
+                            class="admin-nav-item {{ request()->routeIs('admin.translations') ? 'admin-nav-active' : '' }}">
+                            <flux:icon.chat-bubble-left-right class="size-4.5 shrink-0" />
+                            <span>Translations</span>
                         </a>
                     </div>
                 </div>
@@ -319,6 +358,8 @@
                 target="_blank" aria-label="Open frontend" class="max-lg:hidden me-1" />
 
             <div class="flex-1"></div>
+
+            <livewire:admin.locale-switcher class="ml-3" />
 
             <livewire:admin.theme-switcher class="ml-3" />
 

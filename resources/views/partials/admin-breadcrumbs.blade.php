@@ -12,11 +12,14 @@
         'media-library'      => ['Library & System', 'admin.media-library'],
         'settings'           => ['Library & System', 'admin.settings'],
         'email-templates'    => ['Library & System', 'admin.email-templates'],
+        'history'            => ['Library & System', 'admin.history'],
         'contacts'           => ['Inquiries', 'admin.contacts'],
         'pages'              => ['Content', 'admin.pages'],
         'roles'              => ['Access Control', 'admin.roles'],
         'permissions'        => ['Access Control', 'admin.permissions'],
         'users'              => ['Access Control', 'admin.users'],
+        'languages'          => [__('Localization'), 'admin.languages'],
+        'translations'       => [__('Localization'), 'admin.languages'],
     ];
     $section = $sectionMap[$resource] ?? null;
 @endphp

@@ -1,8 +1,4 @@
 <div>
-    <div class="mb-6">
-        <flux:subheading>Configure your site settings and layout.</flux:subheading>
-    </div>
-
     @if (session('success'))
         <div class="mb-4 rounded-lg bg-green-50 border border-green-200 text-green-800 px-4 py-3 text-sm dark:bg-green-950 dark:border-green-800 dark:text-green-300">
             {{ session('success') }}

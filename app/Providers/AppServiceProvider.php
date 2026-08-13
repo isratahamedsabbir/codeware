@@ -4,7 +4,9 @@ namespace App\Providers;
 
 use App\Models\MediaLibrary;
 use App\Policies\MediaLibraryPolicy;
+use App\Support\DatabaseTranslationLoader;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Translation\Loader;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -19,7 +21,23 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->registerDatabaseTranslations();
+    }
+
+    /**
+     * Let admin-managed `translations` rows override the lang/ files.
+     *
+     * This uses extend() rather than a fresh singleton binding because Laravel's
+     * TranslationServiceProvider is deferred — it re-registers `translation.loader` the
+     * first time the translator resolves, which would clobber a plain rebind. Extenders
+     * survive that and run after the file loader is built.
+     */
+    protected function registerDatabaseTranslations(): void
+    {
+        $this->app->extend(
+            'translation.loader',
+            fn (Loader $loader) => new DatabaseTranslationLoader($loader),
+        );
     }
 
     /**

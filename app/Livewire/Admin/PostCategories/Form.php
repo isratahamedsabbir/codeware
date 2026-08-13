@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\PostCategories;
 
 use App\Models\PostCategory;
+use App\Support\AdminActivity;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -76,6 +77,8 @@ class Form extends Component
 
         $this->validate($rules);
 
+        $creating = $this->categoryId === null;
+
         $data = [
             'name'           => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
             'slug'           => $this->slug,
@@ -93,6 +96,11 @@ class Form extends Component
             PostCategory::create($data);
             $this->dispatch('notify', message: 'Category created successfully');
         }
+
+        AdminActivity::log(
+            $creating ? 'created' : 'updated',
+            "Post Category: {$this->name_en}",
+        );
 
         $this->redirect(route('admin.post-categories'), navigate: true);
     }

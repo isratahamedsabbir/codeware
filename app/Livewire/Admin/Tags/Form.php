@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Tags;
 
 use App\Models\Tag;
+use App\Support\AdminActivity;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -48,6 +49,8 @@ class Form extends Component
 
         $this->validate($rules);
 
+        $creating = $this->tagId === null;
+
         $data = [
             'name'   => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
             'slug'   => $this->slug,
@@ -61,6 +64,11 @@ class Form extends Component
             Tag::create($data);
             $this->dispatch('notify', message: 'Tag created successfully');
         }
+
+        AdminActivity::log(
+            $creating ? 'created' : 'updated',
+            "Tag: {$this->name_en}",
+        );
 
         $this->redirect(route('admin.tags'), navigate: true);
     }

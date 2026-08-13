@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Products;
 
 use App\Models\Product;
+use App\Support\AdminActivity;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -54,6 +55,7 @@ class Index extends Component
             if ($product->page) {
                 $product->page->delete();
             }
+            AdminActivity::log('deleted', "Product #{$product->id}: {$product->name}");
             $product->delete();
             $this->dispatch('notify', message: 'Product deleted successfully');
             $this->deletingId = null;

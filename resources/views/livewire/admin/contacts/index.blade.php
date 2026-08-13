@@ -1,12 +1,5 @@
 <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
 
-    {{-- Header --}}
-    <div class="flex items-center justify-between gap-3 px-6 py-5 border-b border-zinc-100 flex-wrap">
-        <div>
-            <p class="text-sm text-zinc-600 mt-0.5">View and manage contact form submissions</p>
-        </div>
-    </div>
-
     {{-- Filters --}}
     <div class="flex gap-3 px-6 py-3 border-b border-zinc-100 flex-wrap">
         <div class="relative flex-1 min-w-[180px]">

@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\PostCategories;
 
 use App\Models\PostCategory;
+use App\Support\AdminActivity;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -40,7 +41,9 @@ class Index extends Component
     public function delete(): void
     {
         if ($this->deletingId) {
-            PostCategory::findOrFail($this->deletingId)->delete();
+            $category = PostCategory::findOrFail($this->deletingId);
+            AdminActivity::log('deleted', "Post Category: {$category->name}");
+            $category->delete();
             $this->dispatch('notify', message: 'Category deleted successfully');
             $this->deletingId = null;
         }

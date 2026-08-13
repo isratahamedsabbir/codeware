@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Roles;
 
+use App\Support\AdminActivity;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\Permission\Models\Role;
@@ -34,6 +35,7 @@ class Index extends Component
                 $this->dispatch('notify', message: 'The admin role cannot be deleted');
             } else {
                 $role->delete();
+                AdminActivity::log('deleted', "Role: {$role->name}");
                 $this->dispatch('notify', message: 'Role deleted successfully');
             }
 

@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Pages;
 
 use App\Models\Page;
+use App\Support\AdminActivity;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -106,6 +107,8 @@ class Form extends Component
             'seo_description' => array_filter(['en' => $this->seo_description_en, 'bn' => $this->seo_description_bn]) ?: null,
         ];
 
+        $creating = $this->pageId === null;
+
         if ($this->pageId) {
             Page::findOrFail($this->pageId)->update($data);
             $this->dispatch('notify', message: 'Page updated successfully');
@@ -114,6 +117,11 @@ class Form extends Component
             $this->pageId = $page->id;
             $this->dispatch('notify', message: 'Page created successfully');
         }
+
+        AdminActivity::log(
+            $creating ? 'created' : 'updated',
+            "Page #{$this->pageId}: {$this->title_en}",
+        );
 
         auth()->user()->tokens()->where('name', 'puck-builder')->delete();
 
@@ -152,6 +160,8 @@ class Form extends Component
             'seo_description' => array_filter(['en' => $this->seo_description_en, 'bn' => $this->seo_description_bn]) ?: null,
         ];
 
+        $creating = $this->pageId === null;
+
         if ($this->pageId) {
             Page::findOrFail($this->pageId)->update($data);
             $this->dispatch('notify', message: 'Page updated successfully');
@@ -160,6 +170,11 @@ class Form extends Component
             $this->pageId = $page->id;
             $this->dispatch('notify', message: 'Page created successfully');
         }
+
+        AdminActivity::log(
+            $creating ? 'created' : 'updated',
+            "Page #{$this->pageId}: {$this->title_en}",
+        );
 
         $this->redirect(route('admin.pages'), navigate: true);
     }

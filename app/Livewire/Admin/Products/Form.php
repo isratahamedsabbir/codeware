@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Products;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Support\AdminActivity;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
@@ -154,6 +155,8 @@ class Form extends Component
 
     private function persistProduct(): void
     {
+        $creating = $this->productId === null;
+
         $data = [
             'product_category_id' => $this->product_category_id,
             'name'   => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
@@ -191,6 +194,11 @@ class Form extends Component
             ]
         );
         $this->pageId = $page->id;
+
+        AdminActivity::log(
+            $creating ? 'created' : 'updated',
+            "Product #{$product->id}: {$this->name_en}",
+        );
     }
 
     public function render()

@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\ProductCategories;
 
 use App\Models\ProductCategory;
+use App\Support\AdminActivity;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -91,6 +92,8 @@ class Form extends Component
 
         $this->validate($rules);
 
+        $creating = $this->categoryId === null;
+
         $data = [
             'name'           => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
             'slug'           => $this->slug,
@@ -110,6 +113,11 @@ class Form extends Component
             ProductCategory::create($data);
             $this->dispatch('notify', message: 'Category created successfully');
         }
+
+        AdminActivity::log(
+            $creating ? 'created' : 'updated',
+            "Product Category: {$this->name_en}",
+        );
 
         $this->redirect(route('admin.product-categories'), navigate: true);
     }

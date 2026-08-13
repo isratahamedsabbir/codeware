@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Users;
 
 use App\Models\User;
+use App\Support\AdminActivity;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -60,6 +61,11 @@ class Form extends Component
         }
 
         $user->save();
+
+        AdminActivity::log(
+            $this->userId ? 'created' : 'updated',
+            "User: {$user->email}",
+        );
 
         $user->syncRoles($this->selectedRoles);
 

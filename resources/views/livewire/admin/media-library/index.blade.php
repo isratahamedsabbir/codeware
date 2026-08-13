@@ -1,9 +1,7 @@
 <div class="space-y-4">
 
     {{-- ─── Header ─────────────────────────────────────────────────────────── --}}
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <span></span>
-
+    <div class="flex justify-end">
         <button type="button" wire:click="openUploadModal"
             class="inline-flex items-center gap-2 rounded-md bg-blue-900 px-4 py-2.5 text-xs font-medium tracking-wide text-white transition-colors hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-2">
             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">

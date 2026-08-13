@@ -57,3 +57,12 @@ Route::get('/permissions', \App\Livewire\Admin\Permissions\Index::class)->name('
 Route::get('/users', \App\Livewire\Admin\Users\Index::class)->name('users');
 Route::get('/users/create', \App\Livewire\Admin\Users\Form::class)->name('users.create');
 Route::get('/users/{id}/edit', \App\Livewire\Admin\Users\Form::class)->name('users.edit');
+
+// Admin Activity History
+Route::get('/history', \App\Livewire\Admin\ActivityLogs\Index::class)->name('history');
+
+// Localization
+Route::get('/languages', \App\Livewire\Admin\Languages\Index::class)->name('languages');
+Route::get('/languages/create', \App\Livewire\Admin\Languages\Form::class)->name('languages.create');
+Route::get('/languages/{id}/edit', \App\Livewire\Admin\Languages\Form::class)->name('languages.edit');
+Route::get('/translations', \App\Livewire\Admin\Translations\Index::class)->name('translations');

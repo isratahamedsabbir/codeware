@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Pages;
 
 use App\Models\Page;
+use App\Support\AdminActivity;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -41,7 +42,9 @@ class Index extends Component
     public function delete(): void
     {
         if ($this->deletingId) {
-            Page::findOrFail($this->deletingId)->delete();
+            $page = Page::findOrFail($this->deletingId);
+            AdminActivity::log('deleted', "Page #{$page->id}: {$page->title}");
+            $page->delete();
             $this->dispatch('notify', message: 'Page deleted successfully');
             $this->deletingId = null;
         }

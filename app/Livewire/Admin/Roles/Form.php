@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Roles;
 
+use App\Support\AdminActivity;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -44,6 +45,8 @@ class Form extends Component
 
         $name = Str::slug($this->name);
 
+        $creating = $this->roleId === null;
+
         if ($this->roleId) {
             $role = Role::findOrFail($this->roleId);
             if ($role->name !== 'admin') {
@@ -56,6 +59,11 @@ class Form extends Component
             $role->syncPermissions($this->selectedPermissions);
             $this->dispatch('notify', message: 'Role created successfully');
         }
+
+        AdminActivity::log(
+            $creating ? 'created' : 'updated',
+            "Role: {$name}",
+        );
 
         $this->redirect(route('admin.roles'), navigate: true);
     }

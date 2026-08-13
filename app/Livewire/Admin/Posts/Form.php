@@ -6,6 +6,7 @@ use App\Models\Page;
 use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\Tag;
+use App\Support\AdminActivity;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
@@ -170,6 +171,8 @@ class Form extends Component
 
     private function persistPost(): void
     {
+        $creating = $this->postId === null;
+
         $data = [
             'user_id'         => auth()->id(),
             'title'           => array_filter(['en' => $this->title_en, 'bn' => $this->title_bn]),
@@ -208,6 +211,11 @@ class Form extends Component
             ]
         );
         $this->pageId = $page->id;
+
+        AdminActivity::log(
+            $creating ? 'created' : 'updated',
+            "Post #{$post->id}: {$this->title_en}",
+        );
     }
 
     // This method is called by the FilePicker component when an image is selected

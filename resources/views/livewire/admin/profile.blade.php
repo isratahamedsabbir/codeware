@@ -1,8 +1,4 @@
 <div class="max-w-3xl mx-auto">
-    <div class="mb-6">
-        <flux:subheading>Update your name, photo and password.</flux:subheading>
-    </div>
-
     {{-- Profile photo & name --}}
     <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden mb-5">
         <div class="px-5 py-3 border-b border-zinc-100 flex items-center justify-between">

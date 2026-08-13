@@ -1,10 +1,7 @@
 <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
 
     {{-- Header --}}
-    <div class="flex items-center justify-between gap-3 px-6 py-5 border-b border-zinc-100 flex-wrap">
-        <div>
-            <p class="text-sm text-zinc-600 mt-0.5">Individual access rights that can be attached to roles.</p>
-        </div>
+    <div class="flex items-center justify-end gap-3 px-6 py-5 border-b border-zinc-100">
         <button wire:click="openCreateModal"
             class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors cursor-pointer"
             style="background:#22c55e" onmouseover="this.style.background='#16a34a'"

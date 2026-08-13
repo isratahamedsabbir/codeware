@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
         $this->call(AdminSeeder::class);
 
         $this->call(SettingsSeeder::class);
+        $this->call(LanguageSeeder::class);
         $this->call(ProductCategorySeeder::class);
         $this->call(PageSeeder::class);
         $this->call(EmailTemplatesSeeder::class);

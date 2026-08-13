@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Tags;
 
 use App\Models\Tag;
+use App\Support\AdminActivity;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -33,7 +34,9 @@ class Index extends Component
     public function delete(): void
     {
         if ($this->deletingId) {
-            Tag::findOrFail($this->deletingId)->delete();
+            $tag = Tag::findOrFail($this->deletingId);
+            AdminActivity::log('deleted', "Tag: {$tag->name}");
+            $tag->delete();
             $this->dispatch('notify', message: 'Tag deleted successfully');
             $this->deletingId = null;
         }

@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Users;
 
 use App\Models\User;
+use App\Support\AdminActivity;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\Permission\Models\Role;
@@ -42,6 +43,7 @@ class Index extends Component
                 $this->dispatch('notify', message: 'You cannot delete your own account');
             } else {
                 $user->delete();
+                AdminActivity::log('deleted', "User: {$user->email}");
                 $this->dispatch('notify', message: 'User deleted successfully');
             }
 
