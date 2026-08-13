@@ -17,6 +17,7 @@ beforeEach(function () {
         APP_ENV=local
         APP_DEBUG=true
         APP_URL=https://example.test
+        FRONTEND_URL=https://frontend.example.test
         APP_LOCALE=en
 
         LOG_CHANNEL=stack
@@ -124,6 +125,35 @@ it('rejects an invalid app url before opening the confirm modal', function () {
 
     // Nothing should have been written.
     expect(EnvFile::get('APP_URL'))->toBe('https://example.test');
+});
+
+it('loads and saves the frontend url', function () {
+    Livewire::test(SettingsIndex::class)
+        ->assertSet('env.FRONTEND_URL', 'https://frontend.example.test')
+        ->set('env.FRONTEND_URL', 'https://new-frontend.example.test')
+        ->call('confirmSaveEnv')
+        ->call('saveEnv');
+
+    expect(EnvFile::get('FRONTEND_URL'))->toBe('https://new-frontend.example.test');
+});
+
+it('rejects an invalid frontend url', function () {
+    Livewire::test(SettingsIndex::class)
+        ->set('env.FRONTEND_URL', 'not-a-url')
+        ->call('confirmSaveEnv')
+        ->assertHasErrors(['env.FRONTEND_URL']);
+
+    expect(EnvFile::get('FRONTEND_URL'))->toBe('https://frontend.example.test');
+});
+
+it('allows a blank frontend url', function () {
+    Livewire::test(SettingsIndex::class)
+        ->set('env.FRONTEND_URL', '')
+        ->call('confirmSaveEnv')
+        ->call('saveEnv')
+        ->assertHasNoErrors();
+
+    expect(EnvFile::get('FRONTEND_URL'))->toBe('');
 });
 
 it('leaves a line completely untouched, quoting style included, when its value did not change', function () {

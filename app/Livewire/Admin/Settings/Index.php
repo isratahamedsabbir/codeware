@@ -58,6 +58,7 @@ class Index extends Component
                 'APP_NAME' => ['label' => 'App Name', 'type' => 'text'],
                 'APP_ENV' => ['label' => 'Environment', 'type' => 'select', 'options' => ['local', 'staging', 'production', 'testing']],
                 'APP_URL' => ['label' => 'App URL', 'type' => 'text'],
+                'FRONTEND_URL' => ['label' => 'Frontend URL', 'type' => 'text'],
                 'APP_LOCALE' => ['label' => 'Locale', 'type' => 'text'],
             ],
             'Debug' => [
@@ -81,6 +82,7 @@ class Index extends Component
     {
         $rules = [
             'env.APP_URL' => 'required|url',
+            'env.FRONTEND_URL' => 'nullable|url',
             'env.MAIL_PORT' => 'nullable|numeric',
             'env.APP_DEBUG' => 'required|in:true,false',
         ];
