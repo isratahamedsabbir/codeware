@@ -1,0 +1,91 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\AdminMenuItem;
+use Illuminate\Database\Seeder;
+
+class AdminMenuSeeder extends Seeder
+{
+    /**
+     * Reproduces the admin sidebar's previous hardcoded structure 1:1, so existing
+     * translations (Settings, Pages, Posts, Media Library, ...) and tests asserting
+     * breadcrumb text ("Access Control" > "Users") keep working unchanged.
+     */
+    public function run(): void
+    {
+        AdminMenuItem::query()->delete();
+
+        $this->standalone('Overview', 'home', 'admin.dashboard', 1);
+
+        $this->group('Products', 2, [
+            ['Product Categories', 'squares-2x2', 'admin.product-categories'],
+            ['Products', 'cube', 'admin.products'],
+        ]);
+
+        $this->group('Blog', 3, [
+            ['Post Categories', 'squares-2x2', 'admin.post-categories'],
+            ['Tags', 'tag', 'admin.tags'],
+            ['Posts', 'document-text', 'admin.posts'],
+        ]);
+
+        $this->group('Library & System', 4, [
+            ['Settings', 'cog-6-tooth', 'admin.settings'],
+            ['Media Library', 'photo', 'admin.media-library'],
+            ['Email Templates', 'envelope', 'admin.email-templates'],
+            ['Admin History', 'clock', 'admin.history'],
+            ['Menu', 'bars-3', 'admin.menu'],
+        ]);
+
+        $this->group('Inquiries', 5, [
+            ['Contacts', 'inbox', 'admin.contacts'],
+        ]);
+
+        $this->group('Content', 6, [
+            ['Pages', 'document', 'admin.pages'],
+        ]);
+
+        $this->group('Localization', 7, [
+            ['Languages', 'language', 'admin.languages'],
+            ['Translations', 'chat-bubble-left-right', 'admin.translations'],
+        ]);
+
+        $this->group('Access Control', 8, [
+            ['Roles', 'shield-check', 'admin.roles'],
+            ['Permissions', 'lock-closed', 'admin.permissions'],
+            ['Users', 'users', 'admin.users'],
+        ]);
+    }
+
+    protected function standalone(string $label, string $icon, string $routeName, int $sortOrder): void
+    {
+        AdminMenuItem::create([
+            'label' => $label,
+            'icon' => $icon,
+            'route_name' => $routeName,
+            'sort_order' => $sortOrder,
+        ]);
+    }
+
+    /**
+     * @param  array<int, array{0: string, 1: string, 2: string}>  $children
+     */
+    protected function group(string $label, int $sortOrder, array $children): void
+    {
+        $group = AdminMenuItem::create([
+            'is_group' => true,
+            'label' => $label,
+            'sort_order' => $sortOrder,
+        ]);
+
+        foreach ($children as $index => [$childLabel, $icon, $routeName]) {
+            AdminMenuItem::create([
+                'parent_id' => $group->id,
+                'label' => $childLabel,
+                'icon' => $icon,
+                'route_name' => $routeName,
+                'sort_order' => $index + 1,
+            ]);
+        }
+    }
+}

@@ -75,34 +75,25 @@
         // x-data attribute below) because flux:sidebar is a Blade component tag — directives
         // with parentheses embedded in a component tag's attribute value get mangled by Blade's
         // attribute-string compilation and blow up Livewire's morph-marker precompiler regex.
-        $sidebarGroupItemsJson = json_encode([
-            'products'     => [__('Product Categories'), __('Products')],
-            'blog'         => [__('Post Categories'), __('Tags'), __('Posts')],
-            'library'      => [__('Settings'), __('Media Library'), __('Email Templates'), __('Admin History')],
-            'inquiries'    => [__('Contacts')],
-            'content'      => [__('Pages')],
-            'localization' => [__('Languages'), __('Translations')],
-            'access'       => [__('Roles'), __('Permissions'), __('Users')],
-        ]);
-        $sidebarSinglesJson = json_encode([__('Overview')]);
+        $sidebarMenu = \App\Models\AdminMenuItem::menuCached();
+
+        $sidebarGroupItemsJson = json_encode(
+            $sidebarMenu->filter(fn ($i) => $i->is_group)
+                ->mapWithKeys(fn ($i) => [
+                    $i->id => $i->children->map(fn ($c) => __($c->label))->values()->all(),
+                ])
+                ->all()
+        );
+        $sidebarSinglesJson = json_encode(
+            $sidebarMenu->reject('is_group')->map(fn ($i) => __($i->label))->values()->all()
+        );
+        $sidebarOpenGroupId = optional($sidebarMenu->first(fn ($g) => $g->is_group && $g->children->contains(
+            fn ($c) => $c->route_name && (request()->routeIs($c->route_name) || request()->routeIs($c->route_name.'.*'))
+        )))->id;
     @endphp
     <flux:sidebar sticky stashable collapsible="desktop" class="admin-sidebar" x-data="{
         search: '',
-        openGroup: '{{ request()->routeIs('admin.product-categories', 'admin.products')
-            ? 'products'
-            : (request()->routeIs('admin.post-categories', 'admin.posts', 'admin.tags')
-                ? 'blog'
-                : (request()->routeIs('admin.settings', 'admin.media-library', 'admin.email-templates', 'admin.history')
-                    ? 'library'
-                    : (request()->routeIs('admin.contacts')
-                        ? 'inquiries'
-                    : (request()->routeIs('admin.pages')
-                        ? 'content'
-                        : (request()->routeIs('admin.languages', 'admin.languages.*', 'admin.translations')
-                            ? 'localization'
-                            : (request()->routeIs('admin.roles', 'admin.roles.*', 'admin.permissions', 'admin.users', 'admin.users.*')
-                                ? 'access'
-                                : 'products')))))) }}',
+        openGroup: {{ $sidebarOpenGroupId ?? 'null' }},
         groupItems: {{ $sidebarGroupItemsJson }},
         query() { return this.search.trim().toLowerCase(); },
         searching() { return this.query() !== ''; },
@@ -155,188 +146,28 @@
         {{-- Navigation --}}
         <nav id="admin-sidebar-nav" class="flex-1 overflow-y-auto px-2 py-4 space-y-0.5 custom-sidebar-nav">
 
-            <div x-show="matches('Overview')">
-                <a href="{{ route('admin.dashboard') }}" wire:navigate.hover
-                    class="admin-nav-item {{ request()->routeIs('admin.dashboard') ? 'admin-nav-active' : '' }}">
-                    <flux:icon.home class="size-4.5 shrink-0" />
-                    <span>{{ __('Overview') }}</span>
-                </a>
-            </div>
-
-            <div>
-
-                {{-- Products Group --}}
-                <div class="nav-group" x-show="groupMatches('products')">
-                    <button @click="toggle('products')"
-                        class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
-                        <span>{{ __('Products') }}</span>
-                        <span x-text="groupOpen('products') ? '−' : '+'"
-                            class="text-zinc-500 text-sm font-bold leading-none"></span>
-                    </button>
-                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': !groupOpen('products') }"
-                        :style="groupOpen('products') ? 'max-height: 500px; opacity: 1;' : ''">
-                        <a href="{{ route('admin.product-categories') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.product-categories') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.squares-2x2 class="size-4.5 shrink-0" />
-                            <span>{{ __('Product Categories') }}</span>
-                        </a>
-                        <a href="{{ route('admin.products') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.products') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.cube class="size-4.5 shrink-0" />
-                            <span>{{ __('Products') }}</span>
-                        </a>
+            @foreach ($sidebarMenu as $item)
+                @if ($item->is_group)
+                    <div class="nav-group" x-show="groupMatches({{ $item->id }})">
+                        <button @click="toggle({{ $item->id }})"
+                            class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
+                            <span>{{ __($item->label) }}</span>
+                            <span x-text="groupOpen({{ $item->id }}) ? '−' : '+'"
+                                class="text-zinc-500 text-sm font-bold leading-none"></span>
+                        </button>
+                        <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': !groupOpen({{ $item->id }}) }"
+                            :style="groupOpen({{ $item->id }}) ? 'max-height: 500px; opacity: 1;' : ''">
+                            @foreach ($item->children as $child)
+                                @include('partials.admin-nav-link', ['link' => $child])
+                            @endforeach
+                        </div>
                     </div>
-                </div>
-
-                {{-- Blog Group --}}
-                <div class="nav-group" x-show="groupMatches('blog')">
-                    <button @click="toggle('blog')"
-                        class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
-                        <span>{{ __('Blog') }}</span>
-                        <span x-text="groupOpen('blog') ? '−' : '+'"
-                            class="text-zinc-500 text-sm font-bold leading-none"></span>
-                    </button>
-                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': !groupOpen('blog') }"
-                        :style="groupOpen('blog') ? 'max-height: 500px; opacity: 1;' : ''">
-                        <a href="{{ route('admin.post-categories') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.post-categories') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.squares-2x2 class="size-4.5 shrink-0" />
-                            <span>{{ __('Post Categories') }}</span>
-                        </a>
-                        <a href="{{ route('admin.tags') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.tags') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.tag class="size-4.5 shrink-0" />
-                            <span>{{ __('Tags') }}</span>
-                        </a>
-                        <a href="{{ route('admin.posts') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.posts') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.document-text class="size-4.5 shrink-0" />
-                            <span>{{ __('Posts') }}</span>
-                        </a>
+                @else
+                    <div x-show="matches({{ \Illuminate\Support\Js::from(__($item->label)) }})">
+                        @include('partials.admin-nav-link', ['link' => $item])
                     </div>
-                </div>
-
-                {{-- Library & System Group --}}
-                <div class="nav-group" x-show="groupMatches('library')">
-                    <button @click="toggle('library')"
-                        class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
-                        <span>{{ __('Library & System') }}</span>
-                        <span x-text="groupOpen('library') ? '−' : '+'"
-                            class="text-zinc-500 text-sm font-bold leading-none"></span>
-                    </button>
-                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': !groupOpen('library') }"
-                        :style="groupOpen('library') ? 'max-height: 500px; opacity: 1;' : ''">
-                        <a href="{{ route('admin.settings') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.settings') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.cog-6-tooth class="size-4.5 shrink-0" />
-                            <span>{{ __('Settings') }}</span>
-                        </a>
-                        <a href="{{ route('admin.media-library') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.media-library') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.photo class="size-4.5 shrink-0" />
-                            <span>{{ __('Media Library') }}</span>
-                        </a>
-                        <a href="{{ route('admin.email-templates') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.email-templates') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.envelope class="size-4.5 shrink-0" />
-                            <span>{{ __('Email Templates') }}</span>
-                        </a>
-                        <a href="{{ route('admin.history') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.history') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.clock class="size-4.5 shrink-0" />
-                            <span>{{ __('Admin History') }}</span>
-                        </a>
-                    </div>
-                </div>
-
-                {{-- Inquiries Group --}}
-                <div class="nav-group" x-show="groupMatches('inquiries')">
-                    <button @click="toggle('inquiries')"
-                        class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
-                        <span>{{ __('Inquiries') }}</span>
-                        <span x-text="groupOpen('inquiries') ? '−' : '+'"
-                            class="text-zinc-500 text-sm font-bold leading-none"></span>
-                    </button>
-                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': !groupOpen('inquiries') }"
-                        :style="groupOpen('inquiries') ? 'max-height: 500px; opacity: 1;' : ''">
-                        <a href="{{ route('admin.contacts') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.contacts') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.inbox class="size-4.5 shrink-0" />
-                            <span>{{ __('Contacts') }}</span>
-                        </a>
-                    </div>
-                </div>
-
-                {{-- Content Group --}}
-                <div class="nav-group" x-show="groupMatches('content')">
-                    <button @click="toggle('content')"
-                        class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
-                        <span>{{ __('Content') }}</span>
-                        <span x-text="groupOpen('content') ? '−' : '+'"
-                            class="text-zinc-500 text-sm font-bold leading-none"></span>
-                    </button>
-                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': !groupOpen('content') }"
-                        :style="groupOpen('content') ? 'max-height: 500px; opacity: 1;' : ''">
-                        <a href="{{ route('admin.pages') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.pages') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.document class="size-4.5 shrink-0" />
-                            <span>{{ __('Pages') }}</span>
-                        </a>
-                    </div>
-                </div>
-
-                {{-- Localization Group --}}
-                <div class="nav-group" x-show="groupMatches('localization')">
-                    <button @click="toggle('localization')"
-                        class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
-                        <span>{{ __('Localization') }}</span>
-                        <span x-text="groupOpen('localization') ? '−' : '+'"
-                            class="text-zinc-500 text-sm font-bold leading-none"></span>
-                    </button>
-                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': !groupOpen('localization') }"
-                        :style="groupOpen('localization') ? 'max-height: 500px; opacity: 1;' : ''">
-                        <a href="{{ route('admin.languages') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.languages', 'admin.languages.*') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.language class="size-4.5 shrink-0" />
-                            <span>{{ __('Languages') }}</span>
-                        </a>
-                        <a href="{{ route('admin.translations') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.translations') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.chat-bubble-left-right class="size-4.5 shrink-0" />
-                            <span>{{ __('Translations') }}</span>
-                        </a>
-                    </div>
-                </div>
-
-                {{-- Access Control Group --}}
-                <div class="nav-group" x-show="groupMatches('access')">
-                    <button @click="toggle('access')"
-                        class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
-                        <span>{{ __('Access Control') }}</span>
-                        <span x-text="groupOpen('access') ? '−' : '+'"
-                            class="text-zinc-500 text-sm font-bold leading-none"></span>
-                    </button>
-                    <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': !groupOpen('access') }"
-                        :style="groupOpen('access') ? 'max-height: 500px; opacity: 1;' : ''">
-                        <a href="{{ route('admin.roles') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.roles', 'admin.roles.*') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.shield-check class="size-4.5 shrink-0" />
-                            <span>{{ __('Roles') }}</span>
-                        </a>
-                        <a href="{{ route('admin.permissions') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.permissions') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.lock-closed class="size-4.5 shrink-0" />
-                            <span>{{ __('Permissions') }}</span>
-                        </a>
-                        <a href="{{ route('admin.users') }}" wire:navigate.hover
-                            class="admin-nav-item {{ request()->routeIs('admin.users', 'admin.users.*') ? 'admin-nav-active' : '' }}">
-                            <flux:icon.users class="size-4.5 shrink-0" />
-                            <span>{{ __('Users') }}</span>
-                        </a>
-                    </div>
-                </div>
-
-            </div>{{-- end accordion wrapper --}}
+                @endif
+            @endforeach
 
             <div x-show="searching() && !anyMatch()" x-cloak
                 class="px-3 py-8 text-center text-sm text-zinc-500">

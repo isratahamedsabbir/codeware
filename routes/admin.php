@@ -66,3 +66,6 @@ Route::get('/languages', \App\Livewire\Admin\Languages\Index::class)->name('lang
 Route::get('/languages/create', \App\Livewire\Admin\Languages\Form::class)->name('languages.create');
 Route::get('/languages/{id}/edit', \App\Livewire\Admin\Languages\Form::class)->name('languages.edit');
 Route::get('/translations', \App\Livewire\Admin\Translations\Index::class)->name('translations');
+
+// Menu
+Route::get('/menu', \App\Livewire\Admin\Menu\Index::class)->name('menu');

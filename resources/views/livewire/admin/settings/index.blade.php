@@ -5,6 +5,12 @@
         </div>
     @endif
 
+    @if (session('error'))
+        <div class="mb-4 rounded-lg bg-red-50 border border-red-200 text-red-800 px-4 py-3 text-sm dark:bg-red-950 dark:border-red-800 dark:text-red-300">
+            {{ session('error') }}
+        </div>
+    @endif
+
     {{-- Alpine tab switcher: General | Layout | Payments --}}
     <div x-data="{ tab: 'general' }">
 
@@ -31,6 +37,9 @@
             <button type="button" @click="tab = 'colors'"
                 :class="tab==='colors'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="px-5 py-3 text-sm -mb-px">Other</button>
+            <button type="button" @click="tab = 'env'"
+                :class="tab==='env'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
+                class="px-5 py-3 text-sm -mb-px">Env</button>
         </div>
 
         {{-- General tab --}}
@@ -490,14 +499,84 @@
             </div>
         </div>
 
+        {{-- Env tab --}}
+        <div x-show="tab === 'env'">
+            <div class="max-w-2xl space-y-6">
+                <div class="rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm dark:bg-amber-950 dark:border-amber-800 dark:text-amber-300">
+                    <strong>{{ __('Careful') }}:</strong>
+                    {{ __('These edit the live .env file this server runs on. A wrong database or mail value can take the site down until it is fixed. A backup of the current file is saved automatically before every change.') }}
+                </div>
+
+                @foreach ($this->envFields() as $groupLabel => $fields)
+                    <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+                        <flux:heading size="sm">{{ __($groupLabel) }}</flux:heading>
+                        @foreach ($fields as $key => $meta)
+                            <flux:field>
+                                <flux:label>{{ __($meta['label']) }}</flux:label>
+                                @if ($meta['type'] === 'boolean')
+                                    <select wire:model="env.{{ $key }}"
+                                        class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                                        <option value="true">{{ __('True') }}</option>
+                                        <option value="false">{{ __('False') }}</option>
+                                    </select>
+                                @elseif ($meta['type'] === 'select')
+                                    <select wire:model="env.{{ $key }}"
+                                        class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                                        @foreach ($meta['options'] as $option)
+                                            <option value="{{ $option }}">{{ $option }}</option>
+                                        @endforeach
+                                    </select>
+                                @elseif ($meta['type'] === 'password')
+                                    <flux:input type="password" wire:model="env.{{ $key }}" />
+                                @else
+                                    <flux:input wire:model="env.{{ $key }}" />
+                                @endif
+                                <flux:error name="env.{{ $key }}" />
+                            </flux:field>
+                        @endforeach
+                    </div>
+                @endforeach
+
+                <flux:button variant="primary" wire:click="confirmSaveEnv" wire:loading.attr="disabled">
+                    {{ __('Save Environment Settings') }}
+                </flux:button>
+            </div>
+        </div>
+
         {{-- Save --}}
-        <div class="mt-6">
+        <div class="mt-6" x-show="tab !== 'env'">
             <flux:button variant="primary" wire:click="save" wire:loading.attr="disabled">
                 Save Settings
             </flux:button>
         </div>
 
     </div>
+
+    {{-- Env save confirmation --}}
+    <flux:modal name="env-save-confirm" class="md:w-96"
+        x-on:open-modal.window="if ($event.detail.name === 'env-save-confirm') $flux.modal('env-save-confirm').show()"
+        x-on:close-modal.window="if ($event.detail.name === 'env-save-confirm') $flux.modal('env-save-confirm').close()">
+        <div class="space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+                    <flux:icon.exclamation-triangle class="w-5 h-5 text-amber-500" />
+                </div>
+                <flux:heading>{{ __('Save environment settings?') }}</flux:heading>
+            </div>
+            <flux:text class="text-sm text-zinc-500">
+                {{ __('This overwrites the live .env file and clears the configuration cache. If a value is wrong — especially the database credentials — the site may stop working until it is corrected.') }}
+            </flux:text>
+            <div class="flex gap-2 pt-1">
+                <button wire:click="saveEnv" wire:loading.attr="disabled"
+                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white bg-amber-600 hover:bg-amber-700 transition-colors border-none cursor-pointer">
+                    {{ __('Save anyway') }}
+                </button>
+                <flux:modal.close>
+                    <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                </flux:modal.close>
+            </div>
+        </div>
+    </flux:modal>
 
     <livewire:admin.media-library.picker-modal />
 </div>
