@@ -159,7 +159,7 @@
                 <a href="{{ route('admin.dashboard') }}" wire:navigate.hover
                     class="admin-nav-item {{ request()->routeIs('admin.dashboard') ? 'admin-nav-active' : '' }}">
                     <flux:icon.home class="size-4.5 shrink-0" />
-                    <span>Overview</span>
+                    <span>{{ __('Overview') }}</span>
                 </a>
             </div>
 
@@ -169,7 +169,7 @@
                 <div class="nav-group" x-show="groupMatches('products')">
                     <button @click="toggle('products')"
                         class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
-                        <span>Products</span>
+                        <span>{{ __('Products') }}</span>
                         <span x-text="groupOpen('products') ? '−' : '+'"
                             class="text-zinc-500 text-sm font-bold leading-none"></span>
                     </button>
@@ -178,12 +178,12 @@
                         <a href="{{ route('admin.product-categories') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.product-categories') ? 'admin-nav-active' : '' }}">
                             <flux:icon.squares-2x2 class="size-4.5 shrink-0" />
-                            <span>Product Categories</span>
+                            <span>{{ __('Product Categories') }}</span>
                         </a>
                         <a href="{{ route('admin.products') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.products') ? 'admin-nav-active' : '' }}">
                             <flux:icon.cube class="size-4.5 shrink-0" />
-                            <span>Products</span>
+                            <span>{{ __('Products') }}</span>
                         </a>
                     </div>
                 </div>
@@ -192,7 +192,7 @@
                 <div class="nav-group" x-show="groupMatches('blog')">
                     <button @click="toggle('blog')"
                         class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
-                        <span>Blog</span>
+                        <span>{{ __('Blog') }}</span>
                         <span x-text="groupOpen('blog') ? '−' : '+'"
                             class="text-zinc-500 text-sm font-bold leading-none"></span>
                     </button>
@@ -201,17 +201,17 @@
                         <a href="{{ route('admin.post-categories') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.post-categories') ? 'admin-nav-active' : '' }}">
                             <flux:icon.squares-2x2 class="size-4.5 shrink-0" />
-                            <span>Post Categories</span>
+                            <span>{{ __('Post Categories') }}</span>
                         </a>
                         <a href="{{ route('admin.tags') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.tags') ? 'admin-nav-active' : '' }}">
                             <flux:icon.tag class="size-4.5 shrink-0" />
-                            <span>Tags</span>
+                            <span>{{ __('Tags') }}</span>
                         </a>
                         <a href="{{ route('admin.posts') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.posts') ? 'admin-nav-active' : '' }}">
                             <flux:icon.document-text class="size-4.5 shrink-0" />
-                            <span>Posts</span>
+                            <span>{{ __('Posts') }}</span>
                         </a>
                     </div>
                 </div>
@@ -220,7 +220,7 @@
                 <div class="nav-group" x-show="groupMatches('library')">
                     <button @click="toggle('library')"
                         class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
-                        <span>Library & System</span>
+                        <span>{{ __('Library & System') }}</span>
                         <span x-text="groupOpen('library') ? '−' : '+'"
                             class="text-zinc-500 text-sm font-bold leading-none"></span>
                     </button>
@@ -229,22 +229,22 @@
                         <a href="{{ route('admin.settings') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.settings') ? 'admin-nav-active' : '' }}">
                             <flux:icon.cog-6-tooth class="size-4.5 shrink-0" />
-                            <span>Settings</span>
+                            <span>{{ __('Settings') }}</span>
                         </a>
                         <a href="{{ route('admin.media-library') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.media-library') ? 'admin-nav-active' : '' }}">
                             <flux:icon.photo class="size-4.5 shrink-0" />
-                            <span>Media Library</span>
+                            <span>{{ __('Media Library') }}</span>
                         </a>
                         <a href="{{ route('admin.email-templates') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.email-templates') ? 'admin-nav-active' : '' }}">
                             <flux:icon.envelope class="size-4.5 shrink-0" />
-                            <span>Email Templates</span>
+                            <span>{{ __('Email Templates') }}</span>
                         </a>
                         <a href="{{ route('admin.history') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.history') ? 'admin-nav-active' : '' }}">
                             <flux:icon.clock class="size-4.5 shrink-0" />
-                            <span>Admin History</span>
+                            <span>{{ __('Admin History') }}</span>
                         </a>
                     </div>
                 </div>
@@ -253,7 +253,7 @@
                 <div class="nav-group" x-show="groupMatches('inquiries')">
                     <button @click="toggle('inquiries')"
                         class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
-                        <span>Inquiries</span>
+                        <span>{{ __('Inquiries') }}</span>
                         <span x-text="groupOpen('inquiries') ? '−' : '+'"
                             class="text-zinc-500 text-sm font-bold leading-none"></span>
                     </button>
@@ -262,7 +262,7 @@
                         <a href="{{ route('admin.contacts') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.contacts') ? 'admin-nav-active' : '' }}">
                             <flux:icon.inbox class="size-4.5 shrink-0" />
-                            <span>Contacts</span>
+                            <span>{{ __('Contacts') }}</span>
                         </a>
                     </div>
                 </div>
@@ -271,7 +271,7 @@
                 <div class="nav-group" x-show="groupMatches('content')">
                     <button @click="toggle('content')"
                         class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
-                        <span>Content</span>
+                        <span>{{ __('Content') }}</span>
                         <span x-text="groupOpen('content') ? '−' : '+'"
                             class="text-zinc-500 text-sm font-bold leading-none"></span>
                     </button>
@@ -280,7 +280,7 @@
                         <a href="{{ route('admin.pages') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.pages') ? 'admin-nav-active' : '' }}">
                             <flux:icon.document class="size-4.5 shrink-0" />
-                            <span>Pages</span>
+                            <span>{{ __('Pages') }}</span>
                         </a>
                     </div>
                 </div>
@@ -289,7 +289,7 @@
                 <div class="nav-group" x-show="groupMatches('localization')">
                     <button @click="toggle('localization')"
                         class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
-                        <span>Localization</span>
+                        <span>{{ __('Localization') }}</span>
                         <span x-text="groupOpen('localization') ? '−' : '+'"
                             class="text-zinc-500 text-sm font-bold leading-none"></span>
                     </button>
@@ -298,12 +298,12 @@
                         <a href="{{ route('admin.languages') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.languages', 'admin.languages.*') ? 'admin-nav-active' : '' }}">
                             <flux:icon.language class="size-4.5 shrink-0" />
-                            <span>Languages</span>
+                            <span>{{ __('Languages') }}</span>
                         </a>
                         <a href="{{ route('admin.translations') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.translations') ? 'admin-nav-active' : '' }}">
                             <flux:icon.chat-bubble-left-right class="size-4.5 shrink-0" />
-                            <span>Translations</span>
+                            <span>{{ __('Translations') }}</span>
                         </a>
                     </div>
                 </div>
@@ -312,7 +312,7 @@
                 <div class="nav-group" x-show="groupMatches('access')">
                     <button @click="toggle('access')"
                         class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
-                        <span>Access Control</span>
+                        <span>{{ __('Access Control') }}</span>
                         <span x-text="groupOpen('access') ? '−' : '+'"
                             class="text-zinc-500 text-sm font-bold leading-none"></span>
                     </button>
@@ -321,17 +321,17 @@
                         <a href="{{ route('admin.roles') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.roles', 'admin.roles.*') ? 'admin-nav-active' : '' }}">
                             <flux:icon.shield-check class="size-4.5 shrink-0" />
-                            <span>Roles</span>
+                            <span>{{ __('Roles') }}</span>
                         </a>
                         <a href="{{ route('admin.permissions') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.permissions') ? 'admin-nav-active' : '' }}">
                             <flux:icon.lock-closed class="size-4.5 shrink-0" />
-                            <span>Permissions</span>
+                            <span>{{ __('Permissions') }}</span>
                         </a>
                         <a href="{{ route('admin.users') }}" wire:navigate.hover
                             class="admin-nav-item {{ request()->routeIs('admin.users', 'admin.users.*') ? 'admin-nav-active' : '' }}">
                             <flux:icon.users class="size-4.5 shrink-0" />
-                            <span>Users</span>
+                            <span>{{ __('Users') }}</span>
                         </a>
                     </div>
                 </div>
@@ -340,7 +340,7 @@
 
             <div x-show="searching() && !anyMatch()" x-cloak
                 class="px-3 py-8 text-center text-sm text-zinc-500">
-                No menu items found for "<span x-text="search" class="text-zinc-400 font-medium"></span>"
+                {{ __('No menu items found for') }} "<span x-text="search" class="text-zinc-400 font-medium"></span>"
             </div>
 
         </nav>

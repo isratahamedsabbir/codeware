@@ -93,13 +93,22 @@ class Language extends Model
     /**
      * Active languages, ordered — cached because the admin layout reads this every request.
      *
-     * @return \Illuminate\Support\Collection<int, self>
+     * Cached as plain attribute arrays (not Eloquent models) and rehydrated on every read.
+     * Caching model/collection objects directly is unreliable here: whether the database
+     * cache driver's unserialize() call happens to run after this process has already
+     * autoloaded Collection/Language is non-deterministic, so it intermittently comes back
+     * as a broken `__PHP_Incomplete_Class` and gets silently swallowed by the try/catch in
+     * Locale::active(), leaving the language switcher with zero options.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, self>
      */
     public static function activeCached()
     {
-        return Cache::rememberForever(
+        $rows = Cache::rememberForever(
             'languages:active',
-            fn () => static::query()->active()->ordered()->get(),
+            fn () => static::query()->active()->ordered()->get()->toArray(),
         );
+
+        return static::hydrate($rows);
     }
 }
