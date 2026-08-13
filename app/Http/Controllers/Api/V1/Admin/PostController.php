@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Page;
 use App\Models\Post;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -49,7 +50,7 @@ class PostController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $post = Post::withTrashed()->with(['category', 'user:id,name', 'tags'])->findOrFail($id);
+        $post = Post::withTrashed()->with(['category', 'user:id,name', 'tags', 'page'])->findOrFail($id);
 
         return response()->json([
             'data' => [
@@ -62,9 +63,10 @@ class PostController extends Controller
                 'featured_image' => $post->featured_image,
                 'reading_time' => $post->reading_time,
                 'published_at' => $post->published_at?->toIso8601String(),
-                'seo_title' => $post->seo_title,
-                'seo_description' => $post->seo_description,
-                'puck_data'       => $post->puck_data,
+                'og_image' => $post->page?->og_image,
+                'seo_title' => $post->page?->seo_title,
+                'seo_description' => $post->page?->seo_description,
+                'puck_data' => $post->puck_data,
                 'deleted_at' => $post->deleted_at?->toIso8601String(),
                 'category' => $post->category,
                 'author' => $post->user ? ['id' => $post->user->id, 'name' => $post->user->name] : null,
@@ -80,18 +82,18 @@ class PostController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'title'     => 'required|array',
-            'title.en'  => 'required|string|max:255',
-            'title.bn'  => 'nullable|string|max:255',
-            'slug'      => 'nullable|string|unique:posts,slug',
-            'status'    => 'sometimes|in:active,inactive',
+            'title' => 'required|array',
+            'title.en' => 'required|string|max:255',
+            'title.bn' => 'nullable|string|max:255',
+            'slug' => 'nullable|string|unique:posts,slug',
+            'status' => 'sometimes|in:active,inactive',
             'puck_data' => 'nullable|array',
-            'tag_ids'   => 'sometimes|array',
+            'tag_ids' => 'sometimes|array',
             'tag_ids.*' => 'exists:tags,id',
         ]);
 
         $validated['user_id'] = $request->user()->id;
-        $validated['status']  = $validated['status'] ?? 'inactive';
+        $validated['status'] = $validated['status'] ?? 'inactive';
 
         $post = Post::create($validated);
         $post->tags()->sync($validated['tag_ids'] ?? []);
@@ -113,6 +115,7 @@ class PostController extends Controller
             'content' => 'sometimes|array',
             'content.en' => 'nullable|string',
             'content.bn' => 'nullable|string',
+            'og_image' => 'sometimes|nullable|string',
             'seo_title' => 'sometimes|array',
             'seo_title.en' => 'nullable|string|max:255',
             'seo_title.bn' => 'nullable|string|max:255',
@@ -123,13 +126,31 @@ class PostController extends Controller
             'featured_image' => 'sometimes|nullable|string',
             'puck_data' => 'sometimes|nullable|array',
             'category_id' => 'sometimes|nullable|exists:categories,id,type,post',
-            'slug' => 'sometimes|string|unique:posts,slug,' . $post->id,
+            'slug' => 'sometimes|string|unique:posts,slug,'.$post->id,
             'tag_ids' => 'sometimes|array',
             'tag_ids.*' => 'exists:tags,id',
         ]);
 
+        // SEO fields and OG image live on the paired Page, not on the post itself.
+        $seo = collect($validated)->only(['og_image', 'seo_title', 'seo_description'])->all();
+        unset($validated['og_image'], $validated['seo_title'], $validated['seo_description']);
+
         $post->update($validated);
         $post->tags()->sync($validated['tag_ids'] ?? []);
+
+        if ($seo !== []) {
+            Page::updateOrCreate(
+                ['type' => 'post', 'post_id' => $post->id],
+                array_filter([
+                    'user_id' => $request->user()?->id,
+                    'title' => $post->getTranslations('title'),
+                    'slug' => $post->slug,
+                    'status' => $post->status,
+                    'description' => $post->getTranslations('description') ?: null,
+                    ...$seo,
+                ])
+            );
+        }
 
         return response()->json(['data' => ['id' => $post->id, 'slug' => $post->slug]]);
     }

@@ -14,22 +14,22 @@ use Spatie\Translatable\HasTranslations;
 
 class Product extends Model
 {
-    use HasFactory, SoftDeletes, HasTranslations;
+    use HasFactory, HasTranslations, SoftDeletes;
 
-    public array $translatable = ['name', 'description', 'seo_title', 'seo_description'];
+    public array $translatable = ['name', 'description'];
 
     protected $fillable = [
         'product_category_id', 'name', 'slug', 'description',
         'faq',
-        'featured_image', 'og_image', 'status', 'is_featured',
-        'sort_order', 'seo_title', 'seo_description', 'puck_data',
+        'featured_image', 'status', 'is_featured',
+        'sort_order', 'puck_data',
     ];
 
     protected $casts = [
-        'faq'         => 'array',
+        'faq' => 'array',
         'is_featured' => 'boolean',
-        'sort_order'  => 'integer',
-        'puck_data'   => 'array',
+        'sort_order' => 'integer',
+        'puck_data' => 'array',
     ];
 
     protected static function booted(): void

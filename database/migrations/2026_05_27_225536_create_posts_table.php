@@ -20,12 +20,9 @@ return new class extends Migration
             $table->json('description')->nullable();
             $table->json('content')->nullable();
             $table->string('featured_image')->nullable();
-            $table->string('og_image')->nullable();
             $table->string('status', 20)->default('inactive');
             $table->timestamp('published_at')->nullable();
             $table->unsignedSmallInteger('reading_time')->nullable();
-            $table->json('seo_title')->nullable();
-            $table->json('seo_description')->nullable();
             $table->json('puck_data')->nullable();
             $table->softDeletes();
             $table->timestamps();

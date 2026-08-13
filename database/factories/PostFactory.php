@@ -12,6 +12,7 @@ class PostFactory extends Factory
     {
         $title = fake()->sentence(6, false);
         $puckContent = ['root' => ['props' => []], 'content' => [], 'zones' => []];
+
         return [
             'user_id' => User::factory(),
             'category_id' => null,
@@ -23,8 +24,6 @@ class PostFactory extends Factory
             'status' => 'inactive',
             'published_at' => null,
             'reading_time' => 1,
-            'seo_title' => ['en' => null, 'bn' => null],
-            'seo_description' => ['en' => null, 'bn' => null],
         ];
     }
 

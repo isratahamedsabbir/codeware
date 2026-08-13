@@ -12,6 +12,7 @@ class PostController extends Controller
     private function resolveLocale(Request $request): string
     {
         $locale = $request->query('locale');
+
         return in_array($locale, ['en', 'bn'], true) ? $locale : 'en';
     }
 
@@ -21,7 +22,7 @@ class PostController extends Controller
         $perPage = min((int) $request->query('per_page', 15), 100);
 
         $posts = Post::published()
-            ->with(['category', 'user:id,name', 'tags'])
+            ->with(['category', 'user:id,name', 'tags', 'page'])
             ->orderByDesc('published_at')
             ->when($request->query('category'), fn ($q, $slug) => $q->whereHas('category', fn ($c) => $c->where('slug', $slug)))
             ->when($request->query('search'), fn ($q, $search) => $q->where("title->{$locale}", 'like', "%{$search}%"))
@@ -43,7 +44,7 @@ class PostController extends Controller
         $locale = $this->resolveLocale($request);
 
         $post = Post::published()
-            ->with(['category', 'user:id,name', 'tags'])
+            ->with(['category', 'user:id,name', 'tags', 'page'])
             ->where('slug', $slug)
             ->firstOrFail();
 
@@ -60,12 +61,12 @@ class PostController extends Controller
             'title' => $post->getTranslation('title', $locale, useFallbackLocale: true),
             'description' => $post->getTranslation('description', $locale, useFallbackLocale: true),
             'featured_image' => $post->featured_image,
-            //'reading_time' => $post->reading_time,
-            //'published_at' => $post->published_at?->toIso8601String(),
-            'seo_title' => $post->getTranslation('seo_title', $locale, useFallbackLocale: true),
-            'seo_description' => $post->getTranslation('seo_description', $locale, useFallbackLocale: true),
-            'og_image' => $post->og_image,
-            //'author' => $post->user ? ['id' => $post->user->id, 'name' => $post->user->name] : null,
+            // 'reading_time' => $post->reading_time,
+            // 'published_at' => $post->published_at?->toIso8601String(),
+            'seo_title' => $post->page?->getTranslation('seo_title', $locale, useFallbackLocale: true),
+            'seo_description' => $post->page?->getTranslation('seo_description', $locale, useFallbackLocale: true),
+            'og_image' => $post->page?->og_image,
+            // 'author' => $post->user ? ['id' => $post->user->id, 'name' => $post->user->name] : null,
             'category' => $post->category ? [
                 'id' => $post->category->id,
                 'slug' => $post->category->slug,
@@ -79,7 +80,7 @@ class PostController extends Controller
         ];
 
         if ($withContent) {
-            $data['content']   = $post->getTranslation('content', $locale, useFallbackLocale: true);
+            $data['content'] = $post->getTranslation('content', $locale, useFallbackLocale: true);
             $data['puck_data'] = $post->page->puck_data;
         }
 

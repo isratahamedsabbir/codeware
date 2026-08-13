@@ -14,19 +14,19 @@ use Spatie\Translatable\HasTranslations;
 
 class Post extends Model
 {
-    use HasFactory, SoftDeletes, HasTranslations;
+    use HasFactory, HasTranslations, SoftDeletes;
 
-    public array $translatable = ['title', 'description', 'content', 'seo_title', 'seo_description'];
+    public array $translatable = ['title', 'description', 'content'];
 
     protected $fillable = [
         'user_id', 'category_id', 'title', 'slug', 'description',
-        'content', 'puck_data', 'featured_image', 'og_image', 'status', 'published_at',
-        'reading_time', 'seo_title', 'seo_description',
+        'content', 'puck_data', 'featured_image', 'status', 'published_at',
+        'reading_time',
     ];
 
     protected $casts = [
         'published_at' => 'datetime',
-        'puck_data'    => 'array',
+        'puck_data' => 'array',
     ];
 
     protected static function booted(): void
@@ -63,7 +63,7 @@ class Post extends Model
 
     public function page(): HasOne
     {
-        return $this->hasOne(Page::class, 'post_id');
+        return $this->hasOne(Page::class, 'post_id')->where('type', 'post');
     }
 
     public function scopePublished(Builder $query): Builder
