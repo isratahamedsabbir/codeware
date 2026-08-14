@@ -48,7 +48,18 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
 
-        Gate::define('access-admin', fn ($user) => (bool) $user->is_admin || $user->hasRole('admin'));
+        // Three admin tiers: Super Admin (is_admin=true, unconditional bypass everywhere),
+        // Admin ('admin' role, every permission), and Staff ('staff' role, content-only —
+        // see RolePermissionSeeder). access-admin is the outer gate: it only decides who
+        // gets into /admin/* at all. access-admin-system is the inner gate that further
+        // restricts the system-level screens (Settings, Users, Roles/Permissions, Menu,
+        // Activity History, Localization, Contacts) to Admin/Super Admin — Staff passes
+        // the outer gate but not this one.
+        Gate::define('access-admin', fn ($user) => (bool) $user->is_admin
+            || $user->hasRole('admin')
+            || $user->hasRole('staff'));
+
+        Gate::define('access-admin-system', fn ($user) => (bool) $user->is_admin || $user->hasRole('admin'));
 
         // File Manager reads/writes anywhere under the project root (including .env),
         // so — unlike most admin screens — it gets its own granular gates rather than

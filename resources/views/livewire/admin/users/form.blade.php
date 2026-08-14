@@ -67,9 +67,10 @@
                 <div class="px-4 py-3">
                     <label class="flex items-center justify-between gap-3 cursor-pointer select-none">
                         <div>
-                            <div class="text-sm font-medium text-zinc-800">Full admin access</div>
-                            <div class="text-xs text-zinc-500 mt-0.5">Sets <span class="font-mono">is_admin</span> — grants
-                                access to the admin panel regardless of roles.</div>
+                            <div class="text-sm font-medium text-zinc-800">Super Admin</div>
+                            <div class="text-xs text-zinc-500 mt-0.5">Sets <span class="font-mono">is_admin</span> — full,
+                                unconditional access to everything, regardless of assigned roles. The other two tiers
+                                (Admin, Staff) are set via roles below.</div>
                         </div>
                         <input type="checkbox" wire:model="isAdmin"
                             class="size-4.5 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 focus:ring-2 cursor-pointer">

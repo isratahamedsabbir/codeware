@@ -9,10 +9,30 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 
 class AdminMenuItem extends Model
 {
     use HasFactory;
+
+    /**
+     * Route name prefixes that require the 'access-admin-system' gate — kept in sync
+     * with the `can:access-admin-system` route groups in routes/admin.php. Staff (see
+     * RolePermissionSeeder) can enter /admin/* but not these; hiding their links from
+     * the sidebar avoids dead-end clicks into a 403.
+     */
+    private const SYSTEM_ROUTE_PREFIXES = [
+        'admin.settings',
+        'admin.email-templates',
+        'admin.contacts',
+        'admin.roles',
+        'admin.permissions',
+        'admin.users',
+        'admin.history',
+        'admin.languages',
+        'admin.translations',
+        'admin.menu',
+    ];
 
     protected $fillable = [
         'parent_id',
@@ -111,6 +131,57 @@ class AdminMenuItem extends Model
                 'children',
                 $byParent->get($i->id, collect()),
             )))
+            ->reject(fn (self $item) => $item->is_group && $item->children->isEmpty())
+            ->values();
+    }
+
+    /**
+     * The gate this item's route requires beyond the base access-admin check, or null
+     * if it needs nothing extra (e.g. content screens, dashboard, profile).
+     */
+    private function requiredGate(): ?string
+    {
+        if (! $this->route_name) {
+            return null;
+        }
+
+        if ($this->route_name === 'admin.file-manager' || str_starts_with($this->route_name, 'admin.file-manager.')) {
+            return 'view-file-manager';
+        }
+
+        foreach (self::SYSTEM_ROUTE_PREFIXES as $prefix) {
+            if ($this->route_name === $prefix || str_starts_with($this->route_name, $prefix.'.')) {
+                return 'access-admin-system';
+            }
+        }
+
+        return null;
+    }
+
+    public function isVisibleToCurrentUser(): bool
+    {
+        $gate = $this->requiredGate();
+
+        return $gate === null || Gate::allows($gate);
+    }
+
+    /**
+     * `menuCached()` filtered down to what the current user is actually allowed to
+     * open — used for the live sidebar. Filtering happens per-request rather than
+     * inside the cached query, since the underlying cache is shared across all users
+     * regardless of their tier (Super Admin / Admin / Staff).
+     *
+     * @return Collection<int, self>
+     */
+    public static function menuForCurrentUser(): Collection
+    {
+        return static::menuCached()
+            ->reject(fn (self $item) => ! $item->is_group && ! $item->isVisibleToCurrentUser())
+            ->map(fn (self $item) => tap($item, function (self $i) {
+                if ($i->is_group) {
+                    $i->setRelation('children', $i->children->filter->isVisibleToCurrentUser()->values());
+                }
+            }))
             ->reject(fn (self $item) => $item->is_group && $item->children->isEmpty())
             ->values();
     }

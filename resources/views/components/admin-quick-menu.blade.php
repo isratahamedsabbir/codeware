@@ -1,5 +1,5 @@
 @php
-    $quickMenuItems = \App\Models\AdminMenuItem::shortMenuCached();
+    $quickMenuItems = \App\Models\AdminMenuItem::shortMenuCached()->filter->isVisibleToCurrentUser()->values();
 @endphp
 
 @if ($quickMenuItems->isNotEmpty())

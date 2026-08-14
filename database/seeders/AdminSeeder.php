@@ -8,7 +8,10 @@ use Illuminate\Database\Seeder;
 class AdminSeeder extends Seeder
 {
     /**
-     * Seed the application's admin and editor users.
+     * Seed a demo user for each of the three admin tiers: Super Admin
+     * (is_admin=true, an unconditional bypass everywhere), Admin (the
+     * 'admin' Spatie role, which has every permission), and Staff (the
+     * 'staff' role, content-only — see RolePermissionSeeder).
      */
     public function run(): void
     {
@@ -25,17 +28,17 @@ class AdminSeeder extends Seeder
 
         $admin->assignRole('admin');
 
-        $editor = User::updateOrCreate(
-            ['email' => 'editor@admin.com'],
+        $staff = User::updateOrCreate(
+            ['email' => 'staff@admin.com'],
             [
-                'name' => 'Editor',
-                'email' => 'editor@admin.com',
+                'name' => 'Staff',
+                'email' => 'staff@admin.com',
                 'password' => '12345678',
                 'email_verified_at' => now(),
                 'is_admin' => false,
             ]
         );
 
-        $editor->assignRole('editor');
+        $staff->assignRole('staff');
     }
 }

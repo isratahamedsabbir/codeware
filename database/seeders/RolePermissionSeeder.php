@@ -39,6 +39,19 @@ class RolePermissionSeeder extends Seeder
         $admin = Role::findOrCreate('admin', 'web');
         $admin->syncPermissions(Permission::all());
 
-        Role::findOrCreate('editor', 'web');
+        // Staff: content-only. No access to Settings, Users, Roles/Permissions, Menu,
+        // Activity History, Localization, Contacts, or the File Manager — those stay
+        // Admin/Super Admin only (see access-admin-system gate in AppServiceProvider).
+        $staff = Role::findOrCreate('staff', 'web');
+        $staff->syncPermissions([
+            'view dashboard',
+            'view posts', 'create posts', 'update posts', 'delete posts',
+            'view post categories', 'create post categories', 'update post categories', 'delete post categories',
+            'view tags', 'create tags', 'update tags', 'delete tags',
+            'view pages', 'create pages', 'update pages', 'delete pages',
+            'view products', 'create products', 'update products', 'delete products',
+            'view product categories', 'create product categories', 'update product categories', 'delete product categories',
+            'view media', 'upload media', 'delete media',
+        ]);
     }
 }
