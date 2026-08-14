@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\LogAdminActivity;
+use App\Http\Middleware\RequireFeature;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -31,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => AdminMiddleware::class,
             'activity-log' => LogAdminActivity::class,
             'locale' => SetLocale::class,
+            'feature' => RequireFeature::class,
         ]);
     })
     ->withEvents(discover: [

@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Settings;
 use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\EnvFile;
+use App\Support\Features;
 use App\Support\Theme;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -29,7 +30,25 @@ class Index extends Component
         $rows = Setting::all();
 
         foreach ($rows as $setting) {
-            $this->settings[$setting->key] = $setting->value ?? '';
+            // Boolean settings are stored as the string "0"/"1" (no cast on the
+            // Setting model). Left as a string, a checkbox bound to it renders
+            // checked no matter what — JS truthiness treats "0" as true, unlike
+            // PHP. Cast to a real boolean so the checkbox reflects the stored value.
+            $this->settings[$setting->key] = $setting->type === 'boolean'
+                ? (bool) $setting->value
+                : ($setting->value ?? '');
+        }
+
+        // Features default to enabled — only rows explicitly saved as off exist in
+        // the settings table, so a feature with no row yet still shows checked here.
+        // These aren't seeded with type=boolean (they're created on the fly by
+        // save()), so cast explicitly regardless of the stored type.
+        foreach (Features::ALL as $key => $label) {
+            $settingKey = Features::settingKey($key);
+
+            $this->settings[$settingKey] = array_key_exists($settingKey, $this->settings)
+                ? (bool) $this->settings[$settingKey]
+                : true;
         }
     }
 
@@ -56,24 +75,10 @@ class Index extends Component
         return [
             'App' => [
                 'APP_NAME' => ['label' => 'App Name', 'type' => 'text'],
-                'APP_ENV' => ['label' => 'Environment', 'type' => 'select', 'options' => ['local', 'staging', 'production', 'testing']],
+                'APP_ENV' => ['label' => 'Environment', 'type' => 'select', 'options' => ['local', 'staging', 'production', 'testing', 'developer']],
+                'APP_DEBUG' => ['label' => 'Debug Mode', 'type' => 'boolean'],
                 'APP_URL' => ['label' => 'App URL', 'type' => 'text'],
                 'FRONTEND_URL' => ['label' => 'Frontend URL', 'type' => 'text'],
-                'APP_LOCALE' => ['label' => 'Locale', 'type' => 'text'],
-            ],
-            'Debug' => [
-                'APP_DEBUG' => ['label' => 'Debug Mode', 'type' => 'boolean'],
-                'LOG_CHANNEL' => ['label' => 'Log Channel', 'type' => 'text'],
-                'LOG_LEVEL' => ['label' => 'Log Level', 'type' => 'select', 'options' => ['debug', 'info', 'notice', 'warning', 'error', 'critical', 'alert', 'emergency']],
-            ],
-            'Email' => [
-                'MAIL_MAILER' => ['label' => 'Mailer', 'type' => 'text'],
-                'MAIL_HOST' => ['label' => 'Host', 'type' => 'text'],
-                'MAIL_PORT' => ['label' => 'Port', 'type' => 'text'],
-                'MAIL_USERNAME' => ['label' => 'Username', 'type' => 'text'],
-                'MAIL_PASSWORD' => ['label' => 'Password', 'type' => 'password'],
-                'MAIL_FROM_ADDRESS' => ['label' => 'From Address', 'type' => 'text'],
-                'MAIL_FROM_NAME' => ['label' => 'From Name', 'type' => 'text'],
             ],
         ];
     }
@@ -81,10 +86,11 @@ class Index extends Component
     public function confirmSaveEnv(): void
     {
         $rules = [
+            'env.APP_NAME' => 'required|string',
+            'env.APP_ENV' => 'required|in:local,staging,production,testing,developer',
+            'env.APP_DEBUG' => 'required|in:true,false',
             'env.APP_URL' => 'required|url',
             'env.FRONTEND_URL' => 'nullable|url',
-            'env.MAIL_PORT' => 'nullable|numeric',
-            'env.APP_DEBUG' => 'required|in:true,false',
         ];
 
         $this->validate($rules);

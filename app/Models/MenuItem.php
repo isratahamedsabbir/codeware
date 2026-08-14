@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Features;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -39,6 +40,28 @@ class MenuItem extends Model
         'admin.languages',
         'admin.translations',
         'admin.menu',
+    ];
+
+    /**
+     * Route name prefixes mapped to the App\Support\Features key that gates them —
+     * kept in sync with the `feature:*` route middleware in routes/admin.php. A
+     * disabled feature hides its sidebar link the same way an unmet gate does.
+     */
+    private const FEATURE_ROUTE_PREFIXES = [
+        'admin.posts' => 'blog',
+        'admin.post-categories' => 'blog',
+        'admin.tags' => 'blog',
+        'admin.products' => 'products',
+        'admin.product-categories' => 'products',
+        'admin.pages' => 'pages',
+        'admin.media-library' => 'media-library',
+        'admin.file-manager' => 'file-manager',
+        'admin.chat' => 'chat',
+        'admin.contacts' => 'contacts',
+        'admin.menu' => 'menu',
+        'admin.email-templates' => 'email-templates',
+        'admin.languages' => 'localization',
+        'admin.translations' => 'localization',
     ];
 
     protected $fillable = [
@@ -166,11 +189,36 @@ class MenuItem extends Model
         return null;
     }
 
+    /**
+     * The App\Support\Features key this item's route belongs to, or null if it isn't
+     * tied to a toggleable feature (e.g. Dashboard, Users, Roles — always on).
+     */
+    private function requiredFeature(): ?string
+    {
+        if (! $this->route_name) {
+            return null;
+        }
+
+        foreach (self::FEATURE_ROUTE_PREFIXES as $prefix => $feature) {
+            if ($this->route_name === $prefix || str_starts_with($this->route_name, $prefix.'.')) {
+                return $feature;
+            }
+        }
+
+        return null;
+    }
+
     public function isVisibleToCurrentUser(): bool
     {
         $gate = $this->requiredGate();
 
-        return $gate === null || Gate::allows($gate);
+        if ($gate !== null && ! Gate::allows($gate)) {
+            return false;
+        }
+
+        $feature = $this->requiredFeature();
+
+        return $feature === null || Features::enabled($feature);
     }
 
     /**

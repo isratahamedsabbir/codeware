@@ -93,28 +93,52 @@ it('backs up the file before writing', function () {
     expect(glob($backupDir.'/env-*.env') ?: [])->toHaveCount(1);
 });
 
-it('renders the env tab with current values and never exposes APP_KEY or MySQL', function () {
+it('renders the env tab with app name, environment, debug mode, and urls, never exposing APP_KEY or MySQL', function () {
     $response = $this->get(route('admin.settings'));
 
     $response->assertOk();
     $response->assertSee('Env');
-    $response->assertSee('Email');
+    $response->assertSee('App Name');
+    $response->assertSee('Environment');
+    $response->assertSee('Debug Mode');
+    $response->assertSee('App URL');
+    $response->assertSee('Frontend URL');
     $response->assertDontSee('MySQL');
     $response->assertDontSee('untouchedsecretkeyvalue');
 });
 
-it('can save environment settings and clears the config cache, leaving MySQL untouched', function () {
+it('can save environment settings and clears the config cache, leaving MySQL and APP_KEY untouched', function () {
     Livewire::test(SettingsIndex::class)
         ->set('env.APP_NAME', 'Renamed App')
+        ->set('env.APP_ENV', 'staging')
+        ->set('env.APP_DEBUG', 'false')
         ->call('confirmSaveEnv')
         ->call('saveEnv');
 
     expect(EnvFile::get('APP_NAME'))->toBe('Renamed App')
+        ->and(EnvFile::get('APP_ENV'))->toBe('staging')
+        ->and(EnvFile::get('APP_DEBUG'))->toBe('false')
         // MySQL was removed from the editable fields entirely, so it must be untouched.
         ->and(EnvFile::get('DB_HOST'))->toBe('127.0.0.1')
         ->and(EnvFile::get('DB_DATABASE'))->toBe('testing')
         // APP_KEY was never part of the form, so it must be untouched.
         ->and(EnvFile::get('APP_KEY'))->toBe('base64:untouchedsecretkeyvalue==');
+});
+
+it('accepts developer as a valid environment option', function () {
+    Livewire::test(SettingsIndex::class)
+        ->set('env.APP_ENV', 'developer')
+        ->call('confirmSaveEnv')
+        ->assertHasNoErrors(['env.APP_ENV']);
+});
+
+it('rejects an unknown environment value', function () {
+    Livewire::test(SettingsIndex::class)
+        ->set('env.APP_ENV', 'not-a-real-env')
+        ->call('confirmSaveEnv')
+        ->assertHasErrors(['env.APP_ENV']);
+
+    expect(EnvFile::get('APP_ENV'))->toBe('local');
 });
 
 it('rejects an invalid app url before opening the confirm modal', function () {
@@ -177,7 +201,7 @@ it('preserves the file\'s CRLF line endings when writing', function () {
 });
 
 it('surfaces a clear error instead of a false success when the write fails', function () {
-    $component = Livewire::test(SettingsIndex::class)->set('env.APP_NAME', 'Whatever');
+    $component = Livewire::test(SettingsIndex::class)->set('env.APP_DEBUG', 'false');
 
     // Break the path only now, after mount()/loadEnv() already succeeded, so the write
     // itself is what fails — not component setup.
