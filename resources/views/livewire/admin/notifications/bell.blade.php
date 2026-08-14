@@ -26,7 +26,7 @@
             <flux:menu.separator />
 
             @forelse ($notifications as $notification)
-                <a href="{{ $notification->link ?? '#' }}" wire:navigate wire:click="markAsRead({{ $notification->id }})"
+                <a href="{{ $notification->data['link'] ?? '#' }}" wire:navigate wire:click="markAsRead('{{ $notification->id }}')"
                     class="flex items-start gap-2.5 px-3 py-2.5 rounded-lg transition-colors
                     {{ $notification->read_at
                         ? 'hover:bg-zinc-100'
@@ -41,10 +41,10 @@
                     <span class="min-w-0 flex-1">
                         <span
                             class="block text-[13px] leading-snug {{ $notification->read_at ? 'font-medium text-zinc-500' : 'font-semibold text-zinc-800' }}">
-                            {{ $notification->title }}
+                            {{ $notification->data['title'] }}
                         </span>
-                        @if ($notification->message)
-                            <span class="block mt-0.5 text-xs text-zinc-500 truncate">{{ $notification->message }}</span>
+                        @if ($notification->data['message'] ?? null)
+                            <span class="block mt-0.5 text-xs text-zinc-500 truncate">{{ $notification->data['message'] }}</span>
                         @endif
                         <span class="block mt-0.5 text-[10px] text-zinc-400">{{ $notification->created_at->diffForHumans() }}</span>
                     </span>

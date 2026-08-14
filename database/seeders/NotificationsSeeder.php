@@ -2,9 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\AdminNotification;
 use App\Models\User;
+use App\Notifications\AdminAlert;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Notification;
 
 class NotificationsSeeder extends Seeder
 {
@@ -19,20 +20,16 @@ class NotificationsSeeder extends Seeder
             return;
         }
 
-        foreach ($admins as $admin) {
-            AdminNotification::create([
-                'user_id' => $admin->id,
-                'title' => 'Welcome to the admin panel',
-                'message' => 'This is where you will see updates about contacts, orders and system events.',
-                'link' => route('admin.dashboard'),
-            ]);
+        Notification::send($admins, new AdminAlert(
+            'Welcome to the admin panel',
+            'This is where you will see updates about contacts, orders and system events.',
+            route('admin.dashboard'),
+        ));
 
-            AdminNotification::create([
-                'user_id' => $admin->id,
-                'title' => 'New contact message',
-                'message' => 'Sample visitor: Please call me about pricing.',
-                'link' => route('admin.contacts'),
-            ]);
-        }
+        Notification::send($admins, new AdminAlert(
+            'New contact message',
+            'Sample visitor: Please call me about pricing.',
+            route('admin.contacts'),
+        ));
     }
 }

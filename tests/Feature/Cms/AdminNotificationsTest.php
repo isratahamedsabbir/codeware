@@ -1,15 +1,20 @@
 <?php
 
 use App\Livewire\Admin\Notifications\Bell;
-use App\Models\AdminNotification;
 use App\Models\Contact;
 use App\Models\User;
+use App\Notifications\AdminAlert;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
 it('shows unread notification count on the bell', function () {
     $admin = User::factory()->create(['is_admin' => true]);
-    AdminNotification::factory()->count(2)->create(['user_id' => $admin->id]);
-    AdminNotification::factory()->read()->create(['user_id' => $admin->id]);
+    $admin->notify(new AdminAlert('One'));
+    $admin->notify(new AdminAlert('Two'));
+    $read = $admin->notifications()->latest()->first();
+    $admin->notify(new AdminAlert('Three'));
+    $read->markAsRead();
 
     Livewire::actingAs($admin)
         ->test(Bell::class)
@@ -19,11 +24,7 @@ it('shows unread notification count on the bell', function () {
 
 it('shows the notification title and message in the dropdown', function () {
     $admin = User::factory()->create(['is_admin' => true]);
-    AdminNotification::factory()->create([
-        'user_id' => $admin->id,
-        'title' => 'New contact message',
-        'message' => 'John: Please call me',
-    ]);
+    $admin->notify(new AdminAlert('New contact message', 'John: Please call me'));
 
     Livewire::actingAs($admin)
         ->test(Bell::class)
@@ -41,7 +42,8 @@ it('shows an empty state when there are no notifications', function () {
 
 it('marks a single notification as read', function () {
     $admin = User::factory()->create(['is_admin' => true]);
-    $notification = AdminNotification::factory()->create(['user_id' => $admin->id]);
+    $admin->notify(new AdminAlert('Test'));
+    $notification = $admin->notifications()->sole();
 
     Livewire::actingAs($admin)
         ->test(Bell::class)
@@ -52,21 +54,23 @@ it('marks a single notification as read', function () {
 
 it('marks all notifications as read', function () {
     $admin = User::factory()->create(['is_admin' => true]);
-    AdminNotification::factory()->count(3)->create(['user_id' => $admin->id]);
+    $admin->notify(new AdminAlert('One'));
+    $admin->notify(new AdminAlert('Two'));
+    $admin->notify(new AdminAlert('Three'));
 
     Livewire::actingAs($admin)
         ->test(Bell::class)
         ->call('markAllRead')
         ->assertDispatched('notify');
 
-    expect(AdminNotification::unread()->count())->toBe(0);
+    expect($admin->unreadNotifications()->count())->toBe(0);
 });
 
 it('only lists notifications belonging to the current user', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $other = User::factory()->create(['is_admin' => true]);
-    AdminNotification::factory()->create(['user_id' => $admin->id, 'title' => 'Mine']);
-    AdminNotification::factory()->create(['user_id' => $other->id, 'title' => 'Theirs']);
+    $admin->notify(new AdminAlert('Mine'));
+    $other->notify(new AdminAlert('Theirs'));
 
     Livewire::actingAs($admin)
         ->test(Bell::class)
@@ -75,7 +79,9 @@ it('only lists notifications belonging to the current user', function () {
 });
 
 it('creates notifications for all admins when a contact is submitted', function () {
-    User::factory()->count(2)->create(['is_admin' => true]);
+    Notification::fake();
+
+    $admins = User::factory()->count(2)->create(['is_admin' => true]);
 
     $this->postJson('/api/v1/contacts', [
         'full_name' => 'John Doe',
@@ -85,13 +91,16 @@ it('creates notifications for all admins when a contact is submitted', function 
         'message' => 'I would like to know more.',
     ])->assertCreated();
 
-    expect(AdminNotification::count())->toBe(2);
-    expect(AdminNotification::first()->title)->toBe('New contact message');
-    expect(AdminNotification::first()->message)->toContain('Product Inquiry');
-    expect(AdminNotification::first()->link)->toBe(route('admin.contacts'));
+    Notification::assertSentTo($admins, function (AdminAlert $notification) {
+        return $notification->title === 'New contact message'
+            && str_contains($notification->message, 'Product Inquiry')
+            && $notification->link === route('admin.contacts');
+    });
 });
 
 it('does not create notifications when no admins exist', function () {
+    Notification::fake();
+
     User::factory()->create(['is_admin' => false]);
 
     $this->postJson('/api/v1/contacts', [
@@ -102,7 +111,7 @@ it('does not create notifications when no admins exist', function () {
         'message' => 'Hi there.',
     ])->assertCreated();
 
-    expect(AdminNotification::count())->toBe(0);
+    Notification::assertNothingSent();
 });
 
 it('renders the bell component in the admin layout header', function () {
@@ -115,22 +124,24 @@ it('renders the bell component in the admin layout header', function () {
         ->assertSee('aria-label="Notifications"', false);
 });
 
-it('deletes notifications when the user is deleted', function () {
+it('leaves notifications in place when the user is deleted, since the native table has no FK to users', function () {
+    // Unlike the old bespoke admin_notifications table (which had a real FK with
+    // cascadeOnDelete), Laravel's native notifications table is a polymorphic
+    // notifiable_type/notifiable_id pair with no FK constraint by design — it
+    // supports notifying any model, so it can't cascade on a specific model's
+    // delete. Orphaned rows for a deleted user are expected, not a bug.
     $admin = User::factory()->create(['is_admin' => true]);
-    AdminNotification::factory()->create(['user_id' => $admin->id]);
+    $admin->notify(new AdminAlert('Test'));
 
     $admin->delete();
 
-    expect(AdminNotification::count())->toBe(0);
+    expect(DB::table('notifications')->count())->toBe(1);
 });
 
 it('renders the bell dropdown with relative time for notifications', function () {
     $admin = User::factory()->create(['is_admin' => true]);
-    AdminNotification::factory()->create([
-        'user_id' => $admin->id,
-        'title' => 'System update',
-        'created_at' => now()->subMinutes(5),
-    ]);
+    $admin->notify(new AdminAlert('System update'));
+    $admin->notifications()->update(['created_at' => now()->subMinutes(5)]);
 
     Livewire::actingAs($admin)
         ->test(Bell::class)
@@ -149,8 +160,8 @@ it('keeps contact notification link pointing to the contacts page', function () 
         'message' => 'Need help.',
     ]);
 
-    $notification = AdminNotification::where('user_id', $admin->id)->first();
+    $notification = $admin->notifications()->first();
 
     expect($notification)->not->toBeNull();
-    expect($notification->title)->toBe('New contact message');
+    expect($notification->data['title'])->toBe('New contact message');
 });
