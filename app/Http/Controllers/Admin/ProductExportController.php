@@ -38,7 +38,7 @@ class ProductExportController extends Controller
             // A UTF-8 BOM so Excel doesn't mangle non-Latin (e.g. Bengali) text.
             fwrite($handle, "\xEF\xBB\xBF");
 
-            fputcsv($handle, ['ID', 'Name (EN)', 'Name (BN)', 'Slug', 'Category', 'Status', 'Featured', 'Sort Order', 'Created At']);
+            fputcsv($handle, ['ID', 'Name (EN)', 'Name (BN)', 'Slug', 'Category', 'Price', 'Status', 'Featured', 'Sort Order', 'Created At']);
 
             foreach ($products as $product) {
                 fputcsv($handle, [
@@ -47,6 +47,7 @@ class ProductExportController extends Controller
                     $product->getTranslation('name', 'bn', false),
                     $product->slug,
                     $product->category?->getTranslation('name', 'en', false),
+                    $product->price,
                     $product->status,
                     $product->is_featured ? 'Yes' : 'No',
                     $product->sort_order,

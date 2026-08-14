@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Admin\FileManagerController;
 use App\Http\Controllers\Admin\ProductExportController;
+use App\Http\Controllers\Admin\ReportExportController;
 use App\Livewire\Admin\Dashboard;
+use App\Livewire\Admin\Orders\Show;
 use App\Livewire\Admin\Posts\Form;
 use App\Livewire\Admin\Posts\Index;
 use App\Livewire\Admin\Profile;
@@ -98,6 +100,15 @@ Route::middleware('can:access-admin-system')->group(function () {
     // Menu
     Route::middleware('feature:menu')->group(function () {
         Route::get('/menu', App\Livewire\Admin\Menu\Index::class)->name('menu');
+    });
+
+    // Orders & Reports
+    Route::middleware('feature:orders')->group(function () {
+        Route::get('/orders', App\Livewire\Admin\Orders\Index::class)->name('orders');
+        Route::get('/orders/{id}', Show::class)->name('orders.show');
+
+        Route::get('/reports', App\Livewire\Admin\Reports\Index::class)->name('reports');
+        Route::get('/reports/export', [ReportExportController::class, 'export'])->name('reports.export');
     });
 });
 

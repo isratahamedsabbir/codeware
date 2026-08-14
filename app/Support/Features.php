@@ -17,6 +17,7 @@ class Features
     public const ALL = [
         'blog' => 'Blog (Posts, Categories, Tags)',
         'products' => 'Products',
+        'orders' => 'Orders & Reports',
         'pages' => 'Pages',
         'media-library' => 'Media Library',
         'file-manager' => 'File Manager',

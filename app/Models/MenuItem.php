@@ -40,6 +40,8 @@ class MenuItem extends Model
         'admin.languages',
         'admin.translations',
         'admin.menu',
+        'admin.orders',
+        'admin.reports',
     ];
 
     /**
@@ -62,6 +64,8 @@ class MenuItem extends Model
         'admin.email-templates' => 'email-templates',
         'admin.languages' => 'localization',
         'admin.translations' => 'localization',
+        'admin.orders' => 'orders',
+        'admin.reports' => 'orders',
     ];
 
     protected $fillable = [

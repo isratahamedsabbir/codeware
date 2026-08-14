@@ -70,6 +70,7 @@ class ProductController extends Controller
             'id' => $product->id,
             'slug' => $product->slug,
             'name' => $product->getTranslation('name', $locale, useFallbackLocale: true),
+            'price' => (float) $product->price,
             'featured_image' => $product->featured_image,
             'is_featured' => $product->is_featured,
             'og_image' => $product->page?->og_image,

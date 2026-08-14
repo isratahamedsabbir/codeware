@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\Admin\ProductCategoryController as AdminProductC
 use App\Http\Controllers\Api\V1\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Api\V1\ContactController;
 use App\Http\Controllers\Api\V1\LayoutController;
+use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\PageController;
 use App\Http\Controllers\Api\V1\PostController;
 use App\Http\Controllers\Api\V1\ProductCategoryController;
@@ -31,6 +32,11 @@ Route::get('/products', [ProductController::class, 'index'])->name('products.ind
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
 
 Route::post('/contacts', [ContactController::class, 'store'])->name('contacts.store');
+
+Route::middleware('feature:orders')->group(function () {
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+    Route::get('/orders/{orderNumber}', [OrderController::class, 'show'])->name('orders.show');
+});
 
 // Admin endpoints — require Sanctum token AND admin role
 Route::middleware(['auth:sanctum', 'can:access-admin'])->prefix('admin')->name('admin.')->group(function () {

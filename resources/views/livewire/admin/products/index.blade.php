@@ -64,10 +64,11 @@
             <table class="w-full border-collapse" style="table-layout:fixed">
                 <colgroup>
                     <col style="width:5%">
-                    <col style="width:23%">
-                    <col style="width:16%">
-                    <col style="width:16%">
+                    <col style="width:20%">
+                    <col style="width:13%">
+                    <col style="width:13%">
                     <col style="width:10%">
+                    <col style="width:9%">
                     <col style="width:10%">
                     <col style="width:20%">
                 </colgroup>
@@ -77,6 +78,7 @@
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Name</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Slug</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Category</th>
+                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Price</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Featured</th>
                         <th class="px-4 py-2.5 text-right text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
@@ -128,6 +130,11 @@
                                 @else
                                     <span class="text-zinc-300 text-sm">—</span>
                                 @endif
+                            </td>
+
+                            {{-- Price --}}
+                            <td class="px-4 py-3.5">
+                                <span class="text-sm text-zinc-700 font-medium">{{ number_format((float) $product->price, 2) }}</span>
                             </td>
 
                             {{-- Status --}}
@@ -273,7 +280,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-16 text-center">
+                            <td colspan="8" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />

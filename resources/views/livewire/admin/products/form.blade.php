@@ -117,6 +117,13 @@
                 </div>
                 <div class="px-4 py-3 border-b border-zinc-50">
                     <flux:field>
+                        <flux:label>Price</flux:label>
+                        <flux:input type="number" wire:model="price" min="0" step="0.01" />
+                        <flux:error name="price" />
+                    </flux:field>
+                </div>
+                <div class="px-4 py-3 border-b border-zinc-50">
+                    <flux:field>
                         <flux:label>Sort Order</flux:label>
                         <flux:input type="number" wire:model="sort_order" min="0" />
                     </flux:field>

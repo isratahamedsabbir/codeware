@@ -21,12 +21,13 @@ class Product extends Model
     protected $fillable = [
         'product_category_id', 'name', 'slug', 'description',
         'faq',
-        'featured_image', 'status', 'is_featured',
+        'featured_image', 'status', 'price', 'is_featured',
         'sort_order', 'puck_data',
     ];
 
     protected $casts = [
         'faq' => 'array',
+        'price' => 'decimal:2',
         'is_featured' => 'boolean',
         'sort_order' => 'integer',
         'puck_data' => 'array',

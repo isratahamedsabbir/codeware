@@ -32,6 +32,9 @@ class Form extends Component
     #[Validate('in:active,inactive')]
     public string $status = 'active';
 
+    #[Validate('required|numeric|min:0')]
+    public string $price = '0';
+
     public bool $is_featured = false;
 
     public int $sort_order = 0;
@@ -58,6 +61,7 @@ class Form extends Component
             $this->slug = $product->slug;
             $this->product_category_id = $product->product_category_id;
             $this->status = $product->status;
+            $this->price = (string) $product->price;
             $this->is_featured = (bool) $product->is_featured;
             $this->sort_order = $product->sort_order;
             $this->description_en = $product->getTranslation('description', 'en', false) ?? '';
@@ -155,6 +159,7 @@ class Form extends Component
             'name' => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
             'slug' => $this->slug,
             'status' => $this->status,
+            'price' => $this->price,
             'is_featured' => $this->is_featured,
             'sort_order' => $this->sort_order,
             'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,

@@ -19,6 +19,7 @@ class ProductFactory extends Factory
             'description' => ['en' => fake()->paragraph(), 'bn' => fake()->paragraph()],
             'featured_image' => null,
             'status' => 'inactive',
+            'price' => fake()->randomFloat(2, 100, 5000),
             'is_featured' => false,
             'sort_order' => 0,
         ];

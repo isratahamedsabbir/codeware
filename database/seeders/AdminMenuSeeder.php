@@ -25,13 +25,18 @@ class AdminMenuSeeder extends Seeder
             ['Products', 'cube', 'admin.products'],
         ]);
 
-        $this->group('Blog', 4, [
+        $this->group('Sales', 4, [
+            ['Orders', 'shopping-bag', 'admin.orders'],
+            ['Reports', 'chart-bar', 'admin.reports'],
+        ]);
+
+        $this->group('Blog', 5, [
             ['Post Categories', 'squares-2x2', 'admin.post-categories'],
             ['Tags', 'tag', 'admin.tags'],
             ['Posts', 'document-text', 'admin.posts'],
         ]);
 
-        $this->group('Library & System', 5, [
+        $this->group('Library & System', 6, [
             ['Settings', 'cog-6-tooth', 'admin.settings'],
             ['Media Library', 'photo', 'admin.media-library'],
             ['File Manager', 'folder', 'admin.file-manager'],
@@ -40,20 +45,20 @@ class AdminMenuSeeder extends Seeder
             ['Menu', 'bars-3', 'admin.menu'],
         ]);
 
-        $this->group('Inquiries', 6, [
+        $this->group('Inquiries', 7, [
             ['Contacts', 'inbox', 'admin.contacts'],
         ]);
 
-        $this->group('Content', 7, [
+        $this->group('Content', 8, [
             ['Pages', 'document', 'admin.pages'],
         ]);
 
-        $this->group('Localization', 8, [
+        $this->group('Localization', 9, [
             ['Languages', 'language', 'admin.languages'],
             ['Translations', 'chat-bubble-left-right', 'admin.translations'],
         ]);
 
-        $this->group('Access Control', 9, [
+        $this->group('Access Control', 10, [
             ['Roles', 'shield-check', 'admin.roles'],
             ['Permissions', 'lock-closed', 'admin.permissions'],
             ['Users', 'users', 'admin.users'],
