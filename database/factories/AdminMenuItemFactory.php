@@ -17,6 +17,7 @@ class AdminMenuItemFactory extends Factory
             'url' => null,
             'sort_order' => 0,
             'is_active' => true,
+            'is_short_menu' => false,
         ];
     }
 
@@ -31,5 +32,10 @@ class AdminMenuItemFactory extends Factory
     public function inactive(): static
     {
         return $this->state(['is_active' => false]);
+    }
+
+    public function shortMenu(): static
+    {
+        return $this->state(['is_short_menu' => true]);
     }
 }

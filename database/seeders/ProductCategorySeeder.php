@@ -2,13 +2,18 @@
 
 namespace Database\Seeders;
 
+use App\Models\Page;
 use App\Models\ProductCategory;
+use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class ProductCategorySeeder extends Seeder
 {
     public function run(): void
     {
+        $admin = User::where('is_admin', true)->first();
+
         $categories = [
             ['en' => 'Micronutrients',     'bn' => 'মাইক্রোনিউট্রিয়েন্ট', 'sort_order' => 1],
             ['en' => 'Fertilizers',        'bn' => 'সার', 'sort_order' => 2],
@@ -18,10 +23,23 @@ class ProductCategorySeeder extends Seeder
         ];
 
         foreach ($categories as $cat) {
-            ProductCategory::firstOrCreate(
-                ['slug' => \Illuminate\Support\Str::slug($cat['en'])],
+            $slug = Str::slug($cat['en']);
+
+            $category = ProductCategory::firstOrCreate(
+                ['slug' => $slug],
                 [
-                    'name'       => ['en' => $cat['en'], 'bn' => $cat['bn']],
+                    'name' => ['en' => $cat['en'], 'bn' => $cat['bn']],
+                    'sort_order' => $cat['sort_order'],
+                ]
+            );
+
+            Page::updateOrCreate(
+                ['type' => 'product_category', 'category_id' => $category->id],
+                [
+                    'user_id' => $admin?->id,
+                    'title' => ['en' => $cat['en'], 'bn' => $cat['bn']],
+                    'slug' => $slug,
+                    'status' => 'active',
                     'sort_order' => $cat['sort_order'],
                 ]
             );

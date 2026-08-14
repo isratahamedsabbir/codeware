@@ -18,10 +18,12 @@ return new class extends Migration
             $table->string('url', 255)->nullable();
             $table->unsignedInteger('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
+            $table->boolean('is_short_menu')->default(false);
             $table->timestamps();
 
             $table->index(['parent_id', 'sort_order']);
             $table->index(['is_active', 'sort_order']);
+            $table->index(['is_short_menu', 'sort_order']);
         });
     }
 

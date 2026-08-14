@@ -33,12 +33,6 @@ class Form extends Component
     #[Validate('nullable|string')]
     public string $description_bn = '';
 
-    #[Validate('nullable|string|max:255')]
-    public string $seo_title = '';
-
-    #[Validate('nullable|string')]
-    public string $seo_description = '';
-
     #[Validate('nullable|integer|exists:categories,id,type,post')]
     public ?int $category_id = null;
 
@@ -52,25 +46,9 @@ class Form extends Component
 
     public string $featuredImagePickerId = '';
 
-    #[Validate('nullable|string')]
-    public ?string $og_image = null;
-
-    public string $ogImagePickerId = '';
-
-    #[Validate('nullable|string|max:255')]
-    public string $og_title = '';
-
-    #[Validate('nullable|string|max:255')]
-    public string $og_description = '';
-
-    public bool $no_index = false;
-
-    public bool $no_follow = false;
-
     public function mount(?int $id = null): void
     {
         $this->featuredImagePickerId = 'featured-image-picker-'.Str::uuid()->toString();
-        $this->ogImagePickerId = 'og-image-picker-'.Str::uuid()->toString();
 
         if ($id) {
             $post = Post::with('page', 'tags')->findOrFail($id);
@@ -85,17 +63,9 @@ class Form extends Component
             $this->featured_image = $post->featured_image ?? '';
             $this->tag_ids = $post->tags->pluck('id')->all();
 
-            // SEO fields and OG image live on the paired Page record, not on the post
-            // itself — the Page is the single source of truth for a post's SEO data.
-            $page = $post->page;
-            $this->pageId = $page?->id;
-            $this->og_image = $page?->og_image ?? null;
-            $this->seo_title = $page?->seo_title ?? '';
-            $this->seo_description = $page?->seo_description ?? '';
-            $this->og_title = $page?->og_title ?? '';
-            $this->og_description = $page?->og_description ?? '';
-            $this->no_index = (bool) $page?->no_index;
-            $this->no_follow = (bool) $page?->no_follow;
+            // SEO now lives entirely on the paired Page record, edited via the Page
+            // screen — this form only keeps the Page in sync on title/slug/status.
+            $this->pageId = $post->page?->id;
         }
     }
 
@@ -215,13 +185,6 @@ class Form extends Component
                 'slug' => $this->slug,
                 'status' => $this->status,
                 'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
-                'og_image' => $this->og_image ?: null,
-                'seo_title' => $this->seo_title ?: null,
-                'seo_description' => $this->seo_description ?: null,
-                'og_title' => $this->og_title ?: null,
-                'og_description' => $this->og_description ?: null,
-                'no_index' => $this->no_index,
-                'no_follow' => $this->no_follow,
             ]
         );
         $this->pageId = $page->id;

@@ -23,6 +23,7 @@ class AdminMenuItem extends Model
         'url',
         'sort_order',
         'is_active',
+        'is_short_menu',
     ];
 
     protected function casts(): array
@@ -31,6 +32,7 @@ class AdminMenuItem extends Model
             'is_group' => 'boolean',
             'is_active' => 'boolean',
             'sort_order' => 'integer',
+            'is_short_menu' => 'boolean',
         ];
     }
 
@@ -63,6 +65,7 @@ class AdminMenuItem extends Model
     public static function flushCache(): void
     {
         Cache::forget('admin-menu:items');
+        Cache::forget('admin-menu:short-items');
     }
 
     /**
@@ -110,5 +113,22 @@ class AdminMenuItem extends Model
             )))
             ->reject(fn (self $item) => $item->is_group && $item->children->isEmpty())
             ->values();
+    }
+
+    /**
+     * Flat, cached list of items flagged for the top bar's "short menu" dropdown — a
+     * quick-access shortlist separate from the full sidebar. Groups are excluded: a
+     * group header has no link of its own, only its children can be flagged.
+     *
+     * @return Collection<int, self>
+     */
+    public static function shortMenuCached(): Collection
+    {
+        $rows = Cache::rememberForever(
+            'admin-menu:short-items',
+            fn () => static::query()->active()->where('is_short_menu', true)->where('is_group', false)->ordered()->get()->toArray(),
+        );
+
+        return static::hydrate($rows);
     }
 }

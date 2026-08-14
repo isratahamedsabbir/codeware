@@ -29,6 +29,7 @@ class RolePermissionSeeder extends Seeder
             'view contacts', 'delete contacts',
             'view roles', 'manage roles',
             'view users', 'create users', 'update users', 'delete users',
+            'view file manager', 'manage file manager',
         ];
 
         foreach ($permissions as $permission) {

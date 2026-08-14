@@ -32,6 +32,7 @@ class AdminMenuSeeder extends Seeder
         $this->group('Library & System', 4, [
             ['Settings', 'cog-6-tooth', 'admin.settings'],
             ['Media Library', 'photo', 'admin.media-library'],
+            ['File Manager', 'folder', 'admin.file-manager'],
             ['Email Templates', 'envelope', 'admin.email-templates'],
             ['Admin History', 'clock', 'admin.history'],
             ['Menu', 'bars-3', 'admin.menu'],

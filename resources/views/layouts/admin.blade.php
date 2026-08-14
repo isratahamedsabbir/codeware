@@ -190,6 +190,8 @@
 
             <div class="flex-1"></div>
 
+            <x-admin-quick-menu class="ml-3" />
+
             <livewire:admin.locale-switcher class="ml-3" />
 
             <livewire:admin.theme-switcher class="ml-3" />

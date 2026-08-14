@@ -92,6 +92,20 @@
                                 </button>
                             @endif
 
+                            {{-- Toggle short menu (top bar quick-access dropdown) --}}
+                            @unless ($item->is_group)
+                                <div class="relative group">
+                                    <button wire:click="toggleShortMenu({{ $item->id }})"
+                                        aria-label="{{ $item->is_short_menu ? __('Remove from short menu') : __('Add to short menu') }}"
+                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg border transition-all duration-150 {{ $item->is_short_menu ? 'bg-amber-50 text-amber-500' : 'bg-zinc-50 text-zinc-400' }} hover:bg-amber-500 hover:text-white hover:-translate-y-px">
+                                        <flux:icon.bolt class="w-3.5 h-3.5" variant="{{ $item->is_short_menu ? 'solid' : 'outline' }}" />
+                                    </button>
+                                    <span class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[11px] font-medium bg-amber-500 text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                        {{ $item->is_short_menu ? __('Remove from short menu') : __('Add to short menu') }}
+                                    </span>
+                                </div>
+                            @endunless
+
                             {{-- Toggle active --}}
                             <div class="relative group">
                                 <button wire:click="toggleActive({{ $item->id }})"
@@ -166,6 +180,11 @@
                                         @endif
                                     </div>
                                     <div class="flex items-center gap-1.5 shrink-0">
+                                        <button wire:click="toggleShortMenu({{ $child->id }})"
+                                            aria-label="{{ $child->is_short_menu ? __('Remove from short menu') : __('Add to short menu') }}"
+                                            class="inline-flex items-center justify-center w-7 h-7 rounded-lg border transition-all duration-150 {{ $child->is_short_menu ? 'bg-amber-50 text-amber-500' : 'bg-white text-zinc-400' }} hover:bg-amber-500 hover:text-white">
+                                            <flux:icon.bolt class="w-3 h-3" variant="{{ $child->is_short_menu ? 'solid' : 'outline' }}" />
+                                        </button>
                                         <button wire:click="toggleActive({{ $child->id }})"
                                             aria-label="{{ $child->is_active ? __('Deactivate') : __('Activate') }}"
                                             class="inline-flex items-center justify-center w-7 h-7 rounded-lg border transition-all duration-150 bg-white text-zinc-500 hover:bg-zinc-600 hover:text-white">

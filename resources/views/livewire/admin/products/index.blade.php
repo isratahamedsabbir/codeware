@@ -176,6 +176,39 @@
                                         </span>
                                     </div>
 
+                                    {{-- Page (SEO) --}}
+                                    <div class="relative group">
+                                        @if ($product->page)
+                                            <a href="{{ route('admin.pages.edit', $product->page->id) }}" wire:navigate
+                                                aria-label="Edit page"
+                                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg border transition-all duration-150 bg-violet-50 text-violet-500 hover:bg-violet-500 hover:text-white hover:-translate-y-px"
+                                                style="box-shadow:none"
+                                                onmouseover="this.style.boxShadow='0 3px 8px rgba(139,92,246,.35)'"
+                                                onmouseout="this.style.boxShadow='none'">
+                                                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2">
+                                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                                    <polyline points="14 2 14 8 20 8" />
+                                                </svg>
+                                            </a>
+                                        @else
+                                            <span aria-label="No page yet"
+                                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg border bg-zinc-50 text-zinc-300 cursor-not-allowed">
+                                                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2">
+                                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                                    <polyline points="14 2 14 8 20 8" />
+                                                </svg>
+                                            </span>
+                                        @endif
+                                        <span
+                                            class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[11px] font-medium bg-violet-500 text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                            Page
+                                            <span
+                                                class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-violet-500"></span>
+                                        </span>
+                                    </div>
+
                                     {{-- Content / Layout --}}
                                     <div class="relative group">
                                         <button wire:click="openPuckEditor({{ $product->id }})"

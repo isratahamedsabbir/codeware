@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 use Spatie\Translatable\HasTranslations;
 
@@ -15,9 +16,9 @@ class PostCategory extends Model
 
     protected $table = 'categories';
 
-    public array $translatable = ['name', 'description', 'seo_title', 'seo_description'];
+    public array $translatable = ['name', 'description'];
 
-    protected $fillable = ['type', 'name', 'slug', 'description', 'sort_order', 'seo_title', 'seo_description', 'status'];
+    protected $fillable = ['type', 'name', 'slug', 'description', 'sort_order', 'status'];
 
     protected static function booted(): void
     {
@@ -42,5 +43,10 @@ class PostCategory extends Model
     public function posts(): HasMany
     {
         return $this->hasMany(Post::class, 'category_id');
+    }
+
+    public function page(): HasOne
+    {
+        return $this->hasOne(Page::class, 'category_id')->where('type', 'post_category');
     }
 }

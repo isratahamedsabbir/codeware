@@ -143,6 +143,15 @@ class Index extends Component
         $this->dispatch('notify', message: __('Menu item updated successfully'));
     }
 
+    public function toggleShortMenu(int $id): void
+    {
+        $item = AdminMenuItem::findOrFail($id);
+        $item->update(['is_short_menu' => ! $item->is_short_menu]);
+
+        AdminActivity::log('updated', "Menu item: {$item->label} ".($item->is_short_menu ? 'added to' : 'removed from').' short menu');
+        $this->dispatch('notify', message: __('Menu item updated successfully'));
+    }
+
     public function confirmDelete(int $id): void
     {
         $this->deletingId = $id;

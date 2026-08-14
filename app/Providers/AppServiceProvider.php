@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Fortify\Fortify;
+use Spatie\Permission\Exceptions\PermissionDoesNotExist;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -48,6 +49,40 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
 
         Gate::define('access-admin', fn ($user) => (bool) $user->is_admin || $user->hasRole('admin'));
+
+        // File Manager reads/writes anywhere under the project root (including .env),
+        // so — unlike most admin screens — it gets its own granular gates rather than
+        // riding solely on the blanket access-admin check: 'view' for browsing/downloading,
+        // 'manage' for anything that creates, edits, or deletes. 'manage' implies 'view' —
+        // someone allowed to change files can always see them too. Deliberately does NOT
+        // fall back to hasRole('admin') the way access-admin does — that would make the
+        // permission unrevokable for admin-role users, defeating the point of having it.
+        // is_admin still bypasses unconditionally, matching every other gate in the app.
+        Gate::define('manage-file-manager', function ($user) {
+            if ((bool) $user->is_admin) {
+                return true;
+            }
+
+            try {
+                return $user->hasPermissionTo('manage file manager');
+            } catch (PermissionDoesNotExist) {
+                // The permission hasn't been seeded yet (e.g. a fresh install) — fail
+                // closed rather than crashing the request.
+                return false;
+            }
+        });
+
+        Gate::define('view-file-manager', function ($user) {
+            if ((bool) $user->is_admin || Gate::forUser($user)->allows('manage-file-manager')) {
+                return true;
+            }
+
+            try {
+                return $user->hasPermissionTo('view file manager');
+            } catch (PermissionDoesNotExist) {
+                return false;
+            }
+        });
 
         Gate::policy(MediaLibrary::class, MediaLibraryPolicy::class);
 

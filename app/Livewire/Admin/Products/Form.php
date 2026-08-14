@@ -44,32 +44,11 @@ class Form extends Component
 
     public string $featured_image = '';
 
-    public string $og_image = '';
-
     public string $featuredImagePickerId = '';
-
-    public string $ogImagePickerId = '';
-
-    #[Validate('nullable|string|max:255')]
-    public string $seo_title = '';
-
-    #[Validate('nullable|string')]
-    public string $seo_description = '';
-
-    #[Validate('nullable|string|max:255')]
-    public string $og_title = '';
-
-    #[Validate('nullable|string|max:255')]
-    public string $og_description = '';
-
-    public bool $no_index = false;
-
-    public bool $no_follow = false;
 
     public function mount(?int $id = null): void
     {
         $this->featuredImagePickerId = 'featured-image-'.Str::uuid()->toString();
-        $this->ogImagePickerId = 'og-image-'.Str::uuid()->toString();
 
         if ($id) {
             $product = Product::findOrFail($id);
@@ -86,18 +65,9 @@ class Form extends Component
 
             $this->featured_image = $product->featured_image ?? '';
 
-            // SEO fields and OG image live on the paired Page record, not on the product
-            // itself — the Page is the single source of truth for a product's SEO data.
-            $page = $product->page;
-            $this->pageId = $page?->id;
-
-            $this->og_image = $page?->og_image ?? '';
-            $this->seo_title = $page?->seo_title ?? '';
-            $this->seo_description = $page?->seo_description ?? '';
-            $this->og_title = $page?->og_title ?? '';
-            $this->og_description = $page?->og_description ?? '';
-            $this->no_index = (bool) $page?->no_index;
-            $this->no_follow = (bool) $page?->no_follow;
+            // SEO now lives entirely on the paired Page record, edited via the Page
+            // screen — this form only keeps the Page in sync on title/slug/status.
+            $this->pageId = $product->page?->id;
         }
     }
 
@@ -208,13 +178,6 @@ class Form extends Component
                 'status' => $this->status,
                 'sort_order' => $this->sort_order,
                 'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
-                'og_image' => $this->og_image ?: null,
-                'seo_title' => $this->seo_title ?: null,
-                'seo_description' => $this->seo_description ?: null,
-                'og_title' => $this->og_title ?: null,
-                'og_description' => $this->og_description ?: null,
-                'no_index' => $this->no_index,
-                'no_follow' => $this->no_follow,
             ]
         );
         $this->pageId = $page->id;

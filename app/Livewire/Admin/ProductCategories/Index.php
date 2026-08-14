@@ -12,6 +12,7 @@ class Index extends Component
     use WithPagination;
 
     public string $search = '';
+
     public ?int $deletingId = null;
 
     public function updatedSearch(): void
@@ -51,6 +52,7 @@ class Index extends Component
                 ->when($this->search, fn ($q) => $q
                     ->where('name->en', 'like', "%{$this->search}%")
                     ->orWhere('name->bn', 'like', "%{$this->search}%"))
+                ->with('page')
                 ->withCount('products')
                 ->orderBy('sort_order')
                 ->orderBy('id')

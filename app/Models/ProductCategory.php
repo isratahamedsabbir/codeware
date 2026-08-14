@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 use Spatie\Translatable\HasTranslations;
 
@@ -15,9 +16,9 @@ class ProductCategory extends Model
 
     protected $table = 'categories';
 
-    public array $translatable = ['name', 'description', 'seo_title', 'seo_description'];
+    public array $translatable = ['name', 'description'];
 
-    protected $fillable = ['type', 'name', 'slug', 'description', 'icon', 'sort_order', 'status', 'seo_title', 'seo_description', 'og_image'];
+    protected $fillable = ['type', 'name', 'slug', 'description', 'icon', 'sort_order', 'status'];
 
     protected static function booted(): void
     {
@@ -42,5 +43,10 @@ class ProductCategory extends Model
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
+    }
+
+    public function page(): HasOne
+    {
+        return $this->hasOne(Page::class, 'category_id')->where('type', 'product_category');
     }
 }

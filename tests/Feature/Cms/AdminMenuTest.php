@@ -222,3 +222,44 @@ it('hides an inactive item from the live sidebar but keeps it in the management 
 
     Livewire::test(MenuIndex::class)->assertSee('Contacts');
 });
+
+it('can toggle a menu item into and out of the short menu', function () {
+    $item = AdminMenuItem::factory()->create(['is_short_menu' => false]);
+
+    Livewire::test(MenuIndex::class)->call('toggleShortMenu', $item->id);
+    expect($item->fresh()->is_short_menu)->toBeTrue();
+
+    Livewire::test(MenuIndex::class)->call('toggleShortMenu', $item->id);
+    expect($item->fresh()->is_short_menu)->toBeFalse();
+});
+
+it('only includes active, non-group, short-menu-flagged items in shortMenuCached', function () {
+    $flagged = AdminMenuItem::factory()->shortMenu()->create(['label' => 'Flagged', 'sort_order' => 1]);
+    AdminMenuItem::factory()->create(['label' => 'Unflagged', 'sort_order' => 2]);
+    AdminMenuItem::factory()->shortMenu()->inactive()->create(['label' => 'Flagged Inactive', 'sort_order' => 3]);
+    $flaggedGroup = AdminMenuItem::factory()->group()->create(['label' => 'Flagged Group', 'sort_order' => 4]);
+    $flaggedGroup->forceFill(['is_short_menu' => true])->save();
+
+    expect(AdminMenuItem::shortMenuCached()->pluck('label')->all())->toBe(['Flagged']);
+});
+
+it('reflects a short menu toggle in the cache immediately', function () {
+    $item = AdminMenuItem::factory()->create(['label' => 'Reports']);
+
+    expect(AdminMenuItem::shortMenuCached()->pluck('label')->all())->toBe([]);
+
+    Livewire::test(MenuIndex::class)->call('toggleShortMenu', $item->id);
+
+    expect(AdminMenuItem::shortMenuCached()->pluck('label')->all())->toBe(['Reports']);
+});
+
+it('shows the short menu dropdown in the admin top bar only when items are flagged', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $this->actingAs($admin);
+
+    $this->get(route('admin.dashboard'))->assertOk()->assertDontSee(__('Short Menu'));
+
+    AdminMenuItem::factory()->shortMenu()->create(['label' => 'Quick Reports', 'url' => '/admin/reports']);
+
+    $this->get(route('admin.dashboard'))->assertOk()->assertSee('Quick Reports')->assertSee(__('Short Menu'));
+});

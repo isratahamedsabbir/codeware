@@ -13,7 +13,9 @@ use Livewire\Livewire;
 // SEO fields (seo_title, seo_description, og_image) were moved off products/posts
 // entirely — the paired `pages` row (Product::page()/Post::page()) is now the only place
 // they live. These fields are single-language (not translatable) — meta data doesn't
-// need a per-locale value. These tests cover every read/write path that touches them.
+// need a per-locale value. SEO is edited exclusively on the Page screen now, so the
+// product/post admin forms no longer expose or write these fields at all — only the
+// non-SEO sync (title/slug/status/description) still flows from those forms to the page.
 
 it('no longer has seo columns on products or posts', function () {
     expect(Schema::hasColumn('products', 'seo_title'))->toBeFalse()
@@ -24,9 +26,9 @@ it('no longer has seo columns on products or posts', function () {
         ->and(Schema::hasColumn('posts', 'og_image'))->toBeFalse();
 });
 
-// --- Livewire admin forms ---
+// --- Livewire admin forms no longer touch SEO ---
 
-it('loads a product\'s SEO fields from its page when editing', function () {
+it('does not expose seo fields on the product admin form', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $this->actingAs($admin);
 
@@ -40,31 +42,29 @@ it('loads a product\'s SEO fields from its page when editing', function () {
     ]);
 
     Livewire::test(ProductForm::class, ['id' => $product->id])
-        ->assertSet('seo_title', 'Page SEO Title')
-        ->assertSet('seo_description', 'Page SEO Description')
-        ->assertSet('og_image', '/og.png');
+        ->assertSet('pageId', Page::where(['type' => 'product', 'product_id' => $product->id])->value('id'));
 });
 
-it('saves a product\'s SEO fields to its page, not the product', function () {
+it('saving a product leaves its page\'s seo fields untouched', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $this->actingAs($admin);
 
-    Livewire::test(ProductForm::class)
-        ->set('name_en', 'New Product')
-        ->set('seo_title', 'My SEO Title')
-        ->set('seo_description', 'My SEO Description')
-        ->set('og_image', '/new-og.png')
+    $product = Product::factory()->create();
+    Page::create([
+        'type' => 'product', 'product_id' => $product->id, 'user_id' => $admin->id,
+        'title' => ['en' => 'Title'], 'slug' => $product->slug, 'status' => 'active',
+        'seo_title' => 'Existing SEO Title',
+    ]);
+
+    Livewire::test(ProductForm::class, ['id' => $product->id])
+        ->set('name_en', 'Updated Product Name')
         ->call('save');
 
-    $product = Product::where('slug', 'new-product')->firstOrFail();
     $page = Page::where(['type' => 'product', 'product_id' => $product->id])->firstOrFail();
-
-    expect($page->seo_title)->toBe('My SEO Title')
-        ->and($page->seo_description)->toBe('My SEO Description')
-        ->and($page->og_image)->toBe('/new-og.png');
+    expect($page->seo_title)->toBe('Existing SEO Title');
 });
 
-it('loads a post\'s SEO fields from its page when editing', function () {
+it('does not expose seo fields on the post admin form', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $this->actingAs($admin);
 
@@ -78,28 +78,26 @@ it('loads a post\'s SEO fields from its page when editing', function () {
     ]);
 
     Livewire::test(PostForm::class, ['id' => $post->id])
-        ->assertSet('seo_title', 'Post Page SEO Title')
-        ->assertSet('seo_description', 'Post Page SEO Description')
-        ->assertSet('og_image', '/post-og.png');
+        ->assertSet('pageId', Page::where(['type' => 'post', 'post_id' => $post->id])->value('id'));
 });
 
-it('saves a post\'s SEO fields to its page, not the post', function () {
+it('saving a post leaves its page\'s seo fields untouched', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $this->actingAs($admin);
 
-    Livewire::test(PostForm::class)
-        ->set('title_en', 'New Post')
-        ->set('seo_title', 'Post SEO Title')
-        ->set('seo_description', 'Post SEO Description')
-        ->set('og_image', '/post-new-og.png')
+    $post = Post::factory()->create();
+    Page::create([
+        'type' => 'post', 'post_id' => $post->id, 'user_id' => $admin->id,
+        'title' => ['en' => 'Title'], 'slug' => $post->slug, 'status' => 'active',
+        'seo_title' => 'Existing Post SEO Title',
+    ]);
+
+    Livewire::test(PostForm::class, ['id' => $post->id])
+        ->set('title_en', 'Updated Post Title')
         ->call('save');
 
-    $post = Post::where('slug', 'new-post')->firstOrFail();
     $page = Page::where(['type' => 'post', 'post_id' => $post->id])->firstOrFail();
-
-    expect($page->seo_title)->toBe('Post SEO Title')
-        ->and($page->seo_description)->toBe('Post SEO Description')
-        ->and($page->og_image)->toBe('/post-new-og.png');
+    expect($page->seo_title)->toBe('Existing Post SEO Title');
 });
 
 // --- Public API ---

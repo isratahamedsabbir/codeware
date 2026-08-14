@@ -13,11 +13,20 @@ class Index extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $statusFilter = '';
+
     public ?int $deletingId = null;
 
-    public function updatedSearch(): void { $this->resetPage(); }
-    public function updatedStatusFilter(): void { $this->resetPage(); }
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedStatusFilter(): void
+    {
+        $this->resetPage();
+    }
 
     public function openPuckEditor(int $postId): void
     {
@@ -26,10 +35,10 @@ class Index extends Component
         $page = $post->page ?? Page::create([
             'user_id' => auth()->id(),
             'post_id' => $post->id,
-            'type'    => 'post',
-            'title'   => $post->title,
-            'slug'    => $post->slug,
-            'status'  => $post->status === 'published' ? 'active' : 'inactive',
+            'type' => 'post',
+            'title' => $post->title,
+            'slug' => $post->slug,
+            'status' => $post->status === 'published' ? 'active' : 'inactive',
         ]);
 
         auth()->user()->tokens()->where('name', 'puck-builder')->delete();
@@ -40,8 +49,8 @@ class Index extends Component
             now()->addMinutes(config('app.puck_session', 5))
         )->plainTextToken;
 
-        $url = config('cms.editor_base_url') . "/puck/edit/post/{$page->id}#token={$token}";
-        $this->js('window.open(' . json_encode($url) . ', \'_blank\')');
+        $url = config('cms.editor_base_url')."/puck/edit/post/{$page->id}#token={$token}";
+        $this->js('window.open('.json_encode($url).', \'_blank\')');
     }
 
     public function confirmDelete(int $id): void
@@ -66,7 +75,7 @@ class Index extends Component
     {
         return view('livewire.admin.posts.index', [
             'posts' => Post::query()
-                ->with(['category'])
+                ->with(['category', 'page'])
                 ->when($this->search, fn ($q) => $q
                     ->where('title->en', 'like', "%{$this->search}%")
                     ->orWhere('title->bn', 'like', "%{$this->search}%")

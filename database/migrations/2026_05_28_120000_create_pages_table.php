@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('type', 20)->default('page');
             $table->foreignId('product_id')->nullable()->constrained('products')->nullOnDelete();
             $table->foreignId('post_id')->nullable()->constrained('posts')->nullOnDelete();
+            $table->foreignId('category_id')->nullable()->constrained('categories')->nullOnDelete();
             $table->string('og_image')->nullable();
             $table->unsignedInteger('sort_order')->default(0);
             $table->string('seo_title')->nullable();

@@ -12,11 +12,20 @@ class Index extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $statusFilter = '';
+
     public ?int $deletingId = null;
 
-    public function updatedSearch(): void { $this->resetPage(); }
-    public function updatedStatusFilter(): void { $this->resetPage(); }
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedStatusFilter(): void
+    {
+        $this->resetPage();
+    }
 
     public function reorder(array $order): void
     {
@@ -28,7 +37,9 @@ class Index extends Component
     public function openPuckEditor(int $productId): void
     {
         $product = Product::with('page')->findOrFail($productId);
-        if (!$product->page) return;
+        if (! $product->page) {
+            return;
+        }
 
         auth()->user()->tokens()->where('name', 'puck-builder')->delete();
 
@@ -38,8 +49,8 @@ class Index extends Component
             now()->addMinutes(config('app.puck_session', 5))
         )->plainTextToken;
 
-        $url = config('cms.editor_base_url') . "/puck/edit/product/{$product->page->id}#token={$token}";
-        $this->js('window.open(' . json_encode($url) . ', \'_blank\')');
+        $url = config('cms.editor_base_url')."/puck/edit/product/{$product->page->id}#token={$token}";
+        $this->js('window.open('.json_encode($url).', \'_blank\')');
     }
 
     public function confirmDelete(int $id): void
@@ -67,7 +78,7 @@ class Index extends Component
     {
         return view('livewire.admin.products.index', [
             'products' => Product::query()
-                ->with('category')
+                ->with(['category', 'page'])
                 ->when($this->search, fn ($q) => $q
                     ->where('name->en', 'like', "%{$this->search}%")
                     ->orWhere('name->bn', 'like', "%{$this->search}%")

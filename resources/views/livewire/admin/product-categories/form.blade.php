@@ -60,15 +60,6 @@
                             <livewire:jodit-text-editor wire:model="description_en" :height="180" />
                         </div>
                     </flux:field>
-                    <flux:field>
-                        <flux:label>SEO Title</flux:label>
-                        <flux:input wire:model="seo_title_en" placeholder="SEO-optimized title" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>SEO Description</flux:label>
-                        <flux:textarea wire:model="seo_description_en" rows="2"
-                            placeholder="Brief description for search engines…" />
-                    </flux:field>
                 </div>
 
                 {{-- Bengali --}}
@@ -88,23 +79,6 @@
                         <div class="jodit-fixed-wrap">
                             <livewire:jodit-text-editor wire:model="description_bn" :height="180" />
                         </div>
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>SEO শিরোনাম</flux:label>
-                        <flux:input wire:model="seo_title_bn" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>SEO বিবরণ</flux:label>
-                        <flux:textarea wire:model="seo_description_bn" rows="2" />
-                    </flux:field>
-                </div>
-
-                {{-- OG Image --}}
-                <div class="mt-5 pt-4 border-t border-zinc-100">
-                    <flux:field>
-                        <flux:label>OG Image (630×1200)</flux:label>
-                        <x-media-picker model="og_image" label="" placeholder="Select OG image from library"
-                            :picker-id="$ogImagePickerId" />
                     </flux:field>
                 </div>
 
