@@ -12,6 +12,7 @@
         "php": "^8.3",
         "laravel/fortify": "^1.34",
         "laravel/framework": "^13.0",
+        "laravel/reverb": "*",
         "laravel/sanctum": "*",
         "laravel/tinker": "^3.0",
         "livewire/flux": "^2.12.0",
@@ -53,7 +54,7 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"npm run dev\" --names='server,queue,vite'"
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74,#7cc242\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"npm run dev\" \"php artisan reverb:start\" --names='server,queue,vite,reverb'"
         ],
         "lint": [
             "pint --parallel"

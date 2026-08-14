@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\LogAdminActivity;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -10,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
+        channels: __DIR__.'/../routes/channels.php',
         health: '/up',
         then: function () {
             Route::middleware(['web', 'auth', 'admin', 'activity-log'])
@@ -21,12 +25,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Applies the globally configured locale. Appended to `web` (not `api`) because
         // the public API resolves its locale from the ?locale= query parameter instead.
-        $middleware->appendToGroup('web', \App\Http\Middleware\SetLocale::class);
+        $middleware->appendToGroup('web', SetLocale::class);
 
         $middleware->alias([
-            'admin' => \App\Http\Middleware\AdminMiddleware::class,
-            'activity-log' => \App\Http\Middleware\LogAdminActivity::class,
-            'locale' => \App\Http\Middleware\SetLocale::class,
+            'admin' => AdminMiddleware::class,
+            'activity-log' => LogAdminActivity::class,
+            'locale' => SetLocale::class,
         ]);
     })
     ->withEvents(discover: [

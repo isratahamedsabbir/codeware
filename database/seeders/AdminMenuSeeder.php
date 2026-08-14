@@ -18,18 +18,20 @@ class AdminMenuSeeder extends Seeder
 
         $this->standalone('Overview', 'home', 'admin.dashboard', 1);
 
-        $this->group('Products', 2, [
+        $this->standalone('Chat', 'chat-bubble-left-right', 'admin.chat', 2);
+
+        $this->group('Products', 3, [
             ['Product Categories', 'squares-2x2', 'admin.product-categories'],
             ['Products', 'cube', 'admin.products'],
         ]);
 
-        $this->group('Blog', 3, [
+        $this->group('Blog', 4, [
             ['Post Categories', 'squares-2x2', 'admin.post-categories'],
             ['Tags', 'tag', 'admin.tags'],
             ['Posts', 'document-text', 'admin.posts'],
         ]);
 
-        $this->group('Library & System', 4, [
+        $this->group('Library & System', 5, [
             ['Settings', 'cog-6-tooth', 'admin.settings'],
             ['Media Library', 'photo', 'admin.media-library'],
             ['File Manager', 'folder', 'admin.file-manager'],
@@ -38,20 +40,20 @@ class AdminMenuSeeder extends Seeder
             ['Menu', 'bars-3', 'admin.menu'],
         ]);
 
-        $this->group('Inquiries', 5, [
+        $this->group('Inquiries', 6, [
             ['Contacts', 'inbox', 'admin.contacts'],
         ]);
 
-        $this->group('Content', 6, [
+        $this->group('Content', 7, [
             ['Pages', 'document', 'admin.pages'],
         ]);
 
-        $this->group('Localization', 7, [
+        $this->group('Localization', 8, [
             ['Languages', 'language', 'admin.languages'],
             ['Translations', 'chat-bubble-left-right', 'admin.translations'],
         ]);
 
-        $this->group('Access Control', 8, [
+        $this->group('Access Control', 9, [
             ['Roles', 'shield-check', 'admin.roles'],
             ['Permissions', 'lock-closed', 'admin.permissions'],
             ['Users', 'users', 'admin.users'],

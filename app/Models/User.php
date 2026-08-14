@@ -6,6 +6,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -42,6 +43,16 @@ class User extends Authenticatable
     public function adminNotifications(): HasMany
     {
         return $this->hasMany(AdminNotification::class);
+    }
+
+    /**
+     * Query the 1-on-1 chat conversations this user is a participant of, on either
+     * side of the pair. Not a formal Eloquent relation since a conversation's other
+     * participant can be in either the user_one_id or user_two_id column.
+     */
+    public function conversations(): Builder
+    {
+        return Conversation::forUser($this);
     }
 
     /**

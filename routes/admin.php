@@ -35,6 +35,9 @@ Route::get('/tags/{id}/edit', App\Livewire\Admin\Tags\Form::class)->name('tags.e
 // Media Library (content — Staff included)
 Route::get('/media-library', App\Livewire\Admin\MediaLibrary\Index::class)->name('media-library');
 
+// Chat — every registered user can 1-on-1 chat with any other registered user
+Route::get('/chat/{recipient?}', App\Livewire\Admin\Chat\Index::class)->name('chat');
+
 // Settings & Email Templates — Admin/Super Admin only, not Staff
 Route::middleware('can:access-admin-system')->group(function () {
     Route::get('/settings', App\Livewire\Admin\Settings\Index::class)->name('settings');
