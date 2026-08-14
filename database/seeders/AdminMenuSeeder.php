@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\AdminMenuItem;
+use App\Models\MenuItem;
 use Illuminate\Database\Seeder;
 
 class AdminMenuSeeder extends Seeder
@@ -14,7 +14,7 @@ class AdminMenuSeeder extends Seeder
      */
     public function run(): void
     {
-        AdminMenuItem::query()->delete();
+        MenuItem::query()->where('group', MenuItem::GROUP_ADMIN_SIDEBAR)->delete();
 
         $this->standalone('Overview', 'home', 'admin.dashboard', 1);
 
@@ -62,7 +62,8 @@ class AdminMenuSeeder extends Seeder
 
     protected function standalone(string $label, string $icon, string $routeName, int $sortOrder): void
     {
-        AdminMenuItem::create([
+        MenuItem::create([
+            'group' => MenuItem::GROUP_ADMIN_SIDEBAR,
             'label' => $label,
             'icon' => $icon,
             'route_name' => $routeName,
@@ -75,14 +76,16 @@ class AdminMenuSeeder extends Seeder
      */
     protected function group(string $label, int $sortOrder, array $children): void
     {
-        $group = AdminMenuItem::create([
+        $group = MenuItem::create([
+            'group' => MenuItem::GROUP_ADMIN_SIDEBAR,
             'is_group' => true,
             'label' => $label,
             'sort_order' => $sortOrder,
         ]);
 
         foreach ($children as $index => [$childLabel, $icon, $routeName]) {
-            AdminMenuItem::create([
+            MenuItem::create([
+                'group' => MenuItem::GROUP_ADMIN_SIDEBAR,
                 'parent_id' => $group->id,
                 'label' => $childLabel,
                 'icon' => $icon,

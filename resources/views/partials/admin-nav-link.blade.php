@@ -4,7 +4,7 @@
         : ($link->url ?? '#');
     $isActive = $link->route_name
         && (request()->routeIs($link->route_name) || request()->routeIs($link->route_name.'.*'));
-    $iconName = \App\Models\AdminMenuItem::iconExists($link->icon) ? $link->icon : 'link';
+    $iconName = \App\Models\MenuItem::iconExists($link->icon) ? $link->icon : 'link';
 @endphp
 <a href="{{ $href }}" wire:navigate.hover class="admin-nav-item {{ $isActive ? 'admin-nav-active' : '' }}">
     <x-dynamic-component :component="'flux::icon.'.$iconName" class="size-4.5 shrink-0" />

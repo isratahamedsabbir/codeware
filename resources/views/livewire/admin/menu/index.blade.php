@@ -61,7 +61,7 @@
                         </div>
 
                         <div class="w-6 shrink-0 text-zinc-400">
-                            @php $iconName = \App\Models\AdminMenuItem::iconExists($item->icon) ? $item->icon : 'link'; @endphp
+                            @php $iconName = \App\Models\MenuItem::iconExists($item->icon) ? $item->icon : 'link'; @endphp
                             @if ($item->is_group)
                                 <flux:icon.folder class="size-4.5" />
                             @else
@@ -169,7 +169,7 @@
                                             <line x1="3" y1="18" x2="21" y2="18" />
                                         </svg>
                                     </div>
-                                    @php $childIcon = \App\Models\AdminMenuItem::iconExists($child->icon) ? $child->icon : 'link'; @endphp
+                                    @php $childIcon = \App\Models\MenuItem::iconExists($child->icon) ? $child->icon : 'link'; @endphp
                                     <x-dynamic-component :component="'flux::icon.'.$childIcon" class="size-4 text-zinc-400 shrink-0" />
                                     <div class="flex-1 min-w-0">
                                         <span class="text-sm text-zinc-700">{{ __($child->label) }}</span>
@@ -247,7 +247,7 @@
                 <div class="flex items-center gap-2">
                     <flux:input wire:model.live="icon" placeholder="home" class="font-mono" />
                     <div class="w-9 h-9 shrink-0 rounded-lg border border-zinc-200 flex items-center justify-center text-zinc-500">
-                        @if (\App\Models\AdminMenuItem::iconExists($icon))
+                        @if (\App\Models\MenuItem::iconExists($icon))
                             <x-dynamic-component :component="'flux::icon.'.$icon" class="size-4.5" />
                         @else
                             <flux:icon.question-mark-circle class="size-4.5 text-zinc-300" />

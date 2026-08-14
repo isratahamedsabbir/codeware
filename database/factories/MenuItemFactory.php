@@ -2,13 +2,15 @@
 
 namespace Database\Factories;
 
+use App\Models\MenuItem;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class AdminMenuItemFactory extends Factory
+class MenuItemFactory extends Factory
 {
     public function definition(): array
     {
         return [
+            'group' => MenuItem::GROUP_ADMIN_SIDEBAR,
             'parent_id' => null,
             'is_group' => false,
             'label' => fake()->unique()->words(2, true),

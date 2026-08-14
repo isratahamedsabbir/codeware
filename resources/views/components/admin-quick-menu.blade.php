@@ -1,5 +1,5 @@
 @php
-    $quickMenuItems = \App\Models\AdminMenuItem::shortMenuCached()->filter->isVisibleToCurrentUser()->values();
+    $quickMenuItems = \App\Models\MenuItem::shortMenuCached()->filter->isVisibleToCurrentUser()->values();
 @endphp
 
 @if ($quickMenuItems->isNotEmpty())
@@ -15,7 +15,7 @@
                     $href = $item->route_name && \Illuminate\Support\Facades\Route::has($item->route_name)
                         ? route($item->route_name)
                         : ($item->url ?? '#');
-                    $iconName = \App\Models\AdminMenuItem::iconExists($item->icon) ? $item->icon : 'link';
+                    $iconName = \App\Models\MenuItem::iconExists($item->icon) ? $item->icon : 'link';
                 @endphp
                 <flux:menu.item :href="$href" :icon="$iconName" wire:navigate>
                     {{ __($item->label) }}

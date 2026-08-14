@@ -1,7 +1,7 @@
 <?php
 
 use App\Livewire\Admin\Menu\Index as MenuIndex;
-use App\Models\AdminMenuItem;
+use App\Models\MenuItem;
 use App\Models\User;
 use Database\Seeders\AdminMenuSeeder;
 use Livewire\Livewire;
@@ -19,16 +19,16 @@ it('checks flux icon names against the filesystem, not the unregistered flux:: v
     // Regression guard: Flux registers icons via Blade::anonymousComponentPath(), not
     // View::addNamespace(), so view()->exists('flux::icon.home') is always false and must
     // never be used for this check.
-    expect(AdminMenuItem::iconExists('home'))->toBeTrue()
-        ->and(AdminMenuItem::iconExists('cube'))->toBeTrue()
-        ->and(AdminMenuItem::iconExists('link'))->toBeTrue()
-        ->and(AdminMenuItem::iconExists('not-a-real-icon'))->toBeFalse()
-        ->and(AdminMenuItem::iconExists(null))->toBeFalse()
-        ->and(AdminMenuItem::iconExists('../../../etc/passwd'))->toBeFalse();
+    expect(MenuItem::iconExists('home'))->toBeTrue()
+        ->and(MenuItem::iconExists('cube'))->toBeTrue()
+        ->and(MenuItem::iconExists('link'))->toBeTrue()
+        ->and(MenuItem::iconExists('not-a-real-icon'))->toBeFalse()
+        ->and(MenuItem::iconExists(null))->toBeFalse()
+        ->and(MenuItem::iconExists('../../../etc/passwd'))->toBeFalse();
 });
 
 it('displays existing menu items', function () {
-    AdminMenuItem::factory()->create(['label' => 'Reports']);
+    MenuItem::factory()->create(['label' => 'Reports']);
 
     Livewire::test(MenuIndex::class)->assertSee('Reports');
 });
@@ -40,7 +40,7 @@ it('can create a standalone menu item linking to an admin page path', function (
         ->set('url', '/admin/reports')
         ->call('save');
 
-    expect(AdminMenuItem::where('label', 'Reports')->where('url', '/admin/reports')->exists())->toBeTrue();
+    expect(MenuItem::where('label', 'Reports')->where('url', '/admin/reports')->exists())->toBeTrue();
 });
 
 it('can create a menu item with a custom url', function () {
@@ -50,7 +50,7 @@ it('can create a menu item with a custom url', function () {
         ->set('url', 'https://example.com')
         ->call('save');
 
-    expect(AdminMenuItem::where('label', 'External')->where('url', 'https://example.com')->exists())->toBeTrue();
+    expect(MenuItem::where('label', 'External')->where('url', 'https://example.com')->exists())->toBeTrue();
 });
 
 it('can create a group', function () {
@@ -60,7 +60,7 @@ it('can create a group', function () {
         ->set('is_group', true)
         ->call('save');
 
-    expect(AdminMenuItem::where('label', 'Reports')->where('is_group', true)->exists())->toBeTrue();
+    expect(MenuItem::where('label', 'Reports')->where('is_group', true)->exists())->toBeTrue();
 });
 
 it('validates label is required', function () {
@@ -100,7 +100,7 @@ it('rejects an unknown icon name', function () {
 });
 
 it('can toggle a menu item active state', function () {
-    $item = AdminMenuItem::factory()->create(['is_active' => true]);
+    $item = MenuItem::factory()->create(['is_active' => true]);
 
     Livewire::test(MenuIndex::class)->call('toggleActive', $item->id);
 
@@ -108,8 +108,8 @@ it('can toggle a menu item active state', function () {
 });
 
 it('can reorder top-level items', function () {
-    $a = AdminMenuItem::factory()->create(['sort_order' => 1]);
-    $b = AdminMenuItem::factory()->create(['sort_order' => 2]);
+    $a = MenuItem::factory()->create(['sort_order' => 1]);
+    $b = MenuItem::factory()->create(['sort_order' => 2]);
 
     Livewire::test(MenuIndex::class)->call('reorderTopLevel', [$b->id, $a->id]);
 
@@ -118,46 +118,46 @@ it('can reorder top-level items', function () {
 });
 
 it('reflects a top-level reorder in the cached live sidebar immediately', function () {
-    $a = AdminMenuItem::factory()->create(['label' => 'Alpha', 'sort_order' => 1]);
-    $b = AdminMenuItem::factory()->create(['label' => 'Bravo', 'sort_order' => 2]);
+    $a = MenuItem::factory()->create(['label' => 'Alpha', 'sort_order' => 1]);
+    $b = MenuItem::factory()->create(['label' => 'Bravo', 'sort_order' => 2]);
 
     // Warm the cache with the original order before reordering.
-    expect(AdminMenuItem::menuCached()->pluck('label')->all())->toBe(['Alpha', 'Bravo']);
+    expect(MenuItem::menuCached()->pluck('label')->all())->toBe(['Alpha', 'Bravo']);
 
     Livewire::test(MenuIndex::class)->call('reorderTopLevel', [$b->id, $a->id]);
 
-    expect(AdminMenuItem::menuCached()->pluck('label')->all())->toBe(['Bravo', 'Alpha']);
+    expect(MenuItem::menuCached()->pluck('label')->all())->toBe(['Bravo', 'Alpha']);
 });
 
 it('reflects a child reorder in the cached live sidebar immediately', function () {
-    $group = AdminMenuItem::factory()->group()->create(['label' => 'Group']);
-    $a = AdminMenuItem::factory()->create(['label' => 'Alpha', 'parent_id' => $group->id, 'sort_order' => 1]);
-    $b = AdminMenuItem::factory()->create(['label' => 'Bravo', 'parent_id' => $group->id, 'sort_order' => 2]);
+    $group = MenuItem::factory()->group()->create(['label' => 'Group']);
+    $a = MenuItem::factory()->create(['label' => 'Alpha', 'parent_id' => $group->id, 'sort_order' => 1]);
+    $b = MenuItem::factory()->create(['label' => 'Bravo', 'parent_id' => $group->id, 'sort_order' => 2]);
 
-    expect(AdminMenuItem::menuCached()->first()->children->pluck('label')->all())->toBe(['Alpha', 'Bravo']);
+    expect(MenuItem::menuCached()->first()->children->pluck('label')->all())->toBe(['Alpha', 'Bravo']);
 
     Livewire::test(MenuIndex::class)->call('reorderChildren', $group->id, [$b->id, $a->id]);
 
-    expect(AdminMenuItem::menuCached()->first()->children->pluck('label')->all())->toBe(['Bravo', 'Alpha']);
+    expect(MenuItem::menuCached()->first()->children->pluck('label')->all())->toBe(['Bravo', 'Alpha']);
 });
 
 it('reflects an edited label in the cached live sidebar immediately', function () {
-    $item = AdminMenuItem::factory()->create(['label' => 'Old Label']);
+    $item = MenuItem::factory()->create(['label' => 'Old Label']);
 
-    expect(AdminMenuItem::menuCached()->firstWhere('id', $item->id)->label)->toBe('Old Label');
+    expect(MenuItem::menuCached()->firstWhere('id', $item->id)->label)->toBe('Old Label');
 
     Livewire::test(MenuIndex::class)
         ->call('edit', $item->id)
         ->set('label', 'New Label')
         ->call('save');
 
-    expect(AdminMenuItem::menuCached()->firstWhere('id', $item->id)->label)->toBe('New Label');
+    expect(MenuItem::menuCached()->firstWhere('id', $item->id)->label)->toBe('New Label');
 });
 
 it('can reorder children within a group', function () {
-    $group = AdminMenuItem::factory()->group()->create();
-    $a = AdminMenuItem::factory()->create(['parent_id' => $group->id, 'sort_order' => 1]);
-    $b = AdminMenuItem::factory()->create(['parent_id' => $group->id, 'sort_order' => 2]);
+    $group = MenuItem::factory()->group()->create();
+    $a = MenuItem::factory()->create(['parent_id' => $group->id, 'sort_order' => 1]);
+    $b = MenuItem::factory()->create(['parent_id' => $group->id, 'sort_order' => 2]);
 
     Livewire::test(MenuIndex::class)->call('reorderChildren', $group->id, [$b->id, $a->id]);
 
@@ -166,24 +166,24 @@ it('can reorder children within a group', function () {
 });
 
 it('can delete a leaf menu item', function () {
-    $item = AdminMenuItem::factory()->create();
+    $item = MenuItem::factory()->create();
 
     Livewire::test(MenuIndex::class)
         ->call('confirmDelete', $item->id)
         ->call('delete');
 
-    expect(AdminMenuItem::find($item->id))->toBeNull();
+    expect(MenuItem::find($item->id))->toBeNull();
 });
 
 it('refuses to delete a group that still has children', function () {
-    $group = AdminMenuItem::factory()->group()->create();
-    AdminMenuItem::factory()->create(['parent_id' => $group->id]);
+    $group = MenuItem::factory()->group()->create();
+    MenuItem::factory()->create(['parent_id' => $group->id]);
 
     Livewire::test(MenuIndex::class)
         ->call('confirmDelete', $group->id)
         ->call('delete');
 
-    expect(AdminMenuItem::find($group->id))->not->toBeNull();
+    expect(MenuItem::find($group->id))->not->toBeNull();
 });
 
 it('renders the seeded menu structure in the live sidebar', function () {
@@ -197,7 +197,7 @@ it('renders the seeded menu structure in the live sidebar', function () {
 
 it('shows a route-name-backed seeded item as its resolved path when editing, and converts it to a plain link on save', function () {
     $this->seed(AdminMenuSeeder::class);
-    $item = AdminMenuItem::where('route_name', 'admin.users')->firstOrFail();
+    $item = MenuItem::where('route_name', 'admin.users')->firstOrFail();
 
     Livewire::test(MenuIndex::class)
         ->call('edit', $item->id)
@@ -215,7 +215,7 @@ it('shows a route-name-backed seeded item as its resolved path when editing, and
 
 it('hides an inactive item from the live sidebar but keeps it in the management list', function () {
     $this->seed(AdminMenuSeeder::class);
-    AdminMenuItem::where('label', 'Contacts')->update(['is_active' => false]);
+    MenuItem::where('label', 'Contacts')->update(['is_active' => false]);
 
     $dashboard = $this->get('/admin')->assertOk();
     $dashboard->assertDontSee('Contacts');
@@ -224,7 +224,7 @@ it('hides an inactive item from the live sidebar but keeps it in the management 
 });
 
 it('can toggle a menu item into and out of the short menu', function () {
-    $item = AdminMenuItem::factory()->create(['is_short_menu' => false]);
+    $item = MenuItem::factory()->create(['is_short_menu' => false]);
 
     Livewire::test(MenuIndex::class)->call('toggleShortMenu', $item->id);
     expect($item->fresh()->is_short_menu)->toBeTrue();
@@ -234,23 +234,23 @@ it('can toggle a menu item into and out of the short menu', function () {
 });
 
 it('only includes active, non-group, short-menu-flagged items in shortMenuCached', function () {
-    $flagged = AdminMenuItem::factory()->shortMenu()->create(['label' => 'Flagged', 'sort_order' => 1]);
-    AdminMenuItem::factory()->create(['label' => 'Unflagged', 'sort_order' => 2]);
-    AdminMenuItem::factory()->shortMenu()->inactive()->create(['label' => 'Flagged Inactive', 'sort_order' => 3]);
-    $flaggedGroup = AdminMenuItem::factory()->group()->create(['label' => 'Flagged Group', 'sort_order' => 4]);
+    $flagged = MenuItem::factory()->shortMenu()->create(['label' => 'Flagged', 'sort_order' => 1]);
+    MenuItem::factory()->create(['label' => 'Unflagged', 'sort_order' => 2]);
+    MenuItem::factory()->shortMenu()->inactive()->create(['label' => 'Flagged Inactive', 'sort_order' => 3]);
+    $flaggedGroup = MenuItem::factory()->group()->create(['label' => 'Flagged Group', 'sort_order' => 4]);
     $flaggedGroup->forceFill(['is_short_menu' => true])->save();
 
-    expect(AdminMenuItem::shortMenuCached()->pluck('label')->all())->toBe(['Flagged']);
+    expect(MenuItem::shortMenuCached()->pluck('label')->all())->toBe(['Flagged']);
 });
 
 it('reflects a short menu toggle in the cache immediately', function () {
-    $item = AdminMenuItem::factory()->create(['label' => 'Reports']);
+    $item = MenuItem::factory()->create(['label' => 'Reports']);
 
-    expect(AdminMenuItem::shortMenuCached()->pluck('label')->all())->toBe([]);
+    expect(MenuItem::shortMenuCached()->pluck('label')->all())->toBe([]);
 
     Livewire::test(MenuIndex::class)->call('toggleShortMenu', $item->id);
 
-    expect(AdminMenuItem::shortMenuCached()->pluck('label')->all())->toBe(['Reports']);
+    expect(MenuItem::shortMenuCached()->pluck('label')->all())->toBe(['Reports']);
 });
 
 it('shows the short menu dropdown in the admin top bar only when items are flagged', function () {
@@ -259,7 +259,7 @@ it('shows the short menu dropdown in the admin top bar only when items are flagg
 
     $this->get(route('admin.dashboard'))->assertOk()->assertDontSee(__('Short Menu'));
 
-    AdminMenuItem::factory()->shortMenu()->create(['label' => 'Quick Reports', 'url' => '/admin/reports']);
+    MenuItem::factory()->shortMenu()->create(['label' => 'Quick Reports', 'url' => '/admin/reports']);
 
     $this->get(route('admin.dashboard'))->assertOk()->assertSee('Quick Reports')->assertSee(__('Short Menu'));
 });

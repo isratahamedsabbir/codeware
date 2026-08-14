@@ -8,9 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('admin_menu_items', function (Blueprint $table) {
+        Schema::create('menu_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('parent_id')->nullable()->constrained('admin_menu_items')->nullOnDelete();
+            // Which menu this row belongs to — lets the same table hold multiple,
+            // independent menus (e.g. a future frontend header/footer nav) alongside
+            // the admin sidebar, filtered by this column. Only 'admin-sidebar' exists
+            // today; see MenuItem::GROUP_ADMIN_SIDEBAR.
+            $table->string('group', 60)->default('admin-sidebar');
+            $table->foreignId('parent_id')->nullable()->constrained('menu_items')->nullOnDelete();
             $table->boolean('is_group')->default(false);
             $table->string('label');
             $table->string('icon', 64)->nullable();
@@ -22,13 +27,13 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['parent_id', 'sort_order']);
-            $table->index(['is_active', 'sort_order']);
-            $table->index(['is_short_menu', 'sort_order']);
+            $table->index(['group', 'is_active', 'sort_order']);
+            $table->index(['group', 'is_short_menu', 'sort_order']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('admin_menu_items');
+        Schema::dropIfExists('menu_items');
     }
 };

@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Admin\Menu;
 
-use App\Models\AdminMenuItem;
+use App\Models\MenuItem;
 use App\Support\AdminActivity;
 use Illuminate\Support\Facades\Route;
 use Livewire\Attributes\Validate;
@@ -36,7 +36,7 @@ class Index extends Component
 
     public function edit(int $id): void
     {
-        $item = AdminMenuItem::findOrFail($id);
+        $item = MenuItem::findOrFail($id);
 
         $this->editingId = $item->id;
         $this->label = $item->label;
@@ -59,12 +59,12 @@ class Index extends Component
 
         // is_group only takes effect when creating — an existing row's type can't flip
         // without leaving its route/url/children in an inconsistent state.
-        $isGroup = $creating ? $this->is_group : AdminMenuItem::findOrFail($this->editingId)->is_group;
+        $isGroup = $creating ? $this->is_group : MenuItem::findOrFail($this->editingId)->is_group;
 
         $rules = [
             'label' => 'required|string|max:191',
             'icon' => ['nullable', 'string', 'max:64', function ($attribute, $value, $fail) {
-                if ($value && ! AdminMenuItem::iconExists($value)) {
+                if ($value && ! MenuItem::iconExists($value)) {
                     $fail(__('Unknown icon name.'));
                 }
             }],
@@ -77,7 +77,7 @@ class Index extends Component
                 }
             }];
             $rules['parent_id'] = ['nullable', function ($attribute, $value, $fail) {
-                if ($value && ! AdminMenuItem::where('id', $value)->where('is_group', true)->exists()) {
+                if ($value && ! MenuItem::where('id', $value)->where('is_group', true)->exists()) {
                     $fail(__('Invalid parent group.'));
                 }
             }];
@@ -97,13 +97,13 @@ class Index extends Component
         ];
 
         if ($creating) {
-            $data['sort_order'] = (int) AdminMenuItem::where('parent_id', $data['parent_id'])->max('sort_order') + 1;
-            AdminMenuItem::create($data);
+            $data['sort_order'] = (int) MenuItem::where('parent_id', $data['parent_id'])->max('sort_order') + 1;
+            MenuItem::create($data);
         } else {
             // Query-builder update() doesn't fire model events, so the cache-busting
             // booted() hook never runs — flush explicitly.
-            AdminMenuItem::where('id', $this->editingId)->update($data);
-            AdminMenuItem::flushCache();
+            MenuItem::where('id', $this->editingId)->update($data);
+            MenuItem::flushCache();
         }
 
         AdminActivity::log($creating ? 'created' : 'updated', "Menu item: {$this->label}");
@@ -117,26 +117,26 @@ class Index extends Component
     public function reorderTopLevel(array $order): void
     {
         foreach ($order as $sortOrder => $id) {
-            AdminMenuItem::where('id', $id)->whereNull('parent_id')->update(['sort_order' => $sortOrder]);
+            MenuItem::where('id', $id)->whereNull('parent_id')->update(['sort_order' => $sortOrder]);
         }
 
         // Query-builder update() doesn't fire model events, so the cache-busting booted()
         // hook never runs — flush explicitly, otherwise the live sidebar keeps the old order.
-        AdminMenuItem::flushCache();
+        MenuItem::flushCache();
     }
 
     public function reorderChildren(int $parentId, array $order): void
     {
         foreach ($order as $sortOrder => $id) {
-            AdminMenuItem::where('id', $id)->where('parent_id', $parentId)->update(['sort_order' => $sortOrder]);
+            MenuItem::where('id', $id)->where('parent_id', $parentId)->update(['sort_order' => $sortOrder]);
         }
 
-        AdminMenuItem::flushCache();
+        MenuItem::flushCache();
     }
 
     public function toggleActive(int $id): void
     {
-        $item = AdminMenuItem::findOrFail($id);
+        $item = MenuItem::findOrFail($id);
         $item->update(['is_active' => ! $item->is_active]);
 
         AdminActivity::log('updated', "Menu item: {$item->label} ".($item->is_active ? 'activated' : 'deactivated'));
@@ -145,7 +145,7 @@ class Index extends Component
 
     public function toggleShortMenu(int $id): void
     {
-        $item = AdminMenuItem::findOrFail($id);
+        $item = MenuItem::findOrFail($id);
         $item->update(['is_short_menu' => ! $item->is_short_menu]);
 
         AdminActivity::log('updated', "Menu item: {$item->label} ".($item->is_short_menu ? 'added to' : 'removed from').' short menu');
@@ -161,7 +161,7 @@ class Index extends Component
     public function delete(): void
     {
         if ($this->deletingId) {
-            $item = AdminMenuItem::findOrFail($this->deletingId);
+            $item = MenuItem::findOrFail($this->deletingId);
 
             if ($item->is_group && $item->children()->exists()) {
                 $this->dispatch('notify', message: __('Move or delete this group\'s items first.'));
@@ -183,12 +183,12 @@ class Index extends Component
 
     public function render()
     {
-        $items = AdminMenuItem::query()->ordered()->get();
+        $items = MenuItem::query()->ordered()->get();
 
         $topLevel = $items->where('parent_id', null)->values();
         $byParent = $items->where('parent_id', '!=', null)->groupBy('parent_id');
 
-        $topLevel->each(fn (AdminMenuItem $item) => $item->setRelation(
+        $topLevel->each(fn (MenuItem $item) => $item->setRelation(
             'children',
             $byParent->get($item->id, collect())->values(),
         ));

@@ -11,9 +11,16 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 
-class AdminMenuItem extends Model
+class MenuItem extends Model
 {
     use HasFactory;
+
+    /**
+     * The only menu group in use today — the admin sidebar. The `group` column
+     * exists so other menus (e.g. a future frontend header/footer nav) can share
+     * this table later, filtered by their own group value.
+     */
+    public const GROUP_ADMIN_SIDEBAR = 'admin-sidebar';
 
     /**
      * Route name prefixes that require the 'access-admin-system' gate — kept in sync
@@ -35,6 +42,7 @@ class AdminMenuItem extends Model
     ];
 
     protected $fillable = [
+        'group',
         'parent_id',
         'is_group',
         'label',
@@ -107,8 +115,8 @@ class AdminMenuItem extends Model
 
     /**
      * Top-level menu (groups with their children attached, plus standalone links), for
-     * rendering the live sidebar. Cached as plain attribute arrays and rehydrated on every
-     * read — never cache Eloquent models/collections directly here, see
+     * rendering the live admin sidebar. Cached as plain attribute arrays and rehydrated on
+     * every read — never cache Eloquent models/collections directly here, see
      * Language::activeCached() for why (unreliable unserialize() across processes with the
      * database cache driver). Groups with no active children are hidden — an empty,
      * expandable-to-nothing group is confusing in the live sidebar, though it still shows in
@@ -120,7 +128,7 @@ class AdminMenuItem extends Model
     {
         $rows = Cache::rememberForever(
             'admin-menu:items',
-            fn () => static::query()->active()->ordered()->get()->toArray(),
+            fn () => static::query()->where('group', self::GROUP_ADMIN_SIDEBAR)->active()->ordered()->get()->toArray(),
         );
 
         $all = static::hydrate($rows);
@@ -187,9 +195,9 @@ class AdminMenuItem extends Model
     }
 
     /**
-     * Flat, cached list of items flagged for the top bar's "short menu" dropdown — a
-     * quick-access shortlist separate from the full sidebar. Groups are excluded: a
-     * group header has no link of its own, only its children can be flagged.
+     * Flat, cached list of admin-sidebar items flagged for the top bar's "short menu"
+     * dropdown — a quick-access shortlist separate from the full sidebar. Groups are
+     * excluded: a group header has no link of its own, only its children can be flagged.
      *
      * @return Collection<int, self>
      */
@@ -197,7 +205,7 @@ class AdminMenuItem extends Model
     {
         $rows = Cache::rememberForever(
             'admin-menu:short-items',
-            fn () => static::query()->active()->where('is_short_menu', true)->where('is_group', false)->ordered()->get()->toArray(),
+            fn () => static::query()->where('group', self::GROUP_ADMIN_SIDEBAR)->active()->where('is_short_menu', true)->where('is_group', false)->ordered()->get()->toArray(),
         );
 
         return static::hydrate($rows);

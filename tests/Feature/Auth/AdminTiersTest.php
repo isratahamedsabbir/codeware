@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\AdminMenuItem;
+use App\Models\MenuItem;
 use App\Models\User;
 use Database\Seeders\AdminMenuSeeder;
 use Database\Seeders\AdminSeeder;
@@ -105,13 +105,13 @@ it('hides system-only sidebar items from staff but shows them to admin', functio
     $this->seed(AdminMenuSeeder::class);
 
     $this->actingAs($this->staffUser);
-    $staffLabels = AdminMenuItem::menuForCurrentUser()
+    $staffLabels = MenuItem::menuForCurrentUser()
         ->flatMap(fn ($item) => $item->is_group ? $item->children->pluck('label') : collect([$item->label]))
         ->all();
     expect($staffLabels)->not->toContain('Users', 'Roles', 'Settings', 'Menu');
 
     $this->actingAs($this->adminRoleUser);
-    $adminLabels = AdminMenuItem::menuForCurrentUser()
+    $adminLabels = MenuItem::menuForCurrentUser()
         ->flatMap(fn ($item) => $item->is_group ? $item->children->pluck('label') : collect([$item->label]))
         ->all();
     expect($adminLabels)->toContain('Users', 'Settings');

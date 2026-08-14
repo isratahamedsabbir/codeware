@@ -75,7 +75,7 @@
         // x-data attribute below) because flux:sidebar is a Blade component tag — directives
         // with parentheses embedded in a component tag's attribute value get mangled by Blade's
         // attribute-string compilation and blow up Livewire's morph-marker precompiler regex.
-        $sidebarMenu = \App\Models\AdminMenuItem::menuForCurrentUser();
+        $sidebarMenu = \App\Models\MenuItem::menuForCurrentUser();
 
         $sidebarGroupItemsJson = json_encode(
             $sidebarMenu->filter(fn ($i) => $i->is_group)
