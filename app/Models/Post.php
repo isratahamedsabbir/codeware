@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Slug;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -9,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
 use Spatie\Translatable\HasTranslations;
 
 class Post extends Model
@@ -36,7 +36,7 @@ class Post extends Model
                 $title = is_array($post->title)
                     ? ($post->title['en'] ?? reset($post->title))
                     : $post->title;
-                $post->slug = Str::slug($title);
+                $post->slug = Slug::make($title);
             }
             if ($post->content) {
                 $contentStr = is_array($post->content) ? json_encode($post->content) : $post->content;

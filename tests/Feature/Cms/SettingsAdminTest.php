@@ -15,10 +15,10 @@ it('renders settings index', function () {
 });
 
 it('loads existing settings into form', function () {
-    Setting::factory()->create(['key' => 'site_name', 'value' => 'Agrosal', 'group' => 'general', 'type' => 'string']);
+    Setting::factory()->create(['key' => 'site_name', 'value' => 'Codeware', 'group' => 'general', 'type' => 'string']);
 
     $component = Livewire::test(SettingsIndex::class);
-    expect($component->get('settings.site_name'))->toBe('Agrosal');
+    expect($component->get('settings.site_name'))->toBe('Codeware');
 });
 
 it('saves settings', function () {
@@ -132,17 +132,17 @@ it('saves seo settings through the form', function () {
     Setting::factory()->create(['key' => 'seo_meta_title', 'value' => '', 'group' => 'seo', 'type' => 'string']);
 
     Livewire::test(SettingsIndex::class)
-        ->set('settings.seo_meta_title', 'Agrosal – Fresh Agriculture')
+        ->set('settings.seo_meta_title', 'Codeware – Fresh Agriculture')
         ->set('settings.seo_meta_description', 'Buy fresh produce online.')
-        ->set('settings.seo_og_title', 'Agrosal')
+        ->set('settings.seo_og_title', 'Codeware')
         ->set('settings.seo_og_description', 'Fresh produce, delivered.')
         ->set('settings.seo_og_image', '/storage/og.png')
         ->call('save')
         ->assertHasNoErrors();
 
-    expect(Setting::where('key', 'seo_meta_title')->value('value'))->toBe('Agrosal – Fresh Agriculture');
+    expect(Setting::where('key', 'seo_meta_title')->value('value'))->toBe('Codeware – Fresh Agriculture');
     expect(Setting::where('key', 'seo_meta_description')->value('value'))->toBe('Buy fresh produce online.');
-    expect(Setting::where('key', 'seo_og_title')->value('value'))->toBe('Agrosal');
+    expect(Setting::where('key', 'seo_og_title')->value('value'))->toBe('Codeware');
     expect(Setting::where('key', 'seo_og_description')->value('value'))->toBe('Fresh produce, delivered.');
     expect(Setting::where('key', 'seo_og_image')->value('value'))->toBe('/storage/og.png');
 });
@@ -214,14 +214,14 @@ it('renders the social links section in the other tab', function () {
 
 it('saves social link settings through the form', function () {
     Livewire::test(SettingsIndex::class)
-        ->set('settings.facebook_url', 'https://facebook.com/agrosal')
-        ->set('settings.instagram_url', 'https://instagram.com/agrosal')
+        ->set('settings.facebook_url', 'https://facebook.com/codeware')
+        ->set('settings.instagram_url', 'https://instagram.com/codeware')
         ->set('settings.whatsapp_number', '+8801700000000')
         ->call('save')
         ->assertHasNoErrors();
 
-    expect(Setting::where('key', 'facebook_url')->value('value'))->toBe('https://facebook.com/agrosal');
-    expect(Setting::where('key', 'instagram_url')->value('value'))->toBe('https://instagram.com/agrosal');
+    expect(Setting::where('key', 'facebook_url')->value('value'))->toBe('https://facebook.com/codeware');
+    expect(Setting::where('key', 'instagram_url')->value('value'))->toBe('https://instagram.com/codeware');
     expect(Setting::where('key', 'whatsapp_number')->value('value'))->toBe('+8801700000000');
 });
 

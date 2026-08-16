@@ -1,8 +1,8 @@
 {
   "info": {
-    "name": "AgroSAL API",
-    "_postman_id": "agrosal-api-v1",
-    "description": "Full REST API collection for AgroSAL. Public endpoints require no auth. Admin endpoints require a Bearer token — set {{admin_token}} in the environment.\n\nAuth flow: GET /sanctum/csrf-cookie → POST /login → session cookie; or create a Sanctum token via `php artisan tinker` and set it as {{admin_token}}.",
+    "name": "Codeware API",
+    "_postman_id": "codeware-api-v1",
+    "description": "Full REST API collection for Codeware. Public endpoints require no auth. Admin endpoints require a Bearer token — set {{admin_token}} in the environment.\n\nAuth flow: GET /sanctum/csrf-cookie → POST /login → session cookie; or create a Sanctum token via `php artisan tinker` and set it as {{admin_token}}.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [],

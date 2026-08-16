@@ -8,7 +8,7 @@
 /vendor
 /crystalvalet
 /crystalvalet-fronend
-/agrosal-frontend
+/codeware-frontend
 .env
 .env.backup
 .env.production

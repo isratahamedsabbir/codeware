@@ -9,11 +9,23 @@ class ProductCategoryFactory extends Factory
     public function definition(): array
     {
         $name = fake()->unique()->words(2, true);
+
         return [
-            'name'        => ['en' => ucfirst($name), 'bn' => ucfirst($name)],
+            'name' => ['en' => ucfirst($name), 'bn' => ucfirst($name)],
             'description' => ['en' => fake()->sentence(), 'bn' => fake()->sentence()],
-            'icon'        => null,
-            'sort_order'  => 0,
+            'icon' => null,
+            'sort_order' => 0,
+            'status' => 'active',
         ];
+    }
+
+    public function published(): static
+    {
+        return $this->state(['status' => 'active']);
+    }
+
+    public function draft(): static
+    {
+        return $this->state(['status' => 'inactive']);
     }
 }

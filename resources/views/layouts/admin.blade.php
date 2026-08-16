@@ -124,7 +124,7 @@
         <div class="px-4 py-5 border-b border-zinc-800/40 shrink-0">
             <a href="{{ route('admin.dashboard') }}" wire:navigate.hover class="flex items-center gap-3 admin-sidebar-logo">
                 <div class="bg-white/95 rounded-xl px-3 py-1.5 shadow-md border border-white/10">
-                    <img src="{{ $siteIcon ?: '/agrosal_logo.png' }}" alt="{{ config('app.name') }}" class="h-7 w-auto">
+                    <img src="{{ $siteIcon ?: '/codeware_logo.png' }}" alt="{{ config('app.name') }}" class="h-7 w-auto">
                 </div>
             </a>
         </div>

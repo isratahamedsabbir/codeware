@@ -14,7 +14,7 @@
                 {{-- ── Header ── --}}
                 <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4 bg-slate-50 shrink-0">
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">AgroSAL</p>
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Codeware</p>
                         <h2 class="text-lg font-black text-slate-900 leading-tight">Media Library</h2>
                     </div>
                     <button type="button" wire:click="closePicker"

@@ -30,5 +30,10 @@ class DatabaseSeeder extends Seeder
         $this->call(PageSeeder::class);
         $this->call(EmailTemplatesSeeder::class);
         $this->call(NotificationsSeeder::class);
+
+        // Fake demo data (products, blog, orders) — not real content, safe for
+        // local/dev seeding but skip this on a real deploy's first seed.
+        $this->call(DemoContentSeeder::class);
+        $this->call(OrderSeeder::class);
     }
 }

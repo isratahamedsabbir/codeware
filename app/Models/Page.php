@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use App\Support\Slug;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
 use Spatie\Translatable\HasTranslations;
 
 class Page extends Model
@@ -36,7 +36,7 @@ class Page extends Model
                 $title = is_array($page->title)
                     ? ($page->title['en'] ?? reset($page->title))
                     : $page->title;
-                $page->slug = Str::slug($title);
+                $page->slug = Slug::make($title);
             }
         });
 

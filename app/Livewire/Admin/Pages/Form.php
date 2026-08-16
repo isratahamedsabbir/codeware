@@ -3,7 +3,12 @@
 namespace App\Livewire\Admin\Pages;
 
 use App\Models\Page;
+use App\Models\Post;
+use App\Models\PostCategory;
+use App\Models\Product;
+use App\Models\ProductCategory;
 use App\Support\AdminActivity;
+use App\Support\Slug;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -11,6 +16,19 @@ use Livewire\Component;
 class Form extends Component
 {
     public ?int $pageId = null;
+
+    /**
+     * Set from the loaded Page's type/foreign keys — 'page' for a plain page,
+     * or 'product'/'post'/'product_category'/'post_category' for one paired
+     * with an entity. Only ever set by mount(); never user-editable.
+     */
+    public string $type = 'page';
+
+    public ?int $productId = null;
+
+    public ?int $postId = null;
+
+    public ?int $categoryId = null;
 
     #[Validate('required|string|max:255')]
     public string $title_en = '';
@@ -20,6 +38,17 @@ class Form extends Component
 
     #[Validate('nullable|string|max:255')]
     public string $slug = '';
+
+    /**
+     * The last auto-generated slug value, so we know whether the admin has
+     * manually diverged from it — see updatedTitleEn().
+     */
+    public string $autoSlug = '';
+
+    /**
+     * null = not yet checked, true = available (green), false = taken (red).
+     */
+    public ?bool $slugAvailable = null;
 
     #[Validate('nullable|string|max:255')]
     public string $seo_title = '';
@@ -56,6 +85,10 @@ class Form extends Component
         if ($id) {
             $page = Page::findOrFail($id);
             $this->pageId = $id;
+            $this->type = $page->type;
+            $this->productId = $page->product_id;
+            $this->postId = $page->post_id;
+            $this->categoryId = $page->category_id;
             $this->title_en = $page->getTranslation('title', 'en', false) ?? '';
             $this->title_bn = $page->getTranslation('title', 'bn', false) ?? '';
             $this->slug = $page->slug;
@@ -69,7 +102,43 @@ class Form extends Component
             $this->og_description = $page->og_description ?? '';
             $this->no_index = (bool) $page->no_index;
             $this->no_follow = (bool) $page->no_follow;
+
+            $this->checkSlugAvailability();
         }
+    }
+
+    /**
+     * Live slug-as-you-type — regenerates from the English title only while
+     * the slug still matches what we last auto-generated (i.e. the admin
+     * hasn't typed a custom one), or is empty. Editing an existing page's
+     * title never touches its already-set slug this way, since autoSlug
+     * starts empty and never matches a loaded slug.
+     */
+    public function updatedTitleEn(string $value): void
+    {
+        if ($this->slug === '' || $this->slug === $this->autoSlug) {
+            $this->autoSlug = Slug::make($value);
+            $this->slug = $this->autoSlug;
+        }
+
+        $this->checkSlugAvailability();
+    }
+
+    /**
+     * Fires on direct manual edits to the slug field too, so the red/green
+     * indicator stays accurate whether the slug came from auto-typing or a
+     * deliberate override.
+     */
+    public function updatedSlug(): void
+    {
+        $this->checkSlugAvailability();
+    }
+
+    private function checkSlugAvailability(): void
+    {
+        [$entityTable, $entityId] = $this->linkedEntity();
+
+        $this->slugAvailable = Slug::isAvailable($this->slug, $this->pageId, $entityTable, $entityId);
     }
 
     public function openPuckEditor(): void
@@ -92,48 +161,7 @@ class Form extends Component
 
     public function saveAndOpenPageBuilder(): void
     {
-        if (empty($this->slug) && $this->title_en) {
-            $this->slug = Str::slug($this->title_en);
-        }
-
-        $rules = $this->getRules();
-        $rules['slug'] = $this->pageId
-            ? 'required|string|max:255|unique:pages,slug,'.$this->pageId
-            : 'required|string|max:255|unique:pages,slug';
-
-        $this->validate($rules);
-
-        $data = [
-            'user_id' => auth()->id(),
-            'title' => array_filter(['en' => $this->title_en, 'bn' => $this->title_bn]),
-            'slug' => $this->slug,
-            'status' => $this->status,
-            'template' => $this->template ?: 'puck',
-            'sort_order' => $this->sort_order,
-            'og_image' => $this->og_image ?: null,
-            'seo_title' => $this->seo_title ?: null,
-            'seo_description' => $this->seo_description ?: null,
-            'og_title' => $this->og_title ?: null,
-            'og_description' => $this->og_description ?: null,
-            'no_index' => $this->no_index,
-            'no_follow' => $this->no_follow,
-        ];
-
-        $creating = $this->pageId === null;
-
-        if ($this->pageId) {
-            Page::findOrFail($this->pageId)->update($data);
-            $this->dispatch('notify', message: 'Page updated successfully');
-        } else {
-            $page = Page::create($data);
-            $this->pageId = $page->id;
-            $this->dispatch('notify', message: 'Page created successfully');
-        }
-
-        AdminActivity::log(
-            $creating ? 'created' : 'updated',
-            "Page #{$this->pageId}: {$this->title_en}",
-        );
+        $this->persistPage();
 
         auth()->user()->tokens()->where('name', 'puck-builder')->delete();
 
@@ -149,14 +177,24 @@ class Form extends Component
 
     public function save(): void
     {
+        $this->persistPage();
+
+        $this->redirect(route('admin.pages'), navigate: true);
+    }
+
+    private function persistPage(): void
+    {
         if (empty($this->slug) && $this->title_en) {
-            $this->slug = Str::slug($this->title_en);
+            $this->slug = Slug::make($this->title_en);
         }
 
+        [$entityTable, $entityId] = $this->linkedEntity();
+
         $rules = $this->getRules();
-        $rules['slug'] = $this->pageId
-            ? 'required|string|max:255|unique:pages,slug,'.$this->pageId
-            : 'required|string|max:255|unique:pages,slug';
+        $rules['slug'] = [
+            'required', 'string', 'max:255',
+            ...Slug::uniqueRules($this->pageId, $entityTable, $entityId),
+        ];
 
         $this->validate($rules);
 
@@ -187,12 +225,49 @@ class Form extends Component
             $this->dispatch('notify', message: 'Page created successfully');
         }
 
+        $this->syncLinkedEntitySlug($entityTable, $entityId);
+
         AdminActivity::log(
             $creating ? 'created' : 'updated',
             "Page #{$this->pageId}: {$this->title_en}",
         );
+    }
 
-        $this->redirect(route('admin.pages'), navigate: true);
+    /**
+     * @return array{0: ?string, 1: ?int} the linked entity's table and id, or
+     *                                    [null, null] for a plain page
+     */
+    private function linkedEntity(): array
+    {
+        return match ($this->type) {
+            'product' => ['products', $this->productId],
+            'post' => ['posts', $this->postId],
+            'product_category', 'post_category' => ['categories', $this->categoryId],
+            default => [null, null],
+        };
+    }
+
+    /**
+     * The other half of entity↔page slug sync: Products/Posts/ProductCategories/
+     * PostCategories Forms already push their slug into this Page on save
+     * (Page::updateOrCreate(...)); this pushes back the other way when the
+     * admin instead edits the slug from this screen. Uses a plain query
+     * update (not the model's save()) so we don't need to re-derive a slug —
+     * we already have the final, validated value.
+     */
+    private function syncLinkedEntitySlug(?string $entityTable, ?int $entityId): void
+    {
+        if (! $entityTable || ! $entityId) {
+            return;
+        }
+
+        match ($this->type) {
+            'product' => Product::whereKey($entityId)->update(['slug' => $this->slug]),
+            'post' => Post::whereKey($entityId)->update(['slug' => $this->slug]),
+            'product_category' => ProductCategory::whereKey($entityId)->update(['slug' => $this->slug]),
+            'post_category' => PostCategory::whereKey($entityId)->update(['slug' => $this->slug]),
+            default => null,
+        };
     }
 
     public function render()

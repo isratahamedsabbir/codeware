@@ -12,7 +12,7 @@ class SettingsSeeder extends Seeder
         $settings = [
             [
                 'key' => 'site_name',
-                'value' => 'Agrosal',
+                'value' => 'Codeware',
                 'type' => 'string',
                 'group' => 'general',
                 'is_public' => true,

@@ -9,12 +9,12 @@ use App\Models\User;
 
 it('blog category auto-generates slug from name', function () {
     $category = PostCategory::factory()->create(['name' => ['en' => 'My Test Category', 'bn' => ''], 'slug' => '']);
-    expect($category->fresh()->slug)->toBe('my-test-category');
+    expect($category->fresh()->slug)->toBe('my_test_category');
 });
 
 it('post auto-generates slug from title', function () {
     $post = Post::factory()->create(['title' => ['en' => 'My First Post', 'bn' => ''], 'slug' => '']);
-    expect($post->fresh()->slug)->toBe('my-first-post');
+    expect($post->fresh()->slug)->toBe('my_first_post');
 });
 
 it('post published scope filters correctly', function () {
@@ -26,7 +26,7 @@ it('post published scope filters correctly', function () {
 
 it('page auto-generates slug from title', function () {
     $page = Page::factory()->create(['title' => ['en' => 'About Us', 'bn' => ''], 'slug' => '']);
-    expect($page->fresh()->slug)->toBe('about-us');
+    expect($page->fresh()->slug)->toBe('about_us');
 });
 
 it('page published scope filters correctly', function () {
@@ -37,8 +37,8 @@ it('page published scope filters correctly', function () {
 });
 
 it('setting get and set work correctly', function () {
-    Setting::set('site_name', 'Agrosal');
-    expect(Setting::get('site_name'))->toBe('Agrosal');
+    Setting::set('site_name', 'Codeware');
+    expect(Setting::get('site_name'))->toBe('Codeware');
 });
 
 it('setting get returns default when key missing', function () {

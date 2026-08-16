@@ -4,13 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-AgroSAL is a two-part project:
+Codeware is a two-part project:
 - **Laravel backend** (this directory): Admin panel (Livewire/Flux) + REST API
-- **Next.js frontend** (`agrosal-frontend/`): Public-facing site (Next.js 16, React 19 — early scaffold, not yet built)
+- **Next.js frontend** (`codeware-frontend/`): Public-facing site (Next.js 16, React 19 — early scaffold, not yet built)
 
 ## Commands
 
-### PHP / Laravel (run from `d:\herd\agrosal`)
+### PHP / Laravel (run from `d:\herd\codeware`)
 
 PHP binary: `C:\Users\User\.config\herd\bin\php85\php.exe`
 
@@ -28,7 +28,7 @@ php artisan tinker                        # REPL
 ```
 
 
-### Next.js (run from `agrosal-frontend/`)
+### Next.js (run from `codeware-frontend/`)
 
 ```bash
 npm run dev     # Development server (localhost:3000)
@@ -93,7 +93,7 @@ Notes:
 - Blog categories use the `blog_categories` table (via `BlogCategory` model), not `categories`.
 - If a schema change also needs a data backfill, put the `DB::table(...)` logic in the create migration too, or run a separate seeder.
 
-### Frontend Stack (`agrosal-frontend/`)
+### Frontend Stack (`codeware-frontend/`)
 
 | Package | Purpose |
 |---------|---------|

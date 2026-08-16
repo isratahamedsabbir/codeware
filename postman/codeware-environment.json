@@ -1,10 +1,10 @@
 {
-  "id": "agrosal-env-local",
-  "name": "AgroSAL — Local",
+  "id": "codeware-env-local",
+  "name": "Codeware — Local",
   "values": [
     {
       "key": "base_url",
-      "value": "http://agrosal.test",
+      "value": "http://codeware.test",
       "type": "default",
       "enabled": true,
       "description": "Base URL of the Laravel app (no trailing slash). Change to https://yourdomain.com for production."
@@ -32,7 +32,7 @@
     },
     {
       "key": "admin_email",
-      "value": "admin@agrosal.test",
+      "value": "admin@codeware.test",
       "type": "default",
       "enabled": true,
       "description": "Admin email used in the Login request body."

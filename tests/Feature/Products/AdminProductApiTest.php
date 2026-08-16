@@ -34,12 +34,12 @@ it('admin can create a product category', function () {
     Sanctum::actingAs($this->admin);
 
     $this->postJson('/api/v1/admin/product-categories', [
-        'name'       => ['en' => 'New Category', 'bn' => 'নতুন বিভাগ'],
-        'icon'       => 'leaf',
+        'name' => ['en' => 'New Category', 'bn' => 'নতুন বিভাগ'],
+        'icon' => 'leaf',
         'sort_order' => 1,
-    ])->assertCreated()->assertJsonPath('data.slug', 'new-category');
+    ])->assertCreated()->assertJsonPath('data.slug', 'new_category');
 
-    expect(ProductCategory::where('slug', 'new-category')->exists())->toBeTrue();
+    expect(ProductCategory::where('slug', 'new_category')->exists())->toBeTrue();
 });
 
 it('admin can update a product category', function () {
@@ -78,12 +78,12 @@ it('admin can create a product', function () {
     $cat = ProductCategory::factory()->create();
 
     $this->postJson('/api/v1/admin/products', [
-        'name'                => ['en' => 'Test Product', 'bn' => ''],
+        'name' => ['en' => 'Test Product', 'bn' => ''],
         'product_category_id' => $cat->id,
-        'status'              => 'inactive',
-    ])->assertCreated()->assertJsonPath('data.slug', 'test-product');
+        'status' => 'inactive',
+    ])->assertCreated()->assertJsonPath('data.slug', 'test_product');
 
-    expect(Product::where('slug', 'test-product')->exists())->toBeTrue();
+    expect(Product::where('slug', 'test_product')->exists())->toBeTrue();
 });
 
 it('admin can create a product with gallery sync', function () {
@@ -92,13 +92,13 @@ it('admin can create a product with gallery sync', function () {
     $media2 = MediaLibrary::factory()->create();
 
     $response = $this->postJson('/api/v1/admin/products', [
-        'name'      => ['en' => 'Gallery Product', 'bn' => ''],
-        'status'    => 'inactive',
+        'name' => ['en' => 'Gallery Product', 'bn' => ''],
+        'status' => 'inactive',
         'media_ids' => [$media1->id, $media2->id],
     ]);
 
     $response->assertCreated();
-    $product = Product::where('slug', 'gallery-product')->firstOrFail();
+    $product = Product::where('slug', 'gallery_product')->firstOrFail();
     expect($product->gallery()->count())->toBe(2);
     expect($product->gallery()->wherePivot('sort_order', 0)->first()->id)->toBe($media1->id);
 });
@@ -166,16 +166,16 @@ it('admin can create a product with puck_data and faq', function () {
     Sanctum::actingAs($this->admin);
 
     $puckData = ['root' => ['props' => []], 'content' => []];
-    $faq      = [['question' => ['en' => 'Q?', 'bn' => ''], 'answer' => ['en' => 'A.', 'bn' => '']]];
+    $faq = [['question' => ['en' => 'Q?', 'bn' => ''], 'answer' => ['en' => 'A.', 'bn' => '']]];
 
     $this->postJson('/api/v1/admin/products', [
-        'name'      => ['en' => 'Puck Product', 'bn' => ''],
-        'status'    => 'inactive',
+        'name' => ['en' => 'Puck Product', 'bn' => ''],
+        'status' => 'inactive',
         'puck_data' => $puckData,
-        'faq'       => $faq,
+        'faq' => $faq,
     ])->assertCreated();
 
-    $product = Product::where('slug', 'puck-product')->firstOrFail();
+    $product = Product::where('slug', 'puck_product')->firstOrFail();
     expect($product->puck_data)->toBe($puckData);
     expect($product->faq[0]['question']['en'])->toBe('Q?');
     expect($product->faq[0]['answer']['en'])->toBe('A.');

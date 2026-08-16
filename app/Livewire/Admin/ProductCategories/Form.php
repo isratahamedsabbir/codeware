@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\ProductCategories;
 use App\Models\Page;
 use App\Models\ProductCategory;
 use App\Support\AdminActivity;
+use App\Support\Slug;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -23,6 +24,17 @@ class Form extends Component
 
     #[Validate('nullable|string|max:255')]
     public string $slug = '';
+
+    /**
+     * The last auto-generated slug value, so we know whether the admin has
+     * manually diverged from it — see updatedNameEn().
+     */
+    public string $autoSlug = '';
+
+    /**
+     * null = not yet checked, true = available (green), false = taken (red).
+     */
+    public ?bool $slugAvailable = null;
 
     #[Validate('nullable|string')]
     public string $description_en = '';
@@ -60,19 +72,54 @@ class Form extends Component
             // SEO now lives entirely on the paired Page record, edited via the Page
             // screen — this form only keeps the Page in sync on title/slug/status.
             $this->pageId = $cat->page?->id;
+
+            $this->checkSlugAvailability();
         }
+    }
+
+    /**
+     * Live slug-as-you-type — regenerates from the English name only while the
+     * slug still matches what we last auto-generated (i.e. the admin hasn't
+     * typed a custom one), or is empty. Editing an existing category's name
+     * never touches its already-set slug this way, since autoSlug starts
+     * empty and never matches a loaded slug.
+     */
+    public function updatedNameEn(string $value): void
+    {
+        if ($this->slug === '' || $this->slug === $this->autoSlug) {
+            $this->autoSlug = Slug::make($value);
+            $this->slug = $this->autoSlug;
+        }
+
+        $this->checkSlugAvailability();
+    }
+
+    /**
+     * Fires on direct manual edits to the slug field too, so the red/green
+     * indicator stays accurate whether the slug came from auto-typing or a
+     * deliberate override.
+     */
+    public function updatedSlug(): void
+    {
+        $this->checkSlugAvailability();
+    }
+
+    private function checkSlugAvailability(): void
+    {
+        $this->slugAvailable = Slug::isAvailable($this->slug, $this->pageId, 'categories', $this->categoryId);
     }
 
     public function save(): void
     {
         if (empty($this->slug) && $this->name_en) {
-            $this->slug = Str::slug($this->name_en);
+            $this->slug = Slug::make($this->name_en);
         }
 
         $rules = $this->getRules();
-        $rules['slug'] = $this->categoryId
-            ? 'required|string|max:255|unique:categories,slug,'.$this->categoryId.',id,type,product'
-            : 'required|string|max:255|unique:categories,slug,NULL,id,type,product';
+        $rules['slug'] = [
+            'required', 'string', 'max:255',
+            ...Slug::uniqueRules($this->pageId, 'categories', $this->categoryId),
+        ];
 
         $this->validate($rules);
 

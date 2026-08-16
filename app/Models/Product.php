@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Slug;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -9,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
 use Spatie\Translatable\HasTranslations;
 
 class Product extends Model
@@ -40,7 +40,7 @@ class Product extends Model
                 $name = is_array($product->name)
                     ? ($product->name['en'] ?? reset($product->name))
                     : $product->name;
-                $product->slug = Str::slug($name);
+                $product->slug = Slug::make($name);
             }
         });
     }

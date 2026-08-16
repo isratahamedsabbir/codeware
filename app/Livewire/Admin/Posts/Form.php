@@ -7,6 +7,7 @@ use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\Tag;
 use App\Support\AdminActivity;
+use App\Support\Slug;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
@@ -26,6 +27,17 @@ class Form extends Component
 
     #[Validate('nullable|string|max:255')]
     public string $slug = '';
+
+    /**
+     * The last auto-generated slug value, so we know whether the admin has
+     * manually diverged from it — see updatedTitleEn().
+     */
+    public string $autoSlug = '';
+
+    /**
+     * null = not yet checked, true = available (green), false = taken (red).
+     */
+    public ?bool $slugAvailable = null;
 
     #[Validate('nullable|string')]
     public string $description_en = '';
@@ -66,7 +78,41 @@ class Form extends Component
             // SEO now lives entirely on the paired Page record, edited via the Page
             // screen — this form only keeps the Page in sync on title/slug/status.
             $this->pageId = $post->page?->id;
+
+            $this->checkSlugAvailability();
         }
+    }
+
+    /**
+     * Live slug-as-you-type — regenerates from the English title only while
+     * the slug still matches what we last auto-generated (i.e. the admin
+     * hasn't typed a custom one), or is empty. Editing an existing post's
+     * title never touches its already-set slug this way, since autoSlug
+     * starts empty and never matches a loaded slug.
+     */
+    public function updatedTitleEn(string $value): void
+    {
+        if ($this->slug === '' || $this->slug === $this->autoSlug) {
+            $this->autoSlug = Slug::make($value);
+            $this->slug = $this->autoSlug;
+        }
+
+        $this->checkSlugAvailability();
+    }
+
+    /**
+     * Fires on direct manual edits to the slug field too, so the red/green
+     * indicator stays accurate whether the slug came from auto-typing or a
+     * deliberate override.
+     */
+    public function updatedSlug(): void
+    {
+        $this->checkSlugAvailability();
+    }
+
+    private function checkSlugAvailability(): void
+    {
+        $this->slugAvailable = Slug::isAvailable($this->slug, $this->pageId, 'posts', $this->postId);
     }
 
     #[Computed]
@@ -102,13 +148,14 @@ class Form extends Component
     public function saveAndOpenPageBuilder(): void
     {
         if (empty($this->slug) && $this->title_en) {
-            $this->slug = Str::slug($this->title_en);
+            $this->slug = Slug::make($this->title_en);
         }
 
         $rules = $this->getRules();
-        $rules['slug'] = $this->postId
-            ? 'required|string|max:255|unique:posts,slug,'.$this->postId
-            : 'required|string|max:255|unique:posts,slug';
+        $rules['slug'] = [
+            'required', 'string', 'max:255',
+            ...Slug::uniqueRules($this->pageId, 'posts', $this->postId),
+        ];
         $rules['tag_ids.*'] = 'exists:tags,id';
 
         $this->validate($rules);
@@ -134,13 +181,14 @@ class Form extends Component
     public function save(): void
     {
         if (empty($this->slug) && $this->title_en) {
-            $this->slug = Str::slug($this->title_en);
+            $this->slug = Slug::make($this->title_en);
         }
 
         $rules = $this->getRules();
-        $rules['slug'] = $this->postId
-            ? 'required|string|max:255|unique:posts,slug,'.$this->postId
-            : 'required|string|max:255|unique:posts,slug';
+        $rules['slug'] = [
+            'required', 'string', 'max:255',
+            ...Slug::uniqueRules($this->pageId, 'posts', $this->postId),
+        ];
         $rules['tag_ids.*'] = 'exists:tags,id';
 
         $this->validate($rules);

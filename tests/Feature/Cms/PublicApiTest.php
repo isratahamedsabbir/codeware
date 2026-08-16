@@ -80,13 +80,13 @@ it('returns a single published page by slug', function () {
 });
 
 it('returns only public settings', function () {
-    Setting::factory()->create(['key' => 'site_name', 'value' => 'Agrosal', 'is_public' => true]);
+    Setting::factory()->create(['key' => 'site_name', 'value' => 'Codeware', 'is_public' => true]);
     Setting::factory()->create(['key' => 'secret_key', 'value' => 'shh', 'is_public' => false]);
 
     $response = $this->getJson('/api/v1/settings/public');
 
     $response->assertOk()
-        ->assertJsonPath('data.site_name', 'Agrosal')
+        ->assertJsonPath('data.site_name', 'Codeware')
         ->assertJsonMissingPath('data.secret_key');
 });
 

@@ -151,7 +151,7 @@ it('admin product API syncs seo_title/seo_description/og_image to a page on crea
         'seo_description' => 'Created SEO Description',
     ])->assertCreated();
 
-    $product = Product::where('slug', 'api-seo-product')->firstOrFail();
+    $product = Product::where('slug', 'api_seo_product')->firstOrFail();
     $page = Page::where(['type' => 'product', 'product_id' => $product->id])->firstOrFail();
 
     expect($page->seo_title)->toBe('Created SEO Title')

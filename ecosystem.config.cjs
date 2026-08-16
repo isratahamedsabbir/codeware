@@ -10,7 +10,7 @@
 module.exports = {
     apps: [
         {
-            name: 'agrosal-queue',
+            name: 'codeware-queue',
             script: 'artisan',
             interpreter: 'php',
             args: 'queue:work --tries=3 --max-time=3600 --sleep=3',
@@ -27,7 +27,7 @@ module.exports = {
             },
         },
         {
-            name: 'agrosal-reverb',
+            name: 'codeware-reverb',
             script: 'artisan',
             interpreter: 'php',
             args: 'reverb:start',
