@@ -1,0 +1,615 @@
+{
+	"info": {
+		"_postman_id": "6c6b6a2e-2f7a-4f4b-9a3e-codeware-api-v1",
+		"name": "Codeware API v1",
+		"description": "Public + Admin REST API for Codeware.\n\n**Auth note:** there is no `/api/v1/login` endpoint. To get a Sanctum token for the Admin folder, either:\n1. Log in via the web Fortify session at `/login`, then hit `GET /token` (dev-only route, expires in ~5 minutes), or\n2. Run `php artisan tinker` and generate a long-lived token:\n```php\n$user = \\App\\Models\\User::where('is_admin', true)->first();\n$user->createToken('postman', ['*'])->plainTextToken;\n```\nPaste the resulting token into the `token` collection variable.\n\nAll translatable fields (`title`, `name`, `description`, `content`) use the shape `{\"en\": \"...\", \"bn\": \"...\"}`.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{ "key": "base_url", "value": "https://codeware.test/api/v1", "type": "string" },
+		{ "key": "token", "value": "", "type": "string" },
+		{ "key": "locale", "value": "en", "type": "string" }
+	],
+	"item": [
+		{
+			"name": "Public",
+			"item": [
+				{
+					"name": "Posts",
+					"item": [
+						{
+							"name": "List Posts",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/posts?locale={{locale}}&per_page=15&category=&search=",
+									"host": ["{{base_url}}"],
+									"path": ["posts"],
+									"query": [
+										{ "key": "locale", "value": "{{locale}}" },
+										{ "key": "per_page", "value": "15" },
+										{ "key": "category", "value": "", "description": "post category slug" },
+										{ "key": "search", "value": "", "description": "matches title in the given locale" }
+									]
+								}
+							}
+						},
+						{
+							"name": "Get Post by Slug",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/posts/:slug?locale={{locale}}",
+									"host": ["{{base_url}}"],
+									"path": ["posts", ":slug"],
+									"variable": [{ "key": "slug", "value": "hello_world" }],
+									"query": [{ "key": "locale", "value": "{{locale}}" }]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Pages",
+					"item": [
+						{
+							"name": "List Pages",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/pages?locale={{locale}}",
+									"host": ["{{base_url}}"],
+									"path": ["pages"],
+									"query": [{ "key": "locale", "value": "{{locale}}" }]
+								}
+							}
+						},
+						{
+							"name": "Get Page by Slug",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/pages/:slug?locale={{locale}}",
+									"host": ["{{base_url}}"],
+									"path": ["pages", ":slug"],
+									"variable": [{ "key": "slug", "value": "about_us" }],
+									"query": [{ "key": "locale", "value": "{{locale}}" }]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Settings & Layout",
+					"item": [
+						{
+							"name": "Get Public Settings",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/settings/public",
+									"host": ["{{base_url}}"],
+									"path": ["settings", "public"]
+								}
+							}
+						},
+						{
+							"name": "Get Layout",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/layout",
+									"host": ["{{base_url}}"],
+									"path": ["layout"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Product Categories",
+					"item": [
+						{
+							"name": "List Product Categories",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/product-categories?locale={{locale}}",
+									"host": ["{{base_url}}"],
+									"path": ["product-categories"],
+									"query": [{ "key": "locale", "value": "{{locale}}" }]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Products",
+					"item": [
+						{
+							"name": "List Products",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/products?locale={{locale}}&per_page=12&category=&search=&featured=",
+									"host": ["{{base_url}}"],
+									"path": ["products"],
+									"query": [
+										{ "key": "locale", "value": "{{locale}}" },
+										{ "key": "per_page", "value": "12" },
+										{ "key": "category", "value": "", "description": "product category slug" },
+										{ "key": "search", "value": "", "description": "matches name in the given locale" },
+										{ "key": "featured", "value": "", "description": "pass 1 to filter is_featured=true" }
+									]
+								}
+							}
+						},
+						{
+							"name": "Get Product by Slug",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/products/:slug?locale={{locale}}",
+									"host": ["{{base_url}}"],
+									"path": ["products", ":slug"],
+									"variable": [{ "key": "slug", "value": "wireless_mouse" }],
+									"query": [{ "key": "locale", "value": "{{locale}}" }]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Contacts",
+					"item": [
+						{
+							"name": "Submit Contact Form",
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"full_name\": \"Rujel Rahman\",\n    \"phone_number\": \"+8801700000000\",\n    \"email\": \"rujel.codeware@gmail.com\",\n    \"subject\": \"Product inquiry\",\n    \"message\": \"Do you ship internationally?\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/contacts",
+									"host": ["{{base_url}}"],
+									"path": ["contacts"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Orders",
+					"description": "404s if the 'orders' feature toggle is disabled in Settings → Features.",
+					"item": [
+						{
+							"name": "Create Order",
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"customer_name\": \"Rujel Rahman\",\n    \"customer_email\": \"rujel.codeware@gmail.com\",\n    \"customer_phone\": \"+8801700000000\",\n    \"shipping_address\": \"House 12, Road 5, Dhanmondi, Dhaka, Bangladesh\",\n    \"payment_method\": \"cod\",\n    \"notes\": \"Please call before delivery\",\n    \"items\": [\n        { \"product_id\": 1, \"quantity\": 2 },\n        { \"product_id\": 3, \"quantity\": 1 }\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/orders",
+									"host": ["{{base_url}}"],
+									"path": ["orders"]
+								}
+							}
+						},
+						{
+							"name": "Get Order by Number",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/orders/:orderNumber?email=rujel.codeware@gmail.com",
+									"host": ["{{base_url}}"],
+									"path": ["orders", ":orderNumber"],
+									"variable": [{ "key": "orderNumber", "value": "ORD-0001" }],
+									"query": [{ "key": "email", "value": "rujel.codeware@gmail.com", "description": "must match the order's customer_email" }]
+								}
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"description": "Requires a Sanctum bearer token from a user with is_admin=true. See collection description for how to obtain one.",
+			"auth": {
+				"type": "bearer",
+				"bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+			},
+			"item": [
+				{
+					"name": "Posts",
+					"item": [
+						{
+							"name": "List Posts",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/admin/posts?per_page=15&status=",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "posts"],
+									"query": [
+										{ "key": "per_page", "value": "15" },
+										{ "key": "status", "value": "", "description": "active | inactive" }
+									]
+								}
+							}
+						},
+						{
+							"name": "Get Post",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/admin/posts/:id",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "posts", ":id"],
+									"variable": [{ "key": "id", "value": "1" }]
+								}
+							}
+						},
+						{
+							"name": "Create Post",
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": { \"en\": \"Hello World\", \"bn\": \"হ্যালো ওয়ার্ল্ড\" },\n    \"slug\": \"hello_world\",\n    \"status\": \"active\",\n    \"puck_data\": {},\n    \"tag_ids\": [1, 2]\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/posts",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "posts"]
+								}
+							}
+						},
+						{
+							"name": "Update Post",
+							"request": {
+								"method": "PUT",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": { \"en\": \"Hello World Updated\", \"bn\": \"\" },\n    \"description\": { \"en\": \"Short summary\", \"bn\": \"\" },\n    \"content\": { \"en\": \"<p>Body content</p>\", \"bn\": \"\" },\n    \"seo_title\": \"Hello World | Codeware\",\n    \"seo_description\": \"An updated hello world post.\",\n    \"status\": \"active\",\n    \"category_id\": null,\n    \"tag_ids\": [1]\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/posts/:id",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "posts", ":id"],
+									"variable": [{ "key": "id", "value": "1" }]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Pages",
+					"item": [
+						{
+							"name": "List Pages",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/admin/pages",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "pages"]
+								}
+							}
+						},
+						{
+							"name": "Get Page",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/admin/pages/:id",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "pages", ":id"],
+									"variable": [{ "key": "id", "value": "1" }]
+								}
+							}
+						},
+						{
+							"name": "Create Page",
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": { \"en\": \"About Us\", \"bn\": \"আমাদের সম্পর্কে\" },\n    \"slug\": \"about_us\",\n    \"status\": \"draft\",\n    \"template\": \"puck\",\n    \"puck_data\": {}\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/pages",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "pages"]
+								}
+							}
+						},
+						{
+							"name": "Update Page",
+							"request": {
+								"method": "PUT",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": { \"en\": \"About Us Updated\", \"bn\": \"\" },\n    \"seo_title\": \"About Us | Codeware\",\n    \"seo_description\": \"Learn more about Codeware.\",\n    \"og_title\": \"About Us\",\n    \"og_description\": \"Learn more about Codeware.\",\n    \"no_index\": false,\n    \"no_follow\": false,\n    \"status\": \"published\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/pages/:id",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "pages", ":id"],
+									"variable": [{ "key": "id", "value": "1" }]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Media",
+					"item": [
+						{
+							"name": "List Media",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/admin/media?per_page=30&type=",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "media"],
+									"query": [
+										{ "key": "per_page", "value": "30" },
+										{ "key": "type", "value": "", "description": "e.g. image, video, application" }
+									]
+								}
+							}
+						},
+						{
+							"name": "Upload Media",
+							"request": {
+								"method": "POST",
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{ "key": "file", "type": "file", "src": [] },
+										{ "key": "alt_text", "value": "", "type": "text" }
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/media",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "media"]
+								}
+							}
+						},
+						{
+							"name": "Delete Media",
+							"request": {
+								"method": "DELETE",
+								"url": {
+									"raw": "{{base_url}}/admin/media/:id",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "media", ":id"],
+									"variable": [{ "key": "id", "value": "1" }]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Layout",
+					"item": [
+						{
+							"name": "Update Layout",
+							"request": {
+								"method": "PUT",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"type\": \"header\",\n    \"content\": \"<nav>...</nav>\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/layout",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "layout"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Product Categories",
+					"item": [
+						{
+							"name": "List Product Categories",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/admin/product-categories",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "product-categories"]
+								}
+							}
+						},
+						{
+							"name": "Create Product Category",
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": { \"en\": \"Home Appliances\", \"bn\": \"হোম অ্যাপ্লায়েন্স\" },\n    \"slug\": \"home_appliances\",\n    \"description\": { \"en\": \"Appliances for the home\", \"bn\": \"\" },\n    \"icon\": \"home\",\n    \"sort_order\": 1\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/product-categories",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "product-categories"]
+								}
+							}
+						},
+						{
+							"name": "Update Product Category",
+							"request": {
+								"method": "PUT",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": { \"en\": \"Home Appliances Updated\", \"bn\": \"\" },\n    \"sort_order\": 2\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/product-categories/:id",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "product-categories", ":id"],
+									"variable": [{ "key": "id", "value": "1" }]
+								}
+							}
+						},
+						{
+							"name": "Delete Product Category",
+							"request": {
+								"method": "DELETE",
+								"url": {
+									"raw": "{{base_url}}/admin/product-categories/:id",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "product-categories", ":id"],
+									"variable": [{ "key": "id", "value": "1" }]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Products",
+					"item": [
+						{
+							"name": "List Products",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/admin/products?per_page=15&status=",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "products"],
+									"query": [
+										{ "key": "per_page", "value": "15" },
+										{ "key": "status", "value": "", "description": "active | inactive" }
+									]
+								}
+							}
+						},
+						{
+							"name": "Create Product",
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": { \"en\": \"Wireless Mouse\", \"bn\": \"ওয়্যারলেস মাউস\" },\n    \"product_category_id\": 1,\n    \"description\": { \"en\": \"Ergonomic wireless mouse\", \"bn\": \"\" },\n    \"featured_image\": \"products/mouse.jpg\",\n    \"status\": \"active\",\n    \"is_featured\": true,\n    \"sort_order\": 1,\n    \"seo_title\": \"Buy Wireless Mouse\",\n    \"seo_description\": \"Best wireless mouse in BD\",\n    \"faq\": [\n        { \"question\": { \"en\": \"Warranty?\", \"bn\": \"\" }, \"answer\": { \"en\": \"1 year\", \"bn\": \"\" } }\n    ],\n    \"media_ids\": []\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/products",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "products"]
+								}
+							}
+						},
+						{
+							"name": "Update Product",
+							"request": {
+								"method": "PUT",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": { \"en\": \"Wireless Mouse V2\", \"bn\": \"\" },\n    \"status\": \"active\",\n    \"is_featured\": false\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/products/:id",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "products", ":id"],
+									"variable": [{ "key": "id", "value": "1" }]
+								}
+							}
+						},
+						{
+							"name": "Delete Product",
+							"request": {
+								"method": "DELETE",
+								"url": {
+									"raw": "{{base_url}}/admin/products/:id",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "products", ":id"],
+									"variable": [{ "key": "id", "value": "1" }]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Contacts",
+					"item": [
+						{
+							"name": "List Contacts",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/admin/contacts?per_page=15&status=",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "contacts"],
+									"query": [
+										{ "key": "per_page", "value": "15" },
+										{ "key": "status", "value": "", "description": "read | unread" }
+									]
+								}
+							}
+						},
+						{
+							"name": "Get Contact",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/admin/contacts/:id",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "contacts", ":id"],
+									"variable": [{ "key": "id", "value": "1" }]
+								}
+							}
+						},
+						{
+							"name": "Update Contact Status",
+							"request": {
+								"method": "PUT",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"status\": \"read\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/admin/contacts/:id",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "contacts", ":id"],
+									"variable": [{ "key": "id", "value": "1" }]
+								}
+							}
+						},
+						{
+							"name": "Delete Contact",
+							"request": {
+								"method": "DELETE",
+								"url": {
+									"raw": "{{base_url}}/admin/contacts/:id",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "contacts", ":id"],
+									"variable": [{ "key": "id", "value": "1" }]
+								}
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}
