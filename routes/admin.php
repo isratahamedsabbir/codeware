@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\FileManagerController;
 use App\Http\Controllers\Admin\ProductExportController;
 use App\Http\Controllers\Admin\ReportExportController;
+use App\Http\Controllers\InvoiceController;
 use App\Livewire\Admin\Dashboard;
 use App\Livewire\Admin\Orders\Show;
 use App\Livewire\Admin\Posts\Form;
@@ -106,6 +107,8 @@ Route::middleware('can:access-admin-system')->group(function () {
     Route::middleware('feature:orders')->group(function () {
         Route::get('/orders', App\Livewire\Admin\Orders\Index::class)->name('orders');
         Route::get('/orders/{id}', Show::class)->name('orders.show');
+        Route::get('/orders/{order}/invoice', [InvoiceController::class, 'show'])->name('orders.invoice');
+        Route::get('/orders/{order}/invoice/download', [InvoiceController::class, 'download'])->name('orders.invoice.download');
 
         Route::get('/reports', App\Livewire\Admin\Reports\Index::class)->name('reports');
         Route::get('/reports/export', [ReportExportController::class, 'export'])->name('reports.export');

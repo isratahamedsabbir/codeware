@@ -1,8 +1,14 @@
 <div class="max-w-[1200px] w-full mx-auto">
 
-    <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.orders') }}" wire:navigate class="mb-4 border-2">
-        Back to Orders
-    </flux:button>
+    <div class="flex items-center justify-between mb-4">
+        <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.orders') }}" wire:navigate class="border-2">
+            Back to Orders
+        </flux:button>
+
+        <flux:button variant="primary" icon="document-text" href="{{ route('admin.orders.invoice', $order) }}" target="_blank">
+            View Invoice
+        </flux:button>
+    </div>
 
     <div class="flex gap-5 items-start flex-wrap lg:flex-nowrap">
 
