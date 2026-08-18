@@ -3,9 +3,7 @@
     {{-- Header --}}
     <div class="flex items-center justify-end gap-3 px-6 py-5 border-b border-zinc-100">
         <a href="{{ route('admin.posts.create') }}" wire:navigate
-            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors"
-            style="background:#22c55e" onmouseover="this.style.background='#16a34a'"
-            onmouseout="this.style.background='#22c55e'">
+            class="admin-btn-success inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />

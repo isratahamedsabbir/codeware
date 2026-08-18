@@ -6,9 +6,7 @@
             {{ __('Drag to reorder, toggle items on or off, or add a new group or link. Changes apply to the sidebar immediately.') }}
         </p>
         <button wire:click="openCreate()"
-            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors"
-            style="background:#22c55e" onmouseover="this.style.background='#16a34a'"
-            onmouseout="this.style.background='#22c55e'">
+            class="admin-btn-success inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
@@ -287,8 +285,7 @@
 
             <div class="flex gap-2 pt-1">
                 <button wire:click="save" wire:loading.attr="disabled"
-                    class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors"
-                    style="background:#28A745">
+                    class="admin-btn-save inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
                     {{ $editingId ? __('Update') : __('Create') }}
                 </button>
                 <flux:modal.close>

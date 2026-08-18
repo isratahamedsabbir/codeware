@@ -17,7 +17,7 @@
                     </div>
                     <div class="h-1.5 rounded-full bg-zinc-100 overflow-hidden">
                         <div class="h-full rounded-full transition-all"
-                            style="width:{{ $stat['percent'] }}%;background:{{ $stat['percent'] >= 100 ? '#22c55e' : ($stat['percent'] >= 50 ? '#6366f1' : '#f59e0b') }}"></div>
+                            style="width:{{ $stat['percent'] }}%;background:{{ $stat['percent'] >= 100 ? 'var(--color-success)' : ($stat['percent'] >= 50 ? 'var(--color-progress-mid)' : 'var(--color-progress-low)') }}"></div>
                     </div>
                     <div class="text-[10px] text-zinc-400 mt-1.5 tabular-nums">
                         {{ $stat['translated'] }} / {{ $stat['total'] }} {{ __('keys') }}
@@ -51,9 +51,7 @@
             </flux:modal.trigger>
 
             <button wire:click="save" wire:loading.attr="disabled" wire:target="save"
-                class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors"
-                style="background:#28A745" onmouseover="this.style.background='#218838'"
-                onmouseout="this.style.background='#28A745'">
+                class="admin-btn-save inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors"
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
                     <polyline points="17 21 17 13 7 13 7 21" />
@@ -230,8 +228,7 @@
 
             <div class="flex gap-2 pt-1">
                 <button wire:click="addKey" wire:loading.attr="disabled" wire:target="addKey"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors border-none cursor-pointer"
-                    style="background:#28A745">
+                    class="admin-btn-save inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors border-none cursor-pointer">
                     {{ __('Add key') }}
                 </button>
                 <flux:modal.close>

@@ -12,9 +12,7 @@
                 {{ __('Translations') }}
             </a>
             <a href="{{ route('admin.languages.create') }}" wire:navigate
-                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors"
-                style="background:#22c55e" onmouseover="this.style.background='#16a34a'"
-                onmouseout="this.style.background='#22c55e'">
+                class="admin-btn-success inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <line x1="12" y1="5" x2="12" y2="19" />
                     <line x1="5" y1="12" x2="19" y2="12" />
@@ -114,7 +112,7 @@
                                 <div class="flex items-center gap-2">
                                     <div class="flex-1 h-1.5 rounded-full bg-zinc-100 overflow-hidden min-w-[60px]">
                                         <div class="h-full rounded-full transition-all"
-                                            style="width:{{ $percent }}%;background:{{ $percent >= 100 ? '#22c55e' : ($percent >= 50 ? '#6366f1' : '#f59e0b') }}"></div>
+                                            style="width:{{ $percent }}%;background:{{ $percent >= 100 ? 'var(--color-success)' : ($percent >= 50 ? 'var(--color-progress-mid)' : 'var(--color-progress-low)') }}"></div>
                                     </div>
                                     <span class="text-xs text-zinc-500 tabular-nums shrink-0">{{ $percent }}%</span>
                                 </div>

@@ -143,9 +143,7 @@
                         </a>
                         @if ($editable && $this->canManage)
                             <button wire:click="saveFile" :disabled="! dirty" wire:loading.attr="disabled"
-                                class="inline-flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                style="background:#28A745" onmouseover="if(!this.disabled) this.style.background='#218838'"
-                                onmouseout="this.style.background='#28A745'">
+                                class="admin-btn-save inline-flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                 Save
                             </button>
                         @endif
@@ -327,9 +325,7 @@
             </flux:field>
             <div class="flex gap-2 pt-1">
                 <button wire:click="createEntry" wire:loading.attr="disabled"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors"
-                    style="background:#28A745" onmouseover="this.style.background='#218838'"
-                    onmouseout="this.style.background='#28A745'">
+                    class="admin-btn-save inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors"
                     Create
                 </button>
                 <flux:modal.close>
@@ -360,9 +356,7 @@
             </flux:field>
             <div class="flex gap-2 pt-1">
                 <button wire:click="composeFile" wire:loading.attr="disabled"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors"
-                    style="background:#28A745" onmouseover="this.style.background='#218838'"
-                    onmouseout="this.style.background='#28A745'">
+                    class="admin-btn-save inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors"
                     Create
                 </button>
                 <flux:modal.close>
@@ -385,9 +379,7 @@
             </flux:field>
             <div class="flex gap-2 pt-1">
                 <button wire:click="renameEntry" wire:loading.attr="disabled"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors"
-                    style="background:#28A745" onmouseover="this.style.background='#218838'"
-                    onmouseout="this.style.background='#28A745'">
+                    class="admin-btn-save inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors"
                     Rename
                 </button>
                 <flux:modal.close>
@@ -412,9 +404,7 @@
             </flux:field>
             <div class="flex gap-2 pt-1">
                 <button wire:click="transferEntry" wire:loading.attr="disabled"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors"
-                    style="background:#28A745" onmouseover="this.style.background='#218838'"
-                    onmouseout="this.style.background='#28A745'">
+                    class="admin-btn-save inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors"
                     {{ $transferMode === 'copy' ? 'Copy' : 'Move' }}
                 </button>
                 <flux:modal.close>

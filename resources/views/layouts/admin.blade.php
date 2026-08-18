@@ -120,31 +120,35 @@
     }">
         <flux:sidebar.toggle class="lg:hidden self-end m-2 text-zinc-400 hover:text-zinc-200" icon="x-mark" />
 
-        {{-- Logo --}}
-        <div class="px-4 py-5 border-b border-zinc-800/40 shrink-0">
+        {{-- Logo --}} 
+        <div class="px-0 py-4 border-b border-white/10 shrink-0 pt-0"> 
             <a href="{{ route('admin.dashboard') }}" wire:navigate.hover class="flex items-center gap-3 admin-sidebar-logo">
-                <div class="bg-white/95 rounded-xl px-3 py-1.5 shadow-md border border-white/10">
-                    <img src="{{ $siteIcon ?: '/codeware_logo.png' }}" alt="{{ config('app.name') }}" class="h-7 w-auto">
+                <div class="bg-white/95 rounded px-3 py-1.5 shadow-md border border-white/10"> 
+                    <img src="{{ $siteIcon ?: '/codeware_logo.png' }}" alt="{{ config('app.name') }}" class="w-auto">
                 </div>
+                <!-- <div class="min-w-0">
+                    <p class="truncate text-sm font-bold tracking-wide text-white">{{ config('app.name') }}</p>
+                    <p class="mt-0.5 text-[11px] font-medium text-slate-300">Admin workspace</p>
+                </div> -->
             </a>
         </div>
 
         {{-- Menu search --}}
-        <div class="px-2 py-3 border-b border-zinc-800/40 shrink-0 admin-sidebar-search">
+        <div class="px-0 py-4 border-b border-white/10 shrink-0 admin-sidebar-search pt-0">
             <div class="relative">
                 <flux:icon.magnifying-glass
                     class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-500 pointer-events-none" />
                 <input type="text" x-model="search" placeholder="{{ __('Search menu...') }}" autocomplete="off"
-                    class="w-full bg-zinc-800/60 border border-zinc-700/60 rounded-lg pl-9 pr-8 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 outline-none focus:border-[#7cc242]/60 focus:ring-1 focus:ring-[#7cc242]/40 transition">
+                    class="admin-sidebar-search-input w-full bg-white/5 border border-white/10 rounded-lg pl-9 pr-8 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 outline-none transition">
                 <button type="button" x-show="search" x-on:click="search = ''"
                     class="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors">
                     <flux:icon.x-mark class="size-4" />
                 </button>
             </div>
-        </div>
+        </div> 
 
         {{-- Navigation --}}
-        <nav id="admin-sidebar-nav" class="flex-1 overflow-y-auto px-2 py-4 space-y-0.5 custom-sidebar-nav">
+        <nav id="admin-sidebar-nav" class="flex-1 overflow-y-auto px-2 py-4 space-y-0.5 custom-sidebar-nav pt-0 pl-0.5">
 
             @foreach ($sidebarMenu as $item)
                 @if ($item->is_group)
@@ -152,8 +156,8 @@
                         <button @click="toggle({{ $item->id }})"
                             class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
                             <span>{{ __($item->label) }}</span>
-                            <span x-text="groupOpen({{ $item->id }}) ? '−' : '+'"
-                                class="text-zinc-500 text-sm font-bold leading-none"></span>
+                            <flux:icon.chevron-right class="admin-nav-group-chevron size-5 shrink-0 transition-transform duration-200"
+                                x-bind:style="groupOpen({{ $item->id }}) ? 'transform: rotate(90deg)' : ''" />
                         </button>
                         <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': !groupOpen({{ $item->id }}) }"
                             :style="groupOpen({{ $item->id }}) ? 'max-height: 500px; opacity: 1;' : ''">
@@ -180,30 +184,34 @@
 
     {{-- Main content --}}
     <flux:main class="admin-main">
-        <flux:header sticky class="admin-header shrink-0">
-            <flux:sidebar.toggle class="lg:hidden mr-2" icon="bars-2" inset="left" />
-            <flux:sidebar.collapse class="max-lg:hidden me-1" />
+        <flux:header sticky class="admin-header shrink-0 gap-1">
+            <flux:sidebar.toggle class="lg:hidden mr-1" icon="bars-2" inset="left" />
+            <flux:sidebar.collapse class="max-lg:hidden" />
             <flux:button variant="subtle" square x-data x-on:click="location.reload()" icon="arrow-path"
-                aria-label="Refresh" class="max-lg:hidden me-1" />
+                aria-label="Refresh" class="max-lg:hidden" />
             <flux:button variant="subtle" square :href="config('app.frontend_url')" icon="arrow-top-right-on-square"
-                target="_blank" aria-label="Open frontend" class="max-lg:hidden me-1" />
+                target="_blank" aria-label="Open frontend" class="max-lg:hidden" />
 
             <div class="flex-1"></div>
 
-            <x-admin-quick-menu class="ml-3" />
+            <div class="flex items-center gap-1.5">
+                <x-admin-quick-menu />
 
-            <livewire:admin.locale-switcher class="ml-3" />
+                <livewire:admin.locale-switcher />
 
-            <livewire:admin.theme-switcher class="ml-3" />
+                <livewire:admin.theme-switcher />
 
-            <livewire:admin.notifications.bell class="ml-3" />
+                <livewire:admin.notifications.bell />
+            </div>
 
-            <x-admin-user-menu class="ml-3" />
+            <div class="w-px h-6 bg-zinc-200/80 mx-2 max-sm:hidden"></div>
+
+            <x-admin-user-menu />
         </flux:header>
 
-        <div class="flex-1 p-4 md:p-6 max-w-[1600px] w-full mx-auto">
+        <div class="flex-1 p-4 md:p-4 max-w-[1600px] w-full mx-auto">
             @unless ($hidePageHeading ?? false)
-                <div class="mb-6">
+                <div class="mb-4">
                     <flux:heading size="xl">{{ $title ?? 'Admin' }}</flux:heading>
                     <div class="mt-2">
                         @include('partials.admin-breadcrumbs')
@@ -214,12 +222,12 @@
             {{ $slot }}
         </div>
 
-        <footer class="shrink-0 border-t border-zinc-200/80 bg-white/70 backdrop-blur px-6 py-4">
+        <footer class="shrink-0 border-t border-zinc-200/70 bg-white/60 backdrop-blur px-4 py-4 md:px-6">
             <div
-                class="max-w-[1600px] w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-zinc-500">
-                <p>© {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</p>
-                <p class="flex items-center gap-1.5">
-                    <flux:icon.cube class="size-3.5 text-zinc-400" />
+                class="max-w-[1600px] w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-medium text-zinc-400">
+                <p>&copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</p>
+                <p class="flex items-center gap-1.5 text-zinc-400">
+                    <flux:icon.cube class="size-3.5" />
                     v{{ config('app.version') }}
                 </p>
             </div>
@@ -236,6 +244,12 @@
             if (accent) {
                 el.style.setProperty('--color-accent', accent);
                 el.style.setProperty('--color-accent-content', accent);
+            }
+
+            // Toggling the dark class repaints chart containers; Chart.js caches its
+            // canvas backing-store size and doesn't notice unless told explicitly.
+            if (window.Chart) {
+                Object.values(window.Chart.instances).forEach((chart) => chart.resize());
             }
         }
 

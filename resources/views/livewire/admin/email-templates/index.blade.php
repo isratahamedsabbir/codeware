@@ -19,7 +19,7 @@
                         <div
                             class="relative rounded-lg border p-3.5 transition-all duration-150
                             {{ $selectedTemplateId === $template->id
-                                ? 'bg-white border-[#7cc242] ring-1 ring-[#7cc242]/30'
+                                ? 'bg-white border-secondary ring-1 ring-secondary/30'
                                 : 'bg-white border-slate-200 hover:bg-white hover:border-slate-300' }}">
                             <div class="flex items-center justify-between mb-1.5">
                                 <span
@@ -63,7 +63,7 @@
                                 <label
                                     class="block text-[10px] font-medium uppercase tracking-widest text-slate-500">Name</label>
                                 <input type="text" wire:model="name"
-                                    class="block w-full h-9 rounded-lg border border-slate-300 text-sm text-slate-800 px-3 focus:border-[#7cc242] focus:ring-1 focus:ring-[#7cc242] outline-none" />
+                                    class="block w-full h-9 rounded-lg border border-slate-300 text-sm text-slate-800 px-3 focus:border-secondary focus:ring-1 focus:ring-secondary outline-none" />
                                 @error('name')
                                     <span class="text-[11px] text-rose-600 font-medium">{{ $message }}</span>
                                 @enderror
@@ -73,7 +73,7 @@
                                 <label
                                     class="block text-[10px] font-medium uppercase tracking-widest text-slate-500">Subject</label>
                                 <input type="text" wire:model="subjectTemplate"
-                                    class="block w-full h-9 rounded-lg border border-slate-300 text-sm text-slate-800 px-3 focus:border-[#7cc242] focus:ring-1 focus:ring-[#7cc242] outline-none" />
+                                    class="block w-full h-9 rounded-lg border border-slate-300 text-sm text-slate-800 px-3 focus:border-secondary focus:ring-1 focus:ring-secondary outline-none" />
                                 @error('subjectTemplate')
                                     <span class="text-[11px] text-rose-600 font-medium">{{ $message }}</span>
                                 @enderror
@@ -98,7 +98,7 @@
                                     Variables (comma separated)</label>
                                 <input type="text" wire:model="variablesList"
                                     placeholder="e.g. customer_name, order_id, order_total"
-                                    class="block w-full h-9 rounded-lg border border-slate-300 text-sm text-slate-800 px-3 font-mono focus:border-[#7cc242] focus:ring-1 focus:ring-[#7cc242] outline-none" />
+                                    class="block w-full h-9 rounded-lg border border-slate-300 text-sm text-slate-800 px-3 font-mono focus:border-secondary focus:ring-1 focus:ring-secondary outline-none" />
                                 @error('variablesList')
                                     <span class="text-[11px] text-rose-600 font-medium">{{ $message }}</span>
                                 @enderror
@@ -107,7 +107,7 @@
                             <div class="flex items-center justify-between">
                                 <label class="inline-flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" wire:model="active"
-                                        class="h-4 w-4 rounded border-slate-300 text-[#7cc242] focus:ring-[#7cc242]">
+                                        class="h-4 w-4 rounded border-slate-300 text-secondary focus:ring-secondary">
                                     <span class="text-sm text-slate-700">Active</span>
                                 </label>
                             </div>
@@ -116,7 +116,7 @@
 
                         <div class="flex items-center mt-6 pt-5 border-t border-slate-100">
                             <button type="button" wire:click="save"
-                                class="inline-flex items-center h-9 px-5 rounded-lg bg-[#7cc242] hover:bg-[#5d9c1f] text-white text-[11px] font-medium uppercase tracking-wide transition-colors">
+                                class="inline-flex items-center h-9 px-5 rounded-lg bg-secondary hover:bg-secondary-hover text-white text-[11px] font-medium uppercase tracking-wide transition-colors">
                                 Update Template
                             </button>
                         </div>
@@ -148,7 +148,7 @@
                                     class="block text-[10px] font-medium uppercase tracking-widest text-slate-500 mb-1.5">Simulation
                                     Data (JSON Payload)</label>
                                 <textarea wire:model="previewVariablesJson" rows="8"
-                                    class="block w-full rounded-lg border border-slate-300 font-mono text-[11px] text-slate-700 p-3 bg-white focus:border-[#7cc242] focus:ring-1 focus:ring-[#7cc242] outline-none resize-none"></textarea>
+                                    class="block w-full rounded-lg border border-slate-300 font-mono text-[11px] text-slate-700 p-3 bg-white focus:border-secondary focus:ring-1 focus:ring-secondary outline-none resize-none"></textarea>
                             </div>
 
                             <div class="space-y-4">

@@ -6,7 +6,7 @@
                     class="size-8 rounded-xl object-cover shrink-0 shadow-sm">
             @else
                 <div
-                    class="size-8 rounded-xl bg-gradient-to-br from-brand-green to-brand-blue flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+                    class="size-8 rounded-xl bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-white text-[10px] font-bold shrink-0">
                     {{ auth()->user()->initials() }}
                 </div>
             @endif

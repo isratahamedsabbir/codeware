@@ -107,7 +107,7 @@
                 @forelse ($this->threadMessages->reverse() as $message)
                     @php $isMine = $message->sender_id === auth()->id(); @endphp
                     <div wire:key="message-{{ $message->id }}" class="flex {{ $isMine ? 'justify-end' : 'justify-start' }}">
-                        <div class="max-w-[70%] rounded-2xl px-3.5 py-2 text-sm {{ $isMine ? 'bg-brand-green text-white rounded-br-sm' : 'bg-zinc-100 text-zinc-800 rounded-bl-sm' }}">
+                        <div class="max-w-[70%] rounded-2xl px-3.5 py-2 text-sm {{ $isMine ? 'bg-secondary text-white rounded-br-sm' : 'bg-zinc-100 text-zinc-800 rounded-bl-sm' }}">
                             <div class="whitespace-pre-wrap wrap-break-word">{{ $message->body }}</div>
                             <div class="text-[10px] mt-1 {{ $isMine ? 'text-white/70' : 'text-zinc-400' }}">
                                 {{ $message->created_at->format('g:i A') }}

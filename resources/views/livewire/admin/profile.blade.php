@@ -10,7 +10,7 @@
             <div class="flex items-center gap-5">
                 <div class="relative shrink-0">
                     <div
-                        class="size-20 rounded-full bg-gradient-to-br from-brand-green to-brand-blue flex items-center justify-center text-white text-xl font-bold shadow-md overflow-hidden">
+                        class="size-20 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-white text-xl font-bold shadow-md overflow-hidden">
                         @if ($photo)
                             <img src="{{ $photo->temporaryUrl() }}" alt="Preview" class="size-full object-cover">
                         @elseif ($user->photo_url)

@@ -7,6 +7,6 @@
     $iconName = \App\Models\MenuItem::iconExists($link->icon) ? $link->icon : 'link';
 @endphp
 <a href="{{ $href }}" wire:navigate.hover class="admin-nav-item {{ $isActive ? 'admin-nav-active' : '' }}">
-    <x-dynamic-component :component="'flux::icon.'.$iconName" class="size-4.5 shrink-0" />
+    <x-dynamic-component :component="'flux::icon.'.$iconName" class="size-5 shrink-0" />
     <span>{{ __($link->label) }}</span>
 </a>

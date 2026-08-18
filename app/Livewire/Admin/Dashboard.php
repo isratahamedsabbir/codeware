@@ -11,44 +11,66 @@ use Livewire\Component;
 
 class Dashboard extends Component
 {
-    public int $totalProducts    = 0;
-    public int $totalCategories  = 0;
-    public int $totalPosts       = 0;
-    public int $publishedPosts   = 0;
-    public int $draftPosts       = 0;
-    public int $totalPages       = 0;
-    public int $totalMedia       = 0;
+    public int $totalProducts = 0;
+
+    public int $totalCategories = 0;
+
+    public int $totalPosts = 0;
+
+    public int $publishedPosts = 0;
+
+    public int $draftPosts = 0;
+
+    public int $totalPages = 0;
+
+    public int $totalMedia = 0;
+
     public string $totalMediaSize = '0 B';
+
+    public int $productsThisMonth = 0;
+
+    public int $postsThisMonth = 0;
+
+    public int $pagesThisMonth = 0;
+
+    public int $mediaThisMonth = 0;
 
     public function mount(): void
     {
-        $this->totalProducts     = Product::count();
-        $this->totalCategories   = ProductCategory::count();
-        $this->totalPosts        = Post::count();
-        $this->publishedPosts    = Post::published()->count();
-        $this->draftPosts        = Post::draft()->count();
-        $this->totalPages        = Page::count();
-        $this->totalMedia        = MediaLibrary::count();
+        $this->totalProducts = Product::count();
+        $this->totalCategories = ProductCategory::count();
+        $this->totalPosts = Post::count();
+        $this->publishedPosts = Post::published()->count();
+        $this->draftPosts = Post::draft()->count();
+        $this->totalPages = Page::count();
+        $this->totalMedia = MediaLibrary::count();
 
         $this->totalMediaSize = $this->formatBytes(MediaLibrary::sum('file_size'));
+
+        $monthStart = now()->startOfMonth();
+
+        $this->productsThisMonth = Product::where('created_at', '>=', $monthStart)->count();
+        $this->postsThisMonth = Post::where('created_at', '>=', $monthStart)->count();
+        $this->pagesThisMonth = Page::where('created_at', '>=', $monthStart)->count();
+        $this->mediaThisMonth = MediaLibrary::where('created_at', '>=', $monthStart)->count();
     }
 
     private function formatBytes(int $bytes, int $precision = 2): string
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
         $bytes = max($bytes, 0);
-        $pow   = floor(($bytes ? log($bytes) : 0) / log(1024));
-        $pow   = min($pow, count($units) - 1);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
         $bytes /= pow(1024, $pow);
 
-        return round($bytes, $precision) . ' ' . $units[$pow];
+        return round($bytes, $precision).' '.$units[$pow];
     }
 
     public function render()
     {
         return view('livewire.admin.dashboard', [
             'recentProducts' => Product::with('category')->latest()->take(5)->get(),
-            'recentPosts'    => Post::with('category')->latest()->take(5)->get(),
+            'recentPosts' => Post::with('category')->latest()->take(5)->get(),
         ])->layout('layouts.admin', ['title' => 'Dashboard', 'hidePageHeading' => true]);
     }
 }
