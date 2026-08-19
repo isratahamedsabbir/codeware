@@ -1,4 +1,4 @@
-<div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
+<div class="bg-white rounded-lg shadow-sm overflow-hidden">
 
     {{-- Completion summary --}}
     @if ($locales->isNotEmpty())
@@ -51,7 +51,7 @@
             </flux:modal.trigger>
 
             <button wire:click="save" wire:loading.attr="disabled" wire:target="save"
-                class="admin-btn-save inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors"
+                class="admin-btn-save inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
                     <polyline points="17 21 17 13 7 13 7 21" />
@@ -105,11 +105,11 @@
     </div>
 
     {{-- Table --}}
-    <div class="overflow-x-auto px-6 py-4">
+    <div class="overflow-x-auto">
         <div class="border border-zinc-100 rounded-lg">
-            <table class="w-full border-collapse">
+            <table class="w-full divide-y divide-gray-200">
                 <thead>
-                    <tr class="bg-zinc-50 border-b border-zinc-100">
+                    <tr class="bg-zinc-50">
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider min-w-[220px]">
                             {{ __('Key') }}
                         </th>
@@ -131,10 +131,10 @@
                         </th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-gray-200">
                     @forelse ($rows as $row)
                         @php $cellsForRow = $cells["{$row->group}|{$row->key}"] ?? collect(); @endphp
-                        <tr class="border-b border-zinc-50 hover:bg-indigo-50/20 transition-colors align-top">
+                        <tr class="hover:bg-indigo-50/20 transition-colors align-top">
 
                             {{-- Key --}}
                             <td class="px-4 py-3">
@@ -167,7 +167,10 @@
                                     <div class="relative group">
                                         <button wire:click="confirmDelete(@js($row->group), @js($row->key))"
                                             aria-label="{{ __('Delete key') }}"
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg border transition-all duration-150 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white hover:-translate-y-px">
+                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white hover:-translate-y-px"
+                                            style="box-shadow:none"
+                                            onmouseover="this.style.boxShadow='0 3px 8px rgba(225,29,72,.35)'"
+                                            onmouseout="this.style.boxShadow='none'">
                                             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
                                                 stroke="currentColor" stroke-width="2">
                                                 <polyline points="3 6 5 6 21 6" />
@@ -202,7 +205,7 @@
     </div>
 
     {{-- Pagination --}}
-    <div class="px-6 py-3 border-t border-zinc-100">
+    <div class="px-6 py-3">
         {{ $rows->links() }}
     </div>
 

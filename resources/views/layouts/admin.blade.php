@@ -152,12 +152,32 @@
 
             @foreach ($sidebarMenu as $item)
                 @if ($item->is_group)
+                    @php
+                        $groupIcon = [
+                            'Products' => 'cube',
+                            'Sales' => 'shopping-bag',
+                            'Blog' => 'pencil-square',
+                            'Library & System' => 'folder',
+                            'Inquiries' => 'inbox',
+                            'Content' => 'document-text',
+                            'Localization' => 'language',
+                            'Access Control' => 'shield-check',
+                        ][$item->label] ?? 'squares-2x2';
+                    @endphp
                     <div class="nav-group" x-show="groupMatches({{ $item->id }})">
                         <button @click="toggle({{ $item->id }})"
-                            class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none">
-                            <span>{{ __($item->label) }}</span>
-                            <flux:icon.chevron-right class="admin-nav-group-chevron size-5 shrink-0 transition-transform duration-200"
-                                x-bind:style="groupOpen({{ $item->id }}) ? 'transform: rotate(90deg)' : ''" />
+                            class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none"
+                            :class="{ 'admin-nav-group-active': groupOpen({{ $item->id }}) }">
+                            <span class="flex items-center gap-2.5">
+                                <span class="admin-nav-group-icon flex size-7 items-center justify-center rounded-lg">
+                                    <x-dynamic-component :component="'flux::icon.'.$groupIcon" class="size-3.5" />
+                                </span>
+                                <span>{{ __($item->label) }}</span>
+                            </span>
+                            <span class="admin-nav-group-chevron-wrap flex size-7 shrink-0 items-center justify-center rounded-lg">
+                                <flux:icon.chevron-right class="admin-nav-group-chevron size-4 transition-transform duration-200"
+                                    x-bind:style="groupOpen({{ $item->id }}) ? 'transform: rotate(90deg)' : ''" />
+                            </span>
                         </button>
                         <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': !groupOpen({{ $item->id }}) }"
                             :style="groupOpen({{ $item->id }}) ? 'max-height: 500px; opacity: 1;' : ''">
@@ -168,7 +188,7 @@
                     </div>
                 @else
                     <div x-show="matches({{ \Illuminate\Support\Js::from(__($item->label)) }})">
-                        @include('partials.admin-nav-link', ['link' => $item])
+                        @include('partials.admin-nav-link', ['link' => $item, 'navigationStyle' => 'top-level'])
                     </div>
                 @endif
             @endforeach

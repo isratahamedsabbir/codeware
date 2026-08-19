@@ -1,4 +1,4 @@
-<div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
+<div class="bg-white rounded-lg shadow-sm overflow-hidden">
 
     {{-- Filters --}}
     <div class="flex gap-3 px-6 py-3 border-b border-zinc-100 flex-wrap">
@@ -21,9 +21,9 @@
     </div>
 
     {{-- Table --}}
-    <div class="overflow-x-auto px-6 py-4">
+    <div class="overflow-x-auto">
         <div class="border border-zinc-100 rounded-lg">
-            <table class="w-full border-collapse" style="table-layout:fixed">
+            <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
                 <colgroup>
                     <col style="width:16%">
                     <col style="width:18%">
@@ -33,7 +33,7 @@
                     <col style="width:14%">
                 </colgroup>
                 <thead>
-                    <tr class="bg-zinc-50 border-b border-zinc-100">
+                    <tr class="bg-zinc-50">
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Name</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Contact Info</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Subject</th>
@@ -42,9 +42,9 @@
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-gray-200">
                     @forelse ($contacts as $contact)
-                        <tr class="border-b border-zinc-50 hover:bg-indigo-50/30 transition-colors">
+                        <tr class="hover:bg-indigo-50/30 transition-colors">
 
                             {{-- Name --}}
                             <td class="px-4 py-3.5">
@@ -106,7 +106,7 @@
     </div>
 
     {{-- Pagination --}}
-    <div class="px-6 py-3 border-t border-zinc-100">
+    <div class="px-6 py-3">
         {{ $contacts->links() }}
     </div>
 

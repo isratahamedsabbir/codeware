@@ -182,7 +182,7 @@
                                     <div class="relative group">
                                         <button wire:click="confirmDelete({{ $category->id }})"
                                             aria-label="Delete category"
-                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white hover:-translate-y-px"
+                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white hover:-translate-y-px cursor-pointer"
                                             style="box-shadow:none"
                                             onmouseover="this.style.boxShadow='0 3px 8px rgba(225,29,72,.35)'"
                                             onmouseout="this.style.boxShadow='none'">

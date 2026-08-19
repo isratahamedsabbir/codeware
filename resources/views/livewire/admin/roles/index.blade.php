@@ -1,7 +1,17 @@
-<div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
+<div class="bg-white rounded-lg shadow-sm overflow-hidden">
 
     {{-- Header --}}
-    <div class="flex items-center justify-end gap-3 px-6 py-5 border-b border-zinc-100">
+    <div class="flex items-center justify-between gap-3 p-4 border-b border-zinc-100">
+        {{-- Search --}}
+        <div class="relative max-w-xs">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search roles…"
+                class="w-full pl-9 pr-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all" />
+        </div>
         <a href="{{ route('admin.roles.create') }}" wire:navigate
             class="admin-btn-success inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -12,23 +22,10 @@
         </a>
     </div>
 
-    {{-- Filters --}}
-    <div class="flex gap-3 px-6 py-3 border-b border-zinc-100 flex-wrap">
-        <div class="relative flex-1 min-w-[180px]">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" viewBox="0 0 24 24"
-                fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search roles…"
-                class="w-full pl-9 pr-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all" />
-        </div>
-    </div>
-
     {{-- Table --}}
-    <div class="overflow-x-auto px-6 py-4">
+    <div class="overflow-x-auto">
         <div class="border border-zinc-100 rounded-lg">
-            <table class="w-full border-collapse" style="table-layout:fixed">
+            <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
                 <colgroup>
                     <col style="width:5%">
                     <col style="width:35%">
@@ -37,7 +34,7 @@
                     <col style="width:24%">
                 </colgroup>
                 <thead>
-                    <tr class="bg-zinc-50 border-b border-zinc-100">
+                    <tr class="bg-zinc-50">
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Role</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Users</th>
@@ -45,9 +42,9 @@
                         <th class="px-4 py-2.5 text-right text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-gray-200">
                     @forelse ($roles as $role)
-                        <tr class="border-b border-zinc-50 hover:bg-indigo-50/30 transition-colors">
+                        <tr class="hover:bg-indigo-50/30 transition-colors">
 
                             {{-- Id --}}
                             <td class="px-2 py-3.5 text-center text-xs text-zinc-500">
@@ -92,7 +89,7 @@
                                     <div class="relative group">
                                         <a href="{{ route('admin.roles.edit', $role->id) }}" wire:navigate
                                             aria-label="Edit role"
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg border transition-all duration-150 bg-indigo-50 text-indigo-500 hover:bg-indigo-500 hover:text-white hover:-translate-y-px"
+                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-primary text-primary hover:bg-primary hover:text-white hover:-translate-y-px"
                                             style="box-shadow:none"
                                             onmouseover="this.style.boxShadow='0 3px 8px rgba(99,102,241,.35)'"
                                             onmouseout="this.style.boxShadow='none'">
@@ -103,10 +100,10 @@
                                             </svg>
                                         </a>
                                         <span
-                                            class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[11px] font-medium bg-indigo-500 text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                            class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[11px] font-medium bg-primary text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10">
                                             Edit
                                             <span
-                                                class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-indigo-500"></span>
+                                                class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-primary"></span>
                                         </span>
                                     </div>
 
@@ -114,7 +111,7 @@
                                     <div class="relative group">
                                         <button wire:click="confirmDelete({{ $role->id }})"
                                             aria-label="Delete role"
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg border transition-all duration-150 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white hover:-translate-y-px"
+                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white hover:-translate-y-px cursor-pointer"
                                             style="box-shadow:none"
                                             onmouseover="this.style.boxShadow='0 3px 8px rgba(225,29,72,.35)'"
                                             onmouseout="this.style.boxShadow='none'">
@@ -159,7 +156,7 @@
     </div>
 
     {{-- Pagination --}}
-    <div class="px-6 py-3 border-t border-zinc-100">
+    <div class="px-6 py-3">
         {{ $roles->links() }}
     </div>
 

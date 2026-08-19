@@ -95,7 +95,10 @@
                                 <div class="relative group">
                                     <button wire:click="toggleShortMenu({{ $item->id }})"
                                         aria-label="{{ $item->is_short_menu ? __('Remove from short menu') : __('Add to short menu') }}"
-                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg border transition-all duration-150 {{ $item->is_short_menu ? 'bg-amber-50 text-amber-500' : 'bg-zinc-50 text-zinc-400' }} hover:bg-amber-500 hover:text-white hover:-translate-y-px">
+                                        class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 {{ $item->is_short_menu ? 'border-amber-500 text-amber-500' : 'border-zinc-300 text-zinc-400' }} hover:bg-amber-500 hover:text-white hover:border-amber-500 hover:-translate-y-px"
+                                        style="box-shadow:none"
+                                        onmouseover="this.style.boxShadow='0 3px 8px rgba(245,158,11,.35)'"
+                                        onmouseout="this.style.boxShadow='none'">
                                         <flux:icon.bolt class="w-3.5 h-3.5" variant="{{ $item->is_short_menu ? 'solid' : 'outline' }}" />
                                     </button>
                                     <span class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[11px] font-medium bg-amber-500 text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10">
@@ -108,7 +111,10 @@
                             <div class="relative group">
                                 <button wire:click="toggleActive({{ $item->id }})"
                                     aria-label="{{ $item->is_active ? __('Deactivate') : __('Activate') }}"
-                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg border transition-all duration-150 bg-zinc-50 text-zinc-500 hover:bg-zinc-600 hover:text-white hover:-translate-y-px">
+                                    class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-zinc-400 text-zinc-500 hover:bg-zinc-600 hover:text-white hover:border-zinc-600 hover:-translate-y-px"
+                                    style="box-shadow:none"
+                                    onmouseover="this.style.boxShadow='0 3px 8px rgba(82,82,91,.35)'"
+                                    onmouseout="this.style.boxShadow='none'">
                                     @if ($item->is_active)
                                         <flux:icon.eye-slash class="w-3.5 h-3.5" />
                                     @else
@@ -123,13 +129,16 @@
                             {{-- Edit --}}
                             <div class="relative group">
                                 <button wire:click="edit({{ $item->id }})" aria-label="{{ __('Edit') }}"
-                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg border transition-all duration-150 bg-indigo-50 text-indigo-500 hover:bg-indigo-500 hover:text-white hover:-translate-y-px">
+                                    class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-primary text-primary hover:bg-primary hover:text-white hover:-translate-y-px"
+                                    style="box-shadow:none"
+                                    onmouseover="this.style.boxShadow='0 3px 8px rgba(99,102,241,.35)'"
+                                    onmouseout="this.style.boxShadow='none'">
                                     <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                                     </svg>
                                 </button>
-                                <span class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[11px] font-medium bg-indigo-500 text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                <span class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[11px] font-medium bg-primary text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10">
                                     {{ __('Edit') }}
                                 </span>
                             </div>
@@ -137,7 +146,10 @@
                             {{-- Delete --}}
                             <div class="relative group">
                                 <button wire:click="confirmDelete({{ $item->id }})" aria-label="{{ __('Delete') }}"
-                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg border transition-all duration-150 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white hover:-translate-y-px">
+                                    class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white hover:-translate-y-px"
+                                    style="box-shadow:none"
+                                    onmouseover="this.style.boxShadow='0 3px 8px rgba(225,29,72,.35)'"
+                                    onmouseout="this.style.boxShadow='none'">
                                     <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <polyline points="3 6 5 6 21 6" />
                                         <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
@@ -180,12 +192,12 @@
                                     <div class="flex items-center gap-1.5 shrink-0">
                                         <button wire:click="toggleShortMenu({{ $child->id }})"
                                             aria-label="{{ $child->is_short_menu ? __('Remove from short menu') : __('Add to short menu') }}"
-                                            class="inline-flex items-center justify-center w-7 h-7 rounded-lg border transition-all duration-150 {{ $child->is_short_menu ? 'bg-amber-50 text-amber-500' : 'bg-white text-zinc-400' }} hover:bg-amber-500 hover:text-white">
+                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 {{ $child->is_short_menu ? 'border-amber-500 text-amber-500' : 'border-zinc-300 text-zinc-400' }} hover:bg-amber-500 hover:text-white hover:border-amber-500">
                                             <flux:icon.bolt class="w-3 h-3" variant="{{ $child->is_short_menu ? 'solid' : 'outline' }}" />
                                         </button>
                                         <button wire:click="toggleActive({{ $child->id }})"
                                             aria-label="{{ $child->is_active ? __('Deactivate') : __('Activate') }}"
-                                            class="inline-flex items-center justify-center w-7 h-7 rounded-lg border transition-all duration-150 bg-white text-zinc-500 hover:bg-zinc-600 hover:text-white">
+                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-zinc-400 text-zinc-500 hover:bg-zinc-600 hover:text-white hover:border-zinc-600">
                                             @if ($child->is_active)
                                                 <flux:icon.eye-slash class="w-3 h-3" />
                                             @else
@@ -193,14 +205,14 @@
                                             @endif
                                         </button>
                                         <button wire:click="edit({{ $child->id }})" aria-label="{{ __('Edit') }}"
-                                            class="inline-flex items-center justify-center w-7 h-7 rounded-lg border transition-all duration-150 bg-indigo-50 text-indigo-500 hover:bg-indigo-500 hover:text-white">
+                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-primary text-primary hover:bg-primary hover:text-white">
                                             <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                                                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                                             </svg>
                                         </button>
                                         <button wire:click="confirmDelete({{ $child->id }})" aria-label="{{ __('Delete') }}"
-                                            class="inline-flex items-center justify-center w-7 h-7 rounded-lg border transition-all duration-150 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white">
+                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white">
                                             <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                 <polyline points="3 6 5 6 21 6" />
                                                 <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />

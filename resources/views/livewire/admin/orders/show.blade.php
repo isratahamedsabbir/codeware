@@ -46,18 +46,18 @@
                 <div class="px-6 py-4 border-b border-zinc-100">
                     <flux:heading size="sm">Items</flux:heading>
                 </div>
-                <table class="w-full border-collapse">
+                <table class="w-full divide-y divide-gray-200">
                     <thead>
-                        <tr class="bg-zinc-50 border-b border-zinc-100">
+                        <tr class="bg-zinc-50">
                             <th class="px-6 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Product</th>
                             <th class="px-6 py-2.5 text-right text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Unit Price</th>
                             <th class="px-6 py-2.5 text-right text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Qty</th>
                             <th class="px-6 py-2.5 text-right text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Line Total</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-gray-200">
                         @foreach ($order->items as $item)
-                            <tr class="border-b border-zinc-50">
+                            <tr>
                                 <td class="px-6 py-3 text-sm text-zinc-800">
                                     {{ $item->product_name }}
                                     @unless ($item->product)
@@ -88,9 +88,9 @@
                 <div class="px-6 py-4 border-b border-zinc-100">
                     <flux:heading size="sm">Transactions</flux:heading>
                 </div>
-                <table class="w-full border-collapse">
+                <table class="w-full divide-y divide-gray-200">
                     <thead>
-                        <tr class="bg-zinc-50 border-b border-zinc-100">
+                        <tr class="bg-zinc-50">
                             <th class="px-6 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Reference</th>
                             <th class="px-6 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Method</th>
                             <th class="px-6 py-2.5 text-right text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Amount</th>
@@ -98,9 +98,9 @@
                             <th class="px-6 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Paid At</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-gray-200">
                         @forelse ($order->transactions as $transaction)
-                            <tr class="border-b border-zinc-50">
+                            <tr>
                                 <td class="px-6 py-3 font-mono text-xs text-zinc-700">{{ $transaction->reference }}</td>
                                 <td class="px-6 py-3 text-sm text-zinc-600">{{ \App\Support\PaymentMethods::label($transaction->payment_method) }}</td>
                                 <td class="px-6 py-3 text-sm text-zinc-900 text-right">{{ number_format((float) $transaction->amount, 2) }}</td>

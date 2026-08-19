@@ -25,7 +25,7 @@
     <div class="flex gap-5 items-start">
 
         {{-- ── MAIN ── --}}
-        <div class="flex-1 min-w-0 bg-white rounded-lg border border-zinc-100 shadow-sm p-6">
+        <div class="flex-1 min-w-0 bg-white rounded-lg shadow-sm p-6">
 
             <div x-data="{ locale: 'en' }">
 
@@ -115,7 +115,7 @@
             {{-- Footer --}}
             <div class="flex justify-end items-center gap-3 border-t border-zinc-100 flex-wrap">
                 <a href="{{ route('admin.post-categories') }}" wire:navigate
-                    class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg border text-red-600 border-red-200 bg-white hover:bg-red-50 hover:border-red-400 transition-colors">
+                    class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-[5px] border text-red-600 border-red-200 bg-white hover:bg-red-50 hover:border-red-400 transition-colors h-10">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18" />
                         <line x1="6" y1="6" x2="18" y2="18" />
@@ -123,7 +123,7 @@
                     Cancel
                 </a>
                 <button wire:click="save" wire:loading.attr="disabled" wire:target="save"
-                    class="admin-btn-save inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors"
+                    class="admin-btn-save inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
                     <svg wire:loading.remove wire:target="save" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
                         <polyline points="17 21 17 13 7 13 7 21" />

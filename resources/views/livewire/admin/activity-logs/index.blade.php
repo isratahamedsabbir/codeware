@@ -1,4 +1,4 @@
-<div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
+<div class="bg-white rounded-lg shadow-sm overflow-hidden">
 
     {{-- Filters --}}
     <div class="flex gap-3 px-6 py-4 border-b border-zinc-100 flex-wrap items-center">
@@ -43,11 +43,11 @@
     </div>
 
     {{-- Table --}}
-    <div class="overflow-x-auto px-6 py-4">
+    <div class="overflow-x-auto">
         <div class="border border-zinc-100 rounded-lg">
-            <table class="w-full border-collapse">
+            <table class="w-full divide-y divide-gray-200">
                 <thead>
-                    <tr class="bg-zinc-50 border-b border-zinc-100">
+                    <tr class="bg-zinc-50">
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Time</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Admin</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Action</th>
@@ -56,9 +56,9 @@
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">IP Address</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-gray-200">
                     @forelse ($logs as $log)
-                        <tr class="border-b border-zinc-50 hover:bg-indigo-50/30 transition-colors">
+                        <tr class="hover:bg-indigo-50/30 transition-colors">
                             <td class="px-4 py-3 text-sm text-zinc-500 whitespace-nowrap">
                                 {{ $log->created_at->format('M d, Y h:i A') }}
                             </td>
@@ -116,7 +116,7 @@
     </div>
 
     {{-- Pagination --}}
-    <div class="px-6 py-3 border-t border-zinc-100">
+    <div class="px-6 py-3">
         {{ $logs->links() }}
     </div>
 

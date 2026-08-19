@@ -1,7 +1,16 @@
-<div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
+<div class="bg-white rounded-lg shadow-sm overflow-hidden">
 
-    {{-- Header --}}
-    <div class="flex items-center justify-end gap-3 px-6 py-5 border-b border-zinc-100">
+    {{-- Toolbar --}}
+    <div class="flex items-center justify-between gap-3 p-4 border-b border-zinc-100 flex-wrap">
+        <div class="relative max-w-xs w-full">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search permissions…"
+                class="w-full pl-9 pr-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all" />
+        </div>
         <button wire:click="openCreateModal"
             class="admin-btn-success inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors cursor-pointer">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -12,23 +21,10 @@
         </button>
     </div>
 
-    {{-- Filters --}}
-    <div class="flex gap-3 px-6 py-3 border-b border-zinc-100 flex-wrap">
-        <div class="relative flex-1 min-w-[180px]">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" viewBox="0 0 24 24"
-                fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search permissions…"
-                class="w-full pl-9 pr-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all" />
-        </div>
-    </div>
-
     {{-- Table --}}
-    <div class="overflow-x-auto px-6 py-4">
+    <div class="overflow-x-auto">
         <div class="border border-zinc-100 rounded-lg">
-            <table class="w-full border-collapse" style="table-layout:fixed">
+            <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
                 <colgroup>
                     <col style="width:5%">
                     <col style="width:55%">
@@ -36,16 +32,16 @@
                     <col style="width:20%">
                 </colgroup>
                 <thead>
-                    <tr class="bg-zinc-50 border-b border-zinc-100">
+                    <tr class="bg-zinc-50">
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Permission</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Guard</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Used by roles</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-gray-200">
                     @forelse ($permissions as $permission)
-                        <tr class="border-b border-zinc-50 hover:bg-indigo-50/30 transition-colors">
+                        <tr class="hover:bg-indigo-50/30 transition-colors">
                             <td class="px-2 py-3.5 text-center text-xs text-zinc-500">
                                 {{ $permission->id }}
                             </td>
@@ -85,7 +81,7 @@
     </div>
 
     {{-- Pagination --}}
-    <div class="px-6 py-3 border-t border-zinc-100">
+    <div class="px-6 py-3">
         {{ $permissions->links() }}
     </div>
 
@@ -112,7 +108,7 @@
             </flux:field>
             <div class="flex gap-2 pt-1">
                 <button wire:click="create"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-colors border-none cursor-pointer">
+                    class="admin-btn-save inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors border-none cursor-pointer">
                     Create
                 </button>
                 <flux:modal.close>
