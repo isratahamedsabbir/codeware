@@ -60,8 +60,8 @@
                 <input id="remember" name="remember" type="checkbox" {{ old('remember') ? 'checked' : '' }}
                     class="
                         h-4 w-4 rounded border-2 border-gray-400
-                        bg-white checked:bg-gray-800 checked:border-gray-800
-                        focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1
+                        bg-white checked:bg-primary checked:border-primary
+                        focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1
                         shadow-none appearance-none cursor-pointer
                         transition-colors duration-150
                         relative
@@ -74,15 +74,15 @@
                     class="text-sm font-normal text-gray-700 cursor-pointer select-none leading-tight">
                     {{ __('Remember me') }}
                 </label>
-            </div>
+            </div> 
 
             {{-- Submit --}}
-            <div class="pt-1">
+            <div class="pt-1"> 
                 <button type="submit" data-test="login-button"
                     class="
-                        w-full rounded-md bg-gray-900 px-4 py-2.5
+                        w-full rounded-md bg-primary px-4 py-2.5
                         text-sm font-semibold text-white
-                        hover:bg-gray-700 active:bg-gray-950
+                        hover:bg-secondary active:bg-secondary
                         focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2
                         shadow-none
                         transition-colors duration-150

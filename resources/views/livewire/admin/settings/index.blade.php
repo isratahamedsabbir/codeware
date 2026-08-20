@@ -14,37 +14,37 @@
     {{-- Alpine tab switcher: General | Layout | Payments --}}
     <div x-data="{ tab: 'general' }">
 
-        {{-- Tab nav --}}
+        {{-- Tab nav --}} 
         <div class="flex gap-0 mb-6 border-b border-zinc-200 dark:border-zinc-700">
             <button type="button" @click="tab = 'general'"
-                :class="tab==='general'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
-                class="px-5 py-3 text-sm -mb-px">General</button>
+                :class="tab==='general'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
+                class="mx-4 ml-0 rounded-none! py-3 text-sm -mb-px">General</button>
             <button type="button" @click="tab = 'layout'"
-                :class="tab==='layout'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
-                class="px-5 py-3 text-sm -mb-px">Layout</button>
+                :class="tab==='layout'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
+                class="mx-4 rounded-none! py-3 text-sm -mb-px">Layout</button>
             <button type="button" @click="tab = 'payments'"
-                :class="tab==='payments'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
-                class="px-5 py-3 text-sm -mb-px">Payments</button>
+                :class="tab==='payments'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
+                class="mx-4 rounded-none! py-3 text-sm -mb-px">Payments</button>
             <button type="button" @click="tab = 'currency'"
-                :class="tab==='currency'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
-                class="px-5 py-3 text-sm -mb-px">Currency</button>
+                :class="tab==='currency'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
+                class="mx-4 rounded-none! py-3 text-sm -mb-px">Currency</button>
             <button type="button" @click="tab = 'seo'"
-                :class="tab==='seo'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
-                class="px-5 py-3 text-sm -mb-px">SEO</button>
+                :class="tab==='seo'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
+                class="mx-4 rounded-none! py-3 text-sm -mb-px">SEO</button>
             <button type="button" @click="tab = 'theme'"
-                :class="tab==='theme'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
-                class="px-5 py-3 text-sm -mb-px">Theme</button>
+                :class="tab==='theme'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
+                class="mx-4 rounded-none! py-3 text-sm -mb-px">Theme</button>
             <button type="button" @click="tab = 'colors'"
-                :class="tab==='colors'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
-                class="px-5 py-3 text-sm -mb-px">Other</button>
+                :class="tab==='colors'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
+                class="mx-4 rounded-none! py-3 text-sm -mb-px">Other</button>
             @if (app()->environment('developer'))
                 <button type="button" @click="tab = 'features'"
-                    :class="tab==='features'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
-                    class="px-5 py-3 text-sm -mb-px">Features</button>
+                    :class="tab==='features'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
+                    class="mx-4 rounded-none! py-3 text-sm -mb-px">Features</button>
             @endif
             <button type="button" @click="tab = 'env'"
-                :class="tab==='env'?'border-b-2 border-blue-600 text-blue-600 font-medium':'text-zinc-500 hover:text-zinc-700'"
-                class="px-5 py-3 text-sm -mb-px">Env</button>
+                :class="tab==='env'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
+                class="mx-4 rounded-none! py-3 text-sm -mb-px">Env</button>
         </div>
 
         {{-- General tab --}}
@@ -52,16 +52,16 @@
             <div class="max-w-2xl space-y-6">
                 @foreach ($groupedSettings as $group => $items)
                     <div>
-                        <flux:heading size="sm" class="mb-3 capitalize">{{ $group ?? 'General' }}</flux:heading>
-                        <div class="space-y-4 rounded-xl border border-zinc-200 dark:border-zinc-700 p-5">
+                        <flux:heading size="sm" class="mb-3 capitalize">{{ $group ?? 'General' }}</flux:heading> 
+                        <div class="space-y-4 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 bg-white">
                             @foreach ($items as $setting)
-                                <flux:field>
+                                <flux:field> 
                                     <flux:label>{{ ucwords(str_replace('_', ' ', $setting->key)) }}</flux:label>
                                     @if ($setting->type === 'boolean')
                                         <div class="flex items-center gap-2">
                                             <input type="checkbox"
                                                 wire:model="settings.{{ $setting->key }}"
-                                                class="rounded border-zinc-300 text-blue-600" />
+                                                class="rounded border-zinc-300 text-primary" />
                                             <span class="text-sm text-zinc-600">Enable</span>
                                         </div>
                                     @elseif ($setting->type === 'color')
@@ -91,18 +91,18 @@
         </div>
 
         {{-- Layout tab --}}
-        <div x-show="tab === 'layout'">
-            <div class="max-w-2xl space-y-4">
-                <flux:text class="text-zinc-500">
+        <div x-show="tab === 'layout'"> 
+            <div class="max-w-2xl space-y-4"> 
+                <flux:text class="text-zinc-500">  
                     Edit your site header and footer using the Puck visual editor. Changes open in a new tab.
                 </flux:text>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5">
-                        <flux:heading size="sm" class="mb-2">Header</flux:heading>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"> 
+                    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5">
+                        <flux:heading size="sm" class="mb-2">Header</flux:heading> 
                         <flux:text class="text-sm text-zinc-500 mb-4">Edit the site-wide header layout and navigation.</flux:text>
                         <a href="{{ $this->getEditorUrl('header') }}" target="_blank"
-                            class="inline-flex items-center justify-center gap-2 w-full rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-blue-700 transition-colors">
+                            class="inline-flex items-center justify-center gap-2 w-full rounded-lg bg-primary px-4 py-2.5 text-xs font-bold text-white hover:bg-primary transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
@@ -110,11 +110,11 @@
                         </a>
                     </div>
 
-                    <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5">
+                    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5">
                         <flux:heading size="sm" class="mb-2">Footer</flux:heading>
                         <flux:text class="text-sm text-zinc-500 mb-4">Edit the site-wide footer layout and links.</flux:text>
                         <a href="{{ $this->getEditorUrl('footer') }}" target="_blank"
-                            class="inline-flex items-center justify-center gap-2 w-full rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-blue-700 transition-colors">
+                            class="inline-flex items-center justify-center gap-2 w-full rounded-lg bg-primary px-4 py-2.5 text-xs font-bold text-white hover:bg-primary transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
@@ -123,7 +123,7 @@
                     </div>
                 </div>
 
-                <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-4 bg-zinc-50 dark:bg-zinc-800/50">
+                <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-4 dark:bg-zinc-800/50">
                     <h5 class="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-2">How it works</h5>
                     <ul class="text-xs text-zinc-500 space-y-1">
                         <li>1. Click "Edit Header" or "Edit Footer" to open the Puck visual editor</li>
@@ -142,11 +142,11 @@
             </flux:text>
 
             {{-- PayPal --}}
-            <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5">
+            <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5">
                 <div class="flex items-center justify-between mb-4">
                     <flux:heading size="sm">PayPal</flux:heading>
                     <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
-                        <input type="checkbox" wire:model="settings.paypal_enabled" class="rounded border-zinc-300 text-blue-600" />
+                        <input type="checkbox" wire:model="settings.paypal_enabled" class="rounded border-zinc-300 text-primary" />
                         Enable
                     </label>
                 </div>
@@ -171,11 +171,11 @@
             </div>
 
             {{-- Stripe --}}
-            <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5">
+            <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5">
                 <div class="flex items-center justify-between mb-4">
                     <flux:heading size="sm">Stripe</flux:heading>
                     <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
-                        <input type="checkbox" wire:model="settings.stripe_enabled" class="rounded border-zinc-300 text-blue-600" />
+                        <input type="checkbox" wire:model="settings.stripe_enabled" class="rounded border-zinc-300 text-primary" />
                         Enable
                     </label>
                 </div>
@@ -204,11 +204,11 @@
             </div>
 
             {{-- bKash --}}
-            <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5">
+            <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5">
                 <div class="flex items-center justify-between mb-4">
                     <flux:heading size="sm">bKash</flux:heading>
                     <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
-                        <input type="checkbox" wire:model="settings.bkash_enabled" class="rounded border-zinc-300 text-blue-600" />
+                        <input type="checkbox" wire:model="settings.bkash_enabled" class="rounded border-zinc-300 text-primary" />
                         Enable
                     </label>
                 </div>
@@ -241,11 +241,11 @@
             </div>
 
             {{-- SSLCommerz --}}
-            <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5">
+            <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5">
                 <div class="flex items-center justify-between mb-4">
                     <flux:heading size="sm">SSLCommerz</flux:heading>
                     <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
-                        <input type="checkbox" wire:model="settings.sslcommerz_enabled" class="rounded border-zinc-300 text-blue-600" />
+                        <input type="checkbox" wire:model="settings.sslcommerz_enabled" class="rounded border-zinc-300 text-primary" />
                         Enable
                     </label>
                 </div>
@@ -270,11 +270,11 @@
             </div>
 
             {{-- Apple Pay --}}
-            <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5">
+            <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5">
                 <div class="flex items-center justify-between mb-4">
                     <flux:heading size="sm">Apple Pay</flux:heading>
                     <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
-                        <input type="checkbox" wire:model="settings.applepay_enabled" class="rounded border-zinc-300 text-blue-600" />
+                        <input type="checkbox" wire:model="settings.applepay_enabled" class="rounded border-zinc-300 text-primary" />
                         Enable
                     </label>
                 </div>
@@ -303,7 +303,7 @@
                     Set the currency used across the site for product pricing and payments.
                 </flux:text>
 
-                <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+                <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
                     <flux:heading size="sm">Currency</flux:heading>
                     <flux:field>
                         <flux:label>Currency Code</flux:label>
@@ -328,7 +328,7 @@
                 </div>
 
                 {{-- Preview --}}
-                <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5">
+                <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5">
                     <flux:heading size="sm" class="mb-2">Preview</flux:heading>
                     <div class="rounded-lg bg-zinc-50 dark:bg-zinc-800/50 px-4 py-6 text-center">
                         <span class="text-2xl font-bold text-zinc-800 dark:text-zinc-100" x-data
@@ -346,7 +346,7 @@
                 </flux:text>
 
                 {{-- Meta tags --}}
-                <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+                <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
                     <flux:heading size="sm">Meta Tags</flux:heading>
                     <flux:field>
                         <flux:label>Meta Title</flux:label>
@@ -361,7 +361,7 @@
                 </div>
 
                 {{-- Open Graph --}}
-                <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+                <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
                     <flux:heading size="sm">Open Graph</flux:heading>
                     <flux:text class="text-xs text-zinc-500 -mt-2">
                         Used when your site is shared on social media (Facebook, WhatsApp, etc.).
@@ -390,19 +390,19 @@
                 </flux:text>
 
                 {{-- Theme mode --}}
-                <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+                <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
                     <flux:heading size="sm">Theme Mode</flux:heading>
                     <div class="grid grid-cols-2 gap-3 max-w-sm">
                         <label class="cursor-pointer">
                             <input type="radio" name="theme_mode" value="light" wire:model="settings.theme_mode" class="sr-only peer">
-                            <div class="flex flex-col items-center gap-2 rounded-xl border border-zinc-200 dark:border-zinc-700 p-4 peer-checked:border-blue-600 peer-checked:ring-2 peer-checked:ring-blue-600/20 transition-all">
+                            <div class="flex flex-col items-center gap-2 rounded-xl border border-zinc-200 dark:border-zinc-700 p-4 peer-checked:border-primary peer-checked:ring-2 peer-checked:ring-primary/20 transition-all">
                                 <flux:icon.sun class="size-6 text-amber-500" />
                                 <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Light</span>
                             </div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="theme_mode" value="dark" wire:model="settings.theme_mode" class="sr-only peer">
-                            <div class="flex flex-col items-center gap-2 rounded-xl border border-zinc-200 dark:border-zinc-700 p-4 peer-checked:border-blue-600 peer-checked:ring-2 peer-checked:ring-blue-600/20 transition-all">
+                            <div class="flex flex-col items-center gap-2 rounded-xl border border-zinc-200 dark:border-zinc-700 p-4 peer-checked:border-primary peer-checked:ring-2 peer-checked:ring-primary/20 transition-all">
                                 <flux:icon.moon class="size-6 text-indigo-400" />
                                 <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Dark</span>
                             </div>
@@ -411,7 +411,7 @@
                 </div>
 
                 {{-- Accent color --}}
-                <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+                <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
                     <flux:heading size="sm">Accent Color</flux:heading>
                     <flux:text class="text-xs text-zinc-500 -mt-2">
                         This becomes your custom theme's primary color.
@@ -436,7 +436,7 @@
                 </div>
 
                 {{-- Theme name --}}
-                <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+                <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
                     <flux:heading size="sm">Theme Name</flux:heading>
                     <flux:text class="text-xs text-zinc-500 -mt-2">
                         A friendly label for your custom theme.
@@ -453,7 +453,7 @@
                     Brand colors and social profile links for your site.
                 </flux:text>
 
-                <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+                <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
                     @foreach ($colorSettings as $setting)
                         <flux:field>
                             <flux:label>{{ ucwords(str_replace('_', ' ', $setting->key)) }}</flux:label>
@@ -469,7 +469,7 @@
                 </div>
 
                 {{-- Social links --}}
-                <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+                <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
                     <flux:heading size="sm">Social Links</flux:heading>
                     <flux:text class="text-xs text-zinc-500 -mt-2">
                         Add links to your social media profiles. These appear across the site.
@@ -512,13 +512,13 @@
                         {{ __('This admin panel is reused as a starting point across different projects — turn off anything this project doesn\'t need. Disabled features are hidden from the sidebar and their pages become unreachable.') }}
                     </flux:text>
 
-                    <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 divide-y divide-zinc-100 dark:divide-zinc-800">
+                    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 divide-y divide-zinc-100 dark:divide-zinc-800">
                         @foreach (\App\Support\Features::ALL as $key => $label)
                             @php $settingKey = \App\Support\Features::settingKey($key); @endphp
                             <label class="flex items-center justify-between gap-4 px-5 py-4 cursor-pointer">
                                 <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __($label) }}</span>
                                 <input type="checkbox" wire:model="settings.{{ $settingKey }}"
-                                    class="rounded border-zinc-300 text-blue-600" />
+                                    class="rounded border-zinc-300 text-primary" />
                             </label>
                         @endforeach
                     </div>
@@ -535,7 +535,7 @@
                 </div>
 
                 @foreach ($this->envFields() as $groupLabel => $fields)
-                    <div class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+                    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
                         <flux:heading size="sm">{{ __($groupLabel) }}</flux:heading>
                         @foreach ($fields as $key => $meta)
                             <flux:field>

@@ -14,16 +14,17 @@
 
         .jodit-fixed-wrap .jodit-container {
             border-radius: 6px;
-        }
+        } 
     </style>
 
-    <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.product-categories') }}" wire:navigate
-        class="mb-4 border-2">
-        Back
-    </flux:button>
+    @push('page-header-actions')
+        <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.product-categories') }}" wire:navigate
+            class="border border-zinc-800 rounded!">
+            Back
+        </flux:button>
+    @endpush
 
     <div class="flex gap-5 items-start">
-
         {{-- ── MAIN ── --}}
         <div class="flex-1 min-w-0 bg-white rounded-lg shadow-sm p-6">
 
@@ -100,14 +101,14 @@
         {{-- ── SIDEBAR ── --}}
         <div class="w-[320px] shrink-0 space-y-4">
 
-            {{-- Icon & Status & Sort Order --}}
+            {{-- Icon, Status & Sort Order --}}
             <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
                 <div
                     class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
                     Category Settings
                 </div>
                 <div class="px-4 py-4 border-b border-zinc-50">
-                    <x-media-picker model="icon" label="" placeholder="Select icon image from library"
+                    <x-media-picker model="icon" label="Icon" placeholder="Select icon image from library"
                         :picker-id="$iconPickerId" />
                 </div>
                 <div class="px-4 py-3 border-b border-zinc-50">
@@ -127,10 +128,8 @@
                 </div>
             </div>
 
-            <livewire:admin.media-library.picker-modal />
-
-            {{-- Footer --}}
-            <div class="flex justify-end items-center gap-3 border-t border-zinc-100 flex-wrap">
+            {{-- Actions --}}
+            <div class="flex justify-end items-center gap-3 flex-wrap mb-0 mt-6">
                 <a href="{{ route('admin.product-categories') }}" wire:navigate
                     class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-[5px] border text-red-600 border-red-200 bg-white hover:bg-red-50 hover:border-red-400 transition-colors h-10">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -155,7 +154,8 @@
                 </button>
             </div>
 
-        </div>
+            <livewire:admin.media-library.picker-modal />
 
+        </div>
     </div>
 </div>

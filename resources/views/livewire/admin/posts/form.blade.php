@@ -18,10 +18,12 @@
         }
     </style>
 
-    <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.posts') }}" wire:navigate
-        class="mb-4 border-2">
-        Back
-    </flux:button>
+    @push('page-header-actions')
+        <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.posts') }}" wire:navigate
+            class="border border-zinc-800 rounded!">
+            Back
+        </flux:button>
+    @endpush
 
     <div class="flex gap-5 items-start">
 
@@ -98,18 +100,11 @@
                 </div>
 
             </div>
-        </div>
 
-        {{-- ── SIDEBAR ── --}}
-        <div class="w-[320px] shrink-0 space-y-4">
-
-            {{-- Category & Status --}}
-            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
-                <div
-                    class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                    Post Settings
-                </div>
-                <div class="px-4 py-3 border-b border-zinc-50">
+            {{-- Post Settings --}}
+            <div class="mt-6 pt-5 border-t border-zinc-100">
+                <h3 class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-4">Post Settings</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <flux:field>
                         <flux:label>Category</flux:label>
                         <flux:select wire:model="category_id">
@@ -121,8 +116,6 @@
                             @endforeach
                         </flux:select>
                     </flux:field>
-                </div>
-                <div class="px-4 py-3">
                     <flux:field>
                         <flux:label>Status</flux:label>
                         <flux:select wire:model="status">
@@ -132,6 +125,10 @@
                     </flux:field>
                 </div>
             </div>
+        </div>
+
+        {{-- ── SIDEBAR ── --}}
+        <div class="w-[320px] shrink-0 space-y-4">
 
             {{-- Tags --}}
             <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">

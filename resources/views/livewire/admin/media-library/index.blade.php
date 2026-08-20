@@ -3,7 +3,7 @@
     {{-- ─── Header ─────────────────────────────────────────────────────────── --}}
     <div class="flex justify-end">
         <button type="button" wire:click="openUploadModal"
-            class="inline-flex items-center gap-2 rounded-md bg-blue-900 px-4 py-2.5 text-xs font-medium tracking-wide text-white transition-colors hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-2">
+            class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-xs font-medium tracking-wide text-white transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round"
                     d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
@@ -20,8 +20,8 @@
             <div class="flex items-center gap-1.5">
                 @foreach (['all' => 'All', 'image' => 'Images', 'document' => 'Documents', 'video' => 'Videos'] as $value => $label)
                     <button type="button" wire:click="$set('filterType', '{{ $value }}')"
-                        class="rounded-md px-3 py-1.5 text-xs font-medium tracking-wide transition-colors focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-1
-                        {{ $filterType === $value ? 'bg-blue-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
+                        class="rounded-md px-3 py-1.5 text-xs font-medium tracking-wide transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1
+                        {{ $filterType === $value ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
                         {{ $label }}
                     </button>
                 @endforeach
@@ -35,7 +35,7 @@
                         d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                 </svg>
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search media…"
-                    class="block w-full rounded-md border border-slate-200 py-2.5 pl-9 pr-3 text-sm text-slate-800 placeholder-slate-400 focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/10" />
+                    class="block w-full rounded-md border border-slate-200 py-2.5 pl-9 pr-3 text-sm text-slate-800 placeholder-slate-400 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/10" />
             </div>
         </div>
     </div>
@@ -55,7 +55,7 @@
                     <div wire:key="media-{{ $item->id }}" wire:click="selectMedia({{ $item->id }})"
                         class="group relative aspect-square cursor-pointer overflow-hidden rounded-lg border transition-all
                         {{ $selectedMediaId === $item->id
-                            ? 'border-blue-700 ring-2 ring-blue-700/20'
+                            ? 'border-primary ring-2 ring-primary/20'
                             : 'border-slate-200 hover:border-slate-300 hover:shadow-sm' }}">
 
                         @if ($item->isImage())
@@ -92,7 +92,7 @@
                         {{-- Selected check --}}
                         @if ($selectedMediaId === $item->id)
                             <div class="absolute right-1.5 top-1.5">
-                                <svg class="h-5 w-5 text-blue-700 drop-shadow" fill="currentColor" viewBox="0 0 20 20">
+                                <svg class="h-5 w-5 text-primary drop-shadow" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd"
                                         d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z"
                                         clip-rule="evenodd" />
@@ -176,7 +176,7 @@
                                     data: { url: el.dataset.url, title: el.dataset.title, alt: el.dataset.alt }
                                 }, '*');
                             "
-                            class="rounded-md bg-blue-900 px-3.5 py-2 text-xs font-medium tracking-wide text-white transition-colors hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-1">
+                            class="rounded-md bg-primary px-3.5 py-2 text-xs font-medium tracking-wide text-white transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1">
                             Use This Media
                         </button>
 
@@ -218,7 +218,7 @@
 
                 <div class="p-6">
                     <label for="file-upload"
-                        class="flex cursor-pointer flex-col items-center rounded-lg border border-dashed border-slate-300 px-6 py-10 text-center transition-colors hover:border-blue-700 hover:bg-blue-50/40">
+                        class="flex cursor-pointer flex-col items-center rounded-lg border border-dashed border-slate-300 px-6 py-10 text-center transition-colors hover:border-primary hover:bg-blue-50/40">
                         <input type="file" wire:key="uploadFiles-{{ $uploadIteration }}" wire:model="uploadFiles"
                             multiple accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx" class="hidden"
                             id="file-upload" />
@@ -261,7 +261,7 @@
                         Cancel
                     </button>
                     <button type="button" wire:click="saveUploads"
-                        class="rounded-md bg-blue-900 px-4 py-2 text-xs font-medium tracking-wide text-white transition-colors hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-1">
+                        class="rounded-md bg-primary px-4 py-2 text-xs font-medium tracking-wide text-white transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1">
                         Upload Files
                     </button>
                 </div>
@@ -300,7 +300,7 @@
                             <label
                                 class="block text-[10px] font-medium uppercase tracking-widest text-slate-500">Title</label>
                             <input wire:model="editTitle" type="text"
-                                class="block w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/10" />
+                                class="block w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/10" />
                         </div>
 
                         {{-- Alt Text --}}
@@ -308,7 +308,7 @@
                             <label class="block text-[10px] font-medium uppercase tracking-widest text-slate-500">Alt
                                 Text</label>
                             <input wire:model="editAltText" type="text" placeholder="For accessibility"
-                                class="block w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/10" />
+                                class="block w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/10" />
                         </div>
 
                         {{-- Caption --}}
@@ -316,7 +316,7 @@
                             <label
                                 class="block text-[10px] font-medium uppercase tracking-widest text-slate-500">Caption</label>
                             <input wire:model="editCaption" type="text"
-                                class="block w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/10" />
+                                class="block w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/10" />
                         </div>
 
                         {{-- Description --}}
@@ -324,7 +324,7 @@
                             <label
                                 class="block text-[10px] font-medium uppercase tracking-widest text-slate-500">Description</label>
                             <textarea wire:model="editDescription" rows="3"
-                                class="block w-full resize-none rounded-md border border-slate-200 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/10"></textarea>
+                                class="block w-full resize-none rounded-md border border-slate-200 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/10"></textarea>
                         </div>
 
                         {{-- Meta --}}
@@ -360,7 +360,7 @@
                             Cancel
                         </button>
                         <button type="button" wire:click="saveMediaDetails"
-                            class="rounded-md bg-blue-900 px-4 py-2 text-xs font-medium tracking-wide text-white transition-colors hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-1">
+                            class="rounded-md bg-primary px-4 py-2 text-xs font-medium tracking-wide text-white transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1">
                             Save Changes
                         </button>
                     </div>

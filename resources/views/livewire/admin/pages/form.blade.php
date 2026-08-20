@@ -1,8 +1,10 @@
 <div class="max-w-[1600px] w-full mx-auto flex-1">
 
-    <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.pages') }}" wire:navigate class="mb-4 border-2">
-        Back
-    </flux:button>
+    @push('page-header-actions')
+        <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.pages') }}" wire:navigate class="border border-zinc-800 rounded!">
+            Back
+        </flux:button>
+    @endpush
 
     <div class="flex gap-5 items-start">
 
@@ -65,6 +67,14 @@
                 </div>
 
             </div>
+
+            {{-- Template --}}
+            <div class="mt-6 pt-5 border-t border-zinc-100">
+                <flux:field>
+                    <flux:label>Template</flux:label>
+                    <flux:input wire:model="template" placeholder="puck" />
+                </flux:field>
+            </div>
         </div>
 
         {{-- ── SIDEBAR ── --}}
@@ -83,12 +93,6 @@
                             <flux:select.option value="active">Active</flux:select.option>
                             <flux:select.option value="inactive">Inactive</flux:select.option>
                         </flux:select>
-                    </flux:field>
-                </div>
-                <div class="px-4 py-3 border-b border-zinc-50">
-                    <flux:field>
-                        <flux:label>Template</flux:label>
-                        <flux:input wire:model="template" placeholder="puck" />
                     </flux:field>
                 </div>
                 <div class="px-4 py-3">

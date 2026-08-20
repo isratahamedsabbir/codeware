@@ -1,9 +1,11 @@
 <div class="max-w-[1600px] w-full mx-auto flex-1">
 
-    <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.languages') }}" wire:navigate
-        class="mb-4 border-2">
-        {{ __('Back') }}
-    </flux:button>
+    @push('page-header-actions')
+        <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.languages') }}" wire:navigate
+            class="border border-zinc-800 rounded!">
+            {{ __('Back') }}
+        </flux:button>
+    @endpush
 
     <div class="flex gap-5 items-start max-lg:flex-col">
 

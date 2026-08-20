@@ -17,10 +17,12 @@
         }
     </style>
 
-    <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.post-categories') }}" wire:navigate
-        class="mb-4 border-2">
-        Back
-    </flux:button>
+    @push('page-header-actions')
+        <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.post-categories') }}" wire:navigate
+            class="border border-zinc-800 rounded!">
+            Back
+        </flux:button>
+    @endpush
 
     <div class="flex gap-5 items-start">
 

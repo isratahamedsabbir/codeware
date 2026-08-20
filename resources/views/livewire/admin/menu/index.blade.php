@@ -16,7 +16,7 @@
     </div>
 
     {{-- Sortable tree --}}
-    <div class="px-6 py-4"
+    <div class=""
         x-data="{
             initTop() {
                 if (typeof Sortable === 'undefined') return;
