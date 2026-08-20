@@ -120,35 +120,32 @@
     }">
         <flux:sidebar.toggle class="lg:hidden self-end m-2 text-zinc-400 hover:text-zinc-200" icon="x-mark" />
 
-        {{-- Logo --}} 
-        <div class="px-0 py-4 border-b border-white/10 shrink-0 pt-0"> 
-            <a href="{{ route('admin.dashboard') }}" wire:navigate.hover class="flex items-center gap-3 admin-sidebar-logo">
-                <div class="bg-white/95 rounded px-3 py-1.5 shadow-md border border-white/10"> 
-                    <img src="{{ $siteIcon ?: '/codeware_logo.png' }}" alt="{{ config('app.name') }}" class="w-auto">
+        {{-- Logo + search --}}
+        <div class="px-0 py-4 border-b border-white/10 shrink-0 pt-0 flex items-center gap-3">
+            <a href="{{ route('admin.dashboard') }}" wire:navigate.hover class="flex items-center gap-3 admin-sidebar-logo shrink-0">
+                <div class="rounded">
+                    <img src="{{ $siteIcon ?: '/site_icon.png' }}" alt="{{ config('app.name') }}" class="w-10">
                 </div>
                 <!-- <div class="min-w-0">
                     <p class="truncate text-sm font-bold tracking-wide text-white">{{ config('app.name') }}</p>
                     <p class="mt-0.5 text-[11px] font-medium text-slate-300">Admin workspace</p>
                 </div> -->
             </a>
-        </div>
 
-        {{-- Menu search --}}
-        <div class="px-0 py-4 border-b border-white/10 shrink-0 admin-sidebar-search pt-0">
-            <div class="relative">
+            <div class="relative flex-1 min-w-0 admin-sidebar-search">
                 <flux:icon.magnifying-glass
                     class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-500 pointer-events-none" />
                 <input type="text" x-model="search" placeholder="{{ __('Search menu...') }}" autocomplete="off"
-                    class="admin-sidebar-search-input w-full bg-white/5 border border-white/10 rounded-lg pl-9 pr-8 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 outline-none transition">
+                    class="admin-sidebar-search-input w-full bg-white/5 border border-primary! rounded-lg pl-9 pr-8 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 outline-none transition">
                 <button type="button" x-show="search" x-on:click="search = ''"
                     class="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors">
                     <flux:icon.x-mark class="size-4" />
                 </button>
             </div>
-        </div> 
+        </div>
 
         {{-- Navigation --}}
-        <nav id="admin-sidebar-nav" class="flex-1 overflow-y-auto px-2 py-4 space-y-0.5 custom-sidebar-nav pt-0 pl-0.5">
+        <nav id="admin-sidebar-nav" class="flex-1 overflow-y-auto px-2 py-4 space-y-0.5 custom-sidebar-nav pt-0 -mt-1 pl-0.5">
 
             @foreach ($sidebarMenu as $item)
                 @if ($item->is_group)
