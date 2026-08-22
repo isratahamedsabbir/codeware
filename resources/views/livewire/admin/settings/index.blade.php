@@ -72,10 +72,10 @@
                                                  :style="'background-color: ' + ($wire.settings['{{ $setting->key }}'] || '#ffffff')"></div>
                                             <flux:input wire:model="settings.{{ $setting->key }}" placeholder="#000000" class="flex-1 font-mono" />
                                         </div>
-                                    @elseif ($setting->key === 'site_icon' || $setting->key === 'favicon')
+                                    @elseif ($setting->key === 'site_icon' || $setting->key === 'favicon' || $setting->key === 'loader')
                                         <x-media-picker model="settings.{{ $setting->key }}"
-                                            label="{{ $setting->key === 'favicon' ? 'Favicon' : 'Site Icon' }}"
-                                            placeholder="Choose a {{ $setting->key === 'favicon' ? 'favicon' : 'site icon' }} from the library" />
+                                            label="{{ match ($setting->key) { 'favicon' => 'Favicon', 'loader' => 'Loader (GIF)', default => 'Site Icon' } }}"
+                                            placeholder="{{ $setting->key === 'loader' ? 'Choose a loading animation (GIF) from the library' : 'Choose a '.($setting->key === 'favicon' ? 'favicon' : 'site icon').' from the library' }}" />
                                     @elseif ($setting->type === 'textarea')
                                         <flux:textarea wire:model="settings.{{ $setting->key }}" rows="3" />
                                     @else

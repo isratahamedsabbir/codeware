@@ -39,6 +39,7 @@ it('seeder creates required settings', function () {
     expect(Setting::where('key', 'site_name')->exists())->toBeTrue();
     expect(Setting::where('key', 'site_icon')->exists())->toBeTrue();
     expect(Setting::where('key', 'favicon')->exists())->toBeTrue();
+    expect(Setting::where('key', 'loader')->exists())->toBeTrue();
 });
 
 it('saves the site icon through the form', function () {
@@ -57,6 +58,15 @@ it('saves the favicon through the form', function () {
         ->assertHasNoErrors();
 
     expect(Setting::where('key', 'favicon')->value('value'))->toBe('/storage/favicon.png');
+});
+
+it('saves the loader gif through the form', function () {
+    Livewire::test(SettingsIndex::class)
+        ->set('settings.loader', '/storage/loader.gif')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(Setting::where('key', 'loader')->value('value'))->toBe('/storage/loader.gif');
 });
 
 it('renders the favicon in the admin layout head', function () {
