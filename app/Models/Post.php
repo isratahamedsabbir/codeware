@@ -20,13 +20,12 @@ class Post extends Model
 
     protected $fillable = [
         'user_id', 'category_id', 'title', 'slug', 'description',
-        'content', 'puck_data', 'featured_image', 'status', 'published_at',
+        'content', 'featured_image', 'status', 'published_at',
         'reading_time',
     ];
 
     protected $casts = [
         'published_at' => 'datetime',
-        'puck_data' => 'array',
     ];
 
     protected static function booted(): void

@@ -1,13 +1,17 @@
 <?php
 
+use App\Models\Page;
 use App\Models\Post;
 use App\Models\User;
 
-it('admin post show includes puck_data', function () {
+it('admin post show includes puck_data from the paired page', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $token = $admin->createToken('test')->plainTextToken;
 
-    $post = Post::factory()->create([
+    $post = Post::factory()->create();
+    Page::create([
+        'type' => 'post', 'post_id' => $post->id, 'user_id' => $admin->id,
+        'title' => ['en' => 'Title'], 'slug' => $post->slug, 'status' => 'active',
         'puck_data' => ['root' => ['props' => []], 'content' => []],
     ]);
 
@@ -17,10 +21,10 @@ it('admin post show includes puck_data', function () {
         ->assertJsonPath('data.puck_data.content', []);
 });
 
-it('admin post update accepts puck_data', function () {
+it('admin post update accepts puck_data, saving it onto the paired page', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $token = $admin->createToken('test')->plainTextToken;
-    $post  = Post::factory()->create();
+    $post = Post::factory()->create();
 
     $puck = ['root' => ['props' => []], 'content' => [['type' => 'HeroSection', 'props' => []]]];
 
@@ -29,7 +33,8 @@ it('admin post update accepts puck_data', function () {
         ->assertOk()
         ->assertJsonPath('data.id', $post->id);
 
-    expect($post->fresh()->puck_data['content'][0]['type'])->toBe('HeroSection');
+    $page = Page::where(['type' => 'post', 'post_id' => $post->id])->sole();
+    expect($page->puck_data['content'][0]['type'])->toBe('HeroSection');
 });
 
 it('admin can create a post via store', function () {
@@ -43,7 +48,7 @@ it('admin can create a post via store', function () {
         ->assertCreated()
         ->assertJsonStructure(['data' => ['id', 'slug']]);
 
-    expect(\App\Models\Post::where('status', 'inactive')->exists())->toBeTrue();
+    expect(Post::where('status', 'inactive')->exists())->toBeTrue();
 });
 
 it('admin post store requires en title', function () {

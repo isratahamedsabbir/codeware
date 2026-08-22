@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Page;
 use App\Models\Post;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -63,9 +64,6 @@ class PostController extends Controller
             'featured_image' => $post->featured_image,
             // 'reading_time' => $post->reading_time,
             // 'published_at' => $post->published_at?->toIso8601String(),
-            'seo_title' => $post->page?->seo_title,
-            'seo_description' => $post->page?->seo_description,
-            'og_image' => $post->page?->og_image,
             // 'author' => $post->user ? ['id' => $post->user->id, 'name' => $post->user->name] : null,
             'category' => $post->category ? [
                 'id' => $post->category->id,
@@ -77,11 +75,34 @@ class PostController extends Controller
                 'slug' => $tag->slug,
                 'name' => $tag->getTranslation('name', $locale, useFallbackLocale: true),
             ])->values(),
+            'page' => $this->formatPage($post->page, $withContent),
         ];
 
         if ($withContent) {
             $data['content'] = $post->getTranslation('content', $locale, useFallbackLocale: true);
-            $data['puck_data'] = $post->page->puck_data;
+        }
+
+        return $data;
+    }
+
+    private function formatPage(?Page $page, bool $withContent): ?array
+    {
+        if (! $page) {
+            return null;
+        }
+
+        $data = [
+            'seo_title' => $page->seo_title,
+            'seo_description' => $page->seo_description,
+            'og_title' => $page->og_title,
+            'og_description' => $page->og_description,
+            'og_image' => $page->og_image,
+            'no_index' => $page->no_index,
+            'no_follow' => $page->no_follow,
+        ];
+
+        if ($withContent) {
+            $data['puck_data'] = $page->puck_data;
         }
 
         return $data;

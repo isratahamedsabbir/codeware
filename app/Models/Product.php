@@ -22,7 +22,7 @@ class Product extends Model
         'product_category_id', 'name', 'slug', 'description',
         'faq',
         'featured_image', 'status', 'price', 'is_featured',
-        'sort_order', 'puck_data',
+        'sort_order',
     ];
 
     protected $casts = [
@@ -30,7 +30,6 @@ class Product extends Model
         'price' => 'decimal:2',
         'is_featured' => 'boolean',
         'sort_order' => 'integer',
-        'puck_data' => 'array',
     ];
 
     protected static function booted(): void

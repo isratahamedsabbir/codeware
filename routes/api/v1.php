@@ -7,6 +7,10 @@ use App\Http\Controllers\Api\V1\Admin\PageController as AdminPageController;
 use App\Http\Controllers\Api\V1\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Api\V1\Admin\ProductCategoryController as AdminProductCategoryController;
 use App\Http\Controllers\Api\V1\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Api\V1\Auth\EmailVerificationController;
+use App\Http\Controllers\Api\V1\Auth\LoginController;
+use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
+use App\Http\Controllers\Api\V1\Auth\RegisterController;
 use App\Http\Controllers\Api\V1\ContactController;
 use App\Http\Controllers\Api\V1\LayoutController;
 use App\Http\Controllers\Api\V1\OrderController;
@@ -14,8 +18,31 @@ use App\Http\Controllers\Api\V1\PageController;
 use App\Http\Controllers\Api\V1\PostController;
 use App\Http\Controllers\Api\V1\ProductCategoryController;
 use App\Http\Controllers\Api\V1\ProductController;
+use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use Illuminate\Support\Facades\Route;
+
+// Customer account auth — API-only (no admin panel UI), backed by the same `users`
+// table as the admin/Fortify web login (is_admin stays false for these accounts).
+Route::prefix('auth')->name('auth.')->group(function () {
+    Route::post('/register', [RegisterController::class, 'store'])->name('register');
+    Route::post('/login', [LoginController::class, 'store'])->name('login')->middleware('throttle:login');
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->name('password.email');
+    Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
+    Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+        ->middleware('signed')->name('email.verify');
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+        Route::post('/email/resend', [EmailVerificationController::class, 'resend'])
+            ->middleware('throttle:6,1')->name('email.resend');
+    });
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+});
 
 // Public read endpoints — no auth required
 Route::get('/posts', [PostController::class, 'index'])->name('posts.index');

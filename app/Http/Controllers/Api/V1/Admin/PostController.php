@@ -66,7 +66,7 @@ class PostController extends Controller
                 'og_image' => $post->page?->og_image,
                 'seo_title' => $post->page?->seo_title,
                 'seo_description' => $post->page?->seo_description,
-                'puck_data' => $post->puck_data,
+                'puck_data' => $post->page?->puck_data,
                 'deleted_at' => $post->deleted_at?->toIso8601String(),
                 'category' => $post->category,
                 'author' => $post->user ? ['id' => $post->user->id, 'name' => $post->user->name] : null,
@@ -95,6 +95,10 @@ class PostController extends Controller
         $validated['user_id'] = $request->user()->id;
         $validated['status'] = $validated['status'] ?? 'inactive';
 
+        // The puck-builder content lives on the paired Page, not on the post itself.
+        $puckData = $validated['puck_data'] ?? null;
+        unset($validated['puck_data']);
+
         $post = Post::create($validated)->refresh();
         $post->tags()->sync($validated['tag_ids'] ?? []);
 
@@ -102,13 +106,14 @@ class PostController extends Controller
         // admin form does — otherwise a page created later has a stale slug.
         Page::updateOrCreate(
             ['type' => 'post', 'post_id' => $post->id],
-            [
+            array_filter([
                 'user_id' => $request->user()->id,
                 'title' => $post->getTranslations('title'),
                 'slug' => $post->slug,
                 'status' => $post->status,
                 'description' => $post->getTranslations('description') ?: null,
-            ]
+                'puck_data' => $puckData,
+            ])
         );
 
         return response()->json(['data' => ['id' => $post->id, 'slug' => $post->slug]], 201);
@@ -140,9 +145,10 @@ class PostController extends Controller
             'tag_ids.*' => 'exists:tags,id',
         ]);
 
-        // SEO fields and OG image live on the paired Page, not on the post itself.
-        $seo = collect($validated)->only(['og_image', 'seo_title', 'seo_description'])->all();
-        unset($validated['og_image'], $validated['seo_title'], $validated['seo_description']);
+        // SEO fields, OG image, and the puck-builder content all live on the paired
+        // Page, not on the post itself.
+        $pageFields = collect($validated)->only(['og_image', 'seo_title', 'seo_description', 'puck_data'])->all();
+        unset($validated['og_image'], $validated['seo_title'], $validated['seo_description'], $validated['puck_data']);
 
         $post->update($validated);
         $post->tags()->sync($validated['tag_ids'] ?? []);
@@ -158,7 +164,7 @@ class PostController extends Controller
                 'slug' => $post->slug,
                 'status' => $post->status,
                 'description' => $post->getTranslations('description') ?: null,
-                ...$seo,
+                ...$pageFields,
             ])
         );
 

@@ -23,7 +23,6 @@ return new class extends Migration
             $table->string('status', 20)->default('inactive');
             $table->timestamp('published_at')->nullable();
             $table->unsignedSmallInteger('reading_time')->nullable();
-            $table->json('puck_data')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

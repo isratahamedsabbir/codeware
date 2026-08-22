@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\User;
 
 it('returns product categories ordered by sort_order', function () {
     ProductCategory::factory()->create(['name' => ['en' => 'Seeds', 'bn' => ''], 'sort_order' => 2]);
@@ -113,17 +115,30 @@ it('returns product name for bn locale', function () {
         ->assertJsonPath('data.0.name', 'বাংলা নাম');
 });
 
-it('public product detail includes puck_data', function () {
+it('public product detail includes puck_data from the paired page', function () {
     $puckData = ['root' => ['props' => []], 'content' => [['type' => 'ProductHero', 'props' => []]]];
-    $product  = Product::factory()->published()->create(['puck_data' => $puckData]);
+    $product = Product::factory()->published()->create();
+    Page::create([
+        'type' => 'product', 'product_id' => $product->id, 'user_id' => User::factory()->create()->id,
+        'title' => ['en' => 'Title'], 'slug' => $product->slug, 'status' => 'active',
+        'puck_data' => $puckData,
+    ]);
 
     $this->getJson("/api/v1/products/{$product->slug}")
         ->assertOk()
-        ->assertJsonPath('data.puck_data', $puckData);
+        ->assertJsonPath('data.page.puck_data', $puckData);
+});
+
+it('public product detail returns a null page when the product has no paired page', function () {
+    $product = Product::factory()->published()->create();
+
+    $this->getJson("/api/v1/products/{$product->slug}")
+        ->assertOk()
+        ->assertJsonPath('data.page', null);
 });
 
 it('public product detail includes faq for locale', function () {
-    $faq     = [['question' => ['en' => 'What is this?', 'bn' => 'এটি কি?'], 'answer' => ['en' => 'A product.', 'bn' => 'একটি পণ্য।']]];
+    $faq = [['question' => ['en' => 'What is this?', 'bn' => 'এটি কি?'], 'answer' => ['en' => 'A product.', 'bn' => 'একটি পণ্য।']]];
     $product = Product::factory()->published()->create(['faq' => $faq]);
 
     $this->getJson("/api/v1/products/{$product->slug}")
@@ -133,7 +148,7 @@ it('public product detail includes faq for locale', function () {
 });
 
 it('public product detail returns faq in bn locale', function () {
-    $faq     = [['question' => ['en' => 'What is this?', 'bn' => 'এটি কি?'], 'answer' => ['en' => 'A product.', 'bn' => 'একটি পণ্য।']]];
+    $faq = [['question' => ['en' => 'What is this?', 'bn' => 'এটি কি?'], 'answer' => ['en' => 'A product.', 'bn' => 'একটি পণ্য।']]];
     $product = Product::factory()->published()->create(['faq' => $faq]);
 
     $this->getJson("/api/v1/products/{$product->slug}?locale=bn")
@@ -142,10 +157,16 @@ it('public product detail returns faq in bn locale', function () {
         ->assertJsonPath('data.faq.0.answer', 'একটি পণ্য।');
 });
 
-it('public product listing does not expose puck_data', function () {
-    Product::factory()->published()->create(['puck_data' => ['root' => ['props' => []], 'content' => []]]);
+it('public product listing does not expose puck_data even when the paired page has it', function () {
+    $product = Product::factory()->published()->create();
+    Page::create([
+        'type' => 'product', 'product_id' => $product->id, 'user_id' => User::factory()->create()->id,
+        'title' => ['en' => 'Title'], 'slug' => $product->slug, 'status' => 'active',
+        'puck_data' => ['root' => ['props' => []], 'content' => []],
+    ]);
 
     $response = $this->getJson('/api/v1/products')->assertOk();
 
-    expect($response->json('data.0'))->not->toHaveKey('puck_data');
+    expect($response->json('data.0'))->not->toHaveKey('puck_data')
+        ->and($response->json('data.0.page'))->not->toHaveKey('puck_data');
 });

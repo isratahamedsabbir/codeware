@@ -28,7 +28,6 @@ return new class extends Migration
             $table->decimal('price', 10, 2)->default(0);
             $table->boolean('is_featured')->default(false);
             $table->unsignedSmallInteger('sort_order')->default(0);
-            $table->json('puck_data')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

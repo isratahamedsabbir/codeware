@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Page;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -73,15 +74,13 @@ class ProductController extends Controller
             'price' => (float) $product->price,
             'featured_image' => $product->featured_image,
             'is_featured' => $product->is_featured,
-            'og_image' => $product->page?->og_image,
             // 'sort_order'      => $product->sort_order,
-            'seo_title' => $product->page?->seo_title,
-            'seo_description' => $product->page?->seo_description,
             'category' => $product->category ? [
                 'id' => $product->category->id,
                 'slug' => $product->category->slug,
                 'name' => $product->category->getTranslation('name', $locale, useFallbackLocale: true),
             ] : null,
+            'page' => $this->formatPage($product->page, $withDetail),
         ];
 
         if ($withDetail) {
@@ -90,7 +89,6 @@ class ProductController extends Controller
                 'question' => $item['question'][$locale] ?? $item['question']['en'] ?? '',
                 'answer' => $item['answer'][$locale] ?? $item['answer']['en'] ?? '',
             ])->values();
-            $data['puck_data'] = $product->page->puck_data;
             /* $data['gallery'] = $product->gallery->map(fn ($m) => [
                 'id'         => $m->id,
                 'url'        => $m->url,
@@ -98,6 +96,29 @@ class ProductController extends Controller
                 'sort_order' => $m->pivot->sort_order,
             ])->values(); */
             // $data['related_products'] = $related->map(fn ($p) => $this->formatProduct($p, $locale))->values();
+        }
+
+        return $data;
+    }
+
+    private function formatPage(?Page $page, bool $withContent): ?array
+    {
+        if (! $page) {
+            return null;
+        }
+
+        $data = [
+            'seo_title' => $page->seo_title,
+            'seo_description' => $page->seo_description,
+            'og_title' => $page->og_title,
+            'og_description' => $page->og_description,
+            'og_image' => $page->og_image,
+            'no_index' => $page->no_index,
+            'no_follow' => $page->no_follow,
+        ];
+
+        if ($withContent) {
+            $data['puck_data'] = $page->puck_data;
         }
 
         return $data;

@@ -115,9 +115,9 @@ it('public product API reads SEO fields from the page', function () {
 
     $this->getJson("/api/v1/products/{$product->slug}")
         ->assertOk()
-        ->assertJsonPath('data.seo_title', 'API SEO Title')
-        ->assertJsonPath('data.seo_description', 'API SEO Description')
-        ->assertJsonPath('data.og_image', '/api-og.png');
+        ->assertJsonPath('data.page.seo_title', 'API SEO Title')
+        ->assertJsonPath('data.page.seo_description', 'API SEO Description')
+        ->assertJsonPath('data.page.og_image', '/api-og.png');
 });
 
 it('public post API reads SEO fields from the page', function () {
@@ -133,9 +133,9 @@ it('public post API reads SEO fields from the page', function () {
 
     $this->getJson("/api/v1/posts/{$post->slug}")
         ->assertOk()
-        ->assertJsonPath('data.seo_title', 'Post API SEO Title')
-        ->assertJsonPath('data.seo_description', 'Post API SEO Description')
-        ->assertJsonPath('data.og_image', '/post-api-og.png');
+        ->assertJsonPath('data.page.seo_title', 'Post API SEO Title')
+        ->assertJsonPath('data.page.seo_description', 'Post API SEO Description')
+        ->assertJsonPath('data.page.og_image', '/post-api-og.png');
 });
 
 // --- Admin REST API ---

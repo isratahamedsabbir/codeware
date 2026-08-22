@@ -71,9 +71,10 @@ class ProductController extends Controller
         $mediaIds = $validated['media_ids'] ?? null;
         unset($validated['media_ids']);
 
-        // SEO fields and OG image live on the paired Page, not on the product itself.
-        $seo = collect($validated)->only(['og_image', 'seo_title', 'seo_description'])->all();
-        unset($validated['og_image'], $validated['seo_title'], $validated['seo_description']);
+        // SEO fields, OG image, and the puck-builder content all live on the paired
+        // Page, not on the product itself.
+        $pageFields = collect($validated)->only(['og_image', 'seo_title', 'seo_description', 'puck_data'])->all();
+        unset($validated['og_image'], $validated['seo_title'], $validated['seo_description'], $validated['puck_data']);
 
         $product = Product::create($validated)->refresh();
 
@@ -96,7 +97,7 @@ class ProductController extends Controller
                 'status' => $product->status,
                 'sort_order' => $product->sort_order,
                 'description' => $product->getTranslations('description') ?: null,
-                ...$seo,
+                ...$pageFields,
             ])
         );
 
@@ -132,9 +133,10 @@ class ProductController extends Controller
         $mediaIds = array_key_exists('media_ids', $validated) ? $validated['media_ids'] : false;
         unset($validated['media_ids']);
 
-        // SEO fields and OG image live on the paired Page, not on the product itself.
-        $seo = collect($validated)->only(['og_image', 'seo_title', 'seo_description'])->all();
-        unset($validated['og_image'], $validated['seo_title'], $validated['seo_description']);
+        // SEO fields, OG image, and the puck-builder content all live on the paired
+        // Page, not on the product itself.
+        $pageFields = collect($validated)->only(['og_image', 'seo_title', 'seo_description', 'puck_data'])->all();
+        unset($validated['og_image'], $validated['seo_title'], $validated['seo_description'], $validated['puck_data']);
 
         $product->update($validated);
 
@@ -157,7 +159,7 @@ class ProductController extends Controller
                 'status' => $product->status,
                 'sort_order' => $product->sort_order,
                 'description' => $product->getTranslations('description') ?: null,
-                ...$seo,
+                ...$pageFields,
             ])
         );
 

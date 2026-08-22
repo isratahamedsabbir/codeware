@@ -6,10 +6,13 @@ use App\Models\MediaLibrary;
 use App\Policies\MediaLibraryPolicy;
 use App\Support\DatabaseTranslationLoader;
 use Carbon\CarbonImmutable;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Contracts\Translation\Loader;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Fortify\Fortify;
@@ -98,6 +101,29 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(MediaLibrary::class, MediaLibraryPolicy::class);
 
         Fortify::redirects('login', fn () => route('admin.dashboard'));
+
+        $this->configureCustomerAuthNotificationUrls();
+    }
+
+    /**
+     * Customer accounts are API-only (see Api\V1\Auth\*), so verification/reset
+     * emails must link back to an API endpoint (or the frontend) instead of
+     * Fortify's session-based web routes, which an API client can't use.
+     */
+    protected function configureCustomerAuthNotificationUrls(): void
+    {
+        VerifyEmail::createUrlUsing(fn ($notifiable) => URL::temporarySignedRoute(
+            'api.v1.auth.email.verify',
+            now()->addMinutes(60),
+            ['id' => $notifiable->getKey(), 'hash' => sha1($notifiable->getEmailForVerification())],
+        ));
+
+        ResetPassword::createUrlUsing(fn ($notifiable, string $token) => sprintf(
+            '%s/reset-password?token=%s&email=%s',
+            rtrim(config('app.frontend_url'), '/'),
+            $token,
+            urlencode($notifiable->getEmailForPasswordReset()),
+        ));
     }
 
     /**

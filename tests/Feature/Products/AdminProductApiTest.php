@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\MediaLibrary;
+use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\User;
@@ -132,7 +133,7 @@ it('create product fails validation without required name', function () {
         ->assertJsonValidationErrors(['name.en']);
 });
 
-it('admin can save puck_data when updating a product', function () {
+it('admin can save puck_data when updating a product, onto the paired page', function () {
     Sanctum::actingAs($this->admin);
     $product = Product::factory()->create();
 
@@ -141,7 +142,8 @@ it('admin can save puck_data when updating a product', function () {
     $this->putJson("/api/v1/admin/products/{$product->id}", ['puck_data' => $puckData])
         ->assertOk();
 
-    expect(Product::find($product->id)->puck_data)->toBe($puckData);
+    $page = Page::where(['type' => 'product', 'product_id' => $product->id])->sole();
+    expect($page->puck_data)->toBe($puckData);
 });
 
 it('admin can save faq when updating a product', function () {
@@ -162,7 +164,7 @@ it('admin can save faq when updating a product', function () {
     expect($saved[0]['answer']['bn'])->toBe('একটি পণ্য।');
 });
 
-it('admin can create a product with puck_data and faq', function () {
+it('admin can create a product with puck_data and faq, puck_data landing on the paired page', function () {
     Sanctum::actingAs($this->admin);
 
     $puckData = ['root' => ['props' => []], 'content' => []];
@@ -176,7 +178,8 @@ it('admin can create a product with puck_data and faq', function () {
     ])->assertCreated();
 
     $product = Product::where('slug', 'puck_product')->firstOrFail();
-    expect($product->puck_data)->toBe($puckData);
+    $page = Page::where(['type' => 'product', 'product_id' => $product->id])->sole();
+    expect($page->puck_data)->toBe($puckData);
     expect($product->faq[0]['question']['en'])->toBe('Q?');
     expect($product->faq[0]['answer']['en'])->toBe('A.');
 });
