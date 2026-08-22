@@ -25,12 +25,14 @@ use Illuminate\Support\Facades\Route;
 // Customer account auth — API-only (no admin panel UI), backed by the same `users`
 // table as the admin/Fortify web login (is_admin stays false for these accounts).
 Route::prefix('auth')->name('auth.')->group(function () {
-    Route::post('/register', [RegisterController::class, 'store'])->name('register');
+    Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:6,1')->name('register');
     Route::post('/login', [LoginController::class, 'store'])->name('login')->middleware('throttle:login');
-    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->name('password.email');
-    Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])
+        ->middleware('throttle:6,1')->name('password.email');
+    Route::post('/reset-password', [PasswordResetController::class, 'reset'])
+        ->middleware('throttle:6,1')->name('password.update');
     Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
-        ->middleware('signed')->name('email.verify');
+        ->middleware(['signed', 'throttle:6,1'])->name('email.verify');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');

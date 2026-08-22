@@ -59,3 +59,17 @@ it('rejects a profile update with an email already taken by another user', funct
         'email' => 'taken@example.com',
     ])->assertUnprocessable()->assertJsonValidationErrors(['email']);
 });
+
+it('ignores an is_admin field sent to the profile update and never grants admin', function () {
+    $user = User::factory()->create();
+    expect((bool) $user->is_admin)->toBeFalse();
+    Sanctum::actingAs($user);
+
+    $this->putJson('/api/v1/profile', [
+        'name' => $user->name,
+        'email' => $user->email,
+        'is_admin' => true,
+    ])->assertOk();
+
+    expect((bool) $user->fresh()->is_admin)->toBeFalse();
+});

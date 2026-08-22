@@ -168,3 +168,91 @@ it('resends the verification email for an authenticated but unverified customer'
 
     Notification::assertSentTo($user, VerifyEmail::class);
 });
+
+// --- Admin can't be bypassed through this API ---
+
+it('ignores an is_admin field sent to registration and never grants admin', function () {
+    $this->postJson('/api/v1/auth/register', [
+        'name' => 'Sneaky Customer',
+        'email' => 'sneaky@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        'is_admin' => true,
+    ])->assertCreated();
+
+    $user = User::where('email', 'sneaky@example.com')->sole();
+    expect((bool) $user->is_admin)->toBeFalse();
+});
+
+it('rejects a customer account from every admin API endpoint', function () {
+    $user = User::factory()->create(['password' => 'secret123']);
+    expect((bool) $user->is_admin)->toBeFalse();
+
+    $token = $this->postJson('/api/v1/auth/login', [
+        'email' => $user->email,
+        'password' => 'secret123',
+    ])->json('data.token');
+
+    $this->withHeader('Authorization', "Bearer {$token}")
+        ->getJson('/api/v1/admin/products')
+        ->assertForbidden();
+
+    $this->withHeader('Authorization', "Bearer {$token}")
+        ->getJson('/api/v1/admin/posts')
+        ->assertForbidden();
+
+    $this->withHeader('Authorization', "Bearer {$token}")
+        ->getJson('/api/v1/admin/pages')
+        ->assertForbidden();
+});
+
+// --- Rate limiting ---
+
+it('throttles registration attempts', function () {
+    foreach (range(1, 6) as $i) {
+        $this->postJson('/api/v1/auth/register', [
+            'name' => "Flooder {$i}",
+            'email' => "flooder{$i}@example.com",
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ])->assertCreated();
+    }
+
+    $this->postJson('/api/v1/auth/register', [
+        'name' => 'Flooder 7',
+        'email' => 'flooder7@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ])->assertStatus(429);
+});
+
+it('throttles login attempts per email+IP', function () {
+    $user = User::factory()->create(['password' => 'secret123']);
+
+    foreach (range(1, 5) as $_) {
+        $this->postJson('/api/v1/auth/login', [
+            'email' => $user->email,
+            'password' => 'wrong-password',
+        ])->assertUnprocessable();
+    }
+
+    $this->postJson('/api/v1/auth/login', [
+        'email' => $user->email,
+        'password' => 'wrong-password',
+    ])->assertStatus(429);
+});
+
+it('throttles forgot-password requests per IP', function () {
+    Notification::fake();
+    // Distinct emails per request: the password broker itself already imposes a
+    // 60s per-email cooldown (config/auth.php `passwords.users.throttle`), so
+    // reusing one email would trip that instead of the route's own IP throttle.
+    $users = User::factory()->count(7)->create();
+
+    foreach ($users->take(6) as $user) {
+        $this->postJson('/api/v1/auth/forgot-password', ['email' => $user->email])->assertOk();
+    }
+
+    $this->postJson('/api/v1/auth/forgot-password', ['email' => $users->last()->email])
+        ->assertStatus(429);
+});
