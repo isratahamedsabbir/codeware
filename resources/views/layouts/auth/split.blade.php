@@ -51,6 +51,8 @@
 
     </div>
 
+    @include('partials.auth-loader-overlay')
+
     @fluxScripts
 </body>
 

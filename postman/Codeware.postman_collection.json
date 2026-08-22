@@ -613,6 +613,39 @@
 					]
 				},
 				{
+					"name": "Settings",
+					"description": "Stricter than the rest of the Admin folder: gated by `access-admin-system`, same as Users — a Staff-role account gets 403 here (this also covers Layout below, which is the Settings screen's own Layout tab).",
+					"item": [
+						{
+							"name": "List Settings",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/admin/settings?group=general",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "settings"],
+									"query": [
+										{ "key": "group", "value": "general", "disabled": true }
+									]
+								}
+							}
+						},
+						{
+							"name": "Update Settings",
+							"request": {
+								"method": "PUT",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"settings\": {\n        \"site_name\": \"Codeware\",\n        \"contact_email\": \"hello@example.com\"\n    }\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/admin/settings"
+							}
+						}
+					]
+				},
+				{
 					"name": "Layout",
 					"item": [
 						{

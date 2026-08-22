@@ -258,6 +258,8 @@
 
     <div x-data x-on:notify.window="toastr.success($event.detail.message)"></div>
 
+    @include('partials.admin-loader-overlay')
+
     {{-- Apply the global admin theme (dark class + accent color) --}}
     <script>
         function applyAdminTheme(mode, accent) {

@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\Admin\PageController as AdminPageController;
 use App\Http\Controllers\Api\V1\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Api\V1\Admin\ProductCategoryController as AdminProductCategoryController;
 use App\Http\Controllers\Api\V1\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Api\V1\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Api\V1\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\V1\Auth\EmailVerificationController;
 use App\Http\Controllers\Api\V1\Auth\LoginController;
@@ -85,8 +86,6 @@ Route::middleware(['auth:sanctum', 'can:access-admin'])->prefix('admin')->name('
     Route::post('/media', [MediaController::class, 'store'])->name('media.store');
     Route::delete('/media/{id}', [MediaController::class, 'destroy'])->name('media.destroy');
 
-    Route::put('/layout', [AdminLayoutController::class, 'update'])->name('layout.update');
-
     Route::get('/product-categories', [AdminProductCategoryController::class, 'index'])->name('product-categories.index');
     Route::post('/product-categories', [AdminProductCategoryController::class, 'store'])->name('product-categories.store');
     Route::put('/product-categories/{id}', [AdminProductCategoryController::class, 'update'])->name('product-categories.update');
@@ -103,8 +102,9 @@ Route::middleware(['auth:sanctum', 'can:access-admin'])->prefix('admin')->name('
     Route::delete('/contacts/{id}', [AdminContactController::class, 'destroy'])->name('contacts.destroy');
 
     // Stricter than the rest of this group: mirrors `access-admin-system` on the
-    // Livewire side (routes/admin.php), which keeps user management to Admin/Super
-    // Admin only — Staff passes the outer `access-admin` gate but not this one.
+    // Livewire side (routes/admin.php) — Users and Settings (including Layout,
+    // which lives on the Settings screen's own Layout tab) are Admin/Super Admin
+    // only there. Staff passes the outer `access-admin` gate but not this one.
     Route::middleware('can:access-admin-system')->group(function () {
         Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
         Route::get('/users/{id}', [AdminUserController::class, 'show'])->name('users.show');
@@ -112,5 +112,10 @@ Route::middleware(['auth:sanctum', 'can:access-admin'])->prefix('admin')->name('
         Route::put('/users/{id}', [AdminUserController::class, 'update'])->name('users.update');
         Route::put('/users/{id}/password', [AdminUserController::class, 'updatePassword'])->name('users.password.update');
         Route::delete('/users/{id}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+
+        Route::get('/settings', [AdminSettingsController::class, 'index'])->name('settings.index');
+        Route::put('/settings', [AdminSettingsController::class, 'update'])->name('settings.update');
+
+        Route::put('/layout', [AdminLayoutController::class, 'update'])->name('layout.update');
     });
 });
