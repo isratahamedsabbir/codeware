@@ -76,11 +76,13 @@ Route::middleware(['auth:sanctum', 'can:access-admin'])->prefix('admin')->name('
     Route::get('/posts/{id}', [AdminPostController::class, 'show'])->name('posts.show');
     Route::post('/posts', [AdminPostController::class, 'store'])->name('posts.store');
     Route::put('/posts/{id}', [AdminPostController::class, 'update'])->name('posts.update');
+    Route::delete('/posts/{id}', [AdminPostController::class, 'destroy'])->name('posts.destroy');
 
     Route::get('/pages', [AdminPageController::class, 'index'])->name('pages.index');
     Route::get('/pages/{id}', [AdminPageController::class, 'show'])->name('pages.show');
     Route::post('/pages', [AdminPageController::class, 'store'])->name('pages.store');
     Route::put('/pages/{id}', [AdminPageController::class, 'update'])->name('pages.update');
+    Route::delete('/pages/{id}', [AdminPageController::class, 'destroy'])->name('pages.destroy');
 
     Route::get('/media', [MediaController::class, 'index'])->name('media.index');
     Route::post('/media', [MediaController::class, 'store'])->name('media.store');

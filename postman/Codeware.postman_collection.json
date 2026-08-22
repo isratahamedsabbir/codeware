@@ -388,7 +388,11 @@
 						},
 						{
 							"name": "Delete Product",
-							"request": { "method": "DELETE", "url": "{{base_url}}/admin/products/{{product_id}}" }
+							"request": {
+								"method": "DELETE",
+								"description": "Also deletes the product's paired page (see App\\Support\\PageCascade).",
+								"url": "{{base_url}}/admin/products/{{product_id}}"
+							}
 						}
 					]
 				},
@@ -441,7 +445,11 @@
 						},
 						{
 							"name": "Delete Product Category",
-							"request": { "method": "DELETE", "url": "{{base_url}}/admin/product-categories/{{category_id}}" }
+							"request": {
+								"method": "DELETE",
+								"description": "Also force-deletes the category's paired page (see App\\Support\\PageCascade) — categories have no SoftDeletes, so the page can't outlive it.",
+								"url": "{{base_url}}/admin/product-categories/{{category_id}}"
+							}
 						}
 					]
 				},
@@ -506,6 +514,14 @@
 								},
 								"url": "{{base_url}}/admin/posts/{{post_id}}"
 							}
+						},
+						{
+							"name": "Delete Post",
+							"request": {
+								"method": "DELETE",
+								"description": "Also deletes the post's paired page (see App\\Support\\PageCascade).",
+								"url": "{{base_url}}/admin/posts/{{post_id}}"
+							}
 						}
 					]
 				},
@@ -556,6 +572,14 @@
 									"raw": "{\n    \"seo_title\": \"About Us\",\n    \"seo_description\": \"Learn more about our company.\",\n    \"og_title\": \"About Us\",\n    \"og_description\": \"Learn more about our company.\",\n    \"no_index\": false,\n    \"no_follow\": false,\n    \"puck_data\": { \"root\": { \"props\": {} }, \"content\": [] },\n    \"status\": \"published\"\n}",
 									"options": { "raw": { "language": "json" } }
 								},
+								"url": "{{base_url}}/admin/pages/{{page_id}}"
+							}
+						},
+						{
+							"name": "Delete Page",
+							"request": {
+								"method": "DELETE",
+								"description": "Also deletes whatever this page is linked to — the paired product/post/category, if any (see App\\Support\\PageCascade). A plain standalone page (type=page) has nothing linked, so only the page itself is removed.",
 								"url": "{{base_url}}/admin/pages/{{page_id}}"
 							}
 						}

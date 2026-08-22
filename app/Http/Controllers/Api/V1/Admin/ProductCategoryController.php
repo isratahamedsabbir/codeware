@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\ProductCategory;
+use App\Support\PageCascade;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -17,12 +18,12 @@ class ProductCategoryController extends Controller
 
         return response()->json([
             'data' => $categories->map(fn ($cat) => [
-                'id'          => $cat->id,
-                'name'        => $cat->getTranslations('name'),
-                'slug'        => $cat->slug,
+                'id' => $cat->id,
+                'name' => $cat->getTranslations('name'),
+                'slug' => $cat->slug,
                 'description' => $cat->getTranslations('description'),
-                'icon'        => $cat->icon,
-                'sort_order'  => $cat->sort_order,
+                'icon' => $cat->icon,
+                'sort_order' => $cat->sort_order,
             ]),
         ]);
     }
@@ -30,15 +31,15 @@ class ProductCategoryController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'name'            => 'required|array',
-            'name.en'         => 'required|string|max:255',
-            'name.bn'         => 'nullable|string|max:255',
-            'slug'            => 'nullable|string|unique:categories,slug,NULL,id,type,product',
-            'description'     => 'nullable|array',
-            'description.en'  => 'nullable|string',
-            'description.bn'  => 'nullable|string',
-            'icon'            => 'nullable|string|max:50',
-            'sort_order'      => 'nullable|integer|min:0',
+            'name' => 'required|array',
+            'name.en' => 'required|string|max:255',
+            'name.bn' => 'nullable|string|max:255',
+            'slug' => 'nullable|string|unique:categories,slug,NULL,id,type,product',
+            'description' => 'nullable|array',
+            'description.en' => 'nullable|string',
+            'description.bn' => 'nullable|string',
+            'icon' => 'nullable|string|max:50',
+            'sort_order' => 'nullable|integer|min:0',
         ]);
 
         $category = ProductCategory::create($validated)->refresh();
@@ -66,15 +67,15 @@ class ProductCategoryController extends Controller
         $category = ProductCategory::findOrFail($id);
 
         $validated = $request->validate([
-            'name'            => 'sometimes|array',
-            'name.en'         => 'required_with:name|string|max:255',
-            'name.bn'         => 'nullable|string|max:255',
-            'slug'            => 'nullable|string|unique:categories,slug,' . $id . ',id,type,product',
-            'description'     => 'sometimes|nullable|array',
-            'description.en'  => 'nullable|string',
-            'description.bn'  => 'nullable|string',
-            'icon'            => 'sometimes|nullable|string|max:50',
-            'sort_order'      => 'sometimes|integer|min:0',
+            'name' => 'sometimes|array',
+            'name.en' => 'required_with:name|string|max:255',
+            'name.bn' => 'nullable|string|max:255',
+            'slug' => 'nullable|string|unique:categories,slug,'.$id.',id,type,product',
+            'description' => 'sometimes|nullable|array',
+            'description.en' => 'nullable|string',
+            'description.bn' => 'nullable|string',
+            'icon' => 'sometimes|nullable|string|max:50',
+            'sort_order' => 'sometimes|integer|min:0',
         ]);
 
         $category->update($validated);
@@ -99,7 +100,10 @@ class ProductCategoryController extends Controller
 
     public function destroy(int $id): Response
     {
-        ProductCategory::findOrFail($id)->delete();
+        $category = ProductCategory::with('page')->findOrFail($id);
+        PageCascade::deletePageFor($category, forcePage: true);
+        $category->delete();
+
         return response()->noContent();
     }
 }

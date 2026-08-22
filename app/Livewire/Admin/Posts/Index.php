@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Posts;
 use App\Models\Page;
 use App\Models\Post;
 use App\Support\AdminActivity;
+use App\Support\PageCascade;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -62,7 +63,8 @@ class Index extends Component
     public function delete(): void
     {
         if ($this->deletingId) {
-            $post = Post::findOrFail($this->deletingId);
+            $post = Post::with('page')->findOrFail($this->deletingId);
+            PageCascade::deletePageFor($post);
             AdminActivity::log('deleted', "Post #{$post->id}: {$post->title}");
             $post->delete();
             $this->dispatch('notify', message: 'Post deleted successfully');

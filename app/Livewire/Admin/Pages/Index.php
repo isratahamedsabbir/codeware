@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Pages;
 
 use App\Models\Page;
 use App\Support\AdminActivity;
+use App\Support\PageCascade;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -12,9 +13,13 @@ class Index extends Component
     use WithPagination;
 
     public string $search = '';
+
     public ?int $deletingId = null;
 
-    public function updatedSearch(): void { $this->resetPage(); }
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
 
     public function reorder(array $order): void
     {
@@ -29,8 +34,8 @@ class Index extends Component
 
         $token = auth()->user()->createToken('puck-builder', ['*'], now()->addMinutes(config('app.puck_session', 5)))->plainTextToken;
 
-        $url = config('cms.editor_base_url') . "/puck/edit/page/{$pageId}#token={$token}";
-        $this->js('window.open(' . json_encode($url) . ', \'_blank\')');
+        $url = config('cms.editor_base_url')."/puck/edit/page/{$pageId}#token={$token}";
+        $this->js('window.open('.json_encode($url).', \'_blank\')');
     }
 
     public function confirmDelete(int $id): void
@@ -43,6 +48,7 @@ class Index extends Component
     {
         if ($this->deletingId) {
             $page = Page::findOrFail($this->deletingId);
+            PageCascade::deleteEntityFor($page);
             AdminActivity::log('deleted', "Page #{$page->id}: {$page->title}");
             $page->delete();
             $this->dispatch('notify', message: 'Page deleted successfully');

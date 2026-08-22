@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Products;
 
 use App\Models\Product;
 use App\Support\AdminActivity;
+use App\Support\PageCascade;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -63,9 +64,7 @@ class Index extends Component
     {
         if ($this->deletingId) {
             $product = Product::with('page')->findOrFail($this->deletingId);
-            if ($product->page) {
-                $product->page->delete();
-            }
+            PageCascade::deletePageFor($product);
             AdminActivity::log('deleted', "Product #{$product->id}: {$product->name}");
             $product->delete();
             $this->dispatch('notify', message: 'Product deleted successfully');

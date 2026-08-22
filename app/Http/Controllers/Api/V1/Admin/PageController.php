@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Page;
+use App\Support\PageCascade;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class PageController extends Controller
 {
@@ -103,5 +105,14 @@ class PageController extends Controller
         $page->update($validated);
 
         return response()->json(['data' => ['id' => $page->id, 'slug' => $page->slug]]);
+    }
+
+    public function destroy(int $id): Response
+    {
+        $page = Page::findOrFail($id);
+        PageCascade::deleteEntityFor($page);
+        $page->delete();
+
+        return response()->noContent();
     }
 }

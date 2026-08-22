@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\PostCategories;
 
 use App\Models\PostCategory;
 use App\Support\AdminActivity;
+use App\Support\PageCascade;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -43,7 +44,8 @@ class Index extends Component
     public function delete(): void
     {
         if ($this->deletingId) {
-            $category = PostCategory::findOrFail($this->deletingId);
+            $category = PostCategory::with('page')->findOrFail($this->deletingId);
+            PageCascade::deletePageFor($category, forcePage: true);
             AdminActivity::log('deleted', "Post Category: {$category->name}");
             $category->delete();
             $this->dispatch('notify', message: 'Category deleted successfully');

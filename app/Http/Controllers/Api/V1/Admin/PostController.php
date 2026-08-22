@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\Post;
+use App\Support\PageCascade;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class PostController extends Controller
 {
@@ -169,5 +171,14 @@ class PostController extends Controller
         );
 
         return response()->json(['data' => ['id' => $post->id, 'slug' => $post->slug]]);
+    }
+
+    public function destroy(int $id): Response
+    {
+        $post = Post::with('page')->findOrFail($id);
+        PageCascade::deletePageFor($post);
+        $post->delete();
+
+        return response()->noContent();
     }
 }

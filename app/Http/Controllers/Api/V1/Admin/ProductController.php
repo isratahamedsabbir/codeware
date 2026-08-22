@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\Product;
+use App\Support\PageCascade;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -168,7 +169,9 @@ class ProductController extends Controller
 
     public function destroy(int $id): Response
     {
-        Product::findOrFail($id)->delete();
+        $product = Product::with('page')->findOrFail($id);
+        PageCascade::deletePageFor($product);
+        $product->delete();
 
         return response()->noContent();
     }
