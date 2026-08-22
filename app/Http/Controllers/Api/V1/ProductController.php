@@ -80,7 +80,7 @@ class ProductController extends Controller
                 'slug' => $product->category->slug,
                 'name' => $product->category->getTranslation('name', $locale, useFallbackLocale: true),
             ] : null,
-            'page' => $this->formatPage($product->page, $withDetail),
+            'page' => $this->formatPage($product->page),
         ];
 
         if ($withDetail) {
@@ -101,13 +101,13 @@ class ProductController extends Controller
         return $data;
     }
 
-    private function formatPage(?Page $page, bool $withContent): ?array
+    private function formatPage(?Page $page): ?array
     {
         if (! $page) {
             return null;
         }
 
-        $data = [
+        return [
             'seo_title' => $page->seo_title,
             'seo_description' => $page->seo_description,
             'og_title' => $page->og_title,
@@ -115,12 +115,7 @@ class ProductController extends Controller
             'og_image' => $page->og_image,
             'no_index' => $page->no_index,
             'no_follow' => $page->no_follow,
+            'puck_data' => $page->puck_data,
         ];
-
-        if ($withContent) {
-            $data['puck_data'] = $page->puck_data;
-        }
-
-        return $data;
     }
 }

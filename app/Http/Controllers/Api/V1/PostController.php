@@ -75,7 +75,7 @@ class PostController extends Controller
                 'slug' => $tag->slug,
                 'name' => $tag->getTranslation('name', $locale, useFallbackLocale: true),
             ])->values(),
-            'page' => $this->formatPage($post->page, $withContent),
+            'page' => $this->formatPage($post->page),
         ];
 
         if ($withContent) {
@@ -85,13 +85,13 @@ class PostController extends Controller
         return $data;
     }
 
-    private function formatPage(?Page $page, bool $withContent): ?array
+    private function formatPage(?Page $page): ?array
     {
         if (! $page) {
             return null;
         }
 
-        $data = [
+        return [
             'seo_title' => $page->seo_title,
             'seo_description' => $page->seo_description,
             'og_title' => $page->og_title,
@@ -99,12 +99,7 @@ class PostController extends Controller
             'og_image' => $page->og_image,
             'no_index' => $page->no_index,
             'no_follow' => $page->no_follow,
+            'puck_data' => $page->puck_data,
         ];
-
-        if ($withContent) {
-            $data['puck_data'] = $page->puck_data;
-        }
-
-        return $data;
     }
 }

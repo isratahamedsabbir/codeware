@@ -27,3 +27,16 @@ it('public post show returns a null page when the post has no paired page', func
         ->assertOk()
         ->assertJsonPath('data.page', null);
 });
+
+it('public post listing also includes puck_data nested under page', function () {
+    $post = Post::factory()->published()->create();
+    Page::create([
+        'type' => 'post', 'post_id' => $post->id, 'user_id' => User::factory()->create()->id,
+        'title' => ['en' => 'Title'], 'slug' => $post->slug, 'status' => 'active',
+        'puck_data' => ['root' => ['props' => []], 'content' => [['type' => 'HeroSection', 'props' => []]]],
+    ]);
+
+    $this->getJson('/api/v1/posts')
+        ->assertOk()
+        ->assertJsonPath('data.0.page.puck_data.content.0.type', 'HeroSection');
+});

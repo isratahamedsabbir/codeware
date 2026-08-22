@@ -54,11 +54,11 @@ class PageController extends Controller
             'og_description' => $page->og_description,
             'no_index' => $page->no_index,
             'no_follow' => $page->no_follow,
+            'puck_data' => $page->puck_data,
         ];
 
         if ($withContent) {
             $data['content'] = $page->getTranslation('content', $locale, useFallbackLocale: true);
-            $data['puck_data'] = $page->puck_data;
         }
 
         return $data;

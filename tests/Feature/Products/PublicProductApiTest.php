@@ -21,7 +21,21 @@ it('product categories response includes expected fields', function () {
 
     $this->getJson('/api/v1/product-categories')
         ->assertOk()
-        ->assertJsonStructure(['data' => [['id', 'name', 'slug', 'description', 'icon', 'sort_order']]]);
+        ->assertJsonStructure(['data' => [['id', 'name', 'slug', 'description', 'icon', 'sort_order', 'page']]]);
+});
+
+it('product categories listing includes puck_data nested under page', function () {
+    $puckData = ['root' => ['props' => []], 'content' => [['type' => 'CategoryHero']]];
+    $category = ProductCategory::factory()->create();
+    Page::create([
+        'type' => 'product_category', 'category_id' => $category->id, 'user_id' => User::factory()->create()->id,
+        'title' => ['en' => 'Title'], 'slug' => $category->slug, 'status' => 'active',
+        'puck_data' => $puckData,
+    ]);
+
+    $this->getJson('/api/v1/product-categories')
+        ->assertOk()
+        ->assertJsonPath('data.0.page.puck_data', $puckData);
 });
 
 it('returns only active products on public listing', function () {
@@ -157,16 +171,17 @@ it('public product detail returns faq in bn locale', function () {
         ->assertJsonPath('data.faq.0.answer', 'একটি পণ্য।');
 });
 
-it('public product listing does not expose puck_data even when the paired page has it', function () {
+it('public product listing includes puck_data nested under page, never at the top level', function () {
+    $puckData = ['root' => ['props' => []], 'content' => []];
     $product = Product::factory()->published()->create();
     Page::create([
         'type' => 'product', 'product_id' => $product->id, 'user_id' => User::factory()->create()->id,
         'title' => ['en' => 'Title'], 'slug' => $product->slug, 'status' => 'active',
-        'puck_data' => ['root' => ['props' => []], 'content' => []],
+        'puck_data' => $puckData,
     ]);
 
     $response = $this->getJson('/api/v1/products')->assertOk();
 
     expect($response->json('data.0'))->not->toHaveKey('puck_data')
-        ->and($response->json('data.0.page'))->not->toHaveKey('puck_data');
+        ->and($response->json('data.0.page.puck_data'))->toBe($puckData);
 });

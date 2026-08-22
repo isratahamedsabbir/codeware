@@ -5,7 +5,6 @@ use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\Setting;
 use App\Models\Tag;
-use App\Models\User;
 
 it('returns published posts only', function () {
     Post::factory()->published()->create(['title' => ['en' => 'Live Post', 'bn' => '']]);
@@ -76,7 +75,20 @@ it('returns a single published page by slug', function () {
 
     $response->assertOk()
         ->assertJsonPath('data.slug', $page->slug)
-        ->assertJsonStructure(['data' => ['id', 'slug', 'title', 'content']]);
+        ->assertJsonStructure(['data' => ['id', 'slug', 'title', 'content', 'puck_data']]);
+});
+
+it('includes puck_data in both the pages listing and a single page', function () {
+    $puckData = ['root' => ['props' => []], 'content' => [['type' => 'Hero']]];
+    $page = Page::factory()->published()->create(['puck_data' => $puckData]);
+
+    $this->getJson('/api/v1/pages')
+        ->assertOk()
+        ->assertJsonPath('data.0.puck_data', $puckData);
+
+    $this->getJson("/api/v1/pages/{$page->slug}")
+        ->assertOk()
+        ->assertJsonPath('data.puck_data', $puckData);
 });
 
 it('returns only public settings', function () {

@@ -50,6 +50,7 @@ class ProductCategoryController extends Controller
             'og_image' => $page->og_image,
             'no_index' => $page->no_index,
             'no_follow' => $page->no_follow,
+            'puck_data' => $page->puck_data,
         ];
     }
 }
