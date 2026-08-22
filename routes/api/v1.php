@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\Admin\PageController as AdminPageController;
 use App\Http\Controllers\Api\V1\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Api\V1\Admin\ProductCategoryController as AdminProductCategoryController;
 use App\Http\Controllers\Api\V1\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Api\V1\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\V1\Auth\EmailVerificationController;
 use App\Http\Controllers\Api\V1\Auth\LoginController;
 use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
@@ -100,4 +101,16 @@ Route::middleware(['auth:sanctum', 'can:access-admin'])->prefix('admin')->name('
     Route::get('/contacts/{id}', [AdminContactController::class, 'show'])->name('contacts.show');
     Route::put('/contacts/{id}', [AdminContactController::class, 'update'])->name('contacts.update');
     Route::delete('/contacts/{id}', [AdminContactController::class, 'destroy'])->name('contacts.destroy');
+
+    // Stricter than the rest of this group: mirrors `access-admin-system` on the
+    // Livewire side (routes/admin.php), which keeps user management to Admin/Super
+    // Admin only — Staff passes the outer `access-admin` gate but not this one.
+    Route::middleware('can:access-admin-system')->group(function () {
+        Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+        Route::get('/users/{id}', [AdminUserController::class, 'show'])->name('users.show');
+        Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
+        Route::put('/users/{id}', [AdminUserController::class, 'update'])->name('users.update');
+        Route::put('/users/{id}/password', [AdminUserController::class, 'updatePassword'])->name('users.password.update');
+        Route::delete('/users/{id}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+    });
 });

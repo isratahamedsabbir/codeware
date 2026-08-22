@@ -1,0 +1,759 @@
+{
+	"info": {
+		"name": "Codeware API",
+		"description": "Codeware REST API (v1) — public storefront endpoints, customer account (auth + profile), and admin CRUD.\n\n**Setup**\n1. Set `base_url` (defaults to the local Herd/Laragon host, `https://codeware.test/api/v1`).\n2. Run `Auth > Register` or `Auth > Login` once — the token is captured automatically into `customer_token`.\n3. For the Admin folder, log in with an admin account's credentials via `Auth > Login`, then copy the returned `token` value into the `admin_token` collection variable (there is no separate admin login endpoint — admin vs customer is just a flag on the same `users` table).\n4. Public endpoints need no auth at all.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "codeware"
+	},
+	"variable": [
+		{ "key": "base_url", "value": "https://codeware.test/api/v1", "type": "string" },
+		{ "key": "customer_token", "value": "", "type": "string" },
+		{ "key": "admin_token", "value": "", "type": "string" },
+		{ "key": "product_slug", "value": "", "type": "string" },
+		{ "key": "product_id", "value": "", "type": "string" },
+		{ "key": "category_slug", "value": "", "type": "string" },
+		{ "key": "category_id", "value": "", "type": "string" },
+		{ "key": "post_slug", "value": "", "type": "string" },
+		{ "key": "post_id", "value": "", "type": "string" },
+		{ "key": "page_slug", "value": "", "type": "string" },
+		{ "key": "page_id", "value": "", "type": "string" },
+		{ "key": "media_id", "value": "", "type": "string" },
+		{ "key": "contact_id", "value": "", "type": "string" },
+		{ "key": "order_number", "value": "", "type": "string" },
+		{ "key": "order_email", "value": "", "type": "string" },
+		{ "key": "reset_token", "value": "", "type": "string" },
+		{ "key": "user_id", "value": "", "type": "string" }
+	],
+	"item": [
+		{
+			"name": "Auth",
+			"description": "Customer account auth — API-only, backed by the same `users` table as the admin/Fortify web login.",
+			"item": [
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const body = pm.response.json();",
+									"    pm.collectionVariables.set('customer_token', body.data.token);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Jane Customer\",\n    \"email\": \"jane@example.com\",\n    \"password\": \"password\",\n    \"password_confirmation\": \"password\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": "{{base_url}}/auth/register"
+					}
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const body = pm.response.json();",
+									"    pm.collectionVariables.set('customer_token', body.data.token);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"jane@example.com\",\n    \"password\": \"password\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": "{{base_url}}/auth/login"
+					}
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{customer_token}}", "type": "string" }] },
+						"url": "{{base_url}}/auth/logout"
+					}
+				},
+				{
+					"name": "Forgot Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// The reset link is emailed (or logged, if MAIL_MAILER=log locally) — copy the",
+									"// `token` query param from it into the `reset_token` collection variable."
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"jane@example.com\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": "{{base_url}}/auth/forgot-password"
+					}
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"{{reset_token}}\",\n    \"email\": \"jane@example.com\",\n    \"password\": \"new-password\",\n    \"password_confirmation\": \"new-password\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": "{{base_url}}/auth/reset-password"
+					}
+				},
+				{
+					"name": "Verify Email (signed link)",
+					"request": {
+						"method": "GET",
+						"description": "This exact URL (with real `id`/`hash`/`expires`/`signature`) is what's emailed on registration — paste it in from the email rather than editing the placeholders here, since the signature is cryptographically tied to those values.",
+						"url": "{{base_url}}/auth/email/verify/1/REPLACE_WITH_HASH_FROM_EMAIL?expires=9999999999&signature=REPLACE_WITH_SIGNATURE_FROM_EMAIL"
+					}
+				},
+				{
+					"name": "Resend Verification Email",
+					"request": {
+						"method": "POST",
+						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{customer_token}}", "type": "string" }] },
+						"url": "{{base_url}}/auth/email/resend"
+					}
+				}
+			]
+		},
+		{
+			"name": "Profile",
+			"description": "The authenticated customer's own account.",
+			"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{customer_token}}", "type": "string" }] },
+			"item": [
+				{
+					"name": "Get Profile",
+					"request": { "method": "GET", "url": "{{base_url}}/profile" }
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Jane Updated\",\n    \"email\": \"jane@example.com\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": "{{base_url}}/profile"
+					}
+				}
+			]
+		},
+		{
+			"name": "Public",
+			"description": "No authentication required. Every product/post/category endpoint accepts `?locale=en|bn`.",
+			"item": [
+				{
+					"name": "Products",
+					"item": [
+						{
+							"name": "List Products",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/products?locale=en&per_page=12&category={{category_slug}}&search=&featured=",
+									"host": ["{{base_url}}"],
+									"path": ["products"],
+									"query": [
+										{ "key": "locale", "value": "en" },
+										{ "key": "per_page", "value": "12" },
+										{ "key": "category", "value": "{{category_slug}}" },
+										{ "key": "search", "value": "", "disabled": true },
+										{ "key": "featured", "value": "1", "disabled": true }
+									]
+								}
+							}
+						},
+						{
+							"name": "Get Product by Slug",
+							"request": { "method": "GET", "url": "{{base_url}}/products/{{product_slug}}?locale=en" }
+						}
+					]
+				},
+				{
+					"name": "Product Categories",
+					"item": [
+						{
+							"name": "List Product Categories",
+							"request": { "method": "GET", "url": "{{base_url}}/product-categories?locale=en" }
+						}
+					]
+				},
+				{
+					"name": "Posts",
+					"item": [
+						{
+							"name": "List Posts",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/posts?locale=en&per_page=15&category={{category_slug}}&search=",
+									"host": ["{{base_url}}"],
+									"path": ["posts"],
+									"query": [
+										{ "key": "locale", "value": "en" },
+										{ "key": "per_page", "value": "15" },
+										{ "key": "category", "value": "{{category_slug}}" },
+										{ "key": "search", "value": "", "disabled": true }
+									]
+								}
+							}
+						},
+						{
+							"name": "Get Post by Slug",
+							"request": { "method": "GET", "url": "{{base_url}}/posts/{{post_slug}}?locale=en" }
+						}
+					]
+				},
+				{
+					"name": "Pages",
+					"item": [
+						{
+							"name": "List Pages",
+							"request": { "method": "GET", "url": "{{base_url}}/pages?locale=en" }
+						},
+						{
+							"name": "Get Page by Slug",
+							"request": { "method": "GET", "url": "{{base_url}}/pages/{{page_slug}}?locale=en" }
+						}
+					]
+				},
+				{
+					"name": "Settings",
+					"item": [
+						{
+							"name": "Get Public Settings",
+							"request": { "method": "GET", "url": "{{base_url}}/settings/public" }
+						}
+					]
+				},
+				{
+					"name": "Layout",
+					"item": [
+						{
+							"name": "Get Layout",
+							"request": { "method": "GET", "url": "{{base_url}}/layout" }
+						}
+					]
+				},
+				{
+					"name": "Contacts",
+					"item": [
+						{
+							"name": "Submit Contact Form",
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"full_name\": \"John Doe\",\n    \"phone_number\": \"+8801700000000\",\n    \"email\": \"john@example.com\",\n    \"subject\": \"General inquiry\",\n    \"message\": \"I'd like to know more about your products.\"\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/contacts"
+							}
+						}
+					]
+				},
+				{
+					"name": "Orders",
+					"item": [
+						{
+							"name": "Create Order",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const body = pm.response.json();",
+											"    pm.collectionVariables.set('order_number', body.data.order_number);",
+											"}"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"customer_name\": \"John Doe\",\n    \"customer_email\": \"{{order_email}}\",\n    \"customer_phone\": \"+8801700000000\",\n    \"shipping_address\": \"123 Main Street, Dhaka\",\n    \"payment_method\": \"cod\",\n    \"notes\": \"Please call before delivery\",\n    \"items\": [\n        { \"product_id\": 1, \"quantity\": 2 }\n    ]\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/orders"
+							}
+						},
+						{
+							"name": "Get Order by Number",
+							"request": {
+								"method": "GET",
+								"url": "{{base_url}}/orders/{{order_number}}?email={{order_email}}"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"description": "Requires an admin account's Sanctum token (see collection description for how to obtain one). Every request here is gated by `auth:sanctum` + the `access-admin` policy gate.",
+			"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}", "type": "string" }] },
+			"item": [
+				{
+					"name": "Products",
+					"item": [
+						{
+							"name": "List Products",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/admin/products?per_page=15&status=active",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "products"],
+									"query": [
+										{ "key": "per_page", "value": "15" },
+										{ "key": "status", "value": "active", "disabled": true }
+									]
+								}
+							}
+						},
+						{
+							"name": "Create Product",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const body = pm.response.json();",
+											"    pm.collectionVariables.set('product_id', body.data.id);",
+											"    pm.collectionVariables.set('product_slug', body.data.slug);",
+											"}"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": { \"en\": \"Blue Running Shoes\", \"bn\": \"নীল দৌড়ের জুতা\" },\n    \"product_category_id\": {{category_id}},\n    \"description\": { \"en\": \"Lightweight running shoes.\", \"bn\": \"\" },\n    \"status\": \"active\",\n    \"price\": 2499.00,\n    \"is_featured\": false,\n    \"sort_order\": 0,\n    \"og_image\": \"\",\n    \"seo_title\": \"Blue Running Shoes\",\n    \"seo_description\": \"Lightweight running shoes for everyday training.\",\n    \"faq\": [\n        { \"question\": { \"en\": \"What sizes?\", \"bn\": \"\" }, \"answer\": { \"en\": \"7 to 12.\", \"bn\": \"\" } }\n    ],\n    \"puck_data\": null\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/admin/products"
+							}
+						},
+						{
+							"name": "Update Product",
+							"request": {
+								"method": "PUT",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"status\": \"active\",\n    \"seo_title\": \"Updated SEO Title\",\n    \"puck_data\": { \"root\": { \"props\": {} }, \"content\": [] }\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/admin/products/{{product_id}}"
+							}
+						},
+						{
+							"name": "Delete Product",
+							"request": { "method": "DELETE", "url": "{{base_url}}/admin/products/{{product_id}}" }
+						}
+					]
+				},
+				{
+					"name": "Product Categories",
+					"item": [
+						{
+							"name": "List Product Categories",
+							"request": { "method": "GET", "url": "{{base_url}}/admin/product-categories" }
+						},
+						{
+							"name": "Create Product Category",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const body = pm.response.json();",
+											"    pm.collectionVariables.set('category_id', body.data.id);",
+											"    pm.collectionVariables.set('category_slug', body.data.slug);",
+											"}"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": { \"en\": \"Footwear\", \"bn\": \"জুতা\" },\n    \"description\": { \"en\": \"\", \"bn\": \"\" },\n    \"icon\": \"shoe\",\n    \"sort_order\": 0\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/admin/product-categories"
+							}
+						},
+						{
+							"name": "Update Product Category",
+							"request": {
+								"method": "PUT",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": { \"en\": \"Footwear & Shoes\", \"bn\": \"\" }\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/admin/product-categories/{{category_id}}"
+							}
+						},
+						{
+							"name": "Delete Product Category",
+							"request": { "method": "DELETE", "url": "{{base_url}}/admin/product-categories/{{category_id}}" }
+						}
+					]
+				},
+				{
+					"name": "Posts",
+					"item": [
+						{
+							"name": "List Posts",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/admin/posts?per_page=15&status=active",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "posts"],
+									"query": [
+										{ "key": "per_page", "value": "15" },
+										{ "key": "status", "value": "active", "disabled": true }
+									]
+								}
+							}
+						},
+						{
+							"name": "Create Post",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const body = pm.response.json();",
+											"    pm.collectionVariables.set('post_id', body.data.id);",
+											"    pm.collectionVariables.set('post_slug', body.data.slug);",
+											"}"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": { \"en\": \"My First Blog Post\", \"bn\": \"\" },\n    \"status\": \"active\",\n    \"tag_ids\": []\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/admin/posts"
+							}
+						},
+						{
+							"name": "Get Post by ID",
+							"request": { "method": "GET", "url": "{{base_url}}/admin/posts/{{post_id}}" }
+						},
+						{
+							"name": "Update Post",
+							"request": {
+								"method": "PUT",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": { \"en\": \"My First Blog Post (Updated)\" },\n    \"content\": { \"en\": \"<p>Post body...</p>\", \"bn\": \"\" },\n    \"seo_title\": \"My First Blog Post\",\n    \"seo_description\": \"An introduction post.\",\n    \"puck_data\": { \"root\": { \"props\": {} }, \"content\": [] }\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/admin/posts/{{post_id}}"
+							}
+						}
+					]
+				},
+				{
+					"name": "Pages",
+					"item": [
+						{
+							"name": "List Pages",
+							"request": { "method": "GET", "url": "{{base_url}}/admin/pages" }
+						},
+						{
+							"name": "Create Page",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const body = pm.response.json();",
+											"    pm.collectionVariables.set('page_id', body.data.id);",
+											"}"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": { \"en\": \"About Us\", \"bn\": \"\" },\n    \"status\": \"draft\",\n    \"template\": \"puck\"\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/admin/pages"
+							}
+						},
+						{
+							"name": "Get Page by ID",
+							"request": { "method": "GET", "url": "{{base_url}}/admin/pages/{{page_id}}" }
+						},
+						{
+							"name": "Update Page",
+							"request": {
+								"method": "PUT",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"seo_title\": \"About Us\",\n    \"seo_description\": \"Learn more about our company.\",\n    \"og_title\": \"About Us\",\n    \"og_description\": \"Learn more about our company.\",\n    \"no_index\": false,\n    \"no_follow\": false,\n    \"puck_data\": { \"root\": { \"props\": {} }, \"content\": [] },\n    \"status\": \"published\"\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/admin/pages/{{page_id}}"
+							}
+						}
+					]
+				},
+				{
+					"name": "Media",
+					"item": [
+						{
+							"name": "List Media",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/admin/media?per_page=30&type=image",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "media"],
+									"query": [
+										{ "key": "per_page", "value": "30" },
+										{ "key": "type", "value": "image", "disabled": true }
+									]
+								}
+							}
+						},
+						{
+							"name": "Upload Media",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const body = pm.response.json();",
+											"    pm.collectionVariables.set('media_id', body.data.id);",
+											"}"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{ "key": "file", "type": "file", "src": [] },
+										{ "key": "alt_text", "type": "text", "value": "" }
+									]
+								},
+								"url": "{{base_url}}/admin/media"
+							}
+						},
+						{
+							"name": "Delete Media",
+							"request": { "method": "DELETE", "url": "{{base_url}}/admin/media/{{media_id}}" }
+						}
+					]
+				},
+				{
+					"name": "Layout",
+					"item": [
+						{
+							"name": "Update Layout",
+							"request": {
+								"method": "PUT",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"type\": \"header\",\n    \"content\": \"<nav>...</nav>\"\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/admin/layout"
+							}
+						}
+					]
+				},
+				{
+					"name": "Contacts",
+					"item": [
+						{
+							"name": "List Contacts",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/admin/contacts?per_page=15&status=unread",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "contacts"],
+									"query": [
+										{ "key": "per_page", "value": "15" },
+										{ "key": "status", "value": "unread", "disabled": true }
+									]
+								}
+							}
+						},
+						{
+							"name": "Get Contact by ID",
+							"request": { "method": "GET", "url": "{{base_url}}/admin/contacts/{{contact_id}}" }
+						},
+						{
+							"name": "Update Contact Status",
+							"request": {
+								"method": "PUT",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"status\": \"read\"\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/admin/contacts/{{contact_id}}"
+							}
+						},
+						{
+							"name": "Delete Contact",
+							"request": { "method": "DELETE", "url": "{{base_url}}/admin/contacts/{{contact_id}}" }
+						}
+					]
+				},
+				{
+					"name": "Users",
+					"description": "Stricter than the rest of the Admin folder: gated by `access-admin-system`, not just `access-admin` — a Staff-role account gets 403 here even though it can reach Products/Posts/etc. `{{admin_token}}` must belong to a Super Admin (is_admin=true) or an `admin`-role account.",
+					"item": [
+						{
+							"name": "List Users",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/admin/users?per_page=15&search=&role=",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "users"],
+									"query": [
+										{ "key": "per_page", "value": "15" },
+										{ "key": "search", "value": "", "disabled": true },
+										{ "key": "role", "value": "staff", "disabled": true }
+									]
+								}
+							}
+						},
+						{
+							"name": "Get User by ID",
+							"request": { "method": "GET", "url": "{{base_url}}/admin/users/{{user_id}}" }
+						},
+						{
+							"name": "Create User",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const body = pm.response.json();",
+											"    pm.collectionVariables.set('user_id', body.data.id);",
+											"}"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"New Staffer\",\n    \"email\": \"staffer@example.com\",\n    \"password\": \"password\",\n    \"password_confirmation\": \"password\",\n    \"is_admin\": false,\n    \"roles\": [\"staff\"]\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/admin/users"
+							}
+						},
+						{
+							"name": "Update User",
+							"request": {
+								"method": "PUT",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Renamed Staffer\",\n    \"email\": \"staffer@example.com\",\n    \"is_admin\": false,\n    \"roles\": [\"staff\"]\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/admin/users/{{user_id}}"
+							}
+						},
+						{
+							"name": "Change User Password",
+							"request": {
+								"method": "PUT",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"password\": \"brand-new-password\",\n    \"password_confirmation\": \"brand-new-password\"\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/admin/users/{{user_id}}/password"
+							}
+						},
+						{
+							"name": "Delete User",
+							"request": { "method": "DELETE", "url": "{{base_url}}/admin/users/{{user_id}}" }
+						}
+					]
+				}
+			]
+		}
+	]
+}
