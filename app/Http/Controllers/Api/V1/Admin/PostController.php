@@ -95,8 +95,21 @@ class PostController extends Controller
         $validated['user_id'] = $request->user()->id;
         $validated['status'] = $validated['status'] ?? 'inactive';
 
-        $post = Post::create($validated);
+        $post = Post::create($validated)->refresh();
         $post->tags()->sync($validated['tag_ids'] ?? []);
+
+        // Keep the paired Page in sync from creation on, same as the Livewire
+        // admin form does — otherwise a page created later has a stale slug.
+        Page::updateOrCreate(
+            ['type' => 'post', 'post_id' => $post->id],
+            [
+                'user_id' => $request->user()->id,
+                'title' => $post->getTranslations('title'),
+                'slug' => $post->slug,
+                'status' => $post->status,
+                'description' => $post->getTranslations('description') ?: null,
+            ]
+        );
 
         return response()->json(['data' => ['id' => $post->id, 'slug' => $post->slug]], 201);
     }
@@ -134,19 +147,20 @@ class PostController extends Controller
         $post->update($validated);
         $post->tags()->sync($validated['tag_ids'] ?? []);
 
-        if ($seo !== []) {
-            Page::updateOrCreate(
-                ['type' => 'post', 'post_id' => $post->id],
-                array_filter([
-                    'user_id' => $request->user()?->id,
-                    'title' => $post->getTranslations('title'),
-                    'slug' => $post->slug,
-                    'status' => $post->status,
-                    'description' => $post->getTranslations('description') ?: null,
-                    ...$seo,
-                ])
-            );
-        }
+        // Always keep the paired Page in sync (slug especially) regardless of
+        // whether this request touched any SEO fields — a Livewire admin edit
+        // syncs unconditionally too, so the two paths can't drift apart.
+        Page::updateOrCreate(
+            ['type' => 'post', 'post_id' => $post->id],
+            array_filter([
+                'user_id' => $request->user()?->id,
+                'title' => $post->getTranslations('title'),
+                'slug' => $post->slug,
+                'status' => $post->status,
+                'description' => $post->getTranslations('description') ?: null,
+                ...$seo,
+            ])
+        );
 
         return response()->json(['data' => ['id' => $post->id, 'slug' => $post->slug]]);
     }

@@ -9,8 +9,10 @@ use App\Models\Page;
 use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\Product;
+use App\Models\ProductCategory;
 use App\Models\User;
 use App\Support\Slug;
+use Laravel\Sanctum\Sanctum;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -98,7 +100,7 @@ it('rejects a product category slug that collides with a post category, since ca
         ->assertHasErrors(['slug']);
 });
 
-it('propagates a slug change made on the Pages screen back to the linked product', function () {
+it('locks the slug field for a linked page and ignores any edit attempt on save, keeping the product authoritative', function () {
     Livewire::test(ProductForm::class)
         ->set('name_en', 'Editable Product')
         ->call('save');
@@ -106,15 +108,16 @@ it('propagates a slug change made on the Pages screen back to the linked product
     $product = Product::where('slug', 'editable_product')->sole();
     $page = Page::where(['type' => 'product', 'product_id' => $product->id])->sole();
 
-    Livewire::test(PageForm::class, ['id' => $page->id])
-        ->set('slug', 'renamed_from_page')
-        ->call('save');
+    $component = Livewire::test(PageForm::class, ['id' => $page->id]);
+    expect($component->instance()->isLinked())->toBeTrue();
 
-    expect($product->fresh()->slug)->toBe('renamed_from_page')
-        ->and($page->fresh()->slug)->toBe('renamed_from_page');
+    $component->set('slug', 'renamed_from_page')->call('save');
+
+    expect($product->fresh()->slug)->toBe('editable_product')
+        ->and($page->fresh()->slug)->toBe('editable_product');
 });
 
-it('propagates a slug change made on the Pages screen back to the linked post category', function () {
+it('locks the slug field for a linked page and ignores any edit attempt on save, keeping the post category authoritative', function () {
     Livewire::test(PostCategoryForm::class)
         ->set('name_en', 'Original Category')
         ->call('save');
@@ -126,7 +129,8 @@ it('propagates a slug change made on the Pages screen back to the linked post ca
         ->set('slug', 'renamed_category')
         ->call('save');
 
-    expect($category->fresh()->slug)->toBe('renamed_category');
+    expect($category->fresh()->slug)->toBe('original_category')
+        ->and($page->fresh()->slug)->toBe('original_category');
 });
 
 it('does not affect other pages when editing a plain (non-typed) page\'s slug', function () {
@@ -221,4 +225,79 @@ it('checks slug availability the same way for posts, categories, and pages', fun
         ->set('title_en', 'New Page')
         ->set('slug', 'blog_slug_taken')
         ->assertSet('slugAvailable', false);
+});
+
+// --- REST admin API: same slug-sync guarantee as the Livewire forms ---
+
+it('keeps a product\'s page slug in sync when the slug is changed via the REST admin API alone', function () {
+    Sanctum::actingAs($this->admin);
+
+    $product = Product::factory()->create(['slug' => 'old_api_slug']);
+    Page::create([
+        'type' => 'product', 'product_id' => $product->id, 'user_id' => $this->admin->id,
+        'title' => ['en' => 'Title'], 'slug' => 'old_api_slug', 'status' => 'active',
+    ]);
+
+    // Only the slug is sent — no SEO fields — which used to skip the Page sync entirely.
+    $this->putJson("/api/v1/admin/products/{$product->id}", ['slug' => 'new_api_slug'])
+        ->assertOk();
+
+    $page = Page::where(['type' => 'product', 'product_id' => $product->id])->sole();
+    expect($page->slug)->toBe('new_api_slug');
+});
+
+it('keeps a post\'s page slug in sync when the slug is changed via the REST admin API alone', function () {
+    Sanctum::actingAs($this->admin);
+
+    $post = Post::factory()->create(['slug' => 'old_post_api_slug']);
+    Page::create([
+        'type' => 'post', 'post_id' => $post->id, 'user_id' => $this->admin->id,
+        'title' => ['en' => 'Title'], 'slug' => 'old_post_api_slug', 'status' => 'active',
+    ]);
+
+    $this->putJson("/api/v1/admin/posts/{$post->id}", ['slug' => 'new_post_api_slug'])
+        ->assertOk();
+
+    $page = Page::where(['type' => 'post', 'post_id' => $post->id])->sole();
+    expect($page->slug)->toBe('new_post_api_slug');
+});
+
+it('creates a matching page slug when a post is created via the REST admin API', function () {
+    Sanctum::actingAs($this->admin);
+
+    $this->postJson('/api/v1/admin/posts', ['title' => ['en' => 'API Created Post']])
+        ->assertCreated();
+
+    $post = Post::where('slug', 'api_created_post')->sole();
+    $page = Page::where(['type' => 'post', 'post_id' => $post->id])->sole();
+
+    expect($page->slug)->toBe('api_created_post');
+});
+
+it('keeps a product category\'s page slug in sync when edited via the REST admin API alone', function () {
+    Sanctum::actingAs($this->admin);
+
+    $category = ProductCategory::factory()->create(['slug' => 'old_cat_api_slug']);
+    Page::create([
+        'type' => 'product_category', 'category_id' => $category->id, 'user_id' => $this->admin->id,
+        'title' => ['en' => 'Title'], 'slug' => 'old_cat_api_slug', 'status' => 'active',
+    ]);
+
+    $this->putJson("/api/v1/admin/product-categories/{$category->id}", ['slug' => 'new_cat_api_slug'])
+        ->assertOk();
+
+    $page = Page::where(['type' => 'product_category', 'category_id' => $category->id])->sole();
+    expect($page->slug)->toBe('new_cat_api_slug');
+});
+
+it('creates a matching page slug when a product category is created via the REST admin API', function () {
+    Sanctum::actingAs($this->admin);
+
+    $this->postJson('/api/v1/admin/product-categories', ['name' => ['en' => 'API Created Category']])
+        ->assertCreated();
+
+    $category = ProductCategory::where('slug', 'api_created_category')->sole();
+    $page = Page::where(['type' => 'product_category', 'category_id' => $category->id])->sole();
+
+    expect($page->slug)->toBe('api_created_category');
 });

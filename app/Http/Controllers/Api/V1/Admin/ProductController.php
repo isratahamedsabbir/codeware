@@ -75,7 +75,7 @@ class ProductController extends Controller
         $seo = collect($validated)->only(['og_image', 'seo_title', 'seo_description'])->all();
         unset($validated['og_image'], $validated['seo_title'], $validated['seo_description']);
 
-        $product = Product::create($validated);
+        $product = Product::create($validated)->refresh();
 
         if ($mediaIds !== null) {
             $sync = collect($mediaIds)
@@ -84,20 +84,21 @@ class ProductController extends Controller
             $product->gallery()->sync($sync);
         }
 
-        if ($seo !== []) {
-            Page::updateOrCreate(
-                ['type' => 'product', 'product_id' => $product->id],
-                array_filter([
-                    'user_id' => $request->user()?->id,
-                    'title' => $product->getTranslations('name'),
-                    'slug' => $product->slug,
-                    'status' => $product->status,
-                    'sort_order' => $product->sort_order,
-                    'description' => $product->getTranslations('description') ?: null,
-                    ...$seo,
-                ])
-            );
-        }
+        // Always keep the paired Page in sync (slug especially) regardless of
+        // whether this request touched any SEO fields — a Livewire admin edit
+        // syncs unconditionally too, so the two paths can't drift apart.
+        Page::updateOrCreate(
+            ['type' => 'product', 'product_id' => $product->id],
+            array_filter([
+                'user_id' => $request->user()?->id,
+                'title' => $product->getTranslations('name'),
+                'slug' => $product->slug,
+                'status' => $product->status,
+                'sort_order' => $product->sort_order,
+                'description' => $product->getTranslations('description') ?: null,
+                ...$seo,
+            ])
+        );
 
         return response()->json(['data' => ['id' => $product->id, 'slug' => $product->slug]], 201);
     }
@@ -144,20 +145,21 @@ class ProductController extends Controller
             $product->gallery()->sync($sync);
         }
 
-        if ($seo !== []) {
-            Page::updateOrCreate(
-                ['type' => 'product', 'product_id' => $product->id],
-                array_filter([
-                    'user_id' => $request->user()?->id,
-                    'title' => $product->getTranslations('name'),
-                    'slug' => $product->slug,
-                    'status' => $product->status,
-                    'sort_order' => $product->sort_order,
-                    'description' => $product->getTranslations('description') ?: null,
-                    ...$seo,
-                ])
-            );
-        }
+        // Always keep the paired Page in sync (slug especially) regardless of
+        // whether this request touched any SEO fields — a Livewire admin edit
+        // syncs unconditionally too, so the two paths can't drift apart.
+        Page::updateOrCreate(
+            ['type' => 'product', 'product_id' => $product->id],
+            array_filter([
+                'user_id' => $request->user()?->id,
+                'title' => $product->getTranslations('name'),
+                'slug' => $product->slug,
+                'status' => $product->status,
+                'sort_order' => $product->sort_order,
+                'description' => $product->getTranslations('description') ?: null,
+                ...$seo,
+            ])
+        );
 
         return response()->json(['data' => ['id' => $product->id, 'slug' => $product->slug]]);
     }

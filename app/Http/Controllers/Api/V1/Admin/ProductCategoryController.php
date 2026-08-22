@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Page;
 use App\Models\ProductCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -40,7 +41,22 @@ class ProductCategoryController extends Controller
             'sort_order'      => 'nullable|integer|min:0',
         ]);
 
-        $category = ProductCategory::create($validated);
+        $category = ProductCategory::create($validated)->refresh();
+
+        // Keep the paired Page in sync from creation on, same as the Livewire
+        // admin form does — otherwise a page created later has a stale slug.
+        // refresh() picks up DB-level defaults (e.g. status) the request didn't set.
+        Page::updateOrCreate(
+            ['type' => 'product_category', 'category_id' => $category->id],
+            [
+                'user_id' => $request->user()?->id,
+                'title' => $category->getTranslations('name'),
+                'slug' => $category->slug,
+                'status' => $category->status,
+                'sort_order' => $category->sort_order,
+                'description' => $category->getTranslations('description') ?: null,
+            ]
+        );
 
         return response()->json(['data' => ['id' => $category->id, 'slug' => $category->slug]], 201);
     }
@@ -62,6 +78,21 @@ class ProductCategoryController extends Controller
         ]);
 
         $category->update($validated);
+
+        // Always keep the paired Page in sync (slug especially) regardless of
+        // which fields this request touched — a Livewire admin edit syncs
+        // unconditionally too, so the two paths can't drift apart.
+        Page::updateOrCreate(
+            ['type' => 'product_category', 'category_id' => $category->id],
+            [
+                'user_id' => $request->user()?->id,
+                'title' => $category->getTranslations('name'),
+                'slug' => $category->slug,
+                'status' => $category->status,
+                'sort_order' => $category->sort_order,
+                'description' => $category->getTranslations('description') ?: null,
+            ]
+        );
 
         return response()->json(['data' => ['id' => $category->id, 'slug' => $category->slug]]);
     }

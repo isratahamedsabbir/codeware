@@ -8,11 +8,13 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;
 
 /**
- * Single source of truth for slug formatting and uniqueness across Products,
- * Posts, ProductCategories, PostCategories, and Pages — every one of those
- * always has a 1:1 paired Page row sharing the exact same slug (see each
- * Form's persist*() method / Pages/Form.php's entity sync), so a slug used
- * anywhere must be globally unique, not just within its own table.
+ * Single source of truth for slug formatting and uniqueness. Products, Posts,
+ * ProductCategories, and PostCategories each own their slug and push it into
+ * their paired Page on save (see each Form's persist*() method); Page never
+ * writes it back — for a linked Page, Pages/Form.php re-reads the slug from
+ * the entity on every save instead of trusting its own field, so the entity
+ * stays the single source of truth and the two can never drift apart. A slug
+ * used anywhere must still be globally unique, not just within its own table.
  */
 class Slug
 {

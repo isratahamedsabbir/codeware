@@ -3,12 +3,9 @@
 namespace App\Livewire\Admin\Pages;
 
 use App\Models\Page;
-use App\Models\Post;
-use App\Models\PostCategory;
-use App\Models\Product;
-use App\Models\ProductCategory;
 use App\Support\AdminActivity;
 use App\Support\Slug;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -103,7 +100,9 @@ class Form extends Component
             $this->no_index = (bool) $page->no_index;
             $this->no_follow = (bool) $page->no_follow;
 
-            $this->checkSlugAvailability();
+            if (! $this->isLinked()) {
+                $this->checkSlugAvailability();
+            }
         }
     }
 
@@ -116,6 +115,10 @@ class Form extends Component
      */
     public function updatedTitleEn(string $value): void
     {
+        if ($this->isLinked()) {
+            return;
+        }
+
         if ($this->slug === '' || $this->slug === $this->autoSlug) {
             $this->autoSlug = Slug::make($value);
             $this->slug = $this->autoSlug;
@@ -127,18 +130,21 @@ class Form extends Component
     /**
      * Fires on direct manual edits to the slug field too, so the red/green
      * indicator stays accurate whether the slug came from auto-typing or a
-     * deliberate override.
+     * deliberate override. No-ops for a linked page — its slug field is
+     * read-only, the entity owns the value.
      */
     public function updatedSlug(): void
     {
+        if ($this->isLinked()) {
+            return;
+        }
+
         $this->checkSlugAvailability();
     }
 
     private function checkSlugAvailability(): void
     {
-        [$entityTable, $entityId] = $this->linkedEntity();
-
-        $this->slugAvailable = Slug::isAvailable($this->slug, $this->pageId, $entityTable, $entityId);
+        $this->slugAvailable = Slug::isAvailable($this->slug, $this->pageId);
     }
 
     public function openPuckEditor(): void
@@ -184,17 +190,21 @@ class Form extends Component
 
     private function persistPage(): void
     {
-        if (empty($this->slug) && $this->title_en) {
+        [$entityTable, $entityId] = $this->linkedEntity();
+
+        if ($entityTable && $entityId) {
+            // The linked entity owns the slug — always take its current
+            // value rather than trusting the (read-only, but client-supplied)
+            // form field, so this Page's slug can never drift from it.
+            $this->slug = DB::table($entityTable)->where('id', $entityId)->value('slug');
+        } elseif (empty($this->slug) && $this->title_en) {
             $this->slug = Slug::make($this->title_en);
         }
 
-        [$entityTable, $entityId] = $this->linkedEntity();
-
         $rules = $this->getRules();
-        $rules['slug'] = [
-            'required', 'string', 'max:255',
-            ...Slug::uniqueRules($this->pageId, $entityTable, $entityId),
-        ];
+        $rules['slug'] = $entityTable
+            ? ['required', 'string', 'max:255']
+            : ['required', 'string', 'max:255', ...Slug::uniqueRules($this->pageId)];
 
         $this->validate($rules);
 
@@ -225,8 +235,6 @@ class Form extends Component
             $this->dispatch('notify', message: 'Page created successfully');
         }
 
-        $this->syncLinkedEntitySlug($entityTable, $entityId);
-
         AdminActivity::log(
             $creating ? 'created' : 'updated',
             "Page #{$this->pageId}: {$this->title_en}",
@@ -248,26 +256,14 @@ class Form extends Component
     }
 
     /**
-     * The other half of entity↔page slug sync: Products/Posts/ProductCategories/
-     * PostCategories Forms already push their slug into this Page on save
-     * (Page::updateOrCreate(...)); this pushes back the other way when the
-     * admin instead edits the slug from this screen. Uses a plain query
-     * update (not the model's save()) so we don't need to re-derive a slug —
-     * we already have the final, validated value.
+     * True when this Page is paired with a Product/Post/Category rather than
+     * being a standalone page. The linked entity owns the slug in that case —
+     * this Page's slug is just a read-only mirror of it, never an independent
+     * value (see persistPage(), which re-reads it from the entity on save).
      */
-    private function syncLinkedEntitySlug(?string $entityTable, ?int $entityId): void
+    public function isLinked(): bool
     {
-        if (! $entityTable || ! $entityId) {
-            return;
-        }
-
-        match ($this->type) {
-            'product' => Product::whereKey($entityId)->update(['slug' => $this->slug]),
-            'post' => Post::whereKey($entityId)->update(['slug' => $this->slug]),
-            'product_category' => ProductCategory::whereKey($entityId)->update(['slug' => $this->slug]),
-            'post_category' => PostCategory::whereKey($entityId)->update(['slug' => $this->slug]),
-            default => null,
-        };
+        return $this->type !== 'page';
     }
 
     public function render()
