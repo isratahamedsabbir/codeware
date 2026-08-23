@@ -16,6 +16,7 @@ class TemplateDrivenMail extends Mailable
     public function __construct(
         public string $subjectLine,
         public string $bodyHtml,
+        public string $viewName = 'emails.template-driven',
     ) {}
 
     public function envelope(): Envelope
@@ -28,7 +29,7 @@ class TemplateDrivenMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.template-driven',
+            view: $this->viewName,
             with: [
                 'subjectLine' => $this->subjectLine,
                 'bodyHtml' => $this->bodyHtml,

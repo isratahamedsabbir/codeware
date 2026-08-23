@@ -63,6 +63,8 @@ Route::get('/products', [ProductController::class, 'index'])->name('products.ind
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
 
 Route::post('/contacts', [ContactController::class, 'store'])->name('contacts.store');
+Route::post('/request-demo', [ContactController::class, 'requestDemo'])->name('request-demo.store');
+Route::post('/book-demo', [ContactController::class, 'bookDemo'])->name('book-demo.store');
 
 Route::middleware('feature:orders')->group(function () {
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
