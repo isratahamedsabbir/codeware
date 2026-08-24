@@ -357,9 +357,23 @@ input:focus, select:focus, textarea:focus {
     width: 16rem !important;
 }
 
-.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-sidebar-logo,
-.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-sidebar-search,
+.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-sidebar-search {
+    display: none;
+}
+
+.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-sidebar-logo {
+    width: 100%;
+    justify-content: center;
+}
+
 .admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-nav-group-label {
+    justify-content: center;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+}
+
+.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-nav-group-label > span:first-child > span:last-child,
+.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-nav-group-chevron-wrap {
     display: none;
 }
 
@@ -369,7 +383,7 @@ input:focus, select:focus, textarea:focus {
     padding-right: 0.25rem;
 }
 
-.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-nav-item span {
+.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-nav-item > span:not(.admin-nav-item-icon) {
     display: none;
 }
 

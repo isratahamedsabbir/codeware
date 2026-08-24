@@ -29,8 +29,8 @@
                 {{-- ── Tabs ── --}}
                 <div class="flex border-b border-slate-200 bg-white shrink-0">
                     <button type="button" wire:click="switchTab('upload')"
-                        class="px-6 py-3 text-xs font-bold uppercase tracking-widest transition-colors border-b-2 -mb-px
-                        {{ $activeTab === 'upload' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700' }}">
+                        class="mx-6 rounded-none! py-3 text-xs font-bold uppercase tracking-widest transition-colors border-b-2 -mb-px
+                        {{ $activeTab === 'upload' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700' }}">
                         <span class="flex items-center gap-2">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2"
                                 stroke="currentColor">
@@ -41,8 +41,8 @@
                         </span>
                     </button>
                     <button type="button" wire:click="switchTab('library')"
-                        class="px-6 py-3 text-xs font-bold uppercase tracking-widest transition-colors border-b-2 -mb-px
-                        {{ $activeTab === 'library' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700' }}">
+                        class="mx-6 rounded-none! py-3 text-xs font-bold uppercase tracking-widest transition-colors border-b-2 -mb-px
+                        {{ $activeTab === 'library' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700' }}">
                         <span class="flex items-center gap-2">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2"
                                 stroke="currentColor">
@@ -109,7 +109,7 @@
                                 <button type="button" wire:click="switchTab('library')"
                                     class="rounded-md border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50">Cancel</button>
                                 <button type="button" wire:click="saveUploads"
-                                    class="inline-flex items-center gap-2 rounded-md bg-blue-600 px-5 py-2.5 text-xs font-bold text-white transition-colors hover:bg-blue-700">
+                                    class="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-xs font-bold text-white transition-colors hover:bg-blue-700">
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
                                         stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -136,14 +136,14 @@
                                     @foreach (['all' => 'All', 'image' => 'Images', 'document' => 'Documents', 'video' => 'Videos'] as $type => $label)
                                         <button type="button" wire:click="$set('filterType', '{{ $type }}')"
                                             class="rounded-lg px-3 py-1.5 text-xs font-bold transition-all
-                                    {{ $filterType === $type ? 'bg-blue-600 text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600' }}">
+                                    {{ $filterType === $type ? 'bg-primary text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-primary' }}">
                                             {{ $label }}
                                         </button>
                                     @endforeach
                                 </div>
 
-                                <div class="relative ml-auto w-56">
-                                    <div class="">
+                                <div class="relative w-full sm:ml-auto sm:w-56">
+                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                         <svg class="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24"
                                             stroke-width="2.5" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -152,7 +152,7 @@
                                     </div>
                                     <input type="text" wire:model.live.debounce.300ms="search"
                                         placeholder="Search…"
-                                        class="block w-full rounded-lg border-slate-200 bg-white pl-9 text-xs focus:border-blue-500 focus:ring-blue-500" />
+                                        class="block h-9 w-full rounded-lg border! border-slate-200! focus:outline-0 focus:border-primary! bg-white pl-9 pr-3 text-xs text-slate-700 placeholder:text-slate-400 shadow-sm transition-colors focus:ring-2 focus:ring-blue-500/20" />
                                 </div>
                             </div>
 
@@ -232,7 +232,7 @@
                                             {{ $search ? 'No results for "' . $search . '"' : 'No media uploaded yet' }}
                                         </p>
                                         <button type="button" wire:click="switchTab('upload')"
-                                            class="mt-4 text-xs font-bold text-blue-600 hover:underline">
+                                            class="mt-4 text-xs font-bold text-primary hover:underline">
                                             Upload your first file →
                                         </button>
                                     </div>
@@ -362,7 +362,7 @@
                                     {{-- Select button --}}
                                     <div class="border-t border-slate-200 p-4">
                                         <button type="button" wire:click="confirmSelection"
-                                            class="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-black text-white shadow-sm hover:bg-blue-700 active:scale-95 transition-all">
+                                            class="w-full rounded-xl bg-primary px-4 py-3 text-sm font-black text-white shadow-sm hover:bg-blue-700 active:scale-95 transition-all">
                                             Select this file
                                         </button>
                                         <button type="button" wire:click="selectMedia({{ $selectedMedia->id }})"

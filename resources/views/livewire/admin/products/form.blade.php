@@ -26,8 +26,7 @@
     <div class="flex gap-5 items-start">
 
         {{-- ── MAIN ── --}}
-        <div class="flex-1 min-w-0 space-y-4">
-        <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex-1 min-w-0 bg-white rounded-lg shadow-sm p-6">
 
             <div x-data="{ locale: 'en' }">
 
@@ -62,6 +61,17 @@
                         @endif
                         <flux:error name="slug" />
                     </flux:field>
+                    <flux:field>
+                        <flux:label>Category</flux:label>
+                        <flux:select wire:model="product_category_id">
+                            <flux:select.option value="">— None —</flux:select.option>
+                            @foreach ($this->productCategories as $cat)
+                                <flux:select.option value="{{ $cat->id }}">
+                                    {{ $cat->getTranslation('name', 'en', false) }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                        <flux:error name="product_category_id" />
+                    </flux:field>
                 </div>
 
                 {{-- Bengali --}}
@@ -82,53 +92,56 @@
                         @endif
                         <flux:error name="slug" />
                     </flux:field>
+                    <flux:field>
+                        <flux:label>Category</flux:label>
+                        <flux:select wire:model="product_category_id">
+                            <flux:select.option value="">— None —</flux:select.option>
+                            @foreach ($this->productCategories as $cat)
+                                <flux:select.option value="{{ $cat->id }}">
+                                    {{ $cat->getTranslation('name', 'en', false) }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                    </flux:field>
                 </div>
 
             </div>
         </div>
 
-        {{-- Settings --}}
-        <div class="bg-white rounded-lg shadow-sm p-6">
-            <h3 class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-4">Settings</h3>
-
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <flux:field>
-                    <flux:label>Category</flux:label>
-                    <flux:select wire:model="product_category_id">
-                        <flux:select.option value="">— None —</flux:select.option>
-                        @foreach ($this->productCategories as $cat)
-                            <flux:select.option value="{{ $cat->id }}">
-                                {{ $cat->getTranslation('name', 'en', false) }}</flux:select.option>
-                        @endforeach
-                    </flux:select>
-                    <flux:error name="product_category_id" />
-                </flux:field>
-                <flux:field>
-                    <flux:label>Status</flux:label>
-                    <flux:select wire:model="status">
-                        <flux:select.option value="active">Active</flux:select.option>
-                        <flux:select.option value="inactive">Inactive</flux:select.option>
-                    </flux:select>
-                </flux:field>
-                <flux:field>
-                    <flux:label>Price</flux:label>
-                    <flux:input type="number" wire:model="price" min="0" step="0.01" />
-                    <flux:error name="price" />
-                </flux:field>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 items-center">
-                <flux:field>
-                    <flux:label>Sort Order</flux:label>
-                    <flux:input type="number" wire:model="sort_order" min="0" />
-                </flux:field>
-                <flux:checkbox wire:model="is_featured" label="Featured" />
-            </div>
-        </div>
-        </div>
-
         {{-- ── SIDEBAR ── --}}
         <div class="w-[320px] shrink-0 space-y-4">
+
+            {{-- Settings --}}
+            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
+                <div
+                    class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                    Settings
+                </div>
+                <div class="px-4 py-3 border-b border-zinc-50">
+                    <flux:field>
+                        <flux:label>Status</flux:label>
+                        <flux:select wire:model="status">
+                            <flux:select.option value="active">Active</flux:select.option>
+                            <flux:select.option value="inactive">Inactive</flux:select.option>
+                        </flux:select>
+                    </flux:field>
+                </div>
+                <div class="px-4 py-3 border-b border-zinc-50">
+                    <flux:field>
+                        <flux:label>Price</flux:label>
+                        <flux:input type="number" wire:model="price" min="0" step="0.01" />
+                        <flux:error name="price" />
+                    </flux:field>
+                </div>
+                <div class="px-4 py-3 border-b border-zinc-50">
+                    <flux:field>
+                        <flux:label>Sort Order</flux:label>
+                        <flux:input type="number" wire:model="sort_order" min="0" />
+                    </flux:field>
+                </div>
+                <div class="px-4 py-3">
+                    <flux:checkbox wire:model="is_featured" label="Featured" />
+                </div>
+            </div>
 
             {{-- Featured Image --}}
             <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
@@ -148,7 +161,7 @@
                     class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
                     Page
                 </div>
-                <div class="px-4 py-3">
+                <div class="px-4 py-3 border-b border-zinc-50">
                     @if ($pageId)
                         <flux:button size="xs" variant="outline" icon="arrow-top-right-on-square"
                             href="{{ route('admin.pages.edit', $pageId) }}" wire:navigate class="w-full justify-center">
@@ -158,14 +171,6 @@
                         <p class="text-[10px] text-zinc-400 leading-relaxed">A page will be created automatically when
                             you save.</p>
                     @endif
-                </div>
-            </div>
-
-            {{-- Page Builder --}}
-            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
-                <div
-                    class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                    Page Builder
                 </div>
                 <div class="px-4 py-3">
                     @if ($productId)

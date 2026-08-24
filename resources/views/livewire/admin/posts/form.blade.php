@@ -64,6 +64,17 @@
                         <flux:error name="slug" />
                     </flux:field>
                     <flux:field>
+                        <flux:label>Category</flux:label>
+                        <flux:select wire:model="category_id">
+                            <flux:select.option value="">No category</flux:select.option>
+                            @foreach ($this->categories as $cat)
+                                <flux:select.option :value="$cat->id">
+                                    {{ $cat->getTranslation('name', 'en', false) }}
+                                </flux:select.option>
+                            @endforeach
+                        </flux:select>
+                    </flux:field>
+                    <flux:field>
                         <flux:label>Description</flux:label>
                         {{-- ✅ jodit-fixed-wrap class দিয়ে height lock --}}
                         <div class="jodit-fixed-wrap">
@@ -91,21 +102,6 @@
                         <flux:error name="slug" />
                     </flux:field>
                     <flux:field>
-                        <flux:label>বিবরণ</flux:label>
-                        {{-- ✅ jodit-fixed-wrap class দিয়ে height lock --}}
-                        <div class="jodit-fixed-wrap">
-                            <livewire:jodit-text-editor wire:model="description_bn" :height="180" />
-                        </div>
-                    </flux:field>
-                </div>
-
-            </div>
-
-            {{-- Post Settings --}}
-            <div class="mt-6 pt-5 border-t border-zinc-100">
-                <h3 class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-4">Post Settings</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <flux:field>
                         <flux:label>Category</flux:label>
                         <flux:select wire:model="category_id">
                             <flux:select.option value="">No category</flux:select.option>
@@ -117,6 +113,28 @@
                         </flux:select>
                     </flux:field>
                     <flux:field>
+                        <flux:label>বিবরণ</flux:label>
+                        {{-- ✅ jodit-fixed-wrap class দিয়ে height lock --}}
+                        <div class="jodit-fixed-wrap">
+                            <livewire:jodit-text-editor wire:model="description_bn" :height="180" />
+                        </div>
+                    </flux:field>
+                </div>
+
+            </div>
+        </div>
+
+        {{-- ── SIDEBAR ── --}}
+        <div class="w-[320px] shrink-0 space-y-4">
+
+            {{-- Post Settings --}}
+            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
+                <div
+                    class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                    Post Settings
+                </div>
+                <div class="px-4 py-3">
+                    <flux:field>
                         <flux:label>Status</flux:label>
                         <flux:select wire:model="status">
                             <flux:select.option value="inactive">Inactive</flux:select.option>
@@ -125,10 +143,6 @@
                     </flux:field>
                 </div>
             </div>
-        </div>
-
-        {{-- ── SIDEBAR ── --}}
-        <div class="w-[320px] shrink-0 space-y-4">
 
             {{-- Tags --}}
             <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
@@ -174,7 +188,7 @@
                     class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
                     Page
                 </div>
-                <div class="px-4 py-3">
+                <div class="px-4 py-3 border-b border-zinc-50">
                     @if ($pageId)
                         <flux:button size="xs" variant="outline" icon="arrow-top-right-on-square"
                             href="{{ route('admin.pages.edit', $pageId) }}" wire:navigate class="w-full justify-center">
@@ -184,14 +198,6 @@
                         <p class="text-[10px] text-zinc-400 leading-relaxed">A page will be created automatically when
                             you save.</p>
                     @endif
-                </div>
-            </div>
-
-            {{-- Page Builder --}}
-            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
-                <div
-                    class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                    Page Builder
                 </div>
                 <div class="px-4 py-3">
                     @if ($postId)

@@ -89,12 +89,12 @@
         );
         $sidebarOpenGroupId = optional($sidebarMenu->first(fn ($g) => $g->is_group && $g->children->contains(
             fn ($c) => $c->route_name && (request()->routeIs($c->route_name) || request()->routeIs($c->route_name.'.*'))
-        )))->id;
+        )))->id; 
     @endphp
-    <flux:sidebar sticky stashable collapsible="desktop" class="admin-sidebar" x-data="{
+    <flux:sidebar sticky stashable collapsible="desktop" class="admin-sidebar pt-1.5" x-data="{  
         search: '',
         openGroup: {{ $sidebarOpenGroupId ?? 'null' }},
-        groupItems: {{ $sidebarGroupItemsJson }},
+        groupItems: {{ $sidebarGroupItemsJson }}, 
         query() { return this.search.trim().toLowerCase(); },
         searching() { return this.query() !== ''; },
         matches(label) {
@@ -117,12 +117,13 @@
                 Object.values(this.groupItems).flat().some(l => l.toLowerCase().includes(q));
         },
         toggle(group) { this.openGroup = this.openGroup === group ? null : group }
-    }">
+    }"> 
         <flux:sidebar.toggle class="lg:hidden self-end m-2 text-zinc-400 hover:text-zinc-200" icon="x-mark" />
 
         {{-- Logo + search --}}
-        <div class="px-0 py-4 border-b border-white/10 shrink-0 pt-0 flex items-center gap-3">
-            <a href="{{ route('admin.dashboard') }}" wire:navigate.hover class="flex items-center gap-3 admin-sidebar-logo shrink-0">
+        <div class="px-0 py-4 border-b border-white/10 shrink-0 pt-0 flex items-center gap-3 pb-2">
+            <a href="{{ route('admin.dashboard') }}" wire:navigate.hover title="{{ config('app.name') }}"
+                class="flex items-center gap-3 admin-sidebar-logo shrink-0">
                 <div class="rounded">
                     <img src="{{ $siteIcon ?: '/site_icon.png' }}" alt="{{ config('app.name') }}" class="w-10">
                 </div>
@@ -136,7 +137,7 @@
                 <flux:icon.magnifying-glass
                     class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-500 pointer-events-none" />
                 <input type="text" x-model="search" placeholder="{{ __('Search menu...') }}" autocomplete="off"
-                    class="admin-sidebar-search-input w-full bg-white/5 border border-primary! rounded-lg pl-9 pr-8 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 outline-none transition">
+                    class="admin-sidebar-search-input w-full bg-white/5 border border-primary! rounded-lg pl-9 pr-8 py-1.5 text-sm text-zinc-200 placeholder:text-zinc-500 outline-none transition">
                 <button type="button" x-show="search" x-on:click="search = ''"
                     class="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors">
                     <flux:icon.x-mark class="size-4" />
@@ -162,7 +163,7 @@
                         ][$item->label] ?? 'squares-2x2';
                     @endphp
                     <div class="nav-group" x-show="groupMatches({{ $item->id }})">
-                        <button @click="toggle({{ $item->id }})"
+                        <button @click="toggle({{ $item->id }})" title="{{ __($item->label) }}"
                             class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none"
                             :class="{ 'admin-nav-group-active': groupOpen({{ $item->id }}) }">
                             <span class="flex items-center gap-2.5">
@@ -216,7 +217,25 @@
 
                 <livewire:admin.locale-switcher />
 
-                <livewire:admin.theme-switcher />
+                <livewire:admin.theme-switcher /> 
+
+                <button type="button" x-data="{ isFullscreen: false }"
+                    x-init="isFullscreen = !!document.fullscreenElement; document.addEventListener('fullscreenchange', () => isFullscreen = !!document.fullscreenElement)"
+                    @click="isFullscreen ? document.exitFullscreen() : document.documentElement.requestFullscreen()"
+                    :aria-label="isFullscreen ? 'Exit full screen' : 'Enter full screen'"
+                    :title="isFullscreen ? 'Exit full screen' : 'Full screen'" :aria-pressed="isFullscreen"
+                    class="inline-flex size-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100">
+                    <svg x-show="!isFullscreen" class="size-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M8.25 3.75H5.625A1.875 1.875 0 0 0 3.75 5.625V8.25m16.5 0V5.625a1.875 1.875 0 0 0-1.875-1.875H15.75m0 16.5h2.625a1.875 1.875 0 0 0 1.875-1.875V15.75m-16.5 0v2.625a1.875 1.875 0 0 0 1.875 1.875H8.25" />
+                    </svg>
+                    <svg x-cloak x-show="isFullscreen" class="size-5" fill="none" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M8.25 9.75H3.75m0 0v-4.5m0 4.5 5.25-5.25m6.75 5.25h4.5m0 0v-4.5m0 4.5-5.25-5.25m-6.75 9.75H3.75m0 0v4.5m0-4.5 5.25 5.25m6.75-5.25h4.5m0 0v4.5m0-4.5-5.25 5.25" />
+                    </svg>
+                </button>
 
                 <livewire:admin.notifications.bell />
             </div>
