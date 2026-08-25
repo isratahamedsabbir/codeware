@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login')->name('home');
@@ -21,5 +22,8 @@ Route::get('/token', function () {
 
     return response()->json(['token' => $token]);
 })->middleware(['auth']);
+
+Route::get('/test-private-channel', [TestController::class, 'testPrivateChannel']);
+Route::get('/test-public-channel', [TestController::class, 'testPublicChannel']);
 
 require __DIR__.'/settings.php';

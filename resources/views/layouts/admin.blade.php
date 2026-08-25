@@ -337,6 +337,26 @@
         // 2. Livewire wire:navigate — fires after each Livewire page navigation
         document.addEventListener('livewire:navigated', scrollActiveNavItem);
     </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            @if (Auth::check())
+                window.Echo.private('test-private-channel.{{ Auth::id() }}').listen('TestPrivateChannel', (
+                    e) => {
+                    alert('Private channel event received: ' + JSON.stringify(e.msg));
+                });
+            @endif
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            window.Echo.channel('test-public-channel').listen('TestPublicChannel', (e) => {
+                alert('Public channel event received: ' + JSON.stringify(e.msg));
+            });
+        });
+    </script>
+    
 </body>
 
 </html>
