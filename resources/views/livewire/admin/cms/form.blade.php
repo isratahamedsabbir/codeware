@@ -1,10 +1,24 @@
-<div class="max-w-3xl space-y-6">
+<div class="max-w-3xl space-y-6" x-data="{ locale: 'en' }">
 
     <div class="flex items-center justify-between">
         <flux:heading size="lg">{{ $cmsId ? 'Edit CMS Section' : 'New CMS Section' }}</flux:heading>
         <a href="{{ route('admin.cms') }}" wire:navigate class="text-sm text-zinc-500 hover:text-zinc-700">
             &larr; Back to CMS
         </a>
+    </div>
+
+    {{-- Language toggle — switches every title/description/label/card field below
+         between English and বাংলা, so each pair only takes up one field's worth
+         of space instead of showing both side by side. --}}
+    <div class="flex gap-2">
+        <button type="button"
+            :class="locale === 'en' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'"
+            class="px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors"
+            @click="locale='en'">EN</button>
+        <button type="button"
+            :class="locale === 'bn' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'"
+            class="px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors"
+            @click="locale='bn'">বাং</button>
     </div>
 
     {{-- Basics --}}
@@ -23,76 +37,44 @@
                 <flux:input wire:model="section" placeholder="e.g. hero, features, cta" />
                 <flux:error name="section" />
             </flux:field>
-
-            <flux:field>
-                <flux:label>Sort Order</flux:label>
-                <flux:input type="number" wire:model="sort_order" min="0" />
-            </flux:field>
         </div>
-
-        <x-media-picker model="bg_image" label="Background Image" placeholder="Choose a background image from the library" />
     </div>
 
-    {{-- Titles --}}
-    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 p-5 space-y-4">
-        <div class="flex items-center justify-between">
-            <flux:heading size="sm">Titles</flux:heading>
-            <flux:button size="xs" variant="outline" wire:click="addTitle">Add title</flux:button>
-        </div>
+    {{-- Title, Description, Image & Background Image --}}
+    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 p-5">
+        <flux:heading size="sm" class="mb-4">Content</flux:heading>
 
-        @forelse ($titles as $i => $title)
-            <div class="flex items-start gap-2 rounded-lg border border-zinc-100 p-3">
-                <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <flux:field>
-                        <flux:label>English</flux:label>
-                        <flux:input wire:model="titles.{{ $i }}.en" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>বাংলা</flux:label>
-                        <flux:input wire:model="titles.{{ $i }}.bn" />
-                    </flux:field>
-                </div>
-                <button type="button" wire:click="removeTitle({{ $i }})"
-                    class="mt-6 shrink-0 text-rose-500 hover:text-rose-700 cursor-pointer" aria-label="Remove title">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+        <div class="grid grid-cols-1 lg:grid-cols-[3fr_1fr] gap-x-7 gap-y-4">
+
+            {{-- Left: title & description --}}
+            <div class="space-y-4 min-w-0">
+                <flux:field x-show="locale === 'en'">
+                    <flux:label>Title (English)</flux:label>
+                    <flux:input wire:model="title.en" />
+                </flux:field>
+                <flux:field x-show="locale === 'bn'" x-cloak>
+                    <flux:label>Title (বাংলা)</flux:label>
+                    <flux:input wire:model="title.bn" />
+                </flux:field>
+
+                <flux:field x-show="locale === 'en'">
+                    <flux:label>Description (English)</flux:label>
+                    <flux:textarea wire:model="description.en" rows="8" />
+                </flux:field>
+                <flux:field x-show="locale === 'bn'" x-cloak>
+                    <flux:label>Description (বাংলা)</flux:label>
+                    <flux:textarea wire:model="description.bn" rows="8" />
+                </flux:field>
             </div>
-        @empty
-            <p class="text-sm text-zinc-400">No titles yet.</p>
-        @endforelse
-    </div>
 
-    {{-- Descriptions --}}
-    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 p-5 space-y-4">
-        <div class="flex items-center justify-between">
-            <flux:heading size="sm">Descriptions</flux:heading>
-            <flux:button size="xs" variant="outline" wire:click="addDescription">Add description</flux:button>
-        </div>
+            {{-- Right: image & background image --}}
+            <div class="space-y-4 min-w-0">
+                <x-media-picker model="image" label="Image" />
 
-        @forelse ($descriptions as $i => $description)
-            <div class="flex items-start gap-2 rounded-lg border border-zinc-100 p-3">
-                <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <flux:field>
-                        <flux:label>English</flux:label>
-                        <flux:textarea wire:model="descriptions.{{ $i }}.en" rows="2" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>বাংলা</flux:label>
-                        <flux:textarea wire:model="descriptions.{{ $i }}.bn" rows="2" />
-                    </flux:field>
-                </div>
-                <button type="button" wire:click="removeDescription({{ $i }})"
-                    class="mt-6 shrink-0 text-rose-500 hover:text-rose-700 cursor-pointer" aria-label="Remove description">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+                <x-media-picker model="bg_image" label="Background Image" />
             </div>
-        @empty
-            <p class="text-sm text-zinc-400">No descriptions yet.</p>
-        @endforelse
+
+        </div>
     </div>
 
     {{-- Buttons --}}
@@ -104,21 +86,22 @@
 
         @forelse ($buttons as $i => $button)
             <div class="flex items-start gap-2 rounded-lg border border-zinc-100 p-3">
-                <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <flux:field>
+                <div class="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <flux:field x-show="locale === 'en'">
                         <flux:label>Label (English)</flux:label>
                         <flux:input wire:model="buttons.{{ $i }}.label.en" />
                     </flux:field>
-                    <flux:field>
+                    <flux:field x-show="locale === 'bn'" x-cloak>
                         <flux:label>Label (বাংলা)</flux:label>
                         <flux:input wire:model="buttons.{{ $i }}.label.bn" />
                     </flux:field>
                     <flux:field>
                         <flux:label>Color</flux:label>
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center rounded-lg border border-zinc-300 overflow-hidden focus-within:ring-2 focus-within:ring-zinc-400">
                             <input type="color" wire:model.live="buttons.{{ $i }}.color"
-                                class="h-9 w-12 rounded border border-zinc-300 cursor-pointer" />
-                            <flux:input wire:model="buttons.{{ $i }}.color" placeholder="#2563eb" class="font-mono" />
+                                class="h-9 w-10 shrink-0 cursor-pointer border-0 border-r border-zinc-300 p-0" />
+                            <input type="text" wire:model="buttons.{{ $i }}.color" placeholder="#2563eb"
+                                class="h-9 min-w-0 flex-1 border-0 px-3 text-sm font-mono focus:outline-none focus:ring-0" />
                         </div>
                     </flux:field>
                     <flux:field>
@@ -147,26 +130,33 @@
 
         @forelse ($cards as $i => $card)
             <div class="flex items-start gap-2 rounded-lg border border-zinc-100 p-3">
-                <div class="flex-1 space-y-3">
-                    <x-media-picker model="cards.{{ $i }}.image" label="Card Image" placeholder="Choose a card image" preview="true" />
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <flux:field>
+                <div class="flex-1 grid grid-cols-1 lg:grid-cols-[3fr_1fr] gap-x-7 gap-y-4">
+
+                    {{-- Left: title & description --}}
+                    <div class="space-y-4 min-w-0">
+                        <flux:field x-show="locale === 'en'">
                             <flux:label>Title (English)</flux:label>
-                            <flux:input wire:model="cards.{{ $i }}.title.en" />
+                            <flux:input wire:model="cards.{{ $i }}.title.en" placeholder="e.g. Fast Delivery" class="font-medium" />
                         </flux:field>
-                        <flux:field>
+                        <flux:field x-show="locale === 'bn'" x-cloak>
                             <flux:label>Title (বাংলা)</flux:label>
-                            <flux:input wire:model="cards.{{ $i }}.title.bn" />
+                            <flux:input wire:model="cards.{{ $i }}.title.bn" placeholder="যেমন: দ্রুত ডেলিভারি" class="font-medium" />
                         </flux:field>
-                        <flux:field>
+                        <flux:field x-show="locale === 'en'">
                             <flux:label>Description (English)</flux:label>
-                            <flux:textarea wire:model="cards.{{ $i }}.description.en" rows="2" />
+                            <flux:textarea wire:model="cards.{{ $i }}.description.en" rows="8" placeholder="Short description shown on the card" />
                         </flux:field>
-                        <flux:field>
+                        <flux:field x-show="locale === 'bn'" x-cloak>
                             <flux:label>Description (বাংলা)</flux:label>
-                            <flux:textarea wire:model="cards.{{ $i }}.description.bn" rows="2" />
+                            <flux:textarea wire:model="cards.{{ $i }}.description.bn" rows="8" placeholder="কার্ডে দেখানো সংক্ষিপ্ত বিবরণ" />
                         </flux:field>
                     </div>
+
+                    {{-- Right: card image --}}
+                    <div class="min-w-0">
+                        <x-media-picker model="cards.{{ $i }}.image" label="Card Image" />
+                    </div>
+
                 </div>
                 <button type="button" wire:click="removeCard({{ $i }})"
                     class="mt-1 shrink-0 text-rose-500 hover:text-rose-700 cursor-pointer" aria-label="Remove card">
@@ -178,33 +168,6 @@
         @empty
             <p class="text-sm text-zinc-400">No cards yet.</p>
         @endforelse
-    </div>
-
-    {{-- Images --}}
-    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 p-5 space-y-4">
-        <div class="flex items-center justify-between">
-            <flux:heading size="sm">Images</flux:heading>
-            <flux:button size="xs" variant="outline" wire:click="addImage">Add image</flux:button>
-        </div>
-
-        @if (count($images))
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                @foreach ($images as $i => $image)
-                    <div class="relative rounded-lg border border-zinc-100 p-3">
-                        <button type="button" wire:click="removeImage({{ $i }})"
-                            class="absolute top-2 right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow text-rose-500 hover:bg-rose-50 cursor-pointer"
-                            aria-label="Remove image">
-                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                <path d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                        <x-media-picker model="images.{{ $i }}" label="" placeholder="Choose an image" />
-                    </div>
-                @endforeach
-            </div>
-        @else
-            <p class="text-sm text-zinc-400">No images yet.</p>
-        @endif
     </div>
 
     {{-- Save --}}

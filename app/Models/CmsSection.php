@@ -16,25 +16,22 @@ class CmsSection extends Model
     protected $fillable = [
         'page',
         'section',
-        'titles',
-        'descriptions',
+        'title',
+        'description',
         'buttons',
         'cards',
-        'images',
+        'image',
         'bg_image',
         'status',
-        'sort_order',
     ];
 
     protected function casts(): array
     {
         return [
-            'titles' => 'array',
-            'descriptions' => 'array',
+            'title' => 'array',
+            'description' => 'array',
             'buttons' => 'array',
             'cards' => 'array',
-            'images' => 'array',
-            'sort_order' => 'integer',
         ];
     }
 

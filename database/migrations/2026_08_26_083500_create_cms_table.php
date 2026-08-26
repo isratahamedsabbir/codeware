@@ -15,14 +15,14 @@ return new class extends Migration
             $table->id();
             $table->string('page');
             $table->string('section');
-            $table->json('titles')->nullable();
-            $table->json('descriptions')->nullable();
+            $table->unique(['page', 'section']);
+            $table->json('title')->nullable();
+            $table->json('description')->nullable();
             $table->json('buttons')->nullable();
             $table->json('cards')->nullable();
-            $table->json('images')->nullable();
+            $table->string('image')->nullable();
             $table->string('bg_image')->nullable();
             $table->string('status', 20)->default('active');
-            $table->unsignedInteger('sort_order')->default(0);
             $table->softDeletes();
             $table->timestamps();
         });

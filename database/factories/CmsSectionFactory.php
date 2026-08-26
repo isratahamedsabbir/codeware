@@ -15,14 +15,13 @@ class CmsSectionFactory extends Factory
         return [
             'page' => 'home',
             'section' => fake()->unique()->word(),
-            'titles' => [['en' => fake()->sentence(3), 'bn' => '']],
-            'descriptions' => [['en' => fake()->sentence(10), 'bn' => '']],
+            'title' => ['en' => fake()->sentence(3), 'bn' => ''],
+            'description' => ['en' => fake()->sentence(10), 'bn' => ''],
             'buttons' => [],
             'cards' => [],
-            'images' => [],
+            'image' => null,
             'bg_image' => null,
             'status' => 'active',
-            'sort_order' => 0,
         ];
     }
 

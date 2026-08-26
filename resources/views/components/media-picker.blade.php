@@ -4,6 +4,7 @@
     'placeholder' => 'No file selected',
     'preview' => true,
     'pickerId' => null,
+    'compact' => true,
 ])
 
 @php($pickerId = $pickerId ?: 'mp-' . preg_replace('/[^a-z0-9]/', '-', strtolower($model)))
@@ -68,7 +69,7 @@
     }
 }" class="w-full min-w-0 space-y-2">
     @if ($label)
-        <label class="text-[10px] font-bold uppercase tracking-widest text-slate-800 mb-2">{{ $label }}</label>
+        <label class="inline-flex items-center text-sm font-medium text-zinc-800 mb-2">{{ $label }}</label>
     @endif
 
     <div class="flex min-w-0 items-start gap-4">
@@ -76,7 +77,7 @@
         {{-- Preview thumbnail --}}
         @if ($preview)
             <button type="button" @click="openPicker()"
-                class="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                class="relative h-28 w-28 shrink-0 overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400">
                 <template x-if="selectedUrl">
                     <img :src="selectedUrl" alt="" class="h-full w-full object-cover" />
                 </template>
@@ -114,28 +115,30 @@
             </button>
         @endif
 
-        <div class="min-w-0 flex-1 space-y-2">
-            {{-- Filename / URL display --}}
-            <div class="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm transition-colors hover:border-blue-400 hover:bg-blue-50"
-                @click="openPicker()">
-                <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                </svg>
-                <span class="min-w-0 flex-1 truncate text-sm"
-                    :class="selectedTitle || selectedUrl ? 'text-slate-700 font-medium' : 'text-slate-400'"
-                    x-text="selectedTitle || (selectedUrl ? selectedUrl.split('/').pop() : '{{ $placeholder }}')"></span>
-            </div>
+        @unless ($compact)
+            <div class="min-w-0 flex-1 space-y-2">
+                {{-- Filename / URL display --}}
+                <div class="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm transition-colors hover:border-blue-400 hover:bg-blue-50"
+                    @click="openPicker()">
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                    </svg>
+                    <span class="min-w-0 flex-1 truncate text-sm"
+                        :class="selectedTitle || selectedUrl ? 'text-slate-700 font-medium' : 'text-slate-400'"
+                        x-text="selectedTitle || (selectedUrl ? selectedUrl.split('/').pop() : '{{ $placeholder }}')"></span>
+                </div>
 
-            {{-- Button --}}
-            <div class="flex items-center gap-2">
-                <button type="button" @click="openPicker()"
-                    class="rounded-md border border-slate-200 w-full bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50">
-                    Choose file
-                </button>
+                {{-- Button --}}
+                <div class="flex items-center gap-2">
+                    <button type="button" @click="openPicker()"
+                        class="rounded-md border border-slate-200 w-full bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50">
+                        Choose file
+                    </button>
+                </div>
             </div>
-        </div>
+        @endunless
 
     </div>
 </div>

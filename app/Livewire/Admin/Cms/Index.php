@@ -27,13 +27,6 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function reorder(array $order): void
-    {
-        foreach ($order as $sortOrder => $id) {
-            CmsSection::where('id', $id)->update(['sort_order' => $sortOrder]);
-        }
-    }
-
     public function toggleStatus(int $id): void
     {
         $cms = CmsSection::findOrFail($id);
@@ -72,7 +65,6 @@ class Index extends Component
                     $q->where('page', 'like', "%{$this->search}%")
                         ->orWhere('section', 'like', "%{$this->search}%");
                 }))
-                ->orderBy('sort_order')
                 ->orderBy('id')
                 ->paginate(30),
             'pages' => CmsSection::query()->distinct()->orderBy('page')->pluck('page'),

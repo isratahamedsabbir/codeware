@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Cms;
 
 use App\Models\CmsSection;
 use App\Support\AdminActivity;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class Form extends Component
@@ -14,24 +15,21 @@ class Form extends Component
 
     public string $section = '';
 
-    public int $sort_order = 0;
-
     public ?string $bg_image = null;
 
-    /** @var array<int, array{en: string, bn: string}> */
-    public array $titles = [];
+    public ?string $image = null;
 
-    /** @var array<int, array{en: string, bn: string}> */
-    public array $descriptions = [];
+    /** @var array{en: string, bn: string} */
+    public array $title = ['en' => '', 'bn' => ''];
+
+    /** @var array{en: string, bn: string} */
+    public array $description = ['en' => '', 'bn' => ''];
 
     /** @var array<int, array{label: array{en: string, bn: string}, color: string, link: string}> */
     public array $buttons = [];
 
     /** @var array<int, array{image: ?string, title: array{en: string, bn: string}, description: array{en: string, bn: string}}> */
     public array $cards = [];
-
-    /** @var array<int, ?string> */
-    public array $images = [];
 
     public function mount(?int $id = null): void
     {
@@ -40,36 +38,13 @@ class Form extends Component
             $this->cmsId = $cms->id;
             $this->page = $cms->page;
             $this->section = $cms->section;
-            $this->sort_order = $cms->sort_order;
             $this->bg_image = $cms->bg_image;
-            $this->titles = $cms->titles ?? [];
-            $this->descriptions = $cms->descriptions ?? [];
+            $this->image = $cms->image;
+            $this->title = $cms->title ?? ['en' => '', 'bn' => ''];
+            $this->description = $cms->description ?? ['en' => '', 'bn' => ''];
             $this->buttons = $cms->buttons ?? [];
             $this->cards = $cms->cards ?? [];
-            $this->images = $cms->images ?? [];
         }
-    }
-
-    public function addTitle(): void
-    {
-        $this->titles[] = ['en' => '', 'bn' => ''];
-    }
-
-    public function removeTitle(int $index): void
-    {
-        unset($this->titles[$index]);
-        $this->titles = array_values($this->titles);
-    }
-
-    public function addDescription(): void
-    {
-        $this->descriptions[] = ['en' => '', 'bn' => ''];
-    }
-
-    public function removeDescription(int $index): void
-    {
-        unset($this->descriptions[$index]);
-        $this->descriptions = array_values($this->descriptions);
     }
 
     public function addButton(): void
@@ -94,30 +69,20 @@ class Form extends Component
         $this->cards = array_values($this->cards);
     }
 
-    public function addImage(): void
-    {
-        $this->images[] = null;
-    }
-
-    public function removeImage(int $index): void
-    {
-        unset($this->images[$index]);
-        $this->images = array_values($this->images);
-    }
-
     protected function rules(): array
     {
         return [
             'page' => 'required|string|max:255',
-            'section' => 'required|string|max:255',
-            'sort_order' => 'integer|min:0',
+            'section' => [
+                'required', 'string', 'max:255',
+                Rule::unique('cms', 'section')->where('page', $this->page)->ignore($this->cmsId),
+            ],
             'bg_image' => 'nullable|string',
-            'titles' => 'array',
-            'titles.*.en' => 'nullable|string|max:255',
-            'titles.*.bn' => 'nullable|string|max:255',
-            'descriptions' => 'array',
-            'descriptions.*.en' => 'nullable|string',
-            'descriptions.*.bn' => 'nullable|string',
+            'image' => 'nullable|string',
+            'title.en' => 'nullable|string|max:255',
+            'title.bn' => 'nullable|string|max:255',
+            'description.en' => 'nullable|string',
+            'description.bn' => 'nullable|string',
             'buttons' => 'array',
             'buttons.*.label.en' => 'nullable|string|max:255',
             'buttons.*.label.bn' => 'nullable|string|max:255',
@@ -129,8 +94,6 @@ class Form extends Component
             'cards.*.title.bn' => 'nullable|string|max:255',
             'cards.*.description.en' => 'nullable|string',
             'cards.*.description.bn' => 'nullable|string',
-            'images' => 'array',
-            'images.*' => 'nullable|string',
         ];
     }
 
@@ -141,13 +104,12 @@ class Form extends Component
         $data = [
             'page' => $this->page,
             'section' => $this->section,
-            'sort_order' => $this->sort_order,
             'bg_image' => $this->bg_image ?: null,
-            'titles' => array_values(array_filter($this->titles, fn ($t) => filled($t['en'] ?? null) || filled($t['bn'] ?? null))),
-            'descriptions' => array_values(array_filter($this->descriptions, fn ($d) => filled($d['en'] ?? null) || filled($d['bn'] ?? null))),
+            'image' => $this->image ?: null,
+            'title' => filled($this->title['en'] ?? null) || filled($this->title['bn'] ?? null) ? $this->title : null,
+            'description' => filled($this->description['en'] ?? null) || filled($this->description['bn'] ?? null) ? $this->description : null,
             'buttons' => array_values($this->buttons),
             'cards' => array_values($this->cards),
-            'images' => array_values(array_filter($this->images)),
         ];
 
         $creating = $this->cmsId === null;

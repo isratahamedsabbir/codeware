@@ -34,36 +34,19 @@
         </a>
     </div>
 
-    {{-- Table with Sortable --}}
-    <div class="overflow-x-auto"
-        x-data="{
-            init() {
-                if (typeof Sortable === 'undefined') return;
-                new Sortable(this.$refs.sortableRows, {
-                    animation: 150,
-                    handle: '.drag-handle',
-                    ghostClass: 'bg-blue-50',
-                    onEnd: (evt) => {
-                        const rows = [...this.$refs.sortableRows.querySelectorAll('[data-cms-id]')];
-                        const order = rows.map(r => parseInt(r.dataset.cmsId));
-                        $wire.reorder(order);
-                    }
-                });
-            }
-        }">
+    {{-- Table --}}
+    <div class="overflow-x-auto">
         <div class="border border-zinc-100 rounded-lg">
             <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
                 <colgroup>
-                    <col style="width:5%">
-                    <col style="width:18%">
-                    <col style="width:18%">
-                    <col style="width:29%">
-                    <col style="width:12%">
-                    <col style="width:18%">
+                    <col style="width:20%">
+                    <col style="width:20%">
+                    <col style="width:32%">
+                    <col style="width:13%">
+                    <col style="width:15%">
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
-                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Page</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Section</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Content</th>
@@ -71,20 +54,9 @@
                         <th class="px-4 py-2.5 text-right text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
-                <tbody x-ref="sortableRows" class="divide-y divide-gray-200">
+                <tbody class="divide-y divide-gray-200">
                     @forelse ($sections as $cms)
-                        <tr class="hover:bg-indigo-50/30 transition-colors" data-cms-id="{{ $cms->id }}">
-
-                            {{-- Drag handle --}}
-                            <td class="px-2 py-3.5 text-center">
-                                <div class="drag-handle cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-600 inline-flex">
-                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <line x1="3" y1="6" x2="21" y2="6" />
-                                        <line x1="3" y1="12" x2="21" y2="12" />
-                                        <line x1="3" y1="18" x2="21" y2="18" />
-                                    </svg>
-                                </div>
-                            </td>
+                        <tr class="hover:bg-indigo-50/30 transition-colors">
 
                             {{-- Page --}}
                             <td class="px-4 py-3.5">
@@ -99,11 +71,17 @@
                             {{-- Content summary --}}
                             <td class="px-4 py-3.5">
                                 <div class="flex flex-wrap gap-1.5 text-[11px]">
-                                    <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">{{ count($cms->titles ?? []) }} title{{ count($cms->titles ?? []) === 1 ? '' : 's' }}</span>
-                                    <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">{{ count($cms->descriptions ?? []) }} desc</span>
+                                    @if (filled($cms->title['en'] ?? null) || filled($cms->title['bn'] ?? null))
+                                        <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">title</span>
+                                    @endif
+                                    @if (filled($cms->description['en'] ?? null) || filled($cms->description['bn'] ?? null))
+                                        <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">desc</span>
+                                    @endif
                                     <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">{{ count($cms->buttons ?? []) }} btn</span>
                                     <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">{{ count($cms->cards ?? []) }} card{{ count($cms->cards ?? []) === 1 ? '' : 's' }}</span>
-                                    <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">{{ count($cms->images ?? []) }} img</span>
+                                    @if ($cms->image)
+                                        <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">img</span>
+                                    @endif
                                     @if ($cms->bg_image)
                                         <span class="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600">bg</span>
                                     @endif
@@ -184,7 +162,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-16 text-center">
+                            <td colspan="5" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <rect x="3" y="3" width="7" height="7" />
