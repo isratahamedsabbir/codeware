@@ -32,7 +32,7 @@
     <!-- ── HERO STRIP ── -->
     <div class="hero-strip" style="background:#7cc242;padding:28px 40px;display:flex;align-items:center;gap:16px;">
       <div style="background:#ffffff;border-radius:14px;padding:10px 22px;box-shadow:0 4px 12px rgba(0,0,0,0.08);margin:0 auto;">
-        <img src="{{ asset('codeware_logo.png') }}"
+        <img src="{{ \App\Models\Setting::get('site_icon') ?: asset('default/logo.png') }}"
              alt="{{ config('app.name') }}"
              style="max-width:180px;height:auto;display:block;margin:0 auto">
       </div>

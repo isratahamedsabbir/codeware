@@ -37,7 +37,7 @@
                 @php
                     $siteIcon = \App\Models\Setting::get('site_icon');
                 @endphp
-                <img src="{{ $siteIcon ?: '/codeware_logo.png' }}" alt="{{ config('app.name') }}"
+                <img src="{{ $siteIcon ?: '/default/logo.png' }}" alt="{{ config('app.name') }}"
                     class="h-7 w-auto block mx-auto mb-6">
                 {{ $slot }}
             </div>

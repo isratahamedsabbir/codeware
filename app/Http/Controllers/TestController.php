@@ -7,13 +7,20 @@ use App\Events\TestPublicChannel;
 use App\Services\EmailTemplateService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class TestController extends Controller
 {
     public function testEmail(Request $request, EmailTemplateService $emailTemplateService): JsonResponse
     {
-        $sent = $emailTemplateService->send('test_email', setting('support_email'), [
-            'name' => 'israt ahamed sabbir',
+        $request->validate([
+            'email' => 'nullable|email',
+        ]);
+
+        $email = $request->query('email', 'isratahamedsabbir@gmail.com');
+
+        $sent = $emailTemplateService->send('test_email', $email, [
+            'name' => Str::before($email, '@'),
         ]);
 
         if ($sent === false) {
