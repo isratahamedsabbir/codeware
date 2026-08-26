@@ -1,11 +1,11 @@
-<div class="max-w-3xl space-y-6" x-data="{ locale: 'en' }">
+@push('page-header-actions')
+    <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.cms') }}" wire:navigate
+        class="border border-zinc-800 rounded!">
+        Back
+    </flux:button>
+@endpush
 
-    <div class="flex items-center justify-between">
-        <flux:heading size="lg">{{ $cmsId ? 'Edit CMS Section' : 'New CMS Section' }}</flux:heading>
-        <a href="{{ route('admin.cms') }}" wire:navigate class="text-sm text-zinc-500 hover:text-zinc-700">
-            &larr; Back to CMS
-        </a>
-    </div>
+<div class="w-full space-y-6" x-data="{ locale: 'en' }">
 
     {{-- Language toggle — switches every title/description/label/card field below
          between English and বাংলা, so each pair only takes up one field's worth
@@ -44,36 +44,28 @@
     <div class="rounded-lg bg-white shadow-sm border border-zinc-200 p-5">
         <flux:heading size="sm" class="mb-4">Content</flux:heading>
 
-        <div class="grid grid-cols-1 lg:grid-cols-[3fr_1fr] gap-x-7 gap-y-4">
+        <div class="space-y-4">
+            <flux:field x-show="locale === 'en'">
+                <flux:label>Title (English)</flux:label>
+                <flux:input wire:model="title.en" placeholder="e.g. Welcome to Codeware" class="font-medium" />
+            </flux:field>
+            <flux:field x-show="locale === 'bn'" x-cloak>
+                <flux:label>Title (বাংলা)</flux:label>
+                <flux:input wire:model="title.bn" placeholder="যেমন: কোডওয়্যারে স্বাগতম" class="font-medium" />
+            </flux:field>
 
-            {{-- Left: title & description --}}
-            <div class="space-y-4 min-w-0">
-                <flux:field x-show="locale === 'en'">
-                    <flux:label>Title (English)</flux:label>
-                    <flux:input wire:model="title.en" />
-                </flux:field>
-                <flux:field x-show="locale === 'bn'" x-cloak>
-                    <flux:label>Title (বাংলা)</flux:label>
-                    <flux:input wire:model="title.bn" />
-                </flux:field>
+            <flux:field x-show="locale === 'en'">
+                <flux:label>Description (English)</flux:label>
+                <flux:textarea wire:model="description.en" rows="8" placeholder="Short description shown for this section" />
+            </flux:field>
+            <flux:field x-show="locale === 'bn'" x-cloak>
+                <flux:label>Description (বাংলা)</flux:label>
+                <flux:textarea wire:model="description.bn" rows="8" placeholder="এই সেকশনের জন্য সংক্ষিপ্ত বিবরণ" />
+            </flux:field>
 
-                <flux:field x-show="locale === 'en'">
-                    <flux:label>Description (English)</flux:label>
-                    <flux:textarea wire:model="description.en" rows="8" />
-                </flux:field>
-                <flux:field x-show="locale === 'bn'" x-cloak>
-                    <flux:label>Description (বাংলা)</flux:label>
-                    <flux:textarea wire:model="description.bn" rows="8" />
-                </flux:field>
-            </div>
+            <x-media-picker model="image" label="Image" />
 
-            {{-- Right: image & background image --}}
-            <div class="space-y-4 min-w-0">
-                <x-media-picker model="image" label="Image" />
-
-                <x-media-picker model="bg_image" label="Background Image" />
-            </div>
-
+            <x-media-picker model="bg_image" label="Background Image" />
         </div>
     </div>
 
@@ -110,7 +102,7 @@
                     </flux:field>
                 </div>
                 <button type="button" wire:click="removeButton({{ $i }})"
-                    class="mt-6 shrink-0 text-rose-500 hover:text-rose-700 cursor-pointer" aria-label="Remove button">
+                    class="mt-1 shrink-0 text-rose-500 hover:text-rose-700 cursor-pointer" aria-label="Remove button">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M6 18L18 6M6 6l12 12" />
                     </svg>

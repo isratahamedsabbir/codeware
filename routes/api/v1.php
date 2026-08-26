@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\V1\Auth\EmailVerificationController;
 use App\Http\Controllers\Api\V1\Auth\LoginController;
 use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Auth\RegisterController;
+use App\Http\Controllers\Api\V1\CmsController;
 use App\Http\Controllers\Api\V1\ContactController;
 use App\Http\Controllers\Api\V1\LayoutController;
 use App\Http\Controllers\Api\V1\OrderController;
@@ -61,6 +62,8 @@ Route::get('/layout', [LayoutController::class, 'show'])->name('layout.show');
 Route::get('/product-categories', [ProductCategoryController::class, 'index'])->name('product-categories.index');
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
+
+Route::get('/cms', [CmsController::class, 'index'])->name('cms.index');
 
 Route::post('/contacts', [ContactController::class, 'store'])->name('contacts.store');
 Route::post('/request-demo', [ContactController::class, 'requestDemo'])->name('request-demo.store');
