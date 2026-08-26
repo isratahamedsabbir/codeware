@@ -83,9 +83,6 @@
                             {{-- Name --}}
                             <td class="px-4 py-3.5">
                                 <div class="flex items-center gap-2">
-                                    @if ($language->flag)
-                                        <span class="text-base leading-none">{{ $language->flag }}</span>
-                                    @endif
                                     <div class="min-w-0">
                                         <div class="font-medium text-zinc-900 text-sm leading-snug truncate">
                                             {{ $language->name }}

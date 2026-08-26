@@ -8,9 +8,6 @@
                 <div class="flex-1 min-w-[180px] rounded-lg border border-zinc-100 px-4 py-3">
                     <div class="flex items-center justify-between gap-2 mb-2">
                         <span class="text-sm font-medium text-zinc-700 flex items-center gap-1.5 min-w-0">
-                            @if ($language->flag)
-                                <span class="text-base leading-none shrink-0">{{ $language->flag }}</span>
-                            @endif
                             <span class="truncate">{{ $language->native_name ?: $language->name }}</span>
                         </span>
                         <span class="text-xs font-semibold text-zinc-500 tabular-nums shrink-0">{{ $stat['percent'] }}%</span>
@@ -116,9 +113,6 @@
                         @foreach ($locales as $language)
                             <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider min-w-[220px]">
                                 <span class="flex items-center gap-1.5">
-                                    @if ($language->flag)
-                                        <span class="text-sm leading-none">{{ $language->flag }}</span>
-                                    @endif
                                     {{ $language->name }}
                                     @if ($language->is_default)
                                         <span class="text-[9px] font-semibold text-indigo-500 normal-case">({{ __('default') }})</span>
