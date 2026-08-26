@@ -26,6 +26,7 @@ class Features
         'menu' => 'Menu Manager',
         'email-templates' => 'Email Templates',
         'localization' => 'Localization (Languages & Translations)',
+        'advance' => 'Advance (Sitemap & Robots.txt)',
     ];
 
     public static function enabled(string $key): bool

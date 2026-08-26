@@ -4,6 +4,8 @@ use App\Http\Controllers\Admin\FileManagerController;
 use App\Http\Controllers\Admin\ProductExportController;
 use App\Http\Controllers\Admin\ReportExportController;
 use App\Http\Controllers\InvoiceController;
+use App\Livewire\Admin\Advance\Robots;
+use App\Livewire\Admin\Advance\Sitemap;
 use App\Livewire\Admin\Dashboard;
 use App\Livewire\Admin\Orders\Show;
 use App\Livewire\Admin\Posts\Form;
@@ -101,6 +103,12 @@ Route::middleware('can:access-admin-system')->group(function () {
     // Menu
     Route::middleware('feature:menu')->group(function () {
         Route::get('/menu', App\Livewire\Admin\Menu\Index::class)->name('menu');
+    });
+
+    // Advance — Sitemap & Robots.txt generation, and future advanced/technical tools
+    Route::middleware('feature:advance')->group(function () {
+        Route::get('/advance/sitemap', Sitemap::class)->name('advance.sitemap');
+        Route::get('/advance/robots', Robots::class)->name('advance.robots');
     });
 
     // Orders & Reports

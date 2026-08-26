@@ -63,6 +63,11 @@ class AdminMenuSeeder extends Seeder
             ['Permissions', 'lock-closed', 'admin.permissions'],
             ['Users', 'users', 'admin.users'],
         ]);
+
+        $this->group('Advance', 11, [
+            ['Sitemap', 'map', 'admin.advance.sitemap'],
+            ['Robots.txt', 'globe-alt', 'admin.advance.robots'],
+        ]);
     }
 
     protected function standalone(string $label, string $icon, string $routeName, int $sortOrder): void
