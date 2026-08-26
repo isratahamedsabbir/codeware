@@ -21,18 +21,14 @@ class Form extends Component
     #[Validate('nullable|string|max:255')]
     public string $slug = '';
 
-    #[Validate('in:active,inactive')]
-    public string $status = 'active';
-
     public function mount(?int $id = null): void
     {
         if ($id) {
             $tag = Tag::findOrFail($id);
-            $this->tagId   = $id;
+            $this->tagId = $id;
             $this->name_en = $tag->getTranslation('name', 'en', false) ?? '';
             $this->name_bn = $tag->getTranslation('name', 'bn', false) ?? '';
-            $this->slug    = $tag->slug;
-            $this->status  = $tag->status;
+            $this->slug = $tag->slug;
         }
     }
 
@@ -44,7 +40,7 @@ class Form extends Component
 
         $rules = $this->getRules();
         $rules['slug'] = $this->tagId
-            ? 'required|string|max:255|unique:tags,slug,' . $this->tagId
+            ? 'required|string|max:255|unique:tags,slug,'.$this->tagId
             : 'required|string|max:255|unique:tags,slug';
 
         $this->validate($rules);
@@ -52,15 +48,17 @@ class Form extends Component
         $creating = $this->tagId === null;
 
         $data = [
-            'name'   => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
-            'slug'   => $this->slug,
-            'status' => $this->status,
+            'name' => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
+            'slug' => $this->slug,
         ];
 
         if ($this->tagId) {
             Tag::findOrFail($this->tagId)->update($data);
             $this->dispatch('notify', message: 'Tag updated successfully');
         } else {
+            // New tags stay inactive until switched on from the list — status is
+            // no longer editable from this form, see Index::toggleStatus().
+            $data['status'] = 'inactive';
             Tag::create($data);
             $this->dispatch('notify', message: 'Tag created successfully');
         }

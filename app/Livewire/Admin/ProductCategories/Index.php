@@ -28,6 +28,18 @@ class Index extends Component
         }
     }
 
+    public function toggleStatus(int $id): void
+    {
+        $category = ProductCategory::with('page')->findOrFail($id);
+        $newStatus = $category->status === 'active' ? 'inactive' : 'active';
+
+        $category->update(['status' => $newStatus]);
+        $category->page?->update(['status' => $newStatus]);
+
+        AdminActivity::log('updated', "Product Category: {$category->name} ".($newStatus === 'active' ? 'activated' : 'deactivated'));
+        $this->dispatch('notify', message: 'Category status updated');
+    }
+
     public function confirmDelete(int $id): void
     {
         $this->deletingId = $id;

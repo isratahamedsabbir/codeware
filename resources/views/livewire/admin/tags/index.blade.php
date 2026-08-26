@@ -83,15 +83,19 @@
                             {{-- Status --}}
                             <td class="px-4 py-3.5">
                                 @if ($tag->status === 'active')
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-600 border border-green-200">
+                                    <button type="button" wire:click="toggleStatus({{ $tag->id }})"
+                                        aria-label="Deactivate"
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-600 border border-green-200 cursor-pointer hover:bg-green-100">
                                         <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                                         Active
-                                    </span>
+                                    </button>
                                 @else
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-600 border border-red-200">
+                                    <button type="button" wire:click="toggleStatus({{ $tag->id }})"
+                                        aria-label="Activate"
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-600 border border-red-200 cursor-pointer hover:bg-red-100">
                                         <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
                                         Inactive
-                                    </span>
+                                    </button>
                                 @endif
                             </td>
 

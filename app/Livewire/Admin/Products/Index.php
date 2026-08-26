@@ -61,6 +61,18 @@ class Index extends Component
         $this->js('window.open('.json_encode($url).', \'_blank\')');
     }
 
+    public function toggleStatus(int $id): void
+    {
+        $product = Product::with('page')->findOrFail($id);
+        $newStatus = $product->status === 'active' ? 'inactive' : 'active';
+
+        $product->update(['status' => $newStatus]);
+        $product->page?->update(['status' => $newStatus]);
+
+        AdminActivity::log('updated', "Product #{$product->id}: {$product->name} ".($newStatus === 'active' ? 'activated' : 'deactivated'));
+        $this->dispatch('notify', message: 'Product status updated');
+    }
+
     public function confirmDelete(int $id): void
     {
         $this->deletingId = $id;

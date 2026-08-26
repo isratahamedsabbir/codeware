@@ -61,21 +61,6 @@
         {{-- ── SIDEBAR ── --}}
         <div class="w-[320px] shrink-0 space-y-4">
 
-            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
-                <div
-                    class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                    Tag Settings
-                </div>
-                <div class="px-4 py-3">
-                    <flux:field>
-                        <flux:label>Status</flux:label>
-                        <flux:select wire:model="status">
-                            <flux:select.option value="active">Active</flux:select.option>
-                            <flux:select.option value="inactive">Inactive</flux:select.option>
-                        </flux:select>
-                    </flux:field>
-                </div>
-            </div>
 
             {{-- Footer --}}
             <div class="flex justify-end items-center gap-3 border-t border-zinc-100 flex-wrap">

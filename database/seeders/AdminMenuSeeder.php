@@ -51,6 +51,7 @@ class AdminMenuSeeder extends Seeder
 
         $this->group('Content', 8, [
             ['Pages', 'document', 'admin.pages'],
+            ['CMS', 'squares-plus', 'admin.cms'],
         ]);
 
         $this->group('Localization', 9, [

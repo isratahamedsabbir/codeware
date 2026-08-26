@@ -3,6 +3,10 @@
 namespace App\Livewire\Admin\Pages;
 
 use App\Models\Page;
+use App\Models\Post;
+use App\Models\PostCategory;
+use App\Models\Product;
+use App\Models\ProductCategory;
 use App\Support\AdminActivity;
 use App\Support\PageCascade;
 use Livewire\Component;
@@ -62,6 +66,31 @@ class Index extends Component
 
         $url = config('cms.editor_base_url')."/puck/edit/{$page->type}/{$pageId}#token={$token}";
         $this->js('window.open('.json_encode($url).', \'_blank\')');
+    }
+
+    /**
+     * Flips this Page's status and, for a linked page (type != 'page'), the
+     * paired Product/Post/Category too — keeping both sides in sync the same
+     * way each entity's own form does.
+     */
+    public function toggleStatus(int $id): void
+    {
+        $page = Page::findOrFail($id);
+        $newStatus = $page->status === 'active' ? 'inactive' : 'active';
+
+        $page->update(['status' => $newStatus]);
+
+        $entity = match ($page->type) {
+            'product' => Product::find($page->product_id),
+            'post' => Post::find($page->post_id),
+            'product_category' => ProductCategory::find($page->category_id),
+            'post_category' => PostCategory::find($page->category_id),
+            default => null,
+        };
+        $entity?->update(['status' => $newStatus]);
+
+        AdminActivity::log('updated', "Page #{$page->id}: {$page->title} ".($newStatus === 'active' ? 'activated' : 'deactivated'));
+        $this->dispatch('notify', message: 'Page status updated');
     }
 
     public function confirmDelete(int $id): void

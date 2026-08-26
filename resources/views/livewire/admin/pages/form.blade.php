@@ -150,15 +150,6 @@
                 </div>
                 <div class="px-4 py-3 border-b border-zinc-50">
                     <flux:field>
-                        <flux:label>Status</flux:label>
-                        <flux:select wire:model="status">
-                            <flux:select.option value="active">Active</flux:select.option>
-                            <flux:select.option value="inactive">Inactive</flux:select.option>
-                        </flux:select>
-                    </flux:field>
-                </div>
-                <div class="px-4 py-3 border-b border-zinc-50">
-                    <flux:field>
                         <flux:label>Template</flux:label>
                         <flux:input wire:model="template" placeholder="puck" />
                     </flux:field>

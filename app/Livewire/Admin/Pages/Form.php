@@ -53,9 +53,6 @@ class Form extends Component
     #[Validate('nullable|string')]
     public string $seo_description = '';
 
-    #[Validate('in:active,inactive')]
-    public string $status = 'active';
-
     #[Validate('nullable|string|max:100')]
     public string $template = 'puck';
 
@@ -91,7 +88,6 @@ class Form extends Component
             $this->slug = $page->slug;
             $this->seo_title = $page->seo_title ?? '';
             $this->seo_description = $page->seo_description ?? '';
-            $this->status = $page->status;
             $this->template = $page->template ?? 'puck';
             $this->sort_order = $page->sort_order;
             $this->og_image = $page->og_image ?? null;
@@ -212,7 +208,6 @@ class Form extends Component
             'user_id' => auth()->id(),
             'title' => array_filter(['en' => $this->title_en, 'bn' => $this->title_bn]),
             'slug' => $this->slug,
-            'status' => $this->status,
             'template' => $this->template ?: 'puck',
             'sort_order' => $this->sort_order,
             'og_image' => $this->og_image ?: null,
@@ -230,6 +225,9 @@ class Form extends Component
             Page::findOrFail($this->pageId)->update($data);
             $this->dispatch('notify', message: 'Page updated successfully');
         } else {
+            // New pages stay inactive until switched on from the list — status is
+            // no longer editable from this form, see Index::toggleStatus().
+            $data['status'] = 'inactive';
             $page = Page::create($data);
             $this->pageId = $page->id;
             $this->dispatch('notify', message: 'Page created successfully');

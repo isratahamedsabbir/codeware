@@ -57,6 +57,7 @@ class MenuItem extends Model
         'admin.products' => 'products',
         'admin.product-categories' => 'products',
         'admin.pages' => 'pages',
+        'admin.cms' => 'cms',
         'admin.media-library' => 'media-library',
         'admin.file-manager' => 'file-manager',
         'admin.chat' => 'chat',

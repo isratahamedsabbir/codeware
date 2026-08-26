@@ -23,7 +23,6 @@ it('displays pages in the table', function () {
 it('can create a page', function () {
     Livewire::test(PagesForm::class)
         ->set('title_en', 'Contact')
-        ->set('status', 'inactive')
         ->call('save');
 
     expect(Page::whereJsonContains('title->en', 'Contact')->exists())->toBeTrue();

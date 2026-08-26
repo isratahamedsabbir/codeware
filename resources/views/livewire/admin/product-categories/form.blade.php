@@ -111,15 +111,6 @@
                     <x-media-picker model="icon" label="Icon" placeholder="Select icon image from library"
                         :picker-id="$iconPickerId" />
                 </div>
-                <div class="px-4 py-3 border-b border-zinc-50">
-                    <flux:field>
-                        <flux:label>Status</flux:label>
-                        <flux:select wire:model="status">
-                            <flux:select.option value="active">Active</flux:select.option>
-                            <flux:select.option value="inactive">Inactive</flux:select.option>
-                        </flux:select>
-                    </flux:field>
-                </div>
                 <div class="px-4 py-3">
                     <flux:field>
                         <flux:label>Sort Order</flux:label>

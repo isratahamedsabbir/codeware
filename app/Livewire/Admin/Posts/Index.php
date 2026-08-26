@@ -54,6 +54,23 @@ class Index extends Component
         $this->js('window.open('.json_encode($url).', \'_blank\')');
     }
 
+    public function toggleStatus(int $id): void
+    {
+        $post = Post::with('page')->findOrFail($id);
+        $newStatus = $post->status === 'active' ? 'inactive' : 'active';
+
+        $post->update([
+            'status' => $newStatus,
+            // Fixed at first publish — reactivating a previously-published post
+            // shouldn't reset "when was this first published".
+            'published_at' => $newStatus === 'active' ? ($post->published_at ?? now()) : $post->published_at,
+        ]);
+        $post->page?->update(['status' => $newStatus]);
+
+        AdminActivity::log('updated', "Post #{$post->id}: {$post->title} ".($newStatus === 'active' ? 'activated' : 'deactivated'));
+        $this->dispatch('notify', message: 'Post status updated');
+    }
+
     public function confirmDelete(int $id): void
     {
         $this->deletingId = $id;

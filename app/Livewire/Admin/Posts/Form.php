@@ -48,9 +48,6 @@ class Form extends Component
     #[Validate('nullable|integer|exists:categories,id,type,post')]
     public ?int $category_id = null;
 
-    #[Validate('in:active,inactive')]
-    public string $status = 'inactive';
-
     #[Validate('nullable|array')]
     public array $tag_ids = [];
 
@@ -71,7 +68,6 @@ class Form extends Component
             $this->description_en = $post->getTranslation('description', 'en', false) ?? '';
             $this->description_bn = $post->getTranslation('description', 'bn', false) ?? '';
             $this->category_id = $post->category_id;
-            $this->status = $post->status;
             $this->featured_image = $post->featured_image ?? '';
             $this->tag_ids = $post->tags->pluck('id')->all();
 
@@ -210,15 +206,16 @@ class Form extends Component
             'slug' => $this->slug,
             'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
             'category_id' => $this->category_id,
-            'status' => $this->status,
             'featured_image' => $this->featured_image ?: null,
-            'published_at' => $this->status === 'active' ? now() : null,
         ];
 
         if ($this->postId) {
             $post = Post::findOrFail($this->postId);
             $post->update($data);
         } else {
+            // New posts stay inactive until switched on from the list — status is
+            // no longer editable from this form, see Index::toggleStatus().
+            $data['status'] = 'inactive';
             $post = Post::create($data);
             $this->postId = $post->id;
         }
@@ -231,7 +228,7 @@ class Form extends Component
                 'user_id' => auth()->id(),
                 'title' => array_filter(['en' => $this->title_en, 'bn' => $this->title_bn]),
                 'slug' => $this->slug,
-                'status' => $this->status,
+                'status' => $post->status,
                 'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
             ]
         );

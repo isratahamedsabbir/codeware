@@ -44,9 +44,6 @@ class Form extends Component
     #[Validate('nullable|integer|min:0')]
     public int $sort_order = 0;
 
-    #[Validate('in:active,inactive')]
-    public string $status = 'active';
-
     public function mount(?int $id = null): void
     {
         if ($id) {
@@ -58,7 +55,6 @@ class Form extends Component
             $this->description_en = $category->getTranslation('description', 'en', false) ?? '';
             $this->description_bn = $category->getTranslation('description', 'bn', false) ?? '';
             $this->sort_order = $category->sort_order;
-            $this->status = $category->status;
 
             // SEO now lives entirely on the paired Page record, edited via the Page
             // screen — this form only keeps the Page in sync on title/slug/status.
@@ -121,7 +117,6 @@ class Form extends Component
             'slug' => $this->slug,
             'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
             'sort_order' => $this->sort_order,
-            'status' => $this->status,
         ];
 
         if ($this->categoryId) {
@@ -129,6 +124,9 @@ class Form extends Component
             $category->update($data);
             $this->dispatch('notify', message: 'Category updated successfully');
         } else {
+            // New categories stay inactive until switched on from the list —
+            // status is no longer editable from this form, see Index::toggleStatus().
+            $data['status'] = 'inactive';
             $category = PostCategory::create($data);
             $this->categoryId = $category->id;
             $this->dispatch('notify', message: 'Category created successfully');
@@ -140,7 +138,7 @@ class Form extends Component
                 'user_id' => auth()->id(),
                 'title' => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
                 'slug' => $this->slug,
-                'status' => $this->status,
+                'status' => $category->status,
                 'sort_order' => $this->sort_order,
                 'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
             ]

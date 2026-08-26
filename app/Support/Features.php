@@ -19,6 +19,7 @@ class Features
         'products' => 'Products',
         'orders' => 'Orders & Reports',
         'pages' => 'Pages',
+        'cms' => 'CMS',
         'media-library' => 'Media Library',
         'file-manager' => 'File Manager',
         'chat' => 'Chat',

@@ -23,7 +23,6 @@ it('displays posts in the table', function () {
 it('can create a post with metadata', function () {
     Livewire::test(PostsForm::class)
         ->set('title_en', 'My First Post')
-        ->set('status', 'inactive')
         ->call('save');
 
     expect(Post::whereJsonContains('title->en', 'My First Post')->exists())->toBeTrue();

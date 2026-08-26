@@ -12,7 +12,9 @@ class Index extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $statusFilter = '';
+
     public ?int $deletingId = null;
 
     public function updatedSearch(): void
@@ -23,6 +25,17 @@ class Index extends Component
     public function updatedStatusFilter(): void
     {
         $this->resetPage();
+    }
+
+    public function toggleStatus(int $id): void
+    {
+        $tag = Tag::findOrFail($id);
+        $newStatus = $tag->status === 'active' ? 'inactive' : 'active';
+
+        $tag->update(['status' => $newStatus]);
+
+        AdminActivity::log('updated', "Tag: {$tag->name} ".($newStatus === 'active' ? 'activated' : 'deactivated'));
+        $this->dispatch('notify', message: 'Tag status updated');
     }
 
     public function confirmDelete(int $id): void

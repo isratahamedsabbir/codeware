@@ -41,9 +41,6 @@ class Form extends Component
     #[Validate('nullable|integer|exists:categories,id,type,product')]
     public ?int $product_category_id = null;
 
-    #[Validate('in:active,inactive')]
-    public string $status = 'active';
-
     #[Validate('required|numeric|min:0')]
     public string $price = '0';
 
@@ -72,7 +69,6 @@ class Form extends Component
             $this->name_bn = $product->getTranslation('name', 'bn', false) ?? '';
             $this->slug = $product->slug;
             $this->product_category_id = $product->product_category_id;
-            $this->status = $product->status;
             $this->price = (string) $product->price;
             $this->is_featured = (bool) $product->is_featured;
             $this->sort_order = $product->sort_order;
@@ -206,7 +202,6 @@ class Form extends Component
             'product_category_id' => $this->product_category_id,
             'name' => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
             'slug' => $this->slug,
-            'status' => $this->status,
             'price' => $this->price,
             'is_featured' => $this->is_featured,
             'sort_order' => $this->sort_order,
@@ -218,6 +213,9 @@ class Form extends Component
             $product = Product::findOrFail($this->productId);
             $product->update($data);
         } else {
+            // New products stay inactive until switched on from the list — status
+            // is no longer editable from this form, see Index::toggleStatus().
+            $data['status'] = 'inactive';
             $product = Product::create($data);
             $this->productId = $product->id;
         }
@@ -228,7 +226,7 @@ class Form extends Component
                 'user_id' => auth()->id(),
                 'title' => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
                 'slug' => $this->slug,
-                'status' => $this->status,
+                'status' => $product->status,
                 'sort_order' => $this->sort_order,
                 'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
             ]

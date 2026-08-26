@@ -118,15 +118,6 @@
                 </div>
                 <div class="px-4 py-3 border-b border-zinc-50">
                     <flux:field>
-                        <flux:label>Status</flux:label>
-                        <flux:select wire:model="status">
-                            <flux:select.option value="active">Active</flux:select.option>
-                            <flux:select.option value="inactive">Inactive</flux:select.option>
-                        </flux:select>
-                    </flux:field>
-                </div>
-                <div class="px-4 py-3 border-b border-zinc-50">
-                    <flux:field>
                         <flux:label>Price</flux:label>
                         <flux:input type="number" wire:model="price" min="0" step="0.01" />
                         <flux:error name="price" />

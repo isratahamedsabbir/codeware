@@ -40,6 +40,13 @@ Route::middleware('feature:pages')->group(function () {
     Route::get('/pages/{id}/edit', App\Livewire\Admin\Pages\Form::class)->name('pages.edit');
 });
 
+// CMS — freeform titles/descriptions/buttons/cards/images sections, grouped by page
+Route::middleware('feature:cms')->group(function () {
+    Route::get('/cms', App\Livewire\Admin\Cms\Index::class)->name('cms');
+    Route::get('/cms/create', App\Livewire\Admin\Cms\Form::class)->name('cms.create');
+    Route::get('/cms/{id}/edit', App\Livewire\Admin\Cms\Form::class)->name('cms.edit');
+});
+
 // Media Library (content — Staff included)
 Route::middleware('feature:media-library')->group(function () {
     Route::get('/media-library', App\Livewire\Admin\MediaLibrary\Index::class)->name('media-library');
