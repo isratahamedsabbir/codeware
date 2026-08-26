@@ -100,10 +100,12 @@ it('blocks staff from the orders and reports screens', function () {
 
     $this->actingAs($staff)->get(route('admin.orders'))->assertForbidden();
     $this->actingAs($staff)->get(route('admin.reports'))->assertForbidden();
+    $this->actingAs($staff)->get(route('admin.coupons'))->assertForbidden();
 });
 
 it('is blocked when the orders feature is disabled', function () {
     Setting::set('feature_orders', false);
 
     $this->get(route('admin.orders'))->assertNotFound();
+    $this->get(route('admin.coupons'))->assertNotFound();
 });

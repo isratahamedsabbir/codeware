@@ -118,7 +118,7 @@ Route::middleware('can:access-admin-system')->group(function () {
         Route::get('/advance/robots', Robots::class)->name('advance.robots');
     });
 
-    // Orders & Reports
+    // Orders, Reports & Coupons
     Route::middleware('feature:orders')->group(function () {
         Route::get('/orders', App\Livewire\Admin\Orders\Index::class)->name('orders');
         Route::get('/orders/{id}', Show::class)->name('orders.show');
@@ -127,6 +127,10 @@ Route::middleware('can:access-admin-system')->group(function () {
 
         Route::get('/reports', App\Livewire\Admin\Reports\Index::class)->name('reports');
         Route::get('/reports/export', [ReportExportController::class, 'export'])->name('reports.export');
+
+        Route::get('/coupons', App\Livewire\Admin\Coupons\Index::class)->name('coupons');
+        Route::get('/coupons/create', App\Livewire\Admin\Coupons\Form::class)->name('coupons.create');
+        Route::get('/coupons/{id}/edit', App\Livewire\Admin\Coupons\Form::class)->name('coupons.edit');
     });
 });
 
