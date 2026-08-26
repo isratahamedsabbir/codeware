@@ -73,6 +73,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Display Timezone
+    |--------------------------------------------------------------------------
+    |
+    | Dates are always stored and computed internally in the timezone above
+    | (UTC). This is the fallback timezone used to *display* dates to users
+    | before an admin picks one in Settings — see the "timezone" setting and
+    | the display_timezone() helper (app/Support/helpers.php).
+    |
+    */
+
+    'display_timezone' => env('DISPLAY_TIMEZONE', 'UTC'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |

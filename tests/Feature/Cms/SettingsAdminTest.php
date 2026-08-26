@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Admin\Settings\Index as SettingsIndex;
+use App\Models\Language;
 use App\Models\Setting;
 use App\Models\User;
 use Livewire\Livewire;
@@ -274,4 +275,40 @@ it('saves currency settings through the form', function () {
     expect(Setting::where('key', 'currency_symbol')->value('value'))->toBe('$');
     expect(Setting::where('key', 'currency_position')->value('value'))->toBe('right');
     expect(Setting::where('key', 'decimal_places')->value('value'))->toBe('2');
+});
+
+it('renders app locale as a select populated from active languages, not a free-text input', function () {
+    Language::create(['code' => 'en', 'name' => 'English', 'native_name' => 'English', 'is_active' => true]);
+    Language::create(['code' => 'bn', 'name' => 'Bengali', 'native_name' => 'বাংলা', 'is_active' => true]);
+    Setting::factory()->create(['key' => 'app_locale', 'value' => 'en', 'group' => 'localization', 'type' => 'string']);
+
+    Livewire::test(SettingsIndex::class)
+        ->assertSee('App Locale')
+        ->assertSeeHtml('<option value="en">English</option>')
+        ->assertSeeHtml('<option value="bn">বাংলা</option>');
+});
+
+it('renders site theme as a select populated from available theme folders, not a free-text input', function () {
+    Setting::factory()->create(['key' => 'site_theme', 'value' => 'default', 'group' => 'frontend', 'type' => 'select']);
+
+    Livewire::test(SettingsIndex::class)
+        ->assertSee('Site Theme')
+        ->assertSeeHtml('<option value="default">Default</option>');
+});
+
+it('does not double-render the label for image settings', function () {
+    Setting::factory()->create(['key' => 'site_icon_white', 'value' => '', 'group' => 'images', 'type' => 'string']);
+
+    $html = Livewire::test(SettingsIndex::class)->html();
+
+    expect(substr_count($html, 'White Icon'))->toBe(1)
+        ->and($html)->not->toContain('Site Icon White');
+});
+
+it('renders timezone as a select grouped by region, not a free-text input', function () {
+    Setting::factory()->create(['key' => 'timezone', 'value' => 'UTC', 'group' => 'localization', 'type' => 'select']);
+
+    Livewire::test(SettingsIndex::class)
+        ->assertSee('Timezone')
+        ->assertSeeHtml('<option value="Asia/Dhaka">Asia/Dhaka</option>');
 });

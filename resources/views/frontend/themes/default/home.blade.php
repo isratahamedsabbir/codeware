@@ -124,7 +124,7 @@
 
     <footer class="border-t border-zinc-100 bg-zinc-50 px-6 py-10">
         <div class="mx-auto flex max-w-6xl flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
-            <p class="text-sm text-zinc-500">&copy; {{ now()->year }} {{ $siteName }}. {{ __('All rights reserved.') }}</p>
+            <p class="text-sm text-zinc-500">&copy; {{ now()->setTimezone(display_timezone())->year }} {{ $siteName }}. {{ __('All rights reserved.') }}</p>
             @if ($socials->isNotEmpty())
                 <div class="flex gap-4">
                     @foreach ($socials as $social)

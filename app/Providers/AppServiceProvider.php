@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\MediaLibrary;
 use App\Policies\MediaLibraryPolicy;
 use App\Support\DatabaseTranslationLoader;
+use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
@@ -132,6 +133,18 @@ class AppServiceProvider extends ServiceProvider
     protected function configureDefaults(): void
     {
         Date::use(CarbonImmutable::class);
+
+        // Dates are stored/computed internally in UTC (config('app.timezone')) — this
+        // formats one for display in the admin's configured timezone (see the "timezone"
+        // setting and display_timezone()). Registered on both Carbon and CarbonImmutable
+        // since Date::use() above makes Eloquent/now() produce CarbonImmutable, but some
+        // dates (e.g. from third-party packages) may still be plain Carbon.
+        $toDisplay = function (string $format = 'M d, Y g:i A') {
+            return $this->setTimezone(display_timezone())->format($format);
+        };
+
+        Carbon::macro('toDisplay', $toDisplay);
+        CarbonImmutable::macro('toDisplay', $toDisplay);
 
         DB::prohibitDestructiveCommands(
             app()->isProduction(),

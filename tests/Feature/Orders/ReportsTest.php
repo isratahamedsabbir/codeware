@@ -2,6 +2,7 @@
 
 use App\Livewire\Admin\Reports\Index as ReportsIndex;
 use App\Models\Order;
+use App\Models\Setting;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -28,6 +29,22 @@ it('filters the report by date range', function () {
         ->set('fromDate', now()->subDays(2)->toDateString())
         ->assertSee('Recent Order')
         ->assertDontSee('Old Order');
+});
+
+it('filters the report by date range using the admin display timezone, not raw UTC', function () {
+    Setting::set('timezone', 'Asia/Dhaka');
+
+    // 2026-01-14 20:00 UTC is 2026-01-15 02:00 in Dhaka (UTC+6).
+    Order::factory()->create(['customer_name' => 'Dhaka Midnight Order', 'created_at' => '2026-01-14 20:00:00']);
+    Order::factory()->create(['customer_name' => 'Different Day Order', 'created_at' => '2026-01-13 10:00:00']);
+
+    Livewire::test(ReportsIndex::class)
+        ->set('fromDate', '2026-01-15')
+        ->set('toDate', '2026-01-15')
+        ->assertSee('Dhaka Midnight Order')
+        ->assertDontSee('Different Day Order');
+
+    Setting::set('timezone', 'UTC');
 });
 
 it('exports the report as csv honoring active filters', function () {

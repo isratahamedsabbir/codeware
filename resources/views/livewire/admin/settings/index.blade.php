@@ -55,8 +55,13 @@
                         <flux:heading size="sm" class="mb-3 capitalize">{{ $group ?? 'General' }}</flux:heading> 
                         <div class="space-y-4 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 bg-white">
                             @foreach ($items as $setting)
-                                <flux:field> 
-                                    <flux:label>{{ ucwords(str_replace('_', ' ', $setting->key)) }}</flux:label>
+                                <flux:field>
+                                    @php
+                                        $isMediaPicker = in_array($setting->key, ['site_icon', 'site_icon_white', 'favicon', 'loader'], true);
+                                    @endphp
+                                    @unless ($isMediaPicker)
+                                        <flux:label>{{ ucwords(str_replace('_', ' ', $setting->key)) }}</flux:label>
+                                    @endunless
                                     @if ($setting->type === 'boolean')
                                         <div class="flex items-center gap-2">
                                             <input type="checkbox"
@@ -72,6 +77,30 @@
                                                  :style="'background-color: ' + ($wire.settings['{{ $setting->key }}'] || '#ffffff')"></div>
                                             <flux:input wire:model="settings.{{ $setting->key }}" placeholder="#000000" class="flex-1 font-mono" />
                                         </div>
+                                    @elseif ($setting->key === 'app_locale')
+                                        <select wire:model="settings.{{ $setting->key }}"
+                                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                                            @foreach (\App\Support\Locale::active() as $language)
+                                                <option value="{{ $language->code }}">{{ $language->native_name ?: $language->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <flux:text class="text-xs text-zinc-500">
+                                            {{ __('The default language the site renders in. Manage languages under the Localization menu.') }}
+                                        </flux:text>
+                                    @elseif ($setting->key === 'timezone')
+                                        <select wire:model="settings.{{ $setting->key }}"
+                                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                                            @foreach (\App\Support\Timezones::grouped() as $region => $zones)
+                                                <optgroup label="{{ $region }}">
+                                                    @foreach ($zones as $zone)
+                                                        <option value="{{ $zone }}">{{ $zone }}</option>
+                                                    @endforeach
+                                                </optgroup>
+                                            @endforeach
+                                        </select>
+                                        <flux:text class="text-xs text-zinc-500">
+                                            {{ __('Dates are stored in UTC and shown to users in this timezone.') }}
+                                        </flux:text>
                                     @elseif ($setting->key === 'site_theme')
                                         <select wire:model="settings.{{ $setting->key }}"
                                             class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">

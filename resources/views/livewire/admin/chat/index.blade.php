@@ -110,7 +110,7 @@
                         <div class="max-w-[70%] rounded-2xl px-3.5 py-2 text-sm {{ $isMine ? 'bg-secondary text-white rounded-br-sm' : 'bg-zinc-100 text-zinc-800 rounded-bl-sm' }}">
                             <div class="whitespace-pre-wrap wrap-break-word">{{ $message->body }}</div>
                             <div class="text-[10px] mt-1 {{ $isMine ? 'text-white/70' : 'text-zinc-400' }}">
-                                {{ $message->created_at->format('g:i A') }}
+                                {{ $message->created_at->toDisplay('g:i A') }}
                             </div>
                         </div>
                     </div>

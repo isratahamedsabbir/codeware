@@ -60,7 +60,7 @@
                     @forelse ($logs as $log)
                         <tr class="hover:bg-indigo-50/30 transition-colors">
                             <td class="px-4 py-3 text-sm text-zinc-500 whitespace-nowrap">
-                                {{ $log->created_at->format('M d, Y h:i A') }}
+                                {{ $log->created_at->toDisplay('M d, Y h:i A') }}
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">

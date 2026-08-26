@@ -75,7 +75,7 @@
                 <div class="invoice-title">INVOICE</div>
                 <div class="invoice-meta">
                     #{{ $order->order_number }}<br>
-                    {{ $order->created_at->format('M d, Y') }}
+                    {{ $order->created_at->toDisplay('M d, Y') }}
                 </div>
             </td>
         </tr>
@@ -176,7 +176,7 @@
     </table>
 
     <div class="footer">
-        &copy; {{ $order->created_at->format('Y') }} {{ \App\Models\Setting::get('site_name', 'Codeware') }}. All rights reserved.
+        &copy; {{ $order->created_at->toDisplay('Y') }} {{ \App\Models\Setting::get('site_name', 'Codeware') }}. All rights reserved.
     </div>
 
 </body>

@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Reports;
 
 use App\Models\Order;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -72,8 +73,8 @@ class Index extends Component
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->when($this->paymentStatusFilter, fn ($q) => $q->where('payment_status', $this->paymentStatusFilter))
             ->when($this->paymentMethodFilter, fn ($q) => $q->where('payment_method', $this->paymentMethodFilter))
-            ->when($this->fromDate, fn ($q) => $q->whereDate('created_at', '>=', $this->fromDate))
-            ->when($this->toDate, fn ($q) => $q->whereDate('created_at', '<=', $this->toDate));
+            ->when($this->fromDate, fn ($q) => $q->where('created_at', '>=', CarbonImmutable::parse($this->fromDate, display_timezone())->startOfDay()->utc()))
+            ->when($this->toDate, fn ($q) => $q->where('created_at', '<=', CarbonImmutable::parse($this->toDate, display_timezone())->endOfDay()->utc()));
     }
 
     public function render()

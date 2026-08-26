@@ -41,6 +41,24 @@ it('filters orders by payment method', function () {
         ->assertDontSee('Cod Customer');
 });
 
+it('filters orders by date range using the admin display timezone, not raw UTC', function () {
+    Setting::set('timezone', 'Asia/Dhaka');
+
+    // 2026-01-14 20:00 UTC is 2026-01-15 02:00 in Dhaka (UTC+6) — a naive
+    // whereDate('created_at', '2026-01-15') would miss this row since the
+    // stored UTC date is still the 14th.
+    $order = Order::factory()->create(['customer_name' => 'Dhaka Midnight Order', 'created_at' => '2026-01-14 20:00:00']);
+    Order::factory()->create(['customer_name' => 'Different Day Order', 'created_at' => '2026-01-13 10:00:00']);
+
+    Livewire::test(OrdersIndex::class)
+        ->set('fromDate', '2026-01-15')
+        ->set('toDate', '2026-01-15')
+        ->assertSee('Dhaka Midnight Order')
+        ->assertDontSee('Different Day Order');
+
+    Setting::set('timezone', 'UTC');
+});
+
 it('searches orders by order number or customer', function () {
     $order = Order::factory()->create(['customer_name' => 'Findable Customer']);
     Order::factory()->create(['customer_name' => 'Someone Else']);

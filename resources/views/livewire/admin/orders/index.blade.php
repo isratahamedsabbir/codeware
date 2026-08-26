@@ -87,7 +87,7 @@
                                     {{ ucfirst($order->status) }}
                                 </span>
                             </td>
-                            <td class="px-4 py-3.5 text-xs text-zinc-500">{{ $order->created_at->format('M d, Y') }}</td>
+                            <td class="px-4 py-3.5 text-xs text-zinc-500">{{ $order->created_at->toDisplay('M d, Y') }}</td>
                             <td class="px-4 py-3.5">
                                 <div class="flex items-center justify-end gap-1.5">
                                     <div class="relative group">

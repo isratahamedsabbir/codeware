@@ -18,7 +18,7 @@
             {{-- Customer & shipping --}}
             <div class="bg-white rounded-lg border border-zinc-100 shadow-sm p-6">
                 <flux:heading size="lg" class="mb-1">Order {{ $order->order_number }}</flux:heading>
-                <p class="text-sm text-zinc-500 mb-5">Placed {{ $order->created_at->format('M d, Y g:i A') }}</p>
+                <p class="text-sm text-zinc-500 mb-5">Placed {{ $order->created_at->toDisplay('M d, Y g:i A') }}</p>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
@@ -105,7 +105,7 @@
                                 <td class="px-6 py-3 text-sm text-zinc-600">{{ \App\Support\PaymentMethods::label($transaction->payment_method) }}</td>
                                 <td class="px-6 py-3 text-sm text-zinc-900 text-right">{{ number_format((float) $transaction->amount, 2) }}</td>
                                 <td class="px-6 py-3 text-sm text-zinc-600">{{ ucfirst($transaction->status) }}</td>
-                                <td class="px-6 py-3 text-xs text-zinc-500">{{ $transaction->paid_at?->format('M d, Y g:i A') ?? '—' }}</td>
+                                <td class="px-6 py-3 text-xs text-zinc-500">{{ $transaction->paid_at?->toDisplay('M d, Y g:i A') ?? '—' }}</td>
                             </tr>
                         @empty
                             <tr>

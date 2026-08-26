@@ -113,7 +113,7 @@
                                 <td class="px-4 py-3 text-sm text-zinc-600">{{ ucfirst($order->payment_status) }}</td>
                                 <td class="px-4 py-3 text-sm text-zinc-600">{{ ucfirst($order->status) }}</td>
                                 <td class="px-4 py-3 text-sm font-medium text-zinc-900 text-right">{{ number_format((float) $order->total, 2) }}</td>
-                                <td class="px-4 py-3 text-xs text-zinc-500">{{ $order->created_at->format('M d, Y') }}</td>
+                                <td class="px-4 py-3 text-xs text-zinc-500">{{ $order->created_at->toDisplay('M d, Y') }}</td>
                             </tr>
                         @empty
                             <tr>

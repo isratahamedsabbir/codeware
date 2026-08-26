@@ -309,7 +309,7 @@
                                                     class="text-[10px] font-bold uppercase tracking-widest text-slate-400">
                                                     Uploaded</dt>
                                                 <dd class="mt-0.5 text-xs font-semibold text-slate-700">
-                                                    {{ $selectedMedia->created_at->format('M j, Y') }}</dd>
+                                                    {{ $selectedMedia->created_at->toDisplay('M j, Y') }}</dd>
                                             </div>
                                             <div>
                                                 <dt

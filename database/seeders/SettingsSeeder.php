@@ -146,6 +146,7 @@ class SettingsSeeder extends Seeder
 
             // ── Localization ──
             ['key' => 'app_locale',               'value' => 'en', 'type' => 'string', 'group' => 'localization', 'is_public' => true],
+            ['key' => 'timezone',                 'value' => 'UTC', 'type' => 'select', 'group' => 'localization', 'is_public' => true],
 
             // ── Frontend ──
             ['key' => 'site_theme',               'value' => 'default', 'type' => 'select', 'group' => 'frontend', 'is_public' => true],

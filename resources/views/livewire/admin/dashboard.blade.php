@@ -20,7 +20,7 @@
             <span class="text-zinc-300 select-none">&bull;</span>
             <span class="inline-flex items-center gap-1.5">
                 <flux:icon.calendar class="size-4 text-zinc-400" />
-                {{ now()->format('l, d F Y') }}
+                {{ now()->toDisplay('l, d F Y') }}
             </span>
         </div>
         {{-- Quick Stat/Status Badge --}}
