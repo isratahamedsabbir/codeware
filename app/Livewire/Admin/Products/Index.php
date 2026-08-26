@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Products;
 
+use App\Models\Page;
 use App\Models\Product;
 use App\Support\AdminActivity;
 use App\Support\PageCascade;
@@ -38,9 +39,15 @@ class Index extends Component
     public function openPuckEditor(int $productId): void
     {
         $product = Product::with('page')->findOrFail($productId);
-        if (! $product->page) {
-            return;
-        }
+
+        $page = $product->page ?? Page::create([
+            'user_id' => auth()->id(),
+            'product_id' => $product->id,
+            'type' => 'product',
+            'title' => $product->name,
+            'slug' => $product->slug,
+            'status' => $product->status,
+        ]);
 
         auth()->user()->tokens()->where('name', 'puck-builder')->delete();
 
@@ -50,7 +57,7 @@ class Index extends Component
             now()->addMinutes(config('app.puck_session', 5))
         )->plainTextToken;
 
-        $url = config('cms.editor_base_url')."/puck/edit/product/{$product->page->id}#token={$token}";
+        $url = config('cms.editor_base_url')."/puck/edit/product/{$page->id}#token={$token}";
         $this->js('window.open('.json_encode($url).', \'_blank\')');
     }
 

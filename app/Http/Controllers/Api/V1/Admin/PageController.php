@@ -18,6 +18,7 @@ class PageController extends Controller
             ->get()
             ->map(fn ($page) => [
                 'id' => $page->id,
+                'type' => $page->type,
                 'slug' => $page->slug,
                 'title' => $page->title,
                 'status' => $page->status,
@@ -36,6 +37,10 @@ class PageController extends Controller
         return response()->json([
             'data' => [
                 'id' => $page->id,
+                'type' => $page->type,
+                'product_id' => $page->product_id,
+                'post_id' => $page->post_id,
+                'category_id' => $page->category_id,
                 'slug' => $page->slug,
                 'title' => $page->title,
                 'content' => $page->content,
@@ -65,13 +70,13 @@ class PageController extends Controller
             'title.en' => 'required|string|max:255',
             'title.bn' => 'nullable|string|max:255',
             'slug' => 'nullable|string|unique:pages,slug',
-            'status' => 'sometimes|in:draft,published',
+            'status' => 'sometimes|in:active,inactive',
             'template' => 'sometimes|nullable|string|max:100',
             'puck_data' => 'nullable|array',
         ]);
 
         $validated['user_id'] = $request->user()->id;
-        $validated['status'] = $validated['status'] ?? 'draft';
+        $validated['status'] = $validated['status'] ?? 'inactive';
         $validated['template'] = $validated['template'] ?? 'puck';
 
         $page = Page::create($validated);
@@ -97,7 +102,7 @@ class PageController extends Controller
             'no_index' => 'sometimes|boolean',
             'no_follow' => 'sometimes|boolean',
             'puck_data' => 'sometimes|nullable|array',
-            'status' => 'sometimes|in:draft,published',
+            'status' => 'sometimes|in:active,inactive',
             'template' => 'sometimes|nullable|string|max:100',
             'slug' => 'sometimes|string|unique:pages,slug,'.$page->id,
         ]);

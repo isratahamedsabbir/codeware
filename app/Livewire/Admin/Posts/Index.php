@@ -39,7 +39,7 @@ class Index extends Component
             'type' => 'post',
             'title' => $post->title,
             'slug' => $post->slug,
-            'status' => $post->status === 'published' ? 'active' : 'inactive',
+            'status' => $post->status,
         ]);
 
         auth()->user()->tokens()->where('name', 'puck-builder')->delete();

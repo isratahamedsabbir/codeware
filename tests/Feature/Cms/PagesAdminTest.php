@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Admin\Pages\Form as PagesForm;
 use App\Livewire\Admin\Pages\Index as PagesIndex;
 use App\Models\Page;
 use App\Models\User;
@@ -20,7 +21,7 @@ it('displays pages in the table', function () {
 });
 
 it('can create a page', function () {
-    Livewire::test(PagesIndex::class)
+    Livewire::test(PagesForm::class)
         ->set('title_en', 'Contact')
         ->set('status', 'inactive')
         ->call('save');
@@ -29,7 +30,7 @@ it('can create a page', function () {
 });
 
 it('validates english title is required', function () {
-    Livewire::test(PagesIndex::class)
+    Livewire::test(PagesForm::class)
         ->set('title_en', '')
         ->call('save')
         ->assertHasErrors(['title_en']);
@@ -56,15 +57,22 @@ it('can soft-delete a page', function () {
     expect(Page::withTrashed()->find($page->id))->not->toBeNull();
 });
 
-it('dispatches open-puck-editor event when opening puck editor for existing page', function () {
+it('opens the puck editor for an existing page', function () {
     $page = Page::factory()->create();
-    Livewire::test(PagesIndex::class)
-        ->call('openPuckEditor', $page->id)
-        ->assertDispatched('open-puck-editor');
+
+    $component = Livewire::test(PagesIndex::class)->call('openPuckEditor', $page->id);
+
+    $xjs = $component->effects['xjs'] ?? [];
+    expect($xjs[0]['expression'] ?? null)->toContain('\/puck\/edit\/page\/'.$page->id);
 });
 
-it('dispatches open-puck-editor event when opening puck editor for new page', function () {
-    Livewire::test(PagesIndex::class)
-        ->call('openPuckEditorNew')
-        ->assertDispatched('open-puck-editor');
+it('saves and opens the puck editor for a new page', function () {
+    $component = Livewire::test(PagesForm::class)
+        ->set('title_en', 'Brand New Page')
+        ->call('saveAndOpenPageBuilder');
+
+    expect(Page::whereJsonContains('title->en', 'Brand New Page')->exists())->toBeTrue();
+
+    $xjs = $component->effects['xjs'] ?? [];
+    expect($xjs[0]['expression'] ?? null)->toContain('\/puck\/edit\/page\/');
 });

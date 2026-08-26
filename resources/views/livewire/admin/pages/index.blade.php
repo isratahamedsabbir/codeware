@@ -2,16 +2,28 @@
 
     {{-- Header --}}
     <div class="flex items-center justify-between gap-3 p-4 border-b border-zinc-100">
-        {{-- Search --}}
-        <div class="relative max-w-xs">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" viewBox="0 0 24 24"
-                fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search pages…"
-                class="w-full pl-9 pr-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all" />
+        <div class="flex items-center gap-3">
+            {{-- Search --}}
+            <div class="relative max-w-xs">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search pages…"
+                    class="w-full pl-9 pr-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all" />
+            </div>
+
+            {{-- Type filter --}}
+            <select wire:model.live="typeFilter"
+                class="text-sm border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all">
+                <option value="all">All types</option>
+                @foreach (\App\Livewire\Admin\Pages\Index::TYPES as $value => $label)
+                    <option value="{{ $value }}">{{ $label }}</option>
+                @endforeach
+            </select>
         </div>
+
         <a href="{{ route('admin.pages.create') }}" wire:navigate
             class="admin-btn-success inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -43,17 +55,19 @@
             <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
                 <colgroup>
                     <col style="width:5%">
-                    <col style="width:27%">
-                    <col style="width:18%">
-                    <col style="width:12%">
-                    <col style="width:14%">
                     <col style="width:24%">
+                    <col style="width:15%">
+                    <col style="width:12%">
+                    <col style="width:11%">
+                    <col style="width:12%">
+                    <col style="width:21%">
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Title</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Slug</th>
+                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Type</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Template</th>
                         <th class="px-4 py-2.5 text-right text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
@@ -90,6 +104,22 @@
                             <td class="px-4 py-3.5">
                                 <span class="font-mono text-xs text-zinc-600 truncate block">
                                     {{ $page->slug }}
+                                </span>
+                            </td>
+
+                            {{-- Type --}}
+                            <td class="px-4 py-3.5">
+                                @php
+                                    $typeColors = [
+                                        'page' => 'bg-zinc-100 text-zinc-600 border-zinc-200',
+                                        'post' => 'bg-purple-50 text-purple-600 border-purple-200',
+                                        'product' => 'bg-emerald-50 text-emerald-600 border-emerald-200',
+                                        'product_category' => 'bg-amber-50 text-amber-600 border-amber-200',
+                                        'post_category' => 'bg-sky-50 text-sky-600 border-sky-200',
+                                    ];
+                                @endphp
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border {{ $typeColors[$page->type] ?? $typeColors['page'] }}">
+                                    {{ \App\Livewire\Admin\Pages\Index::TYPES[$page->type] ?? $page->type }}
                                 </span>
                             </td>
 
@@ -191,7 +221,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-16 text-center">
+                            <td colspan="7" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />

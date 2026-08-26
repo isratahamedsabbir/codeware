@@ -12,11 +12,35 @@ class Index extends Component
 {
     use WithPagination;
 
+    /**
+     * Human-readable labels for every Page::$type value — used for the type
+     * filter dropdown and the type badge in the table.
+     */
+    public const TYPES = [
+        'page' => 'Page',
+        'post' => 'Post',
+        'product' => 'Product',
+        'product_category' => 'Product Category',
+        'post_category' => 'Post Category',
+    ];
+
     public string $search = '';
+
+    /**
+     * 'all' or one of self::TYPES' keys. Defaults to 'page' so this screen keeps
+     * showing standalone pages by default — switch it to audit/manage the
+     * companion pages of products, posts, and categories from here too.
+     */
+    public string $typeFilter = 'page';
 
     public ?int $deletingId = null;
 
     public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedTypeFilter(): void
     {
         $this->resetPage();
     }
@@ -30,11 +54,13 @@ class Index extends Component
 
     public function openPuckEditor(int $pageId): void
     {
+        $page = Page::findOrFail($pageId);
+
         auth()->user()->tokens()->where('name', 'puck-builder')->delete();
 
         $token = auth()->user()->createToken('puck-builder', ['*'], now()->addMinutes(config('app.puck_session', 5)))->plainTextToken;
 
-        $url = config('cms.editor_base_url')."/puck/edit/page/{$pageId}#token={$token}";
+        $url = config('cms.editor_base_url')."/puck/edit/{$page->type}/{$pageId}#token={$token}";
         $this->js('window.open('.json_encode($url).', \'_blank\')');
     }
 
@@ -61,7 +87,7 @@ class Index extends Component
     {
         return view('livewire.admin.pages.index', [
             'pages' => Page::query()
-                ->where('type', 'page')
+                ->when($this->typeFilter !== 'all', fn ($q) => $q->where('type', $this->typeFilter))
                 ->when($this->search, fn ($q) => $q->where(function ($q) {
                     $q->where('title->en', 'like', "%{$this->search}%")
                         ->orWhere('title->bn', 'like', "%{$this->search}%")

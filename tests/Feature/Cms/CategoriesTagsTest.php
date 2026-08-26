@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Admin\PostCategories\Form as PostCategoriesForm;
 use App\Livewire\Admin\PostCategories\Index as PostCategoriesIndex;
 use App\Models\PostCategory;
 use App\Models\User;
@@ -23,7 +24,7 @@ it('displays existing blog categories', function () {
 });
 
 it('can create a blog category', function () {
-    Livewire::test(PostCategoriesIndex::class)
+    Livewire::test(PostCategoriesForm::class)
         ->set('name_en', 'PHP')
         ->set('description_en', 'PHP tutorials')
         ->call('save');
@@ -32,7 +33,7 @@ it('can create a blog category', function () {
 });
 
 it('validates blog category name is required', function () {
-    Livewire::test(PostCategoriesIndex::class)
+    Livewire::test(PostCategoriesForm::class)
         ->set('name_en', '')
         ->call('save')
         ->assertHasErrors(['name_en']);

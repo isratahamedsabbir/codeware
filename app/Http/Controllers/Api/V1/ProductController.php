@@ -84,18 +84,18 @@ class ProductController extends Controller
         ];
 
         if ($withDetail) {
-            // $data['description'] = $product->getTranslation('description', $locale, useFallbackLocale: true);
+            $data['description'] = $product->getTranslation('description', $locale, useFallbackLocale: true);
             $data['faq'] = collect($product->faq ?? [])->map(fn ($item) => [
                 'question' => $item['question'][$locale] ?? $item['question']['en'] ?? '',
                 'answer' => $item['answer'][$locale] ?? $item['answer']['en'] ?? '',
             ])->values();
-            /* $data['gallery'] = $product->gallery->map(fn ($m) => [
-                'id'         => $m->id,
-                'url'        => $m->url,
-                'alt'        => $m->alt_text ?? '',
+            $data['gallery'] = $product->gallery->map(fn ($m) => [
+                'id' => $m->id,
+                'url' => $m->url,
+                'alt' => $m->alt_text ?? '',
                 'sort_order' => $m->pivot->sort_order,
-            ])->values(); */
-            // $data['related_products'] = $related->map(fn ($p) => $this->formatProduct($p, $locale))->values();
+            ])->values();
+            $data['related_products'] = $related->map(fn ($p) => $this->formatProduct($p, $locale))->values();
         }
 
         return $data;

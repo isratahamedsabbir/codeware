@@ -161,7 +161,7 @@ class Form extends Component
             now()->addMinutes(config('app.puck_session', 5))
         )->plainTextToken;
 
-        $url = config('cms.editor_base_url')."/puck/edit/page/{$this->pageId}#token={$token}";
+        $url = config('cms.editor_base_url')."/puck/edit/{$this->type}/{$this->pageId}#token={$token}";
         $this->js('window.open('.json_encode($url).', \'_blank\')');
     }
 
@@ -177,7 +177,7 @@ class Form extends Component
             now()->addMinutes(config('app.puck_session', 5))
         )->plainTextToken;
 
-        $url = config('cms.editor_base_url')."/puck/edit/page/{$this->pageId}#token={$token}";
+        $url = config('cms.editor_base_url')."/puck/edit/{$this->type}/{$this->pageId}#token={$token}";
         $this->js('window.open('.json_encode($url).', \'_blank\')');
     }
 

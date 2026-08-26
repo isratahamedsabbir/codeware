@@ -46,7 +46,7 @@ it('setting get returns default when key missing', function () {
 });
 
 it('media library url accessor returns storage url', function () {
-    $media = MediaLibrary::factory()->create(['path' => 'media/test.jpg', 'disk' => 'public']);
+    $media = MediaLibrary::factory()->create(['path' => 'media/test.jpg', 'disk' => 'public', 'url' => null]);
     expect($media->url)->toContain('test.jpg');
 });
 

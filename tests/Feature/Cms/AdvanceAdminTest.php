@@ -14,7 +14,7 @@ beforeEach(function () {
     $this->sitemapPath = public_path('sitemap.xml');
     $this->robotsPath = public_path('robots.txt');
     $this->robotsBackup = File::exists($this->robotsPath) ? File::get($this->robotsPath) : null;
-    $this->sitemapExistedBefore = File::exists($this->sitemapPath);
+    $this->sitemapBackup = File::exists($this->sitemapPath) ? File::get($this->sitemapPath) : null;
 
     $this->seed(RolePermissionSeeder::class);
 
@@ -30,7 +30,9 @@ afterEach(function () {
         File::delete($this->robotsPath);
     }
 
-    if (! $this->sitemapExistedBefore && File::exists($this->sitemapPath)) {
+    if ($this->sitemapBackup !== null) {
+        File::put($this->sitemapPath, $this->sitemapBackup);
+    } elseif (File::exists($this->sitemapPath)) {
         File::delete($this->sitemapPath);
     }
 });
