@@ -90,19 +90,6 @@
         {{-- ── SIDEBAR ── --}}
         <div class="w-[320px] shrink-0 space-y-4">
 
-            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
-                <div
-                    class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                    Settings
-                </div>
-                <div class="px-4 py-3">
-                    <flux:field>
-                        <flux:label>Sort Order</flux:label>
-                        <flux:input type="number" wire:model="sort_order" min="0" />
-                    </flux:field>
-                </div>
-            </div>
-
             <livewire:admin.media-library.picker-modal />
 
             {{-- Footer --}}

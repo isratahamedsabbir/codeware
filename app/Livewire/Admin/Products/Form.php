@@ -46,8 +46,6 @@ class Form extends Component
 
     public bool $is_featured = false;
 
-    public int $sort_order = 0;
-
     #[Validate('nullable|string')]
     public string $description_en = '';
 
@@ -71,7 +69,6 @@ class Form extends Component
             $this->product_category_id = $product->product_category_id;
             $this->price = (string) $product->price;
             $this->is_featured = (bool) $product->is_featured;
-            $this->sort_order = $product->sort_order;
             $this->description_en = $product->getTranslation('description', 'en', false) ?? '';
             $this->description_bn = $product->getTranslation('description', 'bn', false) ?? '';
 
@@ -204,7 +201,6 @@ class Form extends Component
             'slug' => $this->slug,
             'price' => $this->price,
             'is_featured' => $this->is_featured,
-            'sort_order' => $this->sort_order,
             'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
             'featured_image' => $this->featured_image ?: null,
         ];
@@ -227,7 +223,6 @@ class Form extends Component
                 'title' => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
                 'slug' => $this->slug,
                 'status' => $product->status,
-                'sort_order' => $this->sort_order,
                 'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
             ]
         );

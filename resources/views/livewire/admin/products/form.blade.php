@@ -123,12 +123,6 @@
                         <flux:error name="price" />
                     </flux:field>
                 </div>
-                <div class="px-4 py-3 border-b border-zinc-50">
-                    <flux:field>
-                        <flux:label>Sort Order</flux:label>
-                        <flux:input type="number" wire:model="sort_order" min="0" />
-                    </flux:field>
-                </div>
                 <div class="px-4 py-3">
                     <flux:checkbox wire:model="is_featured" label="Featured" />
                 </div>

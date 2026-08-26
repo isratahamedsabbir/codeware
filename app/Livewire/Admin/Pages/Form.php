@@ -56,8 +56,6 @@ class Form extends Component
     #[Validate('nullable|string|max:100')]
     public string $template = 'puck';
 
-    public int $sort_order = 0;
-
     public ?string $og_image = null;
 
     public string $ogImagePickerId = '';
@@ -89,7 +87,6 @@ class Form extends Component
             $this->seo_title = $page->seo_title ?? '';
             $this->seo_description = $page->seo_description ?? '';
             $this->template = $page->template ?? 'puck';
-            $this->sort_order = $page->sort_order;
             $this->og_image = $page->og_image ?? null;
             $this->og_title = $page->og_title ?? '';
             $this->og_description = $page->og_description ?? '';
@@ -209,7 +206,6 @@ class Form extends Component
             'title' => array_filter(['en' => $this->title_en, 'bn' => $this->title_bn]),
             'slug' => $this->slug,
             'template' => $this->template ?: 'puck',
-            'sort_order' => $this->sort_order,
             'og_image' => $this->og_image ?: null,
             'seo_title' => $this->seo_title ?: null,
             'seo_description' => $this->seo_description ?: null,

@@ -101,21 +101,15 @@
         {{-- ── SIDEBAR ── --}}
         <div class="w-[320px] shrink-0 space-y-4">
 
-            {{-- Icon, Status & Sort Order --}}
+            {{-- Icon & Status --}}
             <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
                 <div
                     class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
                     Category Settings
                 </div>
-                <div class="px-4 py-4 border-b border-zinc-50">
+                <div class="px-4 py-4">
                     <x-media-picker model="icon" label="Icon" placeholder="Select icon image from library"
                         :picker-id="$iconPickerId" />
-                </div>
-                <div class="px-4 py-3">
-                    <flux:field>
-                        <flux:label>Sort Order</flux:label>
-                        <flux:input type="number" wire:model="sort_order" min="0" />
-                    </flux:field>
                 </div>
             </div>
 

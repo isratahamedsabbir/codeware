@@ -41,9 +41,6 @@ class Form extends Component
     #[Validate('nullable|string')]
     public string $description_bn = '';
 
-    #[Validate('nullable|integer|min:0')]
-    public int $sort_order = 0;
-
     public function mount(?int $id = null): void
     {
         if ($id) {
@@ -54,7 +51,6 @@ class Form extends Component
             $this->slug = $category->slug;
             $this->description_en = $category->getTranslation('description', 'en', false) ?? '';
             $this->description_bn = $category->getTranslation('description', 'bn', false) ?? '';
-            $this->sort_order = $category->sort_order;
 
             // SEO now lives entirely on the paired Page record, edited via the Page
             // screen — this form only keeps the Page in sync on title/slug/status.
@@ -116,7 +112,6 @@ class Form extends Component
             'name' => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
             'slug' => $this->slug,
             'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
-            'sort_order' => $this->sort_order,
         ];
 
         if ($this->categoryId) {
@@ -139,7 +134,6 @@ class Form extends Component
                 'title' => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
                 'slug' => $this->slug,
                 'status' => $category->status,
-                'sort_order' => $this->sort_order,
                 'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
             ]
         );

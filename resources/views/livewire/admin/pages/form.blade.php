@@ -148,16 +148,10 @@
                     class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
                     Page Settings
                 </div>
-                <div class="px-4 py-3 border-b border-zinc-50">
+                <div class="px-4 py-3">
                     <flux:field>
                         <flux:label>Template</flux:label>
                         <flux:input wire:model="template" placeholder="puck" />
-                    </flux:field>
-                </div>
-                <div class="px-4 py-3">
-                    <flux:field>
-                        <flux:label>Sort Order</flux:label>
-                        <flux:input type="number" wire:model="sort_order" min="0" />
                     </flux:field>
                 </div>
             </div>
