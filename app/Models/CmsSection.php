@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 
 class CmsSection extends Model
 {
@@ -33,6 +34,22 @@ class CmsSection extends Model
             'buttons' => 'array',
             'cards' => 'array',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => static::flushCache());
+        static::deleted(fn () => static::flushCache());
+    }
+
+    /**
+     * The public CMS API (Api\V1\CmsController) caches its responses in Redis,
+     * tagged 'cms' — flushed here on every write so create/update/delete/status
+     * changes show up immediately instead of waiting out the cache lifetime.
+     */
+    public static function flushCache(): void
+    {
+        Cache::store('redis')->tags(['cms'])->flush();
     }
 
     public function scopeActive(Builder $query): Builder

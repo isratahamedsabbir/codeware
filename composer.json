@@ -20,6 +20,7 @@
         "livewire/flux": "^2.12.0",
         "livewire/livewire": "^4.1",
         "mantix/livewire-jodit-text-editor": "*",
+        "predis/predis": "*",
         "spatie/laravel-permission": "*",
         "spatie/laravel-translatable": "*"
     },

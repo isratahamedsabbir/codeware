@@ -8,7 +8,6 @@ use App\Support\EnvFile;
 use App\Support\Features;
 use App\Support\Theme;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 
 class Index extends Component
@@ -120,8 +119,7 @@ class Index extends Component
     public function save(): void
     {
         foreach ($this->settings as $key => $value) {
-            Setting::updateOrCreate(['key' => $key], ['value' => $value]);
-            Cache::forget("setting:{$key}");
+            Setting::set($key, $value);
         }
 
         if (array_key_exists('theme_mode', $this->settings) || array_key_exists('theme_accent', $this->settings)) {

@@ -1,6 +1,14 @@
 <?php
 
 use App\Models\CmsSection;
+use Illuminate\Support\Facades\Cache;
+
+// The public CMS API caches in real Redis (tagged 'cms'), explicitly via
+// Cache::store('redis') — that bypasses the test env's CACHE_STORE=array
+// override and isn't covered by RefreshDatabase's transaction rollback, so
+// entries would otherwise leak between tests. Flush around every test here.
+beforeEach(fn () => Cache::store('redis')->tags(['cms'])->flush());
+afterEach(fn () => Cache::store('redis')->tags(['cms'])->flush());
 
 it('requires a page query parameter', function () {
     $this->getJson('/api/v1/cms')->assertUnprocessable();
@@ -82,4 +90,39 @@ it('resolves bn locale and falls back to en when bn is empty', function () {
         ->assertOk()
         ->assertJsonPath('data.title', 'স্বাগতম')
         ->assertJsonPath('data.description', 'English only');
+});
+
+it('caches the response in redis and serves the update immediately after a write', function () {
+    $cms = CmsSection::factory()->create([
+        'page' => 'home',
+        'section' => 'hero',
+        'status' => 'active',
+        'title' => ['en' => 'Original title', 'bn' => ''],
+    ]);
+
+    // Prime the cache.
+    $this->getJson('/api/v1/cms?page=home&section=hero')
+        ->assertJsonPath('data.title', 'Original title');
+
+    expect(Cache::store('redis')->tags(['cms'])->get('cms:home:hero:en')['body']['title'])
+        ->toBe('Original title');
+
+    // A plain update — the model's saved() hook should flush the tag.
+    $cms->update(['title' => ['en' => 'Updated title', 'bn' => '']]);
+
+    expect(Cache::store('redis')->tags(['cms'])->get('cms:home:hero:en'))->toBeNull();
+
+    $this->getJson('/api/v1/cms?page=home&section=hero')
+        ->assertOk()
+        ->assertJsonPath('data.title', 'Updated title');
+});
+
+it('refreshes the cache when a section is deleted', function () {
+    $cms = CmsSection::factory()->create(['page' => 'home', 'section' => 'hero', 'status' => 'active']);
+
+    $this->getJson('/api/v1/cms?page=home')->assertJsonCount(1, 'data');
+
+    $cms->delete();
+
+    $this->getJson('/api/v1/cms?page=home')->assertJsonCount(0, 'data');
 });

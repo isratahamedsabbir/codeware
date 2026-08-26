@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CmsSection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class CmsController extends Controller
 {
@@ -19,6 +20,10 @@ class CmsController extends Controller
     /**
      * GET /api/v1/cms?page=home              -> every active section on that page
      * GET /api/v1/cms?page=home&section=hero -> just that one section
+     *
+     * Responses are cached in Redis (tagged 'cms', kept forever) so repeat reads
+     * never hit the database — CmsSection::flushCache() clears the tag on every
+     * create/update/delete/status change, so the cache never serves stale data.
      */
     public function index(Request $request): JsonResponse
     {
@@ -28,24 +33,30 @@ class CmsController extends Controller
         ]);
 
         $locale = $this->resolveLocale($request);
+        $page = $validated['page'];
+        $section = $validated['section'] ?? null;
 
-        $query = CmsSection::active()->ofPage($validated['page']);
+        $cacheKey = 'cms:'.$page.':'.($section ?? '_all').':'.$locale;
 
-        if ($section = $validated['section'] ?? null) {
-            $cms = $query->where('section', $section)->first();
+        $cached = Cache::store('redis')->tags(['cms'])->rememberForever($cacheKey, function () use ($page, $section, $locale) {
+            $query = CmsSection::active()->ofPage($page);
 
-            if (! $cms) {
-                return response()->json(['message' => 'Section not found.'], 404);
+            if ($section) {
+                $cms = $query->where('section', $section)->first();
+
+                return $cms ? ['found' => true, 'body' => $this->format($cms, $locale)] : ['found' => false];
             }
 
-            return response()->json(['data' => $this->format($cms, $locale)]);
+            $sections = $query->orderBy('id')->get();
+
+            return ['found' => true, 'body' => $sections->map(fn (CmsSection $cms) => $this->format($cms, $locale))->all()];
+        });
+
+        if (! $cached['found']) {
+            return response()->json(['message' => 'Section not found.'], 404);
         }
 
-        $sections = $query->orderBy('id')->get();
-
-        return response()->json([
-            'data' => $sections->map(fn (CmsSection $cms) => $this->format($cms, $locale))->values(),
-        ]);
+        return response()->json(['data' => $cached['body']]);
     }
 
     /**

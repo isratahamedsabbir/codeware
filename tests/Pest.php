@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 /*
@@ -13,8 +15,14 @@ use Tests\TestCase;
 |
 */
 
+// Setting::get()/set() cache in real Redis (tagged 'settings'), explicitly
+// via Cache::store('redis') — that bypasses the test env's CACHE_STORE=array
+// override and isn't covered by RefreshDatabase's transaction rollback, so
+// entries would otherwise leak between tests. Flush around every test.
 pest()->extend(TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    ->use(RefreshDatabase::class)
+    ->beforeEach(fn () => Cache::store('redis')->tags(['settings'])->flush())
+    ->afterEach(fn () => Cache::store('redis')->tags(['settings'])->flush())
     ->in('Feature');
 
 /*
