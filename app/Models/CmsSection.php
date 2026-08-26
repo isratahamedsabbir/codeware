@@ -58,6 +58,56 @@ class CmsSection extends Model
     }
 
     /**
+     * Resolves a {en, bn} field to a plain string for the current app locale,
+     * falling back to English when the current locale is empty.
+     */
+    public function localized(string $field): ?string
+    {
+        $value = $this->{$field};
+
+        if (! is_array($value)) {
+            return $value;
+        }
+
+        $locale = app()->getLocale();
+
+        return $value[$locale] ?: ($value['en'] ?? null);
+    }
+
+    /** @return array<int, array{label: ?string, color: ?string, link: ?string}> */
+    public function localizedButtons(): array
+    {
+        $locale = app()->getLocale();
+
+        return collect($this->buttons ?? [])->map(fn ($button) => [
+            'label' => $this->localizeArrayField($button['label'] ?? null, $locale),
+            'color' => $button['color'] ?? null,
+            'link' => $button['link'] ?? null,
+        ])->all();
+    }
+
+    /** @return array<int, array{image: ?string, title: ?string, description: ?string}> */
+    public function localizedCards(): array
+    {
+        $locale = app()->getLocale();
+
+        return collect($this->cards ?? [])->map(fn ($card) => [
+            'image' => $card['image'] ?? null,
+            'title' => $this->localizeArrayField($card['title'] ?? null, $locale),
+            'description' => $this->localizeArrayField($card['description'] ?? null, $locale),
+        ])->all();
+    }
+
+    private function localizeArrayField(mixed $value, string $locale): ?string
+    {
+        if (! is_array($value)) {
+            return $value;
+        }
+
+        return $value[$locale] ?: ($value['en'] ?? null);
+    }
+
+    /**
      * Named `scopeOfPage`, not `scopeForPage` — Eloquent's query builder already
      * has a real `forPage($page, $perPage)` pagination helper, and Eloquent's
      * __call() checks named scopes before falling through to it, so a scope

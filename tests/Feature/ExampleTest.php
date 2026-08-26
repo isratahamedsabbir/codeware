@@ -1,7 +1,7 @@
 <?php
 
-test('home redirects to the login page', function () {
+test('home renders the active theme\'s public homepage', function () {
     $response = $this->get(route('home'));
 
-    $response->assertRedirect(route('login'));
+    $response->assertOk();
 });

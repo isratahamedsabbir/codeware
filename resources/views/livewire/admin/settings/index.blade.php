@@ -72,6 +72,16 @@
                                                  :style="'background-color: ' + ($wire.settings['{{ $setting->key }}'] || '#ffffff')"></div>
                                             <flux:input wire:model="settings.{{ $setting->key }}" placeholder="#000000" class="flex-1 font-mono" />
                                         </div>
+                                    @elseif ($setting->key === 'site_theme')
+                                        <select wire:model="settings.{{ $setting->key }}"
+                                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                                            @foreach (\App\Support\Themes::all() as $slug => $label)
+                                                <option value="{{ $slug }}">{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                        <flux:text class="text-xs text-zinc-500">
+                                            {{ __('The design shown at your site\'s homepage (:url).', ['url' => url('/')]) }}
+                                        </flux:text>
                                     @elseif ($setting->key === 'site_icon' || $setting->key === 'site_icon_white' || $setting->key === 'favicon' || $setting->key === 'loader')
                                         <x-media-picker model="settings.{{ $setting->key }}"
                                             label="{{ match ($setting->key) { 'favicon' => 'Favicon', 'loader' => 'Loader (GIF)', 'site_icon_white' => 'White Icon', default => 'Site Icon' } }}"

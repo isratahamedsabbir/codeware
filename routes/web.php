@@ -1,10 +1,11 @@
 <?php
 
+use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/login')->name('home');
+Route::get('/', [FrontendController::class, 'home'])->name('home');
 
 // Public, signed invoice links — what the invoice QR code and "Download PDF"
 // button point to, so a customer can view/print/download without logging in.
