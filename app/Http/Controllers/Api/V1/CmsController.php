@@ -92,6 +92,7 @@ class CmsController extends Controller
                 'title' => $this->localize($card['title'] ?? null, $locale),
                 'description' => $this->localize($card['description'] ?? null, $locale),
             ])->values(),
+            'metadata' => $cms->metadataMap(),
         ];
     }
 }

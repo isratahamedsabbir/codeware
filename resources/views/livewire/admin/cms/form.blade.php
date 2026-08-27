@@ -162,6 +162,40 @@
         @endforelse
     </div>
 
+    {{-- Metadata --}}
+    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 p-5 space-y-4">
+        <div class="flex items-center justify-between">
+            <flux:heading size="sm">Metadata</flux:heading>
+            <flux:button size="xs" variant="outline" wire:click="addMetadata">Add field</flux:button>
+        </div>
+        <flux:error name="metadata" />
+
+        @forelse ($metadata as $i => $pair)
+            <div class="flex items-start gap-2 rounded-lg border border-zinc-100 p-3">
+                <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <flux:field>
+                        <flux:label>Key</flux:label>
+                        <flux:input wire:model="metadata.{{ $i }}.key" placeholder="e.g. og:type" class="font-mono" />
+                        <flux:error name="metadata.{{ $i }}.key" />
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>Value</flux:label>
+                        <flux:input wire:model="metadata.{{ $i }}.value" placeholder="e.g. website" />
+                        <flux:error name="metadata.{{ $i }}.value" />
+                    </flux:field>
+                </div>
+                <button type="button" wire:click="removeMetadata({{ $i }})"
+                    class="mt-1 shrink-0 text-rose-500 hover:text-rose-700 cursor-pointer" aria-label="Remove field">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        @empty
+            <p class="text-sm text-zinc-400">No metadata yet.</p>
+        @endforelse
+    </div>
+
     {{-- Save --}}
     <div class="flex items-center gap-3">
         <flux:button variant="primary" wire:click="save" wire:loading.attr="disabled">

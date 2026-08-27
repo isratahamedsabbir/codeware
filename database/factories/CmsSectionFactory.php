@@ -19,6 +19,7 @@ class CmsSectionFactory extends Factory
             'description' => ['en' => fake()->sentence(10), 'bn' => ''],
             'buttons' => [],
             'cards' => [],
+            'metadata' => [],
             'image' => null,
             'bg_image' => null,
             'status' => 'active',

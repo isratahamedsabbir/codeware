@@ -51,6 +51,9 @@ it('creates a cms section with a title, description, image, buttons and cards', 
         ->set('cards.0.image', '/storage/media/card.jpg')
         ->set('cards.0.title.en', 'Fast')
         ->set('cards.0.description.en', 'Blazing fast delivery')
+        ->call('addMetadata')
+        ->set('metadata.0.key', 'og:type')
+        ->set('metadata.0.value', 'website')
         ->call('save');
 
     $cms = CmsSection::where('page', 'home')->where('section', 'hero')->sole();
@@ -64,7 +67,65 @@ it('creates a cms section with a title, description, image, buttons and cards', 
         ->and($cms->buttons[0]['color'])->toBe('#16a34a')
         ->and($cms->buttons[0]['link'])->toBe('/contact')
         ->and($cms->cards[0]['title']['en'])->toBe('Fast')
-        ->and($cms->cards[0]['image'])->toBe('/storage/media/card.jpg');
+        ->and($cms->cards[0]['image'])->toBe('/storage/media/card.jpg')
+        ->and($cms->metadata[0]['key'])->toBe('og:type')
+        ->and($cms->metadata[0]['value'])->toBe('website');
+});
+
+it('can add and remove multiple metadata fields before saving', function () {
+    Livewire::test(CmsForm::class)
+        ->call('addMetadata')
+        ->call('addMetadata')
+        ->set('metadata.0.key', 'first')
+        ->set('metadata.0.value', '1')
+        ->set('metadata.1.key', 'second')
+        ->set('metadata.1.value', '2')
+        ->call('removeMetadata', 0)
+        ->assertSet('metadata.0.key', 'second');
+});
+
+it('drops blank metadata rows when saving, but keeps filled ones', function () {
+    Livewire::test(CmsForm::class)
+        ->set('page', 'home')
+        ->set('section', 'hero')
+        ->call('addMetadata')
+        ->call('addMetadata')
+        ->set('metadata.0.key', 'og:type')
+        ->set('metadata.0.value', 'website')
+        ->set('metadata.1.key', '')
+        ->set('metadata.1.value', '')
+        ->call('save');
+
+    $cms = CmsSection::where('page', 'home')->where('section', 'hero')->sole();
+
+    expect($cms->metadata)->toHaveCount(1)
+        ->and($cms->metadata[0]['key'])->toBe('og:type');
+});
+
+it('rejects duplicate metadata keys', function () {
+    Livewire::test(CmsForm::class)
+        ->set('page', 'home')
+        ->set('section', 'hero')
+        ->call('addMetadata')
+        ->call('addMetadata')
+        ->set('metadata.0.key', 'og:type')
+        ->set('metadata.0.value', 'website')
+        ->set('metadata.1.key', 'og:type')
+        ->set('metadata.1.value', 'article')
+        ->call('save')
+        ->assertHasErrors(['metadata']);
+});
+
+it('loads existing metadata for editing', function () {
+    $cms = CmsSection::factory()->create([
+        'page' => 'home',
+        'section' => 'hero',
+        'metadata' => [['key' => 'og:type', 'value' => 'website']],
+    ]);
+
+    Livewire::test(CmsForm::class, ['id' => $cms->id])
+        ->assertSet('metadata.0.key', 'og:type')
+        ->assertSet('metadata.0.value', 'website');
 });
 
 it('validates page and section are required', function () {

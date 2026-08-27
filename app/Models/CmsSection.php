@@ -21,6 +21,7 @@ class CmsSection extends Model
         'description',
         'buttons',
         'cards',
+        'metadata',
         'image',
         'bg_image',
         'status',
@@ -33,6 +34,7 @@ class CmsSection extends Model
             'description' => 'array',
             'buttons' => 'array',
             'cards' => 'array',
+            'metadata' => 'array',
         ];
     }
 
@@ -105,6 +107,21 @@ class CmsSection extends Model
         }
 
         return $value[$locale] ?: ($value['en'] ?? null);
+    }
+
+    /**
+     * Metadata is stored as a list of {key, value} pairs (so the admin form can
+     * repeat/reorder/remove them like buttons and cards), but consumers want a
+     * plain lookup map — this collapses it to key => value, skipping blank keys.
+     *
+     * @return array<string, string>
+     */
+    public function metadataMap(): array
+    {
+        return collect($this->metadata ?? [])
+            ->filter(fn ($pair) => filled($pair['key'] ?? null))
+            ->pluck('value', 'key')
+            ->all();
     }
 
     /**

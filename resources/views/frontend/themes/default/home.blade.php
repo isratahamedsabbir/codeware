@@ -137,6 +137,8 @@
         </div>
     </footer>
 
+    <livewire:frontend.chat-widget />
+
     @fluxScripts
 </body>
 </html>

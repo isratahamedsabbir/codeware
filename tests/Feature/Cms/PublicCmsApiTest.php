@@ -45,6 +45,7 @@ it('returns a single section when section is given', function () {
         'bg_image' => '/storage/media/bg.jpg',
         'buttons' => [['label' => ['en' => 'Get Started', 'bn' => ''], 'color' => '#16a34a', 'link' => '/contact']],
         'cards' => [['image' => '/storage/media/card.jpg', 'title' => ['en' => 'Fast', 'bn' => ''], 'description' => ['en' => 'Blazing fast', 'bn' => '']]],
+        'metadata' => [['key' => 'og:type', 'value' => 'website'], ['key' => 'og:locale', 'value' => 'en_US']],
     ]);
 
     $this->getJson('/api/v1/cms?page=home&section=hero')
@@ -62,6 +63,10 @@ it('returns a single section when section is given', function () {
                 ],
                 'cards' => [
                     ['image' => '/storage/media/card.jpg', 'title' => 'Fast', 'description' => 'Blazing fast'],
+                ],
+                'metadata' => [
+                    'og:type' => 'website',
+                    'og:locale' => 'en_US',
                 ],
             ],
         ]);

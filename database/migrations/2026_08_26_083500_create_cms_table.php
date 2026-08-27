@@ -20,6 +20,7 @@ return new class extends Migration
             $table->json('description')->nullable();
             $table->json('buttons')->nullable();
             $table->json('cards')->nullable();
+            $table->json('metadata')->nullable();
             $table->string('image')->nullable();
             $table->string('bg_image')->nullable();
             $table->string('status', 20)->default('active');

@@ -10,6 +10,8 @@
         {{ auth()->check() ? __('Dashboard') : __('Admin Login') }}
     </a>
 
+    <livewire:frontend.chat-widget />
+
     @fluxScripts
 </body>
 </html>

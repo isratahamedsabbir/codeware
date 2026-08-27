@@ -31,6 +31,9 @@ class Form extends Component
     /** @var array<int, array{image: ?string, title: array{en: string, bn: string}, description: array{en: string, bn: string}}> */
     public array $cards = [];
 
+    /** @var array<int, array{key: string, value: string}> */
+    public array $metadata = [];
+
     public function mount(?int $id = null): void
     {
         if ($id) {
@@ -44,6 +47,7 @@ class Form extends Component
             $this->description = $cms->description ?? ['en' => '', 'bn' => ''];
             $this->buttons = $cms->buttons ?? [];
             $this->cards = $cms->cards ?? [];
+            $this->metadata = $cms->metadata ?? [];
         }
     }
 
@@ -67,6 +71,17 @@ class Form extends Component
     {
         unset($this->cards[$index]);
         $this->cards = array_values($this->cards);
+    }
+
+    public function addMetadata(): void
+    {
+        $this->metadata[] = ['key' => '', 'value' => ''];
+    }
+
+    public function removeMetadata(int $index): void
+    {
+        unset($this->metadata[$index]);
+        $this->metadata = array_values($this->metadata);
     }
 
     protected function rules(): array
@@ -94,6 +109,15 @@ class Form extends Component
             'cards.*.title.bn' => 'nullable|string|max:255',
             'cards.*.description.en' => 'nullable|string',
             'cards.*.description.bn' => 'nullable|string',
+            'metadata' => ['array', function (string $attribute, mixed $value, \Closure $fail) {
+                $keys = collect($value)->pluck('key')->filter()->map(fn ($key) => strtolower(trim($key)));
+
+                if ($keys->count() !== $keys->unique()->count()) {
+                    $fail('Metadata keys must be unique.');
+                }
+            }],
+            'metadata.*.key' => 'nullable|string|max:255',
+            'metadata.*.value' => 'nullable|string|max:1000',
         ];
     }
 
@@ -110,6 +134,7 @@ class Form extends Component
             'description' => filled($this->description['en'] ?? null) || filled($this->description['bn'] ?? null) ? $this->description : null,
             'buttons' => array_values($this->buttons),
             'cards' => array_values($this->cards),
+            'metadata' => collect($this->metadata)->filter(fn ($pair) => filled($pair['key'] ?? null))->values()->all(),
         ];
 
         $creating = $this->cmsId === null;
