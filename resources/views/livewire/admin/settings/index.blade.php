@@ -49,89 +49,98 @@
 
         {{-- General tab --}}
         <div x-show="tab === 'general'">
-            <div class="max-w-2xl space-y-6">
-                @foreach ($groupedSettings as $group => $items)
-                    <div>
-                        <flux:heading size="sm" class="mb-3 capitalize">{{ $group ?? 'General' }}</flux:heading> 
-                        <div class="space-y-4 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 bg-white">
-                            @foreach ($items as $setting)
-                                <flux:field>
-                                    @php
-                                        $isMediaPicker = in_array($setting->key, ['site_icon', 'site_icon_white', 'favicon', 'loader'], true);
-                                    @endphp
-                                    @unless ($isMediaPicker)
-                                        <flux:label>{{ ucwords(str_replace('_', ' ', $setting->key)) }}</flux:label>
-                                    @endunless
-                                    @if ($setting->type === 'boolean')
-                                        <div class="flex items-center gap-2">
-                                            <input type="checkbox"
-                                                wire:model="settings.{{ $setting->key }}"
-                                                class="rounded border-zinc-300 text-primary" />
-                                            <span class="text-sm text-zinc-600">Enable</span>
-                                        </div>
-                                    @elseif ($setting->type === 'color')
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-10 h-10 rounded-lg border border-zinc-300 shrink-0"
-                                                 style="background-color: {{ $settings[$setting->key] ?? '#ffffff' }}"
-                                                 x-data
-                                                 :style="'background-color: ' + ($wire.settings['{{ $setting->key }}'] || '#ffffff')"></div>
-                                            <flux:input wire:model="settings.{{ $setting->key }}" placeholder="#000000" class="flex-1 font-mono" />
-                                        </div>
-                                    @elseif ($setting->key === 'app_locale')
-                                        <select wire:model="settings.{{ $setting->key }}"
-                                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                                            @foreach (\App\Support\Locale::active() as $language)
-                                                <option value="{{ $language->code }}">{{ $language->native_name ?: $language->name }}</option>
-                                            @endforeach
-                                        </select>
-                                        <flux:text class="text-xs text-zinc-500">
-                                            {{ __('The default language the site renders in. Manage languages under the Localization menu.') }}
-                                        </flux:text>
-                                    @elseif ($setting->key === 'timezone')
-                                        <select wire:model="settings.{{ $setting->key }}"
-                                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                                            @foreach (\App\Support\Timezones::grouped() as $region => $zones)
-                                                <optgroup label="{{ $region }}">
-                                                    @foreach ($zones as $zone)
-                                                        <option value="{{ $zone }}">{{ $zone }}</option>
-                                                    @endforeach
-                                                </optgroup>
-                                            @endforeach
-                                        </select>
-                                        <flux:text class="text-xs text-zinc-500">
-                                            {{ __('Dates are stored in UTC and shown to users in this timezone.') }}
-                                        </flux:text>
-                                    @elseif ($setting->key === 'site_theme')
-                                        <select wire:model="settings.{{ $setting->key }}"
-                                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                                            @foreach (\App\Support\Themes::all() as $slug => $label)
-                                                <option value="{{ $slug }}">{{ $label }}</option>
-                                            @endforeach
-                                        </select>
-                                        <flux:text class="text-xs text-zinc-500">
-                                            {{ __('The design shown at your site\'s homepage (:url).', ['url' => url('/')]) }}
-                                        </flux:text>
-                                    @elseif ($setting->key === 'site_icon' || $setting->key === 'site_icon_white' || $setting->key === 'favicon' || $setting->key === 'loader')
-                                        <x-media-picker model="settings.{{ $setting->key }}"
-                                            label="{{ match ($setting->key) { 'favicon' => 'Favicon', 'loader' => 'Loader (GIF)', 'site_icon_white' => 'White Icon', default => 'Site Icon' } }}"
-                                            placeholder="{{ match ($setting->key) { 'loader' => 'Choose a loading animation (GIF) from the library', 'favicon' => 'Choose a favicon from the library', 'site_icon_white' => 'Choose a white icon from the library', default => 'Choose a site icon from the library' } }}" />
-                                    @elseif ($setting->type === 'textarea')
-                                        <flux:textarea wire:model="settings.{{ $setting->key }}" rows="3" />
-                                    @else
-                                        <flux:input wire:model="settings.{{ $setting->key }}" />
-                                    @endif
-                                </flux:field>
-                            @endforeach
+            <div class="max-w-[1600px]">
+                {{-- General and Images render side by side (via CSS order below); every
+                     other group stacks full-width beneath them, in $groupOrder's order.
+                     General is flex-1, so it stretches to fill the row instead of
+                     leaving empty space next to the fixed-width Images card. --}}
+                <div class="flex gap-5 flex-wrap items-start">
+                    @foreach ($groupedSettings as $group => $items)
+                        <div class="{{ match ($group) {
+                            'general' => 'flex-1 min-w-[280px] order-1',
+                            'images' => 'w-[320px] shrink-0 order-2',
+                            default => 'w-full order-3',
+                        } }}">
+                            <flux:heading size="sm" class="mb-3 capitalize">{{ $group ?? 'General' }}</flux:heading>
+                            <div class="space-y-4 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 bg-white">
+                                @foreach ($items as $setting)
+                                    <flux:field>
+                                        @php
+                                            $isMediaPicker = in_array($setting->key, ['site_icon', 'site_icon_white', 'favicon', 'loader'], true);
+                                        @endphp
+                                        @unless ($isMediaPicker)
+                                            <flux:label>{{ ucwords(str_replace('_', ' ', $setting->key)) }}</flux:label>
+                                        @endunless
+                                        @if ($setting->type === 'boolean')
+                                            <div class="flex items-center gap-2">
+                                                <input type="checkbox"
+                                                    wire:model="settings.{{ $setting->key }}"
+                                                    class="rounded border-zinc-300 text-primary" />
+                                                <span class="text-sm text-zinc-600">Enable</span>
+                                            </div>
+                                        @elseif ($setting->type === 'color')
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 rounded-lg border border-zinc-300 shrink-0"
+                                                     style="background-color: {{ $settings[$setting->key] ?? '#ffffff' }}"
+                                                     x-data
+                                                     :style="'background-color: ' + ($wire.settings['{{ $setting->key }}'] || '#ffffff')"></div>
+                                                <flux:input wire:model="settings.{{ $setting->key }}" placeholder="#000000" class="flex-1 font-mono" />
+                                            </div>
+                                        @elseif ($setting->key === 'app_locale')
+                                            <select wire:model="settings.{{ $setting->key }}"
+                                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                                                @foreach (\App\Support\Locale::active() as $language)
+                                                    <option value="{{ $language->code }}">{{ $language->native_name ?: $language->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            <flux:text class="text-xs text-zinc-500">
+                                                {{ __('The default language the site renders in. Manage languages under the Localization menu.') }}
+                                            </flux:text>
+                                        @elseif ($setting->key === 'timezone')
+                                            <select wire:model="settings.{{ $setting->key }}"
+                                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                                                @foreach (\App\Support\Timezones::grouped() as $region => $zones)
+                                                    <optgroup label="{{ $region }}">
+                                                        @foreach ($zones as $zone)
+                                                            <option value="{{ $zone }}">{{ $zone }}</option>
+                                                        @endforeach
+                                                    </optgroup>
+                                                @endforeach
+                                            </select>
+                                            <flux:text class="text-xs text-zinc-500">
+                                                {{ __('Dates are stored in UTC and shown to users in this timezone.') }}
+                                            </flux:text>
+                                        @elseif ($setting->key === 'site_theme')
+                                            <select wire:model="settings.{{ $setting->key }}"
+                                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                                                @foreach (\App\Support\Themes::all() as $slug => $label)
+                                                    <option value="{{ $slug }}">{{ $label }}</option>
+                                                @endforeach
+                                            </select>
+                                            <flux:text class="text-xs text-zinc-500">
+                                                {{ __('The design shown at your site\'s homepage (:url).', ['url' => url('/')]) }}
+                                            </flux:text>
+                                        @elseif ($setting->key === 'site_icon' || $setting->key === 'site_icon_white' || $setting->key === 'favicon' || $setting->key === 'loader')
+                                            <x-media-picker model="settings.{{ $setting->key }}"
+                                                label="{{ match ($setting->key) { 'favicon' => 'Favicon', 'loader' => 'Loader (GIF)', 'site_icon_white' => 'White Icon', default => 'Site Icon' } }}"
+                                                placeholder="{{ match ($setting->key) { 'loader' => 'Choose a loading animation (GIF) from the library', 'favicon' => 'Choose a favicon from the library', 'site_icon_white' => 'Choose a white icon from the library', default => 'Choose a site icon from the library' } }}" />
+                                        @elseif ($setting->type === 'textarea')
+                                            <flux:textarea wire:model="settings.{{ $setting->key }}" rows="3" />
+                                        @else
+                                            <flux:input wire:model="settings.{{ $setting->key }}" />
+                                        @endif
+                                    </flux:field>
+                                @endforeach
+                            </div>
                         </div>
-                    </div>
-                @endforeach
-
+                    @endforeach
+                </div>
             </div>
         </div>
 
         {{-- Layout tab --}}
         <div x-show="tab === 'layout'"> 
-            <div class="max-w-2xl space-y-4"> 
+            <div class="max-w-[1600px] space-y-4"> 
                 <flux:text class="text-zinc-500">  
                     Edit your site header and footer using the Puck visual editor. Changes open in a new tab.
                 </flux:text>
@@ -175,10 +184,12 @@
         </div>
 
         {{-- Payments tab --}}
-        <div x-show="tab === 'payments'" class="max-w-2xl space-y-6">
+        <div x-show="tab === 'payments'" class="max-w-[1600px] space-y-6">
             <flux:text class="text-zinc-500">
                 Enter your payment gateway credentials. Credentials are stored privately and never exposed via the public API.
             </flux:text>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
             {{-- PayPal --}}
             <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5">
@@ -333,14 +344,17 @@
                 </div>
             </div>
 
+            </div>
         </div>
 
         {{-- Currency tab --}}
         <div x-show="tab === 'currency'">
-            <div class="max-w-2xl space-y-6">
+            <div class="max-w-[1600px] space-y-6">
                 <flux:text class="text-zinc-500">
                     Set the currency used across the site for product pricing and payments.
                 </flux:text>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
                 <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
                     <flux:heading size="sm">Currency</flux:heading>
@@ -374,15 +388,19 @@
                             x-text="($wire.settings.currency_position || 'left') === 'right' ? '1,250.00 ' + ($wire.settings.currency_symbol || '৳') : ($wire.settings.currency_symbol || '৳') + '1,250.00'"></span>
                     </div>
                 </div>
+
+                </div>
             </div>
         </div>
 
         {{-- SEO tab --}}
         <div x-show="tab === 'seo'">
-            <div class="max-w-2xl space-y-6">
+            <div class="max-w-[1600px] space-y-6">
                 <flux:text class="text-zinc-500">
                     Control search engine visibility and social sharing metadata for your site.
                 </flux:text>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
                 {{-- Meta tags --}}
                 <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
@@ -418,15 +436,19 @@
                     <x-media-picker model="settings.seo_og_image" label="OG Image"
                         placeholder="Select OG image from library" />
                 </div>
+
+                </div>
             </div>
         </div>
 
         {{-- Theme tab --}}
         <div x-show="tab === 'theme'">
-            <div class="max-w-2xl space-y-6">
+            <div class="max-w-[1600px] space-y-6">
                 <flux:text class="text-zinc-500">
                     Choose a light or dark theme for the admin panel and pick an accent color for buttons, links and menu highlights.
                 </flux:text>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
                 {{-- Theme mode --}}
                 <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
@@ -482,15 +504,19 @@
                     </flux:text>
                     <flux:input wire:model="settings.theme_name" placeholder="e.g. Forest Green" />
                 </div>
+
+                </div>
             </div>
         </div>
 
         {{-- Other tab --}}
         <div x-show="tab === 'colors'">
-            <div class="max-w-2xl space-y-6">
+            <div class="max-w-[1600px] space-y-6">
                 <flux:text class="text-zinc-500">
                     Brand colors and social profile links for your site.
                 </flux:text>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
                 <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
                     @foreach ($colorSettings as $setting)
@@ -540,18 +566,20 @@
                         </flux:field>
                     @endforeach
                 </div>
+
+                </div>
             </div>
         </div>
 
         {{-- Features tab — developer-only, see APP_ENV in the Env tab --}}
         @if (app()->environment('developer'))
             <div x-show="tab === 'features'">
-                <div class="max-w-2xl space-y-6">
+                <div class="max-w-[1600px] space-y-6">
                     <flux:text class="text-zinc-500">
                         {{ __('This admin panel is reused as a starting point across different projects — turn off anything this project doesn\'t need. Disabled features are hidden from the sidebar and their pages become unreachable.') }}
                     </flux:text>
 
-                    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 divide-y divide-zinc-100 dark:divide-zinc-800">
+                    <div class="max-w-2xl rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 divide-y divide-zinc-100 dark:divide-zinc-800">
                         @foreach (\App\Support\Features::ALL as $key => $label)
                             @php $settingKey = \App\Support\Features::settingKey($key); @endphp
                             <label class="flex items-center justify-between gap-4 px-5 py-4 cursor-pointer">
@@ -567,14 +595,14 @@
 
         {{-- Env tab --}}
         <div x-show="tab === 'env'">
-            <div class="max-w-2xl space-y-6">
-                <div class="rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm dark:bg-amber-950 dark:border-amber-800 dark:text-amber-300">
+            <div class="max-w-[1600px] space-y-6">
+                <div class="max-w-2xl rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm dark:bg-amber-950 dark:border-amber-800 dark:text-amber-300">
                     <strong>{{ __('Careful') }}:</strong>
                     {{ __('These edit the live .env file this server runs on. A wrong database or mail value can take the site down until it is fixed. A backup of the current file is saved automatically before every change.') }}
                 </div>
 
                 @foreach ($this->envFields() as $groupLabel => $fields)
-                    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+                    <div class="max-w-2xl rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
                         <flux:heading size="sm">{{ __($groupLabel) }}</flux:heading>
                         @foreach ($fields as $key => $meta)
                             <flux:field>

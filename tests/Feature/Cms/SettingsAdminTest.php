@@ -15,6 +15,24 @@ it('renders settings index', function () {
     Livewire::test(SettingsIndex::class)->assertStatus(200);
 });
 
+it('keeps a fixed section order with General and Images first, regardless of row insertion order', function () {
+    // Inserted out of order (and Frontend before General) to prove the view doesn't
+    // just rely on DB row order, which isn't guaranteed without an ORDER BY. General
+    // and Images render as separate side-by-side cards in the General tab (see the
+    // view) — both need to be present and correctly populated.
+    Setting::factory()->create(['key' => 'site_theme', 'value' => 'default', 'group' => 'frontend', 'type' => 'select']);
+    Setting::factory()->create(['key' => 'app_locale', 'value' => 'en', 'group' => 'localization', 'type' => 'string']);
+    Setting::factory()->create(['key' => 'site_icon', 'value' => '', 'group' => 'images', 'type' => 'string']);
+    Setting::factory()->create(['key' => 'site_name', 'value' => 'Codeware', 'group' => 'general', 'type' => 'string']);
+
+    Livewire::test(SettingsIndex::class)
+        ->assertViewHas('groupedSettings', function ($groups) {
+            return $groups->keys()->all() === ['general', 'images', 'localization', 'frontend']
+                && $groups->get('general')->pluck('key')->all() === ['site_name']
+                && $groups->get('images')->pluck('key')->all() === ['site_icon'];
+        });
+});
+
 it('loads existing settings into form', function () {
     Setting::factory()->create(['key' => 'site_name', 'value' => 'Codeware', 'group' => 'general', 'type' => 'string']);
 

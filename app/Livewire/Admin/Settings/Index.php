@@ -139,10 +139,17 @@ class Index extends Component
 
     public function render()
     {
+        // Section order within the General tab — not the DB row order, which isn't
+        // guaranteed without an ORDER BY. General and Images render side by side (see
+        // the view), so their relative order here doesn't matter; anything not listed
+        // falls to the end in whatever order it comes.
+        $groupOrder = ['general' => 0, 'images' => 1, 'localization' => 2, 'frontend' => 3];
+
         return view('livewire.admin.settings.index', [
             'groupedSettings' => Setting::whereNotIn('group', ['layout', 'payments', 'seo', 'theme', 'colors', 'currency', 'social'])
                 ->get()
-                ->groupBy('group'),
+                ->groupBy('group')
+                ->sortBy(fn ($items, $group) => $groupOrder[$group] ?? count($groupOrder)),
             'colorSettings' => Setting::where('group', 'colors')->get(),
             'currencySettings' => Setting::where('group', 'currency')->get(),
         ])->layout('layouts.admin', ['title' => 'Settings']);
