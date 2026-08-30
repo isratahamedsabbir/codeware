@@ -1,0 +1,234 @@
+/* Portfolio theme — self-contained assets, not part of the main app.css bundle. */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+.theme-portfolio {
+    --pf-bg: #0a0e17;
+    --pf-bg-elevated: #10141f;
+    --pf-border: #1f2937;
+    --pf-text: #e5e7eb;
+    --pf-heading: #ffffff;
+    --pf-text-muted: #94a3b8;
+    --pf-primary: #10b981;
+    --pf-primary-dark: #059669;
+    --pf-grid-line: rgba(148, 163, 184, 0.15);
+
+    background-color: var(--pf-bg);
+    color: var(--pf-text);
+    font-family: 'Inter', system-ui, sans-serif;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Client-side light mode, toggled by script.js (persisted in localStorage) */
+.theme-portfolio.pf-light {
+    --pf-bg: #f8fafc;
+    --pf-bg-elevated: #ffffff;
+    --pf-border: #e2e8f0;
+    --pf-text: #334155;
+    --pf-heading: #0f172a;
+    --pf-text-muted: #64748b;
+    --pf-primary: #059669;
+    --pf-primary-dark: #047857;
+    --pf-grid-line: rgba(51, 65, 85, 0.08);
+}
+
+.theme-portfolio .pf-mono {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.theme-portfolio .pf-heading {
+    color: var(--pf-heading);
+}
+
+/* Gradient hero name */
+.theme-portfolio .pf-gradient-text {
+    background: linear-gradient(90deg, #60a5fa, #a78bfa, #f472b6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Grid-line backdrop behind the hero, fading toward the edges */
+.theme-portfolio .pf-grid-bg {
+    background-image:
+        linear-gradient(to right, var(--pf-grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--pf-grid-line) 1px, transparent 1px);
+    background-size: 56px 56px;
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 40%, transparent 90%);
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 40%, transparent 90%);
+}
+
+/* Soft glow blur behind the hero photo */
+.theme-portfolio .pf-glow {
+    background: radial-gradient(closest-side, rgba(96, 165, 250, 0.35), rgba(244, 114, 182, 0.15), transparent);
+    filter: blur(70px);
+}
+
+/* Blinking cursor used by the typewriter effect (script.js) */
+.theme-portfolio .pf-cursor {
+    display: inline-block;
+    width: 3px;
+    margin-left: 2px;
+    background: var(--pf-primary);
+    animation: pf-blink 1s step-end infinite;
+}
+
+@keyframes pf-blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+}
+
+/* Badge pill above the hero heading */
+.theme-portfolio .pf-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid var(--pf-border);
+    background: var(--pf-bg-elevated);
+    color: var(--pf-text);
+}
+
+/* Hero photo frame + its glow */
+.theme-portfolio .pf-photo-frame {
+    border: 1px solid var(--pf-border);
+    background: var(--pf-bg-elevated);
+}
+
+/* Primary / outline hero buttons */
+.theme-portfolio .pf-btn-solid {
+    background: var(--pf-primary);
+    color: #06120c;
+}
+
+.theme-portfolio .pf-btn-solid:hover {
+    background: var(--pf-primary-dark);
+}
+
+.theme-portfolio .pf-btn-outline {
+    border: 1px solid var(--pf-border);
+    color: var(--pf-text);
+    background: transparent;
+}
+
+.theme-portfolio .pf-btn-outline:hover {
+    border-color: var(--pf-primary);
+    color: var(--pf-primary);
+}
+
+/* Round monogram social icons */
+.theme-portfolio .pf-social-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--pf-border);
+    color: var(--pf-text-muted);
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-portfolio .pf-social-icon:hover {
+    color: var(--pf-primary);
+    border-color: var(--pf-primary);
+}
+
+/* Light/dark toggle button */
+.theme-portfolio .pf-theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    border: 1px solid var(--pf-border);
+    color: var(--pf-text-muted);
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-portfolio .pf-theme-toggle:hover {
+    color: var(--pf-primary);
+    border-color: var(--pf-primary);
+}
+
+.theme-portfolio .pf-theme-toggle .pf-icon-moon { display: inline; }
+.theme-portfolio .pf-theme-toggle .pf-icon-sun { display: none; }
+.theme-portfolio.pf-light .pf-theme-toggle .pf-icon-moon { display: none; }
+.theme-portfolio.pf-light .pf-theme-toggle .pf-icon-sun { display: inline; }
+
+/* EN/BN pill */
+.theme-portfolio .pf-lang-pill {
+    display: inline-flex;
+    border: 1px solid var(--pf-border);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.theme-portfolio .pf-lang-pill a {
+    padding: 0.3rem 0.7rem;
+    color: var(--pf-text-muted);
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.theme-portfolio .pf-lang-pill a.is-active {
+    background: var(--pf-primary);
+    color: #06120c;
+}
+
+/* Scoped scrollbar styling */
+.theme-portfolio ::-webkit-scrollbar {
+    width: 10px;
+}
+
+.theme-portfolio ::-webkit-scrollbar-track {
+    background: var(--pf-bg);
+}
+
+.theme-portfolio ::-webkit-scrollbar-thumb {
+    background: var(--pf-border);
+    border-radius: 999px;
+}
+
+.theme-portfolio ::-webkit-scrollbar-thumb:hover {
+    background: var(--pf-primary-dark);
+}
+
+/* Nav link underline-on-hover accent */
+.theme-portfolio .pf-nav-link {
+    position: relative;
+    color: var(--pf-text-muted);
+    transition: color 0.2s ease;
+}
+
+.theme-portfolio .pf-nav-link:hover,
+.theme-portfolio .pf-nav-link.is-active {
+    color: var(--pf-primary);
+}
+
+.theme-portfolio .pf-nav-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    width: 0;
+    height: 1px;
+    background: var(--pf-primary);
+    transition: width 0.2s ease;
+}
+
+.theme-portfolio .pf-nav-link:hover::after,
+.theme-portfolio .pf-nav-link.is-active::after {
+    width: 100%;
+}
+
+/* Project card hover lift */
+.theme-portfolio .pf-card {
+    background: var(--pf-bg-elevated);
+    border: 1px solid var(--pf-border);
+    transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.theme-portfolio .pf-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--pf-primary-dark);
+}

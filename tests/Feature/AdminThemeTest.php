@@ -1,25 +1,12 @@
 <?php
 
 use App\Models\Setting;
-use App\Models\User;
+use App\Support\Themes;
 
-beforeEach(function () {
+it('falls back to the default theme when the selected theme folder no longer exists', function () {
     Setting::set('site_theme', 'admin');
-});
 
-it('shows an admin login link when logged out', function () {
-    $this->get('/')
-        ->assertOk()
-        ->assertSee(route('login'), false)
-        ->assertSee('Admin Login');
-});
+    expect(Themes::active())->toBe('default');
 
-it('shows a dashboard link when logged in', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
-
-    $this->actingAs($admin)
-        ->get('/')
-        ->assertOk()
-        ->assertSee(route('admin.dashboard'), false)
-        ->assertSee('Dashboard');
+    $this->get('/')->assertOk();
 });

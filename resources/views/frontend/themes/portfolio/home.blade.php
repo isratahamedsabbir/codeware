@@ -2,92 +2,166 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     @include('partials.head')
+    <link rel="stylesheet" href="{{ asset('themes/portfolio/style.css') }}">
 </head>
-<body class="bg-white text-zinc-900 antialiased">
+<body class="theme-portfolio antialiased">
 
     @php
         $siteName = \App\Models\Setting::get('site_name', config('app.name'));
-        $siteIcon = \App\Models\Setting::get('site_icon');
-        $socials = collect([
-            'facebook_url' => 'Facebook',
-            'twitter_url' => 'Twitter / X',
-            'instagram_url' => 'Instagram',
-            'youtube_url' => 'YouTube',
-            'linkedin_url' => 'LinkedIn',
-        ])->map(fn ($label, $key) => ['url' => \App\Models\Setting::get($key), 'label' => $label])
-          ->filter(fn ($social) => filled($social['url']));
+        $siteIcon = \App\Models\Setting::get('site_icon_white') ?: \App\Models\Setting::get('site_icon');
+        $contactEmail = \App\Models\Setting::get('contact_email');
+        $socialIcons = [
+            'facebook_url' => 'FB',
+            'twitter_url' => 'X',
+            'instagram_url' => 'IG',
+            'youtube_url' => 'YT',
+            'linkedin_url' => 'IN',
+            'tiktok_url' => 'TT',
+        ];
+        $socials = collect($socialIcons)
+            ->map(fn ($abbr, $key) => ['url' => \App\Models\Setting::get($key), 'abbr' => $abbr])
+            ->filter(fn ($social) => filled($social['url']))
+            ->values();
         $first = $sections->first();
-        $rest = $sections->skip(1);
+        $rest = $sections->skip(1)->values();
+        $badge = $first?->metadataMap()['badge'] ?? null;
     @endphp
 
-    <header class="fixed inset-x-0 top-0 z-20 mix-blend-difference">
-        <div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-6">
-            <a href="{{ url('/') }}" class="flex items-center gap-2 text-white">
+    <header class="fixed inset-x-0 top-0 z-20 border-b border-(--pf-border) bg-(--pf-bg)/80 backdrop-blur-md">
+        <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+            <a href="{{ url('/') }}" class="pf-heading flex items-center gap-2">
                 @if ($siteIcon)
-                    <img src="{{ $siteIcon }}" alt="{{ $siteName }}" class="h-7 w-auto invert">
+                    <img src="{{ $siteIcon }}" alt="{{ $siteName }}" class="h-7 w-auto">
                 @endif
-                <span class="text-sm font-semibold uppercase tracking-[0.2em]">{{ $siteName }}</span>
+                <span class="text-base font-bold tracking-tight">{{ $siteName }}</span>
             </a>
-            <a href="{{ route('login') }}" class="text-sm font-medium uppercase tracking-widest text-white hover:opacity-70">
-                {{ __('Sign in') }}
-            </a>
+
+            <nav class="hidden items-center gap-8 md:flex">
+                <a href="{{ url('/') }}" class="pf-nav-link is-active pf-mono text-xs uppercase tracking-widest">
+                    {{ __('Home') }}
+                </a>
+                @foreach ($rest as $section)
+                    @if ($section->localized('title'))
+                        <a href="#{{ $section->section }}" class="pf-nav-link pf-mono text-xs uppercase tracking-widest">
+                            {{ $section->localized('title') }}
+                        </a>
+                    @endif
+                @endforeach
+            </nav>
+
+            <div class="flex items-center gap-3">
+                <div class="pf-lang-pill pf-mono text-xs font-semibold uppercase">
+                    <a href="{{ request()->fullUrlWithQuery(['lang' => 'en']) }}" class="{{ app()->getLocale() === 'en' ? 'is-active' : '' }}">EN</a>
+                    <a href="{{ request()->fullUrlWithQuery(['lang' => 'bn']) }}" class="{{ app()->getLocale() === 'bn' ? 'is-active' : '' }}">BN</a>
+                </div>
+
+                <button type="button" data-pf-theme-toggle aria-label="Toggle light / dark theme" class="pf-theme-toggle">
+                    <svg class="pf-icon-sun h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="4" />
+                        <path stroke-linecap="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32 1.41-1.41" />
+                    </svg>
+                    <svg class="pf-icon-moon h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+                    </svg>
+                </button>
+            </div>
         </div>
     </header>
 
     <main>
         @if ($first)
-            <section class="flex min-h-screen flex-col justify-center px-6">
-                <div class="mx-auto w-full max-w-5xl">
-                    @if ($first->localized('title'))
-                        <h1 class="text-5xl font-bold leading-[1.05] tracking-tight sm:text-8xl">
-                            {{ $first->localized('title') }}
-                        </h1>
-                    @endif
-                    @if ($first->localized('description'))
-                        <p class="mt-8 max-w-xl text-lg text-zinc-500">{{ $first->localized('description') }}</p>
-                    @endif
-                    @if (filled($first->localizedButtons()))
-                        <div class="mt-10 flex flex-wrap gap-4">
-                            @foreach ($first->localizedButtons() as $button)
-                                <a href="{{ $button['link'] ?? '#' }}"
-                                    class="inline-flex items-center gap-2 border-b-2 pb-1 text-sm font-semibold uppercase tracking-widest transition hover:gap-3"
-                                    style="border-color: {{ $button['color'] ?: 'var(--color-primary)' }}; color: {{ $button['color'] ?: 'var(--color-primary)' }}">
-                                    {{ $button['label'] }} &rarr;
-                                </a>
-                            @endforeach
+            {{-- Hero --}}
+            <section class="pf-grid-bg relative flex min-h-screen items-center overflow-hidden px-6 pt-24">
+                <div class="mx-auto grid w-full max-w-6xl items-center gap-12 lg:grid-cols-[1fr_360px]">
+                    <div>
+                        @if ($badge)
+                            <span class="pf-badge pf-mono mb-6 rounded-full px-4 py-2 text-xs font-medium">
+                                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="16 18 22 12 16 6" />
+                                    <polyline points="8 6 2 12 8 18" />
+                                </svg>
+                                {{ $badge }}
+                            </span>
+                        @endif
+
+                        <h1 data-typewriter class="pf-heading text-4xl font-extrabold leading-tight tracking-tight sm:text-6xl" style="visibility:hidden">{{ $first->localized('title') }}</h1>
+
+                        @if ($first->localized('description'))
+                            <p class="mt-6 max-w-xl text-lg text-(--pf-text-muted)">{{ $first->localized('description') }}</p>
+                        @endif
+
+                        @if (filled($first->localizedButtons()))
+                            <div class="mt-10 flex flex-wrap gap-4">
+                                @foreach ($first->localizedButtons() as $index => $button)
+                                    <a href="{{ $button['link'] ?? '#' }}"
+                                        @class(['pf-mono inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition hover:-translate-y-0.5', 'pf-btn-solid' => $index === 0, 'pf-btn-outline' => $index > 0])
+                                        @if ($index === 0) style="background-color: {{ $button['color'] ?: 'var(--pf-primary)' }}" @endif>
+                                        {{ $button['label'] }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        @if ($socials->isNotEmpty() || $contactEmail)
+                            <div class="mt-10 flex gap-3">
+                                @foreach ($socials as $social)
+                                    <a href="{{ $social['url'] }}" target="_blank" rel="noopener" aria-label="{{ $social['abbr'] }}"
+                                        class="pf-social-icon pf-mono text-[11px] font-bold">
+                                        {{ $social['abbr'] }}
+                                    </a>
+                                @endforeach
+                                @if ($contactEmail)
+                                    <a href="mailto:{{ $contactEmail }}" aria-label="Email" class="pf-social-icon">
+                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="3" y="5" width="18" height="14" rx="2" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m3 7 9 6 9-6" />
+                                        </svg>
+                                    </a>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+
+                    @if ($first->image)
+                        <div class="relative hidden lg:block">
+                            <div class="pf-glow absolute -inset-8 -z-10"></div>
+                            <div class="pf-photo-frame aspect-square overflow-hidden rounded-3xl p-2 shadow-2xl">
+                                <img src="{{ $first->image }}" alt="{{ $first->localized('title') }}" class="h-full w-full rounded-2xl object-cover">
+                            </div>
                         </div>
                     @endif
                 </div>
             </section>
         @else
             <section class="flex min-h-screen flex-col items-center justify-center px-6 text-center">
-                <h1 class="text-5xl font-bold tracking-tight">{{ $siteName }}</h1>
-                <p class="mt-4 max-w-md text-zinc-500">
+                <h1 class="pf-heading text-4xl font-bold">{{ $siteName }}</h1>
+                <p class="mt-4 max-w-md text-(--pf-text-muted)">
                     {{ __('Add sections to the "home" page in the CMS to populate this page.') }}
                 </p>
             </section>
         @endif
 
-        @foreach ($rest as $section)
+        @foreach ($rest as $index => $section)
             @php $hasCards = filled($section->localizedCards()); @endphp
 
-            <section class="border-t border-zinc-100 px-6 py-24">
-                <div class="mx-auto max-w-5xl">
+            <section id="{{ $section->section }}" class="border-t border-(--pf-border) px-6 py-24">
+                <div class="mx-auto max-w-6xl">
                     @if ($section->localized('title') || $section->localized('description'))
                         <div class="mb-14 max-w-xl">
+                            <p class="pf-mono mb-3 text-xs text-(--pf-text-muted)">// {{ sprintf('%02d', $index + 1) }}</p>
                             @if ($section->localized('title'))
-                                <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">{{ $section->localized('title') }}</h2>
+                                <h2 class="pf-heading text-3xl font-bold tracking-tight sm:text-4xl">{{ $section->localized('title') }}</h2>
                             @endif
                             @if ($section->localized('description'))
-                                <p class="mt-4 text-zinc-500">{{ $section->localized('description') }}</p>
+                                <p class="mt-4 text-(--pf-text-muted)">{{ $section->localized('description') }}</p>
                             @endif
                             @if (filled($section->localizedButtons()))
                                 <div class="mt-6 flex flex-wrap gap-4">
                                     @foreach ($section->localizedButtons() as $button)
                                         <a href="{{ $button['link'] ?? '#' }}"
-                                            class="inline-flex items-center gap-2 border-b-2 pb-1 text-sm font-semibold uppercase tracking-widest transition hover:gap-3"
-                                            style="border-color: {{ $button['color'] ?: 'var(--color-primary)' }}; color: {{ $button['color'] ?: 'var(--color-primary)' }}">
-                                            {{ $button['label'] }} &rarr;
+                                            class="pf-btn-solid pf-mono inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition hover:-translate-y-0.5"
+                                            style="background-color: {{ $button['color'] ?: 'var(--pf-primary)' }}">
+                                            {{ $button['label'] }}
                                         </a>
                                     @endforeach
                                 </div>
@@ -96,24 +170,26 @@
                     @endif
 
                     @if ($section->image && ! $hasCards)
-                        <img src="{{ $section->image }}" alt="{{ $section->localized('title') }}" class="w-full">
+                        <img src="{{ $section->image }}" alt="{{ $section->localized('title') }}" class="pf-card w-full rounded-xl p-2">
                     @endif
 
                     {{-- Work / project grid --}}
                     @if ($hasCards)
-                        <div class="grid gap-px sm:grid-cols-2">
+                        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                             @foreach ($section->localizedCards() as $card)
-                                <div class="group relative aspect-[4/3] overflow-hidden bg-zinc-100">
+                                <div class="pf-card group overflow-hidden rounded-xl">
                                     @if ($card['image'])
-                                        <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}"
-                                            class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
+                                        <div class="aspect-4/3 overflow-hidden">
+                                            <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}"
+                                                class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
+                                        </div>
                                     @endif
-                                    <div class="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/70 via-black/0 to-transparent p-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                                    <div class="p-5">
                                         @if ($card['title'])
-                                            <h3 class="text-lg font-semibold text-white">{{ $card['title'] }}</h3>
+                                            <h3 class="pf-heading pf-mono font-semibold">{{ $card['title'] }}</h3>
                                         @endif
                                         @if ($card['description'])
-                                            <p class="mt-1 text-sm text-zinc-200 line-clamp-2">{{ $card['description'] }}</p>
+                                            <p class="mt-2 text-sm text-(--pf-text-muted) line-clamp-2">{{ $card['description'] }}</p>
                                         @endif
                                     </div>
                                 </div>
@@ -125,14 +201,14 @@
         @endforeach
     </main>
 
-    <footer class="border-t border-zinc-100 px-6 py-10">
-        <div class="mx-auto flex max-w-5xl flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
-            <p class="text-sm text-zinc-500">&copy; {{ now()->setTimezone(display_timezone())->year }} {{ $siteName }}. {{ __('All rights reserved.') }}</p>
+    <footer class="border-t border-(--pf-border) px-6 py-10">
+        <div class="mx-auto flex max-w-6xl flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
+            <p class="pf-mono text-xs text-(--pf-text-muted)">&copy; {{ now()->setTimezone(display_timezone())->year }} {{ $siteName }}. {{ __('All rights reserved.') }}</p>
             @if ($socials->isNotEmpty())
-                <div class="flex gap-5">
+                <div class="flex gap-3">
                     @foreach ($socials as $social)
-                        <a href="{{ $social['url'] }}" target="_blank" rel="noopener" class="text-sm text-zinc-500 hover:text-primary">
-                            {{ $social['label'] }}
+                        <a href="{{ $social['url'] }}" target="_blank" rel="noopener" aria-label="{{ $social['abbr'] }}" class="pf-social-icon pf-mono text-[11px] font-bold">
+                            {{ $social['abbr'] }}
                         </a>
                     @endforeach
                 </div>
@@ -143,5 +219,6 @@
     <livewire:frontend.chat-widget />
 
     @fluxScripts
+    <script src="{{ asset('themes/portfolio/script.js') }}" defer></script>
 </body>
 </html>
