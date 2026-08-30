@@ -7,6 +7,17 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [FrontendController::class, 'home'])->name('home');
 
+// /home is just an alias for / — same controller method and view, so it
+// keeps the homepage's own hero styling instead of the generic page layout.
+Route::get('/home', [FrontendController::class, 'home']);
+
+// Standalone pages (About, Contact, FAQ, ...) — explicitly whitelisted rather
+// than a bare `/{slug}` wildcard so this can never shadow auth/system routes
+// (login, dashboard, token, ...) regardless of route registration order.
+Route::get('/{slug}', [FrontendController::class, 'page'])
+    ->where('slug', 'about|contact|faq')
+    ->name('page');
+
 // Public, signed invoice links — what the invoice QR code and "Download PDF"
 // button point to, so a customer can view/print/download without logging in.
 Route::middleware('signed')->group(function () {

@@ -1,0 +1,46 @@
+{
+  "title": "FAQ",
+  "description": "Answers to common questions",
+  "root": { "props": {} },
+  "content": [
+    {
+      "type": "HeroSection",
+      "props": {
+        "title": "Frequently Asked Questions",
+        "subtitle": "Find answers to the questions we hear most often."
+      }
+    },
+    {
+      "type": "FAQSection",
+      "props": {
+        "title": "Common Questions",
+        "items": [
+          {
+            "question": "How do I get started?",
+            "answer": "Reach out through our contact page and our team will guide you through the next steps."
+          },
+          {
+            "question": "What areas do you serve?",
+            "answer": "We serve customers across Bangladesh through our dealer and support network."
+          },
+          {
+            "question": "How can I get support?",
+            "answer": "Visit the Contact Us page for phone, email, and office details, and our team will respond promptly."
+          },
+          {
+            "question": "Do you offer guidance after purchase?",
+            "answer": "Yes, our support team is available to help with any questions after you start using our products or services."
+          }
+        ]
+      }
+    },
+    {
+      "type": "CTASection",
+      "props": {
+        "title": "Still have questions?",
+        "subtitle": "Get in touch and we'll be happy to help.",
+        "primaryButton": { "text": "Contact Us", "href": "/contact" }
+      }
+    }
+  ]
+}

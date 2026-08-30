@@ -311,7 +311,9 @@ it('renders site theme as a select populated from available theme folders, not a
 
     Livewire::test(SettingsIndex::class)
         ->assertSee('Site Theme')
-        ->assertSeeHtml('<option value="default">Default</option>');
+        ->assertSeeHtml('<option value="default">Default</option>')
+        ->assertSeeHtml('<option value="ecommerce">Ecommerce</option>')
+        ->assertSeeHtml('<option value="portfolio">Portfolio</option>');
 });
 
 it('does not double-render the label for image settings', function () {

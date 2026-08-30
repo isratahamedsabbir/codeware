@@ -101,12 +101,16 @@
             @endif
         @empty
             <section class="mx-auto flex max-w-2xl flex-col items-center px-6 py-32 text-center">
-                <h1 class="text-3xl font-bold text-zinc-900">{{ $siteName }}</h1>
+                <h1 class="text-3xl font-bold text-zinc-900">{{ $page->getTranslation('title', 'en', false) }}</h1>
                 <p class="mt-4 text-zinc-500">
-                    {{ __('Add sections to the "home" page in the CMS to populate this page.') }}
+                    {{ __('Add sections to the ":page" page in the CMS to populate this page.', ['page' => $page->getTranslation('title', 'en', false)]) }}
                 </p>
             </section>
         @endforelse
+
+        @if ($block = \App\Support\PageBlocks::for($page->slug))
+            @livewire($block)
+        @endif
     </main>
 
     <footer class="border-t border-zinc-100 bg-zinc-50 px-6 py-10">

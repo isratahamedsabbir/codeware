@@ -118,9 +118,9 @@
             </section>
         @else
             <section class="flex min-h-screen flex-col items-center justify-center px-6 text-center">
-                <h1 class="pf-heading text-4xl font-bold">{{ $siteName }}</h1>
+                <h1 class="pf-heading text-4xl font-bold">{{ $page->getTranslation('title', 'en', false) }}</h1>
                 <p class="mt-4 max-w-md text-(--pf-text-muted)">
-                    {{ __('Add sections to the "home" page in the CMS to populate this page.') }}
+                    {{ __('Add sections to the ":page" page in the CMS to populate this page.', ['page' => $page->getTranslation('title', 'en', false)]) }}
                 </p>
             </section>
         @endif
@@ -172,6 +172,10 @@
                 </div>
             </section>
         @endforeach
+
+        @if ($block = \App\Support\PageBlocks::for($page->slug))
+            @livewire($block)
+        @endif
     </main>
 
     <footer class="border-t border-(--pf-border) px-6 py-10">
