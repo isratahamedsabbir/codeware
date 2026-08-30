@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Cache;
 
@@ -15,12 +16,11 @@ class CmsSection extends Model
     protected $table = 'cms';
 
     protected $fillable = [
-        'theme',
-        'page',
-        'section',
+        'page_id',
+        'name',
+        'sort_order',
         'title',
         'description',
-        'buttons',
         'cards',
         'metadata',
         'image',
@@ -33,7 +33,6 @@ class CmsSection extends Model
         return [
             'title' => 'array',
             'description' => 'array',
-            'buttons' => 'array',
             'cards' => 'array',
             'metadata' => 'array',
         ];
@@ -53,6 +52,11 @@ class CmsSection extends Model
     public static function flushCache(): void
     {
         Cache::store('redis')->tags(['cms'])->flush();
+    }
+
+    public function page(): BelongsTo
+    {
+        return $this->belongsTo(Page::class);
     }
 
     public function scopeActive(Builder $query): Builder
@@ -75,18 +79,6 @@ class CmsSection extends Model
         $locale = app()->getLocale();
 
         return $value[$locale] ?: ($value['en'] ?? null);
-    }
-
-    /** @return array<int, array{label: ?string, color: ?string, link: ?string}> */
-    public function localizedButtons(): array
-    {
-        $locale = app()->getLocale();
-
-        return collect($this->buttons ?? [])->map(fn ($button) => [
-            'label' => $this->localizeArrayField($button['label'] ?? null, $locale),
-            'color' => $button['color'] ?? null,
-            'link' => $button['link'] ?? null,
-        ])->all();
     }
 
     /** @return array<int, array{image: ?string, title: ?string, description: ?string}> */
@@ -112,7 +104,7 @@ class CmsSection extends Model
 
     /**
      * Metadata is stored as a list of {key, value} pairs (so the admin form can
-     * repeat/reorder/remove them like buttons and cards), but consumers want a
+     * repeat/reorder/remove them like cards), but consumers want a
      * plain lookup map — this collapses it to key => value, skipping blank keys.
      *
      * @return array<string, string>
@@ -131,13 +123,8 @@ class CmsSection extends Model
      * __call() checks named scopes before falling through to it, so a scope
      * literally named `forPage` silently hijacks every paginate() call.
      */
-    public function scopeOfPage(Builder $query, string $page): Builder
+    public function scopeOfPage(Builder $query, int $pageId): Builder
     {
-        return $query->where('page', $page);
-    }
-
-    public function scopeOfTheme(Builder $query, string $theme): Builder
-    {
-        return $query->where('theme', $theme);
+        return $query->where('page_id', $pageId);
     }
 }

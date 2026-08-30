@@ -3,8 +3,8 @@
 namespace App\Livewire\Admin\Cms;
 
 use App\Models\CmsSection;
+use App\Models\Page;
 use App\Support\AdminActivity;
-use App\Support\Themes;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
@@ -12,11 +12,9 @@ class Form extends Component
 {
     public ?int $cmsId = null;
 
-    public string $theme = '';
+    public int $pageId;
 
-    public string $page = '';
-
-    public string $section = '';
+    public string $name = '';
 
     public ?string $bg_image = null;
 
@@ -28,44 +26,27 @@ class Form extends Component
     /** @var array{en: string, bn: string} */
     public array $description = ['en' => '', 'bn' => ''];
 
-    /** @var array<int, array{label: array{en: string, bn: string}, color: string, link: string}> */
-    public array $buttons = [];
-
     /** @var array<int, array{image: ?string, title: array{en: string, bn: string}, description: array{en: string, bn: string}}> */
     public array $cards = [];
 
     /** @var array<int, array{key: string, value: string}> */
     public array $metadata = [];
 
-    public function mount(?int $id = null): void
+    public function mount(int $pageId, ?int $id = null): void
     {
+        $this->pageId = Page::findOrFail($pageId)->id;
+
         if ($id) {
-            $cms = CmsSection::findOrFail($id);
+            $cms = CmsSection::where('page_id', $this->pageId)->findOrFail($id);
             $this->cmsId = $cms->id;
-            $this->theme = $cms->theme;
-            $this->page = $cms->page;
-            $this->section = $cms->section;
+            $this->name = $cms->name;
             $this->bg_image = $cms->bg_image;
             $this->image = $cms->image;
             $this->title = $cms->title ?? ['en' => '', 'bn' => ''];
             $this->description = $cms->description ?? ['en' => '', 'bn' => ''];
-            $this->buttons = $cms->buttons ?? [];
             $this->cards = $cms->cards ?? [];
             $this->metadata = $cms->metadata ?? [];
-        } else {
-            $this->theme = Themes::active();
         }
-    }
-
-    public function addButton(): void
-    {
-        $this->buttons[] = ['label' => ['en' => '', 'bn' => ''], 'color' => '#2563eb', 'link' => ''];
-    }
-
-    public function removeButton(int $index): void
-    {
-        unset($this->buttons[$index]);
-        $this->buttons = array_values($this->buttons);
     }
 
     public function addCard(): void
@@ -93,13 +74,11 @@ class Form extends Component
     protected function rules(): array
     {
         return [
-            'theme' => 'required|string|max:255',
-            'page' => 'required|string|max:255',
-            'section' => [
+            'pageId' => 'required|integer|exists:pages,id',
+            'name' => [
                 'required', 'string', 'max:255',
-                Rule::unique('cms', 'section')
-                    ->where('theme', $this->theme)
-                    ->where('page', $this->page)
+                Rule::unique('cms', 'name')
+                    ->where('page_id', $this->pageId)
                     ->ignore($this->cmsId),
             ],
             'bg_image' => 'nullable|string',
@@ -108,11 +87,6 @@ class Form extends Component
             'title.bn' => 'nullable|string|max:255',
             'description.en' => 'nullable|string',
             'description.bn' => 'nullable|string',
-            'buttons' => 'array',
-            'buttons.*.label.en' => 'nullable|string|max:255',
-            'buttons.*.label.bn' => 'nullable|string|max:255',
-            'buttons.*.color' => 'nullable|string|max:20',
-            'buttons.*.link' => 'nullable|string|max:255',
             'cards' => 'array',
             'cards.*.image' => 'nullable|string',
             'cards.*.title.en' => 'nullable|string|max:255',
@@ -136,14 +110,12 @@ class Form extends Component
         $this->validate();
 
         $data = [
-            'theme' => $this->theme,
-            'page' => $this->page,
-            'section' => $this->section,
+            'page_id' => $this->pageId,
+            'name' => $this->name,
             'bg_image' => $this->bg_image ?: null,
             'image' => $this->image ?: null,
             'title' => filled($this->title['en'] ?? null) || filled($this->title['bn'] ?? null) ? $this->title : null,
             'description' => filled($this->description['en'] ?? null) || filled($this->description['bn'] ?? null) ? $this->description : null,
-            'buttons' => array_values($this->buttons),
             'cards' => array_values($this->cards),
             'metadata' => collect($this->metadata)->filter(fn ($pair) => filled($pair['key'] ?? null))->values()->all(),
         ];
@@ -156,23 +128,25 @@ class Form extends Component
             // New sections stay inactive until switched on from the list — status
             // is no longer editable from this form, see Index::toggleStatus().
             $data['status'] = 'inactive';
+            $data['sort_order'] = (int) CmsSection::where('page_id', $this->pageId)->max('sort_order') + 1;
             $cms = CmsSection::create($data);
             $this->cmsId = $cms->id;
         }
 
         AdminActivity::log(
             $creating ? 'created' : 'updated',
-            "CMS section: {$this->theme} / {$this->page} / {$this->section}",
+            "CMS section: {$this->name}",
         );
 
         $this->dispatch('notify', message: $creating ? 'CMS section created successfully' : 'CMS section updated successfully');
 
-        $this->redirect(route('admin.cms'), navigate: true);
+        $this->redirect(route('admin.cms', ['pageId' => $this->pageId]), navigate: true);
     }
 
     public function render()
     {
-        return view('livewire.admin.cms.form')
-            ->layout('layouts.admin', ['title' => $this->cmsId ? 'Edit CMS Section' : 'New CMS Section']);
+        return view('livewire.admin.cms.form', [
+            'page' => Page::findOrFail($this->pageId),
+        ])->layout('layouts.admin', ['title' => $this->cmsId ? 'Edit CMS Section' : 'New CMS Section']);
     }
 }

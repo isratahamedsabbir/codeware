@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CmsSection;
+use App\Models\Page;
 use App\Models\Setting;
 use App\Support\Themes;
 
@@ -10,13 +11,17 @@ class FrontendController extends Controller
 {
     /**
      * The public site root — renders the admin-selected theme's homepage,
-     * populated with the active "home" page CMS sections.
+     * populated with the "home" page's CMS sections.
      */
     public function home()
     {
         $theme = Themes::active();
 
-        $sections = CmsSection::active()->ofTheme($theme)->ofPage('home')->orderBy('id')->get();
+        $homePage = Page::where('slug', 'home')->first();
+
+        $sections = $homePage
+            ? CmsSection::active()->ofPage($homePage->id)->orderBy('sort_order')->orderBy('id')->get()
+            : collect();
 
         return view("frontend.themes.{$theme}.home", [
             'sections' => $sections,

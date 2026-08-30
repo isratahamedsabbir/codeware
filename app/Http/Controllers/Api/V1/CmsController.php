@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\CmsSection;
-use App\Support\Themes;
+use App\Models\Page;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -19,9 +19,8 @@ class CmsController extends Controller
     }
 
     /**
-     * GET /api/v1/cms?page=home                          -> every active section on that page, for the active theme
-     * GET /api/v1/cms?page=home&section=hero              -> just that one section
-     * GET /api/v1/cms?page=home&theme=portfolio            -> sections for a specific theme instead of the active one
+     * GET /api/v1/cms?page=home                -> every active section on that page
+     * GET /api/v1/cms?page=home&name=hero      -> just that one named section
      *
      * Responses are cached in Redis (tagged 'cms', kept forever) so repeat reads
      * never hit the database — CmsSection::flushCache() clears the tag on every
@@ -31,27 +30,31 @@ class CmsController extends Controller
     {
         $validated = $request->validate([
             'page' => 'required|string',
-            'section' => 'nullable|string',
-            'theme' => 'nullable|string',
+            'name' => 'nullable|string',
         ]);
 
         $locale = $this->resolveLocale($request);
-        $page = $validated['page'];
-        $section = $validated['section'] ?? null;
-        $theme = $validated['theme'] ?? Themes::active();
+        $pageSlug = $validated['page'];
+        $name = $validated['name'] ?? null;
 
-        $cacheKey = 'cms:'.$theme.':'.$page.':'.($section ?? '_all').':'.$locale;
+        $cacheKey = 'cms:'.$pageSlug.':'.($name ?? '_all').':'.$locale;
 
-        $cached = Cache::store('redis')->tags(['cms'])->rememberForever($cacheKey, function () use ($theme, $page, $section, $locale) {
-            $query = CmsSection::active()->ofTheme($theme)->ofPage($page);
+        $cached = Cache::store('redis')->tags(['cms'])->rememberForever($cacheKey, function () use ($pageSlug, $name, $locale) {
+            $page = Page::where('slug', $pageSlug)->first();
 
-            if ($section) {
-                $cms = $query->where('section', $section)->first();
+            if (! $page) {
+                return ['found' => false];
+            }
+
+            $query = CmsSection::active()->ofPage($page->id);
+
+            if ($name) {
+                $cms = $query->where('name', $name)->first();
 
                 return $cms ? ['found' => true, 'body' => $this->format($cms, $locale)] : ['found' => false];
             }
 
-            $sections = $query->orderBy('id')->get();
+            $sections = $query->orderBy('sort_order')->orderBy('id')->get();
 
             return ['found' => true, 'body' => $sections->map(fn (CmsSection $cms) => $this->format($cms, $locale))->all()];
         });
@@ -80,18 +83,12 @@ class CmsController extends Controller
     {
         return [
             'id' => $cms->id,
-            'theme' => $cms->theme,
-            'page' => $cms->page,
-            'section' => $cms->section,
+            'page_id' => $cms->page_id,
+            'name' => $cms->name,
             'title' => $this->localize($cms->title, $locale),
             'description' => $this->localize($cms->description, $locale),
             'image' => $cms->image,
             'bg_image' => $cms->bg_image,
-            'buttons' => collect($cms->buttons ?? [])->map(fn ($button) => [
-                'label' => $this->localize($button['label'] ?? null, $locale),
-                'color' => $button['color'] ?? null,
-                'link' => $button['link'] ?? null,
-            ])->values(),
             'cards' => collect($cms->cards ?? [])->map(fn ($card) => [
                 'image' => $card['image'] ?? null,
                 'title' => $this->localize($card['title'] ?? null, $locale),

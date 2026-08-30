@@ -1,5 +1,5 @@
 {
-  "title": "Our Initiatives - AgroSAL",
+  "title": "Our Initiatives",
   "description": "CSR and sustainability programs",
   "root": { "props": {} },
   "content": [
@@ -15,7 +15,7 @@
       "type": "TextContent",
       "props": {
         "title": "Making a Difference",
-        "content": "At AgroSAL, we believe in giving back to the community and environment that sustains us. Our initiatives focus on empowering farmers, protecting the environment, and building stronger rural communities across Bangladesh.",
+        "content": "We believe in giving back to the community and environment that sustains us. Our initiatives focus on empowering farmers, protecting the environment, and building stronger rural communities across Bangladesh.",
         "align": "center"
       }
     },

@@ -195,6 +195,30 @@
                                         </span>
                                     </div>
 
+                                    {{-- CMS --}}
+                                    <div class="relative group">
+                                        <a href="{{ route('admin.cms', ['pageId' => $page->id]) }}" wire:navigate
+                                            aria-label="CMS sections"
+                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white hover:-translate-y-px"
+                                            style="box-shadow:none"
+                                            onmouseover="this.style.boxShadow='0 3px 8px rgba(16,185,129,.35)'"
+                                            onmouseout="this.style.boxShadow='none'">
+                                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2">
+                                                <rect x="3" y="3" width="7" height="7" />
+                                                <rect x="14" y="3" width="7" height="7" />
+                                                <rect x="3" y="14" width="7" height="7" />
+                                                <line x1="17.5" y1="14" x2="17.5" y2="21" />
+                                                <line x1="14" y1="17.5" x2="21" y2="17.5" />
+                                            </svg>
+                                        </a>
+                                        <span
+                                            class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[11px] font-medium bg-emerald-500 text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                            CMS
+                                            <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-emerald-500"></span>
+                                        </span>
+                                    </div>
+
                                     {{-- Delete --}}
                                     <div class="relative group">
                                         <button wire:click="confirmDelete({{ $page->id }})"

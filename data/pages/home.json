@@ -1,5 +1,5 @@
 {
-  "title": "Home - AgroSAL",
+  "title": "Home",
   "description": "Smart Agricultural Solutions",
   "root": { "props": {} },
   "content": [
@@ -11,7 +11,7 @@
         "posterImage": "/agricultural_inputs.jpg?w=1920",
         "eyebrow": "Empowering Bangladeshi Farmers",
         "headline": "Practical agricultural inputs for healthier fields and stronger harvests.",
-        "subtext": "AgroSAL helps farmers and dealers make confident decisions with reliable crop nutrition, organic inputs, and field-ready support.",
+        "subtext": "We help farmers and dealers make confident decisions with reliable crop nutrition, organic inputs, and field-ready support.",
         "ctaPrimary": { "label": "Explore Products", "href": "/products" },
         "ctaSecondary": { "label": "Find a Dealer", "href": "/dealers" },
         "categoryLinks": [
@@ -27,7 +27,7 @@
      {
       "type": "FeaturesGrid",
       "props": {
-        "title": "Why teams choose AgroSAL",
+        "title": "Why teams choose us",
         "subtitle": "Built around reliability and long-term productivity",
         "features": [
           { "icon": "🌱", "title": "Soil Health First", "description": "Every product is designed to improve long-term soil biology, not just short-term yield." },
@@ -42,7 +42,7 @@
       "type": "ProductShowcaseBlock",
       "props": {
         "categoryBadge": "Featured Product",
-        "productName": "AgroSAL Organic Fertilizer",
+        "productName": "Organic Fertilizer",
         "description": "A premium organic solution enriched with Trichoderma and Bacillus. Brings life back to the soil and promotes sustainable farming across Bangladesh.",
         "benefits": [
           "Enriched with Trichoderma & Bacillus for natural disease resistance",
@@ -67,7 +67,7 @@
           {
             "id": "1",
             "slug": "organic-fertilizer",
-            "name": "AgroSAL Organic Fertilizer",
+            "name": "Organic Fertilizer",
             "nameBn": "জৈব সার",
             "category": "Soil Health",
             "image": "/humizem.jpeg",
@@ -111,7 +111,7 @@
           {
             "id": "5",
             "slug": "bio-pesticide",
-            "name": "AgroSAL Bio Pesticide",
+            "name": "Bio Pesticide",
             "nameBn": "বায়ো কীটনাশক",
             "category": "Bio Pesticide",
             "image": "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=800&auto=format&fit=crop",
@@ -174,10 +174,10 @@
     {
       "type": "VideoSection",
       "props": {
-        "sectionTitle": "See AgroSAL in Action",
+        "sectionTitle": "See Our Products in Action",
         "featuredVideo": {
           "youtubeId": "dQw4w9WgXcQ",
-          "title": "How AgroSAL Organic Fertilizer Transforms Bangladesh Farms",
+          "title": "How Organic Fertilizer Transforms Bangladesh Farms",
           "description": "Watch how our products are used in real field conditions across Bangladesh."
         },
         "thumbnails": [
@@ -195,11 +195,11 @@
         "autoplayInterval": 5000,
         "testimonials": [
           {
-            "quote": "Using AgroSAL's organic fertilizer for two seasons now. My rice yield increased by 30% and the soil feels alive again.",
+            "quote": "Using the organic fertilizer for two seasons now. My rice yield increased by 30% and the soil feels alive again.",
             "farmerName": "Abdul Karim",
             "district": "Rajshahi",
             "cropType": "Rice (Boro)",
-            "productUsed": "AgroSAL Organic Fertilizer",
+            "productUsed": "Organic Fertilizer",
             "productHref": "/products/organic-fertilizer",
             "photo": "/farmer1.jpg",
             "rating": 5
@@ -215,7 +215,7 @@
             "rating": 5
           },
           {
-            "quote": "The AgroSAL team visited my field and gave me the right advice. The micronutrient package made a visible difference in 3 weeks.",
+            "quote": "The agronomy team visited my field and gave me the right advice. The micronutrient package made a visible difference in 3 weeks.",
             "farmerName": "Md. Hasan",
             "district": "Mymensingh",
             "cropType": "Vegetables",
@@ -230,12 +230,12 @@
     {
       "type": "NewsSection",
       "props": {
-        "title": "Latest from AgroSAL",
+        "title": "Latest News",
         "subtitle": "Field reports, product news, and agronomy insights",
         "articles": [
-          { "id": "1", "title": "AgroSAL Launches New Organic Compost Line", "category": "News", "image": "/organic_fertilizer.jpg?w=800", "excerpt": "Introducing our premium range of organic composts designed for sustainable agriculture.", "publishedAt": "2026-03-15", "author": "Media Team" },
+          { "id": "1", "title": "New Organic Compost Line Launched", "category": "News", "image": "/organic_fertilizer.jpg?w=800", "excerpt": "Introducing our premium range of organic composts designed for sustainable agriculture.", "publishedAt": "2026-03-15", "author": "Media Team" },
           { "id": "2", "title": "5 Benefits of Mulching Films in Modern Agriculture", "category": "Blog", "image": "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=800", "excerpt": "Discover how mulching films can transform your crop yield and reduce water consumption.", "publishedAt": "2026-03-10", "author": "Dr. Rahman" },
-          { "id": "3", "title": "AgroSAL Partners with Local Farmers for Buy Back Program", "category": "Announcement", "image": "/organic_fertilizer.jpg?w=800", "excerpt": "A new initiative to support farmers by ensuring fair prices for their harvest.", "publishedAt": "2026-03-01" }
+          { "id": "3", "title": "Partnership with Local Farmers for Buy Back Program", "category": "Announcement", "image": "/organic_fertilizer.jpg?w=800", "excerpt": "A new initiative to support farmers by ensuring fair prices for their harvest.", "publishedAt": "2026-03-01" }
         ],
         "viewAllLink": "#"
       }
@@ -244,7 +244,7 @@
       "type": "CTASection",
       "props": {
         "brandGreen": true,
-        "title": "Build a more dependable growing season with AgroSAL",
+        "title": "Build a more dependable growing season with us",
         "subtitle": "Whether you need product guidance, dealer access, or a stronger supply relationship, our team is ready.",
         "primaryButton": { "text": "Talk to Our Team", "href": "/contact" },
         "secondaryButton": { "text": "Find an Authorized Dealer", "href": "/dealers" }

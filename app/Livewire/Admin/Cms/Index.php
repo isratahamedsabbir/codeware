@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Cms;
 
 use App\Models\CmsSection;
+use App\Models\Page;
 use App\Support\AdminActivity;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -11,27 +12,27 @@ class Index extends Component
 {
     use WithPagination;
 
+    public int $pageId;
+
     public string $search = '';
 
-    public string $themeFilter = '';
-
-    public string $pageFilter = '';
-
     public ?int $deletingId = null;
+
+    public function mount(int $pageId): void
+    {
+        $this->pageId = Page::findOrFail($pageId)->id;
+    }
 
     public function updatedSearch(): void
     {
         $this->resetPage();
     }
 
-    public function updatedThemeFilter(): void
+    public function reorder(array $order): void
     {
-        $this->resetPage();
-    }
-
-    public function updatedPageFilter(): void
-    {
-        $this->resetPage();
+        foreach ($order as $sortOrder => $cmsId) {
+            CmsSection::where('id', $cmsId)->where('page_id', $this->pageId)->update(['sort_order' => $sortOrder]);
+        }
     }
 
     public function toggleStatus(int $id): void
@@ -41,7 +42,7 @@ class Index extends Component
 
         $cms->update(['status' => $newStatus]);
 
-        AdminActivity::log('updated', "CMS section: {$cms->theme} / {$cms->page} / {$cms->section} ".($newStatus === 'active' ? 'activated' : 'deactivated'));
+        AdminActivity::log('updated', "CMS section: {$cms->name} ".($newStatus === 'active' ? 'activated' : 'deactivated'));
         $this->dispatch('notify', message: 'CMS section status updated');
     }
 
@@ -55,7 +56,7 @@ class Index extends Component
     {
         if ($this->deletingId) {
             $cms = CmsSection::findOrFail($this->deletingId);
-            AdminActivity::log('deleted', "CMS section: {$cms->theme} / {$cms->page} / {$cms->section}");
+            AdminActivity::log('deleted', "CMS section: {$cms->name}");
             $cms->delete();
             $this->dispatch('notify', message: 'CMS section deleted successfully');
             $this->deletingId = null;
@@ -66,17 +67,13 @@ class Index extends Component
     public function render()
     {
         return view('livewire.admin.cms.index', [
+            'page' => Page::findOrFail($this->pageId),
             'sections' => CmsSection::query()
-                ->when($this->themeFilter, fn ($q) => $q->where('theme', $this->themeFilter))
-                ->when($this->pageFilter, fn ($q) => $q->where('page', $this->pageFilter))
-                ->when($this->search, fn ($q) => $q->where(function ($q) {
-                    $q->where('page', 'like', "%{$this->search}%")
-                        ->orWhere('section', 'like', "%{$this->search}%");
-                }))
+                ->where('page_id', $this->pageId)
+                ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
+                ->orderBy('sort_order')
                 ->orderBy('id')
                 ->paginate(30),
-            'themes' => \App\Support\Themes::all(),
-            'pages' => CmsSection::query()->distinct()->orderBy('page')->pluck('page'),
         ])->layout('layouts.admin', ['title' => 'CMS']);
     }
 }

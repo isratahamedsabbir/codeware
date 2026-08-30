@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\CmsSection;
+use App\Models\Page;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -13,11 +14,11 @@ class CmsSectionFactory extends Factory
     public function definition(): array
     {
         return [
-            'page' => 'home',
-            'section' => fake()->unique()->word(),
+            'page_id' => Page::factory(),
+            'name' => fake()->unique()->word(),
+            'sort_order' => 0,
             'title' => ['en' => fake()->sentence(3), 'bn' => ''],
             'description' => ['en' => fake()->sentence(10), 'bn' => ''],
-            'buttons' => [],
             'cards' => [],
             'metadata' => [],
             'image' => null,

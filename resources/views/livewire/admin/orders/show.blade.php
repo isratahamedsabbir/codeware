@@ -1,7 +1,7 @@
 <div class="max-w-[1200px] w-full mx-auto">
 
     @push('page-header-actions')
-        <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.orders') }}" wire:navigate class="border border-zinc-800 rounded!">
+        <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.orders') }}" wire:navigate>
             Back to Orders
         </flux:button>
 

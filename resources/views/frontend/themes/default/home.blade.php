@@ -36,7 +36,6 @@
         @forelse ($sections as $section)
             @php
                 $hasCards = filled($section->localizedCards());
-                $hasButtons = filled($section->localizedButtons());
             @endphp
 
             @if ($section->bg_image)
@@ -51,17 +50,6 @@
                         @if ($section->localized('description'))
                             <p class="mt-4 text-lg text-zinc-100">{{ $section->localized('description') }}</p>
                         @endif
-                        @if ($hasButtons)
-                            <div class="mt-8 flex flex-wrap justify-center gap-3">
-                                @foreach ($section->localizedButtons() as $button)
-                                    <a href="{{ $button['link'] ?? '#' }}"
-                                        class="rounded-lg px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:opacity-90"
-                                        style="background-color: {{ $button['color'] ?: 'var(--color-primary)' }}">
-                                        {{ $button['label'] }}
-                                    </a>
-                                @endforeach
-                            </div>
-                        @endif
                     </div>
                 </section>
             @else
@@ -73,17 +61,6 @@
                             @endif
                             @if ($section->localized('description'))
                                 <p class="mt-4 text-zinc-600">{{ $section->localized('description') }}</p>
-                            @endif
-                            @if ($hasButtons)
-                                <div class="mt-6 flex flex-wrap {{ $section->image ? '' : 'justify-center' }} gap-3">
-                                    @foreach ($section->localizedButtons() as $button)
-                                        <a href="{{ $button['link'] ?? '#' }}"
-                                            class="rounded-lg px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
-                                            style="background-color: {{ $button['color'] ?: 'var(--color-primary)' }}">
-                                            {{ $button['label'] }}
-                                        </a>
-                                    @endforeach
-                                </div>
                             @endif
                         </div>
                         @if ($section->image)

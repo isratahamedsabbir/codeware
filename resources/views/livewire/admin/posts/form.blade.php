@@ -19,8 +19,7 @@
     </style>
 
     @push('page-header-actions')
-        <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.posts') }}" wire:navigate
-            class="border border-zinc-800 rounded!">
+        <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.posts') }}" wire:navigate>
             Back
         </flux:button>
     @endpush
@@ -171,7 +170,7 @@
                     class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
                     Page
                 </div>
-                <div class="px-4 py-3 border-b border-zinc-50">
+                <div class="px-4 py-3">
                     @if ($pageId)
                         <flux:button size="xs" variant="outline" icon="arrow-top-right-on-square"
                             href="{{ route('admin.pages.edit', $pageId) }}" wire:navigate class="w-full justify-center">
@@ -182,35 +181,12 @@
                             you save.</p>
                     @endif
                 </div>
-                <div class="px-4 py-3">
-                    @if ($postId)
-                        <flux:button size="xs" variant="outline" icon="arrow-top-right-on-square"
-                            wire:click="openPuckEditor" class="w-full justify-center">
-                            Open Page Builder
-                        </flux:button>
-                    @else
-                        <flux:button size="xs" variant="outline" wire:click="saveAndOpenPageBuilder"
-                            class="w-full justify-center">
-                            Save & Open Builder
-                        </flux:button>
-                        <p class="text-[10px] text-zinc-400 mt-2 leading-relaxed">Save the post first to unlock the
-                            visual page builder.</p>
-                    @endif
-                </div>
             </div>
 
             <livewire:admin.media-library.picker-modal />
 
             {{-- Footer --}}
             <div class="flex justify-end items-center gap-3 border-t border-zinc-100 flex-wrap">
-                <a href="{{ route('admin.posts') }}" wire:navigate
-                    class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-[5px] border text-red-600 border-red-200 bg-white hover:bg-red-50 hover:border-red-400 transition-colors h-10">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                    Cancel
-                </a>
                 <button wire:click="save" wire:loading.attr="disabled" wire:target="save"
                     class="admin-btn-save inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
                     <svg wire:loading.remove wire:target="save" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

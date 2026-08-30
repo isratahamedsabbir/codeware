@@ -1,8 +1,7 @@
 <div class="max-w-[1600px] w-full mx-auto flex-1">
 
     @push('page-header-actions')
-        <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.languages') }}" wire:navigate
-            class="border border-zinc-800 rounded!">
+        <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.languages') }}" wire:navigate>
             {{ __('Back') }}
         </flux:button>
     @endpush
@@ -93,14 +92,6 @@
 
             {{-- Footer --}}
             <div class="flex justify-end items-center gap-3 border-t border-zinc-100 flex-wrap">
-                <a href="{{ route('admin.languages') }}" wire:navigate
-                    class="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg border text-red-600 border-red-200 bg-white hover:bg-red-50 hover:border-red-400 transition-colors">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                    {{ __('Cancel') }}
-                </a>
                 <button wire:click="save" wire:loading.attr="disabled"
                     class="admin-btn-save inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

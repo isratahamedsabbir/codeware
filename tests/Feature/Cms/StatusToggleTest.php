@@ -96,9 +96,10 @@ it('toggles a page status and its linked entity from the list', function () {
 });
 
 it('toggles a cms section status from the list', function () {
-    $cms = CmsSection::factory()->create(['status' => 'inactive']);
+    $page = Page::factory()->create();
+    $cms = CmsSection::factory()->create(['page_id' => $page->id, 'status' => 'inactive']);
 
-    Livewire::test(CmsIndex::class)->call('toggleStatus', $cms->id);
+    Livewire::test(CmsIndex::class, ['pageId' => $page->id])->call('toggleStatus', $cms->id);
 
     expect($cms->fresh()->status)->toBe('active');
 });

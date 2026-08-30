@@ -42,7 +42,7 @@
                 </a>
                 @foreach ($rest as $section)
                     @if ($section->localized('title'))
-                        <a href="#{{ $section->section }}" class="pf-nav-link pf-mono text-xs uppercase tracking-widest">
+                        <a href="#{{ $section->name }}" class="pf-nav-link pf-mono text-xs uppercase tracking-widest">
                             {{ $section->localized('title') }}
                         </a>
                     @endif
@@ -90,18 +90,6 @@
                             <p class="mt-6 max-w-xl text-lg text-(--pf-text-muted)">{{ $first->localized('description') }}</p>
                         @endif
 
-                        @if (filled($first->localizedButtons()))
-                            <div class="mt-10 flex flex-wrap gap-4">
-                                @foreach ($first->localizedButtons() as $index => $button)
-                                    <a href="{{ $button['link'] ?? '#' }}"
-                                        @class(['pf-mono inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition hover:-translate-y-0.5', 'pf-btn-solid' => $index === 0, 'pf-btn-outline' => $index > 0])
-                                        @if ($index === 0) style="background-color: {{ $button['color'] ?: 'var(--pf-primary)' }}" @endif>
-                                        {{ $button['label'] }}
-                                    </a>
-                                @endforeach
-                            </div>
-                        @endif
-
                         @if ($socials->isNotEmpty() || $contactEmail)
                             <div class="mt-10 flex gap-3">
                                 @foreach ($socials as $social)
@@ -144,7 +132,7 @@
         @foreach ($rest as $index => $section)
             @php $hasCards = filled($section->localizedCards()); @endphp
 
-            <section id="{{ $section->section }}" class="border-t border-(--pf-border) px-6 py-24">
+            <section id="{{ $section->name }}" class="border-t border-(--pf-border) px-6 py-24">
                 <div class="mx-auto max-w-6xl">
                     @if ($section->localized('title') || $section->localized('description'))
                         <div class="mb-14 max-w-xl">
@@ -154,17 +142,6 @@
                             @endif
                             @if ($section->localized('description'))
                                 <p class="mt-4 text-(--pf-text-muted)">{{ $section->localized('description') }}</p>
-                            @endif
-                            @if (filled($section->localizedButtons()))
-                                <div class="mt-6 flex flex-wrap gap-4">
-                                    @foreach ($section->localizedButtons() as $button)
-                                        <a href="{{ $button['link'] ?? '#' }}"
-                                            class="pf-btn-solid pf-mono inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition hover:-translate-y-0.5"
-                                            style="background-color: {{ $button['color'] ?: 'var(--pf-primary)' }}">
-                                            {{ $button['label'] }}
-                                        </a>
-                                    @endforeach
-                                </div>
                             @endif
                         </div>
                     @endif

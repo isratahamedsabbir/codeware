@@ -13,13 +13,12 @@ return new class extends Migration
     {
         Schema::create('cms', function (Blueprint $table) {
             $table->id();
-            $table->string('theme')->default('default');
-            $table->string('page');
-            $table->string('section');
-            $table->unique(['theme', 'page', 'section']);
+            $table->foreignId('page_id')->constrained('pages')->cascadeOnDelete();
+            $table->string('name');
+            $table->unique(['page_id', 'name']);
+            $table->unsignedInteger('sort_order')->default(0);
             $table->json('title')->nullable();
             $table->json('description')->nullable();
-            $table->json('buttons')->nullable();
             $table->json('cards')->nullable();
             $table->json('metadata')->nullable();
             $table->string('image')->nullable();

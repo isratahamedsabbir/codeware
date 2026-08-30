@@ -60,17 +60,6 @@
                             {{ $first->localized('description') }}
                         </p>
                     @endif
-                    @if (filled($first->localizedButtons()))
-                        <div class="mt-10 flex flex-wrap justify-center gap-4">
-                            @foreach ($first->localizedButtons() as $button)
-                                <a href="{{ $button['link'] ?? '#' }}"
-                                    class="rounded-full px-8 py-3.5 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5"
-                                    style="background-color: {{ $button['color'] ?: 'var(--color-primary)' }}">
-                                    {{ $button['label'] }}
-                                </a>
-                            @endforeach
-                        </div>
-                    @endif
                 </div>
             </section>
         @else
@@ -85,7 +74,6 @@
         @foreach ($rest as $section)
             @php
                 $hasCards = filled($section->localizedCards());
-                $hasButtons = filled($section->localizedButtons());
             @endphp
 
             <section class="mx-auto max-w-7xl px-6 py-16">
@@ -96,17 +84,6 @@
                         @endif
                         @if ($section->localized('description'))
                             <p class="mt-3 text-zinc-500">{{ $section->localized('description') }}</p>
-                        @endif
-                        @if ($hasButtons)
-                            <div class="mt-6 flex flex-wrap justify-center gap-3">
-                                @foreach ($section->localizedButtons() as $button)
-                                    <a href="{{ $button['link'] ?? '#' }}"
-                                        class="rounded-full px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
-                                        style="background-color: {{ $button['color'] ?: 'var(--color-primary)' }}">
-                                        {{ $button['label'] }}
-                                    </a>
-                                @endforeach
-                            </div>
                         @endif
                     </div>
                 @endif

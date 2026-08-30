@@ -1,5 +1,5 @@
 {
-  "title": "Products - AgroSAL",
+  "title": "Products",
   "description": "Explore our agricultural products",
   "root": { "props": {} },
   "content": [
@@ -20,7 +20,7 @@
           {
             "id": "1",
             "slug": "organic-fertilizer",
-            "name": "AgroSAL Organic Fertilizer",
+            "name": "Organic Fertilizer",
             "nameBn": "জেব সার",
             "category": "Soil Health",
             "image": "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800",

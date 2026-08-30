@@ -40,11 +40,12 @@ Route::middleware('feature:pages')->group(function () {
     Route::get('/pages/{id}/edit', App\Livewire\Admin\Pages\Form::class)->name('pages.edit');
 });
 
-// CMS — freeform titles/descriptions/buttons/cards/images sections, grouped by page
+// CMS — freeform titles/descriptions/buttons/cards/images sections, always scoped
+// to one Page (reached from that page's row on the Pages screen, never standalone)
 Route::middleware('feature:cms')->group(function () {
-    Route::get('/cms', App\Livewire\Admin\Cms\Index::class)->name('cms');
-    Route::get('/cms/create', App\Livewire\Admin\Cms\Form::class)->name('cms.create');
-    Route::get('/cms/{id}/edit', App\Livewire\Admin\Cms\Form::class)->name('cms.edit');
+    Route::get('/pages/{pageId}/cms', App\Livewire\Admin\Cms\Index::class)->name('cms');
+    Route::get('/pages/{pageId}/cms/create', App\Livewire\Admin\Cms\Form::class)->name('cms.create');
+    Route::get('/pages/{pageId}/cms/{id}/edit', App\Livewire\Admin\Cms\Form::class)->name('cms.edit');
 });
 
 // Media Library (content — Staff included)

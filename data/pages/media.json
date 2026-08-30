@@ -1,13 +1,13 @@
 {
-  "title": "Media Center - AgroSAL",
-  "description": "Latest news and updates from AgroSAL",
+  "title": "Media Center",
+  "description": "Latest news and updates from our team",
   "root": { "props": {} },
   "content": [
     {
       "type": "HeroSection",
       "props": {
         "title": "Media Center",
-        "subtitle": "Stay updated with the latest news, insights, and announcements from AgroSAL.",
+        "subtitle": "Stay updated with the latest news, insights, and announcements from our team.",
         "image": "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1920"
       }
     },
@@ -17,9 +17,9 @@
         "title": "Latest Updates",
         "subtitle": "News, blogs, and announcements",
         "articles": [
-          { "id": "1", "title": "AgroSAL Launches New Organic Compost Line", "category": "News", "image": "/organic_fertilizer.jpg?w=800", "excerpt": "Introducing our premium range of organic composts designed for sustainable agriculture.", "publishedAt": "2026-03-15", "author": "Media Team" },
+          { "id": "1", "title": "New Organic Compost Line Launched", "category": "News", "image": "/organic_fertilizer.jpg?w=800", "excerpt": "Introducing our premium range of organic composts designed for sustainable agriculture.", "publishedAt": "2026-03-15", "author": "Media Team" },
           { "id": "2", "title": "5 Benefits of Mulching Films in Modern Agriculture", "category": "Blog", "image": "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=800", "excerpt": "Discover how mulching films can transform your crop yield and reduce water consumption.", "publishedAt": "2026-03-10", "author": "Dr. Rahman" },
-          { "id": "3", "title": "AgroSAL Partners with Local Farmers for Buy Back Program", "category": "Announcement", "image": "/organic_fertilizer.jpg?w=800", "excerpt": "A new initiative to support farmers by ensuring fair prices for their harvest.", "publishedAt": "2026-03-01" }
+          { "id": "3", "title": "Partnership with Local Farmers for Buy Back Program", "category": "Announcement", "image": "/organic_fertilizer.jpg?w=800", "excerpt": "A new initiative to support farmers by ensuring fair prices for their harvest.", "publishedAt": "2026-03-01" }
         ],
         "viewAllLink": "/media"
       }

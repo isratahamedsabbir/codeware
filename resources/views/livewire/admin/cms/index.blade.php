@@ -1,3 +1,9 @@
+@push('page-header-actions')
+    <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.pages') }}" wire:navigate>
+        Back to Pages
+    </flux:button>
+@endpush
+
 <div class="bg-white rounded-lg shadow-sm overflow-hidden">
 
     {{-- Header --}}
@@ -10,30 +16,12 @@
                     <circle cx="11" cy="11" r="8" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
-                <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search page or section…"
+                <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search by name…"
                     class="w-full pl-9 pr-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all" />
             </div>
-
-            {{-- Theme filter --}}
-            <select wire:model.live="themeFilter"
-                class="text-sm border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all">
-                <option value="">All themes</option>
-                @foreach ($themes as $slug => $themeLabel)
-                    <option value="{{ $slug }}">{{ $themeLabel }}</option>
-                @endforeach
-            </select>
-
-            {{-- Page filter --}}
-            <select wire:model.live="pageFilter"
-                class="text-sm border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all">
-                <option value="">All pages</option>
-                @foreach ($pages as $pageValue)
-                    <option value="{{ $pageValue }}">{{ $pageValue }}</option>
-                @endforeach
-            </select>
         </div>
 
-        <a href="{{ route('admin.cms.create') }}" wire:navigate
+        <a href="{{ route('admin.cms.create', ['pageId' => $page->id]) }}" wire:navigate
             class="admin-btn-success inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <line x1="12" y1="5" x2="12" y2="19" />
@@ -44,44 +32,58 @@
     </div>
 
     {{-- Table --}}
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto"
+        x-data="{
+            init() {
+                if (typeof Sortable === 'undefined') return;
+                new Sortable(this.$refs.sortableRows, {
+                    animation: 150,
+                    handle: '.drag-handle',
+                    ghostClass: 'bg-blue-50',
+                    onEnd: (evt) => {
+                        const rows = [...this.$refs.sortableRows.querySelectorAll('[data-cms-id]')];
+                        const order = rows.map(r => parseInt(r.dataset.cmsId));
+                        $wire.reorder(order);
+                    }
+                });
+            }
+        }">
         <div class="border border-zinc-100 rounded-lg">
             <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
                 <colgroup>
-                    <col style="width:15%">
-                    <col style="width:17%">
-                    <col style="width:17%">
-                    <col style="width:26%">
-                    <col style="width:10%">
+                    <col style="width:5%">
+                    <col style="width:25%">
+                    <col style="width:31%">
+                    <col style="width:14%">
                     <col style="width:15%">
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Theme</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Page</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Section</th>
+                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
+                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Name</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Content</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
                         <th class="px-4 py-2.5 text-right text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200">
+                <tbody x-ref="sortableRows" class="divide-y divide-gray-200">
                     @forelse ($sections as $cms)
-                        <tr class="hover:bg-indigo-50/30 transition-colors">
+                        <tr class="hover:bg-indigo-50/30 transition-colors" data-cms-id="{{ $cms->id }}">
 
-                            {{-- Theme --}}
-                            <td class="px-4 py-3.5">
-                                <span class="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 text-xs font-medium">{{ $cms->theme }}</span>
+                            {{-- Drag handle --}}
+                            <td class="px-2 py-3.5 text-center">
+                                <div class="drag-handle cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-600 inline-flex">
+                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="3" y1="6" x2="21" y2="6" />
+                                        <line x1="3" y1="12" x2="21" y2="12" />
+                                        <line x1="3" y1="18" x2="21" y2="18" />
+                                    </svg>
+                                </div>
                             </td>
 
-                            {{-- Page --}}
+                            {{-- Name --}}
                             <td class="px-4 py-3.5">
-                                <span class="text-sm font-medium text-zinc-800">{{ $cms->page }}</span>
-                            </td>
-
-                            {{-- Section --}}
-                            <td class="px-4 py-3.5">
-                                <span class="text-sm text-zinc-600">{{ $cms->section }}</span>
+                                <span class="text-sm font-medium text-zinc-800">{{ $cms->name }}</span>
                             </td>
 
                             {{-- Content summary --}}
@@ -93,7 +95,6 @@
                                     @if (filled($cms->description['en'] ?? null) || filled($cms->description['bn'] ?? null))
                                         <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">desc</span>
                                     @endif
-                                    <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">{{ count($cms->buttons ?? []) }} btn</span>
                                     <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">{{ count($cms->cards ?? []) }} card{{ count($cms->cards ?? []) === 1 ? '' : 's' }}</span>
                                     @if ($cms->image)
                                         <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">img</span>
@@ -129,7 +130,7 @@
 
                                     {{-- Edit --}}
                                     <div class="relative group">
-                                        <a href="{{ route('admin.cms.edit', $cms->id) }}" wire:navigate
+                                        <a href="{{ route('admin.cms.edit', ['pageId' => $page->id, 'id' => $cms->id]) }}" wire:navigate
                                             aria-label="Edit section"
                                             class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-primary text-primary hover:bg-primary hover:text-white hover:-translate-y-px"
                                             style="box-shadow:none"
@@ -178,7 +179,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-16 text-center">
+                            <td colspan="5" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <rect x="3" y="3" width="7" height="7" />

@@ -4,6 +4,7 @@ use App\Livewire\Admin\Cms\Form as CmsForm;
 use App\Livewire\Admin\Cms\Index as CmsIndex;
 use App\Models\CmsSection;
 use App\Models\MenuItem;
+use App\Models\Page;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -12,41 +13,41 @@ beforeEach(function () {
     $this->actingAs($this->admin);
 });
 
-it('renders the cms index', function () {
-    Livewire::test(CmsIndex::class)->assertStatus(200);
+it('renders the cms index for a page', function () {
+    $page = Page::factory()->create();
+
+    Livewire::test(CmsIndex::class, ['pageId' => $page->id])->assertStatus(200);
 });
 
 it('displays existing cms sections in the table', function () {
-    CmsSection::factory()->create(['page' => 'home', 'section' => 'hero']);
+    $page = Page::factory()->create();
+    CmsSection::factory()->create(['page_id' => $page->id, 'name' => 'hero']);
 
-    Livewire::test(CmsIndex::class)
-        ->assertSee('home')
+    Livewire::test(CmsIndex::class, ['pageId' => $page->id])
         ->assertSee('hero');
 });
 
-it('filters cms sections by page', function () {
-    CmsSection::factory()->create(['page' => 'home', 'section' => 'hero']);
-    CmsSection::factory()->create(['page' => 'about', 'section' => 'team']);
+it('only shows sections that belong to the page it was opened for', function () {
+    $home = Page::factory()->create();
+    $about = Page::factory()->create();
+    CmsSection::factory()->create(['page_id' => $home->id, 'name' => 'hero']);
+    CmsSection::factory()->create(['page_id' => $about->id, 'name' => 'team']);
 
-    Livewire::test(CmsIndex::class)
-        ->set('pageFilter', 'about')
+    Livewire::test(CmsIndex::class, ['pageId' => $about->id])
         ->assertDontSee('hero')
         ->assertSee('team');
 });
 
-it('creates a cms section with a title, description, image, buttons and cards', function () {
-    Livewire::test(CmsForm::class)
-        ->set('page', 'home')
-        ->set('section', 'hero')
+it('creates a cms section with a name, title, description, image and cards', function () {
+    $page = Page::factory()->create();
+
+    Livewire::test(CmsForm::class, ['pageId' => $page->id])
+        ->set('name', 'hero')
         ->set('bg_image', '/storage/media/bg.jpg')
         ->set('image', '/storage/media/hero.jpg')
         ->set('title.en', 'Welcome')
         ->set('title.bn', 'স্বাগতম')
         ->set('description.en', 'We build great software.')
-        ->call('addButton')
-        ->set('buttons.0.label.en', 'Get Started')
-        ->set('buttons.0.color', '#16a34a')
-        ->set('buttons.0.link', '/contact')
         ->call('addCard')
         ->set('cards.0.image', '/storage/media/card.jpg')
         ->set('cards.0.title.en', 'Fast')
@@ -56,16 +57,13 @@ it('creates a cms section with a title, description, image, buttons and cards', 
         ->set('metadata.0.value', 'website')
         ->call('save');
 
-    $cms = CmsSection::where('page', 'home')->where('section', 'hero')->sole();
+    $cms = CmsSection::where('page_id', $page->id)->where('name', 'hero')->sole();
 
     expect($cms->bg_image)->toBe('/storage/media/bg.jpg')
         ->and($cms->image)->toBe('/storage/media/hero.jpg')
         ->and($cms->title['en'])->toBe('Welcome')
         ->and($cms->title['bn'])->toBe('স্বাগতম')
         ->and($cms->description['en'])->toBe('We build great software.')
-        ->and($cms->buttons[0]['label']['en'])->toBe('Get Started')
-        ->and($cms->buttons[0]['color'])->toBe('#16a34a')
-        ->and($cms->buttons[0]['link'])->toBe('/contact')
         ->and($cms->cards[0]['title']['en'])->toBe('Fast')
         ->and($cms->cards[0]['image'])->toBe('/storage/media/card.jpg')
         ->and($cms->metadata[0]['key'])->toBe('og:type')
@@ -73,7 +71,9 @@ it('creates a cms section with a title, description, image, buttons and cards', 
 });
 
 it('can add and remove multiple metadata fields before saving', function () {
-    Livewire::test(CmsForm::class)
+    $page = Page::factory()->create();
+
+    Livewire::test(CmsForm::class, ['pageId' => $page->id])
         ->call('addMetadata')
         ->call('addMetadata')
         ->set('metadata.0.key', 'first')
@@ -85,9 +85,10 @@ it('can add and remove multiple metadata fields before saving', function () {
 });
 
 it('drops blank metadata rows when saving, but keeps filled ones', function () {
-    Livewire::test(CmsForm::class)
-        ->set('page', 'home')
-        ->set('section', 'hero')
+    $page = Page::factory()->create();
+
+    Livewire::test(CmsForm::class, ['pageId' => $page->id])
+        ->set('name', 'hero')
         ->call('addMetadata')
         ->call('addMetadata')
         ->set('metadata.0.key', 'og:type')
@@ -96,16 +97,17 @@ it('drops blank metadata rows when saving, but keeps filled ones', function () {
         ->set('metadata.1.value', '')
         ->call('save');
 
-    $cms = CmsSection::where('page', 'home')->where('section', 'hero')->sole();
+    $cms = CmsSection::where('page_id', $page->id)->where('name', 'hero')->sole();
 
     expect($cms->metadata)->toHaveCount(1)
         ->and($cms->metadata[0]['key'])->toBe('og:type');
 });
 
 it('rejects duplicate metadata keys', function () {
-    Livewire::test(CmsForm::class)
-        ->set('page', 'home')
-        ->set('section', 'hero')
+    $page = Page::factory()->create();
+
+    Livewire::test(CmsForm::class, ['pageId' => $page->id])
+        ->set('name', 'hero')
         ->call('addMetadata')
         ->call('addMetadata')
         ->set('metadata.0.key', 'og:type')
@@ -117,95 +119,103 @@ it('rejects duplicate metadata keys', function () {
 });
 
 it('loads existing metadata for editing', function () {
+    $page = Page::factory()->create();
     $cms = CmsSection::factory()->create([
-        'page' => 'home',
-        'section' => 'hero',
+        'page_id' => $page->id,
+        'name' => 'hero',
         'metadata' => [['key' => 'og:type', 'value' => 'website']],
     ]);
 
-    Livewire::test(CmsForm::class, ['id' => $cms->id])
+    Livewire::test(CmsForm::class, ['pageId' => $page->id, 'id' => $cms->id])
         ->assertSet('metadata.0.key', 'og:type')
         ->assertSet('metadata.0.value', 'website');
 });
 
-it('validates page and section are required', function () {
-    Livewire::test(CmsForm::class)
-        ->set('page', '')
-        ->set('section', '')
+it('validates name is required', function () {
+    $page = Page::factory()->create();
+
+    Livewire::test(CmsForm::class, ['pageId' => $page->id])
+        ->set('name', '')
         ->call('save')
-        ->assertHasErrors(['page', 'section']);
+        ->assertHasErrors(['name']);
 });
 
 it('rejects a duplicate section name within the same page', function () {
-    CmsSection::factory()->create(['page' => 'home', 'section' => 'hero']);
+    $page = Page::factory()->create();
+    CmsSection::factory()->create(['page_id' => $page->id, 'name' => 'hero']);
 
-    Livewire::test(CmsForm::class)
-        ->set('page', 'home')
-        ->set('section', 'hero')
+    Livewire::test(CmsForm::class, ['pageId' => $page->id])
+        ->set('name', 'hero')
         ->call('save')
-        ->assertHasErrors(['section']);
+        ->assertHasErrors(['name']);
 });
 
 it('allows the same section name on a different page', function () {
-    CmsSection::factory()->create(['page' => 'home', 'section' => 'hero']);
+    $home = Page::factory()->create();
+    $about = Page::factory()->create();
+    CmsSection::factory()->create(['page_id' => $home->id, 'name' => 'hero']);
 
-    Livewire::test(CmsForm::class)
-        ->set('page', 'about')
-        ->set('section', 'hero')
+    Livewire::test(CmsForm::class, ['pageId' => $about->id])
+        ->set('name', 'hero')
         ->call('save')
-        ->assertHasNoErrors(['section']);
+        ->assertHasNoErrors(['name']);
 
-    expect(CmsSection::where('page', 'about')->where('section', 'hero')->exists())->toBeTrue();
+    expect(CmsSection::where('page_id', $about->id)->where('name', 'hero')->exists())->toBeTrue();
 });
 
 it('allows keeping the same section name when editing that same record', function () {
-    $cms = CmsSection::factory()->create(['page' => 'home', 'section' => 'hero']);
+    $page = Page::factory()->create();
+    $cms = CmsSection::factory()->create(['page_id' => $page->id, 'name' => 'hero']);
 
-    Livewire::test(CmsForm::class, ['id' => $cms->id])
-        ->set('page', 'home')
-        ->set('section', 'hero')
+    Livewire::test(CmsForm::class, ['pageId' => $page->id, 'id' => $cms->id])
+        ->set('name', 'hero')
         ->call('save')
-        ->assertHasNoErrors(['section']);
-});
-
-it('can remove a button before saving', function () {
-    Livewire::test(CmsForm::class)
-        ->call('addButton')
-        ->call('addButton')
-        ->set('buttons.0.label.en', 'First')
-        ->set('buttons.1.label.en', 'Second')
-        ->call('removeButton', 0)
-        ->assertSet('buttons.0.label.en', 'Second');
+        ->assertHasNoErrors(['name']);
 });
 
 it('loads an existing section for editing', function () {
+    $page = Page::factory()->create();
     $cms = CmsSection::factory()->create([
-        'page' => 'home',
-        'section' => 'hero',
+        'page_id' => $page->id,
+        'name' => 'hero',
         'title' => ['en' => 'Hi', 'bn' => ''],
     ]);
 
-    Livewire::test(CmsForm::class, ['id' => $cms->id])
-        ->assertSet('page', 'home')
-        ->assertSet('section', 'hero')
+    Livewire::test(CmsForm::class, ['pageId' => $page->id, 'id' => $cms->id])
+        ->assertSet('pageId', $page->id)
+        ->assertSet('name', 'hero')
         ->assertSet('title.en', 'Hi');
 });
 
 it('can delete a cms section', function () {
-    $cms = CmsSection::factory()->create();
+    $page = Page::factory()->create();
+    $cms = CmsSection::factory()->create(['page_id' => $page->id]);
 
-    Livewire::test(CmsIndex::class)
+    Livewire::test(CmsIndex::class, ['pageId' => $page->id])
         ->call('confirmDelete', $cms->id)
         ->call('delete');
 
     expect(CmsSection::find($cms->id))->toBeNull();
 });
 
-it('seeds a CMS menu item under Content, below Pages', function () {
+it('can reorder cms sections within a page', function () {
+    $page = Page::factory()->create();
+    $first = CmsSection::factory()->create(['page_id' => $page->id, 'name' => 'hero', 'sort_order' => 0]);
+    $second = CmsSection::factory()->create(['page_id' => $page->id, 'name' => 'features', 'sort_order' => 1]);
+
+    Livewire::test(CmsIndex::class, ['pageId' => $page->id])
+        ->call('reorder', [$second->id, $first->id]);
+
+    expect($second->fresh()->sort_order)->toBe(0)
+        ->and($first->fresh()->sort_order)->toBe(1);
+});
+
+it('seeds Pages as a standalone menu item, with no separate CMS item', function () {
     $this->artisan('db:seed', ['--class' => 'AdminMenuSeeder']);
 
-    $content = MenuItem::where('label', 'Content')->where('is_group', true)->sole();
-    $children = $content->children()->orderBy('sort_order')->pluck('label')->all();
+    $pages = MenuItem::where('route_name', 'admin.pages')->sole();
 
-    expect($children)->toBe(['Pages', 'CMS']);
+    expect($pages->is_group)->toBeFalse()
+        ->and($pages->parent_id)->toBeNull()
+        ->and(MenuItem::where('route_name', 'admin.cms')->exists())->toBeFalse();
 });

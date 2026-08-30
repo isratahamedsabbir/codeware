@@ -46,14 +46,9 @@ class AdminMenuSeeder extends Seeder
             ['Menu', 'bars-3', 'admin.menu'],
         ]);
 
-        $this->group('Inquiries', 7, [
-            ['Contacts', 'inbox', 'admin.contacts'],
-        ]);
+        $this->standalone('Contacts', 'inbox', 'admin.contacts', 7);
 
-        $this->group('Content', 8, [
-            ['Pages', 'document', 'admin.pages'],
-            ['CMS', 'squares-plus', 'admin.cms'],
-        ]);
+        $this->standalone('Pages', 'document', 'admin.pages', 8);
 
         $this->group('Localization', 9, [
             ['Languages', 'language', 'admin.languages'],

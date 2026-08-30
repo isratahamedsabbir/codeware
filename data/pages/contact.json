@@ -1,5 +1,5 @@
 {
-  "title": "Contact Us - AgroSAL",
+  "title": "Contact Us",
   "description": "Get in touch with us",
   "root": { "props": {} },
   "content": [
@@ -18,7 +18,7 @@
         "contactInfo": {
           "address": "Dhaka, Bangladesh, 1212",
           "phone": "09612-222345",
-          "email": "info@agrosal.com.bd",
+          "email": "info@example.com",
           "hours": "Sunday - Thursday: 9:00 AM - 6:00 PM"
         },
         "showMap": true,
