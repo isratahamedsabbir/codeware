@@ -63,9 +63,9 @@
                 <flux:textarea wire:model="description.bn" rows="8" placeholder="এই সেকশনের জন্য সংক্ষিপ্ত বিবরণ" />
             </flux:field>
 
-            <x-media-picker model="image" label="Image" />
+            <x-media-picker model="image" label="Image" dropzone />
 
-            <x-media-picker model="bg_image" label="Background Image" />
+            <x-media-picker model="bg_image" label="Background Image" dropzone />
         </div>
     </div>
 
@@ -122,33 +122,25 @@
 
         @forelse ($cards as $i => $card)
             <div class="flex items-start gap-2 rounded-lg border border-zinc-100 p-3">
-                <div class="flex-1 grid grid-cols-1 lg:grid-cols-[3fr_1fr] gap-x-7 gap-y-4">
+                <div class="flex-1 space-y-4 min-w-0">
+                    <flux:field x-show="locale === 'en'">
+                        <flux:label>Title (English)</flux:label>
+                        <flux:input wire:model="cards.{{ $i }}.title.en" placeholder="e.g. Fast Delivery" class="font-medium" />
+                    </flux:field>
+                    <flux:field x-show="locale === 'bn'" x-cloak>
+                        <flux:label>Title (বাংলা)</flux:label>
+                        <flux:input wire:model="cards.{{ $i }}.title.bn" placeholder="যেমন: দ্রুত ডেলিভারি" class="font-medium" />
+                    </flux:field>
+                    <flux:field x-show="locale === 'en'">
+                        <flux:label>Description (English)</flux:label>
+                        <flux:textarea wire:model="cards.{{ $i }}.description.en" rows="8" placeholder="Short description shown on the card" />
+                    </flux:field>
+                    <flux:field x-show="locale === 'bn'" x-cloak>
+                        <flux:label>Description (বাংলা)</flux:label>
+                        <flux:textarea wire:model="cards.{{ $i }}.description.bn" rows="8" placeholder="কার্ডে দেখানো সংক্ষিপ্ত বিবরণ" />
+                    </flux:field>
 
-                    {{-- Left: title & description --}}
-                    <div class="space-y-4 min-w-0">
-                        <flux:field x-show="locale === 'en'">
-                            <flux:label>Title (English)</flux:label>
-                            <flux:input wire:model="cards.{{ $i }}.title.en" placeholder="e.g. Fast Delivery" class="font-medium" />
-                        </flux:field>
-                        <flux:field x-show="locale === 'bn'" x-cloak>
-                            <flux:label>Title (বাংলা)</flux:label>
-                            <flux:input wire:model="cards.{{ $i }}.title.bn" placeholder="যেমন: দ্রুত ডেলিভারি" class="font-medium" />
-                        </flux:field>
-                        <flux:field x-show="locale === 'en'">
-                            <flux:label>Description (English)</flux:label>
-                            <flux:textarea wire:model="cards.{{ $i }}.description.en" rows="8" placeholder="Short description shown on the card" />
-                        </flux:field>
-                        <flux:field x-show="locale === 'bn'" x-cloak>
-                            <flux:label>Description (বাংলা)</flux:label>
-                            <flux:textarea wire:model="cards.{{ $i }}.description.bn" rows="8" placeholder="কার্ডে দেখানো সংক্ষিপ্ত বিবরণ" />
-                        </flux:field>
-                    </div>
-
-                    {{-- Right: card image --}}
-                    <div class="min-w-0">
-                        <x-media-picker model="cards.{{ $i }}.image" label="Card Image" />
-                    </div>
-
+                    <x-media-picker model="cards.{{ $i }}.image" label="Card Image" dropzone />
                 </div>
                 <button type="button" wire:click="removeCard({{ $i }})"
                     class="mt-1 shrink-0 text-rose-500 hover:text-rose-700 cursor-pointer" aria-label="Remove card">

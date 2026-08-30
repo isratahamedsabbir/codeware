@@ -161,7 +161,7 @@
                 </div>
                 <div class="px-4 py-4">
                     <x-media-picker model="featured_image" label="" placeholder="Select image"
-                        :picker-id="$featuredImagePickerId" />
+                        :picker-id="$featuredImagePickerId" dropzone />
                 </div>
             </div>
 

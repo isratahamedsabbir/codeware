@@ -123,7 +123,8 @@
                                         @elseif ($setting->key === 'site_icon' || $setting->key === 'site_icon_white' || $setting->key === 'favicon' || $setting->key === 'loader')
                                             <x-media-picker model="settings.{{ $setting->key }}"
                                                 label="{{ match ($setting->key) { 'favicon' => 'Favicon', 'loader' => 'Loader (GIF)', 'site_icon_white' => 'White Icon', default => 'Site Icon' } }}"
-                                                placeholder="{{ match ($setting->key) { 'loader' => 'Choose a loading animation (GIF) from the library', 'favicon' => 'Choose a favicon from the library', 'site_icon_white' => 'Choose a white icon from the library', default => 'Choose a site icon from the library' } }}" />
+                                                placeholder="{{ match ($setting->key) { 'loader' => 'Choose a loading animation (GIF) from the library', 'favicon' => 'Choose a favicon from the library', 'site_icon_white' => 'Choose a white icon from the library', default => 'Choose a site icon from the library' } }}"
+                                                dropzone />
                                         @elseif ($setting->type === 'textarea')
                                             <flux:textarea wire:model="settings.{{ $setting->key }}" rows="3" />
                                         @else
@@ -434,7 +435,7 @@
                             placeholder="Description shown when shared on social media" />
                     </flux:field>
                     <x-media-picker model="settings.seo_og_image" label="OG Image"
-                        placeholder="Select OG image from library" />
+                        placeholder="Select OG image from library" dropzone />
                 </div>
 
                 </div>

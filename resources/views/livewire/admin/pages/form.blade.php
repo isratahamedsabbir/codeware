@@ -114,7 +114,7 @@
                     <flux:field>
                         <flux:label>OG Image (1200×630)</flux:label>
                         <x-media-picker model="og_image" label="" placeholder="Select OG image from library"
-                            :picker-id="$ogImagePickerId" />
+                            :picker-id="$ogImagePickerId" dropzone />
                     </flux:field>
 
                     <div class="border-t border-zinc-100 pt-4 space-y-3">

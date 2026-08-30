@@ -109,7 +109,7 @@
                 </div>
                 <div class="px-4 py-4">
                     <x-media-picker model="icon" label="Icon" placeholder="Select icon image from library"
-                        :picker-id="$iconPickerId" />
+                        :picker-id="$iconPickerId" dropzone />
                 </div>
             </div>
 

@@ -5,6 +5,7 @@
     'preview' => true,
     'pickerId' => null,
     'compact' => true,
+    'dropzone' => false,
 ])
 
 @php($pickerId = $pickerId ?: 'mp-' . preg_replace('/[^a-z0-9]/', '-', strtolower($model)))
@@ -74,8 +75,49 @@
 
     <div class="flex min-w-0 items-start gap-4">
 
-        {{-- Preview thumbnail --}}
-        @if ($preview)
+        {{-- Preview / dropzone --}}
+        @if ($preview && $dropzone)
+            <button type="button" @click="openPicker()"
+                class="relative flex h-48 w-full shrink-0 flex-col items-center justify-center gap-2 overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 transition-colors hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <template x-if="selectedUrl">
+                    <img :src="selectedUrl" alt="" class="absolute inset-0 h-full w-full object-cover" />
+                </template>
+                <template x-if="!selectedUrl">
+                    <div class="flex flex-col items-center gap-2">
+                        <span class="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
+                            </svg>
+                        </span>
+                        <span class="text-sm font-semibold text-slate-700">Upload a File</span>
+                        <span class="text-xs text-slate-400">Drag and drop files here</span>
+                    </div>
+                </template>
+                {{-- Hover overlay when image is set --}}
+                <template x-if="selectedUrl">
+                    <div
+                        class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity hover:opacity-100">
+                        <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
+                        </svg>
+                    </div>
+                </template>
+                {{-- X remove button — top-right corner --}}
+                <template x-if="selectedUrl">
+                    <button type="button" @click.stop="clearSelection()"
+                        class="absolute top-1 right-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-white shadow hover:bg-red-50 transition-colors">
+                        <svg class="h-3 w-3 text-red-500" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </template>
+            </button>
+        @elseif ($preview)
             <button type="button" @click="openPicker()"
                 class="relative h-28 w-28 shrink-0 overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400">
                 <template x-if="selectedUrl">
