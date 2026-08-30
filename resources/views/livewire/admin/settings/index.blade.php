@@ -50,19 +50,17 @@
         {{-- General tab --}}
         <div x-show="tab === 'general'">
             <div class="max-w-[1600px]">
-                {{-- General and Images render side by side (via CSS order below); every
-                     other group stacks full-width beneath them, in $groupOrder's order.
-                     General is flex-1, so it stretches to fill the row instead of
-                     leaving empty space next to the fixed-width Images card. --}}
+                {{-- General renders first, Images stacks directly beneath it full-width,
+                     then every other group stacks beneath those, in $groupOrder's order. --}}
                 <div class="flex gap-5 flex-wrap items-start">
                     @foreach ($groupedSettings as $group => $items)
                         <div class="{{ match ($group) {
-                            'general' => 'flex-1 min-w-[280px] order-1',
-                            'images' => 'w-[320px] shrink-0 order-2',
+                            'general' => 'w-full order-1',
+                            'images' => 'w-full order-2',
                             default => 'w-full order-3',
                         } }}">
                             <flux:heading size="sm" class="mb-3 capitalize">{{ $group ?? 'General' }}</flux:heading>
-                            <div class="space-y-4 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 bg-white">
+                            <div class="{{ $group === 'images' ? 'grid grid-cols-2 sm:grid-cols-4 gap-4' : 'space-y-4' }} rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 bg-white">
                                 @foreach ($items as $setting)
                                     <flux:field>
                                         @php

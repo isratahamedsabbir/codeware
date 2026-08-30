@@ -14,6 +14,15 @@
                     class="w-full pl-9 pr-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all" />
             </div>
 
+            {{-- Theme filter --}}
+            <select wire:model.live="themeFilter"
+                class="text-sm border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all">
+                <option value="">All themes</option>
+                @foreach ($themes as $slug => $themeLabel)
+                    <option value="{{ $slug }}">{{ $themeLabel }}</option>
+                @endforeach
+            </select>
+
             {{-- Page filter --}}
             <select wire:model.live="pageFilter"
                 class="text-sm border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all">
@@ -39,14 +48,16 @@
         <div class="border border-zinc-100 rounded-lg">
             <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
                 <colgroup>
-                    <col style="width:20%">
-                    <col style="width:20%">
-                    <col style="width:32%">
-                    <col style="width:13%">
+                    <col style="width:15%">
+                    <col style="width:17%">
+                    <col style="width:17%">
+                    <col style="width:26%">
+                    <col style="width:10%">
                     <col style="width:15%">
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
+                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Theme</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Page</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Section</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Content</th>
@@ -57,6 +68,11 @@
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($sections as $cms)
                         <tr class="hover:bg-indigo-50/30 transition-colors">
+
+                            {{-- Theme --}}
+                            <td class="px-4 py-3.5">
+                                <span class="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 text-xs font-medium">{{ $cms->theme }}</span>
+                            </td>
 
                             {{-- Page --}}
                             <td class="px-4 py-3.5">
@@ -162,7 +178,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-16 text-center">
+                            <td colspan="6" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <rect x="3" y="3" width="7" height="7" />

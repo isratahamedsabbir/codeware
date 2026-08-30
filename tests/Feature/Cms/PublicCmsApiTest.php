@@ -109,13 +109,13 @@ it('caches the response in redis and serves the update immediately after a write
     $this->getJson('/api/v1/cms?page=home&section=hero')
         ->assertJsonPath('data.title', 'Original title');
 
-    expect(Cache::store('redis')->tags(['cms'])->get('cms:home:hero:en')['body']['title'])
+    expect(Cache::store('redis')->tags(['cms'])->get('cms:default:home:hero:en')['body']['title'])
         ->toBe('Original title');
 
     // A plain update — the model's saved() hook should flush the tag.
     $cms->update(['title' => ['en' => 'Updated title', 'bn' => '']]);
 
-    expect(Cache::store('redis')->tags(['cms'])->get('cms:home:hero:en'))->toBeNull();
+    expect(Cache::store('redis')->tags(['cms'])->get('cms:default:home:hero:en'))->toBeNull();
 
     $this->getJson('/api/v1/cms?page=home&section=hero')
         ->assertOk()

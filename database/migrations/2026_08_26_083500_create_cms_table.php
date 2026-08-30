@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('cms', function (Blueprint $table) {
             $table->id();
+            $table->string('theme')->default('default');
             $table->string('page');
             $table->string('section');
-            $table->unique(['page', 'section']);
+            $table->unique(['theme', 'page', 'section']);
             $table->json('title')->nullable();
             $table->json('description')->nullable();
             $table->json('buttons')->nullable();

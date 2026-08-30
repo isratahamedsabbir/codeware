@@ -4,12 +4,15 @@ namespace App\Livewire\Admin\Cms;
 
 use App\Models\CmsSection;
 use App\Support\AdminActivity;
+use App\Support\Themes;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class Form extends Component
 {
     public ?int $cmsId = null;
+
+    public string $theme = '';
 
     public string $page = '';
 
@@ -39,6 +42,7 @@ class Form extends Component
         if ($id) {
             $cms = CmsSection::findOrFail($id);
             $this->cmsId = $cms->id;
+            $this->theme = $cms->theme;
             $this->page = $cms->page;
             $this->section = $cms->section;
             $this->bg_image = $cms->bg_image;
@@ -48,6 +52,8 @@ class Form extends Component
             $this->buttons = $cms->buttons ?? [];
             $this->cards = $cms->cards ?? [];
             $this->metadata = $cms->metadata ?? [];
+        } else {
+            $this->theme = Themes::active();
         }
     }
 
@@ -87,10 +93,14 @@ class Form extends Component
     protected function rules(): array
     {
         return [
+            'theme' => 'required|string|max:255',
             'page' => 'required|string|max:255',
             'section' => [
                 'required', 'string', 'max:255',
-                Rule::unique('cms', 'section')->where('page', $this->page)->ignore($this->cmsId),
+                Rule::unique('cms', 'section')
+                    ->where('theme', $this->theme)
+                    ->where('page', $this->page)
+                    ->ignore($this->cmsId),
             ],
             'bg_image' => 'nullable|string',
             'image' => 'nullable|string',
@@ -126,6 +136,7 @@ class Form extends Component
         $this->validate();
 
         $data = [
+            'theme' => $this->theme,
             'page' => $this->page,
             'section' => $this->section,
             'bg_image' => $this->bg_image ?: null,
@@ -151,7 +162,7 @@ class Form extends Component
 
         AdminActivity::log(
             $creating ? 'created' : 'updated',
-            "CMS section: {$this->page} / {$this->section}",
+            "CMS section: {$this->theme} / {$this->page} / {$this->section}",
         );
 
         $this->dispatch('notify', message: $creating ? 'CMS section created successfully' : 'CMS section updated successfully');

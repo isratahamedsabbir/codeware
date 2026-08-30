@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\CmsSection;
+use App\Support\Themes;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -18,8 +19,9 @@ class CmsController extends Controller
     }
 
     /**
-     * GET /api/v1/cms?page=home              -> every active section on that page
-     * GET /api/v1/cms?page=home&section=hero -> just that one section
+     * GET /api/v1/cms?page=home                          -> every active section on that page, for the active theme
+     * GET /api/v1/cms?page=home&section=hero              -> just that one section
+     * GET /api/v1/cms?page=home&theme=portfolio            -> sections for a specific theme instead of the active one
      *
      * Responses are cached in Redis (tagged 'cms', kept forever) so repeat reads
      * never hit the database — CmsSection::flushCache() clears the tag on every
@@ -30,16 +32,18 @@ class CmsController extends Controller
         $validated = $request->validate([
             'page' => 'required|string',
             'section' => 'nullable|string',
+            'theme' => 'nullable|string',
         ]);
 
         $locale = $this->resolveLocale($request);
         $page = $validated['page'];
         $section = $validated['section'] ?? null;
+        $theme = $validated['theme'] ?? Themes::active();
 
-        $cacheKey = 'cms:'.$page.':'.($section ?? '_all').':'.$locale;
+        $cacheKey = 'cms:'.$theme.':'.$page.':'.($section ?? '_all').':'.$locale;
 
-        $cached = Cache::store('redis')->tags(['cms'])->rememberForever($cacheKey, function () use ($page, $section, $locale) {
-            $query = CmsSection::active()->ofPage($page);
+        $cached = Cache::store('redis')->tags(['cms'])->rememberForever($cacheKey, function () use ($theme, $page, $section, $locale) {
+            $query = CmsSection::active()->ofTheme($theme)->ofPage($page);
 
             if ($section) {
                 $cms = $query->where('section', $section)->first();
@@ -76,6 +80,7 @@ class CmsController extends Controller
     {
         return [
             'id' => $cms->id,
+            'theme' => $cms->theme,
             'page' => $cms->page,
             'section' => $cms->section,
             'title' => $this->localize($cms->title, $locale),

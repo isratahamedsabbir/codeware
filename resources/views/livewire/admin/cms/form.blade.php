@@ -25,7 +25,17 @@
     <div class="rounded-lg bg-white shadow-sm border border-zinc-200 p-5 space-y-4">
         <flux:heading size="sm">Basics</flux:heading>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <flux:field>
+                <flux:label>Theme</flux:label>
+                <flux:select wire:model="theme">
+                    @foreach (\App\Support\Themes::all() as $slug => $themeLabel)
+                        <option value="{{ $slug }}">{{ $themeLabel }}</option>
+                    @endforeach
+                </flux:select>
+                <flux:error name="theme" />
+            </flux:field>
+
             <flux:field>
                 <flux:label>Page</flux:label>
                 <flux:input wire:model="page" placeholder="e.g. home, about, contact" />

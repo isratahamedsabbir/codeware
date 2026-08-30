@@ -15,6 +15,7 @@ class CmsSection extends Model
     protected $table = 'cms';
 
     protected $fillable = [
+        'theme',
         'page',
         'section',
         'title',
@@ -133,5 +134,10 @@ class CmsSection extends Model
     public function scopeOfPage(Builder $query, string $page): Builder
     {
         return $query->where('page', $page);
+    }
+
+    public function scopeOfTheme(Builder $query, string $theme): Builder
+    {
+        return $query->where('theme', $theme);
     }
 }

@@ -16,7 +16,7 @@ class FrontendController extends Controller
     {
         $theme = Themes::active();
 
-        $sections = CmsSection::active()->ofPage('home')->orderBy('id')->get();
+        $sections = CmsSection::active()->ofTheme($theme)->ofPage('home')->orderBy('id')->get();
 
         return view("frontend.themes.{$theme}.home", [
             'sections' => $sections,
