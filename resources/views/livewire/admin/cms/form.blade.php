@@ -89,21 +89,39 @@
                     </div>
 
                     <div class="flex-1 min-w-0 space-y-3">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <flux:field>
-                                <flux:label>Key</flux:label>
-                                <flux:input wire:model="metadata.{{ $i }}.key" placeholder="e.g. og:type" class="font-mono" />
-                                <flux:error name="metadata.{{ $i }}.key" />
-                            </flux:field>
-                            <flux:field>
-                                <flux:label>Value type</flux:label>
-                                <flux:select wire:model.live="metadata.{{ $i }}.type">
-                                    <flux:select.option value="text">Input</flux:select.option>
-                                    <flux:select.option value="textarea">Textarea</flux:select.option>
-                                    <flux:select.option value="file">File</flux:select.option>
-                                </flux:select>
-                            </flux:field>
-                        </div>
+                        <flux:field>
+                            <flux:label>Value type</flux:label>
+                            <div class="grid grid-cols-3 gap-1.5 rounded-lg bg-zinc-100 p-1">
+                                <button type="button" wire:click="$set('metadata.{{ $i }}.type', 'text')"
+                                    class="flex items-center justify-center gap-1.5 rounded-md py-2 text-xs font-medium transition-colors cursor-pointer {{ ($pair['type'] ?? 'text') === 'text' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700' }}">
+                                    <svg class="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 7V4h16v3M9 20h6M12 4v16" />
+                                    </svg>
+                                    Input
+                                </button>
+                                <button type="button" wire:click="$set('metadata.{{ $i }}.type', 'textarea')"
+                                    class="flex items-center justify-center gap-1.5 rounded-md py-2 text-xs font-medium transition-colors cursor-pointer {{ ($pair['type'] ?? 'text') === 'textarea' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700' }}">
+                                    <svg class="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10" />
+                                    </svg>
+                                    Textarea
+                                </button>
+                                <button type="button" wire:click="$set('metadata.{{ $i }}.type', 'file')"
+                                    class="flex items-center justify-center gap-1.5 rounded-md py-2 text-xs font-medium transition-colors cursor-pointer {{ ($pair['type'] ?? 'text') === 'file' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700' }}">
+                                    <svg class="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                        <polyline points="14 2 14 8 20 8" />
+                                    </svg>
+                                    File
+                                </button>
+                            </div>
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label>Key</flux:label>
+                            <flux:input wire:model="metadata.{{ $i }}.key" placeholder="e.g. og:type" class="font-mono" />
+                            <flux:error name="metadata.{{ $i }}.key" />
+                        </flux:field>
 
                         <div class="rounded-lg border border-zinc-100 bg-white p-3">
                             @if (($pair['type'] ?? 'text') === 'textarea')
