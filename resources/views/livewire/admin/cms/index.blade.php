@@ -89,18 +89,9 @@
                             {{-- Content summary --}}
                             <td class="px-4 py-3.5">
                                 <div class="flex flex-wrap gap-1.5 text-[11px]">
-                                    @if (filled($cms->title['en'] ?? null) || filled($cms->title['bn'] ?? null))
-                                        <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">title</span>
-                                    @endif
-                                    @if (filled($cms->description['en'] ?? null) || filled($cms->description['bn'] ?? null))
-                                        <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">desc</span>
-                                    @endif
                                     <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">{{ count($cms->cards ?? []) }} card{{ count($cms->cards ?? []) === 1 ? '' : 's' }}</span>
-                                    @if ($cms->image)
-                                        <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">img</span>
-                                    @endif
-                                    @if ($cms->bg_image)
-                                        <span class="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600">bg</span>
+                                    @if (filled($cms->metadataMap()))
+                                        <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">{{ count($cms->metadataMap()) }} meta</span>
                                     @endif
                                 </div>
                             </td>

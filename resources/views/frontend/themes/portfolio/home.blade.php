@@ -283,46 +283,31 @@
         </section>
 
         {{-- Any additional CMS-authored sections get appended here --}}
-        @foreach ($sections as $index => $section)
-            @php $hasCards = filled($section->localizedCards()); @endphp
+        @foreach ($sections as $section)
+            @continue(blank($section->localizedCards()))
 
             <section id="{{ $section->name }}" class="border-t border-(--pf-border) px-6 py-24">
                 <div class="mx-auto max-w-6xl">
-                    @if ($section->localized('title') || $section->localized('description'))
-                        <div class="mb-14 max-w-xl">
-                            <h2 class="pf-heading text-3xl font-bold tracking-tight sm:text-4xl">{{ $section->localized('title') }}</h2>
-                            @if ($section->localized('description'))
-                                <p class="mt-4 text-(--pf-text-muted)">{{ $section->localized('description') }}</p>
-                            @endif
-                        </div>
-                    @endif
-
-                    @if ($section->image && ! $hasCards)
-                        <img src="{{ $section->image }}" alt="{{ $section->localized('title') }}" class="pf-card w-full rounded-xl p-2">
-                    @endif
-
-                    @if ($hasCards)
-                        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                            @foreach ($section->localizedCards() as $card)
-                                <div class="pf-card group overflow-hidden rounded-xl">
-                                    @if ($card['image'])
-                                        <div class="aspect-4/3 overflow-hidden">
-                                            <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}"
-                                                class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
-                                        </div>
-                                    @endif
-                                    <div class="p-5">
-                                        @if ($card['title'])
-                                            <h3 class="pf-heading pf-mono font-semibold">{{ $card['title'] }}</h3>
-                                        @endif
-                                        @if ($card['description'])
-                                            <p class="mt-2 text-sm text-(--pf-text-muted) line-clamp-2">{{ $card['description'] }}</p>
-                                        @endif
+                    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        @foreach ($section->localizedCards() as $card)
+                            <div class="pf-card group overflow-hidden rounded-xl">
+                                @if ($card['image'])
+                                    <div class="aspect-4/3 overflow-hidden">
+                                        <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}"
+                                            class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
                                     </div>
+                                @endif
+                                <div class="p-5">
+                                    @if ($card['title'])
+                                        <h3 class="pf-heading pf-mono font-semibold">{{ $card['title'] }}</h3>
+                                    @endif
+                                    @if ($card['description'])
+                                        <p class="mt-2 text-sm text-(--pf-text-muted) line-clamp-2">{{ $card['description'] }}</p>
+                                    @endif
                                 </div>
-                            @endforeach
-                        </div>
-                    @endif
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
             </section>
         @endforeach

@@ -17,12 +17,8 @@ class CmsSectionFactory extends Factory
             'page_id' => Page::factory(),
             'name' => fake()->unique()->word(),
             'sort_order' => 0,
-            'title' => ['en' => fake()->sentence(3), 'bn' => ''],
-            'description' => ['en' => fake()->sentence(10), 'bn' => ''],
             'cards' => [],
             'metadata' => [],
-            'image' => null,
-            'bg_image' => null,
             'status' => 'active',
         ];
     }

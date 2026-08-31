@@ -43,70 +43,33 @@
     </header>
 
     <main>
-        @forelse ($sections as $section)
-            @php
-                $hasCards = filled($section->localizedCards());
-            @endphp
+        <section class="mx-auto max-w-2xl px-6 py-24 text-center">
+            <h1 class="text-3xl font-bold text-zinc-900 sm:text-4xl">{{ __('Welcome to :site', ['site' => $siteName]) }}</h1>
+        </section>
 
-            @if ($section->bg_image)
-                {{-- Hero-style section: full-bleed background image with a dark overlay --}}
-                <section class="relative flex min-h-[26rem] items-center justify-center bg-cover bg-center px-6 py-20 text-center"
-                    style="background-image: url('{{ $section->bg_image }}')">
-                    <div class="absolute inset-0 bg-zinc-900/60"></div>
-                    <div class="relative max-w-2xl">
-                        @if ($section->localized('title'))
-                            <h1 class="text-3xl font-extrabold text-white sm:text-5xl">{{ $section->localized('title') }}</h1>
-                        @endif
-                        @if ($section->localized('description'))
-                            <p class="mt-4 text-lg text-zinc-100">{{ $section->localized('description') }}</p>
-                        @endif
-                    </div>
-                </section>
-            @else
-                <section class="mx-auto max-w-6xl px-6 py-16">
-                    <div class="grid items-center gap-10 {{ $section->image ? 'md:grid-cols-2' : '' }}">
-                        <div class="{{ $section->image ? 'order-2 md:order-1' : 'mx-auto max-w-2xl text-center' }}">
-                            @if ($section->localized('title'))
-                                <h2 class="text-2xl font-bold text-zinc-900 sm:text-3xl">{{ $section->localized('title') }}</h2>
-                            @endif
-                            @if ($section->localized('description'))
-                                <p class="mt-4 text-zinc-600">{{ $section->localized('description') }}</p>
-                            @endif
-                        </div>
-                        @if ($section->image)
-                            <div class="order-1 md:order-2">
-                                <img src="{{ $section->image }}" alt="{{ $section->localized('title') }}" class="w-full rounded-2xl shadow-lg">
+        @foreach ($sections as $section)
+            @continue(blank($section->localizedCards()))
+
+            <section id="{{ $section->name }}" class="border-t border-zinc-100 px-6 py-16">
+                <div class="mx-auto max-w-6xl">
+                    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        @foreach ($section->localizedCards() as $card)
+                            <div class="rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm transition hover:shadow-md">
+                                @if ($card['image'])
+                                    <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}" class="mb-4 h-40 w-full rounded-xl object-cover">
+                                @endif
+                                @if ($card['title'])
+                                    <h3 class="text-lg font-semibold text-zinc-900">{{ $card['title'] }}</h3>
+                                @endif
+                                @if ($card['description'])
+                                    <p class="mt-2 text-sm text-zinc-600">{{ $card['description'] }}</p>
+                                @endif
                             </div>
-                        @endif
+                        @endforeach
                     </div>
-
-                    @if ($hasCards)
-                        <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                            @foreach ($section->localizedCards() as $card)
-                                <div class="rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm transition hover:shadow-md">
-                                    @if ($card['image'])
-                                        <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}" class="mb-4 h-40 w-full rounded-xl object-cover">
-                                    @endif
-                                    @if ($card['title'])
-                                        <h3 class="text-lg font-semibold text-zinc-900">{{ $card['title'] }}</h3>
-                                    @endif
-                                    @if ($card['description'])
-                                        <p class="mt-2 text-sm text-zinc-600">{{ $card['description'] }}</p>
-                                    @endif
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
-                </section>
-            @endif
-        @empty
-            <section class="mx-auto flex max-w-2xl flex-col items-center px-6 py-32 text-center">
-                <h1 class="text-3xl font-bold text-zinc-900">{{ $siteName }}</h1>
-                <p class="mt-4 text-zinc-500">
-                    {{ __('Add sections to the "home" page in the CMS to populate this page.') }}
-                </p>
+                </div>
             </section>
-        @endforelse
+        @endforeach
     </main>
 
     <footer class="border-t border-zinc-100 bg-zinc-50 px-6 py-10">

@@ -38,20 +38,15 @@ it('only shows sections that belong to the page it was opened for', function () 
         ->assertSee('team');
 });
 
-it('creates a cms section with a name, title, description, image and cards', function () {
+it('creates a cms section with a name and cards', function () {
     $page = Page::factory()->create();
 
     Livewire::test(CmsForm::class, ['pageId' => $page->id])
         ->set('name', 'hero')
-        ->set('bg_image', '/storage/media/bg.jpg')
-        ->set('image', '/storage/media/hero.jpg')
-        ->set('title.en', 'Welcome')
-        ->set('title.bn', 'স্বাগতম')
-        ->set('description.en', 'We build great software.')
         ->call('addCard')
         ->set('cards.0.image', '/storage/media/card.jpg')
-        ->set('cards.0.title.en', 'Fast')
-        ->set('cards.0.description.en', 'Blazing fast delivery')
+        ->set('cards.0.title', 'Fast')
+        ->set('cards.0.description', 'Blazing fast delivery')
         ->call('addMetadata')
         ->set('metadata.0.key', 'og:type')
         ->set('metadata.0.value', 'website')
@@ -59,12 +54,8 @@ it('creates a cms section with a name, title, description, image and cards', fun
 
     $cms = CmsSection::where('page_id', $page->id)->where('name', 'hero')->sole();
 
-    expect($cms->bg_image)->toBe('/storage/media/bg.jpg')
-        ->and($cms->image)->toBe('/storage/media/hero.jpg')
-        ->and($cms->title['en'])->toBe('Welcome')
-        ->and($cms->title['bn'])->toBe('স্বাগতম')
-        ->and($cms->description['en'])->toBe('We build great software.')
-        ->and($cms->cards[0]['title']['en'])->toBe('Fast')
+    expect($cms->cards[0]['title'])->toBe('Fast')
+        ->and($cms->cards[0]['description'])->toBe('Blazing fast delivery')
         ->and($cms->cards[0]['image'])->toBe('/storage/media/card.jpg')
         ->and($cms->metadata[0]['key'])->toBe('og:type')
         ->and($cms->metadata[0]['value'])->toBe('website');
@@ -131,6 +122,71 @@ it('loads existing metadata for editing', function () {
         ->assertSet('metadata.0.value', 'website');
 });
 
+it('defaults a new metadata field to the text input type', function () {
+    $page = Page::factory()->create();
+
+    Livewire::test(CmsForm::class, ['pageId' => $page->id])
+        ->call('addMetadata')
+        ->assertSet('metadata.0.type', 'text');
+});
+
+it('defaults an older metadata row saved without a type to text', function () {
+    $page = Page::factory()->create();
+    $cms = CmsSection::factory()->create([
+        'page_id' => $page->id,
+        'metadata' => [['key' => 'og:type', 'value' => 'website']],
+    ]);
+
+    Livewire::test(CmsForm::class, ['pageId' => $page->id, 'id' => $cms->id])
+        ->assertSet('metadata.0.type', 'text');
+});
+
+it('can save a metadata field as a textarea value', function () {
+    $page = Page::factory()->create();
+
+    Livewire::test(CmsForm::class, ['pageId' => $page->id])
+        ->set('name', 'hero')
+        ->call('addMetadata')
+        ->set('metadata.0.key', 'long_note')
+        ->set('metadata.0.type', 'textarea')
+        ->set('metadata.0.value', "Line one\nLine two")
+        ->call('save');
+
+    $cms = CmsSection::where('page_id', $page->id)->where('name', 'hero')->sole();
+
+    expect($cms->metadata[0]['type'])->toBe('textarea')
+        ->and($cms->metadata[0]['value'])->toBe("Line one\nLine two");
+});
+
+it('can save a metadata field as a file value', function () {
+    $page = Page::factory()->create();
+
+    Livewire::test(CmsForm::class, ['pageId' => $page->id])
+        ->set('name', 'hero')
+        ->call('addMetadata')
+        ->set('metadata.0.key', 'brochure')
+        ->set('metadata.0.type', 'file')
+        ->set('metadata.0.value', '/storage/media/brochure.pdf')
+        ->call('save');
+
+    $cms = CmsSection::where('page_id', $page->id)->where('name', 'hero')->sole();
+
+    expect($cms->metadata[0]['type'])->toBe('file')
+        ->and($cms->metadata[0]['value'])->toBe('/storage/media/brochure.pdf');
+});
+
+it('rejects an unknown metadata value type', function () {
+    $page = Page::factory()->create();
+
+    Livewire::test(CmsForm::class, ['pageId' => $page->id])
+        ->call('addMetadata')
+        ->set('metadata.0.key', 'k')
+        ->set('metadata.0.type', 'not-a-real-type')
+        ->set('metadata.0.value', 'v')
+        ->call('save')
+        ->assertHasErrors(['metadata.0.type']);
+});
+
 it('validates name is required', function () {
     $page = Page::factory()->create();
 
@@ -178,13 +234,13 @@ it('loads an existing section for editing', function () {
     $cms = CmsSection::factory()->create([
         'page_id' => $page->id,
         'name' => 'hero',
-        'title' => ['en' => 'Hi', 'bn' => ''],
+        'cards' => [['image' => null, 'title' => 'Hi', 'description' => '']],
     ]);
 
     Livewire::test(CmsForm::class, ['pageId' => $page->id, 'id' => $cms->id])
         ->assertSet('pageId', $page->id)
         ->assertSet('name', 'hero')
-        ->assertSet('title.en', 'Hi');
+        ->assertSet('cards.0.title', 'Hi');
 });
 
 it('can delete a cms section', function () {

@@ -92,7 +92,7 @@
                     </flux:field>
                     <flux:field>
                         <flux:label>Meta Description</flux:label>
-                        <flux:textarea wire:model="seo_description" rows="3"
+                        <flux:textarea wire:model="seo_description" class="h-48"
                             placeholder="Brief description for search engines…" />
                         <flux:error name="seo_description" />
                     </flux:field>
@@ -103,7 +103,7 @@
                     </flux:field>
                     <flux:field>
                         <flux:label>OG Description</flux:label>
-                        <flux:textarea wire:model="og_description" rows="3"
+                        <flux:textarea wire:model="og_description" class="h-48"
                             placeholder="Description shown when shared on social media" />
                         <flux:error name="og_description" />
                     </flux:field>

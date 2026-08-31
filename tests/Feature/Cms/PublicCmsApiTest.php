@@ -44,11 +44,7 @@ it('returns a single section when name is given', function () {
         'page_id' => $home->id,
         'name' => 'hero',
         'status' => 'active',
-        'title' => ['en' => 'Welcome', 'bn' => 'স্বাগতম'],
-        'description' => ['en' => 'We build great software.', 'bn' => ''],
-        'image' => '/storage/media/hero.jpg',
-        'bg_image' => '/storage/media/bg.jpg',
-        'cards' => [['image' => '/storage/media/card.jpg', 'title' => ['en' => 'Fast', 'bn' => ''], 'description' => ['en' => 'Blazing fast', 'bn' => '']]],
+        'cards' => [['image' => '/storage/media/card.jpg', 'title' => 'Fast', 'description' => 'Blazing fast']],
         'metadata' => [['key' => 'og:type', 'value' => 'website'], ['key' => 'og:locale', 'value' => 'en_US']],
     ]);
 
@@ -57,10 +53,6 @@ it('returns a single section when name is given', function () {
         ->assertJson([
             'data' => [
                 'name' => 'hero',
-                'title' => 'Welcome',
-                'description' => 'We build great software.',
-                'image' => '/storage/media/hero.jpg',
-                'bg_image' => '/storage/media/bg.jpg',
                 'cards' => [
                     ['image' => '/storage/media/card.jpg', 'title' => 'Fast', 'description' => 'Blazing fast'],
                 ],
@@ -89,46 +81,30 @@ it('does not return an inactive section even by exact page and name', function (
     $this->getJson('/api/v1/cms?page=home&name=hero')->assertNotFound();
 });
 
-it('resolves bn locale and falls back to en when bn is empty', function () {
-    $home = Page::factory()->create(['slug' => 'home']);
-    CmsSection::factory()->create([
-        'page_id' => $home->id,
-        'name' => 'hero',
-        'status' => 'active',
-        'title' => ['en' => 'Welcome', 'bn' => 'স্বাগতম'],
-        'description' => ['en' => 'English only', 'bn' => ''],
-    ]);
-
-    $this->getJson('/api/v1/cms?page=home&name=hero&locale=bn')
-        ->assertOk()
-        ->assertJsonPath('data.title', 'স্বাগতম')
-        ->assertJsonPath('data.description', 'English only');
-});
-
 it('caches the response in redis and serves the update immediately after a write', function () {
     $home = Page::factory()->create(['slug' => 'home']);
     $cms = CmsSection::factory()->create([
         'page_id' => $home->id,
         'name' => 'hero',
         'status' => 'active',
-        'title' => ['en' => 'Original title', 'bn' => ''],
+        'metadata' => [['key' => 'note', 'value' => 'Original value']],
     ]);
 
     // Prime the cache.
     $this->getJson('/api/v1/cms?page=home&name=hero')
-        ->assertJsonPath('data.title', 'Original title');
+        ->assertJsonPath('data.metadata.note', 'Original value');
 
-    expect(Cache::store('redis')->tags(['cms'])->get('cms:home:hero:en')['body']['title'])
-        ->toBe('Original title');
+    expect(Cache::store('redis')->tags(['cms'])->get('cms:home:hero')['body']['metadata']['note'])
+        ->toBe('Original value');
 
     // A plain update — the model's saved() hook should flush the tag.
-    $cms->update(['title' => ['en' => 'Updated title', 'bn' => '']]);
+    $cms->update(['metadata' => [['key' => 'note', 'value' => 'Updated value']]]);
 
-    expect(Cache::store('redis')->tags(['cms'])->get('cms:home:hero:en'))->toBeNull();
+    expect(Cache::store('redis')->tags(['cms'])->get('cms:home:hero'))->toBeNull();
 
     $this->getJson('/api/v1/cms?page=home&name=hero')
         ->assertOk()
-        ->assertJsonPath('data.title', 'Updated title');
+        ->assertJsonPath('data.metadata.note', 'Updated value');
 });
 
 it('refreshes the cache when a section is deleted', function () {

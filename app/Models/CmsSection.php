@@ -19,20 +19,14 @@ class CmsSection extends Model
         'page_id',
         'name',
         'sort_order',
-        'title',
-        'description',
         'cards',
         'metadata',
-        'image',
-        'bg_image',
         'status',
     ];
 
     protected function casts(): array
     {
         return [
-            'title' => 'array',
-            'description' => 'array',
             'cards' => 'array',
             'metadata' => 'array',
         ];
@@ -64,42 +58,14 @@ class CmsSection extends Model
         return $query->where('status', 'active');
     }
 
-    /**
-     * Resolves a {en, bn} field to a plain string for the current app locale,
-     * falling back to English when the current locale is empty.
-     */
-    public function localized(string $field): ?string
-    {
-        $value = $this->{$field};
-
-        if (! is_array($value)) {
-            return $value;
-        }
-
-        $locale = app()->getLocale();
-
-        return $value[$locale] ?: ($value['en'] ?? null);
-    }
-
     /** @return array<int, array{image: ?string, title: ?string, description: ?string}> */
     public function localizedCards(): array
     {
-        $locale = app()->getLocale();
-
         return collect($this->cards ?? [])->map(fn ($card) => [
             'image' => $card['image'] ?? null,
-            'title' => $this->localizeArrayField($card['title'] ?? null, $locale),
-            'description' => $this->localizeArrayField($card['description'] ?? null, $locale),
+            'title' => $card['title'] ?? null,
+            'description' => $card['description'] ?? null,
         ])->all();
-    }
-
-    private function localizeArrayField(mixed $value, string $locale): ?string
-    {
-        if (! is_array($value)) {
-            return $value;
-        }
-
-        return $value[$locale] ?: ($value['en'] ?? null);
     }
 
     /**

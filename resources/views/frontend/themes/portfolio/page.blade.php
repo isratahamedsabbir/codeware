@@ -22,9 +22,6 @@
             ->map(fn ($abbr, $key) => ['url' => \App\Models\Setting::get($key), 'abbr' => $abbr])
             ->filter(fn ($social) => filled($social['url']))
             ->values();
-        $first = $sections->first();
-        $rest = $sections->skip(1)->values();
-        $badge = $first?->metadataMap()['badge'] ?? null;
     @endphp
 
     <header class="fixed inset-x-0 top-0 z-20 border-b border-(--pf-border) bg-(--pf-bg)/80 backdrop-blur-md">
@@ -65,110 +62,57 @@
     </header>
 
     <main>
-        @if ($first)
-            {{-- Hero --}}
-            <section class="pf-grid-bg relative flex min-h-screen items-center overflow-hidden px-6 pt-24">
-                <div class="mx-auto grid w-full max-w-6xl items-center gap-12 lg:grid-cols-[1fr_360px]">
-                    <div>
-                        @if ($badge)
-                            <span class="pf-badge pf-mono mb-6 rounded-full px-4 py-2 text-xs font-medium">
-                                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="16 18 22 12 16 6" />
-                                    <polyline points="8 6 2 12 8 18" />
+        {{-- Hero --}}
+        <section class="pf-grid-bg relative flex min-h-[70vh] items-center overflow-hidden px-6 pt-24">
+            <div class="mx-auto max-w-4xl text-center">
+                <h1 data-typewriter class="pf-heading text-4xl font-extrabold leading-tight tracking-tight sm:text-6xl" style="visibility:hidden">{{ $page->getTranslation('title', 'en', false) }}</h1>
+
+                @if ($socials->isNotEmpty() || $contactEmail)
+                    <div class="mt-10 flex justify-center gap-3">
+                        @foreach ($socials as $social)
+                            <a href="{{ $social['url'] }}" target="_blank" rel="noopener" aria-label="{{ $social['abbr'] }}"
+                                class="pf-social-icon pf-mono text-[11px] font-bold">
+                                {{ $social['abbr'] }}
+                            </a>
+                        @endforeach
+                        @if ($contactEmail)
+                            <a href="mailto:{{ $contactEmail }}" aria-label="Email" class="pf-social-icon">
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m3 7 9 6 9-6" />
                                 </svg>
-                                {{ $badge }}
-                            </span>
-                        @endif
-
-                        <h1 data-typewriter class="pf-heading text-4xl font-extrabold leading-tight tracking-tight sm:text-6xl" style="visibility:hidden">{{ $first->localized('title') }}</h1>
-
-                        @if ($first->localized('description'))
-                            <p class="mt-6 max-w-xl text-lg text-(--pf-text-muted)">{{ $first->localized('description') }}</p>
-                        @endif
-
-                        @if ($socials->isNotEmpty() || $contactEmail)
-                            <div class="mt-10 flex gap-3">
-                                @foreach ($socials as $social)
-                                    <a href="{{ $social['url'] }}" target="_blank" rel="noopener" aria-label="{{ $social['abbr'] }}"
-                                        class="pf-social-icon pf-mono text-[11px] font-bold">
-                                        {{ $social['abbr'] }}
-                                    </a>
-                                @endforeach
-                                @if ($contactEmail)
-                                    <a href="mailto:{{ $contactEmail }}" aria-label="Email" class="pf-social-icon">
-                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <rect x="3" y="5" width="18" height="14" rx="2" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="m3 7 9 6 9-6" />
-                                        </svg>
-                                    </a>
-                                @endif
-                            </div>
+                            </a>
                         @endif
                     </div>
+                @endif
+            </div>
+        </section>
 
-                    @if ($first->image)
-                        <div class="relative hidden lg:block">
-                            <div class="pf-glow absolute -inset-8 -z-10"></div>
-                            <div class="pf-photo-frame aspect-square overflow-hidden rounded-3xl p-2 shadow-2xl">
-                                <img src="{{ $first->image }}" alt="{{ $first->localized('title') }}" class="h-full w-full rounded-2xl object-cover">
-                            </div>
-                        </div>
-                    @endif
-                </div>
-            </section>
-        @else
-            <section class="flex min-h-screen flex-col items-center justify-center px-6 text-center">
-                <h1 class="pf-heading text-4xl font-bold">{{ $page->getTranslation('title', 'en', false) }}</h1>
-                <p class="mt-4 max-w-md text-(--pf-text-muted)">
-                    {{ __('Add sections to the ":page" page in the CMS to populate this page.', ['page' => $page->getTranslation('title', 'en', false)]) }}
-                </p>
-            </section>
-        @endif
-
-        @foreach ($rest as $index => $section)
-            @php $hasCards = filled($section->localizedCards()); @endphp
+        @foreach ($sections as $section)
+            @continue(blank($section->localizedCards()))
 
             <section id="{{ $section->name }}" class="border-t border-(--pf-border) px-6 py-24">
                 <div class="mx-auto max-w-6xl">
-                    @if ($section->localized('title') || $section->localized('description'))
-                        <div class="mb-14 max-w-xl">
-                            <p class="pf-mono mb-3 text-xs text-(--pf-text-muted)">// {{ sprintf('%02d', $index + 1) }}</p>
-                            @if ($section->localized('title'))
-                                <h2 class="pf-heading text-3xl font-bold tracking-tight sm:text-4xl">{{ $section->localized('title') }}</h2>
-                            @endif
-                            @if ($section->localized('description'))
-                                <p class="mt-4 text-(--pf-text-muted)">{{ $section->localized('description') }}</p>
-                            @endif
-                        </div>
-                    @endif
-
-                    @if ($section->image && ! $hasCards)
-                        <img src="{{ $section->image }}" alt="{{ $section->localized('title') }}" class="pf-card w-full rounded-xl p-2">
-                    @endif
-
-                    {{-- Work / project grid --}}
-                    @if ($hasCards)
-                        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                            @foreach ($section->localizedCards() as $card)
-                                <div class="pf-card group overflow-hidden rounded-xl">
-                                    @if ($card['image'])
-                                        <div class="aspect-4/3 overflow-hidden">
-                                            <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}"
-                                                class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
-                                        </div>
-                                    @endif
-                                    <div class="p-5">
-                                        @if ($card['title'])
-                                            <h3 class="pf-heading pf-mono font-semibold">{{ $card['title'] }}</h3>
-                                        @endif
-                                        @if ($card['description'])
-                                            <p class="mt-2 text-sm text-(--pf-text-muted) line-clamp-2">{{ $card['description'] }}</p>
-                                        @endif
+                    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        @foreach ($section->localizedCards() as $card)
+                            <div class="pf-card group overflow-hidden rounded-xl">
+                                @if ($card['image'])
+                                    <div class="aspect-4/3 overflow-hidden">
+                                        <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}"
+                                            class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
                                     </div>
+                                @endif
+                                <div class="p-5">
+                                    @if ($card['title'])
+                                        <h3 class="pf-heading pf-mono font-semibold">{{ $card['title'] }}</h3>
+                                    @endif
+                                    @if ($card['description'])
+                                        <p class="mt-2 text-sm text-(--pf-text-muted) line-clamp-2">{{ $card['description'] }}</p>
+                                    @endif
                                 </div>
-                            @endforeach
-                        </div>
-                    @endif
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
             </section>
         @endforeach

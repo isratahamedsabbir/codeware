@@ -323,8 +323,8 @@
                         <div class="md:col-span-2 space-y-1.5">
                             <label
                                 class="block text-[10px] font-medium uppercase tracking-widest text-slate-500">Description</label>
-                            <textarea wire:model="editDescription" rows="3"
-                                class="block w-full resize-none rounded-md border border-slate-200 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/10"></textarea>
+                            <textarea wire:model="editDescription"
+                                class="block h-48 w-full resize-none rounded-md border border-slate-200 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/10"></textarea>
                         </div>
 
                         {{-- Meta --}}

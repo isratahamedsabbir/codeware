@@ -124,7 +124,7 @@
                                                 placeholder="{{ match ($setting->key) { 'loader' => 'Choose a loading animation (GIF) from the library', 'favicon' => 'Choose a favicon from the library', 'site_icon_white' => 'Choose a white icon from the library', default => 'Choose a site icon from the library' } }}"
                                                 dropzone />
                                         @elseif ($setting->type === 'textarea')
-                                            <flux:textarea wire:model="settings.{{ $setting->key }}" rows="3" />
+                                            <flux:textarea wire:model="settings.{{ $setting->key }}" class="h-48" />
                                         @else
                                             <flux:input wire:model="settings.{{ $setting->key }}" />
                                         @endif
@@ -411,7 +411,7 @@
                     </flux:field>
                     <flux:field>
                         <flux:label>Meta Description</flux:label>
-                        <flux:textarea wire:model="settings.seo_meta_description" rows="3"
+                        <flux:textarea wire:model="settings.seo_meta_description" class="h-48"
                             placeholder="Short summary shown in search engine results" />
                     </flux:field>
                 </div>
@@ -429,7 +429,7 @@
                     </flux:field>
                     <flux:field>
                         <flux:label>OG Description</flux:label>
-                        <flux:textarea wire:model="settings.seo_og_description" rows="3"
+                        <flux:textarea wire:model="settings.seo_og_description" class="h-48"
                             placeholder="Description shown when shared on social media" />
                     </flux:field>
                     <x-media-picker model="settings.seo_og_image" label="OG Image"

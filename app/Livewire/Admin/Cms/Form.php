@@ -16,20 +16,10 @@ class Form extends Component
 
     public string $name = '';
 
-    public ?string $bg_image = null;
-
-    public ?string $image = null;
-
-    /** @var array{en: string, bn: string} */
-    public array $title = ['en' => '', 'bn' => ''];
-
-    /** @var array{en: string, bn: string} */
-    public array $description = ['en' => '', 'bn' => ''];
-
-    /** @var array<int, array{image: ?string, title: array{en: string, bn: string}, description: array{en: string, bn: string}}> */
+    /** @var array<int, array{image: ?string, title: string, description: string}> */
     public array $cards = [];
 
-    /** @var array<int, array{key: string, value: string}> */
+    /** @var array<int, array{key: string, type: string, value: string}> */
     public array $metadata = [];
 
     public function mount(int $pageId, ?int $id = null): void
@@ -40,18 +30,18 @@ class Form extends Component
             $cms = CmsSection::where('page_id', $this->pageId)->findOrFail($id);
             $this->cmsId = $cms->id;
             $this->name = $cms->name;
-            $this->bg_image = $cms->bg_image;
-            $this->image = $cms->image;
-            $this->title = $cms->title ?? ['en' => '', 'bn' => ''];
-            $this->description = $cms->description ?? ['en' => '', 'bn' => ''];
             $this->cards = $cms->cards ?? [];
-            $this->metadata = $cms->metadata ?? [];
+            // Older rows were saved before the value-type selector existed —
+            // default them to a plain text value so they still render/edit correctly.
+            $this->metadata = collect($cms->metadata ?? [])
+                ->map(fn (array $pair) => [...$pair, 'type' => $pair['type'] ?? 'text'])
+                ->all();
         }
     }
 
     public function addCard(): void
     {
-        $this->cards[] = ['image' => null, 'title' => ['en' => '', 'bn' => ''], 'description' => ['en' => '', 'bn' => '']];
+        $this->cards[] = ['image' => null, 'title' => '', 'description' => ''];
     }
 
     public function removeCard(int $index): void
@@ -62,7 +52,7 @@ class Form extends Component
 
     public function addMetadata(): void
     {
-        $this->metadata[] = ['key' => '', 'value' => ''];
+        $this->metadata[] = ['key' => '', 'type' => 'text', 'value' => ''];
     }
 
     public function removeMetadata(int $index): void
@@ -81,18 +71,10 @@ class Form extends Component
                     ->where('page_id', $this->pageId)
                     ->ignore($this->cmsId),
             ],
-            'bg_image' => 'nullable|string',
-            'image' => 'nullable|string',
-            'title.en' => 'nullable|string|max:255',
-            'title.bn' => 'nullable|string|max:255',
-            'description.en' => 'nullable|string',
-            'description.bn' => 'nullable|string',
             'cards' => 'array',
             'cards.*.image' => 'nullable|string',
-            'cards.*.title.en' => 'nullable|string|max:255',
-            'cards.*.title.bn' => 'nullable|string|max:255',
-            'cards.*.description.en' => 'nullable|string',
-            'cards.*.description.bn' => 'nullable|string',
+            'cards.*.title' => 'nullable|string|max:255',
+            'cards.*.description' => 'nullable|string',
             'metadata' => ['array', function (string $attribute, mixed $value, \Closure $fail) {
                 $keys = collect($value)->pluck('key')->filter()->map(fn ($key) => strtolower(trim($key)));
 
@@ -101,6 +83,7 @@ class Form extends Component
                 }
             }],
             'metadata.*.key' => 'nullable|string|max:255',
+            'metadata.*.type' => 'nullable|in:text,textarea,file',
             'metadata.*.value' => 'nullable|string|max:1000',
         ];
     }
@@ -112,10 +95,6 @@ class Form extends Component
         $data = [
             'page_id' => $this->pageId,
             'name' => $this->name,
-            'bg_image' => $this->bg_image ?: null,
-            'image' => $this->image ?: null,
-            'title' => filled($this->title['en'] ?? null) || filled($this->title['bn'] ?? null) ? $this->title : null,
-            'description' => filled($this->description['en'] ?? null) || filled($this->description['bn'] ?? null) ? $this->description : null,
             'cards' => array_values($this->cards),
             'metadata' => collect($this->metadata)->filter(fn ($pair) => filled($pair['key'] ?? null))->values()->all(),
         ];

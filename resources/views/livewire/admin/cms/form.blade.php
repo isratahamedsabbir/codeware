@@ -4,28 +4,11 @@
     </flux:button>
 @endpush
 
-<div class="w-full space-y-6" x-data="{ locale: 'en' }">
-
-    {{-- Language toggle — switches every title/description/label/card field below
-         between English and বাংলা, so each pair only takes up one field's worth
-         of space instead of showing both side by side. --}}
-    <div class="flex gap-2">
-        <button type="button"
-            :class="locale === 'en' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'"
-            class="px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors"
-            @click="locale='en'">EN</button>
-        <button type="button"
-            :class="locale === 'bn' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'"
-            class="px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors"
-            @click="locale='bn'">বাং</button>
-    </div>
+<div class="w-full space-y-6">
 
     {{-- Basics --}}
     <div class="rounded-lg bg-white shadow-sm border border-zinc-200 p-5 space-y-4">
-        <flux:heading size="sm">
-            Basics
-            <span class="text-zinc-400 font-normal">— {{ $page->getTranslation('title', 'en', false) }}</span>
-        </flux:heading>
+        <flux:heading size="sm">{{ $page->getTranslation('title', 'en', false) }}</flux:heading>
 
         <flux:field>
             <flux:label>Name</flux:label>
@@ -34,107 +17,129 @@
         </flux:field>
     </div>
 
-    {{-- Title, Description, Image & Background Image --}}
-    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 p-5">
-        <flux:heading size="sm" class="mb-4">Content</flux:heading>
-
-        <div class="space-y-4">
-            <flux:field x-show="locale === 'en'">
-                <flux:label>Title (English)</flux:label>
-                <flux:input wire:model="title.en" placeholder="e.g. Welcome to Codeware" class="font-medium" />
-            </flux:field>
-            <flux:field x-show="locale === 'bn'" x-cloak>
-                <flux:label>Title (বাংলা)</flux:label>
-                <flux:input wire:model="title.bn" placeholder="যেমন: কোডওয়্যারে স্বাগতম" class="font-medium" />
-            </flux:field>
-
-            <flux:field x-show="locale === 'en'">
-                <flux:label>Description (English)</flux:label>
-                <flux:textarea wire:model="description.en" rows="8" placeholder="Short description shown for this section" />
-            </flux:field>
-            <flux:field x-show="locale === 'bn'" x-cloak>
-                <flux:label>Description (বাংলা)</flux:label>
-                <flux:textarea wire:model="description.bn" rows="8" placeholder="এই সেকশনের জন্য সংক্ষিপ্ত বিবরণ" />
-            </flux:field>
-
-            <x-media-picker model="image" label="Image" dropzone />
-
-            <x-media-picker model="bg_image" label="Background Image" dropzone />
-        </div>
-    </div>
-
     {{-- Cards --}}
     <div class="rounded-lg bg-white shadow-sm border border-zinc-200 p-5 space-y-4">
-        <div class="flex items-center justify-between">
-            <flux:heading size="sm">Cards</flux:heading>
-            <flux:button size="xs" variant="outline" wire:click="addCard">Add card</flux:button>
+        <div class="flex items-center justify-between gap-3">
+            <div>
+                <flux:heading size="sm">Cards</flux:heading>
+                <p class="mt-0.5 text-xs text-zinc-400">Repeatable image/title/description tiles for this section.</p>
+            </div>
+            <flux:button size="xs" variant="outline" icon="plus" wire:click="addCard">Add card</flux:button>
         </div>
 
         @forelse ($cards as $i => $card)
-            <div class="flex items-start gap-2 rounded-lg border border-zinc-100 p-3">
-                <div class="flex-1 space-y-4 min-w-0">
-                    <flux:field x-show="locale === 'en'">
-                        <flux:label>Title (English)</flux:label>
-                        <flux:input wire:model="cards.{{ $i }}.title.en" placeholder="e.g. Fast Delivery" class="font-medium" />
-                    </flux:field>
-                    <flux:field x-show="locale === 'bn'" x-cloak>
-                        <flux:label>Title (বাংলা)</flux:label>
-                        <flux:input wire:model="cards.{{ $i }}.title.bn" placeholder="যেমন: দ্রুত ডেলিভারি" class="font-medium" />
-                    </flux:field>
-                    <flux:field x-show="locale === 'en'">
-                        <flux:label>Description (English)</flux:label>
-                        <flux:textarea wire:model="cards.{{ $i }}.description.en" rows="8" placeholder="Short description shown on the card" />
-                    </flux:field>
-                    <flux:field x-show="locale === 'bn'" x-cloak>
-                        <flux:label>Description (বাংলা)</flux:label>
-                        <flux:textarea wire:model="cards.{{ $i }}.description.bn" rows="8" placeholder="কার্ডে দেখানো সংক্ষিপ্ত বিবরণ" />
-                    </flux:field>
+            <div class="group relative rounded-xl border border-zinc-200 bg-zinc-50/60 p-4 transition-colors hover:border-zinc-300">
+                <div class="flex items-start gap-3">
+                    <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-[11px] font-semibold text-white">
+                        {{ $i + 1 }}
+                    </div>
 
-                    <x-media-picker model="cards.{{ $i }}.image" label="Card Image" dropzone />
+                    <div class="flex-1 min-w-0">
+                        <div class="rounded-lg border border-zinc-100 bg-white p-3 space-y-4">
+                            <flux:field>
+                                <flux:label>Title</flux:label>
+                                <flux:input wire:model="cards.{{ $i }}.title" placeholder="e.g. Fast Delivery" class="font-medium" />
+                            </flux:field>
+                            <flux:field>
+                                <flux:label>Description</flux:label>
+                                <flux:textarea wire:model="cards.{{ $i }}.description" class="h-48" placeholder="Short description shown on the card" />
+                            </flux:field>
+
+                            <x-media-picker model="cards.{{ $i }}.image" label="Card Image" dropzone />
+                        </div>
+                    </div>
+
+                    <button type="button" wire:click="removeCard({{ $i }})"
+                        class="shrink-0 rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-rose-50 hover:text-rose-500 cursor-pointer" aria-label="Remove card">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                 </div>
-                <button type="button" wire:click="removeCard({{ $i }})"
-                    class="mt-1 shrink-0 text-rose-500 hover:text-rose-700 cursor-pointer" aria-label="Remove card">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
             </div>
         @empty
-            <p class="text-sm text-zinc-400">No cards yet.</p>
+            <div class="rounded-xl border border-dashed border-zinc-200 py-10 text-center">
+                <svg class="mx-auto mb-2 h-8 w-8 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="3" width="7" height="7" rx="1" />
+                    <rect x="14" y="3" width="7" height="7" rx="1" />
+                    <rect x="14" y="14" width="7" height="7" rx="1" />
+                    <rect x="3" y="14" width="7" height="7" rx="1" />
+                </svg>
+                <p class="text-sm text-zinc-400">No cards yet.</p>
+            </div>
         @endforelse
     </div>
 
     {{-- Metadata --}}
     <div class="rounded-lg bg-white shadow-sm border border-zinc-200 p-5 space-y-4">
-        <div class="flex items-center justify-between">
-            <flux:heading size="sm">Metadata</flux:heading>
-            <flux:button size="xs" variant="outline" wire:click="addMetadata">Add field</flux:button>
+        <div class="flex items-center justify-between gap-3">
+            <div>
+                <flux:heading size="sm">Metadata</flux:heading>
+                <p class="mt-0.5 text-xs text-zinc-400">Freeform key/value pairs — SEO tags, custom flags, or extra content.</p>
+            </div>
+            <flux:button size="xs" variant="outline" icon="plus" wire:click="addMetadata">Add field</flux:button>
         </div>
         <flux:error name="metadata" />
 
         @forelse ($metadata as $i => $pair)
-            <div class="flex items-start gap-2 rounded-lg border border-zinc-100 p-3">
-                <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <flux:field>
-                        <flux:label>Key</flux:label>
-                        <flux:input wire:model="metadata.{{ $i }}.key" placeholder="e.g. og:type" class="font-mono" />
-                        <flux:error name="metadata.{{ $i }}.key" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Value</flux:label>
-                        <flux:input wire:model="metadata.{{ $i }}.value" placeholder="e.g. website" />
-                        <flux:error name="metadata.{{ $i }}.value" />
-                    </flux:field>
+            <div class="group relative rounded-xl border border-zinc-200 bg-zinc-50/60 p-4 transition-colors hover:border-zinc-300">
+                <div class="flex items-start gap-3">
+                    <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-[11px] font-semibold text-white">
+                        {{ $i + 1 }}
+                    </div>
+
+                    <div class="flex-1 min-w-0 space-y-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <flux:field>
+                                <flux:label>Key</flux:label>
+                                <flux:input wire:model="metadata.{{ $i }}.key" placeholder="e.g. og:type" class="font-mono" />
+                                <flux:error name="metadata.{{ $i }}.key" />
+                            </flux:field>
+                            <flux:field>
+                                <flux:label>Value type</flux:label>
+                                <flux:select wire:model.live="metadata.{{ $i }}.type">
+                                    <flux:select.option value="text">Input</flux:select.option>
+                                    <flux:select.option value="textarea">Textarea</flux:select.option>
+                                    <flux:select.option value="file">File</flux:select.option>
+                                </flux:select>
+                            </flux:field>
+                        </div>
+
+                        <div class="rounded-lg border border-zinc-100 bg-white p-3">
+                            @if (($pair['type'] ?? 'text') === 'textarea')
+                                <flux:field>
+                                    <flux:label>Value</flux:label>
+                                    <flux:textarea wire:model="metadata.{{ $i }}.value" class="h-48" placeholder="e.g. website" />
+                                    <flux:error name="metadata.{{ $i }}.value" />
+                                </flux:field>
+                            @elseif (($pair['type'] ?? 'text') === 'file')
+                                <x-media-picker model="metadata.{{ $i }}.value" label="Value" dropzone />
+                                <flux:error name="metadata.{{ $i }}.value" />
+                            @else
+                                <flux:field>
+                                    <flux:label>Value</flux:label>
+                                    <flux:input wire:model="metadata.{{ $i }}.value" placeholder="e.g. website" />
+                                    <flux:error name="metadata.{{ $i }}.value" />
+                                </flux:field>
+                            @endif
+                        </div>
+                    </div>
+
+                    <button type="button" wire:click="removeMetadata({{ $i }})"
+                        class="shrink-0 rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-rose-50 hover:text-rose-500 cursor-pointer" aria-label="Remove field">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                 </div>
-                <button type="button" wire:click="removeMetadata({{ $i }})"
-                    class="mt-1 shrink-0 text-rose-500 hover:text-rose-700 cursor-pointer" aria-label="Remove field">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
             </div>
         @empty
-            <p class="text-sm text-zinc-400">No metadata yet.</p>
+            <div class="rounded-xl border border-dashed border-zinc-200 py-10 text-center">
+                <svg class="mx-auto mb-2 h-8 w-8 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" />
+                </svg>
+                <p class="text-sm text-zinc-400">No metadata yet.</p>
+            </div>
         @endforelse
     </div>
 

@@ -11,13 +11,6 @@ use Illuminate\Support\Facades\Cache;
 
 class CmsController extends Controller
 {
-    private function resolveLocale(Request $request): string
-    {
-        $locale = $request->query('locale');
-
-        return in_array($locale, ['en', 'bn'], true) ? $locale : 'en';
-    }
-
     /**
      * GET /api/v1/cms?page=home                -> every active section on that page
      * GET /api/v1/cms?page=home&name=hero      -> just that one named section
@@ -33,13 +26,12 @@ class CmsController extends Controller
             'name' => 'nullable|string',
         ]);
 
-        $locale = $this->resolveLocale($request);
         $pageSlug = $validated['page'];
         $name = $validated['name'] ?? null;
 
-        $cacheKey = 'cms:'.$pageSlug.':'.($name ?? '_all').':'.$locale;
+        $cacheKey = 'cms:'.$pageSlug.':'.($name ?? '_all');
 
-        $cached = Cache::store('redis')->tags(['cms'])->rememberForever($cacheKey, function () use ($pageSlug, $name, $locale) {
+        $cached = Cache::store('redis')->tags(['cms'])->rememberForever($cacheKey, function () use ($pageSlug, $name) {
             $page = Page::where('slug', $pageSlug)->first();
 
             if (! $page) {
@@ -51,12 +43,12 @@ class CmsController extends Controller
             if ($name) {
                 $cms = $query->where('name', $name)->first();
 
-                return $cms ? ['found' => true, 'body' => $this->format($cms, $locale)] : ['found' => false];
+                return $cms ? ['found' => true, 'body' => $this->format($cms)] : ['found' => false];
             }
 
             $sections = $query->orderBy('sort_order')->orderBy('id')->get();
 
-            return ['found' => true, 'body' => $sections->map(fn (CmsSection $cms) => $this->format($cms, $locale))->all()];
+            return ['found' => true, 'body' => $sections->map(fn (CmsSection $cms) => $this->format($cms))->all()];
         });
 
         if (! $cached['found']) {
@@ -66,33 +58,16 @@ class CmsController extends Controller
         return response()->json(['data' => $cached['body']]);
     }
 
-    /**
-     * Resolves a {en, bn} pair to a plain string for the requested locale,
-     * falling back to English when the requested locale is empty.
-     */
-    private function localize(?array $value, string $locale): ?string
-    {
-        if (! $value) {
-            return null;
-        }
-
-        return $value[$locale] ?: ($value['en'] ?? null);
-    }
-
-    private function format(CmsSection $cms, string $locale): array
+    private function format(CmsSection $cms): array
     {
         return [
             'id' => $cms->id,
             'page_id' => $cms->page_id,
             'name' => $cms->name,
-            'title' => $this->localize($cms->title, $locale),
-            'description' => $this->localize($cms->description, $locale),
-            'image' => $cms->image,
-            'bg_image' => $cms->bg_image,
             'cards' => collect($cms->cards ?? [])->map(fn ($card) => [
                 'image' => $card['image'] ?? null,
-                'title' => $this->localize($card['title'] ?? null, $locale),
-                'description' => $this->localize($card['description'] ?? null, $locale),
+                'title' => $card['title'] ?? null,
+                'description' => $card['description'] ?? null,
             ])->values(),
             'metadata' => $cms->metadataMap(),
         ];
