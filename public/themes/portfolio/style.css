@@ -232,3 +232,93 @@
     transform: translateY(-4px);
     border-color: var(--pf-primary-dark);
 }
+
+/* Staggered entrance animation — every section fades + rises in once on load */
+@keyframes pf-fade-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.theme-portfolio .pf-animate {
+    animation: pf-fade-up 0.6s ease both;
+}
+
+/* Small tech/skill card used in the Skills grid */
+.theme-portfolio .pf-skill-card {
+    background: var(--pf-bg-elevated);
+    border: 1px solid var(--pf-border);
+    transition: transform 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.theme-portfolio .pf-skill-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--pf-primary-dark);
+    background: color-mix(in srgb, var(--pf-bg-elevated) 85%, var(--pf-primary) 15%);
+}
+
+/* Segmented tab control (Experience / Education / Certifications) */
+.theme-portfolio .pf-tabs {
+    display: inline-grid;
+    border: 1px solid var(--pf-border);
+    background: var(--pf-bg-elevated);
+    border-radius: 999px;
+    padding: 0.25rem;
+}
+
+.theme-portfolio .pf-tab {
+    border-radius: 999px;
+    color: var(--pf-text-muted);
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.theme-portfolio .pf-tab.is-active {
+    background: var(--pf-primary);
+    color: #06120c;
+}
+
+/* Pulsing "available" status dot */
+.theme-portfolio .pf-pulse-dot {
+    background: var(--pf-primary);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--pf-primary) 60%, transparent);
+    animation: pf-pulse 2s ease-out infinite;
+}
+
+@keyframes pf-pulse {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--pf-primary) 45%, transparent); }
+    70% { box-shadow: 0 0 0 8px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+/* Connect-with-me link tile */
+.theme-portfolio .pf-connect-tile {
+    background: var(--pf-bg-elevated);
+    border: 1px solid var(--pf-border);
+    color: var(--pf-text);
+    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.theme-portfolio .pf-connect-tile:hover {
+    transform: translateY(-3px) scale(1.02);
+    border-color: var(--pf-primary-dark);
+}
+
+/* Tech badge chip used on project cards */
+.theme-portfolio .pf-chip {
+    border: 1px solid var(--pf-border);
+    color: var(--pf-text-muted);
+    background: var(--pf-bg-elevated);
+}
+
+/* The shared contact-form component reads --form-* custom properties (with
+   light defaults baked into its own view) — redefining them here re-themes
+   it to match this page, dark inputs included, with no changes to the
+   component itself and no !important fights needed. */
+.theme-portfolio .pf-contact-form {
+    --form-label: var(--pf-text);
+    --form-border: var(--pf-border);
+    --form-input-bg: var(--pf-bg);
+    --form-text: var(--pf-text);
+    --form-placeholder: var(--pf-text-muted);
+    --form-accent: var(--pf-primary);
+    --form-accent-hover: var(--pf-primary-dark);
+}

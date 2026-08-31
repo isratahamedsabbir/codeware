@@ -174,7 +174,11 @@
         @endforeach
 
         @if ($block = \App\Support\PageBlocks::for($page->slug))
-            @livewire($block)
+            <section class="px-6 py-16">
+                <div class="pf-card pf-contact-form mx-auto max-w-xl rounded-2xl p-6 sm:p-8">
+                    @livewire($block)
+                </div>
+            </section>
         @endif
     </main>
 

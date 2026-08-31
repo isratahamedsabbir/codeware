@@ -32,6 +32,13 @@ class SettingsSeeder extends Seeder
                 'is_public' => true,
             ],
             [
+                'key' => 'contact_address',
+                'value' => '',
+                'type' => 'string',
+                'group' => 'general',
+                'is_public' => true,
+            ],
+            [
                 'key' => 'order_email',
                 'value' => '',
                 'type' => 'string',

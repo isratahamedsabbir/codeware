@@ -109,7 +109,9 @@
         @endforelse
 
         @if ($block = \App\Support\PageBlocks::for($page->slug))
-            @livewire($block)
+            <section class="mx-auto max-w-xl px-6 py-16">
+                @livewire($block)
+            </section>
         @endif
     </main>
 
