@@ -37,10 +37,10 @@
             </a>
 
             <nav class="hidden items-center gap-8 md:flex">
-                @foreach ($navPages ?? [] as $navPage)
-                    <a href="{{ $navPage->slug === 'home' ? route('home') : route('page', $navPage->slug) }}"
-                        class="pf-nav-link pf-mono text-xs uppercase tracking-widest {{ ($currentSlug ?? null) === $navPage->slug ? 'is-active' : '' }}">
-                        {{ $navPage->getTranslation('title', 'en', false) }}
+                @foreach ($menuItems ?? [] as $menuItem)
+                    <a href="{{ url($menuItem->url) }}"
+                        class="pf-nav-link pf-mono text-xs uppercase tracking-widest {{ url($menuItem->url) === url()->current() ? 'is-active' : '' }}">
+                        {{ $menuItem->label }}
                     </a>
                 @endforeach
             </nav>

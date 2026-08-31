@@ -30,10 +30,10 @@
             </a>
 
             <nav class="hidden items-center gap-6 md:flex">
-                @foreach ($navPages ?? [] as $navPage)
-                    <a href="{{ $navPage->slug === 'home' ? route('home') : route('page', $navPage->slug) }}"
-                        class="text-sm font-medium {{ ($currentSlug ?? null) === $navPage->slug ? 'text-primary' : 'text-zinc-600 hover:text-zinc-900' }}">
-                        {{ $navPage->getTranslation('title', 'en', false) }}
+                @foreach ($menuItems ?? [] as $menuItem)
+                    <a href="{{ url($menuItem->url) }}"
+                        class="text-sm font-medium {{ url($menuItem->url) === url()->current() ? 'text-primary' : 'text-zinc-600 hover:text-zinc-900' }}">
+                        {{ $menuItem->label }}
                     </a>
                 @endforeach
             </nav>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CmsSection;
+use App\Models\MenuItem;
 use App\Models\Page;
 use App\Models\Setting;
 use App\Support\Themes;
@@ -27,6 +28,7 @@ class FrontendController extends Controller
             'sections' => $sections,
             'title' => Setting::get('seo_meta_title') ?: Setting::get('site_name'),
             'navPages' => $this->navPages(),
+            'menuItems' => $this->frontendMenuItems(),
             'currentSlug' => 'home',
         ]);
     }
@@ -49,17 +51,31 @@ class FrontendController extends Controller
             'sections' => $sections,
             'title' => $page->seo_title ?: $page->getTranslation('title', 'en', false),
             'navPages' => $this->navPages(),
+            'menuItems' => $this->frontendMenuItems(),
             'currentSlug' => $slug,
         ]);
     }
 
     /**
      * Every standalone page (Home, About, Contact, FAQ, ...), in the admin's
-     * chosen order — the same list every theme's header renders as its site nav,
-     * so adding/reordering pages in the admin updates every theme at once.
+     * chosen order — used as the site nav by the "default" theme, so
+     * adding/reordering pages in the admin updates it automatically.
      */
     private function navPages()
     {
         return Page::ofType('page')->published()->orderBy('sort_order')->get();
+    }
+
+    /**
+     * The "Frontend" menu (see FrontendMenuSeeder, and /admin/menu), managed
+     * by hand rather than auto-generated from the page list — used as the site
+     * nav by the portfolio and ecommerce themes.
+     */
+    private function frontendMenuItems()
+    {
+        return MenuItem::where('group', 'frontend')
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
     }
 }

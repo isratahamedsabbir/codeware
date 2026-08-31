@@ -1,9 +1,23 @@
 <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
 
+    {{-- Menu selector --}}
+    <div class="flex items-center gap-2 px-6 pt-5 pb-1 flex-wrap">
+        @foreach ($menus as $menu)
+            <button type="button" wire:click="selectMenu('{{ $menu->slug }}')"
+                class="px-3 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer {{ $activeGroup === $menu->slug ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200' }}">
+                {{ $menu->name }}
+            </button>
+        @endforeach
+        <button type="button" wire:click="openNewMenu"
+            class="px-3 py-1.5 rounded-full text-sm font-medium border border-dashed border-zinc-300 text-zinc-500 hover:border-zinc-400 hover:text-zinc-700 transition-colors cursor-pointer">
+            + {{ __('New menu') }}
+        </button>
+    </div>
+
     {{-- Header --}}
     <div class="flex items-center justify-between gap-3 px-6 py-5 border-b border-zinc-100 flex-wrap">
         <p class="text-sm text-zinc-500">
-            {{ __('Drag to reorder, toggle items on or off, or add a new group or link. Changes apply to the sidebar immediately.') }}
+            {{ __('Drag to reorder, toggle items on or off, or add a new group or link. Changes to :menu apply immediately.', ['menu' => optional($menus->firstWhere('slug', $activeGroup))->name ?? $activeGroup]) }}
         </p>
         <button wire:click="openCreate()"
             class="admin-btn-success inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors">
@@ -299,6 +313,34 @@
                 <button wire:click="save" wire:loading.attr="disabled"
                     class="admin-btn-save inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
                     {{ $editingId ? __('Update') : __('Create') }}
+                </button>
+                <flux:modal.close>
+                    <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                </flux:modal.close>
+            </div>
+        </div>
+    </flux:modal>
+
+    {{-- New Menu Modal --}}
+    <flux:modal name="new-menu-form" class="md:w-96"
+        x-on:open-modal.window="if ($event.detail.name === 'new-menu-form') $flux.modal('new-menu-form').show()"
+        x-on:close-modal.window="if ($event.detail.name === 'new-menu-form') $flux.modal('new-menu-form').close()">
+        <div class="space-y-4">
+            <flux:heading>{{ __('New menu') }}</flux:heading>
+            <flux:text class="text-sm text-zinc-500">
+                {{ __('Give it a name — e.g. Frontend Menu, Footer Menu.') }}
+            </flux:text>
+
+            <flux:field>
+                <flux:label>{{ __('Name') }}</flux:label>
+                <flux:input wire:model="newMenuLabel" placeholder="{{ __('e.g. Frontend Menu') }}" />
+                <flux:error name="newMenuLabel" />
+            </flux:field>
+
+            <div class="flex gap-2 pt-1">
+                <button wire:click="createMenu" wire:loading.attr="disabled"
+                    class="admin-btn-save inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
+                    {{ __('Create') }}
                 </button>
                 <flux:modal.close>
                     <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>

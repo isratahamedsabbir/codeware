@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Admin\Menu\Index as MenuIndex;
+use App\Models\Menu;
 use App\Models\MenuItem;
 use App\Models\User;
 use Database\Seeders\AdminMenuSeeder;
@@ -262,4 +263,78 @@ it('shows the short menu dropdown in the admin top bar only when items are flagg
     MenuItem::factory()->shortMenu()->create(['label' => 'Quick Reports', 'url' => '/admin/reports']);
 
     $this->get(route('admin.dashboard'))->assertOk()->assertSee('Quick Reports')->assertSee(__('Short Menu'));
+});
+
+it('defaults to managing the admin menu and only shows its own items', function () {
+    MenuItem::factory()->create(['label' => 'Sidebar Item', 'group' => MenuItem::GROUP_ADMIN_SIDEBAR]);
+    MenuItem::factory()->create(['label' => 'Frontend Item', 'group' => 'frontend-menu']);
+
+    Livewire::test(MenuIndex::class)
+        ->assertSet('activeGroup', MenuItem::GROUP_ADMIN_SIDEBAR)
+        ->assertSee('Sidebar Item')
+        ->assertDontSee('Frontend Item');
+});
+
+it('can create a new named menu and adds items to it, not the admin menu', function () {
+    Livewire::test(MenuIndex::class)
+        ->call('openNewMenu')
+        ->set('newMenuLabel', 'Frontend Menu')
+        ->call('createMenu')
+        ->assertSet('activeGroup', 'frontend-menu')
+        ->call('openCreate')
+        ->set('label', 'Home')
+        ->set('url', '/')
+        ->call('save');
+
+    $item = MenuItem::where('label', 'Home')->sole();
+
+    expect($item->group)->toBe('frontend-menu');
+});
+
+it('persists a newly created menu even with zero items, so it survives navigating away', function () {
+    Livewire::test(MenuIndex::class)
+        ->call('openNewMenu')
+        ->set('newMenuLabel', 'Frontend Menu')
+        ->call('createMenu');
+
+    expect(Menu::where('slug', 'frontend-menu')->where('name', 'Frontend Menu')->exists())->toBeTrue();
+
+    // A brand new component instance (as if the admin reloaded the page) should
+    // still list the empty menu, since it's now a real row and not just in-memory state.
+    Livewire::test(MenuIndex::class)->assertSee('Frontend Menu');
+});
+
+it('rejects naming a new menu the same as the reserved admin menu', function () {
+    Livewire::test(MenuIndex::class)
+        ->call('openNewMenu')
+        ->set('newMenuLabel', 'Admin Sidebar')
+        ->call('createMenu')
+        ->assertHasErrors(['newMenuLabel'])
+        ->assertSet('activeGroup', MenuItem::GROUP_ADMIN_SIDEBAR);
+});
+
+it('switching menus scopes reordering and new item sort_order to that menu only', function () {
+    $adminA = MenuItem::factory()->create(['group' => MenuItem::GROUP_ADMIN_SIDEBAR, 'sort_order' => 5]);
+    MenuItem::factory()->create(['group' => 'frontend-menu', 'sort_order' => 99]);
+
+    Livewire::test(MenuIndex::class)
+        ->call('selectMenu', 'frontend-menu')
+        ->call('openCreate')
+        ->set('label', 'New Frontend Link')
+        ->set('url', '/about')
+        ->call('save');
+
+    $frontendItems = MenuItem::where('group', 'frontend-menu')->pluck('sort_order', 'label');
+
+    expect($frontendItems['New Frontend Link'])->toBe(100)
+        ->and($adminA->fresh()->sort_order)->toBe(5);
+});
+
+it('lists every known menu in the selector, admin menu first', function () {
+    Menu::factory()->create(['slug' => 'frontend-menu', 'name' => 'Frontend Menu']);
+    MenuItem::factory()->create(['group' => 'frontend-menu']);
+
+    Livewire::test(MenuIndex::class)
+        ->assertSee('Admin Menu')
+        ->assertSee('Frontend Menu');
 });

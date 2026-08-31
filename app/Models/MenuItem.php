@@ -17,9 +17,11 @@ class MenuItem extends Model
     use HasFactory;
 
     /**
-     * The only menu group in use today — the admin sidebar. The `group` column
-     * exists so other menus (e.g. a future frontend header/footer nav) can share
-     * this table later, filtered by their own group value.
+     * The reserved menu group backing the admin sidebar — the only one that's
+     * always shown even with zero items. The `group` column itself is generic:
+     * the admin can create any number of other named menus (a frontend header
+     * nav, a footer nav, ...) that share this same table, filtered by their own
+     * group value — see knownGroups()/labelForGroup() and Admin\Menu\Index.
      */
     public const GROUP_ADMIN_SIDEBAR = 'admin-sidebar';
 

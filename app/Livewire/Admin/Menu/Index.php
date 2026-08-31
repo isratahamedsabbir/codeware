@@ -2,9 +2,11 @@
 
 namespace App\Livewire\Admin\Menu;
 
+use App\Models\Menu;
 use App\Models\MenuItem;
 use App\Support\AdminActivity;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
@@ -26,6 +28,48 @@ class Index extends Component
 
     public ?int $parent_id = null;
 
+    /** Which menu (`group`) is currently being managed — see the Menu model. */
+    public string $activeGroup = MenuItem::GROUP_ADMIN_SIDEBAR;
+
+    #[Validate('required|string|max:60')]
+    public string $newMenuLabel = '';
+
+    public function selectMenu(string $group): void
+    {
+        $this->activeGroup = $group;
+    }
+
+    public function openNewMenu(): void
+    {
+        $this->reset(['newMenuLabel']);
+        $this->resetErrorBag();
+        $this->dispatch('open-modal', name: 'new-menu-form');
+    }
+
+    public function createMenu(): void
+    {
+        $this->validateOnly('newMenuLabel');
+
+        $name = trim($this->newMenuLabel);
+        $slug = Str::slug($name, '-');
+
+        if (blank($slug) || $slug === MenuItem::GROUP_ADMIN_SIDEBAR) {
+            $this->addError('newMenuLabel', __('Please choose a different name.'));
+
+            return;
+        }
+
+        // A real row from here on — this is what fixes an empty, just-named menu
+        // vanishing the moment the admin navigates away before adding its first item.
+        $menu = Menu::firstOrCreate(['slug' => $slug], ['name' => $name]);
+
+        $this->activeGroup = $menu->slug;
+        $this->newMenuLabel = '';
+
+        $this->dispatch('close-modal', name: 'new-menu-form');
+        $this->dispatch('notify', message: __('Menu created successfully'));
+    }
+
     public function openCreate(?int $parentId = null): void
     {
         $this->reset(['editingId', 'label', 'icon', 'is_group', 'url']);
@@ -38,6 +82,7 @@ class Index extends Component
     {
         $item = MenuItem::findOrFail($id);
 
+        $this->activeGroup = $item->group;
         $this->editingId = $item->id;
         $this->label = $item->label;
         $this->icon = $item->icon ?? '';
@@ -77,7 +122,7 @@ class Index extends Component
                 }
             }];
             $rules['parent_id'] = ['nullable', function ($attribute, $value, $fail) {
-                if ($value && ! MenuItem::where('id', $value)->where('is_group', true)->exists()) {
+                if ($value && ! MenuItem::where('id', $value)->where('is_group', true)->where('group', $this->activeGroup)->exists()) {
                     $fail(__('Invalid parent group.'));
                 }
             }];
@@ -86,6 +131,7 @@ class Index extends Component
         $this->validate($rules);
 
         $data = [
+            'group' => $this->activeGroup,
             'label' => $this->label,
             'icon' => $this->icon ?: null,
             'is_group' => $isGroup,
@@ -97,7 +143,7 @@ class Index extends Component
         ];
 
         if ($creating) {
-            $data['sort_order'] = (int) MenuItem::where('parent_id', $data['parent_id'])->max('sort_order') + 1;
+            $data['sort_order'] = (int) MenuItem::where('group', $this->activeGroup)->where('parent_id', $data['parent_id'])->max('sort_order') + 1;
             MenuItem::create($data);
         } else {
             // Query-builder update() doesn't fire model events, so the cache-busting
@@ -117,7 +163,7 @@ class Index extends Component
     public function reorderTopLevel(array $order): void
     {
         foreach ($order as $sortOrder => $id) {
-            MenuItem::where('id', $id)->whereNull('parent_id')->update(['sort_order' => $sortOrder]);
+            MenuItem::where('id', $id)->where('group', $this->activeGroup)->whereNull('parent_id')->update(['sort_order' => $sortOrder]);
         }
 
         // Query-builder update() doesn't fire model events, so the cache-busting booted()
@@ -128,7 +174,7 @@ class Index extends Component
     public function reorderChildren(int $parentId, array $order): void
     {
         foreach ($order as $sortOrder => $id) {
-            MenuItem::where('id', $id)->where('parent_id', $parentId)->update(['sort_order' => $sortOrder]);
+            MenuItem::where('id', $id)->where('group', $this->activeGroup)->where('parent_id', $parentId)->update(['sort_order' => $sortOrder]);
         }
 
         MenuItem::flushCache();
@@ -183,7 +229,7 @@ class Index extends Component
 
     public function render()
     {
-        $items = MenuItem::query()->ordered()->get();
+        $items = MenuItem::query()->where('group', $this->activeGroup)->ordered()->get();
 
         $topLevel = $items->where('parent_id', null)->values();
         $byParent = $items->where('parent_id', '!=', null)->groupBy('parent_id');
@@ -195,8 +241,12 @@ class Index extends Component
 
         $groups = $topLevel->where('is_group', true)->values();
 
+        // Admin Menu always sorts first, the rest alphabetically by name.
+        $menus = Menu::all()->sortBy(fn (Menu $menu) => $menu->slug === MenuItem::GROUP_ADMIN_SIDEBAR ? '' : $menu->name)->values();
+
         return view('livewire.admin.menu.index', [
             'topLevel' => $topLevel,
+            'menus' => $menus,
             'groups' => $groups,
         ])->layout('layouts.admin', ['title' => __('Menu')]);
     }
