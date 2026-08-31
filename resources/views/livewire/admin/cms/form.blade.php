@@ -34,19 +34,17 @@
                         {{ $i + 1 }}
                     </div>
 
-                    <div class="flex-1 min-w-0">
-                        <div class="rounded-lg border border-zinc-100 bg-white p-3 space-y-4">
-                            <flux:field>
-                                <flux:label>Title</flux:label>
-                                <flux:input wire:model="cards.{{ $i }}.title" placeholder="e.g. Fast Delivery" class="font-medium" />
-                            </flux:field>
-                            <flux:field>
-                                <flux:label>Description</flux:label>
-                                <flux:textarea wire:model="cards.{{ $i }}.description" class="h-48" placeholder="Short description shown on the card" />
-                            </flux:field>
+                    <div class="flex-1 min-w-0 space-y-3">
+                        <flux:field>
+                            <flux:label>Title</flux:label>
+                            <flux:input wire:model="cards.{{ $i }}.title" placeholder="e.g. Fast Delivery" class="font-medium" />
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>Description</flux:label>
+                            <flux:textarea wire:model="cards.{{ $i }}.description" class="h-48" placeholder="Short description shown on the card" />
+                        </flux:field>
 
-                            <x-media-picker model="cards.{{ $i }}.image" label="Card Image" dropzone />
-                        </div>
+                        <x-media-picker model="cards.{{ $i }}.image" label="Card Image" dropzone />
                     </div>
 
                     <button type="button" wire:click="removeCard({{ $i }})"
@@ -123,24 +121,22 @@
                             <flux:error name="metadata.{{ $i }}.key" />
                         </flux:field>
 
-                        <div class="rounded-lg border border-zinc-100 bg-white p-3">
-                            @if (($pair['type'] ?? 'text') === 'textarea')
-                                <flux:field>
-                                    <flux:label>Value</flux:label>
-                                    <flux:textarea wire:model="metadata.{{ $i }}.value" class="h-48" placeholder="e.g. website" />
-                                    <flux:error name="metadata.{{ $i }}.value" />
-                                </flux:field>
-                            @elseif (($pair['type'] ?? 'text') === 'file')
-                                <x-media-picker model="metadata.{{ $i }}.value" label="Value" dropzone />
+                        @if (($pair['type'] ?? 'text') === 'textarea')
+                            <flux:field>
+                                <flux:label>Value</flux:label>
+                                <flux:textarea wire:model="metadata.{{ $i }}.value" class="h-48" placeholder="e.g. website" />
                                 <flux:error name="metadata.{{ $i }}.value" />
-                            @else
-                                <flux:field>
-                                    <flux:label>Value</flux:label>
-                                    <flux:input wire:model="metadata.{{ $i }}.value" placeholder="e.g. website" />
-                                    <flux:error name="metadata.{{ $i }}.value" />
-                                </flux:field>
-                            @endif
-                        </div>
+                            </flux:field>
+                        @elseif (($pair['type'] ?? 'text') === 'file')
+                            <x-media-picker model="metadata.{{ $i }}.value" label="Value" dropzone />
+                            <flux:error name="metadata.{{ $i }}.value" />
+                        @else
+                            <flux:field>
+                                <flux:label>Value</flux:label>
+                                <flux:input wire:model="metadata.{{ $i }}.value" placeholder="e.g. website" />
+                                <flux:error name="metadata.{{ $i }}.value" />
+                            </flux:field>
+                        @endif
                     </div>
 
                     <button type="button" wire:click="removeMetadata({{ $i }})"
