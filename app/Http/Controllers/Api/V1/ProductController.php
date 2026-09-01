@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\Product;
+use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -20,7 +21,7 @@ class ProductController extends Controller
     public function index(Request $request): JsonResponse
     {
         $locale = $this->resolveLocale($request);
-        $perPage = max(1, min((int) $request->query('per_page', 12), 100));
+        $perPage = max(1, min((int) $request->query('per_page', Setting::perPage()), 100));
 
         $products = Product::active()
             ->with(['category', 'page'])

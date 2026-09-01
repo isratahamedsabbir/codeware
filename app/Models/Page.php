@@ -38,6 +38,8 @@ class Page extends Model
                     ? ($page->title['en'] ?? reset($page->title))
                     : $page->title;
                 $page->slug = Slug::make($title);
+            } else {
+                $page->slug = Slug::lower($page->slug);
             }
         });
 

@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Languages;
 
 use App\Models\Language;
+use App\Models\Setting;
 use App\Models\Translation;
 use App\Support\AdminActivity;
 use App\Support\Locale;
@@ -98,7 +99,7 @@ class Index extends Component
                 ->orWhere('code', 'like', "%{$this->search}%")))
             ->when($this->statusFilter !== '', fn ($q) => $q->where('is_active', $this->statusFilter === 'active'))
             ->ordered()
-            ->paginate(15);
+            ->paginate(Setting::perPage());
 
         // Counted once for the whole page rather than per row.
         $translated = Translation::query()

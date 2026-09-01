@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Roles;
 
+use App\Models\Setting;
 use App\Support\AdminActivity;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -52,7 +53,7 @@ class Index extends Component
                 ->withCount(['users', 'permissions'])
                 ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
                 ->orderBy('name')
-                ->paginate(15),
+                ->paginate(Setting::perPage()),
         ])->layout('layouts.admin', ['title' => 'Roles']);
     }
 }

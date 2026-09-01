@@ -28,6 +28,16 @@ class Slug
     }
 
     /**
+     * Lowercases a manually-typed slug. make() already returns lowercase, but
+     * an admin can type directly into the slug field with any casing — this
+     * is the single place that normalizes it before it ever reaches the DB.
+     */
+    public static function lower(string $slug): string
+    {
+        return Str::lower($slug);
+    }
+
+    /**
      * Validation rules for a slug field: always checked against `pages` (every
      * slug-bearing entity has one), plus the entity's own table when given —
      * a defensive second check in case a row is ever missing its paired page.

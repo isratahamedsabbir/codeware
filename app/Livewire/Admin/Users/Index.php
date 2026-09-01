@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Users;
 
+use App\Models\Setting;
 use App\Models\User;
 use App\Support\AdminActivity;
 use Livewire\Component;
@@ -62,7 +63,7 @@ class Index extends Component
                     ->orWhere('email', 'like', "%{$this->search}%"))
                 ->when($this->roleFilter, fn ($q) => $q->role($this->roleFilter))
                 ->orderBy('id')
-                ->paginate(15),
+                ->paginate(Setting::perPage()),
             'roles' => Role::orderBy('name')->get(),
         ])->layout('layouts.admin', ['title' => 'Users']);
     }

@@ -204,8 +204,9 @@ class Index extends Component
         // Section order within the General tab — not the DB row order, which isn't
         // guaranteed without an ORDER BY. General and Images render side by side (see
         // the view), so their relative order here doesn't matter; anything not listed
-        // falls to the end in whatever order it comes.
-        $groupOrder = ['general' => 0, 'images' => 1, 'localization' => 2];
+        // falls to the end in whatever order it comes. Pagination gets its own card
+        // (via its own 'pagination' group) rather than sharing General's.
+        $groupOrder = ['general' => 0, 'pagination' => 1, 'images' => 2, 'localization' => 3];
 
         return view('livewire.admin.settings.index', [
             // 'frontend' (site_theme) lives under the Theme tab, alongside the admin

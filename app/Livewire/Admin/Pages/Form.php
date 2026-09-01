@@ -77,6 +77,13 @@ class Form extends Component
     #[Validate('nullable|string|max:255')]
     public string $canonical_slug = '';
 
+    /**
+     * The last auto-generated canonical_slug value, so we know whether the
+     * admin has manually diverged from it — same "follow until edited" pattern
+     * as autoSlug, but tracking the page's slug instead of the title.
+     */
+    public string $autoCanonicalSlug = '';
+
     public function mount(?int $id = null): void
     {
         $this->ogImagePickerId = 'page-og-image-picker-'.Str::uuid()->toString();
@@ -102,6 +109,14 @@ class Form extends Component
             $this->canonical_base = $page->canonical_base ?? '';
             $this->canonical_slug = $page->canonical_slug ?? $page->slug;
 
+            // A never-set (or still-matching) canonical_slug is still following the
+            // page slug — keep it auto-syncing. One saved as something else is a
+            // deliberate override, so leave autoCanonicalSlug unmatchable ('') to
+            // stop future title/slug edits from clobbering it.
+            if ($page->canonical_slug === null || $page->canonical_slug === $page->slug) {
+                $this->autoCanonicalSlug = $this->slug;
+            }
+
             if (! $this->isLinked()) {
                 $this->checkSlugAvailability();
             }
@@ -126,6 +141,7 @@ class Form extends Component
             $this->slug = $this->autoSlug;
         }
 
+        $this->syncCanonicalSlug();
         $this->checkSlugAvailability();
     }
 
@@ -141,7 +157,21 @@ class Form extends Component
             return;
         }
 
+        $this->slug = Slug::lower($this->slug);
+        $this->syncCanonicalSlug();
         $this->checkSlugAvailability();
+    }
+
+    /**
+     * Keeps canonical_slug following the page slug the same way slug follows
+     * the title — only while the admin hasn't typed a custom canonical path.
+     */
+    private function syncCanonicalSlug(): void
+    {
+        if ($this->canonical_slug === '' || $this->canonical_slug === $this->autoCanonicalSlug) {
+            $this->autoCanonicalSlug = $this->slug;
+            $this->canonical_slug = $this->autoCanonicalSlug;
+        }
     }
 
     private function checkSlugAvailability(): void

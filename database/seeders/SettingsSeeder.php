@@ -46,6 +46,13 @@ class SettingsSeeder extends Seeder
                 'is_public' => true,
             ],
             [
+                'key' => 'pagination_per_page',
+                'value' => '10',
+                'type' => 'integer',
+                'group' => 'pagination',
+                'is_public' => true,
+            ],
+            [
                 'key' => 'site_icon',
                 'value' => '',
                 'type' => 'string',

@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Cms;
 
 use App\Models\CmsSection;
 use App\Models\Page;
+use App\Models\Setting;
 use App\Support\AdminActivity;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -73,7 +74,7 @@ class Index extends Component
                 ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
                 ->orderBy('sort_order')
                 ->orderBy('id')
-                ->paginate(30),
+                ->paginate(Setting::perPage()),
         ])->layout('layouts.admin', ['title' => 'CMS']);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Tags;
 
+use App\Models\Setting;
 use App\Models\Tag;
 use App\Support\AdminActivity;
 use Livewire\Component;
@@ -65,7 +66,7 @@ class Index extends Component
                 ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
                 ->withCount('posts')
                 ->orderBy('id')
-                ->paginate(15),
+                ->paginate(Setting::perPage()),
         ])->layout('layouts.admin', ['title' => 'Post Tags']);
     }
 }

@@ -26,4 +26,14 @@ class Setting extends Model
         static::updateOrCreate(['key' => $key], ['value' => $value]);
         Cache::store('redis')->tags(['settings'])->forget("setting:{$key}");
     }
+
+    /**
+     * Default row count for paginated admin list tables and the public API —
+     * the single place every ->paginate() call reads from, driven by
+     * Settings → General → Pagination.
+     */
+    public static function perPage(): int
+    {
+        return (int) static::get('pagination_per_page', 10);
+    }
 }

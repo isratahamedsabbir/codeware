@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Posts;
 
 use App\Models\Page;
 use App\Models\Post;
+use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\PageCascade;
 use Livewire\Component;
@@ -101,7 +102,7 @@ class Index extends Component
                     ->orWhere('slug', 'like', "%{$this->search}%"))
                 ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
                 ->latest()
-                ->paginate(20),
+                ->paginate(Setting::perPage()),
         ])->layout('layouts.admin', ['title' => 'Posts']);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\PostCategories;
 
 use App\Models\PostCategory;
+use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\PageCascade;
 use Livewire\Component;
@@ -77,7 +78,7 @@ class Index extends Component
                 ->withCount('posts')
                 ->orderBy('sort_order')
                 ->orderBy('id')
-                ->paginate(15),
+                ->paginate(Setting::perPage()),
         ])->layout('layouts.admin', ['title' => 'Post Categories']);
     }
 }

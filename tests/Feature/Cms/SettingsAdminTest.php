@@ -16,10 +16,11 @@ it('renders settings index', function () {
 });
 
 it('keeps a fixed section order with General and Images first, regardless of row insertion order', function () {
-    // Inserted out of order (and Frontend before General) to prove the view doesn't
-    // just rely on DB row order, which isn't guaranteed without an ORDER BY. General
-    // and Images render as separate side-by-side cards in the General tab (see the
-    // view) — both need to be present and correctly populated.
+    // Inserted out of order to prove the view doesn't just rely on DB row order,
+    // which isn't guaranteed without an ORDER BY. General and Images render as
+    // separate side-by-side cards in the General tab (see the view) — both need
+    // to be present and correctly populated. 'frontend' (site_theme) is excluded
+    // from this listing entirely — it renders under the Theme tab instead.
     Setting::factory()->create(['key' => 'site_theme', 'value' => 'default', 'group' => 'frontend', 'type' => 'select']);
     Setting::factory()->create(['key' => 'app_locale', 'value' => 'en', 'group' => 'localization', 'type' => 'string']);
     Setting::factory()->create(['key' => 'site_icon', 'value' => '', 'group' => 'images', 'type' => 'string']);
@@ -27,7 +28,7 @@ it('keeps a fixed section order with General and Images first, regardless of row
 
     Livewire::test(SettingsIndex::class)
         ->assertViewHas('groupedSettings', function ($groups) {
-            return $groups->keys()->all() === ['general', 'images', 'localization', 'frontend']
+            return $groups->keys()->all() === ['general', 'images', 'localization']
                 && $groups->get('general')->pluck('key')->all() === ['site_name']
                 && $groups->get('images')->pluck('key')->all() === ['site_icon'];
         });
@@ -310,7 +311,7 @@ it('renders site theme as a select populated from available theme folders, not a
     Setting::factory()->create(['key' => 'site_theme', 'value' => 'default', 'group' => 'frontend', 'type' => 'select']);
 
     Livewire::test(SettingsIndex::class)
-        ->assertSee('Site Theme')
+        ->assertSee('Site Design')
         ->assertSeeHtml('<option value="default">Default</option>')
         ->assertSeeHtml('<option value="ecommerce">Ecommerce</option>')
         ->assertSeeHtml('<option value="portfolio">Portfolio</option>');

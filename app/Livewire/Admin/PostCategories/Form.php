@@ -84,6 +84,7 @@ class Form extends Component
      */
     public function updatedSlug(): void
     {
+        $this->slug = Slug::lower($this->slug);
         $this->checkSlugAvailability();
     }
 

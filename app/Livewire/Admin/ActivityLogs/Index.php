@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\ActivityLogs;
 
 use App\Models\AdminActivityLog;
+use App\Models\Setting;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -53,7 +54,7 @@ class Index extends Component
             ->latest();
 
         return view('livewire.admin.activity-logs.index', [
-            'logs' => $query->paginate(25),
+            'logs' => $query->paginate(Setting::perPage()),
             'admins' => User::query()
                 ->where('is_admin', true)
                 ->orWhereHas('roles')

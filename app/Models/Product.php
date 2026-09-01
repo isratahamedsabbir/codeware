@@ -40,6 +40,8 @@ class Product extends Model
                     ? ($product->name['en'] ?? reset($product->name))
                     : $product->name;
                 $product->slug = Slug::make($name);
+            } else {
+                $product->slug = Slug::lower($product->slug);
             }
         });
     }

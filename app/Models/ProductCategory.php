@@ -36,6 +36,8 @@ class ProductCategory extends Model
                     ? ($category->name['en'] ?? reset($category->name))
                     : $category->name;
                 $category->slug = Slug::make($name);
+            } else {
+                $category->slug = Slug::lower($category->slug);
             }
         });
     }

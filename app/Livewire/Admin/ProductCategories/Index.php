@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\ProductCategories;
 
 use App\Models\ProductCategory;
+use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\PageCascade;
 use Livewire\Component;
@@ -70,7 +71,7 @@ class Index extends Component
                 ->withCount('products')
                 ->orderBy('sort_order')
                 ->orderBy('id')
-                ->paginate(15),
+                ->paginate(Setting::perPage()),
         ])->layout('layouts.admin', ['title' => 'Product Categories']);
     }
 }

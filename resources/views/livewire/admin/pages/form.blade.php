@@ -95,7 +95,7 @@
                                     <option value="{{ $base }}">{{ $base }}</option>
                                 @endforeach
                             </select>
-                            <flux:input wire:model="canonical_slug" placeholder="page-slug" class="flex-1" />
+                            <flux:input wire:model.live.debounce.400ms="canonical_slug" placeholder="page-slug" class="flex-1" />
                         </div>
                         <p class="text-xs text-zinc-400 mt-1">
                             The base is managed in Settings → SEO → Canonical Base Links. The path defaults to this page's slug but can be edited independently.

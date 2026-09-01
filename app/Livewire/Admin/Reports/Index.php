@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Reports;
 
 use App\Models\Order;
+use App\Models\Setting;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Livewire\Component;
@@ -88,7 +89,7 @@ class Index extends Component
         $ordersByStatus = $matching->groupBy('status')->map->count();
 
         return view('livewire.admin.reports.index', [
-            'orders' => $this->filteredQuery()->latest()->paginate(20),
+            'orders' => $this->filteredQuery()->latest()->paginate(Setting::perPage()),
             'totalOrders' => $matching->count(),
             'totalRevenue' => $matching->where('payment_status', 'paid')->sum('total'),
             'pendingAmount' => $matching->where('payment_status', 'pending')->sum('total'),

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Permissions;
 
+use App\Models\Setting;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -49,7 +50,7 @@ class Index extends Component
                 ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
                 ->withCount('roles')
                 ->orderBy('name')
-                ->paginate(25),
+                ->paginate(Setting::perPage()),
         ])->layout('layouts.admin', ['title' => 'Permissions']);
     }
 }

@@ -102,6 +102,11 @@
                                             <flux:text class="text-xs text-zinc-500">
                                                 {{ __('The default language the site renders in. Manage languages under the Localization menu.') }}
                                             </flux:text>
+                                        @elseif ($setting->key === 'pagination_per_page')
+                                            <flux:input type="number" min="1" max="100" wire:model="settings.{{ $setting->key }}" />
+                                            <flux:text class="text-xs text-zinc-500">
+                                                {{ __('Default number of items per page on the public site (products, posts, etc.). A request can still override this with its own ?per_page= value.') }}
+                                            </flux:text>
                                         @elseif ($setting->key === 'timezone')
                                             <select wire:model="settings.{{ $setting->key }}"
                                                 class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">

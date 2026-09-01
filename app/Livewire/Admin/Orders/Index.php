@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Orders;
 
 use App\Models\Order;
+use App\Models\Setting;
 use Carbon\CarbonImmutable;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -79,7 +80,7 @@ class Index extends Component
             'orders' => $this->filteredQuery()
                 ->withCount('items')
                 ->latest()
-                ->paginate(20),
+                ->paginate(Setting::perPage()),
         ])->layout('layouts.admin', ['title' => 'Orders']);
     }
 }

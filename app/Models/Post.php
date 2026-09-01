@@ -36,6 +36,8 @@ class Post extends Model
                     ? ($post->title['en'] ?? reset($post->title))
                     : $post->title;
                 $post->slug = Slug::make($title);
+            } else {
+                $post->slug = Slug::lower($post->slug);
             }
             if ($post->content) {
                 $contentStr = is_array($post->content) ? json_encode($post->content) : $post->content;

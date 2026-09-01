@@ -7,6 +7,7 @@ use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\PageCascade;
 use Livewire\Component;
@@ -124,7 +125,7 @@ class Index extends Component
                 }))
                 ->orderBy('sort_order')
                 ->orderBy('id')
-                ->paginate(30),
+                ->paginate(Setting::perPage()),
         ])->layout('layouts.admin', ['title' => 'Pages']);
     }
 }
