@@ -5,10 +5,6 @@
         <div class="flex flex-col sm:flex-row gap-3">
             <x-per-page-select :options="$this->perPageOptions()" />
 
-            <div class="relative flex-1">
-                <flux:input wire:model.live.debounce.300ms="search" placeholder="Search order #, name, or email…" icon="magnifying-glass" />
-            </div>
-
             <flux:select wire:model.live="statusFilter" class="sm:w-[170px]">
                 <flux:select.option value="">All statuses</flux:select.option>
                 @foreach (\App\Models\Order::STATUSES as $status)
@@ -29,6 +25,10 @@
                     <flux:select.option value="{{ $key }}">{{ $label }}</flux:select.option>
                 @endforeach
             </flux:select>
+
+            <div class="relative flex-1">
+                <flux:input wire:model.live.debounce.300ms="search" placeholder="Search order #, name, or email…" icon="magnifying-glass" />
+            </div>
         </div>
 
         <div class="flex flex-col sm:flex-row gap-3 sm:items-center">

@@ -9,7 +9,7 @@
     {{-- Toolbar --}}
     <div class="flex items-center gap-3 p-4 border-b border-zinc-100 flex-wrap">
         <x-per-page-select :options="$this->perPageOptions()" />
-        <div class="relative max-w-xs w-full">
+        <div class="relative max-w-xs w-full ml-auto">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" viewBox="0 0 24 24"
                 fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="11" cy="11" r="8" />

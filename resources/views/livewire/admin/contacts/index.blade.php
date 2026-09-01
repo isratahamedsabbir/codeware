@@ -3,6 +3,13 @@
     {{-- Filters --}}
     <div class="flex gap-3 px-6 py-3 border-b border-zinc-100 flex-wrap items-center">
         <x-per-page-select :options="$this->perPageOptions()" />
+        <select wire:model.live="statusFilter"
+            class="px-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 bg-white appearance-none pr-8 min-w-[140px] transition-all"
+            style="background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 10px center">
+            <option value="">All statuses</option>
+            <option value="unread">Unread</option>
+            <option value="read">Read</option>
+        </select>
         <div class="relative flex-1 min-w-[180px]">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" viewBox="0 0 24 24"
                 fill="none" stroke="currentColor" stroke-width="2">
@@ -12,13 +19,6 @@
             <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search by name, email or subject…"
                 class="w-full pl-9 pr-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all" />
         </div>
-        <select wire:model.live="statusFilter"
-            class="px-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 bg-white appearance-none pr-8 min-w-[140px] transition-all"
-            style="background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 10px center">
-            <option value="">All statuses</option>
-            <option value="unread">Unread</option>
-            <option value="read">Read</option>
-        </select>
     </div>
 
     {{-- Table --}}
