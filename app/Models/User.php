@@ -16,7 +16,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password', 'photo'])]
+#[Fillable(['name', 'email', 'password', 'photo', 'signature'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -68,5 +68,17 @@ class User extends Authenticatable
         }
 
         return Storage::disk('public')->url($this->photo);
+    }
+
+    /**
+     * Get the user's signature image URL
+     */
+    public function getSignatureUrlAttribute(): ?string
+    {
+        if (! $this->signature) {
+            return null;
+        }
+
+        return Storage::disk('public')->url($this->signature);
     }
 }
