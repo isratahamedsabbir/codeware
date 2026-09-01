@@ -36,14 +36,16 @@
         <div class="border border-zinc-100 rounded-lg">
             <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
                 <colgroup>
-                    <col style="width:28%">
+                    <col style="width:5%">
+                    <col style="width:26%">
                     <col style="width:22%">
                     <col style="width:16%">
-                    <col style="width:14%">
+                    <col style="width:11%">
                     <col style="width:20%">
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
+                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Title</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Slug</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Category</th>
@@ -54,6 +56,11 @@
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($posts as $post)
                         <tr class="hover:bg-indigo-50/30 transition-colors">
+
+                            {{-- ID --}}
+                            <td class="px-4 py-3.5">
+                                <span class="text-sm text-zinc-500 font-mono">{{ $post->id }}</span>
+                            </td>
 
                             {{-- Title --}}
                             <td class="px-4 py-3.5">

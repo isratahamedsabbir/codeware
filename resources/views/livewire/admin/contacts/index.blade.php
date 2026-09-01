@@ -26,15 +26,17 @@
         <div class="border border-zinc-100 rounded-lg">
             <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
                 <colgroup>
-                    <col style="width:16%">
+                    <col style="width:5%">
+                    <col style="width:15%">
                     <col style="width:18%">
-                    <col style="width:16%">
-                    <col style="width:24%">
+                    <col style="width:14%">
+                    <col style="width:22%">
                     <col style="width:12%">
                     <col style="width:14%">
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
+                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Name</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Contact Info</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Subject</th>
@@ -46,6 +48,11 @@
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($contacts as $contact)
                         <tr class="hover:bg-indigo-50/30 transition-colors">
+
+                            {{-- ID --}}
+                            <td class="px-4 py-3.5">
+                                <span class="text-sm text-zinc-500 font-mono">{{ $contact->id }}</span>
+                            </td>
 
                             {{-- Name --}}
                             <td class="px-4 py-3.5">

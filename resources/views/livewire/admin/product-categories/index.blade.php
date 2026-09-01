@@ -42,7 +42,8 @@
             <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
                 <colgroup>
                     <col style="width:5%">
-                    <col style="width:28%">
+                    <col style="width:5%">
+                    <col style="width:23%">
                     <col style="width:20%">
                     <col style="width:10%">
                     <col style="width:15%">
@@ -50,7 +51,8 @@
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
-                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
+                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
+                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Name</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Slug</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Icon</th>
@@ -71,6 +73,11 @@
                                         <line x1="3" y1="18" x2="21" y2="18" />
                                     </svg>
                                 </div>
+                            </td>
+
+                            {{-- ID --}}
+                            <td class="px-4 py-3.5">
+                                <span class="text-sm text-zinc-500 font-mono">{{ $category->id }}</span>
                             </td>
 
                             {{-- Name --}}
