@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Pages;
 
 use App\Models\Page;
+use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\Slug;
 use Illuminate\Support\Facades\DB;
@@ -70,6 +71,12 @@ class Form extends Component
 
     public bool $no_follow = false;
 
+    #[Validate('nullable|string|max:255')]
+    public string $canonical_base = '';
+
+    #[Validate('nullable|string|max:255')]
+    public string $canonical_slug = '';
+
     public function mount(?int $id = null): void
     {
         $this->ogImagePickerId = 'page-og-image-picker-'.Str::uuid()->toString();
@@ -92,6 +99,8 @@ class Form extends Component
             $this->og_description = $page->og_description ?? '';
             $this->no_index = (bool) $page->no_index;
             $this->no_follow = (bool) $page->no_follow;
+            $this->canonical_base = $page->canonical_base ?? '';
+            $this->canonical_slug = $page->canonical_slug ?? $page->slug;
 
             if (! $this->isLinked()) {
                 $this->checkSlugAvailability();
@@ -213,6 +222,8 @@ class Form extends Component
             'og_description' => $this->og_description ?: null,
             'no_index' => $this->no_index,
             'no_follow' => $this->no_follow,
+            'canonical_base' => $this->canonical_base ?: null,
+            'canonical_slug' => $this->canonical_slug ?: null,
         ];
 
         $creating = $this->pageId === null;
@@ -258,6 +269,14 @@ class Form extends Component
     public function isLinked(): bool
     {
         return $this->type !== 'page';
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function canonicalBaseOptions(): array
+    {
+        return json_decode(Setting::get('seo_canonical_urls', '[]') ?: '[]', true) ?: [];
     }
 
     public function render()

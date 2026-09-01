@@ -33,6 +33,8 @@ return new class extends Migration
             $table->text('og_description')->nullable();
             $table->boolean('no_index')->default(false);
             $table->boolean('no_follow')->default(false);
+            $table->string('canonical_base')->nullable();
+            $table->string('canonical_slug')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

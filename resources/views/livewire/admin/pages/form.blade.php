@@ -83,6 +83,28 @@
 
             <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-x-7 gap-y-4">
 
+                {{-- Canonical URL --}}
+                <div class="lg:col-span-2 min-w-0">
+                    <flux:field>
+                        <flux:label>Canonical URL</flux:label>
+                        <div class="flex items-center gap-2">
+                            <select wire:model="canonical_base"
+                                class="rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700 shrink-0">
+                                <option value="">Select base…</option>
+                                @foreach ($this->canonicalBaseOptions() as $base)
+                                    <option value="{{ $base }}">{{ $base }}</option>
+                                @endforeach
+                            </select>
+                            <flux:input wire:model="canonical_slug" placeholder="page-slug" class="flex-1" />
+                        </div>
+                        <p class="text-xs text-zinc-400 mt-1">
+                            The base is managed in Settings → SEO → Canonical Base Links. The path defaults to this page's slug but can be edited independently.
+                        </p>
+                        <flux:error name="canonical_base" />
+                        <flux:error name="canonical_slug" />
+                    </flux:field>
+                </div>
+
                 {{-- Left: meta fields --}}
                 <div class="space-y-4 min-w-0">
                     <flux:field>

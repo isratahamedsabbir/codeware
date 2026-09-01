@@ -435,6 +435,27 @@
                 </div>
 
                 </div>
+
+                {{-- Canonical base links --}}
+                <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+                    <flux:heading size="sm">Canonical Base Links</flux:heading>
+                    <flux:text class="text-xs text-zinc-500 -mt-2">
+                        Base URLs used to build canonical link tags. Add one for every domain your site is reachable on.
+                    </flux:text>
+                    <div class="space-y-3 max-w-2xl">
+                        @foreach ($canonicalUrls as $index => $url)
+                            <div class="flex items-center gap-2">
+                                <flux:input wire:model="canonicalUrls.{{ $index }}" placeholder="https://example.com"
+                                    class="flex-1" />
+                                <flux:button variant="subtle" square icon="trash"
+                                    wire:click="removeCanonicalUrl({{ $index }})" aria-label="Remove link" />
+                            </div>
+                        @endforeach
+                    </div>
+                    <flux:button variant="ghost" icon="plus" wire:click="addCanonicalUrl">
+                        Add Link
+                    </flux:button>
+                </div>
             </div>
         </div>
 

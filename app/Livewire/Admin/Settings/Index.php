@@ -18,10 +18,14 @@ class Index extends Component
 
     public string $activeTab = 'general';
 
+    /** @var array<int, string> */
+    public array $canonicalUrls = [];
+
     public function mount(): void
     {
         $this->loadSettings();
         $this->loadEnv();
+        $this->loadCanonicalUrls();
     }
 
     protected function loadSettings(): void
@@ -59,6 +63,30 @@ class Index extends Component
             foreach (array_keys($fields) as $key) {
                 $this->env[$key] = $current[$key] ?? '';
             }
+        }
+    }
+
+    protected function loadCanonicalUrls(): void
+    {
+        $this->canonicalUrls = json_decode(Setting::get('seo_canonical_urls', '[]') ?: '[]', true) ?: [];
+
+        if (empty($this->canonicalUrls)) {
+            $this->canonicalUrls = [''];
+        }
+    }
+
+    public function addCanonicalUrl(): void
+    {
+        $this->canonicalUrls[] = '';
+    }
+
+    public function removeCanonicalUrl(int $index): void
+    {
+        unset($this->canonicalUrls[$index]);
+        $this->canonicalUrls = array_values($this->canonicalUrls);
+
+        if (empty($this->canonicalUrls)) {
+            $this->canonicalUrls = [''];
         }
     }
 
@@ -152,6 +180,9 @@ class Index extends Component
         foreach ($this->settings as $key => $value) {
             Setting::set($key, $value);
         }
+
+        $urls = array_values(array_filter($this->canonicalUrls, fn ($url) => trim($url) !== ''));
+        Setting::set('seo_canonical_urls', json_encode($urls));
 
         if (array_key_exists('theme_mode', $this->settings) || array_key_exists('theme_accent', $this->settings)) {
             $this->dispatch('admin-theme-changed', mode: $this->settings['theme_mode'] ?? Theme::mode(), accent: $this->settings['theme_accent'] ?? Theme::accent());
