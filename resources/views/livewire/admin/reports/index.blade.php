@@ -49,6 +49,7 @@
         <div class="px-6 py-5 border-b border-zinc-100 space-y-3">
             <div class="flex items-center justify-between gap-3 flex-wrap">
                 <div class="flex flex-col sm:flex-row gap-3">
+                    <x-per-page-select :options="$this->perPageOptions()" />
                     <flux:select wire:model.live="statusFilter" class="sm:w-[170px]">
                         <flux:select.option value="">All statuses</flux:select.option>
                         @foreach (\App\Models\Order::STATUSES as $status)

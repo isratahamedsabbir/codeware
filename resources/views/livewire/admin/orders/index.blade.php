@@ -3,6 +3,8 @@
     {{-- Filters --}}
     <div class="px-6 py-5 border-b border-zinc-100 space-y-3">
         <div class="flex flex-col sm:flex-row gap-3">
+            <x-per-page-select :options="$this->perPageOptions()" />
+
             <div class="relative flex-1">
                 <flux:input wire:model.live.debounce.300ms="search" placeholder="Search order #, name, or email…" icon="magnifying-glass" />
             </div>

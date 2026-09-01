@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Admin\Reports;
 
+use App\Concerns\HasPerPage;
 use App\Models\Order;
-use App\Models\Setting;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Livewire\Component;
@@ -11,7 +11,7 @@ use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use WithPagination;
+    use HasPerPage, WithPagination;
 
     public string $statusFilter = '';
 
@@ -89,7 +89,7 @@ class Index extends Component
         $ordersByStatus = $matching->groupBy('status')->map->count();
 
         return view('livewire.admin.reports.index', [
-            'orders' => $this->filteredQuery()->latest()->paginate(Setting::perPage()),
+            'orders' => $this->filteredQuery()->latest()->paginate($this->perPage),
             'totalOrders' => $matching->count(),
             'totalRevenue' => $matching->where('payment_status', 'paid')->sum('total'),
             'pendingAmount' => $matching->where('payment_status', 'pending')->sum('total'),

@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Admin\Languages;
 
+use App\Concerns\HasPerPage;
 use App\Models\Language;
-use App\Models\Setting;
 use App\Models\Translation;
 use App\Support\AdminActivity;
 use App\Support\Locale;
@@ -12,7 +12,7 @@ use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use WithPagination;
+    use HasPerPage, WithPagination;
 
     public string $search = '';
     public string $statusFilter = '';
@@ -99,7 +99,7 @@ class Index extends Component
                 ->orWhere('code', 'like', "%{$this->search}%")))
             ->when($this->statusFilter !== '', fn ($q) => $q->where('is_active', $this->statusFilter === 'active'))
             ->ordered()
-            ->paginate(Setting::perPage());
+            ->paginate($this->perPage);
 
         // Counted once for the whole page rather than per row.
         $translated = Translation::query()

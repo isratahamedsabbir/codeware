@@ -2,14 +2,14 @@
 
 namespace App\Livewire\Admin\Contacts;
 
+use App\Concerns\HasPerPage;
 use App\Models\Contact;
-use App\Models\Setting;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use WithPagination;
+    use HasPerPage, WithPagination;
 
     public string $search = '';
     public string $statusFilter = '';
@@ -45,7 +45,7 @@ class Index extends Component
                     ->orWhere('subject', 'like', "%{$this->search}%"))
                 ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
                 ->latest()
-                ->paginate(Setting::perPage()),
+                ->paginate($this->perPage),
         ])->layout('layouts.admin', ['title' => 'Contacts']);
     }
 }

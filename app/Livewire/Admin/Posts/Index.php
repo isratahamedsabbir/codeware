@@ -2,9 +2,9 @@
 
 namespace App\Livewire\Admin\Posts;
 
+use App\Concerns\HasPerPage;
 use App\Models\Page;
 use App\Models\Post;
-use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\PageCascade;
 use Livewire\Component;
@@ -12,7 +12,7 @@ use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use WithPagination;
+    use HasPerPage, WithPagination;
 
     public string $search = '';
 
@@ -102,7 +102,7 @@ class Index extends Component
                     ->orWhere('slug', 'like', "%{$this->search}%"))
                 ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
                 ->latest()
-                ->paginate(Setting::perPage()),
+                ->paginate($this->perPage),
         ])->layout('layouts.admin', ['title' => 'Posts']);
     }
 }

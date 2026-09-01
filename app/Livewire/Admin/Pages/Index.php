@@ -2,12 +2,12 @@
 
 namespace App\Livewire\Admin\Pages;
 
+use App\Concerns\HasPerPage;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\Product;
 use App\Models\ProductCategory;
-use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\PageCascade;
 use Livewire\Component;
@@ -15,7 +15,7 @@ use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use WithPagination;
+    use HasPerPage, WithPagination;
 
     /**
      * Human-readable labels for every Page::$type value — used for the type
@@ -125,7 +125,7 @@ class Index extends Component
                 }))
                 ->orderBy('sort_order')
                 ->orderBy('id')
-                ->paginate(Setting::perPage()),
+                ->paginate($this->perPage),
         ])->layout('layouts.admin', ['title' => 'Pages']);
     }
 }

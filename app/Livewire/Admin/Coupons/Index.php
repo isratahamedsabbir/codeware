@@ -2,15 +2,15 @@
 
 namespace App\Livewire\Admin\Coupons;
 
+use App\Concerns\HasPerPage;
 use App\Models\Coupon;
-use App\Models\Setting;
 use App\Support\AdminActivity;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use WithPagination;
+    use HasPerPage, WithPagination;
 
     public string $search = '';
 
@@ -64,7 +64,7 @@ class Index extends Component
                 ->when($this->search, fn ($q) => $q->where('code', 'like', '%'.strtoupper($this->search).'%'))
                 ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
                 ->orderByDesc('id')
-                ->paginate(Setting::perPage()),
+                ->paginate($this->perPage),
         ])->layout('layouts.admin', ['title' => 'Coupons']);
     }
 }

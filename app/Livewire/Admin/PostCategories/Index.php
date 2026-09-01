@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Admin\PostCategories;
 
+use App\Concerns\HasPerPage;
 use App\Models\PostCategory;
-use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\PageCascade;
 use Livewire\Component;
@@ -11,7 +11,7 @@ use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use WithPagination;
+    use HasPerPage, WithPagination;
 
     public string $search = '';
 
@@ -78,7 +78,7 @@ class Index extends Component
                 ->withCount('posts')
                 ->orderBy('sort_order')
                 ->orderBy('id')
-                ->paginate(Setting::perPage()),
+                ->paginate($this->perPage),
         ])->layout('layouts.admin', ['title' => 'Post Categories']);
     }
 }

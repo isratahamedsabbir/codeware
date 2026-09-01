@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Admin\Translations;
 
+use App\Concerns\HasPerPage;
 use App\Models\Language;
-use App\Models\Setting;
 use App\Models\Translation;
 use App\Support\AdminActivity;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,7 +15,7 @@ use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use WithPagination;
+    use HasPerPage, WithPagination;
 
     public string $search = '';
     public string $groupFilter = '';
@@ -196,7 +196,7 @@ class Index extends Component
             ->select('group', 'key')
             ->groupBy('group', 'key')
             ->orderBy('key')
-            ->paginate(Setting::perPage());
+            ->paginate($this->perPage);
 
         $this->ensureRows($rows->getCollection(), $locales->pluck('code'));
 

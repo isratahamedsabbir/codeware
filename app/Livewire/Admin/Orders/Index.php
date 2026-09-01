@@ -2,15 +2,15 @@
 
 namespace App\Livewire\Admin\Orders;
 
+use App\Concerns\HasPerPage;
 use App\Models\Order;
-use App\Models\Setting;
 use Carbon\CarbonImmutable;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use WithPagination;
+    use HasPerPage, WithPagination;
 
     public string $search = '';
 
@@ -80,7 +80,7 @@ class Index extends Component
             'orders' => $this->filteredQuery()
                 ->withCount('items')
                 ->latest()
-                ->paginate(Setting::perPage()),
+                ->paginate($this->perPage),
         ])->layout('layouts.admin', ['title' => 'Orders']);
     }
 }

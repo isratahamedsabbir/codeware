@@ -2,16 +2,16 @@
 
 namespace App\Livewire\Admin\Cms;
 
+use App\Concerns\HasPerPage;
 use App\Models\CmsSection;
 use App\Models\Page;
-use App\Models\Setting;
 use App\Support\AdminActivity;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use WithPagination;
+    use HasPerPage, WithPagination;
 
     public int $pageId;
 
@@ -74,7 +74,7 @@ class Index extends Component
                 ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
                 ->orderBy('sort_order')
                 ->orderBy('id')
-                ->paginate(Setting::perPage()),
+                ->paginate($this->perPage),
         ])->layout('layouts.admin', ['title' => 'CMS']);
     }
 }

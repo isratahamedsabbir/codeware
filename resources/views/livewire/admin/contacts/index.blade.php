@@ -1,7 +1,8 @@
 <div class="bg-white rounded-lg shadow-sm overflow-hidden">
 
     {{-- Filters --}}
-    <div class="flex gap-3 px-6 py-3 border-b border-zinc-100 flex-wrap">
+    <div class="flex gap-3 px-6 py-3 border-b border-zinc-100 flex-wrap items-center">
+        <x-per-page-select :options="$this->perPageOptions()" />
         <div class="relative flex-1 min-w-[180px]">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" viewBox="0 0 24 24"
                 fill="none" stroke="currentColor" stroke-width="2">

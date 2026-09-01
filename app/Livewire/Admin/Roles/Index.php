@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Admin\Roles;
 
-use App\Models\Setting;
+use App\Concerns\HasPerPage;
 use App\Support\AdminActivity;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -10,7 +10,7 @@ use Spatie\Permission\Models\Role;
 
 class Index extends Component
 {
-    use WithPagination;
+    use HasPerPage, WithPagination;
 
     public string $search = '';
 
@@ -53,7 +53,7 @@ class Index extends Component
                 ->withCount(['users', 'permissions'])
                 ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
                 ->orderBy('name')
-                ->paginate(Setting::perPage()),
+                ->paginate($this->perPage),
         ])->layout('layouts.admin', ['title' => 'Roles']);
     }
 }
