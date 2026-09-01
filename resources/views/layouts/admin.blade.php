@@ -250,10 +250,7 @@
             @unless ($hidePageHeading ?? false)
                 <div class="mb-4 flex items-start justify-between gap-4 flex-wrap">
                     <div>
-                        <flux:heading size="xl">{{ $title ?? 'Admin' }}</flux:heading>
-                        <div class="mt-2">
-                            @include('partials.admin-breadcrumbs')
-                        </div>
+                        @include('partials.admin-breadcrumbs')
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
                         @stack('page-header-actions')

@@ -1,11 +1,5 @@
 <div class="max-w-[1600px] w-full mx-auto flex-1">
 
-    @push('page-header-actions')
-        <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.roles') }}" wire:navigate>
-            Back
-        </flux:button>
-    @endpush
-
     <div class="space-y-4">
 
         {{-- ── ROLE NAME ── --}}

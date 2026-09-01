@@ -17,12 +17,6 @@
         }
     </style>
 
-    @push('page-header-actions')
-        <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.post-categories') }}" wire:navigate>
-            Back
-        </flux:button>
-    @endpush
-
     <div class="flex gap-5 items-start">
 
         {{-- ── MAIN ── --}}
