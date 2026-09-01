@@ -97,7 +97,8 @@ Route::middleware('can:access-admin-system')->group(function () {
     Route::get('/users', App\Livewire\Admin\Users\Index::class)->name('users');
     Route::get('/users/create', App\Livewire\Admin\Users\Form::class)->name('users.create');
     Route::get('/users/{id}/edit', App\Livewire\Admin\Users\Form::class)->name('users.edit');
-    Route::get('/users/{user}/card', [UserCardController::class, 'download'])->name('users.card');
+    Route::get('/users/{user}/card', [UserCardController::class, 'show'])->name('users.card');
+    Route::get('/users/{user}/card/download', [UserCardController::class, 'download'])->name('users.card.download');
 
     // Admin Activity History
     Route::get('/history', App\Livewire\Admin\ActivityLogs\Index::class)->name('history');

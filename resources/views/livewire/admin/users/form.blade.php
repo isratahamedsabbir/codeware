@@ -2,8 +2,8 @@
 
     @if ($userId)
         @push('page-header-actions')
-            <flux:button variant="ghost" icon="identification" href="{{ route('admin.users.card', $userId) }}">
-                Download Card
+            <flux:button variant="ghost" icon="identification" href="{{ route('admin.users.card', $userId) }}" target="_blank">
+                View Card
             </flux:button>
             <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.users') }}" wire:navigate>
                 Back
