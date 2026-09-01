@@ -60,6 +60,21 @@ class Index extends Component
         $this->resetPage();
     }
 
+    /**
+     * @return array<string, string>
+     */
+    public function filters(): array
+    {
+        return array_filter([
+            'search' => $this->search,
+            'status' => $this->statusFilter,
+            'payment_status' => $this->paymentStatusFilter,
+            'payment_method' => $this->paymentMethodFilter,
+            'from' => $this->fromDate,
+            'to' => $this->toDate,
+        ]);
+    }
+
     private function filteredQuery()
     {
         return Order::query()

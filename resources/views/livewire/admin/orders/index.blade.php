@@ -1,3 +1,9 @@
+@push('page-header-actions')
+    <flux:button variant="ghost" icon="arrow-down-tray" href="{{ route('admin.orders.export', $this->filters()) }}">
+        Export CSV
+    </flux:button>
+@endpush
+
 <div class="bg-white rounded-lg shadow-sm overflow-hidden">
 
     {{-- Filters --}}

@@ -122,6 +122,7 @@ Route::middleware('can:access-admin-system')->group(function () {
     // Orders, Reports & Coupons
     Route::middleware('feature:orders')->group(function () {
         Route::get('/orders', App\Livewire\Admin\Orders\Index::class)->name('orders');
+        Route::get('/orders/export', [ReportExportController::class, 'export'])->name('orders.export');
         Route::get('/orders/{id}', Show::class)->name('orders.show');
         Route::get('/orders/{order}/invoice', [InvoiceController::class, 'show'])->name('orders.invoice');
         Route::get('/orders/{order}/invoice/download', [InvoiceController::class, 'download'])->name('orders.invoice.download');
