@@ -248,7 +248,7 @@
 
         <div class="flex-1 p-4 md:p-4 max-w-[1600px] w-full mx-auto">
             @unless ($hidePageHeading ?? false)
-                <div class="mb-4 flex items-start justify-between gap-4 flex-wrap">
+                <div class="mb-4 flex items-center justify-between gap-4 flex-wrap">
                     <div>
                         @include('partials.admin-breadcrumbs')
                     </div>
