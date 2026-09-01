@@ -1,9 +1,3 @@
-@push('page-header-actions')
-    <flux:button variant="ghost" icon="arrow-down-tray" href="{{ route('admin.orders.export', $this->filters()) }}">
-        Export CSV
-    </flux:button>
-@endpush
-
 <div class="bg-white rounded-lg shadow-sm overflow-hidden">
 
     {{-- Filters --}}
@@ -41,7 +35,10 @@
             <flux:input type="date" wire:model.live="fromDate" class="sm:w-[160px]" />
             <flux:input type="date" wire:model.live="toDate" class="sm:w-[160px]" />
 
-            <flux:button variant="ghost" wire:click="resetFilters" class="sm:ml-auto">Reset</flux:button>
+            <flux:button variant="ghost" icon="arrow-down-tray" href="{{ route('admin.orders.export', $this->filters()) }}" class="sm:ml-auto">
+                Export Filtered
+            </flux:button>
+            <flux:button variant="ghost" wire:click="resetFilters">Reset</flux:button>
         </div>
     </div>
 

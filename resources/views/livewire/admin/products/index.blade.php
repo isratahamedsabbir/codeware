@@ -1,7 +1,4 @@
 @push('page-header-actions')
-    <flux:button variant="ghost" icon="arrow-down-tray" href="{{ route('admin.products.export', ['search' => $search, 'status' => $statusFilter]) }}">
-        Export CSV
-    </flux:button>
     <flux:button variant="ghost" icon="plus" href="{{ route('admin.products.create') }}" wire:navigate>
         New product
     </flux:button>
@@ -19,8 +16,11 @@
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
         </select>
+        <flux:button variant="ghost" icon="arrow-down-tray" href="{{ route('admin.products.export', ['search' => $search, 'status' => $statusFilter]) }}" class="ml-auto">
+            Export CSV
+        </flux:button>
         {{-- Search --}}
-        <div class="relative max-w-xs ml-auto">
+        <div class="relative max-w-xs">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" viewBox="0 0 24 24"
                 fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="11" cy="11" r="8" />
