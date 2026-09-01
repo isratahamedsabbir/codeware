@@ -17,6 +17,14 @@
         } 
     </style>
 
+    @if ($categoryId)
+        @push('page-header-actions')
+            <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.product-categories') }}" wire:navigate>
+                Back
+            </flux:button>
+        @endpush
+    @endif
+
     <div class="flex gap-5 items-start">
         {{-- ── MAIN ── --}}
         <div class="flex-1 min-w-0 bg-white rounded-lg shadow-sm p-6">

@@ -18,6 +18,14 @@
         }
     </style>
 
+    @if ($postId)
+        @push('page-header-actions')
+            <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.posts') }}" wire:navigate>
+                Back
+            </flux:button>
+        @endpush
+    @endif
+
     <div class="flex gap-5 items-start">
 
         {{-- ── MAIN ── --}}

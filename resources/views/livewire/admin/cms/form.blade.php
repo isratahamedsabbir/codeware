@@ -1,3 +1,11 @@
+@if ($cmsId)
+    @push('page-header-actions')
+        <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.cms', ['pageId' => $pageId]) }}" wire:navigate>
+            Back
+        </flux:button>
+    @endpush
+@endif
+
 <div class="w-full space-y-6">
 
     {{-- Basics --}}
