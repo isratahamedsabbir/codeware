@@ -52,7 +52,7 @@
                                             <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                                         </svg>
                                     </div>
-                                    <span class="font-mono text-xs text-zinc-700">{{ $permission->name }}</span>
+                                    <span class="font-mono text-xs text-zinc-700"><x-truncate :text="$permission->name" /></span>
                                 </div>
                             </td>
                             <td class="px-4 py-3.5">

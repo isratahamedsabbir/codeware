@@ -62,7 +62,7 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <div class="font-medium text-zinc-900 text-sm leading-snug">{{ $role->name }}</div>
+                                        <div class="font-medium text-zinc-900 text-sm leading-snug"><x-truncate :text="$role->name" /></div>
                                         <div class="text-xs text-zinc-500">{{ $role->guard_name }}</div>
                                     </div>
                                 </div>

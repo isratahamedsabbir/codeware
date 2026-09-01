@@ -61,10 +61,10 @@
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($orders as $order)
                         <tr class="hover:bg-indigo-50/30 transition-colors">
-                            <td class="px-4 py-3.5 font-mono text-xs text-zinc-700">{{ $order->order_number }}</td>
+                            <td class="px-4 py-3.5 font-mono text-xs text-zinc-700"><x-truncate :text="$order->order_number" /></td>
                             <td class="px-4 py-3.5">
-                                <div class="text-sm font-medium text-zinc-900">{{ $order->customer_name }}</div>
-                                <div class="text-xs text-zinc-500">{{ $order->customer_email }}</div>
+                                <div class="text-sm font-medium text-zinc-900"><x-truncate :text="$order->customer_name" /></div>
+                                <div class="text-xs text-zinc-500"><x-truncate :text="$order->customer_email" /></div>
                             </td>
                             <td class="px-4 py-3.5 text-sm text-zinc-600">{{ $order->items_count }}</td>
                             <td class="px-4 py-3.5 text-sm font-medium text-zinc-900">{{ number_format((float) $order->total, 2) }} {{ $order->currency }}</td>

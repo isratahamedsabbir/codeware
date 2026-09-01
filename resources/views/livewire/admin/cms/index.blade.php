@@ -80,7 +80,7 @@
 
                             {{-- Name --}}
                             <td class="px-4 py-3.5">
-                                <span class="text-sm font-medium text-zinc-800">{{ $cms->name }}</span>
+                                <span class="text-sm font-medium text-zinc-800"><x-truncate :text="$cms->name" /></span>
                             </td>
 
                             {{-- Content summary --}}

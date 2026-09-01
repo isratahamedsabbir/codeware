@@ -106,10 +106,10 @@
                             <tr class="hover:bg-indigo-50/30 transition-colors">
                                 <td class="px-4 py-3 font-mono text-xs text-zinc-700">
                                     <a href="{{ route('admin.orders.show', $order->id) }}" wire:navigate class="hover:underline">
-                                        {{ $order->order_number }}
+                                        <x-truncate :text="$order->order_number" />
                                     </a>
                                 </td>
-                                <td class="px-4 py-3 text-sm text-zinc-800">{{ $order->customer_name }}</td>
+                                <td class="px-4 py-3 text-sm text-zinc-800"><x-truncate :text="$order->customer_name" /></td>
                                 <td class="px-4 py-3 text-sm text-zinc-600">{{ \App\Support\PaymentMethods::label($order->payment_method) }}</td>
                                 <td class="px-4 py-3 text-sm text-zinc-600">{{ ucfirst($order->payment_status) }}</td>
                                 <td class="px-4 py-3 text-sm text-zinc-600">{{ ucfirst($order->status) }}</td>

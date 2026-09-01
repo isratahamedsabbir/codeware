@@ -97,11 +97,11 @@
                             {{-- Name --}}
                             <td class="px-4 py-3.5">
                                 <div class="font-medium text-zinc-900 text-sm leading-snug">
-                                    {{ $product->getTranslation('name', 'en', false) }}
+                                    <x-truncate :text="$product->getTranslation('name', 'en', false)" />
                                 </div>
                                 @if ($product->getTranslation('name', 'bn', false))
                                     <div class="text-xs text-zinc-600 mt-0.5">
-                                        {{ $product->getTranslation('name', 'bn', false) }}
+                                        <x-truncate :text="$product->getTranslation('name', 'bn', false)" />
                                     </div>
                                 @endif
                             </td>
@@ -109,7 +109,7 @@
                             {{-- Slug --}}
                             <td class="px-4 py-3.5">
                                 <span class="font-mono text-xs text-zinc-600 truncate block">
-                                    {{ $product->slug }}
+                                    <x-truncate :text="$product->slug" />
                                 </span>
                             </td>
 
@@ -120,7 +120,7 @@
                                         <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
                                         </svg>
-                                        {{ $product->category->getTranslation('name', 'en', false) }}
+                                        <x-truncate :text="$product->category->getTranslation('name', 'en', false)" />
                                     </span>
                                 @else
                                     <span class="text-zinc-300 text-sm">—</span>

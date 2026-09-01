@@ -75,12 +75,12 @@
                                     @endif
                                     <div class="min-w-0">
                                         <div class="font-medium text-zinc-900 text-sm leading-snug truncate">
-                                            {{ $user->name }}
+                                            <x-truncate :text="$user->name" />
                                             @if ($user->id === auth()->id())
                                                 <span class="text-zinc-400 font-normal">(you)</span>
                                             @endif
                                         </div>
-                                        <div class="text-xs text-zinc-500 truncate">{{ $user->email }}</div>
+                                        <div class="text-xs text-zinc-500 truncate"><x-truncate :text="$user->email" /></div>
                                     </div>
                                 </div>
                             </td>

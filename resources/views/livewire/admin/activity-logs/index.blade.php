@@ -69,7 +69,7 @@
                                     <span class="size-7 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-bold shrink-0">
                                         {{ strtoupper(substr($log->user?->name ?? '?', 0, 1)) }}
                                     </span>
-                                    <span class="text-sm font-medium text-zinc-800">{{ $log->user?->name ?? 'Unknown' }}</span>
+                                    <span class="text-sm font-medium text-zinc-800"><x-truncate :text="$log->user?->name ?? 'Unknown'" /></span>
                                 </div>
                             </td>
                             <td class="px-4 py-3">
@@ -87,11 +87,11 @@
                                 </span>
                             </td>
                             <td class="px-4 py-3">
-                                <span class="text-sm text-zinc-700">{{ $log->description ?? 'Page viewed' }}</span>
+                                <span class="text-sm text-zinc-700"><x-truncate :text="$log->description ?? 'Page viewed'" /></span>
                             </td>
                             <td class="px-4 py-3">
                                 @if ($log->url)
-                                    <span class="font-mono text-xs text-zinc-500 truncate block max-w-[240px]">{{ $log->url }}</span>
+                                    <span class="font-mono text-xs text-zinc-500 truncate block max-w-[240px]"><x-truncate :text="$log->url" /></span>
                                 @else
                                     <span class="text-zinc-300 text-sm">—</span>
                                 @endif

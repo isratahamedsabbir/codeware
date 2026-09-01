@@ -83,11 +83,11 @@
                             {{-- Name --}}
                             <td class="px-4 py-3.5">
                                 <div class="font-medium text-zinc-900 text-sm leading-snug">
-                                    {{ $category->getTranslation('name', 'en', false) }}
+                                    <x-truncate :text="$category->getTranslation('name', 'en', false)" />
                                 </div>
                                 @if ($category->getTranslation('name', 'bn', false))
                                     <div class="text-xs text-zinc-600 mt-0.5">
-                                        {{ $category->getTranslation('name', 'bn', false) }}
+                                        <x-truncate :text="$category->getTranslation('name', 'bn', false)" />
                                     </div>
                                 @endif
                             </td>
@@ -95,7 +95,7 @@
                             {{-- Slug --}}
                             <td class="px-4 py-3.5">
                                 <span class="font-mono text-xs text-zinc-600 truncate block">
-                                    {{ $category->slug }}
+                                    <x-truncate :text="$category->slug" />
                                 </span>
                             </td>
 

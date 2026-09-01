@@ -56,12 +56,12 @@
 
                             {{-- Name --}}
                             <td class="px-4 py-3.5">
-                                <span class="font-medium text-zinc-900 text-sm">{{ $contact->full_name }}</span>
+                                <span class="font-medium text-zinc-900 text-sm"><x-truncate :text="$contact->full_name" /></span>
                             </td>
 
                             {{-- Contact Info --}}
                             <td class="px-4 py-3.5">
-                                <div class="text-sm text-zinc-600">{{ $contact->email }}</div>
+                                <div class="text-sm text-zinc-600"><x-truncate :text="$contact->email" /></div>
                                 @if ($contact->phone_number)
                                     <div class="text-xs text-zinc-400 mt-0.5">{{ $contact->phone_number }}</div>
                                 @endif
@@ -69,12 +69,12 @@
 
                             {{-- Subject --}}
                             <td class="px-4 py-3.5">
-                                <span class="text-sm text-zinc-600 truncate block">{{ $contact->subject }}</span>
+                                <span class="text-sm text-zinc-600 truncate block"><x-truncate :text="$contact->subject" /></span>
                             </td>
 
                             {{-- Message --}}
                             <td class="px-4 py-3.5">
-                                <p class="text-sm text-zinc-500 truncate mb-1.5">{{ $contact->message }}</p>
+                                <p class="text-sm text-zinc-500 truncate mb-1.5"><x-truncate :text="$contact->message" /></p>
                                 <button wire:click="viewMessage({{ $contact->id }})"
                                     class="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors">
                                     View full message

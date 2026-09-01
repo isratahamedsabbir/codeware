@@ -66,7 +66,7 @@
 
                             {{-- Code --}}
                             <td class="px-4 py-3.5">
-                                <span class="font-mono text-sm font-semibold text-zinc-900">{{ $coupon->code }}</span>
+                                <span class="font-mono text-sm font-semibold text-zinc-900"><x-truncate :text="$coupon->code" /></span>
                             </td>
 
                             {{-- Discount --}}

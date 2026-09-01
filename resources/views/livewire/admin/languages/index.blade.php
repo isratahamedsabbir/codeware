@@ -77,7 +77,7 @@
                                 <div class="flex items-center gap-2">
                                     <div class="min-w-0">
                                         <div class="font-medium text-zinc-900 text-sm leading-snug truncate">
-                                            {{ $language->name }}
+                                            <x-truncate :text="$language->name" />
                                             @if ($language->is_default)
                                                 <span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-600 align-middle">
                                                     {{ __('Default') }}
@@ -85,7 +85,7 @@
                                             @endif
                                         </div>
                                         @if ($language->native_name && $language->native_name !== $language->name)
-                                            <div class="text-xs text-zinc-600 mt-0.5 truncate">{{ $language->native_name }}</div>
+                                            <div class="text-xs text-zinc-600 mt-0.5 truncate"><x-truncate :text="$language->native_name" /></div>
                                         @endif
                                     </div>
                                 </div>
