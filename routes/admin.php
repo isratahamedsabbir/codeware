@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\FileManagerController;
 use App\Http\Controllers\Admin\ProductExportController;
 use App\Http\Controllers\Admin\ReportExportController;
+use App\Http\Controllers\Admin\UserCardController;
 use App\Http\Controllers\InvoiceController;
 use App\Livewire\Admin\Advance\Robots;
 use App\Livewire\Admin\Advance\Sitemap;
@@ -96,6 +97,7 @@ Route::middleware('can:access-admin-system')->group(function () {
     Route::get('/users', App\Livewire\Admin\Users\Index::class)->name('users');
     Route::get('/users/create', App\Livewire\Admin\Users\Form::class)->name('users.create');
     Route::get('/users/{id}/edit', App\Livewire\Admin\Users\Form::class)->name('users.edit');
+    Route::get('/users/{user}/card', [UserCardController::class, 'download'])->name('users.card');
 
     // Admin Activity History
     Route::get('/history', App\Livewire\Admin\ActivityLogs\Index::class)->name('history');
