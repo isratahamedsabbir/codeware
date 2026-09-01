@@ -79,6 +79,16 @@ class Index extends Component
                 'APP_URL' => ['label' => 'App URL', 'type' => 'text'],
                 'FRONTEND_URL' => ['label' => 'Frontend URL', 'type' => 'text'],
             ],
+            'Mail' => [
+                'MAIL_MAILER' => ['label' => 'Mailer', 'type' => 'select', 'options' => ['smtp', 'log', 'sendmail', 'ses', 'postmark', 'resend']],
+                'MAIL_HOST' => ['label' => 'SMTP Host', 'type' => 'text'],
+                'MAIL_PORT' => ['label' => 'SMTP Port', 'type' => 'text'],
+                'MAIL_USERNAME' => ['label' => 'SMTP Username', 'type' => 'text'],
+                'MAIL_PASSWORD' => ['label' => 'SMTP Password', 'type' => 'password'],
+                'MAIL_SCHEME' => ['label' => 'Encryption', 'type' => 'select', 'options' => ['null', 'tls', 'smtps']],
+                'MAIL_FROM_ADDRESS' => ['label' => 'From Address', 'type' => 'text'],
+                'MAIL_FROM_NAME' => ['label' => 'From Name', 'type' => 'text'],
+            ],
         ];
     }
 
@@ -90,6 +100,14 @@ class Index extends Component
             'env.APP_DEBUG' => 'required|in:true,false',
             'env.APP_URL' => 'required|url',
             'env.FRONTEND_URL' => 'nullable|url',
+            'env.MAIL_MAILER' => 'required|in:smtp,log,sendmail,ses,postmark,resend',
+            'env.MAIL_HOST' => 'nullable|string',
+            'env.MAIL_PORT' => 'nullable|numeric',
+            'env.MAIL_USERNAME' => 'nullable|string',
+            'env.MAIL_PASSWORD' => 'nullable|string',
+            'env.MAIL_SCHEME' => 'required|in:null,tls,smtps',
+            'env.MAIL_FROM_ADDRESS' => 'required|email',
+            'env.MAIL_FROM_NAME' => 'required|string',
         ];
 
         $this->validate($rules);
@@ -114,6 +132,19 @@ class Index extends Component
 
         $this->dispatch('close-modal', name: 'env-save-confirm');
         session()->flash('success', 'Environment settings saved. Configuration cache cleared.');
+    }
+
+    public function applyThemePreset(string $name): void
+    {
+        $preset = collect(Theme::PRESETS)->firstWhere('name', $name);
+
+        if (! $preset) {
+            return;
+        }
+
+        $this->settings['theme_mode'] = $preset['mode'];
+        $this->settings['theme_accent'] = $preset['accent'];
+        $this->settings['theme_name'] = $preset['name'];
     }
 
     public function save(): void
@@ -143,10 +174,12 @@ class Index extends Component
         // guaranteed without an ORDER BY. General and Images render side by side (see
         // the view), so their relative order here doesn't matter; anything not listed
         // falls to the end in whatever order it comes.
-        $groupOrder = ['general' => 0, 'images' => 1, 'localization' => 2, 'frontend' => 3];
+        $groupOrder = ['general' => 0, 'images' => 1, 'localization' => 2];
 
         return view('livewire.admin.settings.index', [
-            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'payments', 'seo', 'theme', 'colors', 'currency', 'social'])
+            // 'frontend' (site_theme) lives under the Theme tab, alongside the admin
+            // panel's own theme_mode/theme_accent/theme_name — not here.
+            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'payments', 'seo', 'theme', 'colors', 'currency', 'social', 'frontend'])
                 ->get()
                 ->groupBy('group')
                 ->sortBy(fn ($items, $group) => $groupOrder[$group] ?? count($groupOrder)),
