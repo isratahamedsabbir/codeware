@@ -21,11 +21,12 @@ class Page extends Model
         'user_id', 'title', 'slug', 'content', 'description', 'puck_data', 'status',
         'template', 'type', 'product_id', 'post_id', 'category_id', 'sort_order', 'seo_title', 'seo_description',
         'og_image', 'og_title', 'og_description', 'no_index', 'no_follow',
-        'canonical_base', 'canonical_slug',
+        'canonical_base', 'canonical_slug', 'metadata',
     ];
 
     protected $casts = [
         'puck_data' => 'array',
+        'metadata' => 'array',
         'no_index' => 'boolean',
         'no_follow' => 'boolean',
     ];
@@ -92,5 +93,20 @@ class Page extends Model
     public function scopeOfType(Builder $query, string $type): Builder
     {
         return $query->where('type', $type);
+    }
+
+    /**
+     * Metadata is stored as a list of {key, value} pairs (so the admin form can
+     * repeat/reorder/remove them like cards), but consumers want a
+     * plain lookup map — this collapses it to key => value, skipping blank keys.
+     *
+     * @return array<string, string>
+     */
+    public function metadataMap(): array
+    {
+        return collect($this->metadata ?? [])
+            ->filter(fn ($pair) => filled($pair['key'] ?? null))
+            ->pluck('value', 'key')
+            ->all();
     }
 }

@@ -34,6 +34,10 @@ class Index extends Component
         foreach ($order as $sortOrder => $cmsId) {
             CmsSection::where('id', $cmsId)->where('page_id', $this->pageId)->update(['sort_order' => $sortOrder]);
         }
+
+        // A query-builder mass update doesn't fire the model's `saved` event,
+        // so the public CMS cache wouldn't otherwise notice the new order.
+        CmsSection::flushCache();
     }
 
     public function toggleStatus(int $id): void

@@ -24,7 +24,25 @@ class Setting extends Model
     public static function set(string $key, mixed $value): void
     {
         static::updateOrCreate(['key' => $key], ['value' => $value]);
-        Cache::store('redis')->tags(['settings'])->forget("setting:{$key}");
+
+        // A whole-tag flush (not just this key) so derived caches — like the
+        // public settings list — go stale too, without each needing its own
+        // explicit bust wired into every write path.
+        Cache::store('redis')->tags(['settings'])->flush();
+    }
+
+    /**
+     * All settings exposed to the public API (is_public = true), as key => value.
+     * Cached like an individual Setting::get() key — busted by any Setting::set()
+     * call, since that flushes the whole 'settings' tag.
+     *
+     * @return array<string, mixed>
+     */
+    public static function publicMap(): array
+    {
+        return Cache::store('redis')->tags(['settings'])->rememberForever('settings:public', function () {
+            return static::where('is_public', true)->get()->pluck('value', 'key')->all();
+        });
     }
 
     /**

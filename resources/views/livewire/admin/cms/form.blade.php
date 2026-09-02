@@ -70,11 +70,11 @@
         @endforelse
     </div>
 
-    {{-- Metadata --}}
+    {{-- Content --}}
     <div class="rounded-lg bg-white shadow-sm border border-zinc-200 p-5 space-y-4">
         <div class="flex items-center justify-between gap-3">
             <div>
-                <flux:heading size="sm">Metadata</flux:heading>
+                <flux:heading size="sm">Content</flux:heading>
                 <p class="mt-0.5 text-xs text-zinc-400">Freeform key/value pairs — SEO tags, custom flags, or extra content.</p>
             </div>
             <flux:button size="xs" variant="outline" icon="plus" wire:click="addMetadata">Add field</flux:button>

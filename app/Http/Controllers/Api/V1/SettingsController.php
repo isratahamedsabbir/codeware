@@ -10,10 +10,6 @@ class SettingsController extends Controller
 {
     public function public(): JsonResponse
     {
-        $settings = Setting::where('is_public', true)
-            ->get()
-            ->mapWithKeys(fn ($s) => [$s->key => $s->value]);
-
-        return response()->json(['data' => $settings]);
+        return response()->json(['data' => Setting::publicMap()]);
     }
 }

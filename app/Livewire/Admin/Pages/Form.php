@@ -84,6 +84,9 @@ class Form extends Component
      */
     public string $autoCanonicalSlug = '';
 
+    /** @var array<int, array{key: string, type: string, value: string}> */
+    public array $metadata = [];
+
     public function mount(?int $id = null): void
     {
         $this->ogImagePickerId = 'page-og-image-picker-'.Str::uuid()->toString();
@@ -116,6 +119,12 @@ class Form extends Component
             if ($page->canonical_slug === null || $page->canonical_slug === $page->slug) {
                 $this->autoCanonicalSlug = $this->slug;
             }
+
+            // Older rows were saved before the value-type selector existed —
+            // default them to a plain text value so they still render/edit correctly.
+            $this->metadata = collect($page->metadata ?? [])
+                ->map(fn (array $pair) => [...$pair, 'type' => $pair['type'] ?? 'text'])
+                ->all();
 
             if (! $this->isLinked()) {
                 $this->checkSlugAvailability();
@@ -179,6 +188,17 @@ class Form extends Component
         $this->slugAvailable = Slug::isAvailable($this->slug, $this->pageId);
     }
 
+    public function addMetadata(): void
+    {
+        $this->metadata[] = ['key' => '', 'type' => 'text', 'value' => ''];
+    }
+
+    public function removeMetadata(int $index): void
+    {
+        unset($this->metadata[$index]);
+        $this->metadata = array_values($this->metadata);
+    }
+
     public function openPuckEditor(): void
     {
         if (! $this->pageId) {
@@ -237,6 +257,16 @@ class Form extends Component
         $rules['slug'] = $entityTable
             ? ['required', 'string', 'max:255']
             : ['required', 'string', 'max:255', ...Slug::uniqueRules($this->pageId)];
+        $rules['metadata'] = ['array', function (string $attribute, mixed $value, \Closure $fail) {
+            $keys = collect($value)->pluck('key')->filter()->map(fn ($key) => strtolower(trim($key)));
+
+            if ($keys->count() !== $keys->unique()->count()) {
+                $fail('Metadata keys must be unique.');
+            }
+        }];
+        $rules['metadata.*.key'] = 'nullable|string|max:255';
+        $rules['metadata.*.type'] = 'nullable|in:text,textarea,file';
+        $rules['metadata.*.value'] = 'nullable|string|max:1000';
 
         $this->validate($rules);
 
@@ -254,6 +284,7 @@ class Form extends Component
             'no_follow' => $this->no_follow,
             'canonical_base' => $this->canonical_base ?: null,
             'canonical_slug' => $this->canonical_slug ?: null,
+            'metadata' => collect($this->metadata)->filter(fn ($pair) => filled($pair['key'] ?? null))->values()->all(),
         ];
 
         $creating = $this->pageId === null;

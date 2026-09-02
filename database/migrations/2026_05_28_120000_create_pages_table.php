@@ -35,6 +35,7 @@ return new class extends Migration
             $table->boolean('no_follow')->default(false);
             $table->string('canonical_base')->nullable();
             $table->string('canonical_slug')->nullable();
+            $table->json('metadata')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });
