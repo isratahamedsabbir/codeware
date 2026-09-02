@@ -199,6 +199,17 @@ class Form extends Component
         $this->metadata = array_values($this->metadata);
     }
 
+    public function updated(string $name, mixed $value): void
+    {
+        if (preg_match('/^metadata\.\d+\.key$/', $name)) {
+            $sanitized = preg_replace('/[^A-Za-z0-9_]/', '', preg_replace('/\s+/', '_', trim($value)));
+
+            if ($sanitized !== $value) {
+                data_set($this, $name, $sanitized);
+            }
+        }
+    }
+
     public function openPuckEditor(): void
     {
         if (! $this->pageId) {
@@ -264,7 +275,7 @@ class Form extends Component
                 $fail('Metadata keys must be unique.');
             }
         }];
-        $rules['metadata.*.key'] = 'nullable|string|max:255';
+        $rules['metadata.*.key'] = ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9_]*$/'];
         $rules['metadata.*.type'] = 'nullable|in:text,textarea,file';
         $rules['metadata.*.value'] = 'nullable|string|max:1000';
 

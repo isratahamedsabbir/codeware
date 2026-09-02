@@ -119,7 +119,7 @@
 
                         <flux:field>
                             <flux:label>Key</flux:label>
-                            <flux:input wire:model="metadata.{{ $i }}.key" placeholder="e.g. og:type" class="font-mono" />
+                            <flux:input wire:model.live="metadata.{{ $i }}.key" placeholder="e.g. og_type" class="font-mono" />
                             <flux:error name="metadata.{{ $i }}.key" />
                         </flux:field>
 
