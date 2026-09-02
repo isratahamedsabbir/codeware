@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -92,5 +93,30 @@ class CmsSection extends Model
     public function scopeOfPage(Builder $query, int $pageId): Builder
     {
         return $query->where('page_id', $pageId);
+    }
+
+    /**
+     * A page's active CMS sections, cached in Redis (tag 'cms', kept forever)
+     * — the same cache the public CMS API (Api\V1\CmsController) uses, so
+     * flushCache() invalidates both on every write. Caches the *raw* attribute
+     * form (getAttributes(), not toArray()) and re-hydrates into real models
+     * on read, so callers still get full CmsSection instances with casts and
+     * methods like localizedCards()/metadataMap() intact — never cache
+     * Eloquent objects/collections directly, and never toArray(): that
+     * decodes the 'cards'/'metadata' JSON casts into plain arrays, which then
+     * blow up when hydrate() re-applies the same cast on read (double-decoding
+     * a PHP array instead of the JSON string it expects).
+     *
+     * @return Collection<int, CmsSection>
+     */
+    public static function cachedForPage(int $pageId): Collection
+    {
+        $rows = Cache::store('redis')->tags(['cms'])->rememberForever(
+            "cms:page:{$pageId}:sections",
+            fn () => static::active()->ofPage($pageId)->orderBy('sort_order')->orderBy('id')->get()
+                ->map(fn (CmsSection $section) => $section->getAttributes())->all(),
+        );
+
+        return static::hydrate($rows);
     }
 }

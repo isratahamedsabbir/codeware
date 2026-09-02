@@ -14,7 +14,7 @@
 
         <flux:field>
             <flux:label>Name</flux:label>
-            <flux:input wire:model="name" placeholder="e.g. hero, features, cta" />
+            <flux:input wire:model.live="name" placeholder="e.g. hero, features, cta" />
             <flux:error name="name" />
         </flux:field>
     </div>

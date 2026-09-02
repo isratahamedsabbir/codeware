@@ -7,8 +7,6 @@ use App\Models\MenuItem;
 use App\Models\Page;
 use App\Models\Setting;
 use App\Support\Themes;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Cache;
 
 class FrontendController extends Controller
 {
@@ -23,7 +21,7 @@ class FrontendController extends Controller
         $homePage = Page::where('slug', 'home')->first();
 
         $sections = $homePage
-            ? $this->cachedSections($homePage->id)
+            ? CmsSection::cachedForPage($homePage->id)
             : collect();
 
         return view("frontend.themes.{$theme}.home", [
@@ -46,7 +44,7 @@ class FrontendController extends Controller
 
         $page = Page::where('slug', $slug)->where('type', 'page')->where('status', 'active')->firstOrFail();
 
-        $sections = $this->cachedSections($page->id);
+        $sections = CmsSection::cachedForPage($page->id);
 
         return view("frontend.themes.{$theme}.page", [
             'page' => $page,
@@ -56,32 +54,6 @@ class FrontendController extends Controller
             'menuItems' => $this->frontendMenuItems(),
             'currentSlug' => $slug,
         ]);
-    }
-
-    /**
-     * A page's active CMS sections, cached in Redis (tag 'cms', kept forever) —
-     * the same tag CmsController's public API responses use, so
-     * CmsSection::flushCache() invalidates both on every write. Caches the
-     * *raw* attribute form (getAttributes(), not toArray()) and re-hydrates
-     * into real models on read, so callers still get full CmsSection
-     * instances with casts and methods like localizedCards()/metadataMap()
-     * intact — never cache Eloquent objects/collections directly (see
-     * MenuItem::menuCached()), and never toArray(): that decodes the
-     * 'cards'/'metadata' JSON casts into plain arrays, which then blow up
-     * when hydrate() re-applies the same cast on read (double-decoding a
-     * PHP array instead of the JSON string it expects).
-     *
-     * @return Collection<int, CmsSection>
-     */
-    private function cachedSections(int $pageId): Collection
-    {
-        $rows = Cache::store('redis')->tags(['cms'])->rememberForever(
-            "cms:page:{$pageId}:sections",
-            fn () => CmsSection::active()->ofPage($pageId)->orderBy('sort_order')->orderBy('id')->get()
-                ->map(fn (CmsSection $section) => $section->getAttributes())->all(),
-        );
-
-        return CmsSection::hydrate($rows);
     }
 
     /**

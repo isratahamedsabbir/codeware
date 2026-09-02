@@ -63,7 +63,7 @@ class Form extends Component
 
     public function updated(string $name, mixed $value): void
     {
-        if (preg_match('/^metadata\.\d+\.key$/', $name)) {
+        if ($name === 'name' || preg_match('/^metadata\.\d+\.key$/', $name)) {
             $sanitized = preg_replace('/[^A-Za-z0-9_]/', '', preg_replace('/\s+/', '_', trim($value)));
 
             if ($sanitized !== $value) {
@@ -77,7 +77,7 @@ class Form extends Component
         return [
             'pageId' => 'required|integer|exists:pages,id',
             'name' => [
-                'required', 'string', 'max:255',
+                'required', 'string', 'max:255', 'regex:/^[A-Za-z0-9_]*$/',
                 Rule::unique('cms', 'name')
                     ->where('page_id', $this->pageId)
                     ->ignore($this->cmsId),
