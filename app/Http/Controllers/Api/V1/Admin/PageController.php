@@ -54,6 +54,7 @@ class PageController extends Controller
                 'og_description' => $page->og_description,
                 'no_index' => $page->no_index,
                 'no_follow' => $page->no_follow,
+                'metadata' => $page->metadata,
                 'deleted_at' => $page->deleted_at?->toIso8601String(),
                 'revisions' => $page->revisions->map(fn ($r) => [
                     'id' => $r->id,
@@ -73,6 +74,10 @@ class PageController extends Controller
             'status' => 'sometimes|in:active,inactive',
             'template' => 'sometimes|nullable|string|max:100',
             'puck_data' => 'nullable|array',
+            'metadata' => 'sometimes|array',
+            'metadata.*.key' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9_]*$/'],
+            'metadata.*.type' => 'nullable|in:text,textarea,file',
+            'metadata.*.value' => 'nullable|string|max:1000',
         ]);
 
         $validated['user_id'] = $request->user()->id;
@@ -105,6 +110,10 @@ class PageController extends Controller
             'status' => 'sometimes|in:active,inactive',
             'template' => 'sometimes|nullable|string|max:100',
             'slug' => 'sometimes|string|unique:pages,slug,'.$page->id,
+            'metadata' => 'sometimes|array',
+            'metadata.*.key' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9_]*$/'],
+            'metadata.*.type' => 'nullable|in:text,textarea,file',
+            'metadata.*.value' => 'nullable|string|max:1000',
         ]);
 
         $page->update($validated);

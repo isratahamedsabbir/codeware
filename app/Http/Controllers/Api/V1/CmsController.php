@@ -7,7 +7,6 @@ use App\Models\CmsSection;
 use App\Models\Page;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class CmsController extends Controller
 {
@@ -15,9 +14,10 @@ class CmsController extends Controller
      * GET /api/v1/cms?page=home                -> every active section on that page
      * GET /api/v1/cms?page=home&name=hero      -> just that one named section
      *
-     * Responses are cached in Redis (tagged 'cms', kept forever) so repeat reads
-     * never hit the database — CmsSection::flushCache() clears the tag on every
-     * create/update/delete/status change, so the cache never serves stale data.
+     * Reads from CmsSection::cachedForPage() — the same Redis-cached (tag
+     * 'cms', kept forever) lookup the admin's cms_cards()/cms_content()
+     * helpers use, so there's one cache to invalidate (CmsSection::flushCache(),
+     * fired on every create/update/delete/status change) instead of two.
      */
     public function index(Request $request): JsonResponse
     {
@@ -29,33 +29,23 @@ class CmsController extends Controller
         $pageSlug = $validated['page'];
         $name = $validated['name'] ?? null;
 
-        $cacheKey = 'cms:'.$pageSlug.':'.($name ?? '_all');
+        $page = Page::where('slug', $pageSlug)->first();
 
-        $cached = Cache::store('redis')->tags(['cms'])->rememberForever($cacheKey, function () use ($pageSlug, $name) {
-            $page = Page::where('slug', $pageSlug)->first();
-
-            if (! $page) {
-                return ['found' => false];
-            }
-
-            $query = CmsSection::active()->ofPage($page->id);
-
-            if ($name) {
-                $cms = $query->where('name', $name)->first();
-
-                return $cms ? ['found' => true, 'body' => $this->format($cms)] : ['found' => false];
-            }
-
-            $sections = $query->orderBy('sort_order')->orderBy('id')->get();
-
-            return ['found' => true, 'body' => $sections->map(fn (CmsSection $cms) => $this->format($cms))->all()];
-        });
-
-        if (! $cached['found']) {
+        if (! $page) {
             return response()->json(['message' => 'Section not found.'], 404);
         }
 
-        return response()->json(['data' => $cached['body']]);
+        $sections = CmsSection::cachedForPage($page->id);
+
+        if ($name) {
+            $cms = $sections->firstWhere('name', $name);
+
+            return $cms
+                ? response()->json(['data' => $this->format($cms)])
+                : response()->json(['message' => 'Section not found.'], 404);
+        }
+
+        return response()->json(['data' => $sections->map(fn (CmsSection $cms) => $this->format($cms))->values()]);
     }
 
     private function format(CmsSection $cms): array

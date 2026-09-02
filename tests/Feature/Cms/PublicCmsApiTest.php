@@ -90,17 +90,18 @@ it('caches the response in redis and serves the update immediately after a write
         'metadata' => [['key' => 'note', 'value' => 'Original value']],
     ]);
 
+    $cacheKey = "cms:page:{$home->id}:sections";
+
     // Prime the cache.
     $this->getJson('/api/v1/cms?page=home&name=hero')
         ->assertJsonPath('data.metadata.note', 'Original value');
 
-    expect(Cache::store('redis')->tags(['cms'])->get('cms:home:hero')['body']['metadata']['note'])
-        ->toBe('Original value');
+    expect(Cache::store('redis')->tags(['cms'])->get($cacheKey))->not->toBeNull();
 
     // A plain update — the model's saved() hook should flush the tag.
     $cms->update(['metadata' => [['key' => 'note', 'value' => 'Updated value']]]);
 
-    expect(Cache::store('redis')->tags(['cms'])->get('cms:home:hero'))->toBeNull();
+    expect(Cache::store('redis')->tags(['cms'])->get($cacheKey))->toBeNull();
 
     $this->getJson('/api/v1/cms?page=home&name=hero')
         ->assertOk()

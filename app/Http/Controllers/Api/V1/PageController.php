@@ -59,6 +59,7 @@ class PageController extends Controller
 
         if ($withContent) {
             $data['content'] = $page->getTranslation('content', $locale, useFallbackLocale: true);
+            $data['metadata'] = $page->metadataMap();
         }
 
         return $data;

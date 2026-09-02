@@ -48,7 +48,7 @@ it('creates a cms section with a name and cards', function () {
         ->set('cards.0.title', 'Fast')
         ->set('cards.0.description', 'Blazing fast delivery')
         ->call('addMetadata')
-        ->set('metadata.0.key', 'og:type')
+        ->set('metadata.0.key', 'og type')
         ->set('metadata.0.value', 'website')
         ->call('save');
 
@@ -57,7 +57,7 @@ it('creates a cms section with a name and cards', function () {
     expect($cms->cards[0]['title'])->toBe('Fast')
         ->and($cms->cards[0]['description'])->toBe('Blazing fast delivery')
         ->and($cms->cards[0]['image'])->toBe('/storage/media/card.jpg')
-        ->and($cms->metadata[0]['key'])->toBe('og:type')
+        ->and($cms->metadata[0]['key'])->toBe('og_type')
         ->and($cms->metadata[0]['value'])->toBe('website');
 });
 
@@ -82,7 +82,7 @@ it('drops blank metadata rows when saving, but keeps filled ones', function () {
         ->set('name', 'hero')
         ->call('addMetadata')
         ->call('addMetadata')
-        ->set('metadata.0.key', 'og:type')
+        ->set('metadata.0.key', 'og type')
         ->set('metadata.0.value', 'website')
         ->set('metadata.1.key', '')
         ->set('metadata.1.value', '')
@@ -91,7 +91,7 @@ it('drops blank metadata rows when saving, but keeps filled ones', function () {
     $cms = CmsSection::where('page_id', $page->id)->where('name', 'hero')->sole();
 
     expect($cms->metadata)->toHaveCount(1)
-        ->and($cms->metadata[0]['key'])->toBe('og:type');
+        ->and($cms->metadata[0]['key'])->toBe('og_type');
 });
 
 it('rejects duplicate metadata keys', function () {
