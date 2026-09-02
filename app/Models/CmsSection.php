@@ -40,13 +40,21 @@ class CmsSection extends Model
     }
 
     /**
-     * The public CMS API (Api\V1\CmsController) caches its responses in Redis,
-     * tagged 'cms' — flushed here on every write so create/update/delete/status
-     * changes show up immediately instead of waiting out the cache lifetime.
+     * The public CMS API (Api\V1\CmsController) caches its responses under the
+     * app's default cache store (CACHE_STORE in .env) — bumped here on every
+     * write so create/update/delete/status changes show up immediately instead
+     * of waiting out the cache lifetime. Bumping the version orphans every key
+     * built from the old one, standing in for cache tagging (which only
+     * redis/memcached/array support) so this works on any store.
      */
     public static function flushCache(): void
     {
-        Cache::store('redis')->tags(['cms'])->flush();
+        Cache::forever('cms:cache-version', self::cacheVersion() + 1);
+    }
+
+    private static function cacheVersion(): int
+    {
+        return (int) Cache::rememberForever('cms:cache-version', fn () => 1);
     }
 
     public function page(): BelongsTo
@@ -111,8 +119,8 @@ class CmsSection extends Model
      */
     public static function cachedForPage(int $pageId): Collection
     {
-        $rows = Cache::store('redis')->tags(['cms'])->rememberForever(
-            "cms:page:{$pageId}:sections",
+        $rows = Cache::rememberForever(
+            'cms:v'.self::cacheVersion().":page:{$pageId}:sections",
             fn () => static::active()->ofPage($pageId)->orderBy('sort_order')->orderBy('id')->get()
                 ->map(fn (CmsSection $section) => $section->getAttributes())->all(),
         );

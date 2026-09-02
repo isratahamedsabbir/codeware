@@ -15,14 +15,13 @@ use Tests\TestCase;
 |
 */
 
-// Setting::get()/set() cache in real Redis (tagged 'settings'), explicitly
-// via Cache::store('redis') — that bypasses the test env's CACHE_STORE=array
-// override and isn't covered by RefreshDatabase's transaction rollback, so
-// entries would otherwise leak between tests. Flush around every test.
+// Setting/CmsSection cache under the test env's CACHE_STORE=array override,
+// which isn't covered by RefreshDatabase's transaction rollback, so entries
+// would otherwise leak between tests. Flush around every test.
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
-    ->beforeEach(fn () => Cache::store('redis')->tags(['settings'])->flush())
-    ->afterEach(fn () => Cache::store('redis')->tags(['settings'])->flush())
+    ->beforeEach(fn () => Cache::flush())
+    ->afterEach(fn () => Cache::flush())
     ->in('Feature');
 
 /*

@@ -2,14 +2,6 @@
 
 use App\Models\CmsSection;
 use App\Models\Page;
-use Illuminate\Support\Facades\Cache;
-
-// The public CMS API caches in real Redis (tagged 'cms'), explicitly via
-// Cache::store('redis') — that bypasses the test env's CACHE_STORE=array
-// override and isn't covered by RefreshDatabase's transaction rollback, so
-// entries would otherwise leak between tests. Flush around every test here.
-beforeEach(fn () => Cache::store('redis')->tags(['cms'])->flush());
-afterEach(fn () => Cache::store('redis')->tags(['cms'])->flush());
 
 it('requires a page query parameter', function () {
     $this->getJson('/api/v1/cms')->assertUnprocessable();
@@ -81,7 +73,7 @@ it('does not return an inactive section even by exact page and name', function (
     $this->getJson('/api/v1/cms?page=home&name=hero')->assertNotFound();
 });
 
-it('caches the response in redis and serves the update immediately after a write', function () {
+it('caches the response and serves the update immediately after a write', function () {
     $home = Page::factory()->create(['slug' => 'home']);
     $cms = CmsSection::factory()->create([
         'page_id' => $home->id,
@@ -90,18 +82,19 @@ it('caches the response in redis and serves the update immediately after a write
         'metadata' => [['key' => 'note', 'value' => 'Original value']],
     ]);
 
-    $cacheKey = "cms:page:{$home->id}:sections";
-
     // Prime the cache.
     $this->getJson('/api/v1/cms?page=home&name=hero')
         ->assertJsonPath('data.metadata.note', 'Original value');
 
-    expect(Cache::store('redis')->tags(['cms'])->get($cacheKey))->not->toBeNull();
+    // Bypass the model's saved() hook, so a still-cached response is the
+    // only way this could keep returning the original value.
+    CmsSection::query()->where('id', $cms->id)->update(['metadata' => [['key' => 'note', 'value' => 'Bypassed value']]]);
 
-    // A plain update — the model's saved() hook should flush the tag.
+    $this->getJson('/api/v1/cms?page=home&name=hero')
+        ->assertJsonPath('data.metadata.note', 'Original value');
+
+    // A plain update — the model's saved() hook should bump the cache version.
     $cms->update(['metadata' => [['key' => 'note', 'value' => 'Updated value']]]);
-
-    expect(Cache::store('redis')->tags(['cms'])->get($cacheKey))->toBeNull();
 
     $this->getJson('/api/v1/cms?page=home&name=hero')
         ->assertOk()

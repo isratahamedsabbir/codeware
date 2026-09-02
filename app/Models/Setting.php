@@ -14,7 +14,7 @@ class Setting extends Model
 
     public static function get(string $key, mixed $default = null): mixed
     {
-        return Cache::store('redis')->tags(['settings'])->rememberForever("setting:{$key}", function () use ($key, $default) {
+        return Cache::rememberForever(self::cacheKey($key), function () use ($key, $default) {
             $setting = static::where('key', $key)->first();
 
             return $setting ? $setting->value : $default;
@@ -25,24 +25,35 @@ class Setting extends Model
     {
         static::updateOrCreate(['key' => $key], ['value' => $value]);
 
-        // A whole-tag flush (not just this key) so derived caches — like the
-        // public settings list — go stale too, without each needing its own
-        // explicit bust wired into every write path.
-        Cache::store('redis')->tags(['settings'])->flush();
+        // Bumping the version orphans every key built from the old version —
+        // including derived caches like the public settings list — without
+        // needing cache tagging, which only redis/memcached/array support.
+        // Which store is actually used is driven entirely by CACHE_STORE in .env.
+        Cache::forever('settings:cache-version', self::cacheVersion() + 1);
     }
 
     /**
      * All settings exposed to the public API (is_public = true), as key => value.
      * Cached like an individual Setting::get() key — busted by any Setting::set()
-     * call, since that flushes the whole 'settings' tag.
+     * call, since that bumps the shared cache version.
      *
      * @return array<string, mixed>
      */
     public static function publicMap(): array
     {
-        return Cache::store('redis')->tags(['settings'])->rememberForever('settings:public', function () {
+        return Cache::rememberForever(self::cacheKey('__public'), function () {
             return static::where('is_public', true)->get()->pluck('value', 'key')->all();
         });
+    }
+
+    private static function cacheKey(string $key): string
+    {
+        return 'setting:v'.self::cacheVersion().":{$key}";
+    }
+
+    private static function cacheVersion(): int
+    {
+        return (int) Cache::rememberForever('settings:cache-version', fn () => 1);
     }
 
     /**

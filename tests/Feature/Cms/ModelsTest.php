@@ -6,7 +6,6 @@ use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\Setting;
 use App\Models\User;
-use Illuminate\Support\Facades\Cache;
 
 it('blog category auto-generates slug from name', function () {
     $category = PostCategory::factory()->create(['name' => ['en' => 'My Test Category', 'bn' => ''], 'slug' => '']);
@@ -46,16 +45,19 @@ it('setting get returns default when key missing', function () {
     expect(Setting::get('nonexistent_key', 'default'))->toBe('default');
 });
 
-it('setting caches its value in redis and refreshes it immediately on set', function () {
+it('setting caches its value and refreshes it immediately on set', function () {
     Setting::set('site_name', 'Codeware');
 
     // Prime the cache.
     expect(Setting::get('site_name'))->toBe('Codeware');
-    expect(Cache::store('redis')->tags(['settings'])->get('setting:site_name'))->toBe('Codeware');
+
+    // Bypass the model, so a still-cached value is the only way this could
+    // keep returning 'Codeware' — proves the read actually came from cache.
+    Setting::query()->where('key', 'site_name')->update(['value' => 'Bypassed Write']);
+    expect(Setting::get('site_name'))->toBe('Codeware');
 
     Setting::set('site_name', 'Updated Name');
 
-    expect(Cache::store('redis')->tags(['settings'])->get('setting:site_name'))->toBeNull();
     expect(Setting::get('site_name'))->toBe('Updated Name');
 });
 
