@@ -1,7 +1,15 @@
 <div class="space-y-4">
 
     {{-- ─── Header ─────────────────────────────────────────────────────────── --}}
-    <div class="flex justify-end">
+    <div class="flex justify-end gap-2">
+        <button type="button" wire:click="toggleBulkMode"
+            class="inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-xs font-medium tracking-wide transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2
+            {{ $bulkMode ? 'bg-slate-800 text-white focus:ring-slate-500' : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 focus:ring-slate-300' }}">
+            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+            {{ $bulkMode ? 'Cancel Select' : 'Select Multiple' }}
+        </button>
         <button type="button" wire:click="openUploadModal"
             class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-xs font-medium tracking-wide text-white transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
@@ -52,9 +60,10 @@
         @if ($media->count() > 0)
             <div class="grid grid-cols-2 gap-3 p-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
                 @foreach ($media as $item)
+                    @php($isSelected = $bulkMode ? in_array($item->id, $selectedMediaIds, true) : $selectedMediaId === $item->id)
                     <div wire:key="media-{{ $item->id }}" wire:click="selectMedia({{ $item->id }})"
                         class="group relative aspect-square cursor-pointer overflow-hidden rounded-lg border transition-all
-                        {{ $selectedMediaId === $item->id
+                        {{ $isSelected
                             ? 'border-primary ring-2 ring-primary/20'
                             : 'border-slate-200 hover:border-slate-300 hover:shadow-sm' }}">
 
@@ -89,8 +98,22 @@
                             </div>
                         </div>
 
+                        {{-- Bulk-select checkbox --}}
+                        @if ($bulkMode)
+                            <div class="absolute left-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full border-2 shadow
+                                {{ $isSelected ? 'border-primary bg-primary' : 'border-white bg-black/30' }}">
+                                @if ($isSelected)
+                                    <svg class="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                @endif
+                            </div>
+                        @endif
+
                         {{-- Selected check --}}
-                        @if ($selectedMediaId === $item->id)
+                        @if (! $bulkMode && $isSelected)
                             <div class="absolute right-1.5 top-1.5">
                                 <svg class="h-5 w-5 text-primary drop-shadow" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd"
@@ -119,8 +142,33 @@
             </div>
         @endif
 
+        {{-- ─── Bulk Selection Action Bar ──────────────────────────────────────── --}}
+        @if ($bulkMode)
+            <div
+                class="flex flex-col gap-3 border-t border-slate-200 bg-slate-50 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <p class="text-xs font-medium text-slate-600">
+                    {{ count($selectedMediaIds) }} {{ \Illuminate\Support\Str::plural('item', count($selectedMediaIds)) }} selected
+                </p>
+                <div class="flex items-center gap-2">
+                    <button type="button" wire:click="selectAllOnPage"
+                        class="rounded-md border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium tracking-wide text-slate-600 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1">
+                        Select All On Page
+                    </button>
+                    <button type="button" wire:click="clearSelection" @disabled(count($selectedMediaIds) === 0)
+                        class="rounded-md border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium tracking-wide text-slate-600 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50">
+                        Clear
+                    </button>
+                    <button type="button" wire:click="deleteSelectedMedia" wire:confirm="Delete the selected items? This cannot be undone."
+                        @disabled(count($selectedMediaIds) === 0)
+                        class="rounded-md bg-red-600 px-3.5 py-2 text-xs font-medium tracking-wide text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50">
+                        Delete Selected
+                    </button>
+                </div>
+            </div>
+        @endif
+
         {{-- ─── Selection Action Bar ──────────────────────────────────────────── --}}
-        @if ($selectedMediaId)
+        @if (! $bulkMode && $selectedMediaId)
             @php($selectedMedia = $media->firstWhere('id', $selectedMediaId))
             @if ($selectedMedia)
                 <span id="selected-media-data" data-url="{{ $selectedMedia->url }}"

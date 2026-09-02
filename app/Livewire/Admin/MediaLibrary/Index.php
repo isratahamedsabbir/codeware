@@ -21,6 +21,11 @@ class Index extends Component
 
     public ?int $selectedMediaId = null;
 
+    public bool $bulkMode = false;
+
+    /** @var array<int, int> */
+    public array $selectedMediaIds = [];
+
     public bool $showUploadModal = false;
 
     public bool $showDetailsModal = false;
@@ -98,16 +103,16 @@ class Index extends Component
         }
 
         MediaLibrary::create([
-            'filename'          => basename($path),
+            'filename' => basename($path),
             'original_filename' => $file->getClientOriginalName(),
-            'mime_type'         => $mimeType,
-            'file_type'         => $fileType,
-            'file_size'         => $file->getSize(),
-            'disk'              => 'public',
-            'path'              => $path,
-            'url'               => Storage::disk('public')->url($path),
-            'uploaded_by'       => auth()->id(),
-            'metadata'          => $metadata,
+            'mime_type' => $mimeType,
+            'file_type' => $fileType,
+            'file_size' => $file->getSize(),
+            'disk' => 'public',
+            'path' => $path,
+            'url' => Storage::disk('public')->url($path),
+            'uploaded_by' => auth()->id(),
+            'metadata' => $metadata,
         ]);
     }
 
@@ -126,12 +131,65 @@ class Index extends Component
 
     public function selectMedia(int $mediaId): void
     {
-        $this->selectedMediaId = $mediaId;
+        if ($this->bulkMode) {
+            if (in_array($mediaId, $this->selectedMediaIds, true)) {
+                $this->selectedMediaIds = array_values(array_diff($this->selectedMediaIds, [$mediaId]));
+            } else {
+                $this->selectedMediaIds[] = $mediaId;
+            }
+
+            return;
+        }
+
+        $this->selectedMediaId = $this->selectedMediaId === $mediaId ? null : $mediaId;
+    }
+
+    public function toggleBulkMode(): void
+    {
+        $this->bulkMode = ! $this->bulkMode;
+        $this->selectedMediaId = null;
+        $this->selectedMediaIds = [];
+    }
+
+    public function selectAllOnPage(): void
+    {
+        $this->selectedMediaIds = MediaLibrary::query()
+            ->when($this->search !== '', function ($q): void {
+                $q->where(function ($q): void {
+                    $q->where('title', 'like', '%'.$this->search.'%')
+                        ->orWhere('original_filename', 'like', '%'.$this->search.'%')
+                        ->orWhere('alt_text', 'like', '%'.$this->search.'%')
+                        ->orWhere('description', 'like', '%'.$this->search.'%');
+                });
+            })
+            ->when($this->filterType !== 'all', fn ($q) => $q->where('file_type', $this->filterType))
+            ->latest()
+            ->forPage($this->getPage(), 24)
+            ->pluck('id')
+            ->all();
     }
 
     public function clearSelection(): void
     {
         $this->selectedMediaId = null;
+        $this->selectedMediaIds = [];
+    }
+
+    public function deleteSelectedMedia(): void
+    {
+        $mediaItems = MediaLibrary::query()->whereIn('id', $this->selectedMediaIds)->get();
+
+        foreach ($mediaItems as $media) {
+            $this->authorize('delete', $media);
+        }
+
+        foreach ($mediaItems as $media) {
+            Storage::disk($media->disk)->delete($media->path);
+            $media->delete();
+        }
+
+        $this->selectedMediaIds = [];
+        $this->dispatch('notify', message: 'Selected media deleted successfully');
     }
 
     public function confirmSelection(): void
@@ -140,10 +198,10 @@ class Index extends Component
             $media = MediaLibrary::find($this->selectedMediaId);
             if ($media) {
                 $mediaData = [
-                    'id'    => $media->id,
-                    'url'   => $media->url,
+                    'id' => $media->id,
+                    'url' => $media->url,
                     'title' => $media->title ?? $media->original_filename,
-                    'alt'   => $media->alt_text,
+                    'alt' => $media->alt_text,
                 ];
 
                 $this->dispatch('media-selected', media: $mediaData);
@@ -180,17 +238,17 @@ class Index extends Component
         $this->authorize('update', $media);
 
         $this->validate([
-            'editTitle'       => 'nullable|string|max:255',
-            'editAltText'     => 'nullable|string|max:255',
-            'editCaption'     => 'nullable|string|max:500',
+            'editTitle' => 'nullable|string|max:255',
+            'editAltText' => 'nullable|string|max:255',
+            'editCaption' => 'nullable|string|max:500',
             'editDescription' => 'nullable|string|max:1000',
         ]);
 
         $media = MediaLibrary::findOrFail($this->editingMediaId);
         $media->update([
-            'title'       => $this->editTitle ?: null,
-            'alt_text'    => $this->editAltText ?: null,
-            'caption'     => $this->editCaption ?: null,
+            'title' => $this->editTitle ?: null,
+            'alt_text' => $this->editAltText ?: null,
+            'caption' => $this->editCaption ?: null,
             'description' => $this->editDescription ?: null,
         ]);
 
@@ -209,6 +267,8 @@ class Index extends Component
         if ($this->selectedMediaId === $mediaId) {
             $this->clearSelection();
         }
+
+        $this->selectedMediaIds = array_values(array_diff($this->selectedMediaIds, [$mediaId]));
 
         $this->dispatch('notify', message: 'Media deleted successfully');
     }
