@@ -2,5 +2,15 @@
   "title": "Login",
   "description": "Log in to your account",
   "root": { "props": {} },
-  "content": []
+  "content": [],
+  "cms": [
+    {
+      "name": "main_card",
+      "cards": [],
+      "metadata": [
+        { "key": "title", "type": "text", "value": "Log in to your account" },
+        { "key": "sub_title", "type": "text", "value": "Enter your email and password below to log in" }
+      ]
+    }
+  ]
 }

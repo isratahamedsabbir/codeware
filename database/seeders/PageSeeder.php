@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\CmsSection;
 use App\Models\Page;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -46,7 +47,7 @@ class PageSeeder extends Seeder
 
             $json = json_decode(file_get_contents($filePath), true);
 
-            Page::updateOrCreate(
+            $page = Page::updateOrCreate(
                 ['slug' => $file],
                 [
                     'user_id' => $admin?->id,
@@ -61,6 +62,18 @@ class PageSeeder extends Seeder
                     'sort_order' => $sortOrder,
                 ]
             );
+
+            foreach ($json['cms'] ?? [] as $cmsSortOrder => $section) {
+                CmsSection::updateOrCreate(
+                    ['page_id' => $page->id, 'name' => $section['name']],
+                    [
+                        'cards' => $section['cards'] ?? [],
+                        'metadata' => $section['metadata'] ?? [],
+                        'status' => $section['status'] ?? 'active',
+                        'sort_order' => $cmsSortOrder,
+                    ]
+                );
+            }
         }
     }
 }
