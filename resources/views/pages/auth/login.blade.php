@@ -1,4 +1,7 @@
-<x-layouts::auth :title="__('Log in')">
+@php
+    $loginPage = \App\Models\Page::where('slug', 'login')->first();
+@endphp
+<x-layouts::auth :title="$loginPage?->seo_title ?: __('Log in')" :description="$loginPage?->seo_description">
     <div class="flex flex-col gap-5 w-full">
         <x-auth-header :title="__('Log in to your account')" :description="__('Enter your email and password below to log in')" />
 

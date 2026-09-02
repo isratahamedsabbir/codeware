@@ -1,7 +1,7 @@
 <div class="bg-white rounded-lg shadow-sm overflow-hidden">
 
     {{-- Filters --}}
-    <div class="px-6 py-5 border-b border-zinc-100 space-y-3">
+    <div class="px-6 py-5 space-y-3">
         <div class="flex flex-col sm:flex-row gap-3">
             <x-per-page-select :options="$this->perPageOptions()" />
 

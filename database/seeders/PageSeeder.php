@@ -14,6 +14,11 @@ class PageSeeder extends Seeder
         ['file' => 'about',   'sort_order' => 1],
         ['file' => 'contact', 'sort_order' => 2],
         ['file' => 'faq',     'sort_order' => 3],
+        // Inactive — Fortify serves /login directly (see FortifyServiceProvider),
+        // never through FrontendController::page(). This row only exists so its
+        // SEO title/description are editable from /admin/pages; kept inactive so
+        // it never shows up in navPages() as a site-nav link.
+        ['file' => 'login',   'sort_order' => 4, 'status' => 'inactive'],
     ];
 
     public function run(): void
@@ -28,7 +33,9 @@ class PageSeeder extends Seeder
             ->whereNotIn('slug', collect(self::PAGES)->pluck('file'))
             ->delete();
 
-        foreach (self::PAGES as ['file' => $file, 'sort_order' => $sortOrder]) {
+        foreach (self::PAGES as $entry) {
+            $file = $entry['file'];
+            $sortOrder = $entry['sort_order'];
             $filePath = "{$dataDir}/{$file}.json";
 
             if (! file_exists($filePath)) {
@@ -50,7 +57,7 @@ class PageSeeder extends Seeder
                         'content' => $json['content'] ?? [],
                     ],
                     'template' => 'puck',
-                    'status' => 'active',
+                    'status' => $entry['status'] ?? 'active',
                     'sort_order' => $sortOrder,
                 ]
             );

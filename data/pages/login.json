@@ -1,0 +1,6 @@
+{
+  "title": "Login",
+  "description": "Log in to your account",
+  "root": { "props": {} },
+  "content": []
+}

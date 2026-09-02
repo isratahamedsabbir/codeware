@@ -2,7 +2,7 @@
 
     {{-- Completion summary --}}
     @if ($locales->isNotEmpty())
-        <div class="flex gap-3 px-6 py-4 border-b border-zinc-100 flex-wrap">
+        <div class="flex gap-3 px-6 py-4 flex-wrap">
             @foreach ($locales as $language)
                 @php $stat = $stats[$language->code] ?? ['translated' => 0, 'total' => 0, 'percent' => 0]; @endphp
                 <div class="flex-1 min-w-[180px] rounded-lg border border-zinc-100 px-4 py-3">
@@ -60,7 +60,7 @@
     </div>
 
     {{-- Filters --}}
-    <div class="flex gap-3 px-6 py-3 border-b border-zinc-100 flex-wrap items-center">
+    <div class="flex gap-3 px-6 py-3 flex-wrap items-center">
         <x-per-page-select :options="$this->perPageOptions()" />
 
         <select wire:model.live="filter"

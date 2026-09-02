@@ -1,7 +1,7 @@
 <div class="bg-white rounded-lg shadow-sm overflow-hidden">
 
     {{-- Filters --}}
-    <div class="flex gap-3 px-6 py-4 border-b border-zinc-100 flex-wrap items-center">
+    <div class="flex gap-3 px-6 py-4 flex-wrap items-center">
         <x-per-page-select :options="$this->perPageOptions()" />
 
         <select wire:model.live="actionFilter"

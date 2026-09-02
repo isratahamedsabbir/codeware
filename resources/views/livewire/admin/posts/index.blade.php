@@ -7,7 +7,7 @@
 <div class="bg-white rounded-lg shadow-sm overflow-hidden">
 
     {{-- Header --}}
-    <div class="flex items-center gap-3 p-4 border-b border-zinc-100 flex-wrap">
+    <div class="flex items-center gap-3 p-4 flex-wrap">
         <x-per-page-select :options="$this->perPageOptions()" />
 
         {{-- Status filter --}}

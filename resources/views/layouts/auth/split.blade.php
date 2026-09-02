@@ -4,6 +4,9 @@
 <head>
     @include('partials.head')
     <meta name="robots" content="noindex, nofollow">
+    @if (filled($description ?? null))
+        <meta name="description" content="{{ $description }}">
+    @endif
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <style>
