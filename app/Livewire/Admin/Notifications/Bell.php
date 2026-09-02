@@ -18,6 +18,11 @@ class Bell extends Component
         auth()->user()->notifications()->whereKey($id)->first()?->markAsRead();
     }
 
+    public function delete(string $id): void
+    {
+        auth()->user()->notifications()->whereKey($id)->delete();
+    }
+
     public function render()
     {
         return view('livewire.admin.notifications.bell', [
