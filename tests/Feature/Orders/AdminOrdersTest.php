@@ -4,6 +4,7 @@ use App\Livewire\Admin\Orders\Index as OrdersIndex;
 use App\Livewire\Admin\Orders\Show as OrdersShow;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Product;
 use App\Models\Setting;
 use App\Models\Transaction;
 use App\Models\User;
@@ -57,6 +58,30 @@ it('filters orders by date range using the admin display timezone, not raw UTC',
         ->assertDontSee('Different Day Order');
 
     Setting::set('timezone', 'UTC');
+});
+
+it('filters orders by product', function () {
+    $product = Product::factory()->create(['name' => ['en' => 'Findable Widget', 'bn' => '']]);
+    $order = Order::factory()->has(OrderItem::factory()->for($product), 'items')->create(['customer_name' => 'Widget Buyer']);
+    Order::factory()->has(OrderItem::factory(), 'items')->create(['customer_name' => 'Other Buyer']);
+
+    Livewire::test(OrdersIndex::class)
+        ->set('productFilter', (string) $product->id)
+        ->assertSee('Widget Buyer')
+        ->assertDontSee('Other Buyer');
+});
+
+it('filters orders by price range', function () {
+    Order::factory()->create(['customer_name' => 'Cheap Order', 'total' => 100]);
+    Order::factory()->create(['customer_name' => 'Mid Order', 'total' => 500]);
+    Order::factory()->create(['customer_name' => 'Expensive Order', 'total' => 2000]);
+
+    Livewire::test(OrdersIndex::class)
+        ->set('priceMin', '200')
+        ->set('priceMax', '1000')
+        ->assertDontSee('Cheap Order')
+        ->assertSee('Mid Order')
+        ->assertDontSee('Expensive Order');
 });
 
 it('searches orders by order number or customer', function () {
