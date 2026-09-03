@@ -1,18 +1,18 @@
 <div>
     {{-- Greeting & Overview Header --}}
-    <div class="admin-dashboard-hero flex flex-col sm:flex-row sm:items-center justify-between gap-5 mb-5 px-4 py-3 sm:px-4">
+    <div class="admin-dashboard-hero flex flex-col sm:flex-row sm:items-center rounded-lg! justify-between gap-5 mb-5 px-4 py-2 sm:px-4"> 
         <div>
             <!-- <span class="inline-flex items-center gap-1.5 rounded-full bg-blue-600 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
                 <flux:icon.sparkles class="size-3.5" />
                 Control center
-            </span> -->
-            <h1 class="text-2xl font-extrabold tracking-tight text-zinc-900 sm:text-3xl mb-1.5">
+            </span> -->  
+            <h1 class="text-xl font-extrabold tracking-tight text-zinc-900 sm:text-xl mb-0.5">
                 Welcome back, {{ auth()->user()->name }}
             </h1>
             @include('partials.admin-breadcrumbs')
-        </div>
+        </div>   
 
-        <div class="flex flex-wrap items-center gap-3 text-sm text-zinc-500 font-medium">
+        <div class="flex flex-wrap items-center gap-3 text-sm text-zinc-500 font-medium"> 
             <span class="inline-flex items-center gap-1.5">
                 <flux:icon.chart-bar class="size-4 text-primary" />
                 System Overview

@@ -1,4 +1,4 @@
-<div class="max-w-[1600px] w-full mx-auto flex-1">
+﻿<div class="max-w-[1600px] w-full mx-auto flex-1">
 
     <style>
         .jodit-fixed-wrap .jodit-container,
@@ -19,7 +19,7 @@
 
     @if ($productId)
         @push('page-header-actions')
-            <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.products') }}" wire:navigate>
+            <flux:button variant="ghost" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.products') }}" wire:navigate>
                 Back
             </flux:button>
         @endpush

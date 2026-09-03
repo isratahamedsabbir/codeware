@@ -1,8 +1,8 @@
-<div class="max-w-[1600px] w-full mx-auto flex-1">
+﻿<div class="max-w-[1600px] w-full mx-auto flex-1">
 
     @if ($roleId)
         @push('page-header-actions')
-            <flux:button variant="ghost" icon="arrow-left" href="{{ route('admin.roles') }}" wire:navigate>
+            <flux:button variant="ghost" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.roles') }}" wire:navigate>
                 Back
             </flux:button>
         @endpush

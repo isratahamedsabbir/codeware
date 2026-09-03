@@ -122,23 +122,23 @@
         <flux:sidebar.toggle class="lg:hidden self-end m-2 text-zinc-400 hover:text-zinc-200" icon="x-mark" />
 
         {{-- Logo + search --}}
-        <div class="px-0 py-3 border-b border-gray-100 shrink-0 flex items-center gap-3 pb-2"> 
+        <div class="px-0 py-3 border-b border-gray-100 shrink-0 flex items-center gap-3 pt-1 pb-2">   
             <a href="{{ route('admin.dashboard') }}" wire:navigate.hover title="{{ config('app.name') }}"
-                class="flex items-center gap-3 admin-sidebar-logo shrink-0">
-                <div class="rounded"> 
+                class="flex items-center gap-3 admin-sidebar-logo shrink-0"> 
+                <div class="rounded">  
                     <img src="{{ $siteIcon ?: '/default/logo.png' }}" alt="{{ config('app.name') }}" class="w-10">
-                </div>
+                </div>  
                 <!-- <div class="min-w-0">
                     <p class="truncate text-sm font-bold tracking-wide text-white">{{ config('app.name') }}</p>
                     <p class="mt-0.5 text-[11px] font-medium text-slate-300">Admin workspace</p>
                 </div> -->
             </a>
 
-            <div class="relative flex-1 min-w-0 admin-sidebar-search">
+            <div class="relative flex-1 min-w-0 admin-sidebar-search">  
                     <flux:icon.magnifying-glass
-                        class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
+                        class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 pointer-events-none" /> 
                 <input type="text" x-model="search" placeholder="{{ __('Search menu...') }}" autocomplete="off"
-                    class="admin-sidebar-search-input w-full bg-gray-50 border border-gray-200 rounded-md pl-9 pr-8 py-1.5 text-sm text-gray-800 placeholder:text-gray-400 outline-none transition">
+                    class="admin-sidebar-search-input w-full bg-gray-50 border border-primary! rounded! pl-9 pr-8 py-1.5 text-sm text-gray-800 placeholder:text-gray-400 outline-none transition"> 
                 <button type="button" x-show="search" x-on:click="search = ''"
                         class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
                     <flux:icon.x-mark class="size-4" />
@@ -174,7 +174,7 @@
                                 <span>{{ __($item->label) }}</span>
                             </span>
                             <span class="admin-nav-group-chevron-wrap flex shrink-0 items-center justify-center">
-                                <flux:icon.chevron-right class="admin-nav-group-chevron size-3.5 transition-transform duration-200"
+                                <flux:icon.chevron-right class="admin-nav-group-chevron size-4 transition-transform duration-200"
                                     x-bind:style="groupOpen({{ $item->id }}) ? 'transform: rotate(90deg)' : ''" />
                             </span>
                         </button>
@@ -248,11 +248,11 @@
 
         <div class="flex-1 p-4 md:p-4 max-w-[1600px] w-full mx-auto">
             @unless ($hidePageHeading ?? false)
-                <div class="mb-4 flex items-center justify-between gap-4 flex-wrap">
+                <div class="mb-1.5 flex items-center justify-between gap-4 flex-wrap">
                     <div>
                         @include('partials.admin-breadcrumbs')
-                    </div>
-                    <div class="flex items-center gap-2 shrink-0">
+                    </div> 
+                    <div class="flex items-center gap-2 shrink-0 page-header-actions empty:hidden">
                         @stack('page-header-actions')
                     </div>
                 </div>
