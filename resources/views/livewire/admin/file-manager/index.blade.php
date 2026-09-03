@@ -180,17 +180,17 @@
                     <p class="text-sm font-semibold text-zinc-800 font-mono truncate">{{ $selected }}</p>
                     <div class="flex items-center gap-2 shrink-0">
                         <a href="{{ route('admin.file-manager.raw', ['path' => $selected, 'download' => 1]) }}"
-                            class="inline-flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 transition-colors">
+                            class="inline-flex items-center gap-2 px-4 h-10 text-sm font-medium rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 transition-colors">
                             Download
                         </a>
                         @if ($editable && $this->canManage)
                             <button wire:click="saveFile" :disabled="! dirty" wire:loading.attr="disabled"
-                                class="admin-btn-save inline-flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                                class="admin-btn-save inline-flex items-center gap-2 px-4 text-sm font-medium rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                                 Save
                             </button>
                         @endif
                         <button wire:click="closePreview"
-                            class="inline-flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 transition-colors">
+                            class="inline-flex items-center gap-2 px-4 h-10 text-sm font-medium rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 transition-colors">
                             Close
                         </button>
                     </div>

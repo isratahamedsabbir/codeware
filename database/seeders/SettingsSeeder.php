@@ -178,6 +178,11 @@ class SettingsSeeder extends Seeder
             ['key' => 'linkedin_url',        'value' => '', 'type' => 'string', 'group' => 'social', 'is_public' => true],
             ['key' => 'tiktok_url',          'value' => '', 'type' => 'string', 'group' => 'social', 'is_public' => true],
             ['key' => 'whatsapp_number',     'value' => '', 'type' => 'string', 'group' => 'social', 'is_public' => true],
+
+            // ── Floating button (admin panel) ──
+            ['key' => 'floating_button_enabled', 'value' => '0', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
+            ['key' => 'floating_button_action',  'value' => 'top', 'type' => 'string', 'group' => 'other', 'is_public' => false],
+            ['key' => 'floating_button_link',    'value' => '', 'type' => 'string', 'group' => 'other', 'is_public' => false],
         ];
 
         foreach ($settings as $setting) {

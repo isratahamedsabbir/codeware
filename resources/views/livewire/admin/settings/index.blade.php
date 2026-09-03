@@ -1,16 +1,4 @@
 <div>
-    @if (session('success'))
-        <div class="mb-4 rounded-lg bg-green-50 border border-green-200 text-green-800 px-4 py-3 text-sm dark:bg-green-950 dark:border-green-800 dark:text-green-300">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="mb-4 rounded-lg bg-red-50 border border-red-200 text-red-800 px-4 py-3 text-sm dark:bg-red-950 dark:border-red-800 dark:text-red-300">
-            {{ session('error') }}
-        </div>
-    @endif
-
     {{-- Alpine tab switcher: General | Layout | Payments --}}
     <div x-data="{
         tab: localStorage.getItem('admin-settings-tab') || 'general',
@@ -717,6 +705,33 @@
                             </div>
                         </flux:field>
                     @endforeach
+                </div>
+
+                {{-- Floating action button --}}
+                <div class="max-w-md rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4" x-data>
+                    <div class="flex items-center justify-between">
+                        <flux:heading size="sm">Floating Button</flux:heading>
+                        <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
+                            <input type="checkbox" wire:model="settings.floating_button_enabled" class="rounded border-zinc-300 text-primary" />
+                            Enable
+                        </label>
+                    </div>
+                    <flux:text class="text-xs text-zinc-500 -mt-2">
+                        Shows a floating button in the corner of every admin page.
+                    </flux:text>
+                    <flux:field>
+                        <flux:label>Action</flux:label>
+                        <select wire:model="settings.floating_button_action"
+                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                            <option value="link">Open link</option>
+                            <option value="back">Go back</option>
+                            <option value="top">Go to top</option>
+                        </select>
+                    </flux:field>
+                    <flux:field x-show="$wire.settings.floating_button_action === 'link'">
+                        <flux:label>Link URL</flux:label>
+                        <flux:input wire:model="settings.floating_button_link" placeholder="https://example.com" />
+                    </flux:field>
                 </div>
             </div>
         </div>

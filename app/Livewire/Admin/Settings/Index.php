@@ -149,7 +149,7 @@ class Index extends Component
             EnvFile::set($this->env);
         } catch (\RuntimeException $e) {
             $this->dispatch('close-modal', name: 'env-save-confirm');
-            session()->flash('error', 'Could not save environment settings: '.$e->getMessage());
+            $this->dispatch('notify', message: 'Could not save environment settings: '.$e->getMessage());
 
             return;
         }
@@ -159,7 +159,7 @@ class Index extends Component
         AdminActivity::log('updated', 'Environment settings updated');
 
         $this->dispatch('close-modal', name: 'env-save-confirm');
-        session()->flash('success', 'Environment settings saved. Configuration cache cleared.');
+        $this->dispatch('notify', message: 'Environment settings saved. Configuration cache cleared.');
     }
 
     public function applyThemePreset(string $name): void
@@ -188,7 +188,7 @@ class Index extends Component
             $this->dispatch('admin-theme-changed', mode: $this->settings['theme_mode'] ?? Theme::mode(), accent: $this->settings['theme_accent'] ?? Theme::accent());
         }
 
-        session()->flash('success', 'Settings saved.');
+        $this->dispatch('notify', message: 'Settings saved.');
     }
 
     public function getEditorUrl(string $type): string
