@@ -461,29 +461,22 @@ it('rejects composing a file with an invalid name', function () {
     expect(File::exists(storage_path('app/escape.txt')))->toBeFalse();
 });
 
-it('hides the checkbox markup until select mode is toggled on', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
-    $this->actingAs($admin);
-
-    $off = Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager']);
-    $off->assertSet('selectMode', false)
-        ->assertDontSee('type="checkbox"', false);
-
-    $off->call('toggleSelectMode')
-        ->assertSet('selectMode', true)
-        ->assertSee('type="checkbox"', false);
-});
-
-it('clears the current selection when select mode is turned off', function () {
+it('always shows the checkbox markup for a manager', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
-        ->call('toggleSelectMode')
+        ->assertSee('type="checkbox"', false);
+});
+
+it('clears the current selection via clearChecked', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $this->actingAs($admin);
+
+    Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
         ->call('toggleChecked', 'sample.txt')
         ->assertSet('checked', ['sample.txt'])
-        ->call('toggleSelectMode')
-        ->assertSet('selectMode', false)
+        ->call('clearChecked')
         ->assertSet('checked', []);
 });
 
@@ -496,7 +489,6 @@ it('deletes multiple selected files and folders at once', function () {
     File::put($this->fixtureDir.'/sub/inner.txt', 'inner');
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
-        ->call('toggleSelectMode')
         ->call('toggleChecked', 'sample.txt')
         ->call('toggleChecked', 'second.txt')
         ->call('toggleChecked', 'sub')
@@ -516,7 +508,6 @@ it('closes the open preview if the previewed file is bulk-deleted', function () 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
         ->call('open', 'sample.txt')
         ->assertSet('selected', $this->relativeFixture)
-        ->call('toggleSelectMode')
         ->call('toggleChecked', 'sample.txt')
         ->call('deleteSelected')
         ->assertSet('selected', null);

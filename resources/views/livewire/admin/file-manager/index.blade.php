@@ -1,6 +1,6 @@
 <div class="max-w-[1600px] w-full mx-auto flex-1">
 
-    <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
+    <div class="bg-white rounded-lg border border-zinc-100 shadow-sm">
 
         {{-- Breadcrumb / toolbar --}}
         <div class="flex items-center justify-between gap-3 px-6 py-4 border-b border-zinc-100 flex-wrap">
@@ -40,15 +40,6 @@
                 </button>
                 @if ($this->canManage)
                     <input type="file" multiple x-ref="uploadInput" wire:model="uploads" class="hidden">
-                    <button type="button" @click="$refs.uploadInput.click()" x-show="! uploading"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 transition-colors">
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                            <polyline points="17 8 12 3 7 8" />
-                            <line x1="12" y1="3" x2="12" y2="15" />
-                        </svg>
-                        Upload
-                    </button>
                     <div x-show="uploading" x-cloak class="flex items-center gap-2">
                         <div class="w-24 h-1.5 rounded-full bg-zinc-100 overflow-hidden">
                             <div class="h-full bg-indigo-500 transition-all" :style="`width: ${progress}%`"></div>
@@ -56,16 +47,43 @@
                         <span class="text-[11px] text-zinc-500 tabular-nums" x-text="progress + '%'"></span>
                     </div>
 
-                    <button wire:click="toggleSelectMode"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors {{ $selectMode ? 'border-indigo-300 bg-indigo-50 text-indigo-600' : 'border-zinc-200 text-zinc-600 hover:bg-zinc-50' }}">
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="9 11 12 14 20 6" />
-                            <path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9" />
-                        </svg>
-                        {{ $selectMode ? 'Cancel Select' : 'Select' }}
-                    </button>
-
-                    @if ($selectMode && count($checked))
+                    @if (count($checked))
+                        <button wire:click="clearChecked"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 transition-colors">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                            Clear ({{ count($checked) }})
+                        </button>
+                        @if ($this->canManage)
+                            <button wire:click="openTransferModalSelected('move')"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 transition-colors">
+                                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 3H4a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-9" />
+                                    <path d="M13 11l9-9" />
+                                    <path d="M17 2h5v5" />
+                                </svg>
+                                Move Selected ({{ count($checked) }})
+                            </button>
+                            <button wire:click="openTransferModalSelected('copy')"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 transition-colors">
+                                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" />
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                                </svg>
+                                Copy Selected ({{ count($checked) }})
+                            </button>
+                        @endif
+                        <a href="{{ route('admin.file-manager.download-zip', ['path' => $path, 'names' => $checked]) }}"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 transition-colors">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                            Download Selected ({{ count($checked) }})
+                        </a>
                         <button wire:click="zipSelected"
                             class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors">
                             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -88,25 +106,49 @@
                         </button>
                     @endif
 
-                    <button wire:click="openCreateModal('folder')"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 transition-colors">
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M4 4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8L9 4H4z" />
-                            <line x1="12" y1="11" x2="12" y2="17" />
-                            <line x1="9" y1="14" x2="15" y2="14" />
-                        </svg>
-                        New Folder
-                    </button>
-                    <button wire:click="openCreateModal('file')"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 transition-colors">
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                            <polyline points="14 2 14 8 20 8" />
-                            <line x1="12" y1="12" x2="12" y2="17" />
-                            <line x1="9.5" y1="14.5" x2="14.5" y2="14.5" />
-                        </svg>
-                        New File
-                    </button>
+                    <div class="relative" x-data="{ menuOpen: false }" @click.outside="menuOpen = false">
+                        <button type="button" @click="menuOpen = !menuOpen" title="New"
+                            :class="menuOpen ? 'border-zinc-300 bg-zinc-50' : 'border-zinc-200'"
+                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg border text-zinc-600 hover:bg-zinc-50 transition-colors">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                <circle cx="12" cy="5" r="1.6" />
+                                <circle cx="12" cy="12" r="1.6" />
+                                <circle cx="12" cy="19" r="1.6" />
+                            </svg>
+                        </button>
+
+                        <div x-show="menuOpen" x-cloak x-transition.origin.top.right
+                            class="absolute right-0 mt-1 w-36 bg-white rounded-lg border border-zinc-200 shadow-lg py-1 z-30 text-left">
+                            <button type="button" @click="menuOpen = false; $refs.uploadInput.click()"
+                                class="w-full flex items-center gap-2 text-left px-3 py-1.5 text-xs text-zinc-600 hover:bg-zinc-50">
+                                <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                    <polyline points="17 8 12 3 7 8" />
+                                    <line x1="12" y1="3" x2="12" y2="15" />
+                                </svg>
+                                Upload
+                            </button>
+                            <button type="button" @click="menuOpen = false" wire:click="openCreateModal('folder')"
+                                class="w-full flex items-center gap-2 text-left px-3 py-1.5 text-xs text-zinc-600 hover:bg-zinc-50">
+                                <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8L9 4H4z" />
+                                    <line x1="12" y1="11" x2="12" y2="17" />
+                                    <line x1="9" y1="14" x2="15" y2="14" />
+                                </svg>
+                                New Folder
+                            </button>
+                            <button type="button" @click="menuOpen = false" wire:click="openCreateModal('file')"
+                                class="w-full flex items-center gap-2 text-left px-3 py-1.5 text-xs text-zinc-600 hover:bg-zinc-50">
+                                <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                    <polyline points="14 2 14 8 20 8" />
+                                    <line x1="12" y1="12" x2="12" y2="17" />
+                                    <line x1="9.5" y1="14.5" x2="14.5" y2="14.5" />
+                                </svg>
+                                New File
+                            </button>
+                        </div>
+                    </div>
                 @endif
                 @if ($path !== '')
                     <button wire:click="up"
@@ -143,7 +185,7 @@
                         </a>
                         @if ($editable && $this->canManage)
                             <button wire:click="saveFile" :disabled="! dirty" wire:loading.attr="disabled"
-                                class="admin-btn-save inline-flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                class="admin-btn-save inline-flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                                 Save
                             </button>
                         @endif
@@ -188,15 +230,15 @@
                         @foreach ($this->entries as $entry)
                             @php $entryPath = ($path === '' ? '' : $path.'/').$entry['name']; @endphp
                             <div class="relative group">
-                                @if ($selectMode)
+                                @if ($this->canManage)
                                     <input type="checkbox" wire:click.stop="toggleChecked(@js($entry['name']))"
                                         @checked(in_array($entry['name'], $checked, true))
                                         title="Select"
-                                        class="absolute top-1.5 left-1.5 z-10 w-3.5 h-3.5 rounded border-zinc-300 text-indigo-500 focus:ring-indigo-400 cursor-pointer" />
+                                        class="absolute top-1.5 left-1.5 z-10 w-3.5 h-3.5 rounded border-zinc-300 text-indigo-500 focus:ring-indigo-400 cursor-pointer transition-opacity {{ count($checked) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100' }}" />
                                 @endif
 
-                                {{-- 3-dot actions menu --}}
-                                @if (! $entry['is_dir'] || $this->canManage)
+                                {{-- 3-dot actions menu — hidden while anything is selected, since bulk actions take over --}}
+                                @if (count($checked) === 0 && (! $entry['is_dir'] || $this->canManage))
                                 <div class="absolute top-1 right-1 z-20" x-data="{ menuOpen: false }"
                                     @click.outside="menuOpen = false">
                                     <button type="button" @click="menuOpen = !menuOpen" title="Actions"
@@ -257,7 +299,7 @@
                                 </div>
                                 @endif
 
-                                <button wire:click="open(@js($entry['name']))" title="{{ $entry['name'] }}"
+                                <button wire:dblclick="open(@js($entry['name']))" title="{{ $entry['name'] }}"
                                     class="w-full flex flex-col items-center gap-1.5 p-3 rounded-lg border border-transparent hover:border-zinc-200 hover:bg-zinc-50 transition-colors text-center">
                                     <div class="w-9 h-9 flex items-center justify-center shrink-0">
                                         @if ($entry['is_dir'])
@@ -325,7 +367,7 @@
             </flux:field>
             <div class="flex gap-2 pt-1">
                 <button wire:click="createEntry" wire:loading.attr="disabled"
-                    class="admin-btn-save inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors"
+                    class="admin-btn-save inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
                     Create
                 </button>
                 <flux:modal.close>
@@ -356,7 +398,7 @@
             </flux:field>
             <div class="flex gap-2 pt-1">
                 <button wire:click="composeFile" wire:loading.attr="disabled"
-                    class="admin-btn-save inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors"
+                    class="admin-btn-save inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
                     Create
                 </button>
                 <flux:modal.close>
@@ -379,7 +421,7 @@
             </flux:field>
             <div class="flex gap-2 pt-1">
                 <button wire:click="renameEntry" wire:loading.attr="disabled"
-                    class="admin-btn-save inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors"
+                    class="admin-btn-save inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
                     Rename
                 </button>
                 <flux:modal.close>
@@ -390,22 +432,67 @@
     </flux:modal>
 
     {{-- Move / Copy modal --}}
-    <flux:modal name="file-manager-transfer" class="md:w-96"
+    <flux:modal name="file-manager-transfer" class="md:w-104"
         x-on:open-modal.window="if ($event.detail.name === 'file-manager-transfer') $flux.modal('file-manager-transfer').show()"
         x-on:close-modal.window="if ($event.detail.name === 'file-manager-transfer') $flux.modal('file-manager-transfer').close()">
         <div class="space-y-4">
-            <flux:heading>{{ $transferMode === 'copy' ? 'Copy' : 'Move' }} "{{ $transferTarget }}"</flux:heading>
-            <flux:field>
+            <flux:heading>
+                {{ $transferMode === 'copy' ? 'Copy' : 'Move' }}
+                {{ $transferringSelected ? count($checked).' item(s)' : '"'.$transferTarget.'"' }}
+            </flux:heading>
+
+            <div>
                 <flux:label>Destination folder</flux:label>
-                <flux:input wire:model="transferDestination" wire:keydown.enter="transferEntry"
-                    placeholder="e.g. app/Models (leave blank for project root)" autofocus />
-                <p class="text-xs text-zinc-400 mt-1">Path relative to the project root.</p>
+
+                <div class="flex items-center gap-1 mt-1.5 mb-2">
+                    <button type="button" wire:click="transferUp" title="Up"
+                        class="inline-flex items-center justify-center w-6 h-6 shrink-0 rounded border border-zinc-200 text-zinc-500 hover:bg-zinc-50 transition-colors disabled:opacity-40"
+                        @disabled($transferDestination === '')>
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="19" x2="12" y2="5" />
+                            <polyline points="5 12 12 5 19 12" />
+                        </svg>
+                    </button>
+                    <div class="flex items-center gap-1 text-xs flex-wrap min-w-0 text-zinc-500">
+                        <button type="button" wire:click="transferGoTo('')"
+                            class="px-1.5 py-0.5 rounded hover:bg-zinc-100 hover:text-zinc-900 transition-colors {{ $transferDestination === '' ? 'font-semibold text-zinc-900' : '' }}">
+                            Project Root
+                        </button>
+                        @foreach ($this->transferBreadcrumbs as $crumb)
+                            <span class="text-zinc-300">/</span>
+                            <button type="button" wire:click="transferGoTo(@js($crumb['path']))"
+                                class="px-1.5 py-0.5 rounded hover:bg-zinc-100 hover:text-zinc-900 transition-colors truncate max-w-27.5 {{ $crumb['path'] === $transferDestination ? 'font-semibold text-zinc-900' : '' }}">
+                                {{ $crumb['label'] }}
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="border border-zinc-200 rounded-lg h-44 overflow-y-auto divide-y divide-zinc-50">
+                    @forelse ($this->transferBrowseEntries as $folder)
+                        <button type="button" wire:click="transferBrowseInto(@js($folder))"
+                            class="w-full flex items-center gap-2 text-left px-3 py-1.5 text-xs text-zinc-600 hover:bg-zinc-50 transition-colors">
+                            <svg class="w-3.5 h-3.5 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M4 4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8L9 4H4z" />
+                            </svg>
+                            <span class="truncate">{{ $folder }}</span>
+                        </button>
+                    @empty
+                        <p class="text-xs text-zinc-400 text-center py-6">No subfolders here.</p>
+                    @endforelse
+                </div>
+
+                <flux:input wire:model.live.debounce.400ms="transferDestination" wire:keydown.enter="transferEntry"
+                    placeholder="e.g. app/Models (leave blank for project root)" class="mt-2" />
+                <p class="text-xs text-zinc-400 mt-1">Click a folder above to browse into it, or type a path
+                    directly.</p>
                 <flux:error name="transferDestination" />
-            </flux:field>
+            </div>
+
             <div class="flex gap-2 pt-1">
                 <button wire:click="transferEntry" wire:loading.attr="disabled"
-                    class="admin-btn-save inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors"
-                    {{ $transferMode === 'copy' ? 'Copy' : 'Move' }}
+                    class="admin-btn-save inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
+                    {{ $transferMode === 'copy' ? 'Copy' : 'Move' }} here
                 </button>
                 <flux:modal.close>
                     <flux:button variant="ghost">Cancel</flux:button>

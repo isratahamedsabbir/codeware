@@ -143,4 +143,5 @@ Route::middleware('can:access-admin-system')->group(function () {
 Route::middleware(['can:view-file-manager', 'feature:file-manager'])->group(function () {
     Route::get('/file-manager', App\Livewire\Admin\FileManager\Index::class)->name('file-manager');
     Route::get('/file-manager/raw', [FileManagerController::class, 'raw'])->name('file-manager.raw');
+    Route::get('/file-manager/download-zip', [FileManagerController::class, 'downloadZip'])->name('file-manager.download-zip');
 });

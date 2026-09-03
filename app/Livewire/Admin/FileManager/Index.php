@@ -54,8 +54,6 @@ class Index extends Component
 
     public array $uploads = [];
 
-    public bool $selectMode = false;
-
     public array $checked = [];
 
     public ?string $deleteTarget = null;
@@ -69,6 +67,8 @@ class Index extends Component
     public string $transferMode = 'move';
 
     public ?string $transferTarget = null;
+
+    public bool $transferringSelected = false;
 
     public string $transferDestination = '';
 
@@ -214,9 +214,8 @@ class Index extends Component
         $this->checked = [];
     }
 
-    public function toggleSelectMode(): void
+    public function clearChecked(): void
     {
-        $this->selectMode = ! $this->selectMode;
         $this->checked = [];
     }
 
@@ -675,14 +674,114 @@ class Index extends Component
 
         $this->transferMode = $mode === 'copy' ? 'copy' : 'move';
         $this->transferTarget = $name;
+        $this->transferringSelected = false;
         $this->transferDestination = $this->path;
         $this->resetErrorBag('transferDestination');
         $this->dispatch('open-modal', name: 'file-manager-transfer');
     }
 
+    public function openTransferModalSelected(string $mode): void
+    {
+        $this->authorizeManage();
+
+        if (empty($this->checked)) {
+            return;
+        }
+
+        $this->transferMode = $mode === 'copy' ? 'copy' : 'move';
+        $this->transferTarget = null;
+        $this->transferringSelected = true;
+        $this->transferDestination = $this->path;
+        $this->resetErrorBag('transferDestination');
+        $this->dispatch('open-modal', name: 'file-manager-transfer');
+    }
+
+    /**
+     * Subfolders of the currently browsed transfer destination, for the
+     * folder-tree picker in the Move/Copy modal. The item(s) being
+     * transferred are hidden when browsing their own source folder, since
+     * moving/copying into them is meaningless (and blocked server-side
+     * anyway).
+     */
+    #[Computed]
+    public function transferBrowseEntries()
+    {
+        try {
+            $absolute = FileManagerPath::resolve($this->transferDestination);
+        } catch (Throwable) {
+            return collect();
+        }
+
+        if (! is_dir($absolute)) {
+            return collect();
+        }
+
+        $exclude = $this->transferDestination === $this->path
+            ? ($this->transferringSelected ? $this->checked : array_filter([$this->transferTarget]))
+            : [];
+
+        return collect(scandir($absolute) ?: [])
+            ->reject(fn ($name) => in_array($name, ['.', '..'], true))
+            ->reject(fn ($name) => in_array($name, $exclude, true))
+            ->filter(fn ($name) => is_dir($absolute.DIRECTORY_SEPARATOR.$name))
+            ->sort(fn ($a, $b) => strcasecmp($a, $b))
+            ->values();
+    }
+
+    #[Computed]
+    public function transferBreadcrumbs(): array
+    {
+        $normalized = trim(str_replace('\\', '/', $this->transferDestination), '/');
+
+        if ($normalized === '') {
+            return [];
+        }
+
+        $accum = [];
+        $crumbs = [];
+
+        foreach (explode('/', $normalized) as $segment) {
+            $accum[] = $segment;
+            $crumbs[] = ['label' => $segment, 'path' => implode('/', $accum)];
+        }
+
+        return $crumbs;
+    }
+
+    public function transferGoTo(string $path): void
+    {
+        $this->transferDestination = $path;
+        $this->resetErrorBag('transferDestination');
+    }
+
+    public function transferBrowseInto(string $name): void
+    {
+        $this->transferDestination = $this->transferDestination === ''
+            ? $name
+            : $this->transferDestination.'/'.$name;
+        $this->resetErrorBag('transferDestination');
+    }
+
+    public function transferUp(): void
+    {
+        if ($this->transferDestination === '') {
+            return;
+        }
+
+        $parent = dirname(str_replace('\\', '/', $this->transferDestination));
+        $this->transferDestination = $parent === '.' ? '' : $parent;
+        $this->resetErrorBag('transferDestination');
+    }
+
     public function transferEntry(): void
     {
         $this->authorizeManage();
+
+        if ($this->transferringSelected) {
+            $this->transferSelected();
+
+            return;
+        }
 
         if (! $this->transferTarget) {
             return;
@@ -773,6 +872,121 @@ class Index extends Component
         $this->transferTarget = null;
         $this->dispatch('close-modal', name: 'file-manager-transfer');
         $this->dispatch('notify', message: ucfirst($this->transferMode).'d successfully');
+    }
+
+    private function transferSelected(): void
+    {
+        if (empty($this->checked)) {
+            $this->transferringSelected = false;
+            $this->dispatch('close-modal', name: 'file-manager-transfer');
+
+            return;
+        }
+
+        try {
+            $sourceDir = FileManagerPath::resolve($this->path);
+        } catch (Throwable) {
+            $this->addError('transferDestination', 'This folder no longer exists.');
+
+            return;
+        }
+
+        try {
+            $destAbsolute = FileManagerPath::resolve($this->transferDestination);
+        } catch (Throwable) {
+            $this->addError('transferDestination', 'Enter a valid destination folder.');
+
+            return;
+        }
+
+        if (! is_dir($destAbsolute)) {
+            $this->addError('transferDestination', 'Destination must be a folder.');
+
+            return;
+        }
+
+        if ($destAbsolute === $sourceDir) {
+            $this->addError('transferDestination', 'Source and destination are the same.');
+
+            return;
+        }
+
+        $movedNames = [];
+        $count = 0;
+        $skipped = 0;
+
+        foreach ($this->checked as $name) {
+            $sourceAbsolute = $sourceDir.DIRECTORY_SEPARATOR.$name;
+
+            if (! file_exists($sourceAbsolute)) {
+                $skipped++;
+
+                continue;
+            }
+
+            // Guard against moving/copying a folder into itself or one of its own descendants.
+            if (
+                is_dir($sourceAbsolute)
+                && ($destAbsolute === $sourceAbsolute || str_starts_with($destAbsolute, $sourceAbsolute.DIRECTORY_SEPARATOR))
+            ) {
+                $skipped++;
+
+                continue;
+            }
+
+            $targetAbsolute = $destAbsolute.DIRECTORY_SEPARATOR.$name;
+
+            if (file_exists($targetAbsolute)) {
+                $skipped++;
+
+                continue;
+            }
+
+            if ($this->transferMode === 'copy') {
+                if (is_dir($sourceAbsolute)) {
+                    File::copyDirectory($sourceAbsolute, $targetAbsolute);
+                } else {
+                    File::copy($sourceAbsolute, $targetAbsolute);
+                }
+            } elseif (! @rename($sourceAbsolute, $targetAbsolute)) {
+                $skipped++;
+
+                continue;
+            }
+
+            $count++;
+            $movedNames[] = $name;
+        }
+
+        if ($this->transferMode === 'move' && $count > 0) {
+            $this->checked = array_values(array_diff($this->checked, $movedNames));
+
+            foreach ($movedNames as $name) {
+                $relative = $this->path === '' ? $name : $this->path.'/'.$name;
+
+                if ($this->selected === $relative) {
+                    $this->closePreview();
+
+                    break;
+                }
+            }
+        }
+
+        if ($count > 0) {
+            AdminActivity::log(
+                $this->transferMode === 'copy' ? 'file_manager.copy_selected' : 'file_manager.move_selected',
+                ucfirst($this->transferMode)."d {$count} item(s) to: ".FileManagerPath::relative($destAbsolute)
+            );
+        }
+
+        $this->transferringSelected = false;
+        $this->dispatch('close-modal', name: 'file-manager-transfer');
+
+        $message = $count > 0
+            ? ucfirst($this->transferMode)."d {$count} item(s) successfully".($skipped ? ", {$skipped} skipped" : '.')
+            : 'Nothing was '.($this->transferMode === 'copy' ? 'copied' : 'moved').' — items may already exist at the destination.';
+
+        $this->dispatch('notify', message: $message);
     }
 
     public function updatedUploads(): void
