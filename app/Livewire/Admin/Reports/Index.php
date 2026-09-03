@@ -23,6 +23,11 @@ class Index extends Component
 
     public string $toDate = '';
 
+    public function mount(): void
+    {
+        $this->fromDate = $this->toDate = CarbonImmutable::now(display_timezone())->toDateString();
+    }
+
     public function updatedStatusFilter(): void
     {
         $this->resetPage();
@@ -50,7 +55,8 @@ class Index extends Component
 
     public function resetFilters(): void
     {
-        $this->reset(['statusFilter', 'paymentStatusFilter', 'paymentMethodFilter', 'fromDate', 'toDate']);
+        $this->reset(['statusFilter', 'paymentStatusFilter', 'paymentMethodFilter']);
+        $this->fromDate = $this->toDate = CarbonImmutable::now(display_timezone())->toDateString();
         $this->resetPage();
     }
 

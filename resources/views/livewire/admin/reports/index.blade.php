@@ -80,8 +80,7 @@
             </div>
 
             <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
-                <flux:input type="date" wire:model.live="fromDate" class="sm:w-[160px]" />
-                <flux:input type="date" wire:model.live="toDate" class="sm:w-[160px]" />
+                <x-date-range-picker :from="$fromDate" :to="$toDate" />
 
                 <flux:button variant="ghost" wire:click="resetFilters" class="sm:ml-auto">Reset</flux:button>
             </div>

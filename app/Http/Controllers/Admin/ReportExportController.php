@@ -21,6 +21,9 @@ class ReportExportController extends Controller
         $paymentMethod = (string) $request->query('payment_method', '');
         $from = (string) $request->query('from', '');
         $to = (string) $request->query('to', '');
+        $product = (string) $request->query('product', '');
+        $priceMin = (string) $request->query('price_min', '');
+        $priceMax = (string) $request->query('price_max', '');
 
         $orders = Order::query()
             ->when($search, fn ($q) => $q
@@ -32,6 +35,9 @@ class ReportExportController extends Controller
             ->when($paymentMethod, fn ($q) => $q->where('payment_method', $paymentMethod))
             ->when($from, fn ($q) => $q->whereDate('created_at', '>=', $from))
             ->when($to, fn ($q) => $q->whereDate('created_at', '<=', $to))
+            ->when($product, fn ($q) => $q->whereHas('items', fn ($q2) => $q2->where('product_id', $product)))
+            ->when($priceMin !== '', fn ($q) => $q->where('total', '>=', $priceMin))
+            ->when($priceMax !== '', fn ($q) => $q->where('total', '<=', $priceMax))
             ->latest()
             ->get();
 

@@ -32,8 +32,23 @@
         </div>
 
         <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
-            <flux:input type="date" wire:model.live="fromDate" class="sm:w-[160px]" />
-            <flux:input type="date" wire:model.live="toDate" class="sm:w-[160px]" />
+            <x-date-range-picker :from="$fromDate" :to="$toDate" />
+
+            <x-searchable-select
+                model="productFilter"
+                search="productSearch"
+                :options="$this->productOptions()"
+                :selected-value="$productFilter"
+                :selected-label="$this->selectedProductLabel()"
+                all-label="All Products"
+                placeholder="Search products…"
+            />
+
+            <div class="flex items-center gap-1.5">
+                <flux:input type="number" step="0.01" min="0" wire:model.live.debounce.500ms="priceMin" placeholder="Min price" class="w-28" />
+                <span class="text-zinc-400">–</span>
+                <flux:input type="number" step="0.01" min="0" wire:model.live.debounce.500ms="priceMax" placeholder="Max price" class="w-28" />
+            </div>
 
             <flux:button variant="ghost" icon="arrow-down-tray" href="{{ route('admin.orders.export', $this->filters()) }}" class="sm:ml-auto">
                 Export Filtered

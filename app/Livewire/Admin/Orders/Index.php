@@ -4,7 +4,9 @@ namespace App\Livewire\Admin\Orders;
 
 use App\Concerns\HasPerPage;
 use App\Models\Order;
+use App\Models\Product;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Collection;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -23,6 +25,19 @@ class Index extends Component
     public string $fromDate = '';
 
     public string $toDate = '';
+
+    public string $productFilter = '';
+
+    public string $productSearch = '';
+
+    public string $priceMin = '';
+
+    public string $priceMax = '';
+
+    public function mount(): void
+    {
+        $this->fromDate = $this->toDate = CarbonImmutable::now(display_timezone())->toDateString();
+    }
 
     public function updatedSearch(): void
     {
@@ -54,10 +69,53 @@ class Index extends Component
         $this->resetPage();
     }
 
+    public function updatedProductFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPriceMin(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPriceMax(): void
+    {
+        $this->resetPage();
+    }
+
     public function resetFilters(): void
     {
-        $this->reset(['search', 'statusFilter', 'paymentStatusFilter', 'paymentMethodFilter', 'fromDate', 'toDate']);
+        $this->reset(['search', 'statusFilter', 'paymentStatusFilter', 'paymentMethodFilter', 'productFilter', 'productSearch', 'priceMin', 'priceMax']);
+        $this->fromDate = $this->toDate = CarbonImmutable::now(display_timezone())->toDateString();
         $this->resetPage();
+    }
+
+    /**
+     * @return Collection<int, object{id: int, label: string}>
+     */
+    public function productOptions(): Collection
+    {
+        return Product::query()
+            ->when($this->productSearch, fn ($q) => $q
+                ->where('name->en', 'like', "%{$this->productSearch}%")
+                ->orWhere('name->bn', 'like', "%{$this->productSearch}%"))
+            ->orderBy('name->en')
+            ->limit(30)
+            ->get(['id', 'name'])
+            ->map(fn (Product $product) => (object) [
+                'id' => $product->id,
+                'label' => $product->getTranslation('name', 'en', false),
+            ]);
+    }
+
+    public function selectedProductLabel(): ?string
+    {
+        if (! $this->productFilter) {
+            return null;
+        }
+
+        return Product::query()->find($this->productFilter)?->getTranslation('name', 'en', false);
     }
 
     /**
@@ -72,6 +130,9 @@ class Index extends Component
             'payment_method' => $this->paymentMethodFilter,
             'from' => $this->fromDate,
             'to' => $this->toDate,
+            'product' => $this->productFilter,
+            'price_min' => $this->priceMin,
+            'price_max' => $this->priceMax,
         ]);
     }
 
@@ -86,7 +147,10 @@ class Index extends Component
             ->when($this->paymentStatusFilter, fn ($q) => $q->where('payment_status', $this->paymentStatusFilter))
             ->when($this->paymentMethodFilter, fn ($q) => $q->where('payment_method', $this->paymentMethodFilter))
             ->when($this->fromDate, fn ($q) => $q->where('created_at', '>=', CarbonImmutable::parse($this->fromDate, display_timezone())->startOfDay()->utc()))
-            ->when($this->toDate, fn ($q) => $q->where('created_at', '<=', CarbonImmutable::parse($this->toDate, display_timezone())->endOfDay()->utc()));
+            ->when($this->toDate, fn ($q) => $q->where('created_at', '<=', CarbonImmutable::parse($this->toDate, display_timezone())->endOfDay()->utc()))
+            ->when($this->productFilter, fn ($q) => $q->whereHas('items', fn ($q2) => $q2->where('product_id', $this->productFilter)))
+            ->when($this->priceMin !== '', fn ($q) => $q->where('total', '>=', $this->priceMin))
+            ->when($this->priceMax !== '', fn ($q) => $q->where('total', '<=', $this->priceMax));
     }
 
     public function render()
