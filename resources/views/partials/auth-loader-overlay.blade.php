@@ -6,10 +6,10 @@
      has been uploaded yet. --}}
 @php($loaderUrl = \App\Models\Setting::get('loader') ?: asset('default/loader.gif'))
 <div id="auth-loader-overlay"
-    class="fixed inset-0 z-[9999] hidden items-center justify-center bg-white/70 backdrop-blur-sm">
-    <img src="{{ $loaderUrl }}" alt="Loading" class="h-16 w-16 object-contain">
-</div>
-<script>
+    class="fixed inset-0 z-[9999] hidden items-center justify-center bg-white/70 backdrop-blur-sm">     
+    <img src="{{ $loaderUrl }}" alt="Loading" class="w-[150px] object-contain">  
+</div>  
+<script>     
     document.addEventListener('submit', function (event) {
         const overlay = document.getElementById('auth-loader-overlay');
         if (overlay && event.target instanceof HTMLFormElement) {

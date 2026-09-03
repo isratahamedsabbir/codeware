@@ -14,10 +14,10 @@
             @csrf
 
             {{-- Email Address --}}
-            <div class="flex flex-col gap-1.5">
-                <label for="email" class="text-sm font-semibold text-gray-800 leading-tight">
+            <div class="flex flex-col gap-1.5"> 
+                <label for="email" class="text-sm font-semibold text-white leading-tight">
                     {{ __('Email address') }}
-                </label>
+                </label> 
                 <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus
                     autocomplete="email" placeholder="email@example.com"
                     class="
@@ -33,9 +33,9 @@
                 @enderror
             </div>
 
-            {{-- Password --}}
+            {{-- Password --}} 
             <div class="flex flex-col gap-1.5">
-                <label for="password" class="text-sm font-semibold text-gray-800 leading-tight">
+                <label for="password" class="text-sm font-semibold text-white leading-tight">
                     {{ __('Password') }}
                 </label>
                 <div class="relative">
@@ -43,12 +43,26 @@
                         placeholder="{{ __('Password') }}"
                         class="
                             w-full rounded-md border border-gray-300 bg-white
-                            px-3 py-2 text-sm font-normal text-gray-900
+                            px-3 py-2 pr-10 text-sm font-normal text-gray-900
                             placeholder:text-gray-400
                             focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400
                             shadow-none
                             transition-colors duration-150
                         " />
+                    <button type="button" id="toggle-password"
+                        onclick="togglePassword()"
+                        class="absolute inset-y-0 end-0 flex items-center px-3 text-gray-400 hover:text-gray-600 transition-colors duration-150 cursor-pointer"
+                        aria-label="Toggle password visibility">
+                        {{-- Eye icon (visible when password is hidden) --}}
+                        <svg id="icon-eye" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        {{-- Eye-slash icon (visible when password is shown) --}}
+                        <svg id="icon-eye-slash" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.97 9.97 0 012.094-3.592M6.228 6.228A9.97 9.97 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.97 9.97 0 01-1.337 2.694M6.228 6.228L3 3m3.228 3.228l3.65 3.65M21 21l-3.228-3.228m0 0L14.35 14.35M17.772 17.772l-3.65-3.65" />
+                        </svg>
+                    </button> 
                     {{-- @if (Route::has('password.request'))
                         <a href="{{ route('password.request') }}" class="absolute top-0 end-0 text-xs text-gray-500 hover:text-gray-800 transition-colors">
                             {{ __('Forgot your password?') }}
@@ -76,7 +90,7 @@
                         box-shadow: none;
                     " />
                 <label for="remember"
-                    class="text-sm font-normal text-gray-700 cursor-pointer select-none leading-tight">
+                    class="text-sm font-normal text-white cursor-pointer select-none leading-tight">
                     {{ __('Remember me') }}
                 </label>
             </div> 
@@ -95,12 +109,12 @@
                     ">
                     {{ __('Log in') }}
                 </button>
-            </div>
+            </div> 
         </form>
 
         @if (Route::has('register'))
             <p class="text-sm text-center text-gray-500">
-                {{ __("Don't have an account?") }}
+                <!-- {{ __("Don't have an account?") }} -->
                 {{-- <a href="{{ route('register') }}" class="font-semibold text-gray-800 hover:text-gray-900 transition-colors">
                     {{ __('Sign up') }}
                 </a> --}}
@@ -118,4 +132,21 @@
             background-repeat: no-repeat;
         }
     </style>
+
+    <script>
+        function togglePassword() {
+            const input = document.getElementById('password');
+            const iconEye = document.getElementById('icon-eye');
+            const iconEyeSlash = document.getElementById('icon-eye-slash');
+            if (input.type === 'password') {
+                input.type = 'text';
+                iconEye.classList.add('hidden');
+                iconEyeSlash.classList.remove('hidden');
+            } else {
+                input.type = 'password';
+                iconEye.classList.remove('hidden');
+                iconEyeSlash.classList.add('hidden');
+            }
+        }
+    </script>
 </x-layouts::auth>

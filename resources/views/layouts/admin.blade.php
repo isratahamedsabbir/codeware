@@ -122,10 +122,10 @@
         <flux:sidebar.toggle class="lg:hidden self-end m-2 text-zinc-400 hover:text-zinc-200" icon="x-mark" />
 
         {{-- Logo + search --}}
-        <div class="px-0 py-4 border-b border-white/10 shrink-0 pt-0 flex items-center gap-3 pb-2">
+        <div class="px-0 py-3 border-b border-gray-100 shrink-0 flex items-center gap-3 pb-2"> 
             <a href="{{ route('admin.dashboard') }}" wire:navigate.hover title="{{ config('app.name') }}"
                 class="flex items-center gap-3 admin-sidebar-logo shrink-0">
-                <div class="rounded">
+                <div class="rounded"> 
                     <img src="{{ $siteIcon ?: '/default/logo.png' }}" alt="{{ config('app.name') }}" class="w-10">
                 </div>
                 <!-- <div class="min-w-0">
@@ -135,19 +135,19 @@
             </a>
 
             <div class="relative flex-1 min-w-0 admin-sidebar-search">
-                <flux:icon.magnifying-glass
-                    class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-500 pointer-events-none" />
+                    <flux:icon.magnifying-glass
+                        class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
                 <input type="text" x-model="search" placeholder="{{ __('Search menu...') }}" autocomplete="off"
-                    class="admin-sidebar-search-input w-full bg-white/5 border border-primary! rounded-lg pl-9 pr-8 py-1.5 text-sm text-zinc-200 placeholder:text-zinc-500 outline-none transition">
+                    class="admin-sidebar-search-input w-full bg-gray-50 border border-gray-200 rounded-md pl-9 pr-8 py-1.5 text-sm text-gray-800 placeholder:text-gray-400 outline-none transition">
                 <button type="button" x-show="search" x-on:click="search = ''"
-                    class="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors">
+                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
                     <flux:icon.x-mark class="size-4" />
                 </button>
-            </div>
+            </div> 
         </div>
 
         {{-- Navigation --}}
-        <nav id="admin-sidebar-nav" class="flex-1 overflow-y-auto px-2 py-4 space-y-0.5 custom-sidebar-nav pt-0 -mt-1 pl-0.5">
+        <nav id="admin-sidebar-nav" class="flex-1 overflow-y-auto px-2 py-2 space-y-0 custom-sidebar-nav pl-0.5">
 
             @foreach ($sidebarMenu as $item)
                 @if ($item->is_group)
@@ -167,14 +167,14 @@
                         <button @click="toggle({{ $item->id }})" title="{{ __($item->label) }}"
                             class="admin-nav-group-label w-full flex items-center justify-between cursor-pointer select-none"
                             :class="{ 'admin-nav-group-active': groupOpen({{ $item->id }}) }">
-                            <span class="flex items-center gap-2.5">
-                                <span class="admin-nav-group-icon flex size-7 items-center justify-center rounded-lg">
-                                    <x-dynamic-component :component="'flux::icon.'.$groupIcon" class="size-3.5" />
+                            <span class="flex items-center gap-2">
+                                <span class="admin-nav-group-icon">
+                                    <x-dynamic-component :component="'flux::icon.'.$groupIcon" class="size-4.5" />
                                 </span>
                                 <span>{{ __($item->label) }}</span>
                             </span>
-                            <span class="admin-nav-group-chevron-wrap flex size-7 shrink-0 items-center justify-center rounded-lg">
-                                <flux:icon.chevron-right class="admin-nav-group-chevron size-4 transition-transform duration-200"
+                            <span class="admin-nav-group-chevron-wrap flex shrink-0 items-center justify-center">
+                                <flux:icon.chevron-right class="admin-nav-group-chevron size-3.5 transition-transform duration-200"
                                     x-bind:style="groupOpen({{ $item->id }}) ? 'transform: rotate(90deg)' : ''" />
                             </span>
                         </button>
