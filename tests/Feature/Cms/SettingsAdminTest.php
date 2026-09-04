@@ -108,15 +108,6 @@ it('renders the site icon in the admin layout favicon and sidebar logo', functio
         ->assertSee('src="/storage/site-icon.png"', false);
 });
 
-it('renders the SEO tab with meta and open graph fields', function () {
-    Livewire::test(SettingsIndex::class)
-        ->assertSee('SEO')
-        ->assertSee('Meta Title')
-        ->assertSee('Meta Description')
-        ->assertSee('Open Graph')
-        ->assertSee('OG Image');
-});
-
 it('does not show SEO settings in the general tab', function () {
     Setting::factory()->create(['key' => 'seo_meta_title', 'value' => 'Hidden', 'group' => 'seo', 'type' => 'string']);
 
@@ -167,25 +158,6 @@ it('saves colors settings through the form', function () {
     expect(Setting::where('key', 'secondary_color')->value('value'))->toBe('#2563eb');
 });
 
-it('saves seo settings through the form', function () {
-    Setting::factory()->create(['key' => 'seo_meta_title', 'value' => '', 'group' => 'seo', 'type' => 'string']);
-
-    Livewire::test(SettingsIndex::class)
-        ->set('settings.seo_meta_title', 'Codeware – Fresh Agriculture')
-        ->set('settings.seo_meta_description', 'Buy fresh produce online.')
-        ->set('settings.seo_og_title', 'Codeware')
-        ->set('settings.seo_og_description', 'Fresh produce, delivered.')
-        ->set('settings.seo_og_image', '/storage/og.png')
-        ->call('save')
-        ->assertHasNoErrors();
-
-    expect(Setting::where('key', 'seo_meta_title')->value('value'))->toBe('Codeware – Fresh Agriculture');
-    expect(Setting::where('key', 'seo_meta_description')->value('value'))->toBe('Buy fresh produce online.');
-    expect(Setting::where('key', 'seo_og_title')->value('value'))->toBe('Codeware');
-    expect(Setting::where('key', 'seo_og_description')->value('value'))->toBe('Fresh produce, delivered.');
-    expect(Setting::where('key', 'seo_og_image')->value('value'))->toBe('/storage/og.png');
-});
-
 it('seeder creates seo settings', function () {
     $this->artisan('db:seed', ['--class' => 'SettingsSeeder']);
 
@@ -231,37 +203,6 @@ it('seeder creates theme settings', function () {
     foreach (['theme_mode', 'theme_name', 'theme_accent'] as $key) {
         expect(Setting::where('key', $key)->exists())->toBeTrue();
     }
-});
-
-it('seeder creates social link settings', function () {
-    $this->artisan('db:seed', ['--class' => 'SettingsSeeder']);
-
-    foreach (['facebook_url', 'twitter_url', 'instagram_url', 'youtube_url', 'linkedin_url', 'tiktok_url', 'whatsapp_number'] as $key) {
-        expect(Setting::where('key', $key)->exists())->toBeTrue();
-    }
-});
-
-it('renders the social links section in the other tab', function () {
-    Livewire::test(SettingsIndex::class)
-        ->assertSee('Social Links')
-        ->assertSee('Facebook')
-        ->assertSee('Instagram')
-        ->assertSee('YouTube')
-        ->assertSee('LinkedIn')
-        ->assertSee('WhatsApp');
-});
-
-it('saves social link settings through the form', function () {
-    Livewire::test(SettingsIndex::class)
-        ->set('settings.facebook_url', 'https://facebook.com/codeware')
-        ->set('settings.instagram_url', 'https://instagram.com/codeware')
-        ->set('settings.whatsapp_number', '+8801700000000')
-        ->call('save')
-        ->assertHasNoErrors();
-
-    expect(Setting::where('key', 'facebook_url')->value('value'))->toBe('https://facebook.com/codeware');
-    expect(Setting::where('key', 'instagram_url')->value('value'))->toBe('https://instagram.com/codeware');
-    expect(Setting::where('key', 'whatsapp_number')->value('value'))->toBe('+8801700000000');
 });
 
 it('seeder creates currency settings', function () {

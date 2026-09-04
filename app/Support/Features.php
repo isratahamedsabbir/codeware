@@ -2,7 +2,7 @@
 
 namespace App\Support;
 
-use App\Models\Setting;
+use App\Models\Feature;
 
 /**
  * This admin panel is reused as a starting point across multiple projects, and not
@@ -36,7 +36,7 @@ class Features
             return true;
         }
 
-        return (bool) Setting::get(self::settingKey($key), true);
+        return (bool) Feature::enabledMapCached()->get($key, true);
     }
 
     public static function settingKey(string $key): string

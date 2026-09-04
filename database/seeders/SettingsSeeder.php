@@ -116,35 +116,6 @@ class SettingsSeeder extends Seeder
                 'is_public' => false,
             ],
 
-            // ── Payment credentials ──
-            ['key' => 'paypal_enabled',           'value' => '0', 'type' => 'boolean', 'group' => 'payments', 'is_public' => false],
-            ['key' => 'paypal_mode',              'value' => 'sandbox', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
-            ['key' => 'paypal_client_id',         'value' => '', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
-            ['key' => 'paypal_client_secret',     'value' => '', 'type' => 'password', 'group' => 'payments', 'is_public' => false],
-
-            ['key' => 'stripe_enabled',           'value' => '0', 'type' => 'boolean', 'group' => 'payments', 'is_public' => false],
-            ['key' => 'stripe_mode',              'value' => 'test', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
-            ['key' => 'stripe_publishable_key',   'value' => '', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
-            ['key' => 'stripe_secret_key',        'value' => '', 'type' => 'password', 'group' => 'payments', 'is_public' => false],
-            ['key' => 'stripe_webhook_secret',    'value' => '', 'type' => 'password', 'group' => 'payments', 'is_public' => false],
-
-            ['key' => 'bkash_enabled',            'value' => '0', 'type' => 'boolean', 'group' => 'payments', 'is_public' => false],
-            ['key' => 'bkash_mode',               'value' => 'sandbox', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
-            ['key' => 'bkash_username',           'value' => '', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
-            ['key' => 'bkash_password',           'value' => '', 'type' => 'password', 'group' => 'payments', 'is_public' => false],
-            ['key' => 'bkash_app_key',            'value' => '', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
-            ['key' => 'bkash_app_secret',         'value' => '', 'type' => 'password', 'group' => 'payments', 'is_public' => false],
-
-            ['key' => 'sslcommerz_enabled',       'value' => '0', 'type' => 'boolean', 'group' => 'payments', 'is_public' => false],
-            ['key' => 'sslcommerz_mode',          'value' => 'sandbox', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
-            ['key' => 'sslcommerz_store_id',      'value' => '', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
-            ['key' => 'sslcommerz_store_password', 'value' => '', 'type' => 'password', 'group' => 'payments', 'is_public' => false],
-
-            ['key' => 'applepay_enabled',         'value' => '0', 'type' => 'boolean', 'group' => 'payments', 'is_public' => false],
-            ['key' => 'applepay_merchant_id',     'value' => '', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
-            ['key' => 'applepay_merchant_name',   'value' => '', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
-            ['key' => 'applepay_domain',          'value' => '', 'type' => 'string', 'group' => 'payments', 'is_public' => false],
-
             // ── Currency ──
             ['key' => 'currency_code',          'value' => 'BDT', 'type' => 'string', 'group' => 'currency', 'is_public' => true],
             ['key' => 'currency_symbol',        'value' => '৳', 'type' => 'string', 'group' => 'currency', 'is_public' => true],
@@ -169,15 +140,6 @@ class SettingsSeeder extends Seeder
             ['key' => 'theme_mode',               'value' => 'light', 'type' => 'string', 'group' => 'theme', 'is_public' => false],
             ['key' => 'theme_name',               'value' => 'Default', 'type' => 'string', 'group' => 'theme', 'is_public' => false],
             ['key' => 'theme_accent',             'value' => '#1e7bc4', 'type' => 'color', 'group' => 'theme', 'is_public' => false],
-
-            // ── Social links ──
-            ['key' => 'facebook_url',        'value' => '', 'type' => 'string', 'group' => 'social', 'is_public' => true],
-            ['key' => 'twitter_url',         'value' => '', 'type' => 'string', 'group' => 'social', 'is_public' => true],
-            ['key' => 'instagram_url',       'value' => '', 'type' => 'string', 'group' => 'social', 'is_public' => true],
-            ['key' => 'youtube_url',         'value' => '', 'type' => 'string', 'group' => 'social', 'is_public' => true],
-            ['key' => 'linkedin_url',        'value' => '', 'type' => 'string', 'group' => 'social', 'is_public' => true],
-            ['key' => 'tiktok_url',          'value' => '', 'type' => 'string', 'group' => 'social', 'is_public' => true],
-            ['key' => 'whatsapp_number',     'value' => '', 'type' => 'string', 'group' => 'social', 'is_public' => true],
 
             // ── Floating button (admin panel) ──
             ['key' => 'floating_button_enabled', 'value' => '0', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],

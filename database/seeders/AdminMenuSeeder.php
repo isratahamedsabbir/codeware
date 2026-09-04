@@ -29,6 +29,7 @@ class AdminMenuSeeder extends Seeder
             ['Orders', 'shopping-bag', 'admin.orders'],
             ['Coupons', 'ticket', 'admin.coupons'],
             ['Reports', 'chart-bar', 'admin.reports'],
+            ['Payment Gateways', 'credit-card', 'admin.payment-gateways'],
         ]);
 
         $this->group('Blog', 5, [
@@ -39,6 +40,8 @@ class AdminMenuSeeder extends Seeder
 
         $this->group('Library & System', 6, [
             ['Settings', 'cog-6-tooth', 'admin.settings'],
+            ['SEO', 'magnifying-glass', 'admin.seo'],
+            ['Social Links', 'share', 'admin.social'],
             ['Media Library', 'photo', 'admin.media-library'],
             ['File Manager', 'folder', 'admin.file-manager'],
             ['Email Templates', 'envelope', 'admin.email-templates'],

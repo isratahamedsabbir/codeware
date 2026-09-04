@@ -1,8 +1,9 @@
 <?php
 
+use App\Models\Feature;
 use App\Models\Order;
+use App\Models\PaymentGateway;
 use App\Models\Product;
-use App\Models\Setting;
 use App\Models\Transaction;
 
 it('places a cash on delivery order and computes totals server-side', function () {
@@ -83,7 +84,7 @@ it('rejects a payment method that is not cod and not enabled in settings', funct
 });
 
 it('accepts a gateway payment method once it is enabled in settings', function () {
-    Setting::set('stripe_enabled', true);
+    PaymentGateway::create(['code' => 'stripe', 'name' => 'Stripe', 'is_enabled' => true]);
     $product = Product::factory()->published()->create(['price' => 200]);
 
     $this->postJson('/api/v1/orders', [
@@ -128,7 +129,7 @@ it('looks up an order by number and matching email', function () {
 });
 
 it('is blocked when the orders feature is disabled', function () {
-    Setting::set('feature_orders', false);
+    Feature::create(['key' => 'orders', 'label' => 'Orders & Reports', 'is_enabled' => false]);
 
     $this->postJson('/api/v1/orders', [])->assertNotFound();
 });

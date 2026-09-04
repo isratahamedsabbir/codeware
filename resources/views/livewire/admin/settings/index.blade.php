@@ -1,5 +1,5 @@
 <div>
-    {{-- Alpine tab switcher: General | Layout | Payments --}}
+    {{-- Alpine tab switcher: General | Layout | Currency | ... --}}
     <div x-data="{
         tab: localStorage.getItem('admin-settings-tab') || 'general',
         init() {
@@ -7,7 +7,7 @@
         }
     }">
 
-        {{-- Tab nav --}} 
+        {{-- Tab nav --}}
         <div class="flex gap-0 mb-6 border-b border-zinc-200 dark:border-zinc-700">
             <button type="button" @click="tab = 'general'"
                 :class="tab==='general'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
@@ -15,15 +15,9 @@
             <button type="button" @click="tab = 'layout'"
                 :class="tab==='layout'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="mx-4 rounded-none! py-3 text-sm -mb-px">Layout</button>
-            <button type="button" @click="tab = 'payments'"
-                :class="tab==='payments'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
-                class="mx-4 rounded-none! py-3 text-sm -mb-px">Payments</button>
             <button type="button" @click="tab = 'currency'"
                 :class="tab==='currency'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="mx-4 rounded-none! py-3 text-sm -mb-px">Currency</button>
-            <button type="button" @click="tab = 'seo'"
-                :class="tab==='seo'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
-                class="mx-4 rounded-none! py-3 text-sm -mb-px">SEO</button>
             <button type="button" @click="tab = 'theme'"
                 :class="tab==='theme'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="mx-4 rounded-none! py-3 text-sm -mb-px">Theme</button>
@@ -35,9 +29,6 @@
             <button type="button" @click="tab = 'env'"
                 :class="tab==='env'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="mx-4 rounded-none! py-3 text-sm -mb-px">Env</button>
-            <button type="button" @click="tab = 'social'"
-                :class="tab==='social'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
-                class="mx-4 rounded-none! py-3 text-sm -mb-px">Social</button>
             <button type="button" @click="tab = 'other'"
                 :class="tab==='other'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="mx-4 rounded-none! py-3 text-sm -mb-px">Other</button>
@@ -176,170 +167,6 @@
             </div>
         </div>
 
-        {{-- Payments tab --}}
-        <div x-show="tab === 'payments'" class="max-w-[1600px] space-y-6">
-            <flux:text class="text-zinc-500">
-                Enter your payment gateway credentials. Credentials are stored privately and never exposed via the public API.
-            </flux:text>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-            {{-- PayPal --}}
-            <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5">
-                <div class="flex items-center justify-between mb-4">
-                    <flux:heading size="sm">PayPal</flux:heading>
-                    <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
-                        <input type="checkbox" wire:model="settings.paypal_enabled" class="rounded border-zinc-300 text-primary" />
-                        Enable
-                    </label>
-                </div>
-                <div class="space-y-4">
-                    <flux:field>
-                        <flux:label>Mode</flux:label>
-                        <select wire:model="settings.paypal_mode"
-                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                            <option value="sandbox">Sandbox</option>
-                            <option value="live">Live</option>
-                        </select>
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Client ID</flux:label>
-                        <flux:input wire:model="settings.paypal_client_id" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Client Secret</flux:label>
-                        <flux:input type="password" wire:model="settings.paypal_client_secret" />
-                    </flux:field>
-                </div>
-            </div>
-
-            {{-- Stripe --}}
-            <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5">
-                <div class="flex items-center justify-between mb-4">
-                    <flux:heading size="sm">Stripe</flux:heading>
-                    <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
-                        <input type="checkbox" wire:model="settings.stripe_enabled" class="rounded border-zinc-300 text-primary" />
-                        Enable
-                    </label>
-                </div>
-                <div class="space-y-4">
-                    <flux:field>
-                        <flux:label>Mode</flux:label>
-                        <select wire:model="settings.stripe_mode"
-                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                            <option value="test">Test</option>
-                            <option value="live">Live</option>
-                        </select>
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Publishable Key</flux:label>
-                        <flux:input wire:model="settings.stripe_publishable_key" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Secret Key</flux:label>
-                        <flux:input type="password" wire:model="settings.stripe_secret_key" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Webhook Secret</flux:label>
-                        <flux:input type="password" wire:model="settings.stripe_webhook_secret" />
-                    </flux:field>
-                </div>
-            </div>
-
-            {{-- bKash --}}
-            <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5">
-                <div class="flex items-center justify-between mb-4">
-                    <flux:heading size="sm">bKash</flux:heading>
-                    <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
-                        <input type="checkbox" wire:model="settings.bkash_enabled" class="rounded border-zinc-300 text-primary" />
-                        Enable
-                    </label>
-                </div>
-                <div class="space-y-4">
-                    <flux:field>
-                        <flux:label>Mode</flux:label>
-                        <select wire:model="settings.bkash_mode"
-                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                            <option value="sandbox">Sandbox</option>
-                            <option value="live">Live</option>
-                        </select>
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Username</flux:label>
-                        <flux:input wire:model="settings.bkash_username" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Password</flux:label>
-                        <flux:input type="password" wire:model="settings.bkash_password" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>App Key</flux:label>
-                        <flux:input wire:model="settings.bkash_app_key" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>App Secret</flux:label>
-                        <flux:input type="password" wire:model="settings.bkash_app_secret" />
-                    </flux:field>
-                </div>
-            </div>
-
-            {{-- SSLCommerz --}}
-            <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5">
-                <div class="flex items-center justify-between mb-4">
-                    <flux:heading size="sm">SSLCommerz</flux:heading>
-                    <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
-                        <input type="checkbox" wire:model="settings.sslcommerz_enabled" class="rounded border-zinc-300 text-primary" />
-                        Enable
-                    </label>
-                </div>
-                <div class="space-y-4">
-                    <flux:field>
-                        <flux:label>Mode</flux:label>
-                        <select wire:model="settings.sslcommerz_mode"
-                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                            <option value="sandbox">Sandbox</option>
-                            <option value="live">Live</option>
-                        </select>
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Store ID</flux:label>
-                        <flux:input wire:model="settings.sslcommerz_store_id" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Store Password</flux:label>
-                        <flux:input type="password" wire:model="settings.sslcommerz_store_password" />
-                    </flux:field>
-                </div>
-            </div>
-
-            {{-- Apple Pay --}}
-            <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5">
-                <div class="flex items-center justify-between mb-4">
-                    <flux:heading size="sm">Apple Pay</flux:heading>
-                    <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
-                        <input type="checkbox" wire:model="settings.applepay_enabled" class="rounded border-zinc-300 text-primary" />
-                        Enable
-                    </label>
-                </div>
-                <div class="space-y-4">
-                    <flux:field>
-                        <flux:label>Merchant ID</flux:label>
-                        <flux:input wire:model="settings.applepay_merchant_id" placeholder="merchant.com.example" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Merchant Name</flux:label>
-                        <flux:input wire:model="settings.applepay_merchant_name" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Domain</flux:label>
-                        <flux:input wire:model="settings.applepay_domain" placeholder="example.com" />
-                    </flux:field>
-                </div>
-            </div>
-
-            </div>
-        </div>
-
         {{-- Currency tab --}}
         <div x-show="tab === 'currency'">
             <div class="max-w-[1600px] space-y-6">
@@ -386,111 +213,80 @@
             </div>
         </div>
 
-        {{-- SEO tab --}}
-        <div x-show="tab === 'seo'">
-            <div class="max-w-[1600px] space-y-6">
-                <flux:text class="text-zinc-500">
-                    Control search engine visibility and social sharing metadata for your site.
-                </flux:text>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-                {{-- Meta tags --}}
-                <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
-                    <flux:heading size="sm">Meta Tags</flux:heading>
-                    <flux:field>
-                        <flux:label>Meta Title</flux:label>
-                        <flux:input wire:model="settings.seo_meta_title"
-                            placeholder="Title shown in search engine results" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Meta Description</flux:label>
-                        <flux:textarea wire:model="settings.seo_meta_description" class="h-48"
-                            placeholder="Short summary shown in search engine results" />
-                    </flux:field>
-                </div>
-
-                {{-- Open Graph --}}
-                <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
-                    <flux:heading size="sm">Open Graph</flux:heading>
-                    <flux:text class="text-xs text-zinc-500 -mt-2">
-                        Used when your site is shared on social media (Facebook, WhatsApp, etc.).
-                    </flux:text>
-                    <flux:field>
-                        <flux:label>OG Title</flux:label>
-                        <flux:input wire:model="settings.seo_og_title"
-                            placeholder="Title shown when shared on social media" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>OG Description</flux:label>
-                        <flux:textarea wire:model="settings.seo_og_description" class="h-48"
-                            placeholder="Description shown when shared on social media" />
-                    </flux:field>
-                    <x-media-picker model="settings.seo_og_image" label="OG Image"
-                        placeholder="Select OG image from library" dropzone />
-                </div>
-
-                </div>
-
-                {{-- Canonical base links --}}
-                <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
-                    <flux:heading size="sm">Canonical Base Links</flux:heading>
-                    <flux:text class="text-xs text-zinc-500 -mt-2">
-                        Base URLs used to build canonical link tags. Add one for every domain your site is reachable on.
-                    </flux:text>
-                    <div class="space-y-3 max-w-2xl">
-                        @foreach ($canonicalUrls as $index => $url)
-                            <div class="flex items-center gap-2">
-                                <flux:input wire:model="canonicalUrls.{{ $index }}" placeholder="https://example.com"
-                                    class="flex-1" />
-                                <flux:button variant="subtle" square icon="trash"
-                                    wire:click="removeCanonicalUrl({{ $index }})" aria-label="Remove link" />
-                            </div>
-                        @endforeach
-                    </div>
-                    <flux:button variant="ghost" icon="plus" wire:click="addCanonicalUrl">
-                        Add Link
-                    </flux:button>
-                </div>
-            </div>
-        </div>
-
         {{-- Theme tab --}}
         <div x-show="tab === 'theme'">
-            <div class="max-w-[1600px] space-y-8">
+            <div class="max-w-[1600px] space-y-6">
 
-                {{-- Admin --}}
-                <div class="space-y-4">
-                    <div>
-                        <flux:heading size="sm" class="uppercase tracking-wide text-xs text-zinc-400">Admin</flux:heading>
-                        <flux:text class="text-zinc-500">
-                            Choose a light or dark theme for the admin panel and pick an accent color for buttons, links and menu highlights.
-                        </flux:text>
+                {{-- Frontend --}}
+                <div class="rounded-xl bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800/40 overflow-hidden">
+                    <div class="flex items-center gap-3 px-6 py-4 border-b border-zinc-100 dark:border-zinc-700">
+                        <div class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+                            <flux:icon.globe-alt class="size-5" />
+                        </div>
+                        <div>
+                            <flux:heading size="sm">Frontend</flux:heading>
+                            <flux:text class="text-xs text-zinc-500">
+                                Choose the design shown to visitors on the public site.
+                            </flux:text>
+                        </div>
                     </div>
 
-                    {{-- Preset theme --}}
-                    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
-                        <flux:heading size="sm">Preset Theme</flux:heading>
-                        <flux:field>
-                            <flux:label>Theme</flux:label>
-                            <select wire:change="applyThemePreset($event.target.value)"
+                    <div class="px-6 py-5">
+                        {{-- Site theme --}}
+                        <flux:field class="max-w-sm">
+                            <flux:label>Site Design</flux:label>
+                            <select wire:model="settings.site_theme"
                                 class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                                <option value="">Custom</option>
-                                @foreach (\App\Support\Theme::PRESETS as $preset)
-                                    <option value="{{ $preset['name'] }}" @selected(($settings['theme_name'] ?? '') === $preset['name'])>{{ $preset['name'] }}</option>
+                                @foreach (\App\Support\Themes::all() as $slug => $label)
+                                    <option value="{{ $slug }}">{{ $label }}</option>
                                 @endforeach
                             </select>
                             <flux:text class="text-xs text-zinc-500">
-                                Pick a ready-made color theme, or fine-tune mode, accent and name individually below.
+                                {{ __('The design shown at your site\'s homepage (:url).', ['url' => url('/')]) }}
                             </flux:text>
                         </flux:field>
                     </div>
+                </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {{-- Admin --}}
+                <div class="rounded-xl bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800/40 overflow-hidden">
+                    <div class="flex items-center gap-3 px-6 py-4 border-b border-zinc-100 dark:border-zinc-700">
+                        <div class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+                            <flux:icon.swatch class="size-5" />
+                        </div>
+                        <div>
+                            <flux:heading size="sm">Admin</flux:heading>
+                            <flux:text class="text-xs text-zinc-500">
+                                Choose a light or dark theme for the admin panel and pick an accent color for buttons, links and menu highlights.
+                            </flux:text>
+                        </div>
+                    </div>
+
+                    <div class="px-6 py-5 space-y-6 divide-y divide-zinc-100 dark:divide-zinc-700">
+
+                    {{-- Preset theme --}}
+                    <flux:field class="max-w-sm">
+                        <flux:label>Preset Theme</flux:label>
+                        <select wire:change="applyThemePreset($event.target.value)"
+                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                            <option value="">Custom</option>
+                            @foreach (\App\Support\Theme::PRESETS as $preset)
+                                <option value="{{ $preset['name'] }}" @selected(($settings['theme_name'] ?? '') === $preset['name'])>{{ $preset['name'] }}</option>
+                            @endforeach
+                        </select>
+                        <flux:text class="text-xs text-zinc-500">
+                            Pick a ready-made color theme, or fine-tune mode, accent and name individually below.
+                        </flux:text>
+                    </flux:field>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-6">
 
                     {{-- Theme mode --}}
-                    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
-                        <flux:heading size="sm">Theme Mode</flux:heading>
+                    <div class="space-y-3">
+                        <div>
+                            <flux:heading size="sm">Theme Mode</flux:heading>
+                            <flux:text class="text-xs text-zinc-500">Light or dark base for the admin UI.</flux:text>
+                        </div>
                         <div class="grid grid-cols-2 gap-3 max-w-sm">
                             <label class="cursor-pointer">
                                 <input type="radio" name="theme_mode" value="light" wire:model="settings.theme_mode" class="sr-only peer">
@@ -510,11 +306,11 @@
                     </div>
 
                     {{-- Accent color --}}
-                    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
-                        <flux:heading size="sm">Accent Color</flux:heading>
-                        <flux:text class="text-xs text-zinc-500 -mt-2">
-                            This becomes your custom theme's primary color.
-                        </flux:text>
+                    <div class="space-y-3 lg:border-l lg:border-zinc-100 dark:lg:border-zinc-700 lg:pl-8">
+                        <div>
+                            <flux:heading size="sm">Accent Color</flux:heading>
+                            <flux:text class="text-xs text-zinc-500">This becomes your custom theme's primary color.</flux:text>
+                        </div>
                         <div class="flex flex-wrap gap-2">
                             @foreach (['#1e7bc4', '#2563eb', '#7cc242', '#7c3aed', '#db2777', '#ea580c', '#dc2626', '#0d9488'] as $color)
                                 <button type="button" wire:click="$set('settings.theme_accent', '{{ $color }}')"
@@ -535,45 +331,15 @@
                     </div>
 
                     {{-- Theme name --}}
-                    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
-                        <flux:heading size="sm">Theme Name</flux:heading>
-                        <flux:text class="text-xs text-zinc-500 -mt-2">
-                            A friendly label for your custom theme.
-                        </flux:text>
+                    <div class="space-y-3 lg:border-l lg:border-zinc-100 dark:lg:border-zinc-700 lg:pl-8">
+                        <div>
+                            <flux:heading size="sm">Theme Name</flux:heading>
+                            <flux:text class="text-xs text-zinc-500">A friendly label for your custom theme.</flux:text>
+                        </div>
                         <flux:input wire:model="settings.theme_name" placeholder="e.g. Forest Green" />
                     </div>
 
                     </div>
-                </div>
-
-                {{-- Frontend --}}
-                <div class="space-y-4">
-                    <div>
-                        <flux:heading size="sm" class="uppercase tracking-wide text-xs text-zinc-400">Frontend</flux:heading>
-                        <flux:text class="text-zinc-500">
-                            Choose the design shown to visitors on the public site.
-                        </flux:text>
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-
-                    {{-- Site theme --}}
-                    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
-                        <flux:heading size="sm">Site Design</flux:heading>
-                        <flux:field>
-                            <flux:label>Theme</flux:label>
-                            <select wire:model="settings.site_theme"
-                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                                @foreach (\App\Support\Themes::all() as $slug => $label)
-                                    <option value="{{ $slug }}">{{ $label }}</option>
-                                @endforeach
-                            </select>
-                            <flux:text class="text-xs text-zinc-500">
-                                {{ __('The design shown at your site\'s homepage (:url).', ['url' => url('/')]) }}
-                            </flux:text>
-                        </flux:field>
-                    </div>
-
                     </div>
                 </div>
 
@@ -590,10 +356,9 @@
 
                     <div class="max-w-2xl rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 divide-y divide-zinc-100 dark:divide-zinc-800">
                         @foreach (\App\Support\Features::ALL as $key => $label)
-                            @php $settingKey = \App\Support\Features::settingKey($key); @endphp
                             <label class="flex items-center justify-between gap-4 px-5 py-4 cursor-pointer">
                                 <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __($label) }}</span>
-                                <input type="checkbox" wire:model="settings.{{ $settingKey }}"
+                                <input type="checkbox" wire:model="features.{{ $key }}"
                                     class="rounded border-zinc-300 text-primary" />
                             </label>
                         @endforeach
@@ -671,48 +436,6 @@
                 <flux:button variant="primary" wire:click="confirmSaveEnv" wire:loading.attr="disabled">
                     {{ __('Save Environment Settings') }}
                 </flux:button>
-            </div>
-        </div>
-
-        {{-- Social tab --}}
-        <div x-show="tab === 'social'">
-            <div class="max-w-[1600px] space-y-6">
-                <flux:text class="text-zinc-500">
-                    Social profile links for your site.
-                </flux:text>
-
-                <div class="max-w-md rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
-                    <flux:heading size="sm">Social Links</flux:heading>
-                    <flux:text class="text-xs text-zinc-500 -mt-2">
-                        Add links to your social media profiles. These appear across the site.
-                    </flux:text>
-                    @php
-                        $socials = [
-                            ['key' => 'facebook_url',    'label' => 'Facebook',     'color' => '#1877f2'],
-                            ['key' => 'twitter_url',     'label' => 'Twitter / X',  'color' => '#000000'],
-                            ['key' => 'instagram_url',   'label' => 'Instagram',    'color' => '#e4405f'],
-                            ['key' => 'youtube_url',     'label' => 'YouTube',      'color' => '#ff0000'],
-                            ['key' => 'linkedin_url',    'label' => 'LinkedIn',     'color' => '#0a66c2'],
-                            ['key' => 'tiktok_url',      'label' => 'TikTok',       'color' => '#000000'],
-                            ['key' => 'whatsapp_number', 'label' => 'WhatsApp',     'color' => '#25d366'],
-                        ];
-                    @endphp
-                    @foreach ($socials as $social)
-                        <flux:field>
-                            <flux:label>
-                                <span class="inline-flex items-center gap-2">
-                                    <span class="inline-flex size-5 items-center justify-center rounded-full text-[10px] font-bold text-white"
-                                        style="background-color: {{ $social['color'] }}">
-                                        {{ strtoupper(substr($social['label'], 0, 1)) }}
-                                    </span>
-                                    {{ $social['label'] }}
-                                </span>
-                            </flux:label>
-                            <flux:input wire:model="settings.{{ $social['key'] }}"
-                                placeholder="{{ $social['key'] === 'whatsapp_number' ? '+8801XXXXXXXXX' : 'https://' }}" />
-                        </flux:field>
-                    @endforeach
-                </div>
             </div>
         </div>
 

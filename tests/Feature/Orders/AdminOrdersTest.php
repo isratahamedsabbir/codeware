@@ -2,6 +2,7 @@
 
 use App\Livewire\Admin\Orders\Index as OrdersIndex;
 use App\Livewire\Admin\Orders\Show as OrdersShow;
+use App\Models\Feature;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -129,7 +130,7 @@ it('blocks staff from the orders and reports screens', function () {
 });
 
 it('is blocked when the orders feature is disabled', function () {
-    Setting::set('feature_orders', false);
+    Feature::create(['key' => 'orders', 'label' => 'Orders & Reports', 'is_enabled' => false]);
 
     $this->get(route('admin.orders'))->assertNotFound();
     $this->get(route('admin.coupons'))->assertNotFound();

@@ -11,15 +11,15 @@
         $siteIcon = \App\Models\Setting::get('site_icon_white') ?: \App\Models\Setting::get('site_icon');
         $contactEmail = \App\Models\Setting::get('contact_email');
         $socialIcons = [
-            'facebook_url' => 'FB',
-            'twitter_url' => 'X',
-            'instagram_url' => 'IG',
-            'youtube_url' => 'YT',
-            'linkedin_url' => 'IN',
-            'tiktok_url' => 'TT',
+            'facebook' => 'FB',
+            'twitter' => 'X',
+            'instagram' => 'IG',
+            'youtube' => 'YT',
+            'linkedin' => 'IN',
+            'tiktok' => 'TT',
         ];
         $socials = collect($socialIcons)
-            ->map(fn ($abbr, $key) => ['url' => \App\Models\Setting::get($key), 'abbr' => $abbr])
+            ->map(fn ($abbr, $platform) => ['url' => \App\Models\SocialLink::url($platform), 'abbr' => $abbr])
             ->filter(fn ($social) => filled($social['url']))
             ->values();
     @endphp

@@ -1,8 +1,8 @@
 <?php
 
 use App\Livewire\Admin\Settings\Index as SettingsIndex;
+use App\Models\Feature;
 use App\Models\MenuItem;
-use App\Models\Setting;
 use App\Models\User;
 use App\Support\Features;
 use Database\Seeders\AdminMenuSeeder;
@@ -14,23 +14,28 @@ beforeEach(function () {
     $this->actingAs($this->admin);
 });
 
-it('treats every feature as enabled by default when no setting row exists', function () {
-    expect(Setting::where('key', 'like', 'feature_%')->exists())->toBeFalse();
+function disableFeature(string $key): void
+{
+    Feature::updateOrCreate(['key' => $key], ['label' => Features::ALL[$key], 'is_enabled' => false]);
+}
+
+it('treats every feature as enabled by default when no feature row exists', function () {
+    expect(Feature::query()->exists())->toBeFalse();
 
     foreach (array_keys(Features::ALL) as $key) {
         expect(Features::enabled($key))->toBeTrue();
     }
 });
 
-it('disables a feature once its setting is turned off', function () {
-    Setting::set('feature_blog', false);
+it('disables a feature once its row is turned off', function () {
+    disableFeature('blog');
 
     expect(Features::enabled('blog'))->toBeFalse()
         ->and(Features::enabled('products'))->toBeTrue();
 });
 
 it('blocks the routes of a disabled feature with a 404, leaving other features reachable', function () {
-    Setting::set('feature_blog', false);
+    disableFeature('blog');
 
     $this->get(route('admin.posts'))->assertNotFound();
     $this->get(route('admin.post-categories'))->assertNotFound();
@@ -40,10 +45,10 @@ it('blocks the routes of a disabled feature with a 404, leaving other features r
 });
 
 it('blocks chat, pages, media library, and file manager routes when their feature is off', function () {
-    Setting::set('feature_chat', false);
-    Setting::set('feature_pages', false);
-    Setting::set('feature_media-library', false);
-    Setting::set('feature_file-manager', false);
+    disableFeature('chat');
+    disableFeature('pages');
+    disableFeature('media-library');
+    disableFeature('file-manager');
 
     $this->get(route('admin.chat'))->assertNotFound();
     $this->get(route('admin.pages'))->assertNotFound();
@@ -52,10 +57,10 @@ it('blocks chat, pages, media library, and file manager routes when their featur
 });
 
 it('blocks localization, menu, contacts, and email templates routes when their feature is off', function () {
-    Setting::set('feature_localization', false);
-    Setting::set('feature_menu', false);
-    Setting::set('feature_contacts', false);
-    Setting::set('feature_email-templates', false);
+    disableFeature('localization');
+    disableFeature('menu');
+    disableFeature('contacts');
+    disableFeature('email-templates');
 
     $this->get(route('admin.languages'))->assertNotFound();
     $this->get(route('admin.translations'))->assertNotFound();
@@ -73,7 +78,7 @@ it('hides a disabled feature\'s items from the live sidebar but shows them when 
 
     $this->get(route('admin.dashboard'))->assertOk()->assertSee('Products');
 
-    Setting::set('feature_products', false);
+    disableFeature('products');
 
     $this->get(route('admin.dashboard'))->assertOk()->assertDontSee('Product Categories');
 });
@@ -81,7 +86,7 @@ it('hides a disabled feature\'s items from the live sidebar but shows them when 
 it('excludes a disabled feature\'s items from MenuItem::menuForCurrentUser', function () {
     $this->seed(AdminMenuSeeder::class);
 
-    Setting::set('feature_chat', false);
+    disableFeature('chat');
 
     $labels = MenuItem::menuForCurrentUser()
         ->flatMap(fn ($item) => $item->is_group ? $item->children->pluck('label') : collect([$item->label]))
@@ -112,7 +117,7 @@ it('can toggle a feature off through the settings screen', function () {
     app()->instance('env', 'developer');
 
     Livewire::test(SettingsIndex::class)
-        ->set('settings.feature_chat', false)
+        ->set('features.chat', false)
         ->call('save');
 
     expect(Features::enabled('chat'))->toBeFalse();
@@ -120,18 +125,13 @@ it('can toggle a feature off through the settings screen', function () {
     $this->get(route('admin.chat'))->assertNotFound();
 });
 
-it('reflects a disabled feature as an unchecked checkbox on reload, not just a falsy setting', function () {
-    // Regression guard: Setting::value has no boolean cast, so a saved "0" is a
-    // PHP string. Left unconverted, wire:model sends that raw string to the
-    // browser, and JS's `Boolean("0")` is true (unlike PHP's), so the checkbox
-    // renders checked even though the feature is correctly disabled server-side.
+it('reflects a disabled feature as an unchecked checkbox on reload', function () {
     app()->instance('env', 'developer');
-    Setting::set('feature_chat', false);
+    disableFeature('chat');
 
     $component = Livewire::test(SettingsIndex::class);
 
-    expect($component->get('settings.feature_chat'))->toBeFalse()
-        ->and($component->get('settings.feature_chat'))->not->toBeString();
+    expect($component->get('features.chat'))->toBeFalse();
 });
 
 it('still enforces access-admin-system for a feature-gated route even when the feature is on', function () {

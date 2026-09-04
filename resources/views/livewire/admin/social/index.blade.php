@@ -1,0 +1,43 @@
+<div class="max-w-[1600px] space-y-6">
+    <flux:text class="text-zinc-500">
+        Social profile links for your site. These appear across the site (footer, contact sections, etc.).
+    </flux:text>
+
+    @php
+        $colors = [
+            'facebook' => '#1877f2',
+            'twitter' => '#000000',
+            'instagram' => '#e4405f',
+            'youtube' => '#ff0000',
+            'linkedin' => '#0a66c2',
+            'tiktok' => '#000000',
+            'whatsapp' => '#25d366',
+        ];
+    @endphp
+
+    <div class="max-w-md rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+        <flux:heading size="sm">Social Links</flux:heading>
+
+        @foreach ($links as $index => $link)
+            <flux:field>
+                <flux:label>
+                    <span class="inline-flex items-center gap-2">
+                        <span class="inline-flex size-5 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                            style="background-color: {{ $colors[$link['platform']] ?? '#71717a' }}">
+                            {{ strtoupper(substr($link['label'], 0, 1)) }}
+                        </span>
+                        {{ $link['label'] }}
+                    </span>
+                </flux:label>
+                <flux:input wire:model="links.{{ $index }}.url"
+                    placeholder="{{ $link['platform'] === 'whatsapp' ? '+8801XXXXXXXXX' : 'https://' }}" />
+            </flux:field>
+        @endforeach
+    </div>
+
+    <div>
+        <flux:button variant="primary" wire:click="save" wire:loading.attr="disabled">
+            Save Settings
+        </flux:button>
+    </div>
+</div>

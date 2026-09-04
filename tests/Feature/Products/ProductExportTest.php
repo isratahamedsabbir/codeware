@@ -1,8 +1,8 @@
 <?php
 
+use App\Models\Feature;
 use App\Models\Product;
 use App\Models\ProductCategory;
-use App\Models\Setting;
 use App\Models\User;
 
 beforeEach(function () {
@@ -57,7 +57,7 @@ it('includes the category name for products that have one', function () {
 });
 
 it('is blocked when the products feature is disabled', function () {
-    Setting::set('feature_products', false);
+    Feature::create(['key' => 'products', 'label' => 'Products', 'is_enabled' => false]);
 
     $this->get(route('admin.products.export'))->assertNotFound();
 });

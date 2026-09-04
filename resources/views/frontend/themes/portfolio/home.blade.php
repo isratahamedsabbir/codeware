@@ -13,15 +13,15 @@
         $contactEmail = \App\Models\Setting::get('contact_email');
         $contactAddress = \App\Models\Setting::get('contact_address');
         $socialIcons = [
-            'facebook_url' => ['abbr' => 'FB', 'label' => 'Facebook'],
-            'twitter_url' => ['abbr' => 'X', 'label' => 'Twitter'],
-            'instagram_url' => ['abbr' => 'IG', 'label' => 'Instagram'],
-            'youtube_url' => ['abbr' => 'YT', 'label' => 'YouTube'],
-            'linkedin_url' => ['abbr' => 'IN', 'label' => 'LinkedIn'],
-            'tiktok_url' => ['abbr' => 'TT', 'label' => 'TikTok'],
+            'facebook' => ['abbr' => 'FB', 'label' => 'Facebook'],
+            'twitter' => ['abbr' => 'X', 'label' => 'Twitter'],
+            'instagram' => ['abbr' => 'IG', 'label' => 'Instagram'],
+            'youtube' => ['abbr' => 'YT', 'label' => 'YouTube'],
+            'linkedin' => ['abbr' => 'IN', 'label' => 'LinkedIn'],
+            'tiktok' => ['abbr' => 'TT', 'label' => 'TikTok'],
         ];
         $socials = collect($socialIcons)
-            ->map(fn ($meta, $key) => ['url' => \App\Models\Setting::get($key), 'abbr' => $meta['abbr'], 'label' => $meta['label']])
+            ->map(fn ($meta, $platform) => ['url' => \App\Models\SocialLink::url($platform), 'abbr' => $meta['abbr'], 'label' => $meta['label']])
             ->filter(fn ($social) => filled($social['url']))
             ->values();
 

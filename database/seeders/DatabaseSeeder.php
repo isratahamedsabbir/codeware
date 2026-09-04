@@ -24,6 +24,9 @@ class DatabaseSeeder extends Seeder
         $this->call(AdminSeeder::class);
 
         $this->call(SettingsSeeder::class);
+        $this->call(SocialLinkSeeder::class);
+        $this->call(PaymentGatewaySeeder::class);
+        $this->call(FeatureSeeder::class);
         $this->call(LanguageSeeder::class);
         $this->call(AdminMenuSeeder::class);
         $this->call(ProductCategorySeeder::class);

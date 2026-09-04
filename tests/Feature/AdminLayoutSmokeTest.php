@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Database\Seeders\PaymentGatewaySeeder;
 
 test('admin layout renders header and footer', function () {
     $user = User::factory()->create(['is_admin' => true]);
@@ -25,17 +26,16 @@ test('admin subpage renders breadcrumb section', function () {
     $response->assertSee('Users');
 });
 
-test('settings page renders payments tab with gateway credentials', function () {
+test('payment gateways page renders gateway credentials', function () {
     $user = User::factory()->create(['is_admin' => true]);
     $this->actingAs($user);
+    $this->seed(PaymentGatewaySeeder::class);
 
-    $response = $this->get(route('admin.settings'));
+    $response = $this->get(route('admin.payment-gateways'));
     $response->assertOk();
-    $response->assertSee('Payments');
     $response->assertSee('PayPal');
     $response->assertSee('Stripe');
     $response->assertSee('bKash');
     $response->assertSee('SSLCommerz');
     $response->assertSee('Apple Pay');
 });
-

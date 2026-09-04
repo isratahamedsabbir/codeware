@@ -9,12 +9,12 @@
         $siteName = \App\Models\Setting::get('site_name', config('app.name'));
         $siteIcon = \App\Models\Setting::get('site_icon');
         $socials = collect([
-            'facebook_url' => 'Facebook',
-            'twitter_url' => 'Twitter / X',
-            'instagram_url' => 'Instagram',
-            'youtube_url' => 'YouTube',
-            'linkedin_url' => 'LinkedIn',
-        ])->map(fn ($label, $key) => ['url' => \App\Models\Setting::get($key), 'label' => $label])
+            'facebook' => 'Facebook',
+            'twitter' => 'Twitter / X',
+            'instagram' => 'Instagram',
+            'youtube' => 'YouTube',
+            'linkedin' => 'LinkedIn',
+        ])->map(fn ($label, $platform) => ['url' => \App\Models\SocialLink::url($platform), 'label' => $label])
           ->filter(fn ($social) => filled($social['url']));
     @endphp
 

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Settings;
 
+use App\Models\Feature;
 use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\EnvFile;
@@ -18,8 +19,8 @@ class Index extends Component
 
     public string $activeTab = 'general';
 
-    /** @var array<int, string> */
-    public array $canonicalUrls = [];
+    /** @var array<string, bool> */
+    public array $features = [];
 
     /** @var array<int, array{key: string, type: string, value: string}> */
     public array $constants = [];
@@ -30,7 +31,7 @@ class Index extends Component
     {
         $this->loadSettings();
         $this->loadEnv();
-        $this->loadCanonicalUrls();
+        $this->loadFeatures();
         $this->loadConstants();
         $this->maintenanceMode = app()->isDownForMaintenance();
     }
@@ -48,18 +49,6 @@ class Index extends Component
                 ? (bool) $setting->value
                 : ($setting->value ?? '');
         }
-
-        // Features default to enabled — only rows explicitly saved as off exist in
-        // the settings table, so a feature with no row yet still shows checked here.
-        // These aren't seeded with type=boolean (they're created on the fly by
-        // save()), so cast explicitly regardless of the stored type.
-        foreach (Features::ALL as $key => $label) {
-            $settingKey = Features::settingKey($key);
-
-            $this->settings[$settingKey] = array_key_exists($settingKey, $this->settings)
-                ? (bool) $this->settings[$settingKey]
-                : true;
-        }
     }
 
     protected function loadEnv(): void
@@ -73,27 +62,17 @@ class Index extends Component
         }
     }
 
-    protected function loadCanonicalUrls(): void
+    /**
+     * Features default to enabled — a key with no row yet in the `features`
+     * table (a feature added to Features::ALL after the table was last seeded)
+     * still shows checked here.
+     */
+    protected function loadFeatures(): void
     {
-        $this->canonicalUrls = json_decode(Setting::get('seo_canonical_urls', '[]') ?: '[]', true) ?: [];
+        $enabled = Feature::query()->pluck('is_enabled', 'key');
 
-        if (empty($this->canonicalUrls)) {
-            $this->canonicalUrls = [''];
-        }
-    }
-
-    public function addCanonicalUrl(): void
-    {
-        $this->canonicalUrls[] = '';
-    }
-
-    public function removeCanonicalUrl(int $index): void
-    {
-        unset($this->canonicalUrls[$index]);
-        $this->canonicalUrls = array_values($this->canonicalUrls);
-
-        if (empty($this->canonicalUrls)) {
-            $this->canonicalUrls = [''];
+        foreach (Features::ALL as $key => $label) {
+            $this->features[$key] = (bool) ($enabled[$key] ?? true);
         }
     }
 
@@ -272,8 +251,13 @@ class Index extends Component
             Setting::set($key, $value);
         }
 
-        $urls = array_values(array_filter($this->canonicalUrls, fn ($url) => trim($url) !== ''));
-        Setting::set('seo_canonical_urls', json_encode($urls));
+        foreach ($this->features as $key => $enabled) {
+            if (! array_key_exists($key, Features::ALL)) {
+                continue;
+            }
+
+            Feature::updateOrCreate(['key' => $key], ['label' => Features::ALL[$key], 'is_enabled' => $enabled]);
+        }
 
         $constants = collect($this->constants)->filter(fn ($pair) => filled($pair['key'] ?? null))->values()->all();
         Setting::set('constants', json_encode($constants));
@@ -307,7 +291,7 @@ class Index extends Component
             // panel's own theme_mode/theme_accent/theme_name — not here. 'other' is
             // hand-rendered in its own tab (colors + the Floating Button card) rather
             // than through this generic per-group loop.
-            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'payments', 'seo', 'theme', 'colors', 'currency', 'social', 'frontend', 'other'])
+            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'seo', 'theme', 'colors', 'currency', 'frontend', 'other'])
                 ->get()
                 ->groupBy('group')
                 ->sortBy(fn ($items, $group) => $groupOrder[$group] ?? count($groupOrder)),
