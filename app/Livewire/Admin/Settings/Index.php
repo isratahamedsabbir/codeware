@@ -278,8 +278,8 @@ class Index extends Component
         $groupOrder = ['general' => 0, 'pagination' => 1, 'images' => 2, 'localization' => 3];
 
         return view('livewire.admin.settings.index', [
-            // 'frontend' (site_theme) lives under the Theme tab, not here. 'other' is
-            // hand-rendered in its own tab (colors + the Floating Button card) rather
+            // 'frontend' (site_theme) and 'colors' live under the Theme tab, not here.
+            // 'other' is hand-rendered in its own tab (the Floating Button card) rather
             // than through this generic per-group loop.
             'groupedSettings' => Setting::whereNotIn('group', ['layout', 'seo', 'colors', 'currency', 'frontend', 'other'])
                 ->get()

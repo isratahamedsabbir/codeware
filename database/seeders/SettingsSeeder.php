@@ -82,14 +82,14 @@ class SettingsSeeder extends Seeder
             ],
             [
                 'key' => 'primary_color',
-                'value' => '#2563eb',
+                'value' => '#1e7bc4',
                 'type' => 'color',
                 'group' => 'colors',
                 'is_public' => true,
             ],
             [
                 'key' => 'secondary_color',
-                'value' => '#059669',
+                'value' => '#7cc242',
                 'type' => 'color',
                 'group' => 'colors',
                 'is_public' => true,
@@ -97,6 +97,13 @@ class SettingsSeeder extends Seeder
             [
                 'key' => 'tertiary_color',
                 'value' => '#d97706',
+                'type' => 'color',
+                'group' => 'colors',
+                'is_public' => true,
+            ],
+            [
+                'key' => 'button_color',
+                'value' => '#1e7bc4',
                 'type' => 'color',
                 'group' => 'colors',
                 'is_public' => true,

@@ -243,6 +243,38 @@
                     </div>
                 </div>
 
+                {{-- Backend --}}
+                <div class="rounded-xl bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800/40 overflow-hidden">
+                    <div class="flex items-center gap-3 px-6 py-4 border-b border-zinc-100 dark:border-zinc-700">
+                        <div class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+                            <flux:icon.swatch class="size-5" />
+                        </div>
+                        <div>
+                            <flux:heading size="sm">Backend</flux:heading>
+                            <flux:text class="text-xs text-zinc-500">
+                                Colors used across the admin panel, including buttons.
+                            </flux:text>
+                        </div>
+                    </div>
+
+                    <div class="px-6 py-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
+                            @foreach ($colorSettings as $setting)
+                                <flux:field>
+                                    <flux:label>{{ ucwords(str_replace('_', ' ', $setting->key)) }}</flux:label>
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg border border-zinc-300 shrink-0"
+                                             style="background-color: {{ $settings[$setting->key] ?? '#ffffff' }}"
+                                             x-data
+                                             :style="'background-color: ' + ($wire.settings['{{ $setting->key }}'] || '#ffffff')"></div>
+                                        <flux:input wire:model="settings.{{ $setting->key }}" placeholder="#000000" class="flex-1 font-mono" />
+                                    </div>
+                                </flux:field>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
 
@@ -349,25 +381,6 @@
         {{-- Other tab --}}
         <div x-show="tab === 'other'">
             <div class="max-w-[1600px] space-y-6">
-                <flux:text class="text-zinc-500">
-                    Brand colors for your site.
-                </flux:text>
-
-                <div class="max-w-md rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
-                    @foreach ($colorSettings as $setting)
-                        <flux:field>
-                            <flux:label>{{ ucwords(str_replace('_', ' ', $setting->key)) }}</flux:label>
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-lg border border-zinc-300 shrink-0"
-                                     style="background-color: {{ $settings[$setting->key] ?? '#ffffff' }}"
-                                     x-data
-                                     :style="'background-color: ' + ($wire.settings['{{ $setting->key }}'] || '#ffffff')"></div>
-                                <flux:input wire:model="settings.{{ $setting->key }}" placeholder="#000000" class="flex-1 font-mono" />
-                            </div>
-                        </flux:field>
-                    @endforeach
-                </div>
-
                 {{-- Floating action button --}}
                 <div class="max-w-md rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4" x-data>
                     <div class="flex items-center justify-between">

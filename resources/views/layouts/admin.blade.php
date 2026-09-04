@@ -15,6 +15,9 @@
     @php
         $siteIcon = \App\Models\Setting::get('site_icon');
         $favicon = \App\Models\Setting::get('favicon');
+        $adminPrimaryColor = \App\Models\Setting::get('primary_color', '#1e7bc4');
+        $adminSecondaryColor = \App\Models\Setting::get('secondary_color', '#7cc242');
+        $adminButtonColor = \App\Models\Setting::get('button_color', '#1e7bc4');
     @endphp
     @if ($favicon)
         <link rel="icon" href="{{ $favicon }}" sizes="any">
@@ -53,6 +56,16 @@
 
         [x-cloak] {
             display: none !important;
+        }
+
+        /* Admin brand colors — from Settings → Theme → Backend. Placed after the
+           compiled app.css, so this wins over both the light and .dark token
+           blocks there (equal specificity, later in source). */
+        :root {
+            --color-primary: {{ $adminPrimaryColor }};
+            --color-secondary: {{ $adminSecondaryColor }};
+            --color-accent: {{ $adminButtonColor }};
+            --color-accent-content: {{ $adminButtonColor }};
         }
     </style>
 </head>
