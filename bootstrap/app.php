@@ -4,6 +4,8 @@ use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\LogAdminActivity;
 use App\Http\Middleware\RequireFeature;
 use App\Http\Middleware\SetLocale;
+use App\Support\UnauthorizedAccessNotifier;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -39,5 +41,17 @@ return Application::configure(basePath: dirname(__DIR__))
         __DIR__.'/../app/Listeners',
     ])
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // AuthorizationException is silenced by Laravel's default $internalDontReport
+        // list (403s are "expected"), so stopIgnoring() it first or report() below
+        // would simply never run.
+        $exceptions->stopIgnoring(AuthorizationException::class);
+
+        $exceptions->report(function (AuthorizationException $e) {
+            if ($request = request()) {
+                UnauthorizedAccessNotifier::handle($e, $request);
+            }
+
+            // Still don't want these cluttering logs — just wanted the alert above.
+            return false;
+        });
     })->create();

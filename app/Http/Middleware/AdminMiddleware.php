@@ -11,9 +11,10 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->user() === null || Gate::denies('access-admin')) {
-            abort(403, 'Access denied.');
-        }
+        // Gate::authorize() (not denies()+abort()) so a denial throws the same
+        // AuthorizationException every other permission check in the app does —
+        // that's what UnauthorizedAccessNotifier listens for (see bootstrap/app.php).
+        Gate::authorize('access-admin');
 
         return $next($request);
     }
