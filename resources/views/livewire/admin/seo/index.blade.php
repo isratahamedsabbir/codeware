@@ -3,7 +3,7 @@
         Control search engine visibility and social sharing metadata for your site.
     </flux:text>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="space-y-4">
 
     {{-- Meta tags --}}
     <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
