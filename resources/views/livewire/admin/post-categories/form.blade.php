@@ -91,7 +91,7 @@
         {{-- ── SIDEBAR ── --}}
         <div class="w-[320px] shrink-0 space-y-4">
 
-            <livewire:admin.media-library.picker-modal />
+            <livewire:admin.media-library.picker-modal key="post-categories-form-picker-modal" />
 
             {{-- Footer --}}
             <div class="flex justify-end items-center gap-3 border-t border-zinc-100 flex-wrap">

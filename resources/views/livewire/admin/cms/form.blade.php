@@ -153,6 +153,6 @@
         </flux:button>
     </div>
 
-    <livewire:admin.media-library.picker-modal />
+    <livewire:admin.media-library.picker-modal key="cms-form-picker-modal" />
 
 </div>

@@ -132,7 +132,7 @@
                 </button>
             </div>
 
-            <livewire:admin.media-library.picker-modal />
+            <livewire:admin.media-library.picker-modal key="product-categories-form-picker-modal" />
 
         </div>
     </div>

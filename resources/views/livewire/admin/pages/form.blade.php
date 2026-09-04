@@ -1,4 +1,4 @@
-﻿<div class="max-w-[1600px] w-full mx-auto flex-1">
+<div class="max-w-[1600px] w-full mx-auto flex-1">
 
     @if ($pageId)
         @push('page-header-actions')
@@ -13,10 +13,7 @@
         {{-- ── MAIN ── --}}
         <div class="flex-1 min-w-0 space-y-4">
         <div class="bg-white rounded-lg shadow-sm p-6">
-
             <div x-data="{ locale: 'en' }">
-
-                {{-- Locale Tabs --}}
                 <div class="flex gap-2 mb-4">
                     <button type="button"
                         :class="locale === 'en' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'"
@@ -27,8 +24,6 @@
                         class="px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors"
                         @click="locale='bn'">বাং</button>
                 </div>
-
-                {{-- English --}}
                 <div x-show="locale==='en'" class="space-y-4">
                     <flux:field>
                         <flux:label>Title <span class="text-red-500 ml-0.5">*</span></flux:label>
@@ -50,8 +45,6 @@
                         <flux:error name="slug" />
                     </flux:field>
                 </div>
-
-                {{-- Bengali --}}
                 <div x-show="locale==='bn'" class="space-y-4">
                     <flux:field>
                         <flux:label>শিরোনাম <span class="text-red-500 ml-0.5">*</span></flux:label>
@@ -72,20 +65,14 @@
                         <flux:error name="slug" />
                     </flux:field>
                 </div>
-
             </div>
         </div>
 
-        {{-- ── SEO ── --}}
         <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
-
             <div class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
                 Search Engine (SEO) Settings
             </div>
-
             <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-x-7 gap-y-4">
-
-                {{-- Canonical URL --}}
                 <div class="lg:col-span-2 min-w-0">
                     <flux:field>
                         <flux:label>Canonical URL</flux:label>
@@ -106,8 +93,6 @@
                         <flux:error name="canonical_slug" />
                     </flux:field>
                 </div>
-
-                {{-- Left: meta fields --}}
                 <div class="space-y-4 min-w-0">
                     <flux:field>
                         <flux:label>Meta Title</flux:label>
@@ -116,8 +101,7 @@
                     </flux:field>
                     <flux:field>
                         <flux:label>Meta Description</flux:label>
-                        <flux:textarea wire:model="seo_description" class="h-48"
-                            placeholder="Brief description for search engines…" />
+                        <flux:textarea wire:model="seo_description" class="h-48" placeholder="Brief description for search engines…" />
                         <flux:error name="seo_description" />
                     </flux:field>
                     <flux:field>
@@ -127,20 +111,16 @@
                     </flux:field>
                     <flux:field>
                         <flux:label>OG Description</flux:label>
-                        <flux:textarea wire:model="og_description" class="h-48"
-                            placeholder="Description shown when shared on social media" />
+                        <flux:textarea wire:model="og_description" class="h-48" placeholder="Description shown when shared on social media" />
                         <flux:error name="og_description" />
                     </flux:field>
                 </div>
-
-                {{-- Right: OG image + robots toggles --}}
                 <div class="space-y-4 min-w-0">
                     <flux:field>
                         <flux:label>OG Image (1200×630)</flux:label>
                         <x-media-picker model="og_image" label="" placeholder="Select OG image from library"
                             :picker-id="$ogImagePickerId" dropzone />
                     </flux:field>
-
                     <div class="border-t border-zinc-100 pt-4 space-y-3">
                         <div class="flex items-center justify-between">
                             <div>
@@ -158,7 +138,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
 
@@ -244,11 +223,8 @@
 
         {{-- ── SIDEBAR ── --}}
         <div class="w-[320px] shrink-0 space-y-4">
-
-            {{-- Page Settings --}}
             <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
-                <div
-                    class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                <div class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
                     Page Settings
                 </div>
                 <div class="px-4 py-3">
@@ -259,7 +235,6 @@
                 </div>
             </div>
 
-            {{-- Footer --}}
             <div class="flex justify-end items-center gap-3 border-t border-zinc-100 flex-wrap pt-4 mt-5">
                 <button wire:click="save" wire:loading.attr="disabled" wire:target="save"
                     class="admin-btn-save inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
@@ -277,7 +252,7 @@
                 </button>
             </div>
 
-            <livewire:admin.media-library.picker-modal />
+            <livewire:admin.media-library.picker-modal key="pages-form-picker-modal" />
         </div>
     </div>
 

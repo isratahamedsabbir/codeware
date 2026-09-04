@@ -771,5 +771,5 @@
         </div>
     </flux:modal>
 
-    <livewire:admin.media-library.picker-modal />
+    <livewire:admin.media-library.picker-modal key="settings-picker-modal" />
 </div>

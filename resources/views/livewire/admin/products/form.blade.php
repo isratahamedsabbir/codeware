@@ -161,7 +161,7 @@
                 </div>
             </div>
 
-            <livewire:admin.media-library.picker-modal />
+            <livewire:admin.media-library.picker-modal key="products-form-picker-modal" />
 
     {{-- Footer --}}
     <div class="flex justify-end items-center gap-3 border-t border-zinc-100 flex-wrap mt-6">
