@@ -9,12 +9,12 @@
     <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
         <flux:heading size="sm">Meta Tags</flux:heading>
         <flux:field>
-            <flux:label>Meta Title</flux:label>
+            @include('partials.seo-char-counter', ['field' => 'seo_meta_title', 'max' => 60, 'label' => 'Meta Title'])
             <flux:input wire:model="settings.seo_meta_title"
                 placeholder="Title shown in search engine results" />
         </flux:field>
         <flux:field>
-            <flux:label>Meta Description</flux:label>
+            @include('partials.seo-char-counter', ['field' => 'seo_meta_description', 'max' => 160, 'label' => 'Meta Description'])
             <flux:textarea wire:model="settings.seo_meta_description" class="h-48"
                 placeholder="Short summary shown in search engine results" />
         </flux:field>
@@ -27,17 +27,49 @@
             Used when your site is shared on social media (Facebook, WhatsApp, etc.).
         </p>
         <flux:field>
-            <flux:label>OG Title</flux:label>
+            @include('partials.seo-char-counter', ['field' => 'seo_og_title', 'max' => 70, 'label' => 'OG Title'])
             <flux:input wire:model="settings.seo_og_title"
-                placeholder="Title shown when shared on social media" />
+                placeholder="Defaults to Meta Title if left blank" />
         </flux:field>
         <flux:field>
-            <flux:label>OG Description</flux:label>
+            @include('partials.seo-char-counter', ['field' => 'seo_og_description', 'max' => 200, 'label' => 'OG Description'])
             <flux:textarea wire:model="settings.seo_og_description" class="h-48"
-                placeholder="Description shown when shared on social media" />
+                placeholder="Defaults to Meta Description if left blank" />
         </flux:field>
         <x-media-picker model="settings.seo_og_image" label="OG Image"
-            placeholder="Select OG image from library" dropzone />
+            placeholder="Recommended size: 1200 × 630px" dropzone />
+    </div>
+
+    {{-- Twitter Card --}}
+    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
+        <flux:heading size="sm">Twitter Card</flux:heading>
+        <p class="mt-0.5 text-xs text-zinc-400">
+            Used when your site is shared on Twitter / X.
+        </p>
+        <flux:field>
+            <flux:label>Card Type</flux:label>
+            <select wire:model="settings.seo_twitter_card"
+                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                <option value="summary_large_image">Summary with large image</option>
+                <option value="summary">Summary</option>
+            </select>
+        </flux:field>
+        <flux:field>
+            <flux:label>Twitter @username</flux:label>
+            <flux:input wire:model="settings.seo_twitter_site" placeholder="@yoursite" />
+        </flux:field>
+        <flux:field>
+            @include('partials.seo-char-counter', ['field' => 'seo_twitter_title', 'max' => 70, 'label' => 'Twitter Title'])
+            <flux:input wire:model="settings.seo_twitter_title"
+                placeholder="Defaults to Meta Title if left blank" />
+        </flux:field>
+        <flux:field>
+            @include('partials.seo-char-counter', ['field' => 'seo_twitter_description', 'max' => 200, 'label' => 'Twitter Description'])
+            <flux:textarea wire:model="settings.seo_twitter_description" class="h-48"
+                placeholder="Defaults to Meta Description if left blank" />
+        </flux:field>
+        <x-media-picker model="settings.seo_twitter_image" label="Twitter Image"
+            placeholder="Recommended size: 1200 × 675px" dropzone />
     </div>
 
     </div>

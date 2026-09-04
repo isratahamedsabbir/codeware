@@ -57,6 +57,6 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.admin.seo.index')->layout('layouts.admin', ['title' => 'SEO']);
+        return view('livewire.admin.seo.index')->layout('layouts.admin', ['title' => 'Global SEO']);
     }
 }

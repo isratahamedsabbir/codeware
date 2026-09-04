@@ -40,7 +40,7 @@ class AdminMenuSeeder extends Seeder
 
         $this->group('Library & System', 6, [
             ['Settings', 'cog-6-tooth', 'admin.settings'],
-            ['SEO', 'magnifying-glass', 'admin.seo'],
+            ['Global SEO', 'magnifying-glass', 'admin.seo'],
             ['Social Links', 'share', 'admin.social'],
             ['Features', 'adjustments-horizontal', 'admin.features'],
             ['Media Library', 'photo', 'admin.media-library'],

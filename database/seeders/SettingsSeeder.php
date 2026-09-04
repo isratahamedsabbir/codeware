@@ -121,6 +121,11 @@ class SettingsSeeder extends Seeder
             ['key' => 'seo_og_title',             'value' => '', 'type' => 'string', 'group' => 'seo', 'is_public' => true],
             ['key' => 'seo_og_description',       'value' => '', 'type' => 'textarea', 'group' => 'seo', 'is_public' => true],
             ['key' => 'seo_og_image',             'value' => '', 'type' => 'string', 'group' => 'seo', 'is_public' => true],
+            ['key' => 'seo_twitter_card',          'value' => 'summary_large_image', 'type' => 'select', 'group' => 'seo', 'is_public' => true],
+            ['key' => 'seo_twitter_site',          'value' => '', 'type' => 'string', 'group' => 'seo', 'is_public' => true],
+            ['key' => 'seo_twitter_title',         'value' => '', 'type' => 'string', 'group' => 'seo', 'is_public' => true],
+            ['key' => 'seo_twitter_description',   'value' => '', 'type' => 'textarea', 'group' => 'seo', 'is_public' => true],
+            ['key' => 'seo_twitter_image',         'value' => '', 'type' => 'string', 'group' => 'seo', 'is_public' => true],
 
             // ── Localization ──
             ['key' => 'app_locale',               'value' => 'en', 'type' => 'string', 'group' => 'localization', 'is_public' => true],
