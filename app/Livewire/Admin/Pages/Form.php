@@ -85,7 +85,7 @@ class Form extends Component
     public string $autoCanonicalSlug = '';
 
     /** @var array<int, array{key: string, type: string, value: string}> */
-    public array $content = [];
+    public array $constant = [];
 
     public function mount(?int $id = null): void
     {
@@ -122,10 +122,7 @@ class Form extends Component
 
             // Older rows were saved with the since-removed single-line "text" type
             // (or no type at all) — fold both into textarea so they still render/edit correctly.
-            // Stored on the Page under the 'metadata' column/attribute (unchanged —
-            // Page already has an unrelated, actively-used 'content' field of its own),
-            // just surfaced here as "Content" since that's what this admin section is.
-            $this->content = collect($page->metadata ?? [])
+            $this->constant = collect($page->constant ?? [])
                 ->map(fn (array $pair) => [...$pair, 'type' => in_array($pair['type'] ?? null, ['textarea', 'file'], true) ? $pair['type'] : 'textarea'])
                 ->all();
 
@@ -191,29 +188,29 @@ class Form extends Component
         $this->slugAvailable = Slug::isAvailable($this->slug, $this->pageId);
     }
 
-    public function addContent(): void
+    public function addConstant(): void
     {
-        $this->content[] = ['key' => '', 'type' => 'textarea', 'value' => ''];
+        $this->constant[] = ['key' => '', 'type' => 'textarea', 'value' => ''];
     }
 
-    public function removeContent(int $index): void
+    public function removeConstant(int $index): void
     {
-        unset($this->content[$index]);
-        $this->content = array_values($this->content);
+        unset($this->constant[$index]);
+        $this->constant = array_values($this->constant);
     }
 
-    public function setContentType(int $index, string $type): void
+    public function setConstantType(int $index, string $type): void
     {
-        if (! array_key_exists($index, $this->content) || ! in_array($type, ['textarea', 'file'], true)) {
+        if (! array_key_exists($index, $this->constant) || ! in_array($type, ['textarea', 'file'], true)) {
             return;
         }
 
-        $this->content[$index]['type'] = $type;
+        $this->constant[$index]['type'] = $type;
     }
 
     public function updated(string $name, mixed $value): void
     {
-        if (preg_match('/^content\.\d+\.key$/', $name)) {
+        if (preg_match('/^constant\.\d+\.key$/', $name)) {
             $sanitized = preg_replace('/[^A-Za-z0-9_]/', '', preg_replace('/\s+/', '_', trim($value)));
 
             if ($sanitized !== $value) {
@@ -280,16 +277,16 @@ class Form extends Component
         $rules['slug'] = $entityTable
             ? ['required', 'string', 'max:255']
             : ['required', 'string', 'max:255', ...Slug::uniqueRules($this->pageId)];
-        $rules['content'] = ['array', function (string $attribute, mixed $value, \Closure $fail) {
+        $rules['constant'] = ['array', function (string $attribute, mixed $value, \Closure $fail) {
             $keys = collect($value)->pluck('key')->filter()->map(fn ($key) => strtolower(trim($key)));
 
             if ($keys->count() !== $keys->unique()->count()) {
-                $fail('Content keys must be unique.');
+                $fail('Constant keys must be unique.');
             }
         }];
-        $rules['content.*.key'] = ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9_]*$/'];
-        $rules['content.*.type'] = 'nullable|in:textarea,file';
-        $rules['content.*.value'] = 'nullable|string|max:1000';
+        $rules['constant.*.key'] = ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9_]*$/'];
+        $rules['constant.*.type'] = 'nullable|in:textarea,file';
+        $rules['constant.*.value'] = 'nullable|string|max:1000';
 
         $this->validate($rules);
 
@@ -307,8 +304,7 @@ class Form extends Component
             'no_follow' => $this->no_follow,
             'canonical_base' => $this->canonical_base ?: null,
             'canonical_slug' => $this->canonical_slug ?: null,
-            // Written to the Page's 'metadata' column — see the comment in mount().
-            'metadata' => collect($this->content)->filter(fn ($pair) => filled($pair['key'] ?? null))->values()->all(),
+            'constant' => collect($this->constant)->filter(fn ($pair) => filled($pair['key'] ?? null))->values()->all(),
         ];
 
         $creating = $this->pageId === null;
@@ -367,6 +363,6 @@ class Form extends Component
     public function render()
     {
         return view('livewire.admin.pages.form')
-            ->layout('layouts.admin', ['title' => $this->pageId ? 'Edit Page Content' : 'New Page']);
+            ->layout('layouts.admin', ['title' => $this->pageId ? 'Edit Page Constant' : 'New Page']);
     }
 }

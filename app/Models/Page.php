@@ -21,12 +21,12 @@ class Page extends Model
         'user_id', 'title', 'slug', 'content', 'description', 'puck_data', 'status',
         'template', 'type', 'product_id', 'post_id', 'category_id', 'sort_order', 'seo_title', 'seo_description',
         'og_image', 'og_title', 'og_description', 'no_index', 'no_follow',
-        'canonical_base', 'canonical_slug', 'metadata',
+        'canonical_base', 'canonical_slug', 'constant',
     ];
 
     protected $casts = [
         'puck_data' => 'array',
-        'metadata' => 'array',
+        'constant' => 'array',
         'no_index' => 'boolean',
         'no_follow' => 'boolean',
     ];
@@ -96,15 +96,15 @@ class Page extends Model
     }
 
     /**
-     * Metadata is stored as a list of {key, value} pairs (so the admin form can
+     * Constant is stored as a list of {key, value} pairs (so the admin form can
      * repeat/reorder/remove them like cards), but consumers want a
      * plain lookup map — this collapses it to key => value, skipping blank keys.
      *
      * @return array<string, string>
      */
-    public function metadataMap(): array
+    public function constantMap(): array
     {
-        return collect($this->metadata ?? [])
+        return collect($this->constant ?? [])
             ->filter(fn ($pair) => filled($pair['key'] ?? null))
             ->pluck('value', 'key')
             ->all();

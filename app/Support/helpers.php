@@ -36,14 +36,14 @@ if (! function_exists('cms_cards')) {
     }
 }
 
-if (! function_exists('page_content')) {
+if (! function_exists('page_constant')) {
     /**
-     * A single Content value from a Page's own Content editor (as opposed to
+     * A single Constant value from a Page's own Constant editor (as opposed to
      * a CMS section's — see cms_content()), looked up by page slug + key.
      */
-    function page_content(string $page, string $key): ?string
+    function page_constant(string $page, string $key): ?string
     {
-        return Page::where('slug', $page)->first()?->metadataMap()[$key] ?? null;
+        return Page::where('slug', $page)->first()?->constantMap()[$key] ?? null;
     }
 }
 

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unique(['page_id', 'name']);
             $table->unsignedInteger('sort_order')->default(0);
             $table->json('cards')->nullable();
-            $table->json('content')->nullable();
+            $table->json('constant')->nullable();
             $table->string('status', 20)->default('active');
             $table->softDeletes();
             $table->timestamps();

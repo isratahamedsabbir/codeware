@@ -5,47 +5,47 @@ use App\Models\Page;
 use App\Models\User;
 use Livewire\Livewire;
 
-it('switches content value field to file picker when File is clicked', function () {
+it('switches constant value field to file picker when File is clicked', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $page = Page::factory()->create();
 
     $this->actingAs($admin);
 
     Livewire::test(Form::class, ['id' => $page->id])
-        ->call('addContent')
-        ->assertSet('content.0.type', 'textarea')
-        ->assertDontSee('mp-content-0-value', false)
-        ->call('setContentType', 0, 'file')
-        ->assertSet('content.0.type', 'file')
-        ->assertSee('mp-content-0-value', false);
+        ->call('addConstant')
+        ->assertSet('constant.0.type', 'textarea')
+        ->assertDontSee('mp-constant-0-value', false)
+        ->call('setConstantType', 0, 'file')
+        ->assertSet('constant.0.type', 'file')
+        ->assertSee('mp-constant-0-value', false);
 });
 
-it('folds legacy single-line "text" metadata into textarea on load', function () {
+it('folds legacy single-line "text" constant into textarea on load', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $page = Page::factory()->create([
-        'metadata' => [['key' => 'title', 'type' => 'text', 'value' => 'Legacy value']],
+        'constant' => [['key' => 'title', 'type' => 'text', 'value' => 'Legacy value']],
     ]);
 
     $this->actingAs($admin);
 
     Livewire::test(Form::class, ['id' => $page->id])
-        ->assertSet('content.0.type', 'textarea')
-        ->assertSet('content.0.value', 'Legacy value');
+        ->assertSet('constant.0.type', 'textarea')
+        ->assertSet('constant.0.value', 'Legacy value');
 });
 
-it('still writes content back to the Page\'s metadata column on save', function () {
+it('writes constant back to the Page\'s constant column on save', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $page = Page::factory()->create();
 
     $this->actingAs($admin);
 
     Livewire::test(Form::class, ['id' => $page->id])
-        ->call('addContent')
-        ->set('content.0.key', 'og_type')
-        ->set('content.0.value', 'website')
+        ->call('addConstant')
+        ->set('constant.0.key', 'og_type')
+        ->set('constant.0.value', 'website')
         ->call('save');
 
-    expect($page->fresh()->metadata)->toBe([
+    expect($page->fresh()->constant)->toBe([
         ['key' => 'og_type', 'type' => 'textarea', 'value' => 'website'],
     ]);
 });

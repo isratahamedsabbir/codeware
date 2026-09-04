@@ -155,10 +155,10 @@
                             <td class="px-4 py-3.5">
                                 <div class="flex items-center justify-end gap-1.5">
 
-                                    {{-- Content --}}
+                                    {{-- Constant --}}
                                     <div class="relative group">
                                         <a href="{{ route('admin.pages.edit', $page->id) }}" wire:navigate
-                                            aria-label="Edit page content"
+                                            aria-label="Edit page constant"
                                             class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-primary text-primary hover:bg-primary hover:text-white hover:-translate-y-px"
                                             style="box-shadow:none"
                                             onmouseover="this.style.boxShadow='0 3px 8px rgba(99,102,241,.35)'"
@@ -171,7 +171,7 @@
                                         </a>
                                         <span
                                             class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[11px] font-medium bg-primary text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                            Content
+                                            Constant
                                             <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-primary"></span>
                                         </span>
                                     </div>
