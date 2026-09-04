@@ -304,8 +304,10 @@ class Index extends Component
 
         return view('livewire.admin.settings.index', [
             // 'frontend' (site_theme) lives under the Theme tab, alongside the admin
-            // panel's own theme_mode/theme_accent/theme_name — not here.
-            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'payments', 'seo', 'theme', 'colors', 'currency', 'social', 'frontend'])
+            // panel's own theme_mode/theme_accent/theme_name — not here. 'other' is
+            // hand-rendered in its own tab (colors + the Floating Button card) rather
+            // than through this generic per-group loop.
+            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'payments', 'seo', 'theme', 'colors', 'currency', 'social', 'frontend', 'other'])
                 ->get()
                 ->groupBy('group')
                 ->sortBy(fn ($items, $group) => $groupOrder[$group] ?? count($groupOrder)),

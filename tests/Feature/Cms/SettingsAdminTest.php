@@ -135,6 +135,15 @@ it('does not show colors settings in the general tab', function () {
         });
 });
 
+it('does not show the floating button (or any other "other"-group) setting in the general tab', function () {
+    Setting::factory()->create(['key' => 'floating_button_enabled', 'value' => '0', 'group' => 'other', 'type' => 'boolean']);
+
+    Livewire::test(SettingsIndex::class)
+        ->assertViewHas('groupedSettings', function ($groups) {
+            return ! $groups->has('other');
+        });
+});
+
 it('renders the other tab with color fields', function () {
     Setting::factory()->create(['key' => 'primary_color', 'value' => '#2563eb', 'group' => 'colors', 'type' => 'color']);
     Setting::factory()->create(['key' => 'secondary_color', 'value' => '#059669', 'group' => 'colors', 'type' => 'color']);
