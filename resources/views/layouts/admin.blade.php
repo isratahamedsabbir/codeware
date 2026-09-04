@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script>
+        if (localStorage.getItem('admin-theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
     <title>{{ ($title ?? 'Admin') . ' — ' . config('app.name') }}</title>
     @php
         $siteIcon = \App\Models\Setting::get('site_icon');
@@ -116,7 +121,7 @@
                 Object.values(this.groupItems).flat().some(l => l.toLowerCase().includes(q));
         },
         toggle(group) { this.openGroup = this.openGroup === group ? null : group }
-    }"> 
+    }">
         <flux:sidebar.toggle class="lg:hidden self-end m-2 text-zinc-400 hover:text-zinc-200" icon="x-mark" />
 
         {{-- Logo + search --}}
@@ -215,6 +220,15 @@
                 <x-admin-quick-menu />
 
                 <livewire:admin.locale-switcher />
+
+                <button type="button" x-data="{ dark: document.documentElement.classList.contains('dark') }"
+                    @click="dark = !dark; document.documentElement.classList.toggle('dark', dark); localStorage.setItem('admin-theme', dark ? 'dark' : 'light')"
+                    :title="dark ? '{{ __('Switch to light mode') }}' : '{{ __('Switch to dark mode') }}'"
+                    :aria-label="dark ? '{{ __('Switch to light mode') }}' : '{{ __('Switch to dark mode') }}'"
+                    class="inline-flex size-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100">
+                    <flux:icon.sun x-show="dark" x-cloak class="size-5" />
+                    <flux:icon.moon x-show="!dark" class="size-5" />
+                </button>
 
                 <button type="button" x-data="{ isFullscreen: false }"
                     x-init="isFullscreen = !!document.fullscreenElement; document.addEventListener('fullscreenchange', () => isFullscreen = !!document.fullscreenElement)"
