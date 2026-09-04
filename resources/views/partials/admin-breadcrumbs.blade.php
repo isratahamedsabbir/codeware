@@ -13,6 +13,7 @@
         'settings'           => ['Library & System', 'admin.settings'],
         'seo'                => ['Library & System', 'admin.seo'],
         'social'             => ['Library & System', 'admin.social'],
+        'features'           => ['Library & System', 'admin.features'],
         'email-templates'    => ['Library & System', 'admin.email-templates'],
         'history'            => ['Library & System', 'admin.history'],
         'payment-gateways'   => ['Sales', 'admin.orders'],

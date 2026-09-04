@@ -36,6 +36,7 @@ class MenuItem extends Model
         'admin.seo',
         'admin.social',
         'admin.payment-gateways',
+        'admin.features',
         'admin.email-templates',
         'admin.contacts',
         'admin.roles',
@@ -227,6 +228,14 @@ class MenuItem extends Model
         $gate = $this->requiredGate();
 
         if ($gate !== null && ! Gate::allows($gate)) {
+            return false;
+        }
+
+        // Feature toggles (Settings → Features) are a developer-only tool for turning
+        // whole modules on/off per deployment — the route itself 404s outside the
+        // developer environment (see Livewire\Admin\Features\Index::mount()), so hide
+        // its sidebar link there too rather than linking to a dead end.
+        if ($this->route_name === 'admin.features' && ! app()->environment('developer')) {
             return false;
         }
 

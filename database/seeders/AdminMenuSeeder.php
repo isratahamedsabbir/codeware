@@ -42,6 +42,7 @@ class AdminMenuSeeder extends Seeder
             ['Settings', 'cog-6-tooth', 'admin.settings'],
             ['SEO', 'magnifying-glass', 'admin.seo'],
             ['Social Links', 'share', 'admin.social'],
+            ['Features', 'adjustments-horizontal', 'admin.features'],
             ['Media Library', 'photo', 'admin.media-library'],
             ['File Manager', 'folder', 'admin.file-manager'],
             ['Email Templates', 'envelope', 'admin.email-templates'],

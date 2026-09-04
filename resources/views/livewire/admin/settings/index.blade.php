@@ -21,11 +21,6 @@
             <button type="button" @click="tab = 'theme'"
                 :class="tab==='theme'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="mx-4 rounded-none! py-3 text-sm -mb-px">Theme</button>
-            @if (app()->environment('developer'))
-                <button type="button" @click="tab = 'features'"
-                    :class="tab==='features'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
-                    class="mx-4 rounded-none! py-3 text-sm -mb-px">Features</button>
-            @endif
             <button type="button" @click="tab = 'env'"
                 :class="tab==='env'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="mx-4 rounded-none! py-3 text-sm -mb-px">Env</button>
@@ -345,27 +340,6 @@
 
             </div>
         </div>
-
-        {{-- Features tab — developer-only, see APP_ENV in the Env tab --}}
-        @if (app()->environment('developer'))
-            <div x-show="tab === 'features'">
-                <div class="max-w-[1600px] space-y-6">
-                    <flux:text class="text-zinc-500">
-                        {{ __('This admin panel is reused as a starting point across different projects — turn off anything this project doesn\'t need. Disabled features are hidden from the sidebar and their pages become unreachable.') }}
-                    </flux:text>
-
-                    <div class="max-w-2xl rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 divide-y divide-zinc-100 dark:divide-zinc-800">
-                        @foreach (\App\Support\Features::ALL as $key => $label)
-                            <label class="flex items-center justify-between gap-4 px-5 py-4 cursor-pointer">
-                                <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __($label) }}</span>
-                                <input type="checkbox" wire:model="features.{{ $key }}"
-                                    class="rounded border-zinc-300 text-primary" />
-                            </label>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-        @endif
 
         {{-- Env tab --}}
         <div x-show="tab === 'env'">

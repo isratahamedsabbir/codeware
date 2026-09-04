@@ -2,11 +2,9 @@
 
 namespace App\Livewire\Admin\Settings;
 
-use App\Models\Feature;
 use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\EnvFile;
-use App\Support\Features;
 use App\Support\Theme;
 use Illuminate\Support\Facades\Artisan;
 use Livewire\Component;
@@ -19,9 +17,6 @@ class Index extends Component
 
     public string $activeTab = 'general';
 
-    /** @var array<string, bool> */
-    public array $features = [];
-
     /** @var array<int, array{key: string, type: string, value: string}> */
     public array $constants = [];
 
@@ -31,7 +26,6 @@ class Index extends Component
     {
         $this->loadSettings();
         $this->loadEnv();
-        $this->loadFeatures();
         $this->loadConstants();
         $this->maintenanceMode = app()->isDownForMaintenance();
     }
@@ -59,20 +53,6 @@ class Index extends Component
             foreach (array_keys($fields) as $key) {
                 $this->env[$key] = $current[$key] ?? '';
             }
-        }
-    }
-
-    /**
-     * Features default to enabled — a key with no row yet in the `features`
-     * table (a feature added to Features::ALL after the table was last seeded)
-     * still shows checked here.
-     */
-    protected function loadFeatures(): void
-    {
-        $enabled = Feature::query()->pluck('is_enabled', 'key');
-
-        foreach (Features::ALL as $key => $label) {
-            $this->features[$key] = (bool) ($enabled[$key] ?? true);
         }
     }
 
@@ -249,14 +229,6 @@ class Index extends Component
 
         foreach ($this->settings as $key => $value) {
             Setting::set($key, $value);
-        }
-
-        foreach ($this->features as $key => $enabled) {
-            if (! array_key_exists($key, Features::ALL)) {
-                continue;
-            }
-
-            Feature::updateOrCreate(['key' => $key], ['label' => Features::ALL[$key], 'is_enabled' => $enabled]);
         }
 
         $constants = collect($this->constants)->filter(fn ($pair) => filled($pair['key'] ?? null))->values()->all();

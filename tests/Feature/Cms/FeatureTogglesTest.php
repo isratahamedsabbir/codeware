@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\Admin\Settings\Index as SettingsIndex;
+use App\Livewire\Admin\Features\Index as FeaturesIndex;
 use App\Models\Feature;
 use App\Models\MenuItem;
 use App\Models\User;
@@ -96,27 +96,39 @@ it('excludes a disabled feature\'s items from MenuItem::menuForCurrentUser', fun
         ->and($labels)->toContain('Products', 'Posts');
 });
 
-it('renders the features tab in settings, only in the developer environment', function () {
+it('renders the features screen, only in the developer environment', function () {
     app()->instance('env', 'developer');
 
-    Livewire::test(SettingsIndex::class)
+    Livewire::test(FeaturesIndex::class)
         ->assertSee('Blog (Posts, Categories, Tags)')
         ->assertSee('Chat')
         ->assertSee('File Manager');
 });
 
-it('hides the features tab outside the developer environment', function () {
+it('404s the features route outside the developer environment', function () {
     app()->instance('env', 'production');
 
-    Livewire::test(SettingsIndex::class)
-        ->assertDontSee('Blog (Posts, Categories, Tags)')
-        ->assertDontSee('File Manager');
+    $this->get(route('admin.features'))->assertNotFound();
 });
 
-it('can toggle a feature off through the settings screen', function () {
+it('hides the features link from the sidebar outside the developer environment', function () {
+    $this->seed(AdminMenuSeeder::class);
+    app()->instance('env', 'production');
+
+    $this->get(route('admin.dashboard'))->assertOk()->assertDontSee('Features');
+});
+
+it('shows the features link in the sidebar in the developer environment', function () {
+    $this->seed(AdminMenuSeeder::class);
     app()->instance('env', 'developer');
 
-    Livewire::test(SettingsIndex::class)
+    $this->get(route('admin.dashboard'))->assertOk()->assertSee('Features');
+});
+
+it('can toggle a feature off through its own admin screen', function () {
+    app()->instance('env', 'developer');
+
+    Livewire::test(FeaturesIndex::class)
         ->set('features.chat', false)
         ->call('save');
 
@@ -129,7 +141,7 @@ it('reflects a disabled feature as an unchecked checkbox on reload', function ()
     app()->instance('env', 'developer');
     disableFeature('chat');
 
-    $component = Livewire::test(SettingsIndex::class);
+    $component = Livewire::test(FeaturesIndex::class);
 
     expect($component->get('features.chat'))->toBeFalse();
 });
@@ -141,4 +153,14 @@ it('still enforces access-admin-system for a feature-gated route even when the f
     $staff->assignRole('staff');
 
     $this->actingAs($staff)->get(route('admin.menu'))->assertForbidden();
+});
+
+it('blocks staff from the features screen even in the developer environment', function () {
+    app()->instance('env', 'developer');
+    $this->seed(RolePermissionSeeder::class);
+
+    $staff = User::factory()->create(['is_admin' => false]);
+    $staff->assignRole('staff');
+
+    $this->actingAs($staff)->get(route('admin.features'))->assertForbidden();
 });

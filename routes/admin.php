@@ -65,6 +65,7 @@ Route::middleware('can:access-admin-system')->group(function () {
     Route::get('/seo', App\Livewire\Admin\Seo\Index::class)->name('seo');
     Route::get('/social', App\Livewire\Admin\Social\Index::class)->name('social');
     Route::get('/payment-gateways', App\Livewire\Admin\PaymentGateways\Index::class)->name('payment-gateways');
+    Route::get('/features', App\Livewire\Admin\Features\Index::class)->name('features');
 
     Route::middleware('feature:email-templates')->group(function () {
         Route::get('/email-templates', App\Livewire\Admin\EmailTemplates\Index::class)->name('email-templates');
