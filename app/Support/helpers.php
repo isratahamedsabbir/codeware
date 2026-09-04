@@ -39,7 +39,7 @@ if (! function_exists('cms_cards')) {
 if (! function_exists('page_constant')) {
     /**
      * A single Constant value from a Page's own Constant editor (as opposed to
-     * a CMS section's — see cms_content()), looked up by page slug + key.
+     * a CMS section's — see cms_constant()), looked up by page slug + key.
      */
     function page_constant(string $page, string $key): ?string
     {
@@ -47,12 +47,12 @@ if (! function_exists('page_constant')) {
     }
 }
 
-if (! function_exists('cms_content')) {
+if (! function_exists('cms_constant')) {
     /**
-     * A single Content value from a CMS section, looked up by page slug +
-     * section Name + Content key.
+     * A single Constant value from a CMS section, looked up by page slug +
+     * section Name + Constant key.
      */
-    function cms_content(string $page, string $name, string $key): ?string
+    function cms_constant(string $page, string $name, string $key): ?string
     {
         $pageId = Page::where('slug', $page)->value('id');
 
@@ -60,6 +60,6 @@ if (! function_exists('cms_content')) {
             return null;
         }
 
-        return CmsSection::cachedForPage($pageId)->firstWhere('name', $name)?->contentMap()[$key] ?? null;
+        return CmsSection::cachedForPage($pageId)->firstWhere('name', $name)?->constantMap()[$key] ?? null;
     }
 }

@@ -7,7 +7,7 @@
     {
       "name": "main_card",
       "cards": [],
-      "content": [
+      "constant": [
         { "key": "title", "type": "textarea", "value": "Log in to your account" },
         { "key": "sub_title", "type": "textarea", "value": "Enter your email and password below to log in" }
       ]

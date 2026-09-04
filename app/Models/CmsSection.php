@@ -21,7 +21,7 @@ class CmsSection extends Model
         'name',
         'sort_order',
         'cards',
-        'content',
+        'constant',
         'status',
     ];
 
@@ -29,7 +29,7 @@ class CmsSection extends Model
     {
         return [
             'cards' => 'array',
-            'content' => 'array',
+            'constant' => 'array',
         ];
     }
 
@@ -78,15 +78,15 @@ class CmsSection extends Model
     }
 
     /**
-     * Content is stored as a list of {key, value} pairs (so the admin form can
+     * Constant is stored as a list of {key, value} pairs (so the admin form can
      * repeat/reorder/remove them like cards), but consumers want a
      * plain lookup map — this collapses it to key => value, skipping blank keys.
      *
      * @return array<string, string>
      */
-    public function contentMap(): array
+    public function constantMap(): array
     {
-        return collect($this->content ?? [])
+        return collect($this->constant ?? [])
             ->filter(fn ($pair) => filled($pair['key'] ?? null))
             ->pluck('value', 'key')
             ->all();
@@ -109,9 +109,9 @@ class CmsSection extends Model
      * flushCache() invalidates both on every write. Caches the *raw* attribute
      * form (getAttributes(), not toArray()) and re-hydrates into real models
      * on read, so callers still get full CmsSection instances with casts and
-     * methods like localizedCards()/contentMap() intact — never cache
+     * methods like localizedCards()/constantMap() intact — never cache
      * Eloquent objects/collections directly, and never toArray(): that
-     * decodes the 'cards'/'content' JSON casts into plain arrays, which then
+     * decodes the 'cards'/'constant' JSON casts into plain arrays, which then
      * blow up when hydrate() re-applies the same cast on read (double-decoding
      * a PHP array instead of the JSON string it expects).
      *

@@ -47,9 +47,9 @@ it('creates a cms section with a name and cards', function () {
         ->set('cards.0.image', '/storage/media/card.jpg')
         ->set('cards.0.title', 'Fast')
         ->set('cards.0.description', 'Blazing fast delivery')
-        ->call('addContent')
-        ->set('content.0.key', 'og type')
-        ->set('content.0.value', 'website')
+        ->call('addConstant')
+        ->set('constant.0.key', 'og type')
+        ->set('constant.0.value', 'website')
         ->call('save');
 
     $cms = CmsSection::where('page_id', $page->id)->where('name', 'hero')->sole();
@@ -57,134 +57,134 @@ it('creates a cms section with a name and cards', function () {
     expect($cms->cards[0]['title'])->toBe('Fast')
         ->and($cms->cards[0]['description'])->toBe('Blazing fast delivery')
         ->and($cms->cards[0]['image'])->toBe('/storage/media/card.jpg')
-        ->and($cms->content[0]['key'])->toBe('og_type')
-        ->and($cms->content[0]['value'])->toBe('website');
+        ->and($cms->constant[0]['key'])->toBe('og_type')
+        ->and($cms->constant[0]['value'])->toBe('website');
 });
 
-it('can add and remove multiple content fields before saving', function () {
+it('can add and remove multiple constant fields before saving', function () {
     $page = Page::factory()->create();
 
     Livewire::test(CmsForm::class, ['pageId' => $page->id])
-        ->call('addContent')
-        ->call('addContent')
-        ->set('content.0.key', 'first')
-        ->set('content.0.value', '1')
-        ->set('content.1.key', 'second')
-        ->set('content.1.value', '2')
-        ->call('removeContent', 0)
-        ->assertSet('content.0.key', 'second');
+        ->call('addConstant')
+        ->call('addConstant')
+        ->set('constant.0.key', 'first')
+        ->set('constant.0.value', '1')
+        ->set('constant.1.key', 'second')
+        ->set('constant.1.value', '2')
+        ->call('removeConstant', 0)
+        ->assertSet('constant.0.key', 'second');
 });
 
-it('drops blank content rows when saving, but keeps filled ones', function () {
+it('drops blank constant rows when saving, but keeps filled ones', function () {
     $page = Page::factory()->create();
 
     Livewire::test(CmsForm::class, ['pageId' => $page->id])
         ->set('name', 'hero')
-        ->call('addContent')
-        ->call('addContent')
-        ->set('content.0.key', 'og type')
-        ->set('content.0.value', 'website')
-        ->set('content.1.key', '')
-        ->set('content.1.value', '')
+        ->call('addConstant')
+        ->call('addConstant')
+        ->set('constant.0.key', 'og type')
+        ->set('constant.0.value', 'website')
+        ->set('constant.1.key', '')
+        ->set('constant.1.value', '')
         ->call('save');
 
     $cms = CmsSection::where('page_id', $page->id)->where('name', 'hero')->sole();
 
-    expect($cms->content)->toHaveCount(1)
-        ->and($cms->content[0]['key'])->toBe('og_type');
+    expect($cms->constant)->toHaveCount(1)
+        ->and($cms->constant[0]['key'])->toBe('og_type');
 });
 
-it('rejects duplicate content keys', function () {
+it('rejects duplicate constant keys', function () {
     $page = Page::factory()->create();
 
     Livewire::test(CmsForm::class, ['pageId' => $page->id])
         ->set('name', 'hero')
-        ->call('addContent')
-        ->call('addContent')
-        ->set('content.0.key', 'og:type')
-        ->set('content.0.value', 'website')
-        ->set('content.1.key', 'og:type')
-        ->set('content.1.value', 'article')
+        ->call('addConstant')
+        ->call('addConstant')
+        ->set('constant.0.key', 'og:type')
+        ->set('constant.0.value', 'website')
+        ->set('constant.1.key', 'og:type')
+        ->set('constant.1.value', 'article')
         ->call('save')
-        ->assertHasErrors(['content']);
+        ->assertHasErrors(['constant']);
 });
 
-it('loads existing content for editing', function () {
+it('loads existing constant for editing', function () {
     $page = Page::factory()->create();
     $cms = CmsSection::factory()->create([
         'page_id' => $page->id,
         'name' => 'hero',
-        'content' => [['key' => 'og:type', 'value' => 'website']],
+        'constant' => [['key' => 'og:type', 'value' => 'website']],
     ]);
 
     Livewire::test(CmsForm::class, ['pageId' => $page->id, 'id' => $cms->id])
-        ->assertSet('content.0.key', 'og:type')
-        ->assertSet('content.0.value', 'website');
+        ->assertSet('constant.0.key', 'og:type')
+        ->assertSet('constant.0.value', 'website');
 });
 
-it('defaults a new content field to the textarea type', function () {
+it('defaults a new constant field to the textarea type', function () {
     $page = Page::factory()->create();
 
     Livewire::test(CmsForm::class, ['pageId' => $page->id])
-        ->call('addContent')
-        ->assertSet('content.0.type', 'textarea');
+        ->call('addConstant')
+        ->assertSet('constant.0.type', 'textarea');
 });
 
-it('folds an older content row saved without a type (or the removed "text" type) into textarea', function () {
+it('folds an older constant row saved without a type (or the removed "text" type) into textarea', function () {
     $page = Page::factory()->create();
     $cms = CmsSection::factory()->create([
         'page_id' => $page->id,
-        'content' => [['key' => 'og:type', 'value' => 'website']],
+        'constant' => [['key' => 'og:type', 'value' => 'website']],
     ]);
 
     Livewire::test(CmsForm::class, ['pageId' => $page->id, 'id' => $cms->id])
-        ->assertSet('content.0.type', 'textarea');
+        ->assertSet('constant.0.type', 'textarea');
 });
 
-it('can save a content field as a textarea value', function () {
+it('can save a constant field as a textarea value', function () {
     $page = Page::factory()->create();
 
     Livewire::test(CmsForm::class, ['pageId' => $page->id])
         ->set('name', 'hero')
-        ->call('addContent')
-        ->set('content.0.key', 'long_note')
-        ->set('content.0.type', 'textarea')
-        ->set('content.0.value', "Line one\nLine two")
+        ->call('addConstant')
+        ->set('constant.0.key', 'long_note')
+        ->set('constant.0.type', 'textarea')
+        ->set('constant.0.value', "Line one\nLine two")
         ->call('save');
 
     $cms = CmsSection::where('page_id', $page->id)->where('name', 'hero')->sole();
 
-    expect($cms->content[0]['type'])->toBe('textarea')
-        ->and($cms->content[0]['value'])->toBe("Line one\nLine two");
+    expect($cms->constant[0]['type'])->toBe('textarea')
+        ->and($cms->constant[0]['value'])->toBe("Line one\nLine two");
 });
 
-it('can save a content field as a file value', function () {
+it('can save a constant field as a file value', function () {
     $page = Page::factory()->create();
 
     Livewire::test(CmsForm::class, ['pageId' => $page->id])
         ->set('name', 'hero')
-        ->call('addContent')
-        ->set('content.0.key', 'brochure')
-        ->set('content.0.type', 'file')
-        ->set('content.0.value', '/storage/media/brochure.pdf')
+        ->call('addConstant')
+        ->set('constant.0.key', 'brochure')
+        ->set('constant.0.type', 'file')
+        ->set('constant.0.value', '/storage/media/brochure.pdf')
         ->call('save');
 
     $cms = CmsSection::where('page_id', $page->id)->where('name', 'hero')->sole();
 
-    expect($cms->content[0]['type'])->toBe('file')
-        ->and($cms->content[0]['value'])->toBe('/storage/media/brochure.pdf');
+    expect($cms->constant[0]['type'])->toBe('file')
+        ->and($cms->constant[0]['value'])->toBe('/storage/media/brochure.pdf');
 });
 
-it('rejects an unknown content value type', function () {
+it('rejects an unknown constant value type', function () {
     $page = Page::factory()->create();
 
     Livewire::test(CmsForm::class, ['pageId' => $page->id])
-        ->call('addContent')
-        ->set('content.0.key', 'k')
-        ->set('content.0.type', 'not-a-real-type')
-        ->set('content.0.value', 'v')
+        ->call('addConstant')
+        ->set('constant.0.key', 'k')
+        ->set('constant.0.type', 'not-a-real-type')
+        ->set('constant.0.value', 'v')
         ->call('save')
-        ->assertHasErrors(['content.0.type']);
+        ->assertHasErrors(['constant.0.type']);
 });
 
 it('validates name is required', function () {

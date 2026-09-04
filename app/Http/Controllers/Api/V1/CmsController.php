@@ -15,7 +15,7 @@ class CmsController extends Controller
      * GET /api/v1/cms?page=home&name=hero      -> just that one named section
      *
      * Reads from CmsSection::cachedForPage() — the same Redis-cached (tag
-     * 'cms', kept forever) lookup the admin's cms_cards()/cms_content()
+     * 'cms', kept forever) lookup the admin's cms_cards()/cms_constant()
      * helpers use, so there's one cache to invalidate (CmsSection::flushCache(),
      * fired on every create/update/delete/status change) instead of two.
      */
@@ -59,7 +59,7 @@ class CmsController extends Controller
                 'title' => $card['title'] ?? null,
                 'description' => $card['description'] ?? null,
             ])->values(),
-            'content' => $cms->contentMap(),
+            'constant' => $cms->constantMap(),
         ];
     }
 }

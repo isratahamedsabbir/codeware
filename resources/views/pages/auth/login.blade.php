@@ -4,8 +4,8 @@
 <x-layouts::auth :title="$loginPage?->seo_title ?: __('Log in')" :description="$loginPage?->seo_description">
     <div class="flex flex-col gap-5 w-full">
         <x-auth-header
-            :title="cms_content('login', 'main_card', 'title') ?: __('Log in to your account')"
-            :description="cms_content('login', 'main_card', 'sub_title') ?: __('Enter your email and password below to log in')" />
+            :title="cms_constant('login', 'main_card', 'title') ?: __('Log in to your account')"
+            :description="cms_constant('login', 'main_card', 'sub_title') ?: __('Enter your email and password below to log in')" />
 
         {{-- Session Status --}}
         <x-auth-session-status class="text-center" :status="session('status')" />

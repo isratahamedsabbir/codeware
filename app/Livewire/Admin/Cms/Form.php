@@ -20,7 +20,7 @@ class Form extends Component
     public array $cards = [];
 
     /** @var array<int, array{key: string, type: string, value: string}> */
-    public array $content = [];
+    public array $constant = [];
 
     public function mount(int $pageId, ?int $id = null): void
     {
@@ -33,7 +33,7 @@ class Form extends Component
             $this->cards = $cms->cards ?? [];
             // Older rows were saved with the since-removed single-line "text" type
             // (or no type at all) — fold both into textarea so they still render/edit correctly.
-            $this->content = collect($cms->content ?? [])
+            $this->constant = collect($cms->constant ?? [])
                 ->map(fn (array $pair) => [...$pair, 'type' => in_array($pair['type'] ?? null, ['textarea', 'file'], true) ? $pair['type'] : 'textarea'])
                 ->all();
         }
@@ -50,29 +50,29 @@ class Form extends Component
         $this->cards = array_values($this->cards);
     }
 
-    public function addContent(): void
+    public function addConstant(): void
     {
-        $this->content[] = ['key' => '', 'type' => 'textarea', 'value' => ''];
+        $this->constant[] = ['key' => '', 'type' => 'textarea', 'value' => ''];
     }
 
-    public function removeContent(int $index): void
+    public function removeConstant(int $index): void
     {
-        unset($this->content[$index]);
-        $this->content = array_values($this->content);
+        unset($this->constant[$index]);
+        $this->constant = array_values($this->constant);
     }
 
-    public function setContentType(int $index, string $type): void
+    public function setConstantType(int $index, string $type): void
     {
-        if (! array_key_exists($index, $this->content) || ! in_array($type, ['textarea', 'file'], true)) {
+        if (! array_key_exists($index, $this->constant) || ! in_array($type, ['textarea', 'file'], true)) {
             return;
         }
 
-        $this->content[$index]['type'] = $type;
+        $this->constant[$index]['type'] = $type;
     }
 
     public function updated(string $name, mixed $value): void
     {
-        if ($name === 'name' || preg_match('/^content\.\d+\.key$/', $name)) {
+        if ($name === 'name' || preg_match('/^constant\.\d+\.key$/', $name)) {
             $sanitized = preg_replace('/[^A-Za-z0-9_]/', '', preg_replace('/\s+/', '_', trim($value)));
 
             if ($sanitized !== $value) {
@@ -95,16 +95,16 @@ class Form extends Component
             'cards.*.image' => 'nullable|string',
             'cards.*.title' => 'nullable|string|max:255',
             'cards.*.description' => 'nullable|string',
-            'content' => ['array', function (string $attribute, mixed $value, \Closure $fail) {
+            'constant' => ['array', function (string $attribute, mixed $value, \Closure $fail) {
                 $keys = collect($value)->pluck('key')->filter()->map(fn ($key) => strtolower(trim($key)));
 
                 if ($keys->count() !== $keys->unique()->count()) {
-                    $fail('Content keys must be unique.');
+                    $fail('Constant keys must be unique.');
                 }
             }],
-            'content.*.key' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9_]*$/'],
-            'content.*.type' => 'nullable|in:textarea,file',
-            'content.*.value' => 'nullable|string|max:1000',
+            'constant.*.key' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9_]*$/'],
+            'constant.*.type' => 'nullable|in:textarea,file',
+            'constant.*.value' => 'nullable|string|max:1000',
         ];
     }
 
@@ -116,7 +116,7 @@ class Form extends Component
             'page_id' => $this->pageId,
             'name' => $this->name,
             'cards' => array_values($this->cards),
-            'content' => collect($this->content)->filter(fn ($pair) => filled($pair['key'] ?? null))->values()->all(),
+            'constant' => collect($this->constant)->filter(fn ($pair) => filled($pair['key'] ?? null))->values()->all(),
         ];
 
         $creating = $this->cmsId === null;
