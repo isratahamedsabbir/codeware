@@ -5,7 +5,6 @@ namespace App\Livewire\Admin\Settings;
 use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\EnvFile;
-use App\Support\Theme;
 use Illuminate\Support\Facades\Artisan;
 use Livewire\Component;
 
@@ -236,19 +235,6 @@ class Index extends Component
         }
     }
 
-    public function applyThemePreset(string $name): void
-    {
-        $preset = collect(Theme::PRESETS)->firstWhere('name', $name);
-
-        if (! $preset) {
-            return;
-        }
-
-        $this->settings['theme_mode'] = $preset['mode'];
-        $this->settings['theme_accent'] = $preset['accent'];
-        $this->settings['theme_name'] = $preset['name'];
-    }
-
     public function save(): void
     {
         $this->validate([
@@ -271,10 +257,6 @@ class Index extends Component
         $constants = collect($this->constants)->filter(fn ($pair) => filled($pair['key'] ?? null))->values()->all();
         Setting::set('constants', json_encode($constants));
 
-        if (array_key_exists('theme_mode', $this->settings) || array_key_exists('theme_accent', $this->settings)) {
-            $this->dispatch('admin-theme-changed', mode: $this->settings['theme_mode'] ?? Theme::mode(), accent: $this->settings['theme_accent'] ?? Theme::accent());
-        }
-
         $this->dispatch('notify', message: 'Settings saved.');
     }
 
@@ -296,11 +278,10 @@ class Index extends Component
         $groupOrder = ['general' => 0, 'pagination' => 1, 'images' => 2, 'localization' => 3];
 
         return view('livewire.admin.settings.index', [
-            // 'frontend' (site_theme) lives under the Theme tab, alongside the admin
-            // panel's own theme_mode/theme_accent/theme_name — not here. 'other' is
+            // 'frontend' (site_theme) lives under the Theme tab, not here. 'other' is
             // hand-rendered in its own tab (colors + the Floating Button card) rather
             // than through this generic per-group loop.
-            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'seo', 'theme', 'colors', 'currency', 'frontend', 'other'])
+            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'seo', 'colors', 'currency', 'frontend', 'other'])
                 ->get()
                 ->groupBy('group')
                 ->sortBy(fn ($items, $group) => $groupOrder[$group] ?? count($groupOrder)),

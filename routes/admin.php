@@ -5,6 +5,8 @@ use App\Http\Controllers\Admin\ProductExportController;
 use App\Http\Controllers\Admin\ReportExportController;
 use App\Http\Controllers\Admin\UserCardController;
 use App\Http\Controllers\InvoiceController;
+use App\Livewire\Admin\Advance\Backup;
+use App\Livewire\Admin\Advance\Database;
 use App\Livewire\Admin\Advance\Robots;
 use App\Livewire\Admin\Advance\Sitemap;
 use App\Livewire\Admin\Dashboard;
@@ -124,6 +126,8 @@ Route::middleware('can:access-admin-system')->group(function () {
     Route::middleware('feature:advance')->group(function () {
         Route::get('/advance/sitemap', Sitemap::class)->name('advance.sitemap');
         Route::get('/advance/robots', Robots::class)->name('advance.robots');
+        Route::get('/advance/database', Database::class)->name('advance.database');
+        Route::get('/advance/backup', Backup::class)->name('advance.backup');
     });
 
     // Orders, Reports & Coupons

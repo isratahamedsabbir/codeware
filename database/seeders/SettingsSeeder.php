@@ -136,11 +136,6 @@ class SettingsSeeder extends Seeder
             // ── Frontend ──
             ['key' => 'site_theme',               'value' => 'default', 'type' => 'select', 'group' => 'frontend', 'is_public' => true],
 
-            // ── Theme ──
-            ['key' => 'theme_mode',               'value' => 'light', 'type' => 'string', 'group' => 'theme', 'is_public' => false],
-            ['key' => 'theme_name',               'value' => 'Default', 'type' => 'string', 'group' => 'theme', 'is_public' => false],
-            ['key' => 'theme_accent',             'value' => '#1e7bc4', 'type' => 'color', 'group' => 'theme', 'is_public' => false],
-
             // ── Floating button (admin panel) ──
             ['key' => 'floating_button_enabled', 'value' => '0', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
             ['key' => 'floating_button_action',  'value' => 'top', 'type' => 'string', 'group' => 'other', 'is_public' => false],

@@ -100,42 +100,6 @@
     --color-chart-category-text: #71717a;
 }
 
-@layer theme {
-    .dark {
-        --color-accent: #3d9be0;
-        --color-accent-content: #3d9be0;
-        --color-accent-foreground: var(--color-white);
-
-        --color-main-from: #1e293b;
-        --color-main-to: #0f172a;
-
-        --color-header-bg: rgba(15, 23, 42, 0.85);
-        --color-header-border: rgba(51, 65, 85, 0.7);
-        --color-surface-bg: #1e293b;
-        --color-surface-border: rgba(51, 65, 85, 0.8);
-        --color-surface-row-hover: rgba(51, 65, 85, 0.45);
-
-        --color-auth-card-bg: rgba(15, 23, 42, 0.8);
-        --color-auth-card-border: rgba(255, 255, 255, 0.06);
-
-        /* Dark-only tokens (no light counterpart) */
-        --color-body-bg: #0f172a;
-        --color-text-strong: #e2e8f0;
-        --color-text-muted: #cbd5e1;
-        --color-border-muted: rgba(51, 65, 85, 0.8);
-        --color-border-strong: rgba(100, 116, 139, 0.6);
-        --color-bg-muted: rgba(51, 65, 85, 0.4);
-        --color-util-bg-white: #1f2937;
-        --color-badge-emerald-bg: rgba(16, 185, 129, 0.15);
-        --color-badge-emerald-text: #34d399;
-        --color-badge-blue-bg: rgba(59, 130, 246, 0.15);
-        --color-badge-blue-text: #60a5fa;
-        --color-badge-sky-bg: rgba(14, 165, 233, 0.15);
-        --color-badge-sky-text: #38bdf8;
-        --color-badge-indigo-text: #818cf8;
-    }
-}
-
 @layer base {
 
     *,

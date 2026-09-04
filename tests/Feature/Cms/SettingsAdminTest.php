@@ -166,45 +166,6 @@ it('seeder creates seo settings', function () {
     }
 });
 
-it('does not show theme settings in the general tab', function () {
-    Setting::factory()->create(['key' => 'theme_mode', 'value' => 'dark', 'group' => 'theme', 'type' => 'string']);
-
-    Livewire::test(SettingsIndex::class)
-        ->assertViewHas('groupedSettings', function ($groups) {
-            return ! $groups->has('theme');
-        });
-});
-
-it('renders the theme tab with mode and accent fields', function () {
-    Livewire::test(SettingsIndex::class)
-        ->assertSee('Theme')
-        ->assertSee('Theme Mode')
-        ->assertSee('Accent Color')
-        ->assertSee('Custom hex');
-});
-
-it('saves theme settings through the form', function () {
-    Livewire::test(SettingsIndex::class)
-        ->set('settings.theme_mode', 'dark')
-        ->set('settings.theme_accent', '#7cc242')
-        ->set('settings.theme_name', 'Forest Green')
-        ->call('save')
-        ->assertHasNoErrors()
-        ->assertDispatched('admin-theme-changed');
-
-    expect(Setting::where('key', 'theme_mode')->value('value'))->toBe('dark');
-    expect(Setting::where('key', 'theme_accent')->value('value'))->toBe('#7cc242');
-    expect(Setting::where('key', 'theme_name')->value('value'))->toBe('Forest Green');
-});
-
-it('seeder creates theme settings', function () {
-    $this->artisan('db:seed', ['--class' => 'SettingsSeeder']);
-
-    foreach (['theme_mode', 'theme_name', 'theme_accent'] as $key) {
-        expect(Setting::where('key', $key)->exists())->toBeTrue();
-    }
-});
-
 it('seeder creates currency settings', function () {
     $this->artisan('db:seed', ['--class' => 'SettingsSeeder']);
 

@@ -1,7 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
-    class="{{ \App\Support\Theme::isDark() ? 'dark' : '' }}"
-    style="--color-accent: {{ \App\Support\Theme::accent() }}; --color-accent-content: {{ \App\Support\Theme::accent() }};">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     <meta charset="utf-8">
@@ -218,8 +216,6 @@
 
                 <livewire:admin.locale-switcher />
 
-                <livewire:admin.theme-switcher /> 
-
                 <button type="button" x-data="{ isFullscreen: false }"
                     x-init="isFullscreen = !!document.fullscreenElement; document.addEventListener('fullscreenchange', () => isFullscreen = !!document.fullscreenElement)"
                     @click="isFullscreen ? document.exitFullscreen() : document.documentElement.requestFullscreen()"
@@ -278,36 +274,6 @@
     @include('partials.admin-floating-button')
 
     @include('partials.admin-loader-overlay')
-
-    {{-- Apply the global admin theme (dark class + accent color) --}}
-    <script>
-        function applyAdminTheme(mode, accent) {
-            const el = document.documentElement;
-            el.classList.toggle('dark', mode === 'dark');
-            if (accent) {
-                el.style.setProperty('--color-accent', accent);
-                el.style.setProperty('--color-accent-content', accent);
-            }
-
-            // Toggling the dark class repaints chart containers; Chart.js caches its
-            // canvas backing-store size and doesn't notice unless told explicitly.
-            if (window.Chart) {
-                Object.values(window.Chart.instances).forEach((chart) => chart.resize());
-            }
-        }
-
-        document.addEventListener('livewire:navigated', () => {
-            applyAdminTheme('{{ \App\Support\Theme::isDark() ? 'dark' : 'light' }}');
-        });
-
-        window.addEventListener('theme:toggled', (e) => {
-            applyAdminTheme(e.detail.mode);
-        });
-
-        window.addEventListener('admin-theme-changed', (e) => {
-            applyAdminTheme(e.detail.mode, e.detail.accent);
-        });
-    </script>
 
     @fluxScripts
 

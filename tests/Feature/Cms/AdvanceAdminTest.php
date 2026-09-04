@@ -1,5 +1,7 @@
 <?php
 
+use App\Livewire\Admin\Advance\Backup;
+use App\Livewire\Admin\Advance\Database;
 use App\Livewire\Admin\Advance\Robots;
 use App\Livewire\Admin\Advance\Sitemap;
 use App\Models\Page;
@@ -44,11 +46,20 @@ it('lets an admin view the sitemap and robots.txt tools', function () {
     Livewire::test(Robots::class)->assertStatus(200);
 });
 
+it('lets an admin view the database and backup tools', function () {
+    $this->actingAs($this->admin);
+
+    Livewire::test(Database::class)->assertStatus(200);
+    Livewire::test(Backup::class)->assertStatus(200);
+});
+
 it('blocks staff from the advance routes', function () {
     $this->actingAs($this->staff);
 
     $this->get(route('admin.advance.sitemap'))->assertForbidden();
     $this->get(route('admin.advance.robots'))->assertForbidden();
+    $this->get(route('admin.advance.database'))->assertForbidden();
+    $this->get(route('admin.advance.backup'))->assertForbidden();
 });
 
 it('generates a sitemap.xml from published content', function () {
@@ -76,4 +87,20 @@ it('saves robots.txt content through the form', function () {
         ->call('save');
 
     expect(File::get($this->robotsPath))->toBe("User-agent: *\nDisallow: /admin\n");
+});
+
+it('downloads a sql dump of the database', function () {
+    $this->actingAs($this->admin);
+
+    Livewire::test(Database::class)
+        ->call('download')
+        ->assertFileDownloaded();
+});
+
+it('downloads a zip of the storage directory', function () {
+    $this->actingAs($this->admin);
+
+    Livewire::test(Backup::class)
+        ->call('download')
+        ->assertFileDownloaded();
 });
