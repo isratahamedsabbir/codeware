@@ -3,9 +3,7 @@
         Downloads everything under <code>storage/app</code> — uploaded media, generated files and .env backups — as a single zip.
     </flux:text>
 
-    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
-        <flux:heading size="sm">Storage</flux:heading>
-
+    <x-admin-section-card icon="archive-box" title="Storage" icon-color="bg-emerald-500/10 text-emerald-600">
         <div class="grid grid-cols-2 gap-4 text-sm">
             <div>
                 <div class="text-zinc-400 text-xs uppercase tracking-wide mb-1">Files</div>
@@ -23,5 +21,5 @@
                 <span wire:loading wire:target="download">Zipping files…</span>
             </flux:button>
         </div>
-    </div>
+    </x-admin-section-card>
 </div>

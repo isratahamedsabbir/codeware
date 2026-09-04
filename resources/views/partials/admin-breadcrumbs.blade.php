@@ -17,7 +17,7 @@
         'email-templates'    => ['Library & System', 'admin.email-templates'],
         'cms'                => ['Content', 'admin.pages'],
         'history'            => ['Library & System', 'admin.history'],
-        'payment-gateways'   => ['Sales', 'admin.orders'],
+        'payment-gateways'   => ['Library & System', 'admin.settings'],
         'contacts'           => ['Inquiries', 'admin.contacts'],
         'pages'              => ['Content', 'admin.pages'],
         'roles'              => ['Access Control', 'admin.roles'],

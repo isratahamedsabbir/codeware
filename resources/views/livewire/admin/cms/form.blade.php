@@ -9,25 +9,20 @@
 <div class="w-full space-y-6">
 
     {{-- Basics --}}
-    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 p-5 space-y-4">
-        <flux:heading size="sm">{{ $page->getTranslation('title', 'en', false) }}</flux:heading>
-
+    <x-admin-section-card icon="squares-2x2" :title="$page->getTranslation('title', 'en', false)">
         <flux:field>
             <flux:label>Name</flux:label>
             <flux:input wire:model.live="name" placeholder="e.g. hero, features, cta" />
             <flux:error name="name" />
         </flux:field>
-    </div>
+    </x-admin-section-card>
 
     {{-- Cards --}}
-    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 p-5 space-y-4">
-        <div class="flex items-center justify-between gap-3">
-            <div>
-                <flux:heading size="sm">Cards</flux:heading>
-                <p class="mt-0.5 text-xs text-zinc-400">Repeatable image/title/description tiles for this section.</p>
-            </div>
+    <x-admin-section-card icon="rectangle-group" title="Cards" icon-color="bg-blue-500/10 text-blue-600"
+        description="Repeatable image/title/description tiles for this section.">
+        <x-slot:actions>
             <flux:button size="xs" variant="outline" icon="plus" wire:click="addCard">Add card</flux:button>
-        </div>
+        </x-slot:actions>
 
         @forelse ($cards as $i => $card)
             <div class="group relative rounded-xl border border-zinc-200 bg-zinc-50/60 p-4 transition-colors hover:border-zinc-300">
@@ -68,17 +63,14 @@
                 <p class="text-sm text-zinc-400">No cards yet.</p>
             </div>
         @endforelse
-    </div>
+    </x-admin-section-card>
 
     {{-- Constant --}}
-    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 p-5 space-y-4">
-        <div class="flex items-center justify-between gap-3">
-            <div>
-                <flux:heading size="sm">Constant</flux:heading>
-                <p class="mt-0.5 text-xs text-zinc-400">Freeform key/value pairs — SEO tags, custom flags, or extra content.</p>
-            </div>
+    <x-admin-section-card icon="variable" title="Constant" icon-color="bg-indigo-500/10 text-indigo-600"
+        description="Freeform key/value pairs — SEO tags, custom flags, or extra content.">
+        <x-slot:actions>
             <flux:button size="xs" variant="outline" icon="plus" wire:click="addConstant">Add field</flux:button>
-        </div>
+        </x-slot:actions>
         <flux:error name="constant" />
 
         @forelse ($constant as $i => $pair)
@@ -144,7 +136,7 @@
                 <p class="text-sm text-zinc-400">No content yet.</p>
             </div>
         @endforelse
-    </div>
+    </x-admin-section-card>
 
     {{-- Save --}}
     <div class="flex items-center gap-3">

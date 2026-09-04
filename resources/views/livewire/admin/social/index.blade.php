@@ -15,9 +15,8 @@
         ];
     @endphp
 
-    <div class="max-w-md rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
-        <flux:heading size="sm">Social Links</flux:heading>
-
+    <x-admin-section-card icon="share" title="Social Links" class="max-w-md"
+        description="Where each platform icon should link to.">
         @foreach ($links as $index => $link)
             <flux:field>
                 <flux:label>
@@ -33,7 +32,7 @@
                     placeholder="{{ $link['platform'] === 'whatsapp' ? '+8801XXXXXXXXX' : 'https://' }}" />
             </flux:field>
         @endforeach
-    </div>
+    </x-admin-section-card>
 
     <div>
         <flux:button variant="primary" wire:click="save" wire:loading.attr="disabled">

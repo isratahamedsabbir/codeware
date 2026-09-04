@@ -9,9 +9,7 @@
         Generates <code>sitemap.xml</code> from every published page, product, category and post — ready for search engines to crawl.
     </flux:text>
 
-    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
-        <flux:heading size="sm">Sitemap</flux:heading>
-
+    <x-admin-section-card icon="map" title="Sitemap" icon-color="bg-sky-500/10 text-sky-600">
         <div class="grid grid-cols-2 gap-4 text-sm">
             <div>
                 <div class="text-zinc-400 text-xs uppercase tracking-wide mb-1">URLs</div>
@@ -35,5 +33,5 @@
                 </a>
             @endif
         </div>
-    </div>
+    </x-admin-section-card>
 </div>

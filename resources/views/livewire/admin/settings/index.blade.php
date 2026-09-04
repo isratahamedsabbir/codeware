@@ -44,8 +44,17 @@
                             'images' => 'w-full order-2',
                             default => 'w-full order-3',
                         } }}">
-                            <flux:heading size="sm" class="mb-3 capitalize">{{ $group ?? 'General' }}</flux:heading>
-                            <div class="{{ $group === 'images' ? 'grid grid-cols-2 sm:grid-cols-4 gap-4' : 'space-y-4' }} rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 bg-white">
+                            @php
+                                $groupIcon = match ($group) {
+                                    'general' => 'information-circle',
+                                    'images' => 'photo',
+                                    'pagination' => 'document-duplicate',
+                                    'localization' => 'language',
+                                    default => 'squares-2x2',
+                                };
+                            @endphp
+                            <x-admin-section-card :icon="$groupIcon" :title="ucfirst($group ?? 'General')">
+                                <div class="{{ $group === 'images' ? 'grid grid-cols-2 sm:grid-cols-4 gap-4' : 'space-y-4' }}">
                                 @foreach ($items as $setting)
                                     <flux:field>
                                         @php
@@ -110,7 +119,8 @@
                                         @endif
                                     </flux:field>
                                 @endforeach
-                            </div>
+                                </div>
+                            </x-admin-section-card>
                         </div>
                     @endforeach
                 </div>
@@ -124,10 +134,9 @@
                     Edit your site header and footer using the Puck visual editor. Changes open in a new tab.
                 </flux:text>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"> 
-                    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5">
-                        <flux:heading size="sm" class="mb-2">Header</flux:heading> 
-                        <flux:text class="text-sm text-zinc-500 mb-4">Edit the site-wide header layout and navigation.</flux:text>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <x-admin-section-card icon="window" title="Header"
+                        description="Edit the site-wide header layout and navigation.">
                         <a href="{{ $this->getEditorUrl('header') }}" target="_blank"
                             class="inline-flex items-center justify-center gap-2 w-full rounded-lg bg-primary px-4 py-2.5 text-xs font-bold text-white hover:bg-primary transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,11 +144,10 @@
                             </svg>
                             Edit Header
                         </a>
-                    </div>
+                    </x-admin-section-card>
 
-                    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5">
-                        <flux:heading size="sm" class="mb-2">Footer</flux:heading>
-                        <flux:text class="text-sm text-zinc-500 mb-4">Edit the site-wide footer layout and links.</flux:text>
+                    <x-admin-section-card icon="bars-3-bottom-left" title="Footer" icon-color="bg-blue-500/10 text-blue-600"
+                        description="Edit the site-wide footer layout and links.">
                         <a href="{{ $this->getEditorUrl('footer') }}" target="_blank"
                             class="inline-flex items-center justify-center gap-2 w-full rounded-lg bg-primary px-4 py-2.5 text-xs font-bold text-white hover:bg-primary transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,7 +155,7 @@
                             </svg>
                             Edit Footer
                         </a>
-                    </div>
+                    </x-admin-section-card>
                 </div>
 
                 <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-4 dark:bg-zinc-800/50">
@@ -171,8 +179,7 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-                <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
-                    <flux:heading size="sm">Currency</flux:heading>
+                <x-admin-section-card icon="banknotes" title="Currency">
                     <flux:field>
                         <flux:label>Currency Code</flux:label>
                         <flux:input wire:model="settings.currency_code" placeholder="BDT, USD, EUR" class="uppercase" />
@@ -193,16 +200,14 @@
                         <flux:label>Decimal Places</flux:label>
                         <flux:input type="number" wire:model="settings.decimal_places" min="0" max="4" />
                     </flux:field>
-                </div>
+                </x-admin-section-card>
 
-                {{-- Preview --}}
-                <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5">
-                    <flux:heading size="sm" class="mb-2">Preview</flux:heading>
+                <x-admin-section-card icon="eye" title="Preview" icon-color="bg-blue-500/10 text-blue-600">
                     <div class="rounded-lg bg-zinc-50 dark:bg-zinc-800/50 px-4 py-6 text-center">
                         <span class="text-2xl font-bold text-zinc-800 dark:text-zinc-100" x-data
                             x-text="($wire.settings.currency_position || 'left') === 'right' ? '1,250.00 ' + ($wire.settings.currency_symbol || '৳') : ($wire.settings.currency_symbol || '৳') + '1,250.00'"></span>
                     </div>
-                </div>
+                </x-admin-section-card>
 
                 </div>
             </div>
@@ -212,68 +217,39 @@
         <div x-show="tab === 'theme'">
             <div class="max-w-[1600px] space-y-6">
 
-                {{-- Frontend --}}
-                <div class="rounded-xl bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800/40 overflow-hidden">
-                    <div class="flex items-center gap-3 px-6 py-4 border-b border-zinc-100 dark:border-zinc-700">
-                        <div class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
-                            <flux:icon.globe-alt class="size-5" />
-                        </div>
-                        <div>
-                            <flux:heading size="sm">Frontend</flux:heading>
-                            <flux:text class="text-xs text-zinc-500">
-                                Choose the design shown to visitors on the public site.
-                            </flux:text>
-                        </div>
-                    </div>
-
-                    <div class="px-6 py-5">
-                        {{-- Site theme --}}
-                        <flux:field class="max-w-sm">
-                            <flux:label>Site Design</flux:label>
-                            <select wire:model="settings.site_theme"
-                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                                @foreach (\App\Support\Themes::all() as $slug => $label)
-                                    <option value="{{ $slug }}">{{ $label }}</option>
-                                @endforeach
-                            </select>
-                            <flux:text class="text-xs text-zinc-500">
-                                {{ __('The design shown at your site\'s homepage (:url).', ['url' => url('/')]) }}
-                            </flux:text>
-                        </flux:field>
-                    </div>
-                </div>
-
-                {{-- Backend --}}
-                <div class="rounded-xl bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800/40 overflow-hidden">
-                    <div class="flex items-center gap-3 px-6 py-4 border-b border-zinc-100 dark:border-zinc-700">
-                        <div class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
-                            <flux:icon.swatch class="size-5" />
-                        </div>
-                        <div>
-                            <flux:heading size="sm">Backend</flux:heading>
-                            <flux:text class="text-xs text-zinc-500">
-                                Colors used across the admin panel, including buttons.
-                            </flux:text>
-                        </div>
-                    </div>
-
-                    <div class="px-6 py-5">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
-                            @foreach ($colorSettings as $setting)
-                                <flux:field>
-                                    <flux:label>{{ ucwords(str_replace('_', ' ', $setting->key)) }}</flux:label>
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-lg border border-zinc-300 shrink-0"
-                                             style="background-color: {{ $settings[$setting->key] ?? '#ffffff' }}"
-                                             x-data
-                                             :style="'background-color: ' + ($wire.settings['{{ $setting->key }}'] || '#ffffff')"></div>
-                                        <flux:input wire:model="settings.{{ $setting->key }}" placeholder="#000000" class="flex-1 font-mono" />
-                                    </div>
-                                </flux:field>
+                <x-admin-section-card icon="globe-alt" title="Frontend"
+                    description="Choose the design shown to visitors on the public site.">
+                    <flux:field class="max-w-sm">
+                        <flux:label>Site Design</flux:label>
+                        <select wire:model="settings.site_theme"
+                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                            @foreach (\App\Support\Themes::all() as $slug => $label)
+                                <option value="{{ $slug }}">{{ $label }}</option>
                             @endforeach
-                        </div>
+                        </select>
+                        <flux:text class="text-xs text-zinc-500">
+                            {{ __('The design shown at your site\'s homepage (:url).', ['url' => url('/')]) }}
+                        </flux:text>
+                    </flux:field>
+                </x-admin-section-card>
+
+                <x-admin-section-card icon="swatch" title="Backend"
+                    description="Colors used across the admin panel, including buttons.">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
+                        @foreach ($colorSettings as $setting)
+                            <flux:field>
+                                <flux:label>{{ ucwords(str_replace('_', ' ', $setting->key)) }}</flux:label>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg border border-zinc-300 shrink-0"
+                                         style="background-color: {{ $settings[$setting->key] ?? '#ffffff' }}"
+                                         x-data
+                                         :style="'background-color: ' + ($wire.settings['{{ $setting->key }}'] || '#ffffff')"></div>
+                                    <flux:input wire:model="settings.{{ $setting->key }}" placeholder="#000000" class="flex-1 font-mono" />
+                                </div>
+                            </flux:field>
+                        @endforeach
                     </div>
-                </div>
+                </x-admin-section-card>
 
             </div>
         </div>
@@ -287,21 +263,18 @@
                 </div>
 
                 {{-- Maintenance mode --}}
-                <div class="max-w-2xl rounded-lg bg-white shadow-sm border {{ $maintenanceMode ? 'border-red-300 dark:border-red-800' : 'border-zinc-200 dark:border-zinc-700' }} p-5 space-y-3">
-                    <div class="flex items-center justify-between gap-3">
-                        <div>
-                            <flux:heading size="sm">Maintenance Mode</flux:heading>
-                            <p class="mt-0.5 text-xs text-zinc-400">
-                                Takes the public site offline for every visitor. The admin panel and login stay reachable either way.
-                            </p>
-                        </div>
+                <x-admin-section-card icon="wrench" title="Maintenance Mode"
+                    icon-color="{{ $maintenanceMode ? 'bg-red-500/10 text-red-600' : 'bg-primary/10 text-primary' }}"
+                    description="Takes the public site offline for every visitor. The admin panel and login stay reachable either way."
+                    class="max-w-2xl {{ $maintenanceMode ? 'border-red-300! dark:border-red-800!' : '' }}">
+                    <x-slot:actions>
                         @if ($maintenanceMode)
-                            <span class="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-red-50 dark:bg-red-950 px-3 py-1 text-xs font-semibold text-red-700 dark:text-red-300 ring-1 ring-red-600/20">
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-red-50 dark:bg-red-950 px-3 py-1 text-xs font-semibold text-red-700 dark:text-red-300 ring-1 ring-red-600/20">
                                 <span class="size-1.5 rounded-full bg-red-500 animate-pulse"></span>
                                 Site is offline
                             </span>
                         @endif
-                    </div>
+                    </x-slot:actions>
 
                     @if ($maintenanceMode)
                         <flux:button variant="danger" wire:click="disableMaintenanceMode" wire:loading.attr="disabled">
@@ -312,24 +285,21 @@
                             Enable Maintenance Mode
                         </flux:button>
                     @endif
-                </div>
+                </x-admin-section-card>
 
                 {{-- Debug mode --}}
-                <div class="max-w-2xl rounded-lg bg-white shadow-sm border {{ $debugMode ? 'border-amber-300 dark:border-amber-800' : 'border-zinc-200 dark:border-zinc-700' }} p-5 space-y-3">
-                    <div class="flex items-center justify-between gap-3">
-                        <div>
-                            <flux:heading size="sm">Debug Mode</flux:heading>
-                            <p class="mt-0.5 text-xs text-zinc-400">
-                                Shows full error details and stack traces to visitors. Leave this off in production.
-                            </p>
-                        </div>
+                <x-admin-section-card icon="bug-ant" title="Debug Mode"
+                    icon-color="{{ $debugMode ? 'bg-amber-500/10 text-amber-600' : 'bg-primary/10 text-primary' }}"
+                    description="Shows full error details and stack traces to visitors. Leave this off in production."
+                    class="max-w-2xl {{ $debugMode ? 'border-amber-300! dark:border-amber-800!' : '' }}">
+                    <x-slot:actions>
                         @if ($debugMode)
-                            <span class="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300 ring-1 ring-amber-600/20">
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300 ring-1 ring-amber-600/20">
                                 <span class="size-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                                 Debug on
                             </span>
                         @endif
-                    </div>
+                    </x-slot:actions>
 
                     @if ($debugMode)
                         <flux:button variant="danger" wire:click="disableDebugMode" wire:loading.attr="disabled">
@@ -340,11 +310,10 @@
                             Enable Debug Mode
                         </flux:button>
                     @endif
-                </div>
+                </x-admin-section-card>
 
                 @foreach ($this->envFields() as $groupLabel => $fields)
-                    <div class="max-w-2xl rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
-                        <flux:heading size="sm">{{ __($groupLabel) }}</flux:heading>
+                    <x-admin-section-card icon="server" :title="__($groupLabel)" class="max-w-2xl">
                         @foreach ($fields as $key => $meta)
                             <flux:field>
                                 <flux:label>{{ __($meta['label']) }}</flux:label>
@@ -369,7 +338,7 @@
                                 <flux:error name="env.{{ $key }}" />
                             </flux:field>
                         @endforeach
-                    </div>
+                    </x-admin-section-card>
                 @endforeach
 
                 <flux:button variant="primary" wire:click="confirmSaveEnv" wire:loading.attr="disabled">
@@ -382,17 +351,15 @@
         <div x-show="tab === 'other'">
             <div class="max-w-[1600px] space-y-6">
                 {{-- Floating action button --}}
-                <div class="max-w-md rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4" x-data>
-                    <div class="flex items-center justify-between">
-                        <flux:heading size="sm">Floating Button</flux:heading>
+                <x-admin-section-card x-data icon="cursor-arrow-rays" title="Floating Button" class="max-w-md"
+                    description="Shows a floating button in the corner of every admin page.">
+                    <x-slot:actions>
                         <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
                             <input type="checkbox" wire:model="settings.floating_button_enabled" class="rounded border-zinc-300 text-primary" />
                             Enable
                         </label>
-                    </div>
-                    <p class="mt-0.5 text-xs text-zinc-400">
-                        Shows a floating button in the corner of every admin page.
-                    </p>
+                    </x-slot:actions>
+
                     <flux:field>
                         <flux:label>Action</flux:label>
                         <select wire:model="settings.floating_button_action"
@@ -406,21 +373,18 @@
                         <flux:label>Link URL</flux:label>
                         <flux:input wire:model="settings.floating_button_link" placeholder="https://example.com" />
                     </flux:field>
-                </div>
+                </x-admin-section-card>
             </div>
         </div>
 
         {{-- Constant tab --}}
         <div x-show="tab === 'constant'">
             <div class="max-w-[1600px] space-y-6">
-                <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
-                    <div class="flex items-center justify-between gap-3">
-                        <div>
-                            <flux:heading size="sm">Constant</flux:heading>
-                            <p class="mt-0.5 text-xs text-zinc-400">Freeform key/value pairs, available site-wide — not tied to any page or CMS section.</p>
-                        </div>
+                <x-admin-section-card icon="variable" title="Constant"
+                    description="Freeform key/value pairs, available site-wide — not tied to any page or CMS section.">
+                    <x-slot:actions>
                         <flux:button size="xs" variant="outline" icon="plus" wire:click="addConstant">Add field</flux:button>
-                    </div>
+                    </x-slot:actions>
 
                     <flux:error name="constants" />
 
@@ -487,7 +451,7 @@
                             <p class="text-sm text-zinc-400">No constants yet.</p>
                         </div>
                     @endforelse
-                </div>
+                </x-admin-section-card>
             </div>
         </div>
 

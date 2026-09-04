@@ -42,10 +42,7 @@
             </div>
 
             {{-- Items --}}
-            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
-                <div class="px-6 py-4 border-b border-zinc-100">
-                    <flux:heading size="sm">Items</flux:heading>
-                </div>
+            <x-admin-section-card icon="shopping-bag" title="Items" body-class="">
                 <table class="w-full divide-y divide-gray-200">
                     <thead>
                         <tr class="bg-zinc-50">
@@ -81,13 +78,10 @@
                         </tr>
                     </tfoot>
                 </table>
-            </div>
+            </x-admin-section-card>
 
             {{-- Transactions --}}
-            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
-                <div class="px-6 py-4 border-b border-zinc-100">
-                    <flux:heading size="sm">Transactions</flux:heading>
-                </div>
+            <x-admin-section-card icon="banknotes" title="Transactions" icon-color="bg-emerald-500/10 text-emerald-600" body-class="">
                 <table class="w-full divide-y divide-gray-200">
                     <thead>
                         <tr class="bg-zinc-50">
@@ -114,14 +108,12 @@
                         @endforelse
                     </tbody>
                 </table>
-            </div>
+            </x-admin-section-card>
         </div>
 
         {{-- Sidebar: status update --}}
         <div class="w-full lg:w-[320px] shrink-0 space-y-4">
-            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm p-6 space-y-4">
-                <flux:heading size="sm">Update Order</flux:heading>
-
+            <x-admin-section-card icon="pencil-square" title="Update Order" icon-color="bg-indigo-500/10 text-indigo-600">
                 <flux:field>
                     <flux:label>Fulfillment Status</flux:label>
                     <flux:select wire:model="status">
@@ -145,7 +137,7 @@
                 <flux:button variant="primary" wire:click="updateStatus" wire:loading.attr="disabled" class="w-full">
                     Save Changes
                 </flux:button>
-            </div>
+            </x-admin-section-card>
         </div>
 
     </div>

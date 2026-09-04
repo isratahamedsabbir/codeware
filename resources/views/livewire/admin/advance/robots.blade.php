@@ -9,13 +9,12 @@
         Controls what search engine crawlers are allowed to access, served at <code>/robots.txt</code>.
     </flux:text>
 
-    <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
-        <div class="flex items-center justify-between">
-            <flux:heading size="sm">Robots.txt</flux:heading>
-            @if ($updatedAt)
+    <x-admin-section-card icon="document-text" title="Robots.txt" icon-color="bg-amber-500/10 text-amber-600">
+        @if ($updatedAt)
+            <x-slot:actions>
                 <span class="text-xs text-zinc-400">Last updated {{ $updatedAt }}</span>
-            @endif
-        </div>
+            </x-slot:actions>
+        @endif
 
         <flux:field>
             <flux:textarea wire:model="content" rows="10" class="font-mono text-sm" />
@@ -30,5 +29,5 @@
                 Reset to Default
             </flux:button>
         </div>
-    </div>
+    </x-admin-section-card>
 </div>
