@@ -14,6 +14,13 @@ use Laravel\Fortify\Fortify;
 class FortifyServiceProvider extends ServiceProvider
 {
     /**
+     * Failed login attempts (per email+IP) allowed before the 5-minute lockout
+     * kicks in — shared with Listeners\NotifyAdminOnRepeatedFailedLogin, which
+     * fires the admin alert at exactly this count.
+     */
+    public const LOGIN_MAX_ATTEMPTS = 3;
+
+    /**
      * Register any application services.
      */
     public function register(): void
@@ -64,9 +71,18 @@ class FortifyServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('login', function (Request $request) {
-            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
-
-            return Limit::perMinute(5)->by($throttleKey);
+            // 3 wrong-password attempts locks the email+IP pair out for 5 minutes.
+            return Limit::perMinutes(5, self::LOGIN_MAX_ATTEMPTS)->by(self::loginThrottleKey($request));
         });
+    }
+
+    /**
+     * The same email+IP signature the 'login' rate limiter keys on — pulled out
+     * so Listeners\NotifyAdminOnRepeatedFailedLogin can read the same counter
+     * (via RateLimiter::attempts()) instead of keeping its own.
+     */
+    public static function loginThrottleKey(Request $request): string
+    {
+        return Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
     }
 }

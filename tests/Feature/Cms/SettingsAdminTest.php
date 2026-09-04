@@ -333,3 +333,56 @@ it('renders timezone as a select grouped by region, not a free-text input', func
         ->assertSee('Timezone')
         ->assertSeeHtml('<option value="Asia/Dhaka">Asia/Dhaka</option>');
 });
+
+it('defaults a new constant field to the textarea type', function () {
+    Livewire::test(SettingsIndex::class)
+        ->call('addConstant')
+        ->assertSet('constants.0.type', 'textarea');
+});
+
+it('switches a constant value field to file picker when File is clicked', function () {
+    Livewire::test(SettingsIndex::class)
+        ->call('addConstant')
+        ->assertDontSee('mp-constants-0-value', false)
+        ->call('setConstantType', 0, 'file')
+        ->assertSet('constants.0.type', 'file')
+        ->assertSee('mp-constants-0-value', false);
+});
+
+it('saves constants and makes them readable through the setting_constant() helper', function () {
+    Livewire::test(SettingsIndex::class)
+        ->call('addConstant')
+        ->set('constants.0.key', 'support_email')
+        ->set('constants.0.value', 'support@example.com')
+        ->call('save');
+
+    expect(setting_constant('support_email'))->toBe('support@example.com');
+});
+
+it('drops blank constant rows when saving, but keeps filled ones', function () {
+    Livewire::test(SettingsIndex::class)
+        ->call('addConstant')
+        ->call('addConstant')
+        ->set('constants.0.key', 'kept')
+        ->set('constants.0.value', '1')
+        ->set('constants.1.key', '')
+        ->set('constants.1.value', '')
+        ->call('save');
+
+    $constants = json_decode(Setting::get('constants'), true);
+
+    expect($constants)->toHaveCount(1)
+        ->and($constants[0]['key'])->toBe('kept');
+});
+
+it('rejects duplicate constant keys', function () {
+    Livewire::test(SettingsIndex::class)
+        ->call('addConstant')
+        ->call('addConstant')
+        ->set('constants.0.key', 'dup')
+        ->set('constants.0.value', 'a')
+        ->set('constants.1.key', 'dup')
+        ->set('constants.1.value', 'b')
+        ->call('save')
+        ->assertHasErrors(['constants']);
+});

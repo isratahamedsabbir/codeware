@@ -229,7 +229,10 @@ it('throttles registration attempts', function () {
 it('throttles login attempts per email+IP', function () {
     $user = User::factory()->create(['password' => 'secret123']);
 
-    foreach (range(1, 5) as $_) {
+    // 3 wrong-password attempts allowed (see FortifyServiceProvider), then locked
+    // out for 5 minutes — shared with Fortify's own web login via the same
+    // 'login' named rate limiter.
+    foreach (range(1, 3) as $_) {
         $this->postJson('/api/v1/auth/login', [
             'email' => $user->email,
             'password' => 'wrong-password',

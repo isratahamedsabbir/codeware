@@ -21,11 +21,15 @@ class Index extends Component
     /** @var array<int, string> */
     public array $canonicalUrls = [];
 
+    /** @var array<int, array{key: string, type: string, value: string}> */
+    public array $constants = [];
+
     public function mount(): void
     {
         $this->loadSettings();
         $this->loadEnv();
         $this->loadCanonicalUrls();
+        $this->loadConstants();
     }
 
     protected function loadSettings(): void
@@ -88,6 +92,33 @@ class Index extends Component
         if (empty($this->canonicalUrls)) {
             $this->canonicalUrls = [''];
         }
+    }
+
+    protected function loadConstants(): void
+    {
+        $this->constants = collect(json_decode(Setting::get('constants', '[]') ?: '[]', true) ?: [])
+            ->map(fn (array $pair) => [...$pair, 'type' => in_array($pair['type'] ?? null, ['textarea', 'file'], true) ? $pair['type'] : 'textarea'])
+            ->all();
+    }
+
+    public function addConstant(): void
+    {
+        $this->constants[] = ['key' => '', 'type' => 'textarea', 'value' => ''];
+    }
+
+    public function removeConstant(int $index): void
+    {
+        unset($this->constants[$index]);
+        $this->constants = array_values($this->constants);
+    }
+
+    public function setConstantType(int $index, string $type): void
+    {
+        if (! array_key_exists($index, $this->constants) || ! in_array($type, ['textarea', 'file'], true)) {
+            return;
+        }
+
+        $this->constants[$index]['type'] = $type;
     }
 
     /**
@@ -162,6 +193,17 @@ class Index extends Component
         $this->dispatch('notify', message: 'Environment settings saved. Configuration cache cleared.');
     }
 
+    public function updated(string $name, mixed $value): void
+    {
+        if (preg_match('/^constants\.\d+\.key$/', $name)) {
+            $sanitized = preg_replace('/[^A-Za-z0-9_]/', '', preg_replace('/\s+/', '_', trim($value)));
+
+            if ($sanitized !== $value) {
+                data_set($this, $name, $sanitized);
+            }
+        }
+    }
+
     public function applyThemePreset(string $name): void
     {
         $preset = collect(Theme::PRESETS)->firstWhere('name', $name);
@@ -177,12 +219,28 @@ class Index extends Component
 
     public function save(): void
     {
+        $this->validate([
+            'constants' => ['array', function (string $attribute, mixed $value, \Closure $fail) {
+                $keys = collect($value)->pluck('key')->filter()->map(fn ($key) => strtolower(trim($key)));
+
+                if ($keys->count() !== $keys->unique()->count()) {
+                    $fail('Constant keys must be unique.');
+                }
+            }],
+            'constants.*.key' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9_]*$/'],
+            'constants.*.type' => 'nullable|in:textarea,file',
+            'constants.*.value' => 'nullable|string|max:1000',
+        ]);
+
         foreach ($this->settings as $key => $value) {
             Setting::set($key, $value);
         }
 
         $urls = array_values(array_filter($this->canonicalUrls, fn ($url) => trim($url) !== ''));
         Setting::set('seo_canonical_urls', json_encode($urls));
+
+        $constants = collect($this->constants)->filter(fn ($pair) => filled($pair['key'] ?? null))->values()->all();
+        Setting::set('constants', json_encode($constants));
 
         if (array_key_exists('theme_mode', $this->settings) || array_key_exists('theme_accent', $this->settings)) {
             $this->dispatch('admin-theme-changed', mode: $this->settings['theme_mode'] ?? Theme::mode(), accent: $this->settings['theme_accent'] ?? Theme::accent());

@@ -63,3 +63,16 @@ if (! function_exists('cms_constant')) {
         return CmsSection::cachedForPage($pageId)->firstWhere('name', $name)?->constantMap()[$key] ?? null;
     }
 }
+
+if (! function_exists('setting_constant')) {
+    /**
+     * A single site-wide Constant value, looked up by key — set from
+     * Settings → Other → Constant, not tied to any Page or CMS section.
+     */
+    function setting_constant(string $key): ?string
+    {
+        $constants = json_decode(Setting::get('constants', '[]') ?: '[]', true) ?: [];
+
+        return collect($constants)->firstWhere('key', $key)['value'] ?? null;
+    }
+}
