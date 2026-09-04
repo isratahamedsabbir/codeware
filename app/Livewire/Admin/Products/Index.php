@@ -74,6 +74,15 @@ class Index extends Component
         $this->dispatch('notify', message: 'Product status updated');
     }
 
+    public function toggleFeatured(int $id): void
+    {
+        $product = Product::findOrFail($id);
+        $product->update(['is_featured' => ! $product->is_featured]);
+
+        AdminActivity::log('updated', "Product #{$product->id}: {$product->name} ".($product->is_featured ? 'marked featured' : 'unmarked featured'));
+        $this->dispatch('notify', message: 'Product featured status updated');
+    }
+
     public function confirmDelete(int $id): void
     {
         $this->deletingId = $id;

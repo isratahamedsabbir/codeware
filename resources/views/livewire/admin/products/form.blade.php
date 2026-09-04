@@ -111,18 +111,13 @@
         <div class="w-[320px] shrink-0 space-y-4">
 
             {{-- Settings --}}
-            <x-admin-section-card icon="cog-6-tooth" title="Settings" body-class=""
-                description="Price and catalog visibility.">
-                <div class="px-4 py-3 border-b border-zinc-50">
-                    <flux:field>
-                        <flux:label>Price</flux:label>
-                        <flux:input type="number" wire:model="price" min="0" step="0.01" />
-                        <flux:error name="price" />
-                    </flux:field>
-                </div>
-                <div class="px-4 py-3">
-                    <flux:checkbox wire:model="is_featured" label="Featured" />
-                </div>
+            <x-admin-section-card icon="cog-6-tooth" title="Settings" body-class="px-4 py-3"
+                description="Base price for this product.">
+                <flux:field>
+                    <flux:label>Price</flux:label>
+                    <flux:input type="number" wire:model="price" min="0" step="0.01" />
+                    <flux:error name="price" />
+                </flux:field>
             </x-admin-section-card>
 
             {{-- Featured Image --}}
