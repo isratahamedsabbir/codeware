@@ -230,9 +230,9 @@
             <div class="border-t border-zinc-100 pt-5 space-y-3">
                 <div>
                     <flux:heading size="sm">{{ __('Send Test Email') }}</flux:heading>
-                    <flux:text class="text-xs text-zinc-500 -mt-1">
+                    <p class="mt-0.5 text-xs text-zinc-400">
                         {{ __('Sends the "Test Email (Mail Settings)" template using whatever mail settings are currently saved.') }}
-                    </flux:text>
+                    </p>
                 </div>
                 <div class="flex items-start gap-2">
                     <div class="flex-1">

@@ -23,9 +23,9 @@
     {{-- Open Graph --}}
     <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
         <flux:heading size="sm">Open Graph</flux:heading>
-        <flux:text class="text-xs text-zinc-500 -mt-2">
+        <p class="mt-0.5 text-xs text-zinc-400">
             Used when your site is shared on social media (Facebook, WhatsApp, etc.).
-        </flux:text>
+        </p>
         <flux:field>
             <flux:label>OG Title</flux:label>
             <flux:input wire:model="settings.seo_og_title"
@@ -45,9 +45,9 @@
     {{-- Canonical base links --}}
     <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
         <flux:heading size="sm">Canonical Base Links</flux:heading>
-        <flux:text class="text-xs text-zinc-500 -mt-2">
+        <p class="mt-0.5 text-xs text-zinc-400">
             Base URLs used to build canonical link tags. Add one for every domain your site is reachable on.
-        </flux:text>
+        </p>
         <div class="space-y-3 max-w-2xl">
             @foreach ($canonicalUrls as $index => $url)
                 <div class="flex items-center gap-2">

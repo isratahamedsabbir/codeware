@@ -354,9 +354,9 @@
                     <div class="flex items-center justify-between gap-3">
                         <div>
                             <flux:heading size="sm">Maintenance Mode</flux:heading>
-                            <flux:text class="text-xs text-zinc-500 -mt-1">
+                            <p class="mt-0.5 text-xs text-zinc-400">
                                 Takes the public site offline for every visitor. The admin panel and login stay reachable either way.
-                            </flux:text>
+                            </p>
                         </div>
                         @if ($maintenanceMode)
                             <span class="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-red-50 dark:bg-red-950 px-3 py-1 text-xs font-semibold text-red-700 dark:text-red-300 ring-1 ring-red-600/20">
@@ -382,9 +382,9 @@
                     <div class="flex items-center justify-between gap-3">
                         <div>
                             <flux:heading size="sm">Debug Mode</flux:heading>
-                            <flux:text class="text-xs text-zinc-500 -mt-1">
+                            <p class="mt-0.5 text-xs text-zinc-400">
                                 Shows full error details and stack traces to visitors. Leave this off in production.
-                            </flux:text>
+                            </p>
                         </div>
                         @if ($debugMode)
                             <span class="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300 ring-1 ring-amber-600/20">
@@ -472,9 +472,9 @@
                             Enable
                         </label>
                     </div>
-                    <flux:text class="text-xs text-zinc-500 -mt-2">
+                    <p class="mt-0.5 text-xs text-zinc-400">
                         Shows a floating button in the corner of every admin page.
-                    </flux:text>
+                    </p>
                     <flux:field>
                         <flux:label>Action</flux:label>
                         <select wire:model="settings.floating_button_action"
