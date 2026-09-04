@@ -1,11 +1,11 @@
 ﻿<div class="max-w-[1200px] w-full mx-auto">
 
     @push('page-header-actions')
-        <flux:button variant="ghost" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.orders') }}" wire:navigate>
+        <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.orders') }}" wire:navigate>
             Back to Orders
         </flux:button>
 
-        <flux:button variant="primary" icon="document-text" href="{{ route('admin.orders.invoice', $order) }}" target="_blank">
+        <flux:button variant="primary" size="sm" icon="document-text" href="{{ route('admin.orders.invoice', $order) }}" target="_blank">
             View Invoice
         </flux:button>
     @endpush

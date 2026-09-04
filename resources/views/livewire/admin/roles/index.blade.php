@@ -1,5 +1,5 @@
 @push('page-header-actions')
-    <flux:button variant="ghost" icon="plus" href="{{ route('admin.roles.create') }}" wire:navigate>
+    <flux:button variant="ghost" size="sm" icon="plus" href="{{ route('admin.roles.create') }}" wire:navigate>
         New role
     </flux:button>
 @endpush

@@ -1,5 +1,5 @@
 @push('page-header-actions')
-    <flux:button variant="ghost" icon="plus" wire:click="openCreateModal">
+    <flux:button variant="ghost" size="sm" icon="plus" wire:click="openCreateModal">
         New permission
     </flux:button>
 @endpush

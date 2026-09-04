@@ -2,10 +2,10 @@
 
     @if ($userId)
         @push('page-header-actions')
-            <flux:button variant="ghost" icon="identification" href="{{ route('admin.users.card', $userId) }}" target="_blank">
+            <flux:button variant="ghost" size="sm" icon="identification" href="{{ route('admin.users.card', $userId) }}" target="_blank">
                 View Card
             </flux:button>
-            <flux:button variant="ghost" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.users') }}" wire:navigate>
+            <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.users') }}" wire:navigate>
                 Back
             </flux:button>
         @endpush

@@ -1,5 +1,5 @@
 @push('page-header-actions')
-    <flux:button variant="ghost" icon="plus" href="{{ route('admin.product-categories.create') }}" wire:navigate>
+    <flux:button variant="ghost" size="sm" icon="plus" href="{{ route('admin.product-categories.create') }}" wire:navigate>
         New category
     </flux:button>
 @endpush

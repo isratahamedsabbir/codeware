@@ -1,6 +1,6 @@
 @push('page-header-actions')
     <flux:modal.trigger name="mail-settings">
-        <flux:button variant="outline" icon="envelope">
+        <flux:button variant="outline" size="sm" icon="envelope">
             Mail Settings
         </flux:button>
     </flux:modal.trigger>

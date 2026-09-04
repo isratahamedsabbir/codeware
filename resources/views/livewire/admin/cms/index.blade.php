@@ -1,5 +1,11 @@
 @push('page-header-actions')
-    <flux:button variant="ghost" icon="plus" href="{{ route('admin.cms.create', ['pageId' => $page->id]) }}" wire:navigate>
+    <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.pages') }}" wire:navigate>
+        Back
+    </flux:button>
+@endpush
+
+@push('page-header-actions')
+    <flux:button variant="ghost" size="sm" icon="plus" href="{{ route('admin.cms.create', ['pageId' => $page->id]) }}" wire:navigate>
         New section
     </flux:button>
 @endpush

@@ -19,7 +19,7 @@
 
     @if ($categoryId)
         @push('page-header-actions')
-            <flux:button variant="ghost" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.product-categories') }}" wire:navigate>
+            <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.product-categories') }}" wire:navigate>
                 Back
             </flux:button>
         @endpush

@@ -2,7 +2,7 @@
 
     @if ($couponId)
         @push('page-header-actions')
-            <flux:button variant="ghost" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.coupons') }}" wire:navigate>
+            <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.coupons') }}" wire:navigate>
                 Back
             </flux:button>
         @endpush

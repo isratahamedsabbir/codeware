@@ -15,6 +15,7 @@
         'social'             => ['Library & System', 'admin.social'],
         'features'           => ['Library & System', 'admin.features'],
         'email-templates'    => ['Library & System', 'admin.email-templates'],
+        'cms'                => ['Content', 'admin.pages'],
         'history'            => ['Library & System', 'admin.history'],
         'payment-gateways'   => ['Sales', 'admin.orders'],
         'contacts'           => ['Inquiries', 'admin.contacts'],

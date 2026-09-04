@@ -1,24 +1,13 @@
-<div class="space-y-4">
+@push('page-header-actions')
+    <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="check-circle" wire:click="toggleBulkMode">
+        {{ $bulkMode ? 'Cancel Select' : 'Select Multiple' }}
+    </flux:button>
+    <flux:button variant="ghost" size="sm" icon="arrow-up-tray" wire:click="openUploadModal">
+        Upload Files
+    </flux:button>
+@endpush
 
-    {{-- ─── Header ─────────────────────────────────────────────────────────── --}}
-    <div class="flex justify-end gap-2">
-        <button type="button" wire:click="toggleBulkMode"
-            class="inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-xs font-medium tracking-wide transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2
-            {{ $bulkMode ? 'bg-slate-800 text-white focus:ring-slate-500' : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 focus:ring-slate-300' }}">
-            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-            </svg>
-            {{ $bulkMode ? 'Cancel Select' : 'Select Multiple' }}
-        </button>
-        <button type="button" wire:click="openUploadModal"
-            class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-xs font-medium tracking-wide text-white transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
-            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
-            </svg>
-            Upload Files
-        </button>
-    </div>
+<div class="space-y-4">
 
     {{-- ─── Filters ─────────────────────────────────────────────────────────── --}}
     <div class="rounded-xl border border-slate-200 bg-white px-5 py-4">

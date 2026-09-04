@@ -1,5 +1,5 @@
 @push('page-header-actions')
-    <flux:button variant="ghost" icon="plus" href="{{ route('admin.tags.create') }}" wire:navigate>
+    <flux:button variant="ghost" size="sm" icon="plus" href="{{ route('admin.tags.create') }}" wire:navigate>
         New tag
     </flux:button>
 @endpush

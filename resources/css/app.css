@@ -556,16 +556,14 @@ button {
 
 /* ── Page Header Action Buttons → always primary style ── */
 
-.page-header-actions [data-flux-button] { 
+.page-header-actions [data-flux-button] {
     background: linear-gradient(135deg, var(--color-accent, #1e7bc4) 0%, color-mix(in srgb, var(--color-accent, #1e7bc4) 78%, #000) 100%) !important;
     color: #ffffff !important;
     border: none !important;
     box-shadow: 0 2px 8px color-mix(in srgb, var(--color-accent, #1e7bc4) 28%, transparent) !important;
     font-weight: 500 !important;
     transition: all 150ms ease !important;
-    border-radius: 5px !important; 
-    height: 36px !important; 
-    margin-bottom: 10px !important;
+    border-radius: 5px !important;
 }
 
 .page-header-actions [data-flux-button]:hover {
@@ -576,16 +574,6 @@ button {
 
 .page-header-actions [data-flux-button] svg { 
     color: #ffffff !important;
-}
-
-/* Back buttons → outline/neutral style */
-div:has(.admin-back-btn) {
-    margin-bottom: 0px !important;
-}
-
-/* Reduce top spacing for form grids across all form/edit pages */
-.admin-main .flex.gap-5.items-start {
-    margin-top: -0.75rem;
 }
 
 .page-header-actions:empty,

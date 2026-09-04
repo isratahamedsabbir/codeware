@@ -2,7 +2,7 @@
 
     @if ($tagId)
         @push('page-header-actions')
-            <flux:button variant="ghost" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.tags') }}" wire:navigate>
+            <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.tags') }}" wire:navigate>
                 Back
             </flux:button>
         @endpush

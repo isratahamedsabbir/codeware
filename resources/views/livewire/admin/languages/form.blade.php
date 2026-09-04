@@ -2,7 +2,7 @@
 
     @if ($languageId)
         @push('page-header-actions')
-            <flux:button variant="ghost" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.languages') }}" wire:navigate>
+            <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.languages') }}" wire:navigate>
                 {{ __('Back') }}
             </flux:button>
         @endpush

@@ -1,8 +1,8 @@
 @push('page-header-actions')
-    <flux:button variant="ghost" icon="language" href="{{ route('admin.translations') }}" wire:navigate>
+    <flux:button variant="ghost" size="sm" icon="language" href="{{ route('admin.translations') }}" wire:navigate>
         {{ __('Translations') }}
     </flux:button>
-    <flux:button variant="ghost" icon="plus" href="{{ route('admin.languages.create') }}" wire:navigate>
+    <flux:button variant="ghost" size="sm" icon="plus" href="{{ route('admin.languages.create') }}" wire:navigate>
         {{ __('New language') }}
     </flux:button>
 @endpush
