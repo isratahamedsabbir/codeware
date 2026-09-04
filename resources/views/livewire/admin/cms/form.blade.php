@@ -138,7 +138,7 @@
 
     {{-- Save --}}
     <div class="flex items-center gap-3">
-        <flux:button variant="primary" wire:click="save" wire:loading.attr="disabled">
+        <flux:button variant="primary" size="sm" wire:click="save" wire:loading.attr="disabled">
             {{ $cmsId ? 'Update Section' : 'Create Section' }}
         </flux:button>
     </div>

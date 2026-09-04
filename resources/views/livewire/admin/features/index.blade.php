@@ -14,7 +14,7 @@
     </div>
 
     <div>
-        <flux:button variant="primary" wire:click="save" wire:loading.attr="disabled">
+        <flux:button variant="primary" size="sm" wire:click="save" wire:loading.attr="disabled">
             Save Features
         </flux:button>
     </div>

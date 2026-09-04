@@ -457,7 +457,7 @@
 
         {{-- Save --}}
         <div class="mt-6" x-show="tab !== 'env'">
-            <flux:button variant="primary" wire:click="save" wire:loading.attr="disabled">
+            <flux:button variant="primary" size="sm" wire:click="save" wire:loading.attr="disabled">
                 Save Settings
             </flux:button>
         </div>

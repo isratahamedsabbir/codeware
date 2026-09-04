@@ -553,7 +553,7 @@ button {
 
 .admin-btn-save {
     background: var(--color-save);
-    height: 40px;
+    height: 32px;
 }
 
 .admin-btn-save:hover {
@@ -694,15 +694,46 @@ flux\:table\:row:hover {
 }
 
 input[data-flux-control], textarea[data-flux-control], select[data-flux-control] {
-    border-radius: 3px;
+    border-radius: 4px;
     transition: all 200ms ease !important;
     border-color: var(--color-input-border) !important;
 }
 
-/* Single-line controls get a fixed compact height — textareas size themselves via
-   their own h-* class/rows instead, so a multi-line field isn't clamped to input height. */
+/* Single-line controls get a fixed compact height — matches the sidebar search
+   input (32px) for a consistent input size across the whole admin panel.
+   Padding is reset too (Flux's own py-2/py-1.5 was sized for its taller
+   default height and clips text once the box shrinks). Textareas size
+   themselves via their own h-* class/rows instead, so a multi-line field
+   isn't clamped to input height. */
 input[data-flux-control], select[data-flux-control] {
-    height: 36px;
+    height: 32px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* Plain (non-Flux) <select> elements — filter dropdowns, form selects, etc. —
+   get the same height/radius as everything else instead of their bigger
+   Tailwind-utility defaults (py-2 + rounded-lg). */
+select:not([data-flux-control]) {
+    height: 32px !important;
+    border-radius: 4px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* Data table search boxes (index page toolbars) — same treatment, matching
+   the sidebar search input this whole set of rules is modeled on. */
+input.rounded-lg.border-zinc-200.pl-9 {
+    height: 32px !important;
+    border-radius: 4px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* Placeholders read one step smaller than typed text, so they sit comfortably
+   inside the now-compact 32px controls instead of crowding the field. */
+input::placeholder, textarea::placeholder {
+    font-size: 0.8125rem;
 }
 
 input:focus[data-flux-control],
