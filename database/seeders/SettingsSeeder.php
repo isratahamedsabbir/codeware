@@ -95,20 +95,6 @@ class SettingsSeeder extends Seeder
                 'is_public' => true,
             ],
             [
-                'key' => 'tertiary_color',
-                'value' => '#d97706',
-                'type' => 'color',
-                'group' => 'colors',
-                'is_public' => true,
-            ],
-            [
-                'key' => 'button_color',
-                'value' => '#1e7bc4',
-                'type' => 'color',
-                'group' => 'colors',
-                'is_public' => true,
-            ],
-            [
                 'key' => 'header_content',
                 'value' => json_encode(['root' => ['props' => []], 'content' => [], 'zones' => []]),
                 'type' => 'json',
