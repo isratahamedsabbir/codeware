@@ -1,5 +1,5 @@
 <div
-    class="flex h-[78vh] min-h-130 gap-4"
+    class="flex flex-col md:flex-row h-[calc(100dvh-11rem)] md:h-[78vh] min-h-100 md:min-h-130 gap-4"
     x-data="{
         authId: {{ auth()->id() }},
         activeId: @entangle('conversationId'),
@@ -22,7 +22,7 @@
     }"
 >
     {{-- Conversation list --}}
-    <div class="w-[320px] shrink-0 bg-white rounded-lg border border-zinc-100 shadow-sm flex flex-col overflow-hidden">
+    <div class="w-full md:w-[320px] shrink-0 bg-white rounded-lg border border-zinc-100 shadow-sm flex-col overflow-hidden {{ $this->activeConversation ? 'hidden md:flex' : 'flex' }}">
         <div class="p-3 border-b border-zinc-100 relative">
             <flux:input
                 wire:model.live.debounce.300ms="userSearch"
@@ -86,10 +86,13 @@
     </div>
 
     {{-- Thread --}}
-    <div class="flex-1 bg-white rounded-lg border border-zinc-100 shadow-sm flex flex-col overflow-hidden">
+    <div class="flex-1 min-h-0 bg-white rounded-lg border border-zinc-100 shadow-sm flex-col overflow-hidden {{ $this->activeConversation ? 'flex' : 'hidden md:flex' }}">
         @if ($this->activeConversation)
             @php $other = $this->activeConversation->otherUser(auth()->user()); @endphp
             <div class="px-4 py-3 border-b border-zinc-100 flex items-center gap-2.5 shrink-0">
+                <button type="button" wire:click="closeConversation" class="md:hidden -ml-1 p-1 rounded text-zinc-500 hover:bg-zinc-100 shrink-0" aria-label="{{ __('Back to conversations') }}">
+                    <flux:icon.chevron-left class="size-5" />
+                </button>
                 <flux:avatar size="sm" :name="$other->name" :initials="$other->initials()" />
                 <div class="text-sm font-semibold text-zinc-800">{{ $other->name }}</div>
             </div>
@@ -121,17 +124,18 @@
                 @endforelse
             </div>
 
-            <form wire:submit="sendMessage" class="p-3 border-t border-zinc-100 flex items-end gap-2 shrink-0">
+            <form wire:submit="sendMessage" class="p-3 border-t border-zinc-100 flex items-stretch gap-2 shrink-0">
                 <div class="flex-1">
                     <flux:textarea
                         wire:model="messageBody"
-                        rows="1"
+                        rows="2"
+                        resize="none"
                         placeholder="{{ __('Write a message...') }}"
                         x-on:keydown.enter.prevent="if (!$event.shiftKey) { $wire.sendMessage(); }"
                     />
                     <flux:error name="messageBody" />
                 </div>
-                <flux:button type="submit" variant="primary" icon="paper-airplane">
+                <flux:button type="submit" variant="primary" icon="paper-airplane" class="h-auto! self-stretch">
                     {{ __('Send') }}
                 </flux:button>
             </form>

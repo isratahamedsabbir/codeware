@@ -102,6 +102,11 @@ class Index extends Component
         $this->openConversation(Conversation::between(auth()->user(), $recipient)->id);
     }
 
+    public function closeConversation(): void
+    {
+        $this->conversationId = null;
+    }
+
     public function sendMessage(): void
     {
         $this->validate([
