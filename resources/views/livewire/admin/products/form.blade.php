@@ -142,25 +142,6 @@
                 </div>
             </div>
 
-            {{-- Page --}}
-            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
-                <div
-                    class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                    Page
-                </div>
-                <div class="px-4 py-3">
-                    @if ($pageId)
-                        <flux:button size="xs" variant="outline" icon="arrow-top-right-on-square"
-                            href="{{ route('admin.pages.edit', $pageId) }}" wire:navigate class="w-full justify-center">
-                            Edit Page
-                        </flux:button>
-                    @else
-                        <p class="text-[10px] text-zinc-400 leading-relaxed">A page will be created automatically when
-                            you save.</p>
-                    @endif
-                </div>
-            </div>
-
             <livewire:admin.media-library.picker-modal key="products-form-picker-modal" />
 
     {{-- Footer --}}
