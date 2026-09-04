@@ -1,4 +1,4 @@
-﻿<div class="max-w-[1600px] w-full mx-auto flex-1">
+<div class="max-w-[1600px] w-full mx-auto flex-1">
 
     <style>
         .jodit-fixed-wrap .jodit-container,
@@ -17,13 +17,11 @@
         } 
     </style>
 
-    @if ($categoryId)
-        @push('page-header-actions')
-            <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.product-categories') }}" wire:navigate>
-                Back
-            </flux:button>
-        @endpush
-    @endif
+    @push('page-header-actions')
+        <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.product-categories') }}" wire:navigate>
+            Back
+        </flux:button>
+    @endpush
 
     <div class="flex gap-5 items-start">
         {{-- ── MAIN ── --}}
@@ -32,7 +30,7 @@
             <div x-data="{ locale: 'en' }">
 
                 {{-- Locale Tabs --}}
-                <div class="flex gap-2 mb-4">
+                <div class="flex gap-2 -mx-6 px-6 pb-4 mb-4 border-b border-zinc-200 dark:border-zinc-700">
                     <button type="button"
                         :class="locale === 'en' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'"
                         class="px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors"
@@ -103,16 +101,11 @@
         <div class="w-[320px] shrink-0 space-y-4">
 
             {{-- Icon & Status --}}
-            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
-                <div
-                    class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                    Category Settings
-                </div>
-                <div class="px-4 py-4">
-                    <x-media-picker model="icon" label="Icon" placeholder="Select icon image from library"
-                        :picker-id="$iconPickerId" dropzone />
-                </div>
-            </div>
+            <x-admin-section-card icon="swatch" title="Category Settings" body-class="px-4 py-4"
+                description="Icon shown for this category.">
+                <x-media-picker model="icon" label="Icon" placeholder="Select icon image from library"
+                    :picker-id="$iconPickerId" dropzone />
+            </x-admin-section-card>
 
             {{-- Actions --}}
             <div class="bg-white rounded-lg border border-zinc-100 shadow-sm p-4 flex items-center gap-3 flex-wrap">

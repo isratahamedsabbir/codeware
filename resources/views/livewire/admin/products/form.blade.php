@@ -1,4 +1,4 @@
-﻿<div class="max-w-[1600px] w-full mx-auto flex-1">
+<div class="max-w-[1600px] w-full mx-auto flex-1">
 
     <style>
         .jodit-fixed-wrap .jodit-container,
@@ -17,13 +17,11 @@
         }
     </style>
 
-    @if ($productId)
-        @push('page-header-actions')
-            <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.products') }}" wire:navigate>
-                Back
-            </flux:button>
-        @endpush
-    @endif
+    @push('page-header-actions')
+        <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.products') }}" wire:navigate>
+            Back
+        </flux:button>
+    @endpush
 
     <div class="flex gap-5 items-start">
 
@@ -33,7 +31,7 @@
             <div x-data="{ locale: 'en' }">
 
                 {{-- Locale Tabs --}}
-                <div class="flex gap-2 mb-4">
+                <div class="flex gap-2 -mx-6 px-6 pb-4 mb-4 border-b border-zinc-200 dark:border-zinc-700">
                     <button type="button"
                         :class="locale === 'en' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'"
                         class="px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors"
@@ -113,11 +111,8 @@
         <div class="w-[320px] shrink-0 space-y-4">
 
             {{-- Settings --}}
-            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
-                <div
-                    class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                    Settings
-                </div>
+            <x-admin-section-card icon="cog-6-tooth" title="Settings" body-class=""
+                description="Price and catalog visibility.">
                 <div class="px-4 py-3 border-b border-zinc-50">
                     <flux:field>
                         <flux:label>Price</flux:label>
@@ -128,19 +123,14 @@
                 <div class="px-4 py-3">
                     <flux:checkbox wire:model="is_featured" label="Featured" />
                 </div>
-            </div>
+            </x-admin-section-card>
 
             {{-- Featured Image --}}
-            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
-                <div
-                    class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                    Thumbnail Image
-                </div>
-                <div class="px-4 py-4">
-                    <x-media-picker model="featured_image" label="" placeholder="Select featured image"
-                        :picker-id="$featuredImagePickerId" dropzone />
-                </div>
-            </div>
+            <x-admin-section-card icon="photo" title="Thumbnail Image" icon-color="bg-blue-500/10 text-blue-600"
+                body-class="px-4 py-4" description="Shown in the product catalog.">
+                <x-media-picker model="featured_image" label="" placeholder="Select featured image"
+                    :picker-id="$featuredImagePickerId" dropzone />
+            </x-admin-section-card>
 
             <livewire:admin.media-library.picker-modal key="products-form-picker-modal" />
 

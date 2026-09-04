@@ -1,15 +1,15 @@
-﻿<div class="max-w-[1600px] w-full mx-auto flex-1">
+<div class="max-w-[1600px] w-full mx-auto flex-1">
 
-    @if ($userId)
-        @push('page-header-actions')
+    @push('page-header-actions')
+        @if ($userId)
             <flux:button variant="ghost" size="sm" icon="identification" href="{{ route('admin.users.card', $userId) }}" target="_blank">
                 View Card
             </flux:button>
-            <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.users') }}" wire:navigate>
-                Back
-            </flux:button>
-        @endpush
-    @endif
+        @endif
+        <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.users') }}" wire:navigate>
+            Back
+        </flux:button>
+    @endpush
 
     <div class="flex gap-5 items-start">
 
@@ -97,32 +97,24 @@
         {{-- ── SIDEBAR ── --}}
         <div class="w-[320px] shrink-0 space-y-4">
 
-            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
-                <div
-                    class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                    Settings
-                </div>
-                <div class="px-4 py-3">
-                    <label class="flex items-center justify-between gap-3 cursor-pointer select-none">
-                        <div>
-                            <div class="text-sm font-medium text-zinc-800">Super Admin</div>
-                            <div class="text-xs text-zinc-500 mt-0.5">Sets <span class="font-mono">is_admin</span> — full,
-                                unconditional access to everything, regardless of assigned roles. The other two tiers
-                                (Admin, Staff) are set via roles below.</div>
-                        </div>
-                        <input type="checkbox" wire:model="isAdmin"
-                            class="size-4.5 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 focus:ring-2 cursor-pointer">
-                    </label>
-                </div>
-            </div>
+            <x-admin-section-card icon="shield-check" title="Settings" body-class="px-4 py-3"
+                description="Access level for this account.">
+                <label class="flex items-center justify-between gap-3 cursor-pointer select-none">
+                    <div>
+                        <div class="text-sm font-medium text-zinc-800">Super Admin</div>
+                        <div class="text-xs text-zinc-500 mt-0.5">Sets <span class="font-mono">is_admin</span> — full,
+                            unconditional access to everything, regardless of assigned roles. The other two tiers
+                            (Admin, Staff) are set via roles below.</div>
+                    </div>
+                    <input type="checkbox" wire:model="isAdmin"
+                        class="size-4.5 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 focus:ring-2 cursor-pointer">
+                </label>
+            </x-admin-section-card>
 
             {{-- Signature --}}
-            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
-                <div
-                    class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                    Signature
-                </div>
-                <div class="px-4 py-3 space-y-2"
+            <x-admin-section-card icon="pencil" title="Signature" icon-color="bg-indigo-500/10 text-indigo-600"
+                body-class="px-4 py-3" description="Draw or upload a signature image.">
+                <div class="space-y-2"
                     x-data="{
                         drawing: false,
                         ctx: null,
@@ -207,7 +199,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </x-admin-section-card>
 
             {{-- Footer --}}
             <div class="bg-white rounded-lg border border-zinc-100 shadow-sm p-4 flex items-center gap-3 flex-wrap">

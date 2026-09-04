@@ -53,7 +53,7 @@
                                     default => 'squares-2x2',
                                 };
                             @endphp
-                            <x-admin-section-card :icon="$groupIcon" :title="ucfirst($group ?? 'General')">
+                            <x-admin-section-card header-border="border-zinc-100" :icon="$groupIcon" :title="ucfirst($group ?? 'General')">
                                 <div class="{{ $group === 'images' ? 'grid grid-cols-2 sm:grid-cols-4 gap-4' : 'space-y-4' }}">
                                 @foreach ($items as $setting)
                                     <flux:field>
@@ -135,7 +135,7 @@
                 </flux:text>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <x-admin-section-card icon="window" title="Header"
+                    <x-admin-section-card header-border="border-zinc-100" icon="window" title="Header"
                         description="Edit the site-wide header layout and navigation.">
                         <a href="{{ $this->getEditorUrl('header') }}" target="_blank"
                             class="inline-flex items-center justify-center gap-2 w-full rounded-lg bg-primary px-4 py-2.5 text-xs font-bold text-white hover:bg-primary transition-colors">
@@ -146,7 +146,7 @@
                         </a>
                     </x-admin-section-card>
 
-                    <x-admin-section-card icon="bars-3-bottom-left" title="Footer" icon-color="bg-blue-500/10 text-blue-600"
+                    <x-admin-section-card header-border="border-zinc-100" icon="bars-3-bottom-left" title="Footer" icon-color="bg-blue-500/10 text-blue-600"
                         description="Edit the site-wide footer layout and links.">
                         <a href="{{ $this->getEditorUrl('footer') }}" target="_blank"
                             class="inline-flex items-center justify-center gap-2 w-full rounded-lg bg-primary px-4 py-2.5 text-xs font-bold text-white hover:bg-primary transition-colors">
@@ -179,7 +179,7 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-                <x-admin-section-card icon="banknotes" title="Currency">
+                <x-admin-section-card header-border="border-zinc-100" icon="banknotes" title="Currency">
                     <flux:field>
                         <flux:label>Currency Code</flux:label>
                         <flux:input wire:model="settings.currency_code" placeholder="BDT, USD, EUR" class="uppercase" />
@@ -202,7 +202,7 @@
                     </flux:field>
                 </x-admin-section-card>
 
-                <x-admin-section-card icon="eye" title="Preview" icon-color="bg-blue-500/10 text-blue-600">
+                <x-admin-section-card header-border="border-zinc-100" icon="eye" title="Preview" icon-color="bg-blue-500/10 text-blue-600">
                     <div class="rounded-lg bg-zinc-50 dark:bg-zinc-800/50 px-4 py-6 text-center">
                         <span class="text-2xl font-bold text-zinc-800 dark:text-zinc-100" x-data
                             x-text="($wire.settings.currency_position || 'left') === 'right' ? '1,250.00 ' + ($wire.settings.currency_symbol || '৳') : ($wire.settings.currency_symbol || '৳') + '1,250.00'"></span>
@@ -217,7 +217,7 @@
         <div x-show="tab === 'theme'">
             <div class="max-w-[1600px] space-y-6">
 
-                <x-admin-section-card icon="globe-alt" title="Frontend"
+                <x-admin-section-card header-border="border-zinc-100" icon="globe-alt" title="Frontend"
                     description="Choose the design shown to visitors on the public site.">
                     <flux:field class="max-w-sm">
                         <flux:label>Site Design</flux:label>
@@ -233,7 +233,7 @@
                     </flux:field>
                 </x-admin-section-card>
 
-                <x-admin-section-card icon="swatch" title="Backend"
+                <x-admin-section-card header-border="border-zinc-100" icon="swatch" title="Backend"
                     description="Colors used across the admin panel, including buttons.">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
                         @foreach ($colorSettings as $setting)
@@ -263,7 +263,7 @@
                 </div>
 
                 {{-- Maintenance mode --}}
-                <x-admin-section-card icon="wrench" title="Maintenance Mode"
+                <x-admin-section-card header-border="border-zinc-100" icon="wrench" title="Maintenance Mode"
                     icon-color="{{ $maintenanceMode ? 'bg-red-500/10 text-red-600' : 'bg-primary/10 text-primary' }}"
                     description="Takes the public site offline for every visitor. The admin panel and login stay reachable either way."
                     class="max-w-2xl {{ $maintenanceMode ? 'border-red-300! dark:border-red-800!' : '' }}">
@@ -288,7 +288,7 @@
                 </x-admin-section-card>
 
                 {{-- Debug mode --}}
-                <x-admin-section-card icon="bug-ant" title="Debug Mode"
+                <x-admin-section-card header-border="border-zinc-100" icon="bug-ant" title="Debug Mode"
                     icon-color="{{ $debugMode ? 'bg-amber-500/10 text-amber-600' : 'bg-primary/10 text-primary' }}"
                     description="Shows full error details and stack traces to visitors. Leave this off in production."
                     class="max-w-2xl {{ $debugMode ? 'border-amber-300! dark:border-amber-800!' : '' }}">
@@ -313,7 +313,7 @@
                 </x-admin-section-card>
 
                 @foreach ($this->envFields() as $groupLabel => $fields)
-                    <x-admin-section-card icon="server" :title="__($groupLabel)" class="max-w-2xl">
+                    <x-admin-section-card header-border="border-zinc-100" icon="server" :title="__($groupLabel)" class="max-w-2xl">
                         @foreach ($fields as $key => $meta)
                             <flux:field>
                                 <flux:label>{{ __($meta['label']) }}</flux:label>
@@ -351,7 +351,7 @@
         <div x-show="tab === 'other'">
             <div class="max-w-[1600px] space-y-6">
                 {{-- Floating action button --}}
-                <x-admin-section-card x-data icon="cursor-arrow-rays" title="Floating Button" class="max-w-md"
+                <x-admin-section-card header-border="border-zinc-100" x-data icon="cursor-arrow-rays" title="Floating Button" class="max-w-md"
                     description="Shows a floating button in the corner of every admin page.">
                     <x-slot:actions>
                         <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
@@ -380,7 +380,7 @@
         {{-- Constant tab --}}
         <div x-show="tab === 'constant'">
             <div class="max-w-[1600px] space-y-6">
-                <x-admin-section-card icon="variable" title="Constant"
+                <x-admin-section-card header-border="border-zinc-100" icon="variable" title="Constant"
                     description="Freeform key/value pairs, available site-wide — not tied to any page or CMS section.">
                     <x-slot:actions>
                         <flux:button size="xs" variant="outline" icon="plus" wire:click="addConstant">Add field</flux:button>

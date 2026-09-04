@@ -1,4 +1,4 @@
-﻿<div class="max-w-[1600px] w-full mx-auto flex-1">
+<div class="max-w-[1600px] w-full mx-auto flex-1">
 
     <style>
         .jodit-fixed-wrap .jodit-container,
@@ -17,20 +17,18 @@
         }
     </style>
 
-    @if ($categoryId)
-        @push('page-header-actions')
-            <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.post-categories') }}" wire:navigate>
-                Back
-            </flux:button>
-        @endpush
-    @endif
+    @push('page-header-actions')
+        <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.post-categories') }}" wire:navigate>
+            Back
+        </flux:button>
+    @endpush
 
     <div class="w-full bg-white rounded-lg shadow-sm p-6">
 
             <div x-data="{ locale: 'en' }">
 
                 {{-- Locale Tabs --}}
-                <div class="flex gap-2 mb-4">
+                <div class="flex gap-2 -mx-6 px-6 pb-4 mb-4 border-b border-zinc-200 dark:border-zinc-700">
                     <button type="button"
                         :class="locale === 'en' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'"
                         class="px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors"

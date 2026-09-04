@@ -1,12 +1,10 @@
 <div class="max-w-[1600px] w-full mx-auto flex-1">
 
-    @if ($couponId)
-        @push('page-header-actions')
-            <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.coupons') }}" wire:navigate>
-                Back
-            </flux:button>
-        @endpush
-    @endif
+    @push('page-header-actions')
+        <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.coupons') }}" wire:navigate>
+            Back
+        </flux:button>
+    @endpush
 
     <div class="w-full bg-white rounded-lg shadow-sm p-6 space-y-4">
 

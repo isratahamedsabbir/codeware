@@ -1,12 +1,10 @@
 <div class="max-w-[1600px] w-full mx-auto flex-1">
 
-    @if ($pageId)
-        @push('page-header-actions')
-            <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.pages') }}" wire:navigate>
-                Back
-            </flux:button>
-        @endpush
-    @endif
+    @push('page-header-actions')
+        <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.pages') }}" wire:navigate>
+            Back
+        </flux:button>
+    @endpush
 
     <div class="flex gap-5 items-start">
 
@@ -14,7 +12,7 @@
         <div class="flex-1 min-w-0 space-y-4">
         <div class="bg-white rounded-lg shadow-sm p-6">
             <div x-data="{ locale: 'en' }">
-                <div class="flex gap-2 mb-4">
+                <div class="flex gap-2 -mx-6 px-6 pb-4 mb-4 border-b border-zinc-200 dark:border-zinc-700">
                     <button type="button"
                         :class="locale === 'en' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'"
                         class="px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors"
@@ -68,11 +66,9 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
-            <div class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                Search Engine (SEO) Settings
-            </div>
-            <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-x-7 gap-y-4">
+        <x-admin-section-card icon="magnifying-glass" title="Search Engine (SEO) Settings"
+            icon-color="bg-sky-500/10 text-sky-600" body-class="grid grid-cols-1 lg:grid-cols-2 gap-x-7 gap-y-4"
+            description="Meta tags and indexing controls for this page.">
                 <div class="lg:col-span-2 min-w-0">
                     <flux:field>
                         <flux:label>Canonical URL</flux:label>
@@ -138,20 +134,15 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+        </x-admin-section-card>
 
         {{-- ── Constant ── --}}
-        <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
-            <div class="px-4 py-2.5 border-b border-zinc-100 flex items-center justify-between gap-3">
-                <div>
-                    <div class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Constant</div>
-                    <p class="mt-0.5 text-xs text-zinc-400">Freeform key/value pairs — custom flags or extra content.</p>
-                </div>
+        <x-admin-section-card icon="variable" title="Constant" icon-color="bg-indigo-500/10 text-indigo-600"
+            description="Freeform key/value pairs — custom flags or extra content.">
+            <x-slot:actions>
                 <flux:button size="xs" variant="outline" icon="plus" wire:click="addConstant">Add field</flux:button>
-            </div>
+            </x-slot:actions>
 
-            <div class="p-6 space-y-4">
                 <flux:error name="constant" />
 
                 @forelse ($constant as $i => $pair)
@@ -217,25 +208,20 @@
                         <p class="text-sm text-zinc-400">No content yet.</p>
                     </div>
                 @endforelse
-            </div>
-        </div>
+        </x-admin-section-card>
         </div>
 
         {{-- ── SIDEBAR ── --}}
         <div class="w-[320px] shrink-0 space-y-4">
-            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
-                <div class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                    Page Settings
-                </div>
-                <div class="px-4 py-3">
-                    <flux:field>
-                        <flux:label>Template</flux:label>
-                        <flux:input wire:model="template" placeholder="puck" />
-                    </flux:field>
-                </div>
-            </div>
+            <x-admin-section-card icon="cog-6-tooth" title="Page Settings" body-class="px-4 py-3"
+                description="Template used to render this page.">
+                <flux:field>
+                    <flux:label>Template</flux:label>
+                    <flux:input wire:model="template" placeholder="puck" />
+                </flux:field>
+            </x-admin-section-card>
 
-            <div class="flex justify-start items-center gap-3 border-t border-zinc-100 flex-wrap pt-4 mt-5">
+            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm p-4 flex items-center gap-3 flex-wrap">
                 <button wire:click="save" wire:loading.attr="disabled" wire:target="save"
                     class="admin-btn-save inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
                     <svg wire:loading.remove wire:target="save" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

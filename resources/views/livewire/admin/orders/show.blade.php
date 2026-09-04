@@ -1,4 +1,4 @@
-﻿<div class="max-w-[1200px] w-full mx-auto">
+<div class="max-w-[1200px] w-full mx-auto">
 
     @push('page-header-actions')
         <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.orders') }}" wire:navigate>

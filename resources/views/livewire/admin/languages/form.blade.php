@@ -1,12 +1,10 @@
-﻿<div class="max-w-[1600px] w-full mx-auto flex-1">
+<div class="max-w-[1600px] w-full mx-auto flex-1">
 
-    @if ($languageId)
-        @push('page-header-actions')
-            <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.languages') }}" wire:navigate>
-                {{ __('Back') }}
-            </flux:button>
-        @endpush
-    @endif
+    @push('page-header-actions')
+        <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.languages') }}" wire:navigate>
+            {{ __('Back') }}
+        </flux:button>
+    @endpush
 
     <div class="flex gap-5 items-start max-lg:flex-col">
 
@@ -53,36 +51,32 @@
         {{-- ── SIDEBAR ── --}}
         <div class="w-[320px] max-lg:w-full shrink-0 space-y-4">
 
-            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
-                <div class="px-4 py-2.5 border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                    {{ __('Settings') }}
-                </div>
-                <div class="px-4 py-3 space-y-4">
+            <x-admin-section-card icon="adjustments-horizontal" :title="__('Settings')" body-class="px-4 py-3 space-y-4"
+                :description="__('Text direction and ordering in the switcher.')">
 
-                    <flux:field>
-                        <flux:label>{{ __('Text direction') }}</flux:label>
-                        <flux:select wire:model="direction">
-                            <flux:select.option value="ltr">{{ __('Left to right (LTR)') }}</flux:select.option>
-                            <flux:select.option value="rtl">{{ __('Right to left (RTL)') }}</flux:select.option>
-                        </flux:select>
-                        <flux:error name="direction" />
-                    </flux:field>
+                <flux:field>
+                    <flux:label>{{ __('Text direction') }}</flux:label>
+                    <flux:select wire:model="direction">
+                        <flux:select.option value="ltr">{{ __('Left to right (LTR)') }}</flux:select.option>
+                        <flux:select.option value="rtl">{{ __('Right to left (RTL)') }}</flux:select.option>
+                    </flux:select>
+                    <flux:error name="direction" />
+                </flux:field>
 
-                    <flux:field>
-                        <flux:label>{{ __('Sort order') }}</flux:label>
-                        <flux:input type="number" wire:model="sort_order" min="0" />
-                        <flux:description>{{ __('Lower numbers appear first in the switcher.') }}</flux:description>
-                        <flux:error name="sort_order" />
-                    </flux:field>
+                <flux:field>
+                    <flux:label>{{ __('Sort order') }}</flux:label>
+                    <flux:input type="number" wire:model="sort_order" min="0" />
+                    <flux:description>{{ __('Lower numbers appear first in the switcher.') }}</flux:description>
+                    <flux:error name="sort_order" />
+                </flux:field>
 
-                    <flux:field variant="inline">
-                        <flux:switch wire:model="is_active" />
-                        <flux:label>{{ __('Active') }}</flux:label>
-                        <flux:description>{{ __('Inactive languages are hidden from the switcher.') }}</flux:description>
-                    </flux:field>
+                <flux:field variant="inline">
+                    <flux:switch wire:model="is_active" />
+                    <flux:label>{{ __('Active') }}</flux:label>
+                    <flux:description>{{ __('Inactive languages are hidden from the switcher.') }}</flux:description>
+                </flux:field>
 
-                </div>
-            </div>
+            </x-admin-section-card>
 
             @unless ($languageId)
                 <div class="rounded-lg border border-indigo-100 bg-indigo-50/60 px-4 py-3">
