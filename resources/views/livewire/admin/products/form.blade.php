@@ -145,7 +145,7 @@
             <livewire:admin.media-library.picker-modal key="products-form-picker-modal" />
 
     {{-- Footer --}}
-    <div class="flex justify-end items-center gap-3 border-t border-zinc-100 flex-wrap mt-6">
+    <div class="flex justify-start items-center gap-3 border-t border-zinc-100 flex-wrap mt-6">
         <button wire:click="save" wire:loading.attr="disabled" wire:target="save"
             class="admin-btn-save inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
             <svg wire:loading.remove wire:target="save" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
