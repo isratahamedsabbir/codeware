@@ -93,7 +93,7 @@
             @endunless
 
             {{-- Footer --}}
-            <div class="flex justify-start items-center gap-3 border-t border-zinc-100 flex-wrap">
+            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm p-4 flex items-center gap-3 flex-wrap">
                 <button wire:click="save" wire:loading.attr="disabled"
                     class="admin-btn-save inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
