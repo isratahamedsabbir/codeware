@@ -201,12 +201,12 @@
                                     <div class="flex items-center gap-1.5 shrink-0">
                                         <button wire:click="toggleShortMenu({{ $child->id }})"
                                             aria-label="{{ $child->is_short_menu ? __('Remove from short menu') : __('Add to short menu') }}"
-                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 {{ $child->is_short_menu ? 'border-amber-500 text-amber-500' : 'border-zinc-300 text-zinc-400' }} hover:bg-amber-500 hover:text-white hover:border-amber-500">
+                                            class="inline-flex items-center justify-center w-7 h-7 shrink-0 rounded border transition-all duration-150 {{ $child->is_short_menu ? 'border-amber-500 text-amber-500' : 'border-zinc-300 text-zinc-400' }} hover:bg-amber-500 hover:text-white hover:border-amber-500">
                                             <flux:icon.bolt class="w-3 h-3" variant="{{ $child->is_short_menu ? 'solid' : 'outline' }}" />
                                         </button>
                                         <button wire:click="toggleActive({{ $child->id }})"
                                             aria-label="{{ $child->is_active ? __('Deactivate') : __('Activate') }}"
-                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-zinc-400 text-zinc-500 hover:bg-zinc-600 hover:text-white hover:border-zinc-600">
+                                            class="inline-flex items-center justify-center w-7 h-7 shrink-0 rounded border transition-all duration-150 border-zinc-400 text-zinc-500 hover:bg-zinc-600 hover:text-white hover:border-zinc-600">
                                             @if ($child->is_active)
                                                 <flux:icon.eye-slash class="w-3 h-3" />
                                             @else
@@ -214,14 +214,14 @@
                                             @endif
                                         </button>
                                         <button wire:click="edit({{ $child->id }})" aria-label="{{ __('Edit') }}"
-                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-primary text-primary hover:bg-primary hover:text-white">
+                                            class="inline-flex items-center justify-center w-7 h-7 shrink-0 rounded border transition-all duration-150 border-primary text-primary hover:bg-primary hover:text-white">
                                             <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                                                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                                             </svg>
                                         </button>
                                         <button wire:click="confirmDelete({{ $child->id }})" aria-label="{{ __('Delete') }}"
-                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white">
+                                            class="inline-flex items-center justify-center w-7 h-7 shrink-0 rounded border transition-all duration-150 border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white">
                                             <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                 <polyline points="3 6 5 6 21 6" />
                                                 <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
@@ -310,7 +310,7 @@
                     {{ $editingId ? __('Update') : __('Create') }}
                 </button>
                 <flux:modal.close>
-                    <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                    <flux:button variant="ghost" size="sm">{{ __('Cancel') }}</flux:button>
                 </flux:modal.close>
             </div>
         </div>
@@ -338,7 +338,7 @@
                     {{ __('Create') }}
                 </button>
                 <flux:modal.close>
-                    <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                    <flux:button variant="ghost" size="sm">{{ __('Cancel') }}</flux:button>
                 </flux:modal.close>
             </div>
         </div>
@@ -363,11 +363,11 @@
             </flux:text>
             <div class="flex gap-2 pt-1">
                 <button wire:click="delete"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">
+                    class="inline-flex h-8 items-center gap-2 px-4 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">
                     {{ __('Delete') }}
                 </button>
                 <flux:modal.close>
-                    <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                    <flux:button variant="ghost" size="sm">{{ __('Cancel') }}</flux:button>
                 </flux:modal.close>
             </div>
         </div>

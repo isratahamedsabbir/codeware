@@ -1,7 +1,4 @@
 @push('page-header-actions')
-    <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="check-circle" wire:click="toggleBulkMode">
-        {{ $bulkMode ? 'Cancel Select' : 'Select Multiple' }}
-    </flux:button>
     <flux:button variant="ghost" size="sm" icon="arrow-up-tray" wire:click="openUploadModal">
         Upload Files
     </flux:button>
@@ -32,7 +29,7 @@
                         d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                 </svg>
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search media…"
-                    class="block w-full rounded-md border border-slate-200 py-2.5 pl-9 pr-3 text-sm text-slate-800 placeholder-slate-400 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/10" />
+                    class="block h-8 w-full rounded border border-slate-200 pl-9 pr-3 text-sm text-slate-800 placeholder-slate-400 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/10" />
             </div>
         </div>
     </div>
@@ -43,6 +40,7 @@
         {{-- Grid header --}}
         <div class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-3.5">
             <span class="text-[10px] font-medium uppercase tracking-widest text-slate-500">Library</span>
+            <span class="text-xs text-slate-400">Ctrl+click to select multiple</span>
             <span class="text-xs font-medium text-slate-500">Total: {{ $media->total() }}</span>
         </div>
 
@@ -50,7 +48,8 @@
             <div class="grid grid-cols-2 gap-3 p-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
                 @foreach ($media as $item)
                     @php($isSelected = $bulkMode ? in_array($item->id, $selectedMediaIds, true) : $selectedMediaId === $item->id)
-                    <div wire:key="media-{{ $item->id }}" wire:click="selectMedia({{ $item->id }})"
+                    <div wire:key="media-{{ $item->id }}"
+                        x-on:click="($event.ctrlKey || $event.metaKey) ? $wire.ctrlSelectMedia({{ $item->id }}) : $wire.selectMedia({{ $item->id }})"
                         class="group relative aspect-square cursor-pointer overflow-hidden rounded-lg border transition-all
                         {{ $isSelected
                             ? 'border-primary ring-2 ring-primary/20'

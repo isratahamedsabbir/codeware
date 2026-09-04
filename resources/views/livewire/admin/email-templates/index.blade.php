@@ -71,7 +71,7 @@
                                 <label
                                     class="block text-[10px] font-medium uppercase tracking-widest text-slate-500">Name</label>
                                 <input type="text" wire:model="name"
-                                    class="block w-full h-9 rounded-lg border border-slate-300 text-sm text-slate-800 px-3 focus:border-secondary focus:ring-1 focus:ring-secondary outline-none" />
+                                    class="block w-full h-8 rounded border border-slate-300 text-sm text-slate-800 px-3 focus:border-secondary focus:ring-1 focus:ring-secondary outline-none" />
                                 @error('name')
                                     <span class="text-[11px] text-rose-600 font-medium">{{ $message }}</span>
                                 @enderror
@@ -81,7 +81,7 @@
                                 <label
                                     class="block text-[10px] font-medium uppercase tracking-widest text-slate-500">Subject</label>
                                 <input type="text" wire:model="subjectTemplate"
-                                    class="block w-full h-9 rounded-lg border border-slate-300 text-sm text-slate-800 px-3 focus:border-secondary focus:ring-1 focus:ring-secondary outline-none" />
+                                    class="block w-full h-8 rounded border border-slate-300 text-sm text-slate-800 px-3 focus:border-secondary focus:ring-1 focus:ring-secondary outline-none" />
                                 @error('subjectTemplate')
                                     <span class="text-[11px] text-rose-600 font-medium">{{ $message }}</span>
                                 @enderror

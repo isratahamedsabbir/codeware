@@ -54,7 +54,7 @@
     @keydown.escape.window="open = false"
     {{ $attributes->class(['relative']) }}>
     <button type="button" x-ref="trigger" @click="toggle()"
-        class="inline-flex w-full items-center justify-between gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 hover:border-zinc-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:w-[200px]">
+        class="inline-flex h-8 w-full items-center justify-between gap-2 rounded border border-zinc-200 bg-white px-3 text-sm text-zinc-700 hover:border-zinc-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:w-[200px]">
         <span class="truncate">{{ $selectedLabel ?: $allLabel }}</span>
         <flux:icon.chevron-down class="size-3.5 shrink-0 text-zinc-400 transition-transform" ::class="{ 'rotate-180': open }" />
     </button>

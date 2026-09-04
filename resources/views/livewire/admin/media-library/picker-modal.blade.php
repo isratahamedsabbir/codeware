@@ -354,7 +354,7 @@
                                                 class="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
                                                 File URL</p>
                                             <input type="text" readonly value="{{ $selectedMedia->url }}"
-                                                class="w-full rounded-lg border-slate-200 bg-white text-xs text-slate-500 focus:border-blue-500 focus:ring-blue-500"
+                                                class="h-8 w-full rounded border-slate-200 bg-white text-xs text-slate-500 focus:border-blue-500 focus:ring-blue-500"
                                                 onclick="this.select()" />
                                         </div>
                                     </div>

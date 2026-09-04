@@ -29,7 +29,7 @@
 
             <div class="relative max-w-xs w-full">
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search media..."
-                    class="block w-full rounded-lg border border-slate-300 text-sm font-bold focus:border-blue-500 focus:ring-blue-500 px-3 py-3" />
+                    class="block h-8 w-full rounded border border-slate-300 text-sm font-bold focus:border-blue-500 focus:ring-blue-500 px-3" />
             </div>
         </div>
     </section>

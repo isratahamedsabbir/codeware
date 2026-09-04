@@ -129,26 +129,41 @@ class Index extends Component
         return 'document';
     }
 
+    /**
+     * Plain click — always collapses to a single selection. If a multi-select
+     * (ctrl+click) was in progress, this exits it and selects just this item.
+     */
     public function selectMedia(int $mediaId): void
     {
         if ($this->bulkMode) {
-            if (in_array($mediaId, $this->selectedMediaIds, true)) {
-                $this->selectedMediaIds = array_values(array_diff($this->selectedMediaIds, [$mediaId]));
-            } else {
-                $this->selectedMediaIds[] = $mediaId;
-            }
-
-            return;
+            $this->bulkMode = false;
+            $this->selectedMediaIds = [];
         }
 
         $this->selectedMediaId = $this->selectedMediaId === $mediaId ? null : $mediaId;
     }
 
-    public function toggleBulkMode(): void
+    /**
+     * Ctrl/Cmd+click — adds/removes this item from a multi-selection instead
+     * of replacing it, entering multi-select mode on the first such click.
+     */
+    public function ctrlSelectMedia(int $mediaId): void
     {
-        $this->bulkMode = ! $this->bulkMode;
-        $this->selectedMediaId = null;
-        $this->selectedMediaIds = [];
+        if (! $this->bulkMode) {
+            $this->bulkMode = true;
+            $this->selectedMediaIds = $this->selectedMediaId ? [$this->selectedMediaId] : [];
+            $this->selectedMediaId = null;
+        }
+
+        if (in_array($mediaId, $this->selectedMediaIds, true)) {
+            $this->selectedMediaIds = array_values(array_diff($this->selectedMediaIds, [$mediaId]));
+        } else {
+            $this->selectedMediaIds[] = $mediaId;
+        }
+
+        if (empty($this->selectedMediaIds)) {
+            $this->bulkMode = false;
+        }
     }
 
     public function selectAllOnPage(): void
@@ -173,6 +188,7 @@ class Index extends Component
     {
         $this->selectedMediaId = null;
         $this->selectedMediaIds = [];
+        $this->bulkMode = false;
     }
 
     public function deleteSelectedMedia(): void

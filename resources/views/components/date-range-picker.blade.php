@@ -17,7 +17,7 @@
     {{ $attributes->class(['relative']) }}
 >
     <button type="button" x-ref="trigger" @click="toggle()"
-        class="inline-flex w-full items-center justify-between gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 hover:border-zinc-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:w-[220px]">
+        class="inline-flex h-8 w-full items-center justify-between gap-2 rounded border border-zinc-200 bg-white px-3 text-sm text-zinc-700 hover:border-zinc-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:w-[220px]">
         <span class="inline-flex min-w-0 items-center gap-2">
             <flux:icon.calendar class="size-4 shrink-0 text-zinc-400" />
             <span class="truncate" x-text="triggerLabel()"></span>
