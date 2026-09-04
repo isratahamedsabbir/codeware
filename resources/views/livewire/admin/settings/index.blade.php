@@ -610,6 +610,34 @@
                     {{ __('These edit the live .env file this server runs on. A wrong database or mail value can take the site down until it is fixed. A backup of the current file is saved automatically before every change.') }}
                 </div>
 
+                {{-- Maintenance mode --}}
+                <div class="max-w-2xl rounded-lg bg-white shadow-sm border {{ $maintenanceMode ? 'border-red-300 dark:border-red-800' : 'border-zinc-200 dark:border-zinc-700' }} p-5 space-y-3">
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <flux:heading size="sm">Maintenance Mode</flux:heading>
+                            <flux:text class="text-xs text-zinc-500 -mt-1">
+                                Takes the public site offline for every visitor. The admin panel and login stay reachable either way.
+                            </flux:text>
+                        </div>
+                        @if ($maintenanceMode)
+                            <span class="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-red-50 dark:bg-red-950 px-3 py-1 text-xs font-semibold text-red-700 dark:text-red-300 ring-1 ring-red-600/20">
+                                <span class="size-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                                Site is offline
+                            </span>
+                        @endif
+                    </div>
+
+                    @if ($maintenanceMode)
+                        <flux:button variant="danger" wire:click="disableMaintenanceMode" wire:loading.attr="disabled">
+                            Bring Site Back Online
+                        </flux:button>
+                    @else
+                        <flux:button variant="outline" wire:click="confirmEnableMaintenanceMode" wire:loading.attr="disabled">
+                            Enable Maintenance Mode
+                        </flux:button>
+                    @endif
+                </div>
+
                 @foreach ($this->envFields() as $groupLabel => $fields)
                     <div class="max-w-2xl rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-5 space-y-4">
                         <flux:heading size="sm">{{ __($groupLabel) }}</flux:heading>
@@ -847,6 +875,32 @@
                 <button wire:click="saveEnv" wire:loading.attr="disabled"
                     class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white bg-amber-600 hover:bg-amber-700 transition-colors border-none cursor-pointer">
                     {{ __('Save anyway') }}
+                </button>
+                <flux:modal.close>
+                    <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                </flux:modal.close>
+            </div>
+        </div>
+    </flux:modal>
+
+    {{-- Maintenance mode confirmation --}}
+    <flux:modal name="maintenance-mode-confirm" class="md:w-96"
+        x-on:open-modal.window="if ($event.detail.name === 'maintenance-mode-confirm') $flux.modal('maintenance-mode-confirm').show()"
+        x-on:close-modal.window="if ($event.detail.name === 'maintenance-mode-confirm') $flux.modal('maintenance-mode-confirm').close()">
+        <div class="space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center shrink-0">
+                    <flux:icon.exclamation-triangle class="w-5 h-5 text-red-500" />
+                </div>
+                <flux:heading>{{ __('Enable maintenance mode?') }}</flux:heading>
+            </div>
+            <flux:text class="text-sm text-zinc-500">
+                {{ __('Every visitor to the public site will see a "down for maintenance" page until you turn this back off. The admin panel and login stay reachable, so you can always come back here to re-enable the site.') }}
+            </flux:text>
+            <div class="flex gap-2 pt-1">
+                <button wire:click="enableMaintenanceMode" wire:loading.attr="disabled"
+                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">
+                    {{ __('Take site offline') }}
                 </button>
                 <flux:modal.close>
                     <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>

@@ -24,12 +24,15 @@ class Index extends Component
     /** @var array<int, array{key: string, type: string, value: string}> */
     public array $constants = [];
 
+    public bool $maintenanceMode = false;
+
     public function mount(): void
     {
         $this->loadSettings();
         $this->loadEnv();
         $this->loadCanonicalUrls();
         $this->loadConstants();
+        $this->maintenanceMode = app()->isDownForMaintenance();
     }
 
     protected function loadSettings(): void
@@ -191,6 +194,39 @@ class Index extends Component
 
         $this->dispatch('close-modal', name: 'env-save-confirm');
         $this->dispatch('notify', message: 'Environment settings saved. Configuration cache cleared.');
+    }
+
+    public function confirmEnableMaintenanceMode(): void
+    {
+        $this->dispatch('open-modal', name: 'maintenance-mode-confirm');
+    }
+
+    /**
+     * Takes the public site offline — the admin panel and /login stay reachable
+     * regardless (see bootstrap/app.php's preventRequestsDuringMaintenance
+     * exceptions), so this can never lock the admin out of turning it back off.
+     */
+    public function enableMaintenanceMode(): void
+    {
+        Artisan::call('down');
+
+        $this->maintenanceMode = true;
+
+        AdminActivity::log('updated', 'Enabled maintenance mode');
+
+        $this->dispatch('close-modal', name: 'maintenance-mode-confirm');
+        $this->dispatch('notify', message: 'Maintenance mode enabled. The public site is now offline.');
+    }
+
+    public function disableMaintenanceMode(): void
+    {
+        Artisan::call('up');
+
+        $this->maintenanceMode = false;
+
+        AdminActivity::log('updated', 'Disabled maintenance mode');
+
+        $this->dispatch('notify', message: 'Maintenance mode disabled. The site is back online.');
     }
 
     public function updated(string $name, mixed $value): void

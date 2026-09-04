@@ -36,6 +36,17 @@ return Application::configure(basePath: dirname(__DIR__))
             'locale' => SetLocale::class,
             'feature' => RequireFeature::class,
         ]);
+
+        // Settings → Env can flip the public site into maintenance mode (see
+        // Livewire\Admin\Settings\Index::enableMaintenanceMode()) — the admin panel
+        // and login stay reachable regardless, so turning it on can never lock the
+        // admin out of the one place that can turn it back off.
+        $middleware->preventRequestsDuringMaintenance(except: [
+            'admin/*',
+            'login',
+            'logout',
+            'two-factor-challenge',
+        ]);
     })
     ->withEvents(discover: [
         __DIR__.'/../app/Listeners',
