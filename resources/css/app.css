@@ -703,6 +703,11 @@ input[data-flux-control], textarea[data-flux-control], select[data-flux-control]
     border-radius: 3px;
     transition: all 200ms ease !important;
     border-color: var(--color-input-border) !important;
+}
+
+/* Single-line controls get a fixed compact height — textareas size themselves via
+   their own h-* class/rows instead, so a multi-line field isn't clamped to input height. */
+input[data-flux-control], select[data-flux-control] {
     height: 36px;
 }
 
