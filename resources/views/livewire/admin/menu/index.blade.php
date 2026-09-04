@@ -19,14 +19,9 @@
         <p class="text-sm text-zinc-500">
             {{ __('Drag to reorder, toggle items on or off, or add a new group or link. Changes to :menu apply immediately.', ['menu' => optional($menus->firstWhere('slug', $activeGroup))->name ?? $activeGroup]) }}
         </p>
-        <button wire:click="openCreate()"
-            class="admin-btn-success inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
+        <flux:button variant="primary" class="admin-btn-success" icon="plus" wire:click="openCreate()">
             {{ __('New menu item') }}
-        </button>
+        </flux:button>
     </div>
 
     {{-- Sortable tree --}}
