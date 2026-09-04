@@ -69,7 +69,7 @@
                         <tr class="hover:bg-indigo-50/30 transition-colors" data-category-id="{{ $category->id }}">
 
                             {{-- Drag handle --}}
-                            <td class="px-2 py-3.5 text-center">
+                            <td class="px-2 py-2.5 text-center">
                                 <div class="drag-handle cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-600 inline-flex">
                                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <line x1="3" y1="6" x2="21" y2="6" />
@@ -80,12 +80,12 @@
                             </td>
 
                             {{-- ID --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <span class="text-sm text-zinc-500 font-mono">{{ $category->id }}</span>
                             </td>
 
                             {{-- Name --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <div class="font-medium text-zinc-900 text-sm leading-snug">
                                     <x-truncate :text="$category->getTranslation('name', 'en', false)" />
                                 </div>
@@ -97,14 +97,14 @@
                             </td>
 
                             {{-- Slug --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <span class="font-mono text-xs text-zinc-600 truncate block">
                                     <x-truncate :text="$category->slug" />
                                 </span>
                             </td>
 
                             {{-- Status --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 @if ($category->status === 'active')
                                     <button type="button" wire:click="toggleStatus({{ $category->id }})"
                                         aria-label="Deactivate"
@@ -123,7 +123,7 @@
                             </td>
 
                             {{-- Posts count --}}
-                            {{-- <td class="px-4 py-3.5">
+                            {{-- <td class="px-4 py-2.5">
                                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500">
                                     <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -134,7 +134,7 @@
                             </td> --}}
 
                             {{-- Actions --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <div class="flex items-center justify-end gap-1.5">
 
                                     {{-- Edit --}}

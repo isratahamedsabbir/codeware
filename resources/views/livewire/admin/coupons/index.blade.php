@@ -60,17 +60,17 @@
                         <tr class="hover:bg-indigo-50/30 transition-colors">
 
                             {{-- Id --}}
-                            <td class="px-2 py-3.5 text-center text-xs text-zinc-500">
+                            <td class="px-2 py-2.5 text-center text-xs text-zinc-500">
                                 {{ $coupon->id }}
                             </td>
 
                             {{-- Code --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <span class="font-mono text-sm font-semibold text-zinc-900"><x-truncate :text="$coupon->code" /></span>
                             </td>
 
                             {{-- Discount --}}
-                            <td class="px-4 py-3.5 text-sm text-zinc-700">
+                            <td class="px-4 py-2.5 text-sm text-zinc-700">
                                 @if ($coupon->type === 'percentage')
                                     {{ rtrim(rtrim(number_format((float) $coupon->value, 2), '0'), '.') }}% off
                                 @else
@@ -79,17 +79,17 @@
                             </td>
 
                             {{-- Min order --}}
-                            <td class="px-4 py-3.5 text-xs text-zinc-500">
+                            <td class="px-4 py-2.5 text-xs text-zinc-500">
                                 {{ $coupon->min_order_amount !== null ? \App\Models\Setting::get('currency_symbol', '৳').number_format((float) $coupon->min_order_amount, 2) : '—' }}
                             </td>
 
                             {{-- Usage --}}
-                            <td class="px-4 py-3.5 text-xs text-zinc-500">
+                            <td class="px-4 py-2.5 text-xs text-zinc-500">
                                 {{ $coupon->used_count }}{{ $coupon->max_uses !== null ? ' / '.$coupon->max_uses : '' }}
                             </td>
 
                             {{-- Expires --}}
-                            <td class="px-4 py-3.5 text-xs text-zinc-500">
+                            <td class="px-4 py-2.5 text-xs text-zinc-500">
                                 @if ($coupon->expires_at)
                                     <span class="{{ $coupon->isExpired() ? 'text-rose-500' : '' }}">
                                         {{ $coupon->expires_at->toDisplay('M d, Y') }}
@@ -100,7 +100,7 @@
                             </td>
 
                             {{-- Status --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 @if ($coupon->status === 'active')
                                     <button type="button" wire:click="toggleStatus({{ $coupon->id }})"
                                         aria-label="Deactivate"
@@ -119,7 +119,7 @@
                             </td>
 
                             {{-- Actions --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <div class="flex items-center justify-end gap-1.5">
 
                                     {{-- Edit --}}

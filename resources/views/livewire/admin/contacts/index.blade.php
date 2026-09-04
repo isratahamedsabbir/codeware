@@ -50,17 +50,17 @@
                         <tr class="hover:bg-indigo-50/30 transition-colors">
 
                             {{-- ID --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <span class="text-sm text-zinc-500 font-mono">{{ $contact->id }}</span>
                             </td>
 
                             {{-- Name --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <span class="font-medium text-zinc-900 text-sm"><x-truncate :text="$contact->full_name" /></span>
                             </td>
 
                             {{-- Contact Info --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <div class="text-sm text-zinc-600"><x-truncate :text="$contact->email" /></div>
                                 @if ($contact->phone_number)
                                     <div class="text-xs text-zinc-400 mt-0.5">{{ $contact->phone_number }}</div>
@@ -68,12 +68,12 @@
                             </td>
 
                             {{-- Subject --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <span class="text-sm text-zinc-600 truncate block"><x-truncate :text="$contact->subject" /></span>
                             </td>
 
                             {{-- Message --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <p class="text-sm text-zinc-500 truncate mb-1.5"><x-truncate :text="$contact->message" /></p>
                                 <button wire:click="viewMessage({{ $contact->id }})"
                                     class="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors">
@@ -82,12 +82,12 @@
                             </td>
 
                             {{-- Date --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <span class="text-sm text-zinc-500 whitespace-nowrap">{{ $contact->created_at->toDisplay('d M Y') }}</span>
                             </td>
 
                             {{-- Status --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <select wire:change="updateStatus({{ $contact->id }}, $event.target.value)"
                                     class="text-sm rounded-lg border border-zinc-200 bg-white py-1.5 pl-2.5 pr-7 text-zinc-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all appearance-none"
                                     style="background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 8px center">

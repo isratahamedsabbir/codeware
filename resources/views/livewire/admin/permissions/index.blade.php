@@ -41,10 +41,10 @@
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($permissions as $permission)
                         <tr class="hover:bg-indigo-50/30 transition-colors">
-                            <td class="px-2 py-3.5 text-center text-xs text-zinc-500">
+                            <td class="px-2 py-2.5 text-center text-xs text-zinc-500">
                                 {{ $permission->id }}
                             </td>
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <div class="flex items-center gap-2.5">
                                     <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-500 flex items-center justify-center shrink-0">
                                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -55,10 +55,10 @@
                                     <span class="font-mono text-xs text-zinc-700"><x-truncate :text="$permission->name" /></span>
                                 </div>
                             </td>
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <span class="text-xs text-zinc-600">{{ $permission->guard_name }}</span>
                             </td>
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <span class="text-xs text-zinc-600">{{ $permission->roles_count }}</span>
                             </td>
                         </tr>

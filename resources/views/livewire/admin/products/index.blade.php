@@ -79,7 +79,7 @@
                         <tr class="hover:bg-indigo-50/30 transition-colors" data-product-id="{{ $product->id }}">
 
                             {{-- Drag handle --}}
-                            <td class="px-2 py-3.5 text-center">
+                            <td class="px-2 py-2.5 text-center">
                                 <div class="drag-handle cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-600 inline-flex">
                                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <line x1="3" y1="6" x2="21" y2="6" />
@@ -90,12 +90,12 @@
                             </td>
 
                             {{-- ID --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <span class="text-sm text-zinc-500 font-mono">{{ $product->id }}</span>
                             </td>
 
                             {{-- Name --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <div class="font-medium text-zinc-900 text-sm leading-snug">
                                     <x-truncate :text="$product->getTranslation('name', 'en', false)" />
                                 </div>
@@ -107,14 +107,14 @@
                             </td>
 
                             {{-- Slug --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <span class="font-mono text-xs text-zinc-600 truncate block">
                                     <x-truncate :text="$product->slug" />
                                 </span>
                             </td>
 
                             {{-- Category --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 @if ($product->category)
                                     <span class="inline-flex w-max items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500 border border-zinc-200">
                                         <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -128,12 +128,12 @@
                             </td>
 
                             {{-- Price --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <span class="text-sm text-zinc-700 font-medium">{{ number_format((float) $product->price, 2) }}</span>
                             </td>
 
                             {{-- Status --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 @if ($product->status === 'active')
                                     <button type="button" wire:click="toggleStatus({{ $product->id }})"
                                         aria-label="Deactivate"
@@ -152,7 +152,7 @@
                             </td>
 
                             {{-- Featured --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 @if ($product->is_featured)
                                     <button type="button" wire:click="toggleFeatured({{ $product->id }})"
                                         aria-label="Unmark as featured"
@@ -175,7 +175,7 @@
                             </td>
 
                             {{-- Actions --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <div class="flex items-center justify-end gap-1.5">
 
                                     {{-- Edit --}}

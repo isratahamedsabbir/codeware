@@ -77,7 +77,7 @@
                         <tr class="hover:bg-indigo-50/30 transition-colors" data-page-id="{{ $page->id }}">
 
                             {{-- Drag handle --}}
-                            <td class="px-2 py-3.5 text-center">
+                            <td class="px-2 py-2.5 text-center">
                                 <div class="drag-handle cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-600 inline-flex">
                                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <line x1="3" y1="6" x2="21" y2="6" />
@@ -88,12 +88,12 @@
                             </td>
 
                             {{-- ID --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <span class="text-sm text-zinc-500 font-mono">{{ $page->id }}</span>
                             </td>
 
                             {{-- Title --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <div class="font-medium text-zinc-900 text-sm leading-snug">
                                     <x-truncate :text="$page->getTranslation('title', 'en', false)" />
                                 </div>
@@ -105,14 +105,14 @@
                             </td>
 
                             {{-- Slug --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <span class="font-mono text-xs text-zinc-600 truncate block">
                                     <x-truncate :text="$page->slug" />
                                 </span>
                             </td>
 
                             {{-- Type --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 @php
                                     $typeColors = [
                                         'page' => 'bg-zinc-100 text-zinc-600 border-zinc-200',
@@ -128,7 +128,7 @@
                             </td>
 
                             {{-- Status --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 @if ($page->status === 'active')
                                     <button type="button" wire:click="toggleStatus({{ $page->id }})"
                                         aria-label="Deactivate"
@@ -147,12 +147,12 @@
                             </td>
 
                             {{-- Template --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <span class="text-sm text-zinc-600">{{ $page->template }}</span>
                             </td>
 
                             {{-- Actions --}}
-                            <td class="px-4 py-3.5">
+                            <td class="px-4 py-2.5">
                                 <div class="flex items-center justify-end gap-1.5">
 
                                     {{-- Constant --}}
