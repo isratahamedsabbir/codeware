@@ -107,22 +107,24 @@ it('renders the env tab with app name, environment, debug mode, and urls, never 
     $response->assertDontSee('untouchedsecretkeyvalue');
 });
 
-it('can save environment settings and clears the config cache, leaving MySQL and APP_KEY untouched', function () {
+it('can save environment settings and clears the config cache, leaving MySQL, APP_KEY, and APP_DEBUG untouched', function () {
     Livewire::test(SettingsIndex::class)
         ->set('env.APP_NAME', 'Renamed App')
         ->set('env.APP_ENV', 'staging')
-        ->set('env.APP_DEBUG', 'false')
         ->call('confirmSaveEnv')
         ->call('saveEnv');
 
     expect(EnvFile::get('APP_NAME'))->toBe('Renamed App')
         ->and(EnvFile::get('APP_ENV'))->toBe('staging')
-        ->and(EnvFile::get('APP_DEBUG'))->toBe('false')
         // MySQL was removed from the editable fields entirely, so it must be untouched.
         ->and(EnvFile::get('DB_HOST'))->toBe('127.0.0.1')
         ->and(EnvFile::get('DB_DATABASE'))->toBe('testing')
         // APP_KEY was never part of the form, so it must be untouched.
-        ->and(EnvFile::get('APP_KEY'))->toBe('base64:untouchedsecretkeyvalue==');
+        ->and(EnvFile::get('APP_KEY'))->toBe('base64:untouchedsecretkeyvalue==')
+        // Debug mode has its own dedicated toggle (see DebugModeTest.php) — it must
+        // never be touched by the generic env-save form, so it isn't at risk of
+        // flipping accidentally alongside an unrelated env change.
+        ->and(EnvFile::get('APP_DEBUG'))->toBe('true');
 });
 
 it('accepts developer as a valid environment option', function () {
@@ -201,18 +203,16 @@ it('preserves the file\'s CRLF line endings when writing', function () {
 });
 
 it('surfaces a clear error instead of a false success when the write fails', function () {
-    $component = Livewire::test(SettingsIndex::class)->set('env.APP_DEBUG', 'false');
+    $component = Livewire::test(SettingsIndex::class)->set('env.APP_NAME', 'Renamed App');
 
     // Break the path only now, after mount()/loadEnv() already succeeded, so the write
     // itself is what fails — not component setup.
     EnvFile::$pathOverride = sys_get_temp_dir().'/nonexistent-dir-'.uniqid().'/.env';
 
-    $component->call('confirmSaveEnv')->call('saveEnv');
-
-    // The write failure must be surfaced as a flashed error, not silently treated as
-    // success — confirmed via the flash bag's "new" registry rather than session('error')
-    // directly, since Livewire's component-test harness doesn't age flash data the same
-    // way a full HTTP round trip would.
-    expect(session()->get('_flash.new'))->toContain('error')
-        ->and(session()->get('_flash.new'))->not->toContain('success');
+    // The write failure must be surfaced as an error notification, not silently
+    // treated as success (and not the generic "saved" message from the happy path).
+    // EnvFile::set() reads the file before it writes, so against a path whose
+    // directory doesn't exist, the read is what actually fails first.
+    $component->call('confirmSaveEnv')->call('saveEnv')
+        ->assertDispatched('notify', message: 'Could not save environment settings: Could not read '.EnvFile::path().'.');
 });

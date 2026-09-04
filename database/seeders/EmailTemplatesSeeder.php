@@ -65,6 +65,15 @@ class EmailTemplatesSeeder extends Seeder
                 'variables' => ['name', 'email', 'phone', 'message', 'site_name'],
                 'active' => true,
             ],
+            [
+                'key' => 'mail_settings_test',
+                'name' => 'Test Email (Mail Settings)',
+                'description' => 'Sent by the "Send Test Email" action on the Email Templates page to verify mail settings.',
+                'subject_template' => 'Test Email from {{site_name}}',
+                'body_template' => '<p>This is a test email sent from {{site_name}} to confirm your mail settings are working correctly.</p><p>Sent at: {{sent_at}}</p>',
+                'variables' => ['site_name', 'sent_at'],
+                'active' => true,
+            ],
         ];
 
         foreach ($templates as $template) {

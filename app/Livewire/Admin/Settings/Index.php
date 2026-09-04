@@ -22,12 +22,15 @@ class Index extends Component
 
     public bool $maintenanceMode = false;
 
+    public bool $debugMode = false;
+
     public function mount(): void
     {
         $this->loadSettings();
         $this->loadEnv();
         $this->loadConstants();
         $this->maintenanceMode = app()->isDownForMaintenance();
+        $this->debugMode = (bool) config('app.debug');
     }
 
     protected function loadSettings(): void
@@ -86,7 +89,9 @@ class Index extends Component
     /**
      * Editable .env keys, grouped for the Env tab. Deliberately excludes APP_KEY and
      * anything else whose value would be unsafe to expose or that shouldn't be edited
-     * through a web form (encryption key, session/cache drivers, etc.).
+     * through a web form (encryption key, session/cache drivers, etc.). Mail credentials
+     * live on the Email Templates page instead (see EmailTemplates\Index), next to the
+     * "send a test email" action that actually exercises them.
      *
      * @return array<string, array<string, array{label: string, type: string, options?: array<int, string>}>>
      */
@@ -96,19 +101,8 @@ class Index extends Component
             'App' => [
                 'APP_NAME' => ['label' => 'App Name', 'type' => 'text'],
                 'APP_ENV' => ['label' => 'Environment', 'type' => 'select', 'options' => ['local', 'staging', 'production', 'testing', 'developer']],
-                'APP_DEBUG' => ['label' => 'Debug Mode', 'type' => 'boolean'],
                 'APP_URL' => ['label' => 'App URL', 'type' => 'text'],
                 'FRONTEND_URL' => ['label' => 'Frontend URL', 'type' => 'text'],
-            ],
-            'Mail' => [
-                'MAIL_MAILER' => ['label' => 'Mailer', 'type' => 'select', 'options' => ['smtp', 'log', 'sendmail', 'ses', 'postmark', 'resend']],
-                'MAIL_HOST' => ['label' => 'SMTP Host', 'type' => 'text'],
-                'MAIL_PORT' => ['label' => 'SMTP Port', 'type' => 'text'],
-                'MAIL_USERNAME' => ['label' => 'SMTP Username', 'type' => 'text'],
-                'MAIL_PASSWORD' => ['label' => 'SMTP Password', 'type' => 'password'],
-                'MAIL_SCHEME' => ['label' => 'Encryption', 'type' => 'select', 'options' => ['null', 'tls', 'smtps']],
-                'MAIL_FROM_ADDRESS' => ['label' => 'From Address', 'type' => 'text'],
-                'MAIL_FROM_NAME' => ['label' => 'From Name', 'type' => 'text'],
             ],
         ];
     }
@@ -118,17 +112,8 @@ class Index extends Component
         $rules = [
             'env.APP_NAME' => 'required|string',
             'env.APP_ENV' => 'required|in:local,staging,production,testing,developer',
-            'env.APP_DEBUG' => 'required|in:true,false',
             'env.APP_URL' => 'required|url',
             'env.FRONTEND_URL' => 'nullable|url',
-            'env.MAIL_MAILER' => 'required|in:smtp,log,sendmail,ses,postmark,resend',
-            'env.MAIL_HOST' => 'nullable|string',
-            'env.MAIL_PORT' => 'nullable|numeric',
-            'env.MAIL_USERNAME' => 'nullable|string',
-            'env.MAIL_PASSWORD' => 'nullable|string',
-            'env.MAIL_SCHEME' => 'required|in:null,tls,smtps',
-            'env.MAIL_FROM_ADDRESS' => 'required|email',
-            'env.MAIL_FROM_NAME' => 'required|string',
         ];
 
         $this->validate($rules);
@@ -186,6 +171,58 @@ class Index extends Component
         AdminActivity::log('updated', 'Disabled maintenance mode');
 
         $this->dispatch('notify', message: 'Maintenance mode disabled. The site is back online.');
+    }
+
+    public function confirmEnableDebugMode(): void
+    {
+        $this->dispatch('open-modal', name: 'debug-mode-confirm');
+    }
+
+    /**
+     * Debug mode has no artisan down/up equivalent — it's just APP_DEBUG in .env,
+     * read through config('app.debug'). Writing it goes through EnvFile (same as
+     * saveEnv()) followed by config:clear so the change takes effect immediately.
+     */
+    public function enableDebugMode(): void
+    {
+        if (! $this->writeDebugMode('true')) {
+            return;
+        }
+
+        $this->debugMode = true;
+
+        AdminActivity::log('updated', 'Enabled debug mode');
+
+        $this->dispatch('close-modal', name: 'debug-mode-confirm');
+        $this->dispatch('notify', message: 'Debug mode enabled. Errors will now show full stack traces to visitors.');
+    }
+
+    public function disableDebugMode(): void
+    {
+        if (! $this->writeDebugMode('false')) {
+            return;
+        }
+
+        $this->debugMode = false;
+
+        AdminActivity::log('updated', 'Disabled debug mode');
+
+        $this->dispatch('notify', message: 'Debug mode disabled.');
+    }
+
+    protected function writeDebugMode(string $value): bool
+    {
+        try {
+            EnvFile::set(['APP_DEBUG' => $value]);
+        } catch (\RuntimeException $e) {
+            $this->dispatch('notify', message: 'Could not update debug mode: '.$e->getMessage());
+
+            return false;
+        }
+
+        Artisan::call('config:clear');
+
+        return true;
     }
 
     public function updated(string $name, mixed $value): void

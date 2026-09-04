@@ -51,6 +51,17 @@ it('blocks the public site but keeps the admin panel and login reachable while e
     $this->get('/admin/settings')->assertOk();
 });
 
+it('does not block Livewire\'s own AJAX endpoint, so the toggle can turn itself back off', function () {
+    Artisan::call('down');
+
+    // Livewire::test() bypasses the HTTP kernel/middleware stack entirely, so it
+    // can't catch this: the "disable maintenance mode" button round-trips through
+    // Livewire's real update endpoint, which must itself be reachable while down.
+    $response = $this->post(route('default-livewire.update'), []);
+
+    expect($response->status())->not->toBe(503);
+});
+
 it('brings the site back online', function () {
     Artisan::call('down');
     expect(app()->isDownForMaintenance())->toBeTrue();

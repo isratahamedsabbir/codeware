@@ -6,6 +6,7 @@ use App\Models\EmailTemplate;
 use App\Models\User;
 use App\Services\EmailTemplateRenderer;
 use App\Services\EmailTemplateService;
+use App\Support\EnvFile;
 use Database\Seeders\EmailTemplatesSeeder;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
@@ -179,6 +180,134 @@ it('seeds default email templates', function () {
     expect(EmailTemplate::query()->where('key', 'user_welcome')->exists())->toBeTrue();
     expect(EmailTemplate::query()->where('key', 'order_confirmation')->exists())->toBeTrue();
     expect(EmailTemplate::query()->where('key', 'contact_message_for_admin')->exists())->toBeTrue();
+});
+
+describe('mail settings', function () {
+    beforeEach(function () {
+        // EnvFile must never touch the real project .env during tests — point it at a
+        // throwaway file instead, and always restore the override afterwards.
+        $this->envPath = sys_get_temp_dir().'/email-templates-mail-test-'.uniqid().'.env';
+
+        file_put_contents($this->envPath, <<<'ENV'
+            MAIL_MAILER=smtp
+            MAIL_HOST=smtp.example.test
+            MAIL_PORT=587
+            MAIL_USERNAME=original@example.test
+            MAIL_PASSWORD=secret
+            MAIL_SCHEME=tls
+            MAIL_FROM_ADDRESS=hello@example.test
+            MAIL_FROM_NAME="Example App"
+            ENV);
+
+        EnvFile::$pathOverride = $this->envPath;
+
+        $this->admin = User::factory()->create(['is_admin' => true]);
+    });
+
+    afterEach(function () {
+        EnvFile::$pathOverride = null;
+        @unlink($this->envPath);
+    });
+
+    it('loads current mail settings from .env on mount, not the generic env form', function () {
+        Livewire::actingAs($this->admin)
+            ->test(Index::class)
+            ->assertSet('mailSettings.MAIL_HOST', 'smtp.example.test')
+            ->assertSet('mailSettings.MAIL_FROM_NAME', 'Example App');
+    });
+
+    it('shows the mail settings action on the page and no longer on the settings env tab', function () {
+        $this->actingAs($this->admin)
+            ->get(route('admin.email-templates'))
+            ->assertOk()
+            ->assertSee('Mail Settings');
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.settings'))
+            ->assertOk()
+            ->assertDontSee('SMTP Host');
+    });
+
+    it('validates before opening the save confirmation', function () {
+        Livewire::actingAs($this->admin)
+            ->test(Index::class)
+            ->set('mailSettings.MAIL_FROM_ADDRESS', 'not-an-email')
+            ->call('confirmSaveMailSettings')
+            ->assertHasErrors(['mailSettings.MAIL_FROM_ADDRESS']);
+
+        expect(EnvFile::get('MAIL_FROM_ADDRESS'))->toBe('hello@example.test');
+    });
+
+    it('saves mail settings to .env and clears the config cache', function () {
+        Livewire::actingAs($this->admin)
+            ->test(Index::class)
+            ->set('mailSettings.MAIL_HOST', 'smtp.new-provider.test')
+            ->set('mailSettings.MAIL_USERNAME', 'new@example.test')
+            ->call('confirmSaveMailSettings')
+            ->call('saveMailSettings');
+
+        expect(EnvFile::get('MAIL_HOST'))->toBe('smtp.new-provider.test')
+            ->and(EnvFile::get('MAIL_USERNAME'))->toBe('new@example.test');
+    });
+
+    it('surfaces a clear error instead of a false success when the write fails', function () {
+        $component = Livewire::actingAs($this->admin)->test(Index::class);
+
+        EnvFile::$pathOverride = sys_get_temp_dir().'/nonexistent-dir-'.uniqid().'/.env';
+
+        $component->call('confirmSaveMailSettings')->call('saveMailSettings')
+            ->assertDispatched('notify', message: 'Could not save mail settings: Could not read '.EnvFile::path().'.');
+    });
+});
+
+describe('send test email', function () {
+    beforeEach(function () {
+        $this->admin = User::factory()->create(['is_admin' => true]);
+        EmailTemplate::factory()->create([
+            'key' => Index::TEST_EMAIL_TEMPLATE_KEY,
+            'subject_template' => 'Test Email from {{site_name}}',
+            'body_template' => '<p>Sent at {{sent_at}}</p>',
+            'active' => true,
+        ]);
+    });
+
+    it('rejects an invalid test email address', function () {
+        Mail::fake();
+
+        Livewire::actingAs($this->admin)
+            ->test(Index::class)
+            ->set('testEmailAddress', 'not-an-email')
+            ->call('sendTestEmail')
+            ->assertHasErrors(['testEmailAddress']);
+
+        Mail::assertNothingSent();
+    });
+
+    it('sends the test email template to the given address', function () {
+        Mail::fake();
+
+        Livewire::actingAs($this->admin)
+            ->test(Index::class)
+            ->set('testEmailAddress', 'destination@example.test')
+            ->call('sendTestEmail')
+            ->assertHasNoErrors()
+            ->assertDispatched('notify', message: 'Test email sent to destination@example.test.');
+
+        Mail::assertSent(TemplateDrivenMail::class, fn (TemplateDrivenMail $mail) => $mail->hasTo('destination@example.test'));
+    });
+
+    it('reports failure instead of a false success when the test template is missing or inactive', function () {
+        Mail::fake();
+        EmailTemplate::query()->where('key', Index::TEST_EMAIL_TEMPLATE_KEY)->update(['active' => false]);
+
+        Livewire::actingAs($this->admin)
+            ->test(Index::class)
+            ->set('testEmailAddress', 'destination@example.test')
+            ->call('sendTestEmail')
+            ->assertDispatched('notify', message: 'Could not send — the "'.Index::TEST_EMAIL_TEMPLATE_KEY.'" template is missing or inactive.');
+
+        Mail::assertNothingSent();
+    });
 });
 
 it('renders the template-driven email view', function () {

@@ -346,7 +346,7 @@
             <div class="max-w-[1600px] space-y-6">
                 <div class="max-w-2xl rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm dark:bg-amber-950 dark:border-amber-800 dark:text-amber-300">
                     <strong>{{ __('Careful') }}:</strong>
-                    {{ __('These edit the live .env file this server runs on. A wrong database or mail value can take the site down until it is fixed. A backup of the current file is saved automatically before every change.') }}
+                    {{ __('These edit the live .env file this server runs on. A wrong value can take the site down until it is fixed. A backup of the current file is saved automatically before every change. Mail credentials live on the Email Templates page instead.') }}
                 </div>
 
                 {{-- Maintenance mode --}}
@@ -373,6 +373,34 @@
                     @else
                         <flux:button variant="outline" wire:click="confirmEnableMaintenanceMode" wire:loading.attr="disabled">
                             Enable Maintenance Mode
+                        </flux:button>
+                    @endif
+                </div>
+
+                {{-- Debug mode --}}
+                <div class="max-w-2xl rounded-lg bg-white shadow-sm border {{ $debugMode ? 'border-amber-300 dark:border-amber-800' : 'border-zinc-200 dark:border-zinc-700' }} p-5 space-y-3">
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <flux:heading size="sm">Debug Mode</flux:heading>
+                            <flux:text class="text-xs text-zinc-500 -mt-1">
+                                Shows full error details and stack traces to visitors. Leave this off in production.
+                            </flux:text>
+                        </div>
+                        @if ($debugMode)
+                            <span class="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300 ring-1 ring-amber-600/20">
+                                <span class="size-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                Debug on
+                            </span>
+                        @endif
+                    </div>
+
+                    @if ($debugMode)
+                        <flux:button variant="danger" wire:click="disableDebugMode" wire:loading.attr="disabled">
+                            Turn Debug Mode Off
+                        </flux:button>
+                    @else
+                        <flux:button variant="outline" wire:click="confirmEnableDebugMode" wire:loading.attr="disabled">
+                            Enable Debug Mode
                         </flux:button>
                     @endif
                 </div>
@@ -598,6 +626,32 @@
                 <button wire:click="enableMaintenanceMode" wire:loading.attr="disabled"
                     class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">
                     {{ __('Take site offline') }}
+                </button>
+                <flux:modal.close>
+                    <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                </flux:modal.close>
+            </div>
+        </div>
+    </flux:modal>
+
+    {{-- Debug mode confirmation --}}
+    <flux:modal name="debug-mode-confirm" class="md:w-96"
+        x-on:open-modal.window="if ($event.detail.name === 'debug-mode-confirm') $flux.modal('debug-mode-confirm').show()"
+        x-on:close-modal.window="if ($event.detail.name === 'debug-mode-confirm') $flux.modal('debug-mode-confirm').close()">
+        <div class="space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+                    <flux:icon.exclamation-triangle class="w-5 h-5 text-amber-500" />
+                </div>
+                <flux:heading>{{ __('Enable debug mode?') }}</flux:heading>
+            </div>
+            <flux:text class="text-sm text-zinc-500">
+                {{ __('Errors will show full stack traces, file paths, and environment values to every visitor until you turn this back off. Only enable this briefly while actively debugging.') }}
+            </flux:text>
+            <div class="flex gap-2 pt-1">
+                <button wire:click="enableDebugMode" wire:loading.attr="disabled"
+                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white bg-amber-600 hover:bg-amber-700 transition-colors border-none cursor-pointer">
+                    {{ __('Enable debug mode') }}
                 </button>
                 <flux:modal.close>
                     <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>

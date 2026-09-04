@@ -1,3 +1,11 @@
+@push('page-header-actions')
+    <flux:modal.trigger name="mail-settings">
+        <flux:button variant="outline" icon="envelope">
+            Mail Settings
+        </flux:button>
+    </flux:modal.trigger>
+@endpush
+
 <div class="space-y-4">
 
     <div class="grid gap-6 lg:grid-cols-[280px_1fr]">
@@ -181,5 +189,88 @@
             @endif
         </main>
     </div>
+
+    {{-- Mail settings --}}
+    <flux:modal name="mail-settings" class="md:w-[560px]">
+        <div class="space-y-5">
+            <flux:heading>{{ __('Mail Settings') }}</flux:heading>
+
+            <div class="rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm dark:bg-amber-950 dark:border-amber-800 dark:text-amber-300">
+                <strong>{{ __('Careful') }}:</strong>
+                {{ __('This edits the live .env file this server runs on. A backup of the current file is saved automatically before every change.') }}
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                @foreach ($this->mailFields() as $key => $meta)
+                    <flux:field class="{{ in_array($key, ['MAIL_FROM_ADDRESS', 'MAIL_FROM_NAME'], true) ? 'sm:col-span-2' : '' }}">
+                        <flux:label>{{ __($meta['label']) }}</flux:label>
+                        @if ($meta['type'] === 'select')
+                            <select wire:model="mailSettings.{{ $key }}"
+                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                                @foreach ($meta['options'] as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
+                                @endforeach
+                            </select>
+                        @elseif ($meta['type'] === 'password')
+                            <flux:input type="password" wire:model="mailSettings.{{ $key }}" />
+                        @else
+                            <flux:input wire:model="mailSettings.{{ $key }}" />
+                        @endif
+                        <flux:error name="mailSettings.{{ $key }}" />
+                    </flux:field>
+                @endforeach
+            </div>
+
+            <div class="flex gap-2 pt-1">
+                <flux:button variant="primary" wire:click="confirmSaveMailSettings" wire:loading.attr="disabled">
+                    {{ __('Save Mail Settings') }}
+                </flux:button>
+            </div>
+
+            <div class="border-t border-zinc-100 pt-5 space-y-3">
+                <div>
+                    <flux:heading size="sm">{{ __('Send Test Email') }}</flux:heading>
+                    <flux:text class="text-xs text-zinc-500 -mt-1">
+                        {{ __('Sends the "Test Email (Mail Settings)" template using whatever mail settings are currently saved.') }}
+                    </flux:text>
+                </div>
+                <div class="flex items-start gap-2">
+                    <div class="flex-1">
+                        <flux:input type="email" wire:model="testEmailAddress" placeholder="you@example.com" />
+                        <flux:error name="testEmailAddress" />
+                    </div>
+                    <flux:button variant="outline" wire:click="sendTestEmail" wire:loading.attr="disabled" wire:target="sendTestEmail">
+                        {{ __('Send Test Email') }}
+                    </flux:button>
+                </div>
+            </div>
+        </div>
+    </flux:modal>
+
+    {{-- Mail settings save confirmation --}}
+    <flux:modal name="mail-settings-save-confirm" class="md:w-96"
+        x-on:open-modal.window="if ($event.detail.name === 'mail-settings-save-confirm') $flux.modal('mail-settings-save-confirm').show()"
+        x-on:close-modal.window="if ($event.detail.name === 'mail-settings-save-confirm') $flux.modal('mail-settings-save-confirm').close()">
+        <div class="space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+                    <flux:icon.exclamation-triangle class="w-5 h-5 text-amber-500" />
+                </div>
+                <flux:heading>{{ __('Save mail settings?') }}</flux:heading>
+            </div>
+            <flux:text class="text-sm text-zinc-500">
+                {{ __('This overwrites the live .env file and clears the configuration cache. Use "Send Test Email" afterwards to confirm the new settings actually work.') }}
+            </flux:text>
+            <div class="flex gap-2 pt-1">
+                <button wire:click="saveMailSettings" wire:loading.attr="disabled"
+                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white bg-amber-600 hover:bg-amber-700 transition-colors border-none cursor-pointer">
+                    {{ __('Save anyway') }}
+                </button>
+                <flux:modal.close>
+                    <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                </flux:modal.close>
+            </div>
+        </div>
+    </flux:modal>
 
 </div>

@@ -40,9 +40,15 @@ return Application::configure(basePath: dirname(__DIR__))
         // Settings → Env can flip the public site into maintenance mode (see
         // Livewire\Admin\Settings\Index::enableMaintenanceMode()) — the admin panel
         // and login stay reachable regardless, so turning it on can never lock the
-        // admin out of the one place that can turn it back off.
+        // admin out of the one place that can turn it back off. `livewire*` must be
+        // excepted too: every Livewire component action (including the button that
+        // calls disableMaintenanceMode()) round-trips through Livewire's own AJAX
+        // endpoint (livewire-<hash>/update), not the admin/* prefix — without this,
+        // that endpoint itself gets blocked by this same middleware once maintenance
+        // mode is on, and the toggle can never turn itself back off from the UI.
         $middleware->preventRequestsDuringMaintenance(except: [
             'admin/*',
+            'livewire*',
             'login',
             'logout',
             'two-factor-challenge',
