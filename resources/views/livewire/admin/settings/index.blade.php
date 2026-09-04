@@ -1,5 +1,5 @@
 <div>
-    {{-- Alpine tab switcher: General | Layout | Currency | ... --}}
+    {{-- Alpine tab switcher: General | Currency | ... --}}
     <div x-data="{
         tab: localStorage.getItem('admin-settings-tab') || 'general',
         init() {
@@ -12,9 +12,6 @@
             <button type="button" @click="tab = 'general'"
                 :class="tab==='general'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="mx-4 ml-0 rounded-none! py-3 text-sm -mb-px">General</button>
-            <button type="button" @click="tab = 'layout'"
-                :class="tab==='layout'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
-                class="mx-4 rounded-none! py-3 text-sm -mb-px">Layout</button>
             <button type="button" @click="tab = 'currency'"
                 :class="tab==='currency'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="mx-4 rounded-none! py-3 text-sm -mb-px">Currency</button>
@@ -127,48 +124,6 @@
             </div>
         </div>
 
-        {{-- Layout tab --}}
-        <div x-show="tab === 'layout'"> 
-            <div class="max-w-[1600px] space-y-4"> 
-                <flux:text class="text-zinc-500">  
-                    Edit your site header and footer using the Puck visual editor. Changes open in a new tab.
-                </flux:text>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <x-admin-section-card header-border="border-zinc-100" icon="window" title="Header"
-                        description="Edit the site-wide header layout and navigation.">
-                        <a href="{{ $this->getEditorUrl('header') }}" target="_blank"
-                            class="inline-flex items-center justify-center gap-2 w-full rounded-lg bg-primary px-4 py-2.5 text-xs font-bold text-white hover:bg-primary transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                            Edit Header
-                        </a>
-                    </x-admin-section-card>
-
-                    <x-admin-section-card header-border="border-zinc-100" icon="bars-3-bottom-left" title="Footer" icon-color="bg-blue-500/10 text-blue-600"
-                        description="Edit the site-wide footer layout and links.">
-                        <a href="{{ $this->getEditorUrl('footer') }}" target="_blank"
-                            class="inline-flex items-center justify-center gap-2 w-full rounded-lg bg-primary px-4 py-2.5 text-xs font-bold text-white hover:bg-primary transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                            Edit Footer
-                        </a>
-                    </x-admin-section-card>
-                </div>
-
-                <div class="rounded-lg bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 p-4 dark:bg-zinc-800/50">
-                    <h5 class="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-2">How it works</h5>
-                    <ul class="text-xs text-zinc-500 space-y-1">
-                        <li>1. Click "Edit Header" or "Edit Footer" to open the Puck visual editor</li>
-                        <li>2. Make your changes using the drag-and-drop interface</li>
-                        <li>3. Save your changes in Puck - they will be stored automatically</li>
-                        <li>4. The changes will appear on your live site immediately</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
 
         {{-- Currency tab --}}
         <div x-show="tab === 'currency'">

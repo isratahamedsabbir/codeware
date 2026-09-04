@@ -260,14 +260,6 @@ class Index extends Component
         $this->dispatch('notify', message: 'Settings saved.');
     }
 
-    public function getEditorUrl(string $type): string
-    {
-        $token = auth()->user()->createToken('builder')->plainTextToken;
-        $baseUrl = config('cms.editor_base_url', 'http://localhost:3000');
-
-        return "{$baseUrl}/editor?mode=layout&type={$type}&token={$token}";
-    }
-
     public function render()
     {
         // Section order within the General tab — not the DB row order, which isn't

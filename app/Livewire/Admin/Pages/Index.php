@@ -70,6 +70,18 @@ class Index extends Component
     }
 
     /**
+     * Site-wide header/footer layout editor (moved here from Settings — this is
+     * where pages live, not a per-page thing like openPuckEditor() above).
+     */
+    public function getLayoutEditorUrl(string $type): string
+    {
+        $token = auth()->user()->createToken('builder')->plainTextToken;
+        $baseUrl = config('cms.editor_base_url', 'http://localhost:3000');
+
+        return "{$baseUrl}/editor?mode=layout&type={$type}&token={$token}";
+    }
+
+    /**
      * Flips this Page's status and, for a linked page (type != 'page'), the
      * paired Product/Post/Category too — keeping both sides in sync the same
      * way each entity's own form does.

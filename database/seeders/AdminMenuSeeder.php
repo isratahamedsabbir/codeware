@@ -70,6 +70,7 @@ class AdminMenuSeeder extends Seeder
             ['Robots.txt', 'globe-alt', 'admin.advance.robots'],
             ['Database', 'circle-stack', 'admin.advance.database'],
             ['Backup', 'archive-box', 'admin.advance.backup'],
+            ['Password Generator', 'key', 'admin.advance.password-generator'],
         ]);
     }
 

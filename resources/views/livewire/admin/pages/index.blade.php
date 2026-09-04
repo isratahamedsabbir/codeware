@@ -1,4 +1,18 @@
 @push('page-header-actions')
+    <flux:dropdown position="bottom" align="end">
+        <flux:button variant="ghost" size="sm" icon="window" icon-trailing="chevron-down">
+            Layout
+        </flux:button>
+        <flux:menu>
+            <flux:menu.item :href="$this->getLayoutEditorUrl('header')" target="_blank" icon="window">
+                Edit Header
+            </flux:menu.item>
+            <flux:menu.item :href="$this->getLayoutEditorUrl('footer')" target="_blank" icon="bars-3-bottom-left">
+                Edit Footer
+            </flux:menu.item>
+        </flux:menu>
+    </flux:dropdown>
+
     <flux:button variant="ghost" size="sm" icon="plus" href="{{ route('admin.pages.create') }}" wire:navigate>
         New page
     </flux:button>

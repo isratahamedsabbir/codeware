@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\UserCardController;
 use App\Http\Controllers\InvoiceController;
 use App\Livewire\Admin\Advance\Backup;
 use App\Livewire\Admin\Advance\Database;
+use App\Livewire\Admin\Advance\PasswordGenerator;
 use App\Livewire\Admin\Advance\Robots;
 use App\Livewire\Admin\Advance\Sitemap;
 use App\Livewire\Admin\Dashboard;
@@ -128,6 +129,7 @@ Route::middleware('can:access-admin-system')->group(function () {
         Route::get('/advance/robots', Robots::class)->name('advance.robots');
         Route::get('/advance/database', Database::class)->name('advance.database');
         Route::get('/advance/backup', Backup::class)->name('advance.backup');
+        Route::get('/advance/password-generator', PasswordGenerator::class)->name('advance.password-generator');
     });
 
     // Orders, Reports & Coupons
