@@ -97,7 +97,7 @@
                     </flux:field>
                     <flux:field>
                         <flux:label>Meta Description</flux:label>
-                        <flux:textarea wire:model="seo_description" class="h-48" placeholder="Brief description for search engines…" />
+                        <flux:textarea wire:model="seo_description" class="h-24" placeholder="Brief description for search engines…" />
                         <flux:error name="seo_description" />
                     </flux:field>
                     <flux:field>
@@ -107,7 +107,7 @@
                     </flux:field>
                     <flux:field>
                         <flux:label>OG Description</flux:label>
-                        <flux:textarea wire:model="og_description" class="h-48" placeholder="Description shown when shared on social media" />
+                        <flux:textarea wire:model="og_description" class="h-24" placeholder="Description shown when shared on social media" />
                         <flux:error name="og_description" />
                     </flux:field>
                 </div>
@@ -186,7 +186,7 @@
                                 @else
                                     <flux:field>
                                         <flux:label>Value</flux:label>
-                                        <flux:textarea wire:model="constant.{{ $i }}.value" class="h-48" placeholder="e.g. website" />
+                                        <flux:textarea wire:model="constant.{{ $i }}.value" class="h-24" placeholder="e.g. website" />
                                         <flux:error name="constant.{{ $i }}.value" />
                                     </flux:field>
                                 @endif

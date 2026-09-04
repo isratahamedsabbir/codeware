@@ -14,7 +14,7 @@
         </flux:field>
         <flux:field>
             @include('partials.seo-char-counter', ['field' => 'seo_meta_description', 'max' => 160, 'label' => 'Meta Description'])
-            <flux:textarea wire:model="settings.seo_meta_description" class="h-48"
+            <flux:textarea wire:model="settings.seo_meta_description" class="h-24"
                 placeholder="Short summary shown in search engine results" />
         </flux:field>
     </x-admin-section-card>
@@ -28,7 +28,7 @@
         </flux:field>
         <flux:field>
             @include('partials.seo-char-counter', ['field' => 'seo_og_description', 'max' => 200, 'label' => 'OG Description'])
-            <flux:textarea wire:model="settings.seo_og_description" class="h-48"
+            <flux:textarea wire:model="settings.seo_og_description" class="h-24"
                 placeholder="Defaults to Meta Description if left blank" />
         </flux:field>
         <x-media-picker model="settings.seo_og_image" label="OG Image"
@@ -56,7 +56,7 @@
         </flux:field>
         <flux:field>
             @include('partials.seo-char-counter', ['field' => 'seo_twitter_description', 'max' => 200, 'label' => 'Twitter Description'])
-            <flux:textarea wire:model="settings.seo_twitter_description" class="h-48"
+            <flux:textarea wire:model="settings.seo_twitter_description" class="h-24"
                 placeholder="Defaults to Meta Description if left blank" />
         </flux:field>
         <x-media-picker model="settings.seo_twitter_image" label="Twitter Image"

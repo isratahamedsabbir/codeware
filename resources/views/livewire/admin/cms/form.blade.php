@@ -36,7 +36,7 @@
                         </flux:field>
                         <flux:field>
                             <flux:label>Description</flux:label>
-                            <flux:textarea wire:model="cards.{{ $i }}.description" class="h-48" placeholder="Short description shown on the card" />
+                            <flux:textarea wire:model="cards.{{ $i }}.description" class="h-24" placeholder="Short description shown on the card" />
                         </flux:field>
 
                         <x-media-picker model="cards.{{ $i }}.image" label="Card Image" dropzone />
@@ -112,7 +112,7 @@
                         @else
                             <flux:field>
                                 <flux:label>Value</flux:label>
-                                <flux:textarea wire:model="constant.{{ $i }}.value" class="h-48" placeholder="e.g. website" />
+                                <flux:textarea wire:model="constant.{{ $i }}.value" class="h-24" placeholder="e.g. website" />
                                 <flux:error name="constant.{{ $i }}.value" />
                             </flux:field>
                         @endif

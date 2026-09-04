@@ -110,7 +110,7 @@
                                                 placeholder="{{ match ($setting->key) { 'loader' => 'Choose a loading animation (GIF) from the library', 'favicon' => 'Choose a favicon from the library', 'site_icon_white' => 'Choose a white icon from the library', default => 'Choose a site icon from the library' } }}"
                                                 dropzone />
                                         @elseif ($setting->type === 'textarea')
-                                            <flux:textarea wire:model="settings.{{ $setting->key }}" class="h-48" />
+                                            <flux:textarea wire:model="settings.{{ $setting->key }}" class="h-24" />
                                         @else
                                             <flux:input wire:model="settings.{{ $setting->key }}" />
                                         @endif
@@ -384,7 +384,7 @@
                                     @else
                                         <flux:field>
                                             <flux:label>Value</flux:label>
-                                            <flux:textarea wire:model="constants.{{ $i }}.value" class="h-48" placeholder="e.g. support@example.com" />
+                                            <flux:textarea wire:model="constants.{{ $i }}.value" class="h-24" placeholder="e.g. support@example.com" />
                                             <flux:error name="constants.{{ $i }}.value" />
                                         </flux:field>
                                     @endif
