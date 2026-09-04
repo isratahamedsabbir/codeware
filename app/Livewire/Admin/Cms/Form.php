@@ -20,7 +20,7 @@ class Form extends Component
     public array $cards = [];
 
     /** @var array<int, array{key: string, type: string, value: string}> */
-    public array $metadata = [];
+    public array $content = [];
 
     public function mount(int $pageId, ?int $id = null): void
     {
@@ -31,10 +31,10 @@ class Form extends Component
             $this->cmsId = $cms->id;
             $this->name = $cms->name;
             $this->cards = $cms->cards ?? [];
-            // Older rows were saved before the value-type selector existed —
-            // default them to a plain text value so they still render/edit correctly.
-            $this->metadata = collect($cms->metadata ?? [])
-                ->map(fn (array $pair) => [...$pair, 'type' => $pair['type'] ?? 'text'])
+            // Older rows were saved with the since-removed single-line "text" type
+            // (or no type at all) — fold both into textarea so they still render/edit correctly.
+            $this->content = collect($cms->content ?? [])
+                ->map(fn (array $pair) => [...$pair, 'type' => in_array($pair['type'] ?? null, ['textarea', 'file'], true) ? $pair['type'] : 'textarea'])
                 ->all();
         }
     }
@@ -50,20 +50,29 @@ class Form extends Component
         $this->cards = array_values($this->cards);
     }
 
-    public function addMetadata(): void
+    public function addContent(): void
     {
-        $this->metadata[] = ['key' => '', 'type' => 'text', 'value' => ''];
+        $this->content[] = ['key' => '', 'type' => 'textarea', 'value' => ''];
     }
 
-    public function removeMetadata(int $index): void
+    public function removeContent(int $index): void
     {
-        unset($this->metadata[$index]);
-        $this->metadata = array_values($this->metadata);
+        unset($this->content[$index]);
+        $this->content = array_values($this->content);
+    }
+
+    public function setContentType(int $index, string $type): void
+    {
+        if (! array_key_exists($index, $this->content) || ! in_array($type, ['textarea', 'file'], true)) {
+            return;
+        }
+
+        $this->content[$index]['type'] = $type;
     }
 
     public function updated(string $name, mixed $value): void
     {
-        if ($name === 'name' || preg_match('/^metadata\.\d+\.key$/', $name)) {
+        if ($name === 'name' || preg_match('/^content\.\d+\.key$/', $name)) {
             $sanitized = preg_replace('/[^A-Za-z0-9_]/', '', preg_replace('/\s+/', '_', trim($value)));
 
             if ($sanitized !== $value) {
@@ -86,16 +95,16 @@ class Form extends Component
             'cards.*.image' => 'nullable|string',
             'cards.*.title' => 'nullable|string|max:255',
             'cards.*.description' => 'nullable|string',
-            'metadata' => ['array', function (string $attribute, mixed $value, \Closure $fail) {
+            'content' => ['array', function (string $attribute, mixed $value, \Closure $fail) {
                 $keys = collect($value)->pluck('key')->filter()->map(fn ($key) => strtolower(trim($key)));
 
                 if ($keys->count() !== $keys->unique()->count()) {
-                    $fail('Metadata keys must be unique.');
+                    $fail('Content keys must be unique.');
                 }
             }],
-            'metadata.*.key' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9_]*$/'],
-            'metadata.*.type' => 'nullable|in:text,textarea,file',
-            'metadata.*.value' => 'nullable|string|max:1000',
+            'content.*.key' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9_]*$/'],
+            'content.*.type' => 'nullable|in:textarea,file',
+            'content.*.value' => 'nullable|string|max:1000',
         ];
     }
 
@@ -107,7 +116,7 @@ class Form extends Component
             'page_id' => $this->pageId,
             'name' => $this->name,
             'cards' => array_values($this->cards),
-            'metadata' => collect($this->metadata)->filter(fn ($pair) => filled($pair['key'] ?? null))->values()->all(),
+            'content' => collect($this->content)->filter(fn ($pair) => filled($pair['key'] ?? null))->values()->all(),
         ];
 
         $creating = $this->cmsId === null;

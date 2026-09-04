@@ -85,7 +85,7 @@ class Form extends Component
     public string $autoCanonicalSlug = '';
 
     /** @var array<int, array{key: string, type: string, value: string}> */
-    public array $metadata = [];
+    public array $content = [];
 
     public function mount(?int $id = null): void
     {
@@ -120,10 +120,13 @@ class Form extends Component
                 $this->autoCanonicalSlug = $this->slug;
             }
 
-            // Older rows were saved before the value-type selector existed —
-            // default them to a plain text value so they still render/edit correctly.
-            $this->metadata = collect($page->metadata ?? [])
-                ->map(fn (array $pair) => [...$pair, 'type' => $pair['type'] ?? 'text'])
+            // Older rows were saved with the since-removed single-line "text" type
+            // (or no type at all) — fold both into textarea so they still render/edit correctly.
+            // Stored on the Page under the 'metadata' column/attribute (unchanged —
+            // Page already has an unrelated, actively-used 'content' field of its own),
+            // just surfaced here as "Content" since that's what this admin section is.
+            $this->content = collect($page->metadata ?? [])
+                ->map(fn (array $pair) => [...$pair, 'type' => in_array($pair['type'] ?? null, ['textarea', 'file'], true) ? $pair['type'] : 'textarea'])
                 ->all();
 
             if (! $this->isLinked()) {
@@ -188,20 +191,29 @@ class Form extends Component
         $this->slugAvailable = Slug::isAvailable($this->slug, $this->pageId);
     }
 
-    public function addMetadata(): void
+    public function addContent(): void
     {
-        $this->metadata[] = ['key' => '', 'type' => 'text', 'value' => ''];
+        $this->content[] = ['key' => '', 'type' => 'textarea', 'value' => ''];
     }
 
-    public function removeMetadata(int $index): void
+    public function removeContent(int $index): void
     {
-        unset($this->metadata[$index]);
-        $this->metadata = array_values($this->metadata);
+        unset($this->content[$index]);
+        $this->content = array_values($this->content);
+    }
+
+    public function setContentType(int $index, string $type): void
+    {
+        if (! array_key_exists($index, $this->content) || ! in_array($type, ['textarea', 'file'], true)) {
+            return;
+        }
+
+        $this->content[$index]['type'] = $type;
     }
 
     public function updated(string $name, mixed $value): void
     {
-        if (preg_match('/^metadata\.\d+\.key$/', $name)) {
+        if (preg_match('/^content\.\d+\.key$/', $name)) {
             $sanitized = preg_replace('/[^A-Za-z0-9_]/', '', preg_replace('/\s+/', '_', trim($value)));
 
             if ($sanitized !== $value) {
@@ -268,16 +280,16 @@ class Form extends Component
         $rules['slug'] = $entityTable
             ? ['required', 'string', 'max:255']
             : ['required', 'string', 'max:255', ...Slug::uniqueRules($this->pageId)];
-        $rules['metadata'] = ['array', function (string $attribute, mixed $value, \Closure $fail) {
+        $rules['content'] = ['array', function (string $attribute, mixed $value, \Closure $fail) {
             $keys = collect($value)->pluck('key')->filter()->map(fn ($key) => strtolower(trim($key)));
 
             if ($keys->count() !== $keys->unique()->count()) {
-                $fail('Metadata keys must be unique.');
+                $fail('Content keys must be unique.');
             }
         }];
-        $rules['metadata.*.key'] = ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9_]*$/'];
-        $rules['metadata.*.type'] = 'nullable|in:text,textarea,file';
-        $rules['metadata.*.value'] = 'nullable|string|max:1000';
+        $rules['content.*.key'] = ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9_]*$/'];
+        $rules['content.*.type'] = 'nullable|in:textarea,file';
+        $rules['content.*.value'] = 'nullable|string|max:1000';
 
         $this->validate($rules);
 
@@ -295,7 +307,8 @@ class Form extends Component
             'no_follow' => $this->no_follow,
             'canonical_base' => $this->canonical_base ?: null,
             'canonical_slug' => $this->canonical_slug ?: null,
-            'metadata' => collect($this->metadata)->filter(fn ($pair) => filled($pair['key'] ?? null))->values()->all(),
+            // Written to the Page's 'metadata' column — see the comment in mount().
+            'metadata' => collect($this->content)->filter(fn ($pair) => filled($pair['key'] ?? null))->values()->all(),
         ];
 
         $creating = $this->pageId === null;
@@ -354,6 +367,6 @@ class Form extends Component
     public function render()
     {
         return view('livewire.admin.pages.form')
-            ->layout('layouts.admin', ['title' => $this->pageId ? 'Edit Page Metadata' : 'New Page']);
+            ->layout('layouts.admin', ['title' => $this->pageId ? 'Edit Page Content' : 'New Page']);
     }
 }

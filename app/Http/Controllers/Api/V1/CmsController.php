@@ -59,7 +59,7 @@ class CmsController extends Controller
                 'title' => $card['title'] ?? null,
                 'description' => $card['description'] ?? null,
             ])->values(),
-            'metadata' => $cms->metadataMap(),
+            'content' => $cms->contentMap(),
         ];
     }
 }

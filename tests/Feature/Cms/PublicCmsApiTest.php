@@ -37,7 +37,7 @@ it('returns a single section when name is given', function () {
         'name' => 'hero',
         'status' => 'active',
         'cards' => [['image' => '/storage/media/card.jpg', 'title' => 'Fast', 'description' => 'Blazing fast']],
-        'metadata' => [['key' => 'og:type', 'value' => 'website'], ['key' => 'og:locale', 'value' => 'en_US']],
+        'content' => [['key' => 'og:type', 'value' => 'website'], ['key' => 'og:locale', 'value' => 'en_US']],
     ]);
 
     $this->getJson('/api/v1/cms?page=home&name=hero')
@@ -48,7 +48,7 @@ it('returns a single section when name is given', function () {
                 'cards' => [
                     ['image' => '/storage/media/card.jpg', 'title' => 'Fast', 'description' => 'Blazing fast'],
                 ],
-                'metadata' => [
+                'content' => [
                     'og:type' => 'website',
                     'og:locale' => 'en_US',
                 ],
@@ -79,26 +79,26 @@ it('caches the response and serves the update immediately after a write', functi
         'page_id' => $home->id,
         'name' => 'hero',
         'status' => 'active',
-        'metadata' => [['key' => 'note', 'value' => 'Original value']],
+        'content' => [['key' => 'note', 'value' => 'Original value']],
     ]);
 
     // Prime the cache.
     $this->getJson('/api/v1/cms?page=home&name=hero')
-        ->assertJsonPath('data.metadata.note', 'Original value');
+        ->assertJsonPath('data.content.note', 'Original value');
 
     // Bypass the model's saved() hook, so a still-cached response is the
     // only way this could keep returning the original value.
-    CmsSection::query()->where('id', $cms->id)->update(['metadata' => [['key' => 'note', 'value' => 'Bypassed value']]]);
+    CmsSection::query()->where('id', $cms->id)->update(['content' => [['key' => 'note', 'value' => 'Bypassed value']]]);
 
     $this->getJson('/api/v1/cms?page=home&name=hero')
-        ->assertJsonPath('data.metadata.note', 'Original value');
+        ->assertJsonPath('data.content.note', 'Original value');
 
     // A plain update — the model's saved() hook should bump the cache version.
-    $cms->update(['metadata' => [['key' => 'note', 'value' => 'Updated value']]]);
+    $cms->update(['content' => [['key' => 'note', 'value' => 'Updated value']]]);
 
     $this->getJson('/api/v1/cms?page=home&name=hero')
         ->assertOk()
-        ->assertJsonPath('data.metadata.note', 'Updated value');
+        ->assertJsonPath('data.content.note', 'Updated value');
 });
 
 it('refreshes the cache when a section is deleted', function () {

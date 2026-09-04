@@ -47,9 +47,9 @@ it('creates a cms section with a name and cards', function () {
         ->set('cards.0.image', '/storage/media/card.jpg')
         ->set('cards.0.title', 'Fast')
         ->set('cards.0.description', 'Blazing fast delivery')
-        ->call('addMetadata')
-        ->set('metadata.0.key', 'og type')
-        ->set('metadata.0.value', 'website')
+        ->call('addContent')
+        ->set('content.0.key', 'og type')
+        ->set('content.0.value', 'website')
         ->call('save');
 
     $cms = CmsSection::where('page_id', $page->id)->where('name', 'hero')->sole();
@@ -57,134 +57,134 @@ it('creates a cms section with a name and cards', function () {
     expect($cms->cards[0]['title'])->toBe('Fast')
         ->and($cms->cards[0]['description'])->toBe('Blazing fast delivery')
         ->and($cms->cards[0]['image'])->toBe('/storage/media/card.jpg')
-        ->and($cms->metadata[0]['key'])->toBe('og_type')
-        ->and($cms->metadata[0]['value'])->toBe('website');
+        ->and($cms->content[0]['key'])->toBe('og_type')
+        ->and($cms->content[0]['value'])->toBe('website');
 });
 
-it('can add and remove multiple metadata fields before saving', function () {
+it('can add and remove multiple content fields before saving', function () {
     $page = Page::factory()->create();
 
     Livewire::test(CmsForm::class, ['pageId' => $page->id])
-        ->call('addMetadata')
-        ->call('addMetadata')
-        ->set('metadata.0.key', 'first')
-        ->set('metadata.0.value', '1')
-        ->set('metadata.1.key', 'second')
-        ->set('metadata.1.value', '2')
-        ->call('removeMetadata', 0)
-        ->assertSet('metadata.0.key', 'second');
+        ->call('addContent')
+        ->call('addContent')
+        ->set('content.0.key', 'first')
+        ->set('content.0.value', '1')
+        ->set('content.1.key', 'second')
+        ->set('content.1.value', '2')
+        ->call('removeContent', 0)
+        ->assertSet('content.0.key', 'second');
 });
 
-it('drops blank metadata rows when saving, but keeps filled ones', function () {
+it('drops blank content rows when saving, but keeps filled ones', function () {
     $page = Page::factory()->create();
 
     Livewire::test(CmsForm::class, ['pageId' => $page->id])
         ->set('name', 'hero')
-        ->call('addMetadata')
-        ->call('addMetadata')
-        ->set('metadata.0.key', 'og type')
-        ->set('metadata.0.value', 'website')
-        ->set('metadata.1.key', '')
-        ->set('metadata.1.value', '')
+        ->call('addContent')
+        ->call('addContent')
+        ->set('content.0.key', 'og type')
+        ->set('content.0.value', 'website')
+        ->set('content.1.key', '')
+        ->set('content.1.value', '')
         ->call('save');
 
     $cms = CmsSection::where('page_id', $page->id)->where('name', 'hero')->sole();
 
-    expect($cms->metadata)->toHaveCount(1)
-        ->and($cms->metadata[0]['key'])->toBe('og_type');
+    expect($cms->content)->toHaveCount(1)
+        ->and($cms->content[0]['key'])->toBe('og_type');
 });
 
-it('rejects duplicate metadata keys', function () {
+it('rejects duplicate content keys', function () {
     $page = Page::factory()->create();
 
     Livewire::test(CmsForm::class, ['pageId' => $page->id])
         ->set('name', 'hero')
-        ->call('addMetadata')
-        ->call('addMetadata')
-        ->set('metadata.0.key', 'og:type')
-        ->set('metadata.0.value', 'website')
-        ->set('metadata.1.key', 'og:type')
-        ->set('metadata.1.value', 'article')
+        ->call('addContent')
+        ->call('addContent')
+        ->set('content.0.key', 'og:type')
+        ->set('content.0.value', 'website')
+        ->set('content.1.key', 'og:type')
+        ->set('content.1.value', 'article')
         ->call('save')
-        ->assertHasErrors(['metadata']);
+        ->assertHasErrors(['content']);
 });
 
-it('loads existing metadata for editing', function () {
+it('loads existing content for editing', function () {
     $page = Page::factory()->create();
     $cms = CmsSection::factory()->create([
         'page_id' => $page->id,
         'name' => 'hero',
-        'metadata' => [['key' => 'og:type', 'value' => 'website']],
+        'content' => [['key' => 'og:type', 'value' => 'website']],
     ]);
 
     Livewire::test(CmsForm::class, ['pageId' => $page->id, 'id' => $cms->id])
-        ->assertSet('metadata.0.key', 'og:type')
-        ->assertSet('metadata.0.value', 'website');
+        ->assertSet('content.0.key', 'og:type')
+        ->assertSet('content.0.value', 'website');
 });
 
-it('defaults a new metadata field to the text input type', function () {
+it('defaults a new content field to the textarea type', function () {
     $page = Page::factory()->create();
 
     Livewire::test(CmsForm::class, ['pageId' => $page->id])
-        ->call('addMetadata')
-        ->assertSet('metadata.0.type', 'text');
+        ->call('addContent')
+        ->assertSet('content.0.type', 'textarea');
 });
 
-it('defaults an older metadata row saved without a type to text', function () {
+it('folds an older content row saved without a type (or the removed "text" type) into textarea', function () {
     $page = Page::factory()->create();
     $cms = CmsSection::factory()->create([
         'page_id' => $page->id,
-        'metadata' => [['key' => 'og:type', 'value' => 'website']],
+        'content' => [['key' => 'og:type', 'value' => 'website']],
     ]);
 
     Livewire::test(CmsForm::class, ['pageId' => $page->id, 'id' => $cms->id])
-        ->assertSet('metadata.0.type', 'text');
+        ->assertSet('content.0.type', 'textarea');
 });
 
-it('can save a metadata field as a textarea value', function () {
+it('can save a content field as a textarea value', function () {
     $page = Page::factory()->create();
 
     Livewire::test(CmsForm::class, ['pageId' => $page->id])
         ->set('name', 'hero')
-        ->call('addMetadata')
-        ->set('metadata.0.key', 'long_note')
-        ->set('metadata.0.type', 'textarea')
-        ->set('metadata.0.value', "Line one\nLine two")
+        ->call('addContent')
+        ->set('content.0.key', 'long_note')
+        ->set('content.0.type', 'textarea')
+        ->set('content.0.value', "Line one\nLine two")
         ->call('save');
 
     $cms = CmsSection::where('page_id', $page->id)->where('name', 'hero')->sole();
 
-    expect($cms->metadata[0]['type'])->toBe('textarea')
-        ->and($cms->metadata[0]['value'])->toBe("Line one\nLine two");
+    expect($cms->content[0]['type'])->toBe('textarea')
+        ->and($cms->content[0]['value'])->toBe("Line one\nLine two");
 });
 
-it('can save a metadata field as a file value', function () {
+it('can save a content field as a file value', function () {
     $page = Page::factory()->create();
 
     Livewire::test(CmsForm::class, ['pageId' => $page->id])
         ->set('name', 'hero')
-        ->call('addMetadata')
-        ->set('metadata.0.key', 'brochure')
-        ->set('metadata.0.type', 'file')
-        ->set('metadata.0.value', '/storage/media/brochure.pdf')
+        ->call('addContent')
+        ->set('content.0.key', 'brochure')
+        ->set('content.0.type', 'file')
+        ->set('content.0.value', '/storage/media/brochure.pdf')
         ->call('save');
 
     $cms = CmsSection::where('page_id', $page->id)->where('name', 'hero')->sole();
 
-    expect($cms->metadata[0]['type'])->toBe('file')
-        ->and($cms->metadata[0]['value'])->toBe('/storage/media/brochure.pdf');
+    expect($cms->content[0]['type'])->toBe('file')
+        ->and($cms->content[0]['value'])->toBe('/storage/media/brochure.pdf');
 });
 
-it('rejects an unknown metadata value type', function () {
+it('rejects an unknown content value type', function () {
     $page = Page::factory()->create();
 
     Livewire::test(CmsForm::class, ['pageId' => $page->id])
-        ->call('addMetadata')
-        ->set('metadata.0.key', 'k')
-        ->set('metadata.0.type', 'not-a-real-type')
-        ->set('metadata.0.value', 'v')
+        ->call('addContent')
+        ->set('content.0.key', 'k')
+        ->set('content.0.type', 'not-a-real-type')
+        ->set('content.0.value', 'v')
         ->call('save')
-        ->assertHasErrors(['metadata.0.type']);
+        ->assertHasErrors(['content.0.type']);
 });
 
 it('validates name is required', function () {

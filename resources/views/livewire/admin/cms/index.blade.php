@@ -87,8 +87,8 @@
                             <td class="px-4 py-3.5">
                                 <div class="flex flex-wrap gap-1.5 text-[11px]">
                                     <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">{{ count($cms->cards ?? []) }} card{{ count($cms->cards ?? []) === 1 ? '' : 's' }}</span>
-                                    @if (filled($cms->metadataMap()))
-                                        <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">{{ count($cms->metadataMap()) }} content</span>
+                                    @if (filled($cms->contentMap()))
+                                        <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">{{ count($cms->contentMap()) }} content</span>
                                     @endif
                                 </div>
                             </td>

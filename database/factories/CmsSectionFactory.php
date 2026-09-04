@@ -18,7 +18,7 @@ class CmsSectionFactory extends Factory
             'name' => fake()->unique()->word(),
             'sort_order' => 0,
             'cards' => [],
-            'metadata' => [],
+            'content' => [],
             'status' => 'active',
         ];
     }

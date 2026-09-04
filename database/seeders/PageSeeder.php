@@ -68,7 +68,7 @@ class PageSeeder extends Seeder
                     ['page_id' => $page->id, 'name' => $section['name']],
                     [
                         'cards' => $section['cards'] ?? [],
-                        'metadata' => $section['metadata'] ?? [],
+                        'content' => $section['content'] ?? [],
                         'status' => $section['status'] ?? 'active',
                         'sort_order' => $cmsSortOrder,
                     ]

@@ -60,6 +60,6 @@ if (! function_exists('cms_content')) {
             return null;
         }
 
-        return CmsSection::cachedForPage($pageId)->firstWhere('name', $name)?->metadataMap()[$key] ?? null;
+        return CmsSection::cachedForPage($pageId)->firstWhere('name', $name)?->contentMap()[$key] ?? null;
     }
 }
