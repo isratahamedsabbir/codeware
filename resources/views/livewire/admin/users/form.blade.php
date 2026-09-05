@@ -14,7 +14,7 @@
     <div class="flex gap-5 items-start">
 
         {{-- ── MAIN ── --}}
-        <div class="flex-1 min-w-0 bg-white rounded-lg shadow-sm p-6">
+        <div class="flex-1 min-w-0 bg-white rounded-[5px] shadow-sm p-6">
 
             {{-- Profile photo --}}
             <div class="flex items-center gap-5 mb-5">

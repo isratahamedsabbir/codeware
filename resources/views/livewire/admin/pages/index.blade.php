@@ -18,7 +18,7 @@
     </flux:button>
 @endpush
 
-<div class="bg-white rounded-lg shadow-sm overflow-hidden">
+<div class="bg-white rounded-[5px] shadow-sm overflow-hidden">
 
     {{-- Header --}}
     <div class="flex items-center gap-3 p-4">

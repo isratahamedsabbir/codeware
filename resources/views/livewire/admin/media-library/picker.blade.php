@@ -14,7 +14,7 @@
         </button>
     </div>
 
-    <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <section class="rounded-[5px] border border-slate-200 bg-white p-4 shadow-sm">
         <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div class="flex flex-wrap items-center gap-2">
                 <button type="button" wire:click="$set('filterType', 'all')"
@@ -34,7 +34,7 @@
         </div>
     </section>
 
-    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <section class="overflow-hidden rounded-[5px] border border-slate-200 bg-white shadow-sm">
         <div class="flex items-center justify-between border-b border-slate-100 bg-slate-50/60 px-5 py-3">
             <h3 class="text-[11px] font-black uppercase tracking-[0.25em] text-slate-700">Library</h3>
             <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">{{ $media->total() }}

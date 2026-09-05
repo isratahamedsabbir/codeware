@@ -1,4 +1,4 @@
-<div class="bg-white rounded-lg shadow-sm overflow-hidden">
+<div class="bg-white rounded-[5px] shadow-sm overflow-hidden">
 
     {{-- Filters --}}
     <div class="flex gap-3 px-6 py-4 flex-wrap items-center">

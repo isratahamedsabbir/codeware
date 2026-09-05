@@ -1,4 +1,4 @@
-<div class="bg-white rounded-lg shadow-sm overflow-hidden">
+<div class="bg-white rounded-[5px] shadow-sm overflow-hidden">
 
     {{-- Completion summary --}}
     @if ($locales->isNotEmpty())

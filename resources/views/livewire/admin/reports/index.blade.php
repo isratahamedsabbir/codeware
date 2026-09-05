@@ -2,20 +2,20 @@
 
     {{-- Summary cards --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white rounded-lg border border-zinc-100 shadow-sm p-5">
+        <div class="bg-white rounded-[5px] border border-zinc-100 shadow-sm p-5">
             <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Total Orders</p>
             <p class="text-2xl font-bold text-zinc-900">{{ number_format($totalOrders) }}</p>
         </div>
-        <div class="bg-white rounded-lg border border-zinc-100 shadow-sm p-5">
+        <div class="bg-white rounded-[5px] border border-zinc-100 shadow-sm p-5">
             <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Revenue (Paid)</p>
             <p class="text-2xl font-bold text-green-600">{{ number_format((float) $totalRevenue, 2) }}</p>
         </div>
-        <div class="bg-white rounded-lg border border-zinc-100 shadow-sm p-5">
+        <div class="bg-white rounded-[5px] border border-zinc-100 shadow-sm p-5">
             <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Pending Payments</p>
             <p class="text-2xl font-bold text-amber-600">{{ number_format((float) $pendingAmount, 2) }}</p>
             <p class="text-xs text-zinc-400 mt-0.5">{{ $pendingCount }} order(s)</p>
         </div>
-        <div class="bg-white rounded-lg border border-zinc-100 shadow-sm p-5">
+        <div class="bg-white rounded-[5px] border border-zinc-100 shadow-sm p-5">
             <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">Revenue by Method</p>
             <div class="space-y-1">
                 @forelse ($revenueByMethod as $method => $amount)
@@ -31,7 +31,7 @@
     </div>
 
     {{-- Orders by status --}}
-    <div class="bg-white rounded-lg border border-zinc-100 shadow-sm p-5">
+    <div class="bg-white rounded-[5px] border border-zinc-100 shadow-sm p-5">
         <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">Orders by Status</p>
         <div class="flex gap-3 flex-wrap">
             @forelse (\App\Models\Order::STATUSES as $status)
@@ -45,7 +45,7 @@
     </div>
 
     {{-- Filters + table --}}
-    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+    <div class="bg-white rounded-[5px] shadow-sm overflow-hidden">
         <div class="px-6 py-5 space-y-3">
             <div class="flex items-center justify-between gap-3 flex-wrap">
                 <div class="flex flex-col sm:flex-row gap-3">

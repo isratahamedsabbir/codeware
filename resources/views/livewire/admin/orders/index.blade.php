@@ -1,4 +1,4 @@
-<div class="bg-white rounded-lg shadow-sm overflow-hidden">
+<div class="bg-white rounded-[5px] shadow-sm overflow-hidden">
 
     {{-- Filters --}}
     <div class="px-6 py-5 space-y-3">

@@ -9,7 +9,7 @@
     <div class="space-y-4">
 
         {{-- ── ROLE NAME ── --}}
-        <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="bg-white rounded-[5px] shadow-sm p-6">
             <div class="space-y-5">
                 <flux:field>
                     <flux:label>Role name <span class="text-red-500 ml-0.5">*</span></flux:label>

@@ -16,7 +16,7 @@
         <div class="flex-1 min-w-0 space-y-5">
 
             {{-- Customer & shipping --}}
-            <div class="bg-white rounded-lg border border-zinc-100 shadow-sm p-6">
+            <div class="bg-white rounded-[5px] border border-zinc-100 shadow-sm p-6">
                 <flux:heading size="lg" class="mb-1">Order {{ $order->order_number }}</flux:heading>
                 <p class="text-sm text-zinc-500 mb-5">Placed {{ $order->created_at->toDisplay('M d, Y g:i A') }}</p>
 

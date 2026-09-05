@@ -1,4 +1,4 @@
-<div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
+<div class="bg-white rounded-[5px] border border-zinc-100 shadow-sm overflow-hidden">
 
     {{-- Menu selector --}}
     <div class="flex items-center gap-2 px-6 pt-5 pb-1 flex-wrap">

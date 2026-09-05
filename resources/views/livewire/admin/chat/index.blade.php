@@ -22,7 +22,7 @@
     }"
 >
     {{-- Conversation list --}}
-    <div class="w-full md:w-[320px] shrink-0 bg-white rounded-lg border border-zinc-100 shadow-sm flex-col overflow-hidden {{ $this->activeConversation ? 'hidden md:flex' : 'flex' }}">
+    <div class="w-full md:w-[320px] shrink-0 bg-white rounded-[5px] border border-zinc-100 shadow-sm flex-col overflow-hidden {{ $this->activeConversation ? 'hidden md:flex' : 'flex' }}">
         <div class="p-3 border-b border-zinc-100 relative">
             <flux:input
                 wire:model.live.debounce.300ms="userSearch"
@@ -86,7 +86,7 @@
     </div>
 
     {{-- Thread --}}
-    <div class="flex-1 min-h-0 bg-white rounded-lg border border-zinc-100 shadow-sm flex-col overflow-hidden {{ $this->activeConversation ? 'flex' : 'hidden md:flex' }}">
+    <div class="flex-1 min-h-0 bg-white rounded-[5px] border border-zinc-100 shadow-sm flex-col overflow-hidden {{ $this->activeConversation ? 'flex' : 'hidden md:flex' }}">
         @if ($this->activeConversation)
             @php $other = $this->activeConversation->otherUser(auth()->user()); @endphp
             <div class="px-4 py-3 border-b border-zinc-100 flex items-center gap-2.5 shrink-0">

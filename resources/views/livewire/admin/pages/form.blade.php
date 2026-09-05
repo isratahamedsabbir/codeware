@@ -10,7 +10,7 @@
 
         {{-- ── MAIN ── --}}
         <div class="flex-1 min-w-0 space-y-4">
-        <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="bg-white rounded-[5px] shadow-sm p-6">
             <div x-data="{ locale: 'en' }">
                 <div class="flex gap-2 -mx-6 px-6 pb-3 mb-3 border-b border-zinc-200 dark:border-zinc-700">
                     <button type="button"

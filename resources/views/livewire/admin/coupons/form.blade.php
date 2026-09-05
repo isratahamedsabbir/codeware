@@ -6,7 +6,7 @@
         </flux:button>
     @endpush
 
-    <div class="w-full bg-white rounded-lg shadow-sm p-6 space-y-4">
+    <div class="w-full bg-white rounded-[5px] shadow-sm p-6 space-y-4">
 
         <flux:field>
             <flux:label>Code <span class="text-red-500 ml-0.5">*</span></flux:label>

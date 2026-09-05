@@ -9,7 +9,7 @@
     <div class="flex gap-5 items-start max-lg:flex-col">
 
         {{-- ── MAIN ── --}}
-        <div class="flex-1 min-w-0 bg-white rounded-lg border border-zinc-100 shadow-sm p-6 space-y-4">
+        <div class="flex-1 min-w-0 bg-white rounded-[5px] border border-zinc-100 shadow-sm p-6 space-y-4">
 
             <flux:field>
                 <flux:label>{{ __('Name') }} <span class="text-red-500 ml-0.5">*</span></flux:label>

@@ -1,6 +1,6 @@
 <div class="max-w-3xl mx-auto">
     {{-- Profile photo & name --}}
-    <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden mb-5">
+    <div class="bg-white rounded-[5px] border border-zinc-100 shadow-sm overflow-hidden mb-5">
         <div class="px-5 py-3 border-b border-zinc-100 flex items-center justify-between">
             <h2 class="text-sm font-semibold text-zinc-900">Profile Information</h2>
             <span class="text-xs text-zinc-400">Account photo and display name</span>
@@ -55,7 +55,7 @@
     </div>
 
     {{-- Password --}}
-    <div class="bg-white rounded-lg border border-zinc-100 shadow-sm overflow-hidden">
+    <div class="bg-white rounded-[5px] border border-zinc-100 shadow-sm overflow-hidden">
         <div class="px-5 py-3 border-b border-zinc-100 flex items-center justify-between">
             <h2 class="text-sm font-semibold text-zinc-900">Change Password</h2>
             <span class="text-xs text-zinc-400">Keep your account secure</span>

@@ -6,7 +6,7 @@
         </flux:button>
     @endpush
 
-    <div class="w-full bg-white rounded-lg shadow-sm p-6">
+    <div class="w-full bg-white rounded-[5px] shadow-sm p-6">
 
             <div x-data="{ locale: 'en' }">
 

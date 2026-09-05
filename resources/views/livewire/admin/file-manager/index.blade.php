@@ -1,6 +1,6 @@
 <div class="max-w-[1600px] w-full mx-auto flex-1">
 
-    <div class="bg-white rounded-lg border border-zinc-100 shadow-sm">
+    <div class="bg-white rounded-[5px] border border-zinc-100 shadow-sm">
 
         {{-- Breadcrumb / toolbar --}}
         <div class="flex items-center justify-between gap-3 px-6 py-4 border-b border-zinc-100 flex-wrap">

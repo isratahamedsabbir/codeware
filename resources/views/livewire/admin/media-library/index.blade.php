@@ -7,7 +7,7 @@
 <div class="space-y-4">
 
     {{-- ─── Filters ─────────────────────────────────────────────────────────── --}}
-    <div class="rounded-xl border border-slate-200 bg-white px-5 py-4">
+    <div class="rounded-[5px] border border-slate-200 bg-white px-5 py-4">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
             {{-- Type filter tabs --}}
@@ -35,7 +35,7 @@
     </div>
 
     {{-- ─── Media Grid ──────────────────────────────────────────────────────── --}}
-    <div class="rounded-xl border border-slate-200 bg-white overflow-hidden">
+    <div class="rounded-[5px] border border-slate-200 bg-white overflow-hidden">
 
         {{-- Grid header --}}
         <div class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-3.5">
