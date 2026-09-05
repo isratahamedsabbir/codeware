@@ -57,12 +57,12 @@
                         <tr class="hover:bg-indigo-50/30 transition-colors">
 
                             {{-- Id --}}
-                            <td class="px-2 py-2.5 text-center text-xs text-zinc-500">
+                            <td class="px-2 py-2 text-center text-xs text-zinc-500">
                                 {{ $user->id }}
                             </td>
 
                             {{-- User --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <div class="flex items-center gap-3">
                                     @if ($user->photo_url)
                                         <img src="{{ $user->photo_url }}" alt="{{ $user->name }}"
@@ -86,7 +86,7 @@
                             </td>
 
                             {{-- Roles --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <div class="flex flex-wrap gap-1">
                                     @forelse ($user->roles as $role)
                                         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
@@ -99,7 +99,7 @@
                             </td>
 
                             {{-- Type --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 @if ($user->is_admin)
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-600 border border-green-200">
                                         <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
@@ -114,7 +114,7 @@
                             </td>
 
                             {{-- Actions --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <div class="flex items-center justify-end gap-1.5">
 
                                     {{-- Edit --}}

@@ -68,12 +68,12 @@
                         <tr class="hover:bg-indigo-50/30 transition-colors">
 
                             {{-- Id --}}
-                            <td class="px-2 py-2.5 text-center text-xs text-zinc-500">
+                            <td class="px-2 py-2 text-center text-xs text-zinc-500">
                                 {{ $language->id }}
                             </td>
 
                             {{-- Name --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <div class="flex items-center gap-2">
                                     <div class="min-w-0">
                                         <div class="font-medium text-zinc-900 text-sm leading-snug truncate">
@@ -92,7 +92,7 @@
                             </td>
 
                             {{-- Code --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <span class="font-mono text-xs text-zinc-600">{{ $language->code }}</span>
                                 @if ($language->direction === 'rtl')
                                     <span class="block text-[10px] text-zinc-400 mt-0.5">RTL</span>
@@ -100,7 +100,7 @@
                             </td>
 
                             {{-- Completion --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <div class="flex items-center gap-2">
                                     <div class="flex-1 h-1.5 rounded-full bg-zinc-100 overflow-hidden min-w-[60px]">
                                         <div class="h-full rounded-full transition-all"
@@ -114,7 +114,7 @@
                             </td>
 
                             {{-- Status --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 @if ($language->is_active)
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-600 border border-green-200">
                                         <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
@@ -129,7 +129,7 @@
                             </td>
 
                             {{-- Actions --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <div class="flex items-center justify-end gap-1.5">
 
                                     {{-- Make default --}}

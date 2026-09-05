@@ -69,7 +69,7 @@
                         <tr class="hover:bg-indigo-50/30 transition-colors" data-cms-id="{{ $cms->id }}">
 
                             {{-- Drag handle --}}
-                            <td class="px-2 py-2.5 text-center">
+                            <td class="px-2 py-2 text-center">
                                 <div class="drag-handle cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-600 inline-flex">
                                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <line x1="3" y1="6" x2="21" y2="6" />
@@ -80,17 +80,17 @@
                             </td>
 
                             {{-- ID --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <span class="text-sm text-zinc-500 font-mono">{{ $cms->id }}</span>
                             </td>
 
                             {{-- Name --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <span class="text-sm font-medium text-zinc-800"><x-truncate :text="$cms->name" /></span>
                             </td>
 
                             {{-- Content summary --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <div class="flex flex-wrap gap-1.5 text-[11px]">
                                     <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">{{ count($cms->cards ?? []) }} card{{ count($cms->cards ?? []) === 1 ? '' : 's' }}</span>
                                     @if (filled($cms->constantMap()))
@@ -100,7 +100,7 @@
                             </td>
 
                             {{-- Status --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 @if ($cms->status === 'active')
                                     <button type="button" wire:click="toggleStatus({{ $cms->id }})"
                                         aria-label="Deactivate"
@@ -119,7 +119,7 @@
                             </td>
 
                             {{-- Actions --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <div class="flex items-center justify-end gap-1.5">
 
                                     {{-- Edit --}}

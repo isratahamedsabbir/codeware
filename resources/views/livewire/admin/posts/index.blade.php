@@ -58,12 +58,12 @@
                         <tr class="hover:bg-indigo-50/30 transition-colors">
 
                             {{-- ID --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <span class="text-sm text-zinc-500 font-mono">{{ $post->id }}</span>
                             </td>
 
                             {{-- Title --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <div class="font-medium text-zinc-900 text-sm leading-snug">
                                     <x-truncate :text="$post->getTranslation('title', 'en', false)" />
                                 </div>
@@ -75,14 +75,14 @@
                             </td>
 
                             {{-- Slug --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <span class="font-mono text-xs text-zinc-600 truncate block">
                                     <x-truncate :text="$post->slug" />
                                 </span>
                             </td>
 
                             {{-- Category --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 @if ($post->category)
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500 border border-zinc-200 w-max">
                                         <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -96,7 +96,7 @@
                             </td>
 
                             {{-- Status --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 @if ($post->status === 'active')
                                     <button type="button" wire:click="toggleStatus({{ $post->id }})"
                                         aria-label="Deactivate"
@@ -115,7 +115,7 @@
                             </td>
 
                             {{-- Actions --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <div class="flex items-center justify-end gap-1.5">
 
                                     {{-- Edit --}}

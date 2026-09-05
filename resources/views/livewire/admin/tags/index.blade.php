@@ -54,12 +54,12 @@
                         <tr class="hover:bg-indigo-50/30 transition-colors">
 
                             {{-- Id --}}
-                            <td class="px-2 py-2.5 text-center text-xs text-zinc-500">
+                            <td class="px-2 py-2 text-center text-xs text-zinc-500">
                                 {{ $tag->id }}
                             </td>
 
                             {{-- Name --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <div class="font-medium text-zinc-900 text-sm leading-snug">
                                     <x-truncate :text="$tag->getTranslation('name', 'en', false)" />
                                 </div>
@@ -71,14 +71,14 @@
                             </td>
 
                             {{-- Slug --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <span class="font-mono text-xs text-zinc-600 truncate block">
                                     <x-truncate :text="$tag->slug" />
                                 </span>
                             </td>
 
                             {{-- Status --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 @if ($tag->status === 'active')
                                     <button type="button" wire:click="toggleStatus({{ $tag->id }})"
                                         aria-label="Deactivate"
@@ -97,7 +97,7 @@
                             </td>
 
                             {{-- Actions --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <div class="flex items-center justify-end gap-1.5">
 
                                     {{-- Edit --}}

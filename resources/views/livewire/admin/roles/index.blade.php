@@ -46,12 +46,12 @@
                         <tr class="hover:bg-indigo-50/30 transition-colors">
 
                             {{-- Id --}}
-                            <td class="px-2 py-2.5 text-center text-xs text-zinc-500">
+                            <td class="px-2 py-2 text-center text-xs text-zinc-500">
                                 {{ $role->id }}
                             </td>
 
                             {{-- Role --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <div class="flex items-center gap-2.5">
                                     <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-500 flex items-center justify-center shrink-0">
                                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -69,19 +69,19 @@
                             </td>
 
                             {{-- Users --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <span class="text-sm text-zinc-700">{{ $role->users_count }}</span>
                             </td>
 
                             {{-- Permissions --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">
                                     {{ $role->permissions_count }} permissions
                                 </span>
                             </td>
 
                             {{-- Actions --}}
-                            <td class="px-4 py-2.5">
+                            <td class="px-4 py-2">
                                 <div class="flex items-center justify-end gap-1.5">
 
                                     {{-- Edit --}}
