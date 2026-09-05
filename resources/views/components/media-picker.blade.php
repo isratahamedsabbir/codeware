@@ -78,7 +78,7 @@
         {{-- Preview / dropzone --}}
         @if ($preview && $dropzone)
             <button type="button" @click="openPicker()"
-                class="relative flex h-28 w-full shrink-0 flex-col items-center justify-center gap-1.5 overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 transition-colors hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                class="relative flex h-24 w-full shrink-0 flex-col items-center justify-center gap-1.5 overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 transition-colors hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400">
                 <template x-if="selectedUrl">
                     <img :src="selectedUrl" alt="" class="absolute inset-0 h-full w-full object-cover" />
                 </template>
