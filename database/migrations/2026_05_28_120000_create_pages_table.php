@@ -31,6 +31,9 @@ return new class extends Migration
             $table->text('seo_description')->nullable();
             $table->string('og_title')->nullable();
             $table->text('og_description')->nullable();
+            $table->string('twitter_title')->nullable();
+            $table->text('twitter_description')->nullable();
+            $table->string('twitter_image')->nullable();
             $table->boolean('no_index')->default(false);
             $table->boolean('no_follow')->default(false);
             $table->string('canonical_base')->nullable();

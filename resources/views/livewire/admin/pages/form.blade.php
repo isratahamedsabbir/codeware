@@ -67,8 +67,10 @@
         </div>
 
         <x-admin-section-card icon="magnifying-glass" title="Search Engine (SEO) Settings"
-            icon-color="bg-sky-500/10 text-sky-600" body-class="grid grid-cols-1 lg:grid-cols-2 gap-x-7 gap-y-4"
+            icon-color="bg-sky-500/10 text-sky-600" body-class="px-6 py-5 grid grid-cols-1 lg:grid-cols-2 gap-x-7 gap-y-5"
             description="Meta tags and indexing controls for this page.">
+
+                {{-- Canonical URL --}}
                 <div class="lg:col-span-2 min-w-0">
                     <flux:field>
                         <flux:label>Canonical URL</flux:label>
@@ -89,35 +91,80 @@
                         <flux:error name="canonical_slug" />
                     </flux:field>
                 </div>
-                <div class="space-y-4 min-w-0">
-                    <flux:field>
-                        <flux:label>Meta Title</flux:label>
-                        <flux:input wire:model="seo_title" placeholder="SEO-optimized title" />
-                        <flux:error name="seo_title" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Meta Description</flux:label>
-                        <flux:textarea wire:model="seo_description" class="h-24" placeholder="Brief description for search engines…" />
-                        <flux:error name="seo_description" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>OG Title</flux:label>
-                        <flux:input wire:model="og_title" placeholder="Title shown when shared on social media" />
-                        <flux:error name="og_title" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>OG Description</flux:label>
-                        <flux:textarea wire:model="og_description" class="h-24" placeholder="Description shown when shared on social media" />
-                        <flux:error name="og_description" />
-                    </flux:field>
+
+                {{-- Meta tags --}}
+                <div class="lg:col-span-2 min-w-0 border-t border-zinc-100 pt-5">
+                    <flux:heading size="sm" class="mb-3">Meta Tags</flux:heading>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-7 gap-y-4">
+                        <flux:field>
+                            <flux:label>Meta Title</flux:label>
+                            <flux:input wire:model="seo_title" placeholder="SEO-optimized title" />
+                            <flux:error name="seo_title" />
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>Meta Description</flux:label>
+                            <flux:textarea wire:model="seo_description" class="h-24" placeholder="Brief description for search engines…" />
+                            <flux:error name="seo_description" />
+                        </flux:field>
+                    </div>
                 </div>
-                <div class="space-y-4 min-w-0">
-                    <flux:field>
-                        <flux:label>OG Image (1200×630)</flux:label>
-                        <x-media-picker model="og_image" label="" placeholder="Select OG image from library"
-                            :picker-id="$ogImagePickerId" dropzone />
-                    </flux:field>
-                    <div class="border-t border-zinc-100 pt-4 space-y-3">
+
+                {{-- Open Graph --}}
+                <div class="lg:col-span-2 min-w-0 border-t border-zinc-100 pt-5">
+                    <flux:heading size="sm" class="mb-3">Open Graph (Facebook, LinkedIn)</flux:heading>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-7 gap-y-4">
+                        <div class="space-y-4 min-w-0">
+                            <flux:field>
+                                <flux:label>OG Title</flux:label>
+                                <flux:input wire:model="og_title" placeholder="Title shown when shared on social media" />
+                                <flux:error name="og_title" />
+                            </flux:field>
+                            <flux:field>
+                                <flux:label>OG Description</flux:label>
+                                <flux:textarea wire:model="og_description" class="h-24" placeholder="Description shown when shared on social media" />
+                                <flux:error name="og_description" />
+                            </flux:field>
+                        </div>
+                        <div class="min-w-0">
+                            <flux:field>
+                                <flux:label>OG Image (1200×630)</flux:label>
+                                <x-media-picker model="og_image" label="" placeholder="Select OG image from library"
+                                    :picker-id="$ogImagePickerId" dropzone />
+                            </flux:field>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Twitter Card --}}
+                <div class="lg:col-span-2 min-w-0 border-t border-zinc-100 pt-5">
+                    <flux:heading size="sm" class="mb-3">Twitter Card</flux:heading>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-7 gap-y-4">
+                        <div class="space-y-4 min-w-0">
+                            <flux:field>
+                                <flux:label>Twitter Title</flux:label>
+                                <flux:input wire:model="twitter_title" placeholder="Title shown when shared on X/Twitter" />
+                                <flux:error name="twitter_title" />
+                            </flux:field>
+                            <flux:field>
+                                <flux:label>Twitter Description</flux:label>
+                                <flux:textarea wire:model="twitter_description" class="h-24" placeholder="Description shown when shared on X/Twitter" />
+                                <flux:error name="twitter_description" />
+                            </flux:field>
+                        </div>
+                        <div class="min-w-0">
+                            <flux:field>
+                                <flux:label>Twitter Image (1200×630)</flux:label>
+                                <x-media-picker model="twitter_image" label="" placeholder="Select Twitter image from library"
+                                    :picker-id="$twitterImagePickerId" dropzone />
+                            </flux:field>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Indexing --}}
+                <div class="lg:col-span-2 min-w-0 border-t border-zinc-100 pt-5">
+                    <flux:heading size="sm" class="mb-3">Indexing</flux:heading>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-7 gap-y-3">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-zinc-700">No-Index</p>

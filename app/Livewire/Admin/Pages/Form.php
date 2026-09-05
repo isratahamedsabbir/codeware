@@ -67,6 +67,16 @@ class Form extends Component
     #[Validate('nullable|string|max:255')]
     public string $og_description = '';
 
+    public ?string $twitter_image = null;
+
+    public string $twitterImagePickerId = '';
+
+    #[Validate('nullable|string|max:255')]
+    public string $twitter_title = '';
+
+    #[Validate('nullable|string|max:255')]
+    public string $twitter_description = '';
+
     public bool $no_index = false;
 
     public bool $no_follow = false;
@@ -90,6 +100,7 @@ class Form extends Component
     public function mount(?int $id = null): void
     {
         $this->ogImagePickerId = 'page-og-image-picker-'.Str::uuid()->toString();
+        $this->twitterImagePickerId = 'page-twitter-image-picker-'.Str::uuid()->toString();
 
         if ($id) {
             $page = Page::findOrFail($id);
@@ -107,6 +118,9 @@ class Form extends Component
             $this->og_image = $page->og_image ?? null;
             $this->og_title = $page->og_title ?? '';
             $this->og_description = $page->og_description ?? '';
+            $this->twitter_image = $page->twitter_image ?? null;
+            $this->twitter_title = $page->twitter_title ?? '';
+            $this->twitter_description = $page->twitter_description ?? '';
             $this->no_index = (bool) $page->no_index;
             $this->no_follow = (bool) $page->no_follow;
             $this->canonical_base = $page->canonical_base ?? '';
@@ -300,6 +314,9 @@ class Form extends Component
             'seo_description' => $this->seo_description ?: null,
             'og_title' => $this->og_title ?: null,
             'og_description' => $this->og_description ?: null,
+            'twitter_image' => $this->twitter_image ?: null,
+            'twitter_title' => $this->twitter_title ?: null,
+            'twitter_description' => $this->twitter_description ?: null,
             'no_index' => $this->no_index,
             'no_follow' => $this->no_follow,
             'canonical_base' => $this->canonical_base ?: null,
