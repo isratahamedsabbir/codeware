@@ -1,5 +1,5 @@
 <div
-    class="flex flex-col md:flex-row h-[calc(100dvh-11rem)] md:h-[78vh] min-h-100 md:min-h-130 gap-4"
+    class="flex flex-col md:flex-row h-full min-h-100 md:min-h-130 gap-4"
     x-data="{
         authId: {{ auth()->id() }},
         activeId: @entangle('conversationId'),
@@ -50,7 +50,7 @@
             @endif
         </div>
 
-        <div class="flex-1 overflow-y-auto">
+        <div class="flex-1 min-h-0 overflow-y-auto">
             @forelse ($this->conversations as $conversation)
                 @php $other = $conversation->otherUser(auth()->user()); @endphp
                 <button
@@ -106,7 +106,7 @@
                 DOM) so the reversed flow renders them in normal reading order visually
                 (oldest at top, newest at bottom).
             --}}
-            <div class="flex-1 overflow-y-auto px-4 py-4 flex flex-col-reverse space-y-3 space-y-reverse">
+            <div class="flex-1 min-h-0 overflow-y-auto px-4 py-4 flex flex-col-reverse space-y-3 space-y-reverse">
                 @forelse ($this->threadMessages->reverse() as $message)
                     @php $isMine = $message->sender_id === auth()->id(); @endphp
                     <div wire:key="message-{{ $message->id }}" class="flex {{ $isMine ? 'justify-end' : 'justify-start' }}">
@@ -124,18 +124,17 @@
                 @endforelse
             </div>
 
-            <form wire:submit="sendMessage" class="p-3 border-t border-zinc-100 flex items-stretch gap-2 shrink-0">
+            <form wire:submit="sendMessage" class="p-3 border-t border-zinc-100 flex items-end gap-2 shrink-0">
                 <div class="flex-1">
                     <flux:textarea
                         wire:model="messageBody"
                         rows="2"
-                        resize="none"
                         placeholder="{{ __('Write a message...') }}"
                         x-on:keydown.enter.prevent="if (!$event.shiftKey) { $wire.sendMessage(); }"
                     />
                     <flux:error name="messageBody" />
                 </div>
-                <flux:button type="submit" variant="primary" icon="paper-airplane" class="h-auto! self-stretch">
+                <flux:button type="submit" variant="primary" icon="paper-airplane">
                     {{ __('Send') }}
                 </flux:button>
             </form>
