@@ -31,7 +31,7 @@
             <div x-data="{ locale: 'en' }">
 
                 {{-- Locale Tabs --}}
-                <div class="flex gap-2 -mx-6 px-6 pb-4 mb-4 border-b border-zinc-200 dark:border-zinc-700">
+                <div class="flex gap-2 -mx-6 px-6 pb-3 mb-3 border-b border-zinc-200 dark:border-zinc-700">
                     <button type="button"
                         :class="locale === 'en' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'"
                         class="px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors"
@@ -43,7 +43,7 @@
                 </div>
 
                 {{-- English --}}
-                <div x-show="locale==='en'" class="space-y-4">
+                <div x-show="locale==='en'" class="space-y-3">
                     <flux:field>
                         <flux:label>Name <span class="text-red-500 ml-0.5">*</span></flux:label>
                         <flux:input wire:model.live.debounce.400ms="name_en" placeholder="Product name in English" />
@@ -75,7 +75,7 @@
                 </div>
 
                 {{-- Bengali --}}
-                <div x-show="locale==='bn'" class="space-y-4">
+                <div x-show="locale==='bn'" class="space-y-3">
                     <flux:field>
                         <flux:label>নাম</flux:label>
                         <flux:input wire:model="name_bn" placeholder="বাংলায় পণ্যের নাম" />
@@ -108,10 +108,10 @@
         </div>
 
         {{-- ── SIDEBAR ── --}}
-        <div class="w-[320px] shrink-0 space-y-4">
+        <div class="w-[320px] shrink-0 space-y-3">
 
             {{-- Settings --}}
-            <x-admin-section-card icon="cog-6-tooth" title="Settings" body-class="px-4 py-3"
+            <x-admin-section-card icon="cog-6-tooth" title="Settings" body-class="px-4 py-2"
                 description="Base price for this product.">
                 <flux:field>
                     <flux:label>Price</flux:label>
@@ -122,7 +122,7 @@
 
             {{-- Featured Image --}}
             <x-admin-section-card icon="photo" title="Thumbnail Image" icon-color="bg-blue-500/10 text-blue-600"
-                body-class="px-4 py-4" description="Shown in the product catalog.">
+                body-class="px-4 py-3" description="Shown in the product catalog.">
                 <x-media-picker model="featured_image" label="" placeholder="Select featured image"
                     :picker-id="$featuredImagePickerId" dropzone />
             </x-admin-section-card>

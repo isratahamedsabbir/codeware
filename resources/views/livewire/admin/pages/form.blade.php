@@ -12,7 +12,7 @@
         <div class="flex-1 min-w-0 space-y-4">
         <div class="bg-white rounded-lg shadow-sm p-6">
             <div x-data="{ locale: 'en' }">
-                <div class="flex gap-2 -mx-6 px-6 pb-4 mb-4 border-b border-zinc-200 dark:border-zinc-700">
+                <div class="flex gap-2 -mx-6 px-6 pb-3 mb-3 border-b border-zinc-200 dark:border-zinc-700">
                     <button type="button"
                         :class="locale === 'en' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'"
                         class="px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors"
