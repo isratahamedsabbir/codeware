@@ -8,6 +8,7 @@ use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\PageCascade;
 use Livewire\Component;
@@ -40,6 +41,13 @@ class Index extends Component
 
     public ?int $deletingId = null;
 
+    public int $puckSessionMinutes = 30;
+
+    public function mount(): void
+    {
+        $this->puckSessionMinutes = Setting::puckSessionMinutes();
+    }
+
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -63,10 +71,24 @@ class Index extends Component
 
         auth()->user()->tokens()->where('name', 'puck-builder')->delete();
 
-        $token = auth()->user()->createToken('puck-builder', ['*'], now()->addMinutes(config('app.puck_session', 5)))->plainTextToken;
+        $token = auth()->user()->createToken('puck-builder', ['*'], now()->addMinutes(Setting::puckSessionMinutes()))->plainTextToken;
 
         $url = config('cms.editor_base_url')."/puck/edit/{$page->type}/{$pageId}#token={$token}";
         $this->js('window.open('.json_encode($url).', \'_blank\')');
+    }
+
+    public function saveEditorSettings(): void
+    {
+        $this->validate([
+            'puckSessionMinutes' => 'required|integer|min:1|max:1440',
+        ]);
+
+        Setting::set('puck_session_minutes', $this->puckSessionMinutes);
+
+        AdminActivity::log('updated', "Puck editor token expiry set to {$this->puckSessionMinutes} minute(s)");
+
+        $this->dispatch('close-modal', name: 'editor-settings');
+        $this->dispatch('notify', message: 'Editor settings saved.');
     }
 
     /**

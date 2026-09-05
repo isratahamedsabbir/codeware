@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Posts;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\PostCategory;
+use App\Models\Setting;
 use App\Models\Tag;
 use App\Support\AdminActivity;
 use App\Support\Slug;
@@ -135,7 +136,7 @@ class Form extends Component
         $token = auth()->user()->createToken(
             'puck-builder',
             ['*'],
-            now()->addMinutes(config('app.puck_session', 5))
+            now()->addMinutes(Setting::puckSessionMinutes())
         )->plainTextToken;
 
         $url = config('cms.editor_base_url')."/puck/edit/post/{$this->pageId}#token={$token}";
@@ -166,7 +167,7 @@ class Form extends Component
         $token = auth()->user()->createToken(
             'puck-builder',
             ['*'],
-            now()->addMinutes(config('app.puck_session', 5))
+            now()->addMinutes(Setting::puckSessionMinutes())
         )->plainTextToken;
 
         $url = config('cms.editor_base_url')."/puck/edit/post/{$this->pageId}#token={$token}";

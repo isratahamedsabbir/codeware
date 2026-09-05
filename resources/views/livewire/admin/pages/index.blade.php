@@ -1,4 +1,10 @@
 @push('page-header-actions')
+    <flux:modal.trigger name="editor-settings">
+        <flux:button variant="ghost" size="sm" icon="cog-6-tooth">
+            Settings
+        </flux:button>
+    </flux:modal.trigger>
+
     <flux:dropdown position="bottom" align="end">
         <flux:button variant="ghost" size="sm" icon="window" icon-trailing="chevron-down">
             Layout
@@ -286,6 +292,30 @@
     <div class="px-6 py-3">
         {{ $pages->links() }}
     </div>
+
+    {{-- Editor Settings Modal --}}
+    <flux:modal name="editor-settings" class="md:w-96"
+        x-on:open-modal.window="if ($event.detail.name === 'editor-settings') $flux.modal('editor-settings').show()"
+        x-on:close-modal.window="if ($event.detail.name === 'editor-settings') $flux.modal('editor-settings').close()">
+        <div class="space-y-4">
+            <flux:heading>Editor settings</flux:heading>
+            <flux:text class="text-sm text-zinc-500">
+                How long a Puck editor link stays valid after you open it. Past this time, the tab must be reopened
+                from here to get a fresh link.
+            </flux:text>
+            <flux:field>
+                <flux:label>Token expiry (minutes)</flux:label>
+                <flux:input type="number" min="1" max="1440" wire:model="puckSessionMinutes" />
+                <flux:error name="puckSessionMinutes" />
+            </flux:field>
+            <div class="flex gap-2 pt-1">
+                <flux:button variant="primary" wire:click="saveEditorSettings">Save</flux:button>
+                <flux:modal.close>
+                    <flux:button variant="ghost">Cancel</flux:button>
+                </flux:modal.close>
+            </div>
+        </div>
+    </flux:modal>
 
     {{-- Delete Modal --}}
     <flux:modal name="page-delete" class="md:w-80"

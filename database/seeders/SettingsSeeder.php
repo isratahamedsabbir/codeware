@@ -134,6 +134,9 @@ class SettingsSeeder extends Seeder
             // ── Frontend ──
             ['key' => 'site_theme',               'value' => 'default', 'type' => 'select', 'group' => 'frontend', 'is_public' => true],
 
+            // ── Editor ──
+            ['key' => 'puck_session_minutes',    'value' => '30', 'type' => 'integer', 'group' => 'editor', 'is_public' => false],
+
             // ── Floating button (admin panel) ──
             ['key' => 'floating_button_enabled', 'value' => '0', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
             ['key' => 'floating_button_action',  'value' => 'top', 'type' => 'string', 'group' => 'other', 'is_public' => false],

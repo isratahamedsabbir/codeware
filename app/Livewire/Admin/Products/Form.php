@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Products;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\Slug;
 use Illuminate\Support\Str;
@@ -132,7 +133,7 @@ class Form extends Component
         $token = auth()->user()->createToken(
             'puck-builder',
             ['*'],
-            now()->addMinutes(config('app.puck_session', 5))
+            now()->addMinutes(Setting::puckSessionMinutes())
         )->plainTextToken;
 
         $url = config('cms.editor_base_url')."/puck/edit/product/{$this->pageId}#token={$token}";
@@ -162,7 +163,7 @@ class Form extends Component
         $token = auth()->user()->createToken(
             'puck-builder',
             ['*'],
-            now()->addMinutes(config('app.puck_session', 5))
+            now()->addMinutes(Setting::puckSessionMinutes())
         )->plainTextToken;
 
         $url = config('cms.editor_base_url')."/puck/edit/product/{$this->pageId}#token={$token}";

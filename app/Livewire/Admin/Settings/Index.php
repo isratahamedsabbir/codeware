@@ -273,7 +273,7 @@ class Index extends Component
             // 'frontend' (site_theme) and 'colors' live under the Theme tab, not here.
             // 'other' is hand-rendered in its own tab (the Floating Button card) rather
             // than through this generic per-group loop.
-            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'seo', 'colors', 'currency', 'frontend', 'other'])
+            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'seo', 'colors', 'currency', 'frontend', 'other', 'editor'])
                 ->get()
                 ->groupBy('group')
                 ->sortBy(fn ($items, $group) => $groupOrder[$group] ?? count($groupOrder)),

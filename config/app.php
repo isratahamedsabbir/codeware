@@ -141,6 +141,4 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-    'puck_session' => 5,
-
 ];

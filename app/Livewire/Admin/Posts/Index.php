@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Posts;
 use App\Concerns\HasPerPage;
 use App\Models\Page;
 use App\Models\Post;
+use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\PageCascade;
 use Livewire\Component;
@@ -48,7 +49,7 @@ class Index extends Component
         $token = auth()->user()->createToken(
             'puck-builder',
             ['*'],
-            now()->addMinutes(config('app.puck_session', 5))
+            now()->addMinutes(Setting::puckSessionMinutes())
         )->plainTextToken;
 
         $url = config('cms.editor_base_url')."/puck/edit/post/{$page->id}#token={$token}";

@@ -65,4 +65,14 @@ class Setting extends Model
     {
         return (int) static::get('pagination_per_page', 10);
     }
+
+    /**
+     * How long a minted Puck editor token (Sanctum PAT) stays valid — the
+     * single place every openPuckEditor()/saveAndOpenPageBuilder() call
+     * reads from, driven by the Settings button on the admin Pages screen.
+     */
+    public static function puckSessionMinutes(): int
+    {
+        return (int) static::get('puck_session_minutes', 30);
+    }
 }

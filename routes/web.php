@@ -3,6 +3,7 @@
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\TestController;
+use App\Models\Setting;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [FrontendController::class, 'home'])->name('home');
@@ -30,7 +31,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::get('/token', function () {
-    $token = auth()->user()->createToken('test-token', ['*'], now()->addMinutes(config('app.puck_session', 5)))->plainTextToken;
+    $token = auth()->user()->createToken('test-token', ['*'], now()->addMinutes(Setting::puckSessionMinutes()))->plainTextToken;
 
     return response()->json(['token' => $token]);
 })->middleware(['auth']);
