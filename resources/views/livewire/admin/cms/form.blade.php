@@ -22,8 +22,9 @@
             <flux:button size="xs" variant="outline" icon="plus" wire:click="addCard">Add card</flux:button>
         </x-slot:actions>
 
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         @forelse ($cards as $i => $card)
-            <div class="group relative rounded-xl border border-zinc-200 bg-zinc-50/60 p-4 transition-colors hover:border-zinc-300">
+            <div class="group relative rounded-[5px] border border-zinc-200 bg-zinc-50/60 p-4 transition-colors hover:border-zinc-300">
                 <div class="flex items-start gap-3">
                     <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-[11px] font-semibold text-white">
                         {{ $i + 1 }}
@@ -31,7 +32,7 @@
 
                     <div class="flex-1 min-w-0 space-y-3">
                         <flux:field>
-                            <flux:label class="text-[11px]! font-bold! uppercase! tracking-wider! text-zinc-500! dark:text-zinc-400! block! w-full! pb-2.5! mb-3! border-b! border-zinc-200! dark:border-zinc-700!">Title</flux:label>
+                            <flux:label>Title</flux:label>
                             <flux:input wire:model="cards.{{ $i }}.title" placeholder="e.g. Fast Delivery" class="font-medium" />
                         </flux:field>
                         <flux:field>
@@ -51,7 +52,7 @@
                 </div>
             </div>
         @empty
-            <div class="rounded-xl border border-dashed border-zinc-200 py-10 text-center">
+            <div class="col-span-full rounded-[5px] border border-dashed border-zinc-200 py-10 text-center">
                 <svg class="mx-auto mb-2 h-8 w-8 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <rect x="3" y="3" width="7" height="7" rx="1" />
                     <rect x="14" y="3" width="7" height="7" rx="1" />
@@ -61,6 +62,7 @@
                 <p class="text-sm text-zinc-400">No cards yet.</p>
             </div>
         @endforelse
+        </div>
     </x-admin-section-card>
 
     {{-- Constant --}}
@@ -71,8 +73,9 @@
         </x-slot:actions>
         <flux:error name="constant" />
 
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         @forelse ($constant as $i => $pair)
-            <div wire:key="constant-row-{{ $i }}" class="group relative rounded-xl border border-zinc-200 bg-zinc-50/60 p-4 transition-colors hover:border-zinc-300">
+            <div wire:key="constant-row-{{ $i }}" class="group relative rounded-[5px] border border-zinc-200 bg-zinc-50/60 p-4 transition-colors hover:border-zinc-300">
                 <div class="flex items-start gap-3">
                     <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-[11px] font-semibold text-white">
                         {{ $i + 1 }}
@@ -80,7 +83,7 @@
 
                     <div class="flex-1 min-w-0 space-y-3">
                         <flux:field>
-                            <flux:label class="text-[11px]! font-bold! uppercase! tracking-wider! text-zinc-500! dark:text-zinc-400! block! w-full! pb-2.5! mb-3! border-b! border-zinc-200! dark:border-zinc-700!">Value type</flux:label>
+                            <flux:label>Value type</flux:label>
                             <div class="grid grid-cols-2 gap-1.5 rounded-lg bg-zinc-100 p-1">
                                 <button type="button" wire:click="setConstantType({{ $i }}, 'textarea')"
                                     class="flex items-center justify-center gap-1.5 rounded-md py-2 text-xs font-medium transition-colors cursor-pointer {{ ($pair['type'] ?? 'textarea') === 'textarea' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700' }}">
@@ -127,13 +130,14 @@
                 </div>
             </div>
         @empty
-            <div class="rounded-xl border border-dashed border-zinc-200 py-10 text-center">
+            <div class="col-span-full rounded-[5px] border border-dashed border-zinc-200 py-10 text-center">
                 <svg class="mx-auto mb-2 h-8 w-8 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" />
                 </svg>
                 <p class="text-sm text-zinc-400">No content yet.</p>
             </div>
         @endforelse
+        </div>
     </x-admin-section-card>
 
     {{-- Save --}}
