@@ -31,7 +31,7 @@
 
                     <div class="flex-1 min-w-0 space-y-3">
                         <flux:field>
-                            <flux:label>Title</flux:label>
+                            <flux:label class="text-[11px]! font-bold! uppercase! tracking-wider! text-zinc-500! dark:text-zinc-400! block! w-full! pb-2.5! mb-3! border-b! border-zinc-200! dark:border-zinc-700!">Title</flux:label>
                             <flux:input wire:model="cards.{{ $i }}.title" placeholder="e.g. Fast Delivery" class="font-medium" />
                         </flux:field>
                         <flux:field>
@@ -80,7 +80,7 @@
 
                     <div class="flex-1 min-w-0 space-y-3">
                         <flux:field>
-                            <flux:label>Value type</flux:label>
+                            <flux:label class="text-[11px]! font-bold! uppercase! tracking-wider! text-zinc-500! dark:text-zinc-400! block! w-full! pb-2.5! mb-3! border-b! border-zinc-200! dark:border-zinc-700!">Value type</flux:label>
                             <div class="grid grid-cols-2 gap-1.5 rounded-lg bg-zinc-100 p-1">
                                 <button type="button" wire:click="setConstantType({{ $i }}, 'textarea')"
                                     class="flex items-center justify-center gap-1.5 rounded-md py-2 text-xs font-medium transition-colors cursor-pointer {{ ($pair['type'] ?? 'textarea') === 'textarea' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700' }}">
