@@ -104,21 +104,18 @@
                     </flux:field>
                 </div>
 
+                {{-- Price (not translatable — shown regardless of locale tab) --}}
+                <flux:field class="mt-3">
+                    <flux:label>Price</flux:label>
+                    <flux:input type="number" wire:model="price" min="0" step="0.01" />
+                    <flux:error name="price" />
+                </flux:field>
+
             </div>
         </div>
 
         {{-- ── SIDEBAR ── --}}
         <div class="w-[320px] shrink-0 space-y-3">
-
-            {{-- Settings --}}
-            <x-admin-section-card icon="cog-6-tooth" title="Settings" body-class="px-4 py-2"
-                description="Base price for this product.">
-                <flux:field>
-                    <flux:label>Price</flux:label>
-                    <flux:input type="number" wire:model="price" min="0" step="0.01" />
-                    <flux:error name="price" />
-                </flux:field>
-            </x-admin-section-card>
 
             {{-- Featured Image --}}
             <x-admin-section-card icon="photo" title="Thumbnail Image" icon-color="bg-blue-500/10 text-blue-600"
