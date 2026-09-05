@@ -347,7 +347,7 @@
                     @forelse ($constants as $i => $pair)
                         <div wire:key="settings-constant-row-{{ $i }}" class="group relative rounded-[5px] border border-zinc-200 bg-zinc-50/60 p-4 transition-colors hover:border-zinc-300">
                             <div class="flex items-start gap-3">
-                                <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-[11px] font-semibold text-white">
+                                <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-zinc-300 text-[11px] font-semibold text-zinc-500">
                                     {{ $i + 1 }}
                                 </div>
 
