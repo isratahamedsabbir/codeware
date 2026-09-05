@@ -163,7 +163,7 @@
         </div>
 
         {{-- Navigation --}}
-        <nav id="admin-sidebar-nav" class="flex-1 overflow-y-auto px-2 py-2 space-y-0 custom-sidebar-nav pl-0.5">
+        <nav id="admin-sidebar-nav" class="flex-1 overflow-y-auto px-2 py-2 space-y-2 custom-sidebar-nav pl-0.5">
 
             @foreach ($sidebarMenu as $item)
                 @if ($item->is_group)
@@ -194,7 +194,7 @@
                                     x-bind:style="groupOpen({{ $item->id }}) ? 'transform: rotate(90deg)' : ''" />
                             </span>
                         </button>
-                        <div class="nav-group-items space-y-0.5" :class="{ 'collapsed': !groupOpen({{ $item->id }}) }"
+                        <div class="nav-group-items space-y-2" :class="{ 'collapsed': !groupOpen({{ $item->id }}) }"
                             :style="groupOpen({{ $item->id }}) ? 'max-height: 500px; opacity: 1;' : ''">
                             @foreach ($item->children as $child)
                                 @include('partials.admin-nav-link', ['link' => $child])
