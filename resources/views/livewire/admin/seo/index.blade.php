@@ -31,8 +31,8 @@
             <flux:textarea wire:model="settings.seo_og_description" class="h-24"
                 placeholder="Defaults to Meta Description if left blank" />
         </flux:field>
-        <x-media-picker model="settings.seo_og_image" label="OG Image"
-            placeholder="Recommended size: 1200 × 630px" dropzone />
+        <x-media-picker model="settings.seo_og_image" label="OG Image" hint="1200×630px"
+            placeholder="Select OG image from library" mimes="jpg,jpeg,png,webp" only-images dropzone />
     </x-admin-section-card>
 
     <x-admin-section-card icon="at-symbol" title="Twitter Card" icon-color="bg-sky-500/10 text-sky-600"
@@ -59,8 +59,8 @@
             <flux:textarea wire:model="settings.seo_twitter_description" class="h-24"
                 placeholder="Defaults to Meta Description if left blank" />
         </flux:field>
-        <x-media-picker model="settings.seo_twitter_image" label="Twitter Image"
-            placeholder="Recommended size: 1200 × 675px" dropzone />
+        <x-media-picker model="settings.seo_twitter_image" label="Twitter Image" hint="1200×675px"
+            placeholder="Select Twitter image from library" mimes="jpg,jpeg,png,webp" only-images dropzone />
     </x-admin-section-card>
 
     </div>

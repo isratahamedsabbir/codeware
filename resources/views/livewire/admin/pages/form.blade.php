@@ -127,9 +127,10 @@
                         </div>
                         <div class="min-w-0">
                             <flux:field>
-                                <flux:label>OG Image (1200×630)</flux:label>
+                                <flux:label>OG Image</flux:label>
+                                <flux:text class="-mt-1! mb-1 block text-[11px] text-zinc-400">1200×630px</flux:text>
                                 <x-media-picker model="og_image" label="" placeholder="Select OG image from library"
-                                    :picker-id="$ogImagePickerId" dropzone />
+                                    :picker-id="$ogImagePickerId" mimes="jpg,jpeg,png,webp" only-images dropzone />
                             </flux:field>
                         </div>
                     </div>
@@ -153,9 +154,10 @@
                         </div>
                         <div class="min-w-0">
                             <flux:field>
-                                <flux:label>Twitter Image (1200×630)</flux:label>
+                                <flux:label>Twitter Image</flux:label>
+                                <flux:text class="-mt-1! mb-1 block text-[11px] text-zinc-400">1200×630px</flux:text>
                                 <x-media-picker model="twitter_image" label="" placeholder="Select Twitter image from library"
-                                    :picker-id="$twitterImagePickerId" dropzone />
+                                    :picker-id="$twitterImagePickerId" mimes="jpg,jpeg,png,webp" only-images dropzone />
                             </flux:field>
                         </div>
                     </div>

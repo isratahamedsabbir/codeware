@@ -4,7 +4,9 @@
      pages are plain HTML forms, not Livewire, so this is a vanilla listener
      rather than wire:loading. Falls back to the bundled default GIF if none
      has been uploaded yet. --}}
-@php($loaderUrl = \App\Models\Setting::get('loader') ?: asset('default/loader.gif'))
+@php
+    $loaderUrl = \App\Models\Setting::get('loader') ?: asset('default/loader.gif');
+@endphp
 <div id="auth-loader-overlay"
     class="fixed inset-0 z-[9999] hidden items-center justify-center bg-white/70 backdrop-blur-sm">     
     <img src="{{ $loaderUrl }}" alt="Loading" class="w-[150px] object-contain">  

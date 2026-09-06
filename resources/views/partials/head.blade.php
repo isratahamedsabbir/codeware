@@ -5,8 +5,10 @@
     {{ filled($title ?? null) ? $title.' - '.config('app.name', 'Laravel') : config('app.name', 'Laravel') }}
 </title>
 
-@php($siteIcon = \App\Models\Setting::get('site_icon'))
-@php($favicon = \App\Models\Setting::get('favicon'))
+@php
+    $siteIcon = \App\Models\Setting::get('site_icon');
+    $favicon = \App\Models\Setting::get('favicon');
+@endphp
 @if ($favicon)
     <link rel="icon" href="{{ $favicon }}" sizes="any">
 @else

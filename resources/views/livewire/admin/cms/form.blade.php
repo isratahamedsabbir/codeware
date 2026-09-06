@@ -51,7 +51,7 @@
                         <flux:textarea wire:model="cards.{{ $i }}.description" class="h-24" placeholder="Short description shown on the card" />
                     </flux:field>
 
-                    <x-media-picker model="cards.{{ $i }}.image" label="Card Image" dropzone />
+                    <x-media-picker model="cards.{{ $i }}.image" label="Card Image" hint="600×400px" mimes="jpg,jpeg,png,webp" only-images dropzone />
                 </div>
             </div>
         @empty

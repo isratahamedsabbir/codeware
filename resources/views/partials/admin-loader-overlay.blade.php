@@ -3,7 +3,9 @@
      after login while the dashboard is being fetched) or any Livewire AJAX
      request (table filters/pagination/saves). Falls back to the bundled
      default GIF if none has been uploaded yet. --}}
-@php($loaderUrl = \App\Models\Setting::get('loader') ?: asset('default/loader.gif'))
+@php
+    $loaderUrl = \App\Models\Setting::get('loader') ?: asset('default/loader.gif');
+@endphp
 <div wire:loading.flex
     class="fixed inset-0 z-[9999] hidden items-center justify-center bg-white/70 backdrop-blur-sm dark:bg-zinc-900/70">
     <img src="{{ $loaderUrl }}" alt="Loading" class="max-w-[150px] object-contain">     

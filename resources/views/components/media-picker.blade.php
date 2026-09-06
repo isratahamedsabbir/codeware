@@ -1,14 +1,23 @@
 @props([
     'model' => 'imageUrl',
     'label' => 'Image',
+    'hint' => null,
     'placeholder' => 'No file selected',
     'preview' => true,
     'pickerId' => null,
     'compact' => true,
     'dropzone' => false,
+    'onlyImages' => false,
+    'mimes' => 'jpg,jpeg,png,gif,webp',
+    'maxSizeMb' => 2,
 ])
 
-@php($pickerId = $pickerId ?: 'mp-' . preg_replace('/[^a-z0-9]/', '-', strtolower($model)))
+@php
+    $pickerId = $pickerId ?: 'mp-' . preg_replace('/[^a-z0-9]/', '-', strtolower($model));
+    $extLabels = ['jpg' => 'JPG', 'jpeg' => 'JPG', 'png' => 'PNG', 'gif' => 'GIF', 'webp' => 'WEBP', 'ico' => 'ICO', 'svg' => 'SVG'];
+    $formatLabels = array_values(array_unique(array_map(fn ($e) => $extLabels[$e] ?? strtoupper($e), explode(',', $mimes))));
+    $uploadNote = $onlyImages ? 'Max '.$maxSizeMb.'MB · '.implode(', ', $formatLabels) : null;
+@endphp
 
 {{-- ================================================================
      media-picker Blade component
@@ -59,7 +68,12 @@
     },
     openPicker() {
         window.dispatchEvent(new CustomEvent('open-media-picker', {
-            detail: { pickerId: '{{ $pickerId }}' }
+            detail: {
+                pickerId: '{{ $pickerId }}',
+                onlyImages: {{ $onlyImages ? 'true' : 'false' }},
+                mimes: '{{ $mimes }}',
+                maxSizeKb: {{ (int) round($maxSizeMb * 1024) }},
+            }
         }));
     },
     clearSelection() {
@@ -70,7 +84,12 @@
     }
 }" class="w-full min-w-0 space-y-2">
     @if ($label)
-        <label class="inline-flex items-center text-sm font-medium text-zinc-800 mb-2">{{ $label }}</label>
+        <div class="mb-2 min-h-9">
+            <label class="block text-sm font-medium text-zinc-800">{{ $label }}</label>
+            @if ($hint)
+                <span class="block text-[11px] font-normal leading-tight text-zinc-400">{{ $hint }}</span>
+            @endif
+        </div>
     @endif
 
     <div class="flex min-w-0 items-start gap-4">
@@ -78,12 +97,12 @@
         {{-- Preview / dropzone --}}
         @if ($preview && $dropzone)
             <button type="button" @click="openPicker()"
-                class="relative flex h-24 w-full shrink-0 flex-col items-center justify-center gap-1.5 overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 transition-colors hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                class="relative flex {{ $uploadNote ? 'h-28' : 'h-24' }} w-full shrink-0 flex-col items-center justify-center gap-1.5 overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-3 transition-colors hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400">
                 <template x-if="selectedUrl">
                     <img :src="selectedUrl" alt="" class="absolute inset-0 h-full w-full object-cover" />
                 </template>
                 <template x-if="!selectedUrl">
-                    <div class="flex flex-col items-center gap-1.5">
+                    <div class="flex flex-col items-center gap-1">
                         <span class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-400">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                 stroke="currentColor">
@@ -93,6 +112,9 @@
                         </span>
                         <span class="text-sm font-semibold text-slate-700">Upload a File</span>
                         <span class="text-xs text-slate-400">Drag and drop files here</span>
+                        @if ($uploadNote)
+                            <span class="mt-0.5 text-[10px] text-slate-300">{{ $uploadNote }}</span>
+                        @endif
                     </div>
                 </template>
                 {{-- Hover overlay when image is set --}}

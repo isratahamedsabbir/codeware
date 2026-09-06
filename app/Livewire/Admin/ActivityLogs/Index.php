@@ -61,6 +61,6 @@ class Index extends Component
                 ->orderBy('name')
                 ->get(),
             'actions' => ['login', 'logout', 'visit', 'created', 'updated', 'deleted'],
-        ])->layout('layouts.admin', ['title' => 'Admin History']);
+        ])->layout('layouts.admin', ['title' => 'Audit Log']);
     }
 }

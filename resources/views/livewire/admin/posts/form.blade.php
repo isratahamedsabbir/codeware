@@ -135,9 +135,9 @@
 
             {{-- Featured Image --}}
             <x-admin-section-card icon="photo" title="Featured Image" icon-color="bg-blue-500/10 text-blue-600"
-                body-class="px-4 py-4" description="Shown in post listings and social shares.">
+                body-class="px-4 py-4" description="Shown in post listings and social shares. Recommended 1200×675px.">
                 <x-media-picker model="featured_image" label="" placeholder="Select image"
-                    :picker-id="$featuredImagePickerId" dropzone />
+                    :picker-id="$featuredImagePickerId" mimes="jpg,jpeg,png,webp" only-images dropzone />
             </x-admin-section-card>
 
             <livewire:admin.media-library.picker-modal key="posts-form-picker-modal" />

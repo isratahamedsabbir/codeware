@@ -33,13 +33,33 @@ class PickerModal extends Component
 
     public int $perPage = 32;
 
-    public function openPicker(string $pickerId): void
+    /**
+     * Set when the field that opened this picker only accepts images (site icon, OG
+     * image, product/category/post images, ...) — restricts both the library filter
+     * and the upload validation to real image files, rather than the general-purpose
+     * mixed-file rule used by the standalone Media Library manager.
+     */
+    public bool $onlyImages = false;
+
+    /**
+     * Comma-separated extensions this field's upload is restricted to when $onlyImages
+     * is set — varies per field (a favicon accepts ico/png, a loader gif/png/jpg, a
+     * photo field jpg/png/webp, ...), set by whichever <x-media-picker mimes="..."> opened us.
+     */
+    public string $restrictMimes = 'jpg,jpeg,png,gif,webp';
+
+    public int $maxSizeKb = 2048;
+
+    public function openPicker(string $pickerId, bool $onlyImages = false, string $mimes = 'jpg,jpeg,png,gif,webp', int $maxSizeKb = 2048): void
     {
         $this->pickerId = $pickerId;
+        $this->onlyImages = $onlyImages;
+        $this->restrictMimes = $mimes;
+        $this->maxSizeKb = $maxSizeKb;
         $this->show = true;
         $this->selectedMediaId = null;
         $this->search = '';
-        $this->filterType = 'all';
+        $this->filterType = $onlyImages ? 'image' : 'all';
         $this->activeTab = 'library';
         $this->page = 1;
         $this->uploadFiles = [];
@@ -67,7 +87,7 @@ class PickerModal extends Component
 
         $media = MediaLibrary::find($this->selectedMediaId);
 
-        if ($media === null) {
+        if ($media === null || ($this->onlyImages && ! $media->isImage())) {
             return;
         }
 
@@ -115,7 +135,9 @@ class PickerModal extends Component
         $this->authorize('create', MediaLibrary::class);
 
         $this->validate([
-            'uploadFiles.*' => 'file|max:10240|mimes:jpg,jpeg,png,gif,webp,pdf,mp4,mp3,doc,docx,xls,xlsx',
+            'uploadFiles.*' => $this->onlyImages
+                ? 'file|max:'.$this->maxSizeKb.'|mimes:'.$this->restrictMimes
+                : 'file|max:10240|mimes:jpg,jpeg,png,gif,webp,pdf,mp4,mp3,doc,docx,xls,xlsx',
         ]);
 
         $lastId = null;

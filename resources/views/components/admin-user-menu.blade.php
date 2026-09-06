@@ -16,15 +16,16 @@
     <flux:menu>
         <flux:menu.item :href="route('admin.profile')" icon="user-circle" wire:navigate>
             My Profile
-        </flux:menu.item>
-        <flux:menu.separator />
+        </flux:menu.item> 
+        <flux:menu.separator />   
         <form method="POST" action="{{ route('logout') }}" class="w-full">
             @csrf
             <flux:menu.item
                 as="button"
                 type="submit"
                 icon="arrow-right-start-on-rectangle"
-                class="w-full cursor-pointer"
+                variant="danger"
+                class="w-full cursor-pointer text-red-600! dark:text-red-400! **:data-flux-menu-item-icon:text-red-600! dark:**:data-flux-menu-item-icon:text-red-400!"
             >
                 Log out
             </flux:menu.item>

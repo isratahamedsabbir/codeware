@@ -106,9 +106,12 @@
                                             </flux:text>
                                         @elseif ($setting->key === 'site_icon' || $setting->key === 'site_icon_white' || $setting->key === 'favicon' || $setting->key === 'loader')
                                             <x-media-picker model="settings.{{ $setting->key }}"
-                                                label="{{ match ($setting->key) { 'favicon' => 'Favicon', 'loader' => 'Loader (GIF)', 'site_icon_white' => 'White Icon', default => 'Site Icon' } }}"
-                                                placeholder="{{ match ($setting->key) { 'loader' => 'Choose a loading animation (GIF) from the library', 'favicon' => 'Choose a favicon from the library', 'site_icon_white' => 'Choose a white icon from the library', default => 'Choose a site icon from the library' } }}"
-                                                dropzone />
+                                                label="{{ match ($setting->key) { 'favicon' => 'Favicon', 'loader' => 'Loader', 'site_icon_white' => 'White Icon', default => 'Site Icon' } }}"
+                                                hint="{{ match ($setting->key) { 'favicon' => '32×32px, square', 'loader' => '200×200px, square', 'site_icon_white' => '512×512px, transparent', default => '512×512px, transparent' } }}"
+                                                placeholder="{{ match ($setting->key) { 'loader' => 'Choose a loading animation from the library', 'favicon' => 'Choose a favicon from the library', 'site_icon_white' => 'Choose a white icon from the library', default => 'Choose a site icon from the library' } }}"
+                                                mimes="{{ match ($setting->key) { 'favicon' => 'ico,png', 'loader' => 'gif,png,jpg', default => 'png,webp' } }}"
+                                                :max-size-mb="$setting->key === 'favicon' ? 1 : 2"
+                                                only-images dropzone />
                                         @elseif ($setting->type === 'textarea')
                                             <flux:textarea wire:model="settings.{{ $setting->key }}" class="h-24" />
                                         @else
