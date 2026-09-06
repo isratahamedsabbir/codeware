@@ -21,7 +21,7 @@ it('product categories response includes expected fields', function () {
 
     $this->getJson('/api/v1/product-categories')
         ->assertOk()
-        ->assertJsonStructure(['data' => [['id', 'name', 'slug', 'description', 'icon', 'sort_order', 'page']]]);
+        ->assertJsonStructure(['data' => [['id', 'name', 'slug', 'icon', 'sort_order', 'page']]]);
 });
 
 it('product categories listing includes puck_data nested under page', function () {

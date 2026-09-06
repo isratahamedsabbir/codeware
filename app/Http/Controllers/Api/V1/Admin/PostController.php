@@ -27,7 +27,6 @@ class PostController extends Controller
                 'id' => $post->id,
                 'slug' => $post->slug,
                 'title' => $post->title,
-                'description' => $post->description,
                 'status' => $post->status,
                 'featured_image' => $post->featured_image,
                 'reading_time' => $post->reading_time,
@@ -59,7 +58,6 @@ class PostController extends Controller
                 'id' => $post->id,
                 'slug' => $post->slug,
                 'title' => $post->title,
-                'description' => $post->description,
                 'content' => $post->content,
                 'status' => $post->status,
                 'featured_image' => $post->featured_image,
@@ -113,7 +111,6 @@ class PostController extends Controller
                 'title' => $post->getTranslations('title'),
                 'slug' => $post->slug,
                 'status' => $post->status,
-                'description' => $post->getTranslations('description') ?: null,
                 'puck_data' => $puckData,
             ])
         );
@@ -129,9 +126,6 @@ class PostController extends Controller
             'title' => 'sometimes|array',
             'title.en' => 'required_with:title|string|max:255',
             'title.bn' => 'nullable|string|max:255',
-            'description' => 'sometimes|array',
-            'description.en' => 'nullable|string',
-            'description.bn' => 'nullable|string',
             'content' => 'sometimes|array',
             'content.en' => 'nullable|string',
             'content.bn' => 'nullable|string',
@@ -165,7 +159,6 @@ class PostController extends Controller
                 'title' => $post->getTranslations('title'),
                 'slug' => $post->slug,
                 'status' => $post->status,
-                'description' => $post->getTranslations('description') ?: null,
                 ...$pageFields,
             ])
         );

@@ -21,7 +21,6 @@ class ProductCategoryController extends Controller
                 'id' => $cat->id,
                 'name' => $cat->getTranslations('name'),
                 'slug' => $cat->slug,
-                'description' => $cat->getTranslations('description'),
                 'icon' => $cat->icon,
                 'sort_order' => $cat->sort_order,
             ]),
@@ -35,9 +34,6 @@ class ProductCategoryController extends Controller
             'name.en' => 'required|string|max:255',
             'name.bn' => 'nullable|string|max:255',
             'slug' => 'nullable|string|unique:categories,slug,NULL,id,type,product',
-            'description' => 'nullable|array',
-            'description.en' => 'nullable|string',
-            'description.bn' => 'nullable|string',
             'icon' => 'nullable|string|max:50',
             'sort_order' => 'nullable|integer|min:0',
         ]);
@@ -55,7 +51,6 @@ class ProductCategoryController extends Controller
                 'slug' => $category->slug,
                 'status' => $category->status,
                 'sort_order' => $category->sort_order,
-                'description' => $category->getTranslations('description') ?: null,
             ]
         );
 
@@ -71,9 +66,6 @@ class ProductCategoryController extends Controller
             'name.en' => 'required_with:name|string|max:255',
             'name.bn' => 'nullable|string|max:255',
             'slug' => 'nullable|string|unique:categories,slug,'.$id.',id,type,product',
-            'description' => 'sometimes|nullable|array',
-            'description.en' => 'nullable|string',
-            'description.bn' => 'nullable|string',
             'icon' => 'sometimes|nullable|string|max:50',
             'sort_order' => 'sometimes|integer|min:0',
         ]);
@@ -91,7 +83,6 @@ class ProductCategoryController extends Controller
                 'slug' => $category->slug,
                 'status' => $category->status,
                 'sort_order' => $category->sort_order,
-                'description' => $category->getTranslations('description') ?: null,
             ]
         );
 

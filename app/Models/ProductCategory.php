@@ -16,9 +16,9 @@ class ProductCategory extends Model
 
     protected $table = 'categories';
 
-    public array $translatable = ['name', 'description'];
+    public array $translatable = ['name'];
 
-    protected $fillable = ['type', 'name', 'slug', 'description', 'icon', 'sort_order', 'status'];
+    protected $fillable = ['type', 'name', 'slug', 'icon', 'sort_order', 'status'];
 
     protected static function booted(): void
     {

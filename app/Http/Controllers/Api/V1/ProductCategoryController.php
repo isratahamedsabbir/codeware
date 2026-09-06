@@ -28,7 +28,6 @@ class ProductCategoryController extends Controller
                 'id' => $cat->id,
                 'name' => $cat->getTranslation('name', $locale, useFallbackLocale: true),
                 'slug' => $cat->slug,
-                'description' => $cat->getTranslation('description', $locale, useFallbackLocale: true),
                 'icon' => $cat->icon,
                 'sort_order' => $cat->sort_order,
                 'page' => $this->formatPage($cat->page),

@@ -73,13 +73,6 @@
                             @endforeach
                         </flux:select>
                     </flux:field>
-                    <flux:field>
-                        <flux:label>Description</flux:label>
-                        {{-- ✅ jodit-fixed-wrap class দিয়ে height lock --}}
-                        <div class="jodit-fixed-wrap">
-                            <livewire:jodit-text-editor wire:model="description_en" :height="180" />
-                        </div>
-                    </flux:field>
                 </div>
 
                 {{-- Bengali --}}
@@ -110,13 +103,6 @@
                                 </flux:select.option>
                             @endforeach
                         </flux:select>
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>বিবরণ</flux:label>
-                        {{-- ✅ jodit-fixed-wrap class দিয়ে height lock --}}
-                        <div class="jodit-fixed-wrap">
-                            <livewire:jodit-text-editor wire:model="description_bn" :height="180" />
-                        </div>
                     </flux:field>
                 </div>
 

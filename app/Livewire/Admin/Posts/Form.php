@@ -40,12 +40,6 @@ class Form extends Component
      */
     public ?bool $slugAvailable = null;
 
-    #[Validate('nullable|string')]
-    public string $description_en = '';
-
-    #[Validate('nullable|string')]
-    public string $description_bn = '';
-
     #[Validate('nullable|integer|exists:categories,id,type,post')]
     public ?int $category_id = null;
 
@@ -66,8 +60,6 @@ class Form extends Component
             $this->title_en = $post->getTranslation('title', 'en', false) ?? '';
             $this->title_bn = $post->getTranslation('title', 'bn', false) ?? '';
             $this->slug = $post->slug;
-            $this->description_en = $post->getTranslation('description', 'en', false) ?? '';
-            $this->description_bn = $post->getTranslation('description', 'bn', false) ?? '';
             $this->category_id = $post->category_id;
             $this->featured_image = $post->featured_image ?? '';
             $this->tag_ids = $post->tags->pluck('id')->all();
@@ -206,7 +198,6 @@ class Form extends Component
             'user_id' => auth()->id(),
             'title' => array_filter(['en' => $this->title_en, 'bn' => $this->title_bn]),
             'slug' => $this->slug,
-            'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
             'category_id' => $this->category_id,
             'featured_image' => $this->featured_image ?: null,
         ];
@@ -231,7 +222,6 @@ class Form extends Component
                 'title' => array_filter(['en' => $this->title_en, 'bn' => $this->title_bn]),
                 'slug' => $this->slug,
                 'status' => $post->status,
-                'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
             ]
         );
         $this->pageId = $page->id;

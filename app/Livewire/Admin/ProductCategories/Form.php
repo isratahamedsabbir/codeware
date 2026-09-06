@@ -37,12 +37,6 @@ class Form extends Component
     public ?bool $slugAvailable = null;
 
     #[Validate('nullable|string')]
-    public string $description_en = '';
-
-    #[Validate('nullable|string')]
-    public string $description_bn = '';
-
-    #[Validate('nullable|string')]
     public ?string $icon = null;
 
     public string $iconPickerId = '';
@@ -57,8 +51,6 @@ class Form extends Component
             $this->name_en = $cat->getTranslation('name', 'en', false) ?? '';
             $this->name_bn = $cat->getTranslation('name', 'bn', false) ?? '';
             $this->slug = $cat->slug;
-            $this->description_en = $cat->getTranslation('description', 'en', false) ?? '';
-            $this->description_bn = $cat->getTranslation('description', 'bn', false) ?? '';
             $this->icon = $cat->icon ?? null;
 
             // SEO now lives entirely on the paired Page record, edited via the Page
@@ -121,7 +113,6 @@ class Form extends Component
         $data = [
             'name' => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
             'slug' => $this->slug,
-            'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
             'icon' => $this->icon ?: null,
         ];
 
@@ -145,7 +136,6 @@ class Form extends Component
                 'title' => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
                 'slug' => $this->slug,
                 'status' => $category->status,
-                'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
             ]
         );
         $this->pageId = $page->id;

@@ -12,7 +12,6 @@ class ProductCategoryFactory extends Factory
 
         return [
             'name' => ['en' => ucfirst($name), 'bn' => ucfirst($name)],
-            'description' => ['en' => fake()->sentence(), 'bn' => fake()->sentence()],
             'icon' => null,
             'sort_order' => 0,
             'status' => 'active',

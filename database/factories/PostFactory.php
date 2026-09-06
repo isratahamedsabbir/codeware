@@ -18,7 +18,6 @@ class PostFactory extends Factory
             'category_id' => null,
             'title' => ['en' => $title, 'bn' => $title],
             'slug' => Str::slug($title),
-            'description' => ['en' => fake()->paragraph(), 'bn' => fake()->paragraph()],
             'content' => ['en' => $puckContent, 'bn' => $puckContent],
             'featured_image' => null,
             'status' => 'inactive',

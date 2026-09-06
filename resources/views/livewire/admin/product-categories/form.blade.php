@@ -60,12 +60,6 @@
                         @endif
                         <flux:error name="slug" />
                     </flux:field>
-                    <flux:field>
-                        <flux:label>Description</flux:label>
-                        <div class="jodit-fixed-wrap">
-                            <livewire:jodit-text-editor wire:model="description_en" :height="180" />
-                        </div>
-                    </flux:field>
                 </div>
 
                 {{-- Bengali --}}
@@ -85,12 +79,6 @@
                             <p class="text-xs text-zinc-400 mt-1">Auto-generated from the English name as you type — edit it if you'd like a different one</p>
                         @endif
                         <flux:error name="slug" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>বিবরণ</flux:label>
-                        <div class="jodit-fixed-wrap">
-                            <livewire:jodit-text-editor wire:model="description_bn" :height="180" />
-                        </div>
                     </flux:field>
                 </div>
 
