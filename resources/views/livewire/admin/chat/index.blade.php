@@ -1,6 +1,11 @@
-<div
-    class="flex flex-col md:flex-row h-full min-h-100 md:min-h-130 gap-4"
-    x-data="{
+<div>
+    <div class="mb-3">
+        @include('partials.admin-breadcrumbs')
+    </div>
+
+    <div
+        class="flex flex-col md:flex-row h-full min-h-100 md:min-h-130 gap-4"
+        x-data="{
         authId: {{ auth()->id() }},
         activeId: @entangle('conversationId'),
         channel: null,
@@ -143,5 +148,6 @@
                 {{ __('Select a conversation or search for someone to start chatting.') }}
             </div>
         @endif
+    </div>
     </div>
 </div>

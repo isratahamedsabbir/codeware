@@ -6,6 +6,9 @@
     $sectionMap = [
         'product-categories' => ['Products', 'admin.product-categories'],
         'products'           => ['Products', 'admin.products'],
+        'orders'             => ['Sales', 'admin.orders'],
+        'coupons'            => ['Sales', 'admin.coupons'],
+        'reports'            => ['Sales', 'admin.reports'],
         'post-categories'    => ['Blog', 'admin.post-categories'],
         'tags'               => ['Blog', 'admin.tags'],
         'posts'              => ['Blog', 'admin.posts'],
@@ -15,16 +18,17 @@
         'social'             => ['Library & System', 'admin.social'],
         'features'           => ['Library & System', 'admin.features'],
         'email-templates'    => ['Library & System', 'admin.email-templates'],
-        'cms'                => ['Content', 'admin.pages'],
+        'file-manager'       => ['Library & System', 'admin.file-manager'],
+        'menu'               => ['Library & System', 'admin.menu'],
+        'cms'                => ['Pages', 'admin.pages'],
         'history'            => ['Library & System', 'admin.history'],
-        'payment-gateways'   => ['Library & System', 'admin.settings'],
-        'contacts'           => ['Inquiries', 'admin.contacts'],
-        'pages'              => ['Content', 'admin.pages'],
+        'payment-gateways'   => ['Library & System', 'admin.payment-gateways'],
         'roles'              => ['Access Control', 'admin.roles'],
         'permissions'        => ['Access Control', 'admin.permissions'],
         'users'              => ['Access Control', 'admin.users'],
         'languages'          => [__('Localization'), 'admin.languages'],
-        'translations'       => [__('Localization'), 'admin.languages'],
+        'translations'       => [__('Localization'), 'admin.translations'],
+        'advance'            => ['Advance', 'admin.advance.sitemap'],
     ];
     $section = $sectionMap[$resource] ?? null;
 @endphp
