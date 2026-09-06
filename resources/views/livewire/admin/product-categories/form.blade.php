@@ -103,8 +103,8 @@
             {{-- Icon & Status --}}
             <x-admin-section-card icon="swatch" title="Category Settings" body-class="px-4 py-4"
                 description="Icon shown for this category.">
-                <x-media-picker model="icon" label="Icon" placeholder="Select icon image from library"
-                    :picker-id="$iconPickerId" dropzone />
+                <x-media-picker model="icon" label="Icon" hint="64×64px, transparent" placeholder="Select icon image from library"
+                    :picker-id="$iconPickerId" mimes="png,webp" :max-size-mb="1" only-images dropzone />
             </x-admin-section-card>
 
             {{-- Actions --}}

@@ -7,9 +7,14 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script>
-        if (localStorage.getItem('admin-theme') === 'dark') {
-            document.documentElement.classList.add('dark');
+        function applyAdminTheme() {
+            document.documentElement.classList.toggle('dark', localStorage.getItem('admin-theme') === 'dark');
         }
+        applyAdminTheme();
+        // wire:navigate swaps the page without a full reload and morphs <html> to
+        // match the freshly-fetched (always light) markup, wiping the class — so
+        // it must be re-applied after every Livewire navigation, not just on load.
+        document.addEventListener('livewire:navigated', applyAdminTheme);
     </script>
     <title>{{ ($title ?? 'Admin') . ' — ' . config('app.name') }}</title>
     @php
@@ -232,7 +237,7 @@
             <div class="flex items-center gap-1.5">
                 <x-admin-quick-menu />
 
-                <livewire:admin.locale-switcher />
+                <livewire:admin.locale-switcher /> 
 
                 <button type="button" x-data="{ dark: document.documentElement.classList.contains('dark') }"
                     @click="dark = !dark; document.documentElement.classList.toggle('dark', dark); localStorage.setItem('admin-theme', dark ? 'dark' : 'light')"
@@ -241,7 +246,7 @@
                     class="inline-flex size-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100">
                     <flux:icon.sun x-show="dark" x-cloak class="size-5" />
                     <flux:icon.moon x-show="!dark" class="size-5" />
-                </button>
+                </button> 
 
                 <button type="button" x-data="{ isFullscreen: false }"
                     x-init="isFullscreen = !!document.fullscreenElement; document.addEventListener('fullscreenchange', () => isFullscreen = !!document.fullscreenElement)"
@@ -259,10 +264,10 @@
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M8.25 9.75H3.75m0 0v-4.5m0 4.5 5.25-5.25m6.75 5.25h4.5m0 0v-4.5m0 4.5-5.25-5.25m-6.75 9.75H3.75m0 0v4.5m0-4.5 5.25 5.25m6.75-5.25h4.5m0 0v4.5m0-4.5-5.25 5.25" />
                     </svg>
-                </button>
+                </button> 
 
                 <livewire:admin.notifications.bell />
-            </div>
+            </div> 
 
             <div class="w-px h-6 bg-zinc-200/80 mx-2 max-sm:hidden"></div>
 

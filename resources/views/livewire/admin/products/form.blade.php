@@ -119,9 +119,9 @@
 
             {{-- Featured Image --}}
             <x-admin-section-card icon="photo" title="Thumbnail Image" icon-color="bg-blue-500/10 text-blue-600"
-                body-class="px-4 py-3" description="Shown in the product catalog.">
+                body-class="px-4 py-3" description="Shown in the product catalog. Recommended 800×800px.">
                 <x-media-picker model="featured_image" label="" placeholder="Select featured image"
-                    :picker-id="$featuredImagePickerId" dropzone />
+                    :picker-id="$featuredImagePickerId" mimes="jpg,jpeg,png,webp" only-images dropzone />
             </x-admin-section-card>
 
             <livewire:admin.media-library.picker-modal key="products-form-picker-modal" />

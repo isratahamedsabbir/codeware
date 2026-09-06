@@ -1,4 +1,4 @@
-<div x-data @open-media-picker.window="$wire.openPicker($event.detail.pickerId)"
+<div x-data @open-media-picker.window="$wire.openPicker($event.detail.pickerId, $event.detail.onlyImages, $event.detail.mimes, $event.detail.maxSizeKb)"
     @keydown.escape.window="$wire.closePicker()">
     {{-- ============================================================
          MEDIA PICKER MODAL — WordPress-style two-panel layout
@@ -63,10 +63,15 @@
                             @dragleave.prevent="dragging = false" @drop.prevent="dragging = false"
                             :class="dragging ? 'border-blue-500 bg-blue-50' : 'border-slate-300 bg-slate-50'"
                             class="w-full max-w-2xl rounded-2xl border-2 border-dashed p-16 text-center transition-colors cursor-pointer">
+                            @php
+                                $extToAccept = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'gif' => 'image/gif', 'webp' => 'image/webp', 'ico' => 'image/x-icon', 'svg' => 'image/svg+xml'];
+                                $extToLabel = ['jpg' => 'JPG', 'jpeg' => 'JPG', 'png' => 'PNG', 'gif' => 'GIF', 'webp' => 'WEBP', 'ico' => 'ICO', 'svg' => 'SVG'];
+                                $restrictExts = explode(',', $restrictMimes);
+                            @endphp
                             <input type="file" wire:key="picker-upload-{{ $uploadIteration }}"
                                 wire:model="uploadFiles" multiple
-                                accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx" class="hidden"
-                                id="picker-file-input" />
+                                accept="{{ $onlyImages ? implode(',', array_unique(array_map(fn ($e) => $extToAccept[$e] ?? '', $restrictExts))) : 'image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx' }}"
+                                class="hidden" id="picker-file-input" />
                             <label for="picker-file-input" class="cursor-pointer">
                                 <svg class="mx-auto h-14 w-14 text-slate-300" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor">
@@ -75,8 +80,15 @@
                                 </svg>
                                 <p class="mt-5 text-base font-bold text-slate-700">Drop files here or click to upload
                                 </p>
-                                <p class="mt-2 text-sm text-slate-400">Supports: Images, Videos, Audio, PDFs &mdash; Max
-                                    10 MB per file</p>
+                                @if ($onlyImages)
+                                    <p class="mt-2 text-sm text-slate-400">
+                                        Supports: {{ implode(', ', array_unique(array_map(fn ($e) => $extToLabel[$e] ?? strtoupper($e), $restrictExts))) }}
+                                        &mdash; Max {{ round($maxSizeKb / 1024, 1) }} MB per file
+                                    </p>
+                                @else
+                                    <p class="mt-2 text-sm text-slate-400">Supports: Images, Videos, Audio, PDFs
+                                        &mdash; Max 10 MB per file</p>
+                                @endif
                             </label>
                         </div>
 
@@ -133,7 +145,7 @@
                             <div
                                 class="flex flex-wrap items-center gap-3 border-b border-slate-100 bg-slate-50/60 px-5 py-3 shrink-0">
                                 <div class="flex items-center gap-1.5">
-                                    @foreach (['all' => 'All', 'image' => 'Images', 'document' => 'Documents', 'video' => 'Videos'] as $type => $label)
+                                    @foreach ($onlyImages ? ['image' => 'Images'] : ['all' => 'All', 'image' => 'Images', 'document' => 'Documents', 'video' => 'Videos'] as $type => $label)
                                         <button type="button" wire:click="$set('filterType', '{{ $type }}')"
                                             class="rounded-lg px-3 py-1.5 text-xs font-bold transition-all
                                     {{ $filterType === $type ? 'bg-primary text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-primary' }}">

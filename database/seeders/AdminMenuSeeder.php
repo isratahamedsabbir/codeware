@@ -46,7 +46,7 @@ class AdminMenuSeeder extends Seeder
             ['Media Library', 'photo', 'admin.media-library'],
             ['File Manager', 'folder', 'admin.file-manager'],
             ['Email Templates', 'envelope', 'admin.email-templates'],
-            ['Admin History', 'clock', 'admin.history'],
+            ['Audit Log', 'clock', 'admin.history'],
             ['Menu', 'bars-3', 'admin.menu'],
         ]);
 
