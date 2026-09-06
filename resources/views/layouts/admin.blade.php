@@ -235,6 +235,8 @@
             <div class="flex-1"></div>
 
             <div class="flex items-center gap-1.5">
+                @include('partials.admin-command-palette')
+
                 <x-admin-quick-menu />
 
                 <livewire:admin.locale-switcher /> 
