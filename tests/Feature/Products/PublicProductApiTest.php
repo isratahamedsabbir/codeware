@@ -5,9 +5,15 @@ use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\User;
 
+beforeEach(function () {
+    $this->admin = User::factory()->create(['is_admin' => true]);
+});
+
 it('returns product categories ordered by sort_order', function () {
-    ProductCategory::factory()->create(['name' => ['en' => 'Seeds', 'bn' => ''], 'sort_order' => 2]);
-    ProductCategory::factory()->create(['name' => ['en' => 'Fertilizers', 'bn' => ''], 'sort_order' => 1]);
+    $seeds = ProductCategory::factory()->create(['name' => ['en' => 'Seeds', 'bn' => ''], 'sort_order' => 2]);
+    pairPageFor($seeds, 'product_category', 'seeds', $this->admin->id);
+    $fertilizers = ProductCategory::factory()->create(['name' => ['en' => 'Fertilizers', 'bn' => ''], 'sort_order' => 1]);
+    pairPageFor($fertilizers, 'product_category', 'fertilizers', $this->admin->id);
 
     $response = $this->getJson('/api/v1/product-categories');
 
@@ -29,7 +35,7 @@ it('product categories listing includes puck_data nested under page', function (
     $category = ProductCategory::factory()->create();
     Page::create([
         'type' => 'product_category', 'category_id' => $category->id, 'user_id' => User::factory()->create()->id,
-        'title' => ['en' => 'Title'], 'slug' => $category->slug, 'status' => 'active',
+        'title' => ['en' => 'Title'], 'slug' => 'category-hero', 'status' => 'active',
         'puck_data' => $puckData,
     ]);
 
@@ -49,7 +55,8 @@ it('returns only active products on public listing', function () {
 });
 
 it('filters products by category slug', function () {
-    $cat = ProductCategory::factory()->create(['slug' => 'fertilizers']);
+    $cat = ProductCategory::factory()->create();
+    pairPageFor($cat, 'product_category', 'fertilizers', $this->admin->id);
     Product::factory()->published()->create(['product_category_id' => $cat->id]);
     Product::factory()->published()->create();
 
@@ -93,6 +100,7 @@ it('returns full product detail by slug with gallery and related', function () {
         'product_category_id' => $cat->id,
         'name' => ['en' => 'Detail Product', 'bn' => ''],
     ]);
+    pairPageFor($product, 'product', 'detail-product', $this->admin->id);
     Product::factory()->published()->create(['product_category_id' => $cat->id]);
 
     $this->getJson("/api/v1/products/{$product->slug}")
@@ -108,6 +116,7 @@ it('returns full product detail by slug with gallery and related', function () {
 it('related_products excludes current product', function () {
     $cat = ProductCategory::factory()->create();
     $product = Product::factory()->published()->create(['product_category_id' => $cat->id]);
+    pairPageFor($product, 'product', 'related-excludes-self', $this->admin->id);
 
     $response = $this->getJson("/api/v1/products/{$product->slug}");
 
@@ -117,6 +126,7 @@ it('related_products excludes current product', function () {
 
 it('returns 404 for inactive product slug on public endpoint', function () {
     $product = Product::factory()->draft()->create();
+    pairPageFor($product, 'product', 'inactive-product', $this->admin->id);
 
     $this->getJson("/api/v1/products/{$product->slug}")->assertNotFound();
 });
@@ -132,28 +142,18 @@ it('returns product name for bn locale', function () {
 it('public product detail includes puck_data from the paired page', function () {
     $puckData = ['root' => ['props' => []], 'content' => [['type' => 'ProductHero', 'props' => []]]];
     $product = Product::factory()->published()->create();
-    Page::create([
-        'type' => 'product', 'product_id' => $product->id, 'user_id' => User::factory()->create()->id,
-        'title' => ['en' => 'Title'], 'slug' => $product->slug, 'status' => 'active',
-        'puck_data' => $puckData,
-    ]);
+    pairPageFor($product, 'product', 'puck-detail-product', $this->admin->id);
+    $product->page->update(['puck_data' => $puckData]);
 
     $this->getJson("/api/v1/products/{$product->slug}")
         ->assertOk()
         ->assertJsonPath('data.page.puck_data', $puckData);
 });
 
-it('public product detail returns a null page when the product has no paired page', function () {
-    $product = Product::factory()->published()->create();
-
-    $this->getJson("/api/v1/products/{$product->slug}")
-        ->assertOk()
-        ->assertJsonPath('data.page', null);
-});
-
 it('public product detail includes faq for locale', function () {
     $faq = [['question' => ['en' => 'What is this?', 'bn' => 'এটি কি?'], 'answer' => ['en' => 'A product.', 'bn' => 'একটি পণ্য।']]];
     $product = Product::factory()->published()->create(['faq' => $faq]);
+    pairPageFor($product, 'product', 'faq-product', $this->admin->id);
 
     $this->getJson("/api/v1/products/{$product->slug}")
         ->assertOk()
@@ -164,6 +164,7 @@ it('public product detail includes faq for locale', function () {
 it('public product detail returns faq in bn locale', function () {
     $faq = [['question' => ['en' => 'What is this?', 'bn' => 'এটি কি?'], 'answer' => ['en' => 'A product.', 'bn' => 'একটি পণ্য।']]];
     $product = Product::factory()->published()->create(['faq' => $faq]);
+    pairPageFor($product, 'product', 'faq-product-bn', $this->admin->id);
 
     $this->getJson("/api/v1/products/{$product->slug}?locale=bn")
         ->assertOk()
@@ -176,7 +177,7 @@ it('public product listing includes puck_data nested under page, never at the to
     $product = Product::factory()->published()->create();
     Page::create([
         'type' => 'product', 'product_id' => $product->id, 'user_id' => User::factory()->create()->id,
-        'title' => ['en' => 'Title'], 'slug' => $product->slug, 'status' => 'active',
+        'title' => ['en' => 'Title'], 'slug' => 'listing-puck-product', 'status' => 'active',
         'puck_data' => $puckData,
     ]);
 

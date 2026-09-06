@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Models\ProductCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
 class ProductFactory extends Factory
 {
@@ -15,7 +14,6 @@ class ProductFactory extends Factory
         return [
             'product_category_id' => ProductCategory::factory(),
             'name' => ['en' => ucfirst($name), 'bn' => ucfirst($name)],
-            'slug' => Str::slug($name),
             'description' => ['en' => fake()->paragraph(), 'bn' => fake()->paragraph()],
             'featured_image' => null,
             'status' => 'inactive',

@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Support\Slug;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,7 +19,7 @@ class Post extends Model
     public array $translatable = ['title', 'content'];
 
     protected $fillable = [
-        'user_id', 'category_id', 'title', 'slug',
+        'user_id', 'category_id', 'title',
         'content', 'featured_image', 'status', 'published_at',
         'reading_time',
     ];
@@ -28,17 +28,22 @@ class Post extends Model
         'published_at' => 'datetime',
     ];
 
+    /**
+     * `slug` is a virtual accessor (see below), not a real column — Eloquent
+     * only includes accessor-only attributes in toArray()/JSON output when
+     * they're appended here, otherwise dumping the whole model silently drops
+     * it (e.g. Admin API's `'category' => $post->category`).
+     */
+    protected $appends = ['slug'];
+
+    protected function slug(): Attribute
+    {
+        return Attribute::make(get: fn () => $this->page?->slug);
+    }
+
     protected static function booted(): void
     {
         static::saving(function (Post $post) {
-            if (empty($post->slug)) {
-                $title = is_array($post->title)
-                    ? ($post->title['en'] ?? reset($post->title))
-                    : $post->title;
-                $post->slug = Slug::make($title);
-            } else {
-                $post->slug = Slug::lower($post->slug);
-            }
             if ($post->content) {
                 $contentStr = is_array($post->content) ? json_encode($post->content) : $post->content;
                 $wordCount = str_word_count(strip_tags($contentStr));

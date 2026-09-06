@@ -6,7 +6,6 @@ use App\Models\Page;
 use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\Slug;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -279,10 +278,11 @@ class Form extends Component
         [$entityTable, $entityId] = $this->linkedEntity();
 
         if ($entityTable && $entityId) {
-            // The linked entity owns the slug — always take its current
-            // value rather than trusting the (read-only, but client-supplied)
-            // form field, so this Page's slug can never drift from it.
-            $this->slug = DB::table($entityTable)->where('id', $entityId)->value('slug');
+            // This Page is the sole owner of the slug for a linked entity —
+            // always re-read the current DB value rather than trusting the
+            // (read-only, but client-supplied) form field, so it can never
+            // drift via a tampered request.
+            $this->slug = Page::find($this->pageId)?->slug ?? $this->slug;
         } elseif (empty($this->slug) && $this->title_en) {
             $this->slug = Slug::make($this->title_en);
         }
@@ -360,9 +360,10 @@ class Form extends Component
 
     /**
      * True when this Page is paired with a Product/Post/Category rather than
-     * being a standalone page. The linked entity owns the slug in that case —
-     * this Page's slug is just a read-only mirror of it, never an independent
-     * value (see persistPage(), which re-reads it from the entity on save).
+     * being a standalone page. The slug field is read-only in that case — it's
+     * still edited from the entity's own admin form (Products, Posts, ...),
+     * not here (see persistPage(), which re-reads the current value from the
+     * database on save rather than trusting the client-supplied field).
      */
     public function isLinked(): bool
     {

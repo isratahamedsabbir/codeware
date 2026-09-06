@@ -35,7 +35,7 @@ it('does not expose seo fields on the product admin form', function () {
     $product = Product::factory()->create();
     Page::create([
         'type' => 'product', 'product_id' => $product->id, 'user_id' => $admin->id,
-        'title' => ['en' => 'Title'], 'slug' => $product->slug, 'status' => 'active',
+        'title' => ['en' => 'Title'], 'status' => 'active',
         'og_image' => '/og.png',
         'seo_title' => 'Page SEO Title',
         'seo_description' => 'Page SEO Description',
@@ -52,7 +52,7 @@ it('saving a product leaves its page\'s seo fields untouched', function () {
     $product = Product::factory()->create();
     Page::create([
         'type' => 'product', 'product_id' => $product->id, 'user_id' => $admin->id,
-        'title' => ['en' => 'Title'], 'slug' => $product->slug, 'status' => 'active',
+        'title' => ['en' => 'Title'], 'status' => 'active',
         'seo_title' => 'Existing SEO Title',
     ]);
 
@@ -71,7 +71,7 @@ it('does not expose seo fields on the post admin form', function () {
     $post = Post::factory()->create();
     Page::create([
         'type' => 'post', 'post_id' => $post->id, 'user_id' => $admin->id,
-        'title' => ['en' => 'Title'], 'slug' => $post->slug, 'status' => 'active',
+        'title' => ['en' => 'Title'], 'status' => 'active',
         'og_image' => '/post-og.png',
         'seo_title' => 'Post Page SEO Title',
         'seo_description' => 'Post Page SEO Description',
@@ -88,7 +88,7 @@ it('saving a post leaves its page\'s seo fields untouched', function () {
     $post = Post::factory()->create();
     Page::create([
         'type' => 'post', 'post_id' => $post->id, 'user_id' => $admin->id,
-        'title' => ['en' => 'Title'], 'slug' => $post->slug, 'status' => 'active',
+        'title' => ['en' => 'Title'], 'status' => 'active',
         'seo_title' => 'Existing Post SEO Title',
     ]);
 
@@ -107,7 +107,7 @@ it('public product API reads SEO fields from the page', function () {
     $product = Product::factory()->published()->create();
     Page::create([
         'type' => 'product', 'product_id' => $product->id, 'user_id' => $user->id,
-        'title' => ['en' => 'Title'], 'slug' => $product->slug, 'status' => 'active',
+        'title' => ['en' => 'Title'], 'status' => 'active',
         'og_image' => '/api-og.png',
         'seo_title' => 'API SEO Title',
         'seo_description' => 'API SEO Description',
@@ -125,7 +125,7 @@ it('public post API reads SEO fields from the page', function () {
     $post = Post::factory()->published()->create();
     Page::create([
         'type' => 'post', 'post_id' => $post->id, 'user_id' => $user->id,
-        'title' => ['en' => 'Title'], 'slug' => $post->slug, 'status' => 'active',
+        'title' => ['en' => 'Title'], 'status' => 'active',
         'og_image' => '/post-api-og.png',
         'seo_title' => 'Post API SEO Title',
         'seo_description' => 'Post API SEO Description',
@@ -151,8 +151,7 @@ it('admin product API syncs seo_title/seo_description/og_image to a page on crea
         'seo_description' => 'Created SEO Description',
     ])->assertCreated();
 
-    $product = Product::where('slug', 'api_seo_product')->firstOrFail();
-    $page = Page::where(['type' => 'product', 'product_id' => $product->id])->firstOrFail();
+    $page = Page::where(['type' => 'product', 'slug' => 'api_seo_product'])->firstOrFail();
 
     expect($page->seo_title)->toBe('Created SEO Title')
         ->and($page->og_image)->toBe('/created-og.png');
@@ -165,7 +164,7 @@ it('admin product API syncs seo fields to the existing page on update, keeping t
     $product = Product::factory()->create();
     $page = Page::create([
         'type' => 'product', 'product_id' => $product->id, 'user_id' => $admin->id,
-        'title' => ['en' => 'Stale Title'], 'slug' => $product->slug, 'status' => 'active',
+        'title' => ['en' => 'Stale Title'], 'status' => 'active',
         'seo_title' => 'Old SEO Title',
     ]);
 
@@ -203,7 +202,7 @@ it('admin post API show returns SEO fields from the page', function () {
     $post = Post::factory()->create();
     Page::create([
         'type' => 'post', 'post_id' => $post->id, 'user_id' => $admin->id,
-        'title' => ['en' => 'Title'], 'slug' => $post->slug, 'status' => 'active',
+        'title' => ['en' => 'Title'], 'status' => 'active',
         'og_image' => '/show-og.png',
         'seo_title' => 'Show SEO Title',
     ]);

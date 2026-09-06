@@ -17,7 +17,7 @@ it('posts table has required columns', function () {
     // seo_title/seo_description/og_image live on the paired `pages` row, not on posts
     // itself — see 'pages table has required columns' below.
     expect(Schema::hasColumns('posts', [
-        'id', 'user_id', 'category_id', 'title', 'slug', 'content',
+        'id', 'user_id', 'category_id', 'title', 'content',
         'status', 'featured_image', 'published_at', 'reading_time', 'deleted_at',
     ]))->toBeTrue();
 });

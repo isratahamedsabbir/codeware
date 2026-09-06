@@ -24,9 +24,9 @@ class PostController extends Controller
         $perPage = min((int) $request->query('per_page', Setting::perPage()), 100);
 
         $posts = Post::published()
-            ->with(['category', 'user:id,name', 'tags', 'page'])
+            ->with(['category.page', 'user:id,name', 'tags', 'page'])
             ->orderByDesc('published_at')
-            ->when($request->query('category'), fn ($q, $slug) => $q->whereHas('category', fn ($c) => $c->where('slug', $slug)))
+            ->when($request->query('category'), fn ($q, $slug) => $q->whereHas('category.page', fn ($c) => $c->where('slug', $slug)))
             ->when($request->query('search'), fn ($q, $search) => $q->where("title->{$locale}", 'like', "%{$search}%"))
             ->paginate($perPage);
 
@@ -46,8 +46,8 @@ class PostController extends Controller
         $locale = $this->resolveLocale($request);
 
         $post = Post::published()
-            ->with(['category', 'user:id,name', 'tags', 'page'])
-            ->where('slug', $slug)
+            ->with(['category.page', 'user:id,name', 'tags', 'page'])
+            ->whereHas('page', fn ($q) => $q->where('slug', $slug))
             ->firstOrFail();
 
         return response()->json([

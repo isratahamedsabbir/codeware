@@ -50,7 +50,7 @@ class Form extends Component
             $this->categoryId = $id;
             $this->name_en = $cat->getTranslation('name', 'en', false) ?? '';
             $this->name_bn = $cat->getTranslation('name', 'bn', false) ?? '';
-            $this->slug = $cat->slug;
+            $this->slug = $cat->slug ?? '';
             $this->icon = $cat->icon ?? null;
 
             // SEO now lives entirely on the paired Page record, edited via the Page
@@ -91,7 +91,7 @@ class Form extends Component
 
     private function checkSlugAvailability(): void
     {
-        $this->slugAvailable = Slug::isAvailable($this->slug, $this->pageId, 'categories', $this->categoryId);
+        $this->slugAvailable = Slug::isAvailable($this->slug, $this->pageId);
     }
 
     public function save(): void
@@ -103,7 +103,7 @@ class Form extends Component
         $rules = $this->getRules();
         $rules['slug'] = [
             'required', 'string', 'max:255',
-            ...Slug::uniqueRules($this->pageId, 'categories', $this->categoryId),
+            ...Slug::uniqueRules($this->pageId),
         ];
 
         $this->validate($rules);
@@ -112,7 +112,6 @@ class Form extends Component
 
         $data = [
             'name' => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
-            'slug' => $this->slug,
             'icon' => $this->icon ?: null,
         ];
 

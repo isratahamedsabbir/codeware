@@ -14,11 +14,8 @@ beforeEach(function () {
 it('shows only standalone pages by default', function () {
     Page::factory()->create(['type' => 'page', 'slug' => 'about-standalone']);
 
-    $category = ProductCategory::factory()->create(['slug' => 'gadgets-category']);
-    Page::create([
-        'user_id' => $this->admin->id, 'category_id' => $category->id, 'type' => 'product_category',
-        'title' => ['en' => 'Category page'], 'slug' => $category->slug, 'status' => 'active',
-    ]);
+    $category = ProductCategory::factory()->create();
+    pairPageFor($category, 'product_category', 'gadgets-category', $this->admin->id);
 
     Livewire::test(PagesIndex::class)
         ->assertSee('about-standalone')
@@ -28,11 +25,8 @@ it('shows only standalone pages by default', function () {
 it('filters by type when a specific type is selected', function () {
     Page::factory()->create(['type' => 'page', 'slug' => 'about-standalone']);
 
-    $category = ProductCategory::factory()->create(['slug' => 'gadgets-category']);
-    Page::create([
-        'user_id' => $this->admin->id, 'category_id' => $category->id, 'type' => 'product_category',
-        'title' => ['en' => 'Category page'], 'slug' => $category->slug, 'status' => 'active',
-    ]);
+    $category = ProductCategory::factory()->create();
+    pairPageFor($category, 'product_category', 'gadgets-category', $this->admin->id);
 
     Livewire::test(PagesIndex::class)
         ->set('typeFilter', 'product_category')
@@ -43,11 +37,8 @@ it('filters by type when a specific type is selected', function () {
 it('shows every type when "all" is selected', function () {
     Page::factory()->create(['type' => 'page', 'slug' => 'about-standalone']);
 
-    $category = ProductCategory::factory()->create(['slug' => 'gadgets-category']);
-    Page::create([
-        'user_id' => $this->admin->id, 'category_id' => $category->id, 'type' => 'product_category',
-        'title' => ['en' => 'Category page'], 'slug' => $category->slug, 'status' => 'active',
-    ]);
+    $category = ProductCategory::factory()->create();
+    pairPageFor($category, 'product_category', 'gadgets-category', $this->admin->id);
 
     Livewire::test(PagesIndex::class)
         ->set('typeFilter', 'all')
@@ -57,10 +48,7 @@ it('shows every type when "all" is selected', function () {
 
 it('opens the puck editor using the row own type, not always "page"', function () {
     $category = ProductCategory::factory()->create();
-    $page = Page::create([
-        'user_id' => $this->admin->id, 'category_id' => $category->id, 'type' => 'product_category',
-        'title' => ['en' => 'Category page'], 'slug' => $category->slug, 'status' => 'active',
-    ]);
+    $page = pairPageFor($category, 'product_category', 'gadgets-category', $this->admin->id);
 
     $component = Livewire::test(PagesIndex::class)
         ->set('typeFilter', 'all')

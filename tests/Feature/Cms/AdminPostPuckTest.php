@@ -11,7 +11,7 @@ it('admin post show includes puck_data from the paired page', function () {
     $post = Post::factory()->create();
     Page::create([
         'type' => 'post', 'post_id' => $post->id, 'user_id' => $admin->id,
-        'title' => ['en' => 'Title'], 'slug' => $post->slug, 'status' => 'active',
+        'title' => ['en' => 'Title'], 'status' => 'active',
         'puck_data' => ['root' => ['props' => []], 'content' => []],
     ]);
 

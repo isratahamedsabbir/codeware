@@ -40,7 +40,7 @@ it('admin can create a product category', function () {
         'sort_order' => 1,
     ])->assertCreated()->assertJsonPath('data.slug', 'new_category');
 
-    expect(ProductCategory::where('slug', 'new_category')->exists())->toBeTrue();
+    expect(Page::where(['type' => 'product_category', 'slug' => 'new_category'])->exists())->toBeTrue();
 });
 
 it('admin can update a product category', function () {
@@ -84,7 +84,7 @@ it('admin can create a product', function () {
         'status' => 'inactive',
     ])->assertCreated()->assertJsonPath('data.slug', 'test_product');
 
-    expect(Product::where('slug', 'test_product')->exists())->toBeTrue();
+    expect(Page::where(['type' => 'product', 'slug' => 'test_product'])->exists())->toBeTrue();
 });
 
 it('admin can create a product with gallery sync', function () {
@@ -99,7 +99,8 @@ it('admin can create a product with gallery sync', function () {
     ]);
 
     $response->assertCreated();
-    $product = Product::where('slug', 'gallery_product')->firstOrFail();
+    $page = Page::where(['type' => 'product', 'slug' => 'gallery_product'])->firstOrFail();
+    $product = Product::findOrFail($page->product_id);
     expect($product->gallery()->count())->toBe(2);
     expect($product->gallery()->wherePivot('sort_order', 0)->first()->id)->toBe($media1->id);
 });
@@ -177,8 +178,8 @@ it('admin can create a product with puck_data and faq, puck_data landing on the 
         'faq' => $faq,
     ])->assertCreated();
 
-    $product = Product::where('slug', 'puck_product')->firstOrFail();
-    $page = Page::where(['type' => 'product', 'product_id' => $product->id])->sole();
+    $page = Page::where(['type' => 'product', 'slug' => 'puck_product'])->sole();
+    $product = Product::findOrFail($page->product_id);
     expect($page->puck_data)->toBe($puckData);
     expect($product->faq[0]['question']['en'])->toBe('Q?');
     expect($product->faq[0]['answer']['en'])->toBe('A.');

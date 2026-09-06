@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Page;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
@@ -50,7 +52,27 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * Post/Product/ProductCategory/PostCategory have no slug column of their
+ * own — Page is the only place a slug is stored, and each entity reads it
+ * back through a `slug` accessor that proxies to its paired Page. So any
+ * fixture that needs an entity with a specific slug has to create that
+ * entity, then create (or update) its paired Page with that slug.
+ */
+function pairPageFor(Model $entity, string $type, string $slug, int $userId): Page
 {
-    // ..
+    $fk = match ($type) {
+        'product' => 'product_id',
+        'post' => 'post_id',
+        default => 'category_id',
+    };
+
+    return Page::create([
+        'type' => $type,
+        $fk => $entity->id,
+        'user_id' => $userId,
+        'title' => ['en' => 'Title'],
+        'slug' => $slug,
+        'status' => 'active',
+    ]);
 }

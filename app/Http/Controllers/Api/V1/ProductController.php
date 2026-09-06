@@ -24,9 +24,9 @@ class ProductController extends Controller
         $perPage = max(1, min((int) $request->query('per_page', Setting::perPage()), 100));
 
         $products = Product::active()
-            ->with(['category', 'page'])
+            ->with(['category.page', 'page'])
             ->orderBy('sort_order')
-            ->when($request->query('category'), fn ($q, $slug) => $q->whereHas('category', fn ($c) => $c->where('slug', $slug)))
+            ->when($request->query('category'), fn ($q, $slug) => $q->whereHas('category.page', fn ($c) => $c->where('slug', $slug)))
             ->when($request->query('search'), fn ($q, $search) => $q->where("name->{$locale}", 'like', "%{$search}%"))
             ->when($request->query('featured') === '1', fn ($q) => $q->where('is_featured', true))
             ->paginate($perPage);
@@ -47,8 +47,8 @@ class ProductController extends Controller
         $locale = $this->resolveLocale($request);
 
         $product = Product::active()
-            ->with(['category', 'gallery', 'page'])
-            ->where('slug', $slug)
+            ->with(['category.page', 'gallery', 'page'])
+            ->whereHas('page', fn ($q) => $q->where('slug', $slug))
             ->firstOrFail();
 
         $related = $product->product_category_id

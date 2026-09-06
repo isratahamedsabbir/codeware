@@ -7,16 +7,6 @@ use App\Models\PostCategory;
 use App\Models\Setting;
 use App\Models\User;
 
-it('blog category auto-generates slug from name', function () {
-    $category = PostCategory::factory()->create(['name' => ['en' => 'My Test Category', 'bn' => ''], 'slug' => '']);
-    expect($category->fresh()->slug)->toBe('my_test_category');
-});
-
-it('post auto-generates slug from title', function () {
-    $post = Post::factory()->create(['title' => ['en' => 'My First Post', 'bn' => ''], 'slug' => '']);
-    expect($post->fresh()->slug)->toBe('my_first_post');
-});
-
 it('post published scope filters correctly', function () {
     Post::factory()->published()->create();
     Post::factory()->draft()->create();

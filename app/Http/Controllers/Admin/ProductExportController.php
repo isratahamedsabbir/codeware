@@ -20,11 +20,11 @@ class ProductExportController extends Controller
         $status = (string) $request->query('status', '');
 
         $products = Product::query()
-            ->with('category')
+            ->with(['category', 'page'])
             ->when($search, fn ($q) => $q
                 ->where('name->en', 'like', "%{$search}%")
                 ->orWhere('name->bn', 'like', "%{$search}%")
-                ->orWhere('slug', 'like', "%{$search}%"))
+                ->orWhereHas('page', fn ($p) => $p->where('slug', 'like', "%{$search}%")))
             ->when($status, fn ($q) => $q->where('status', $status))
             ->orderBy('sort_order')
             ->orderBy('id')

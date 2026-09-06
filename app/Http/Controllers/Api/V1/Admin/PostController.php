@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\Post;
 use App\Support\PageCascade;
+use App\Support\Slug;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -17,7 +18,7 @@ class PostController extends Controller
         $perPage = min((int) $request->query('per_page', 15), 100);
 
         $posts = Post::withTrashed()
-            ->with(['category:id,slug', 'user:id,name', 'tags'])
+            ->with(['category.page', 'user:id,name', 'tags', 'page'])
             ->orderByDesc('updated_at')
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
             ->paginate($perPage);
@@ -51,7 +52,7 @@ class PostController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $post = Post::withTrashed()->with(['category', 'user:id,name', 'tags', 'page'])->findOrFail($id);
+        $post = Post::withTrashed()->with(['category.page', 'user:id,name', 'tags', 'page'])->findOrFail($id);
 
         return response()->json([
             'data' => [
@@ -85,7 +86,7 @@ class PostController extends Controller
             'title' => 'required|array',
             'title.en' => 'required|string|max:255',
             'title.bn' => 'nullable|string|max:255',
-            'slug' => 'nullable|string|unique:posts,slug',
+            'slug' => ['nullable', 'string', ...Slug::uniqueRules(null)],
             'status' => 'sometimes|in:active,inactive',
             'puck_data' => 'nullable|array',
             'tag_ids' => 'sometimes|array',
@@ -99,6 +100,10 @@ class PostController extends Controller
         $puckData = $validated['puck_data'] ?? null;
         unset($validated['puck_data']);
 
+        // The slug lives on the paired Page only — the post has no column for it.
+        $slug = $validated['slug'] ?? null;
+        unset($validated['slug']);
+
         $post = Post::create($validated)->refresh();
         $post->tags()->sync($validated['tag_ids'] ?? []);
 
@@ -109,7 +114,7 @@ class PostController extends Controller
             array_filter([
                 'user_id' => $request->user()->id,
                 'title' => $post->getTranslations('title'),
-                'slug' => $post->slug,
+                'slug' => $slug,
                 'status' => $post->status,
                 'puck_data' => $puckData,
             ])
@@ -136,7 +141,7 @@ class PostController extends Controller
             'featured_image' => 'sometimes|nullable|string',
             'puck_data' => 'sometimes|nullable|array',
             'category_id' => 'sometimes|nullable|exists:categories,id,type,post',
-            'slug' => 'sometimes|string|unique:posts,slug,'.$post->id,
+            'slug' => ['sometimes', 'string', ...Slug::uniqueRules($post->page?->id)],
             'tag_ids' => 'sometimes|array',
             'tag_ids.*' => 'exists:tags,id',
         ]);
@@ -146,24 +151,31 @@ class PostController extends Controller
         $pageFields = collect($validated)->only(['og_image', 'seo_title', 'seo_description', 'puck_data'])->all();
         unset($validated['og_image'], $validated['seo_title'], $validated['seo_description'], $validated['puck_data']);
 
+        // The slug lives on the paired Page only — the post has no column for it.
+        $slug = $validated['slug'] ?? null;
+        unset($validated['slug']);
+
         $post->update($validated);
         $post->tags()->sync($validated['tag_ids'] ?? []);
 
         // Always keep the paired Page in sync (slug especially) regardless of
         // whether this request touched any SEO fields — a Livewire admin edit
         // syncs unconditionally too, so the two paths can't drift apart.
-        Page::updateOrCreate(
+        // $post->page may already be cached (from the ?->id lookup above for
+        // the uniqueness rule) — read the slug off this fresh return value
+        // instead of $post->slug, which would resolve the stale cached page.
+        $page = Page::updateOrCreate(
             ['type' => 'post', 'post_id' => $post->id],
             array_filter([
                 'user_id' => $request->user()?->id,
                 'title' => $post->getTranslations('title'),
-                'slug' => $post->slug,
+                'slug' => $slug,
                 'status' => $post->status,
                 ...$pageFields,
             ])
         );
 
-        return response()->json(['data' => ['id' => $post->id, 'slug' => $post->slug]]);
+        return response()->json(['data' => ['id' => $post->id, 'slug' => $page->slug]]);
     }
 
     public function destroy(int $id): Response

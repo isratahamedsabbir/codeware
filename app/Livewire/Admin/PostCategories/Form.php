@@ -48,7 +48,7 @@ class Form extends Component
             $this->categoryId = $id;
             $this->name_en = $category->getTranslation('name', 'en', false) ?? '';
             $this->name_bn = $category->getTranslation('name', 'bn', false) ?? '';
-            $this->slug = $category->slug;
+            $this->slug = $category->slug ?? '';
             $this->description_en = $category->getTranslation('description', 'en', false) ?? '';
             $this->description_bn = $category->getTranslation('description', 'bn', false) ?? '';
 
@@ -90,7 +90,7 @@ class Form extends Component
 
     private function checkSlugAvailability(): void
     {
-        $this->slugAvailable = Slug::isAvailable($this->slug, $this->pageId, 'categories', $this->categoryId);
+        $this->slugAvailable = Slug::isAvailable($this->slug, $this->pageId);
     }
 
     public function save(): void
@@ -102,7 +102,7 @@ class Form extends Component
         $rules = $this->getRules();
         $rules['slug'] = [
             'required', 'string', 'max:255',
-            ...Slug::uniqueRules($this->pageId, 'categories', $this->categoryId),
+            ...Slug::uniqueRules($this->pageId),
         ];
 
         $this->validate($rules);
@@ -111,7 +111,6 @@ class Form extends Component
 
         $data = [
             'name' => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
-            'slug' => $this->slug,
             'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
         ];
 

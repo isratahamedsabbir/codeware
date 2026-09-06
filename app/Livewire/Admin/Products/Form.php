@@ -66,7 +66,7 @@ class Form extends Component
             $this->productId = $id;
             $this->name_en = $product->getTranslation('name', 'en', false) ?? '';
             $this->name_bn = $product->getTranslation('name', 'bn', false) ?? '';
-            $this->slug = $product->slug;
+            $this->slug = $product->slug ?? '';
             $this->product_category_id = $product->product_category_id;
             $this->price = (string) $product->price;
             $this->is_featured = (bool) $product->is_featured;
@@ -113,7 +113,7 @@ class Form extends Component
 
     private function checkSlugAvailability(): void
     {
-        $this->slugAvailable = Slug::isAvailable($this->slug, $this->pageId, 'products', $this->productId);
+        $this->slugAvailable = Slug::isAvailable($this->slug, $this->pageId);
     }
 
     #[Computed]
@@ -149,7 +149,7 @@ class Form extends Component
         $rules = $this->getRules();
         $rules['slug'] = [
             'required', 'string', 'max:255',
-            ...Slug::uniqueRules($this->pageId, 'products', $this->productId),
+            ...Slug::uniqueRules($this->pageId),
         ];
 
         $this->validate($rules);
@@ -181,7 +181,7 @@ class Form extends Component
         $rules = $this->getRules();
         $rules['slug'] = [
             'required', 'string', 'max:255',
-            ...Slug::uniqueRules($this->pageId, 'products', $this->productId),
+            ...Slug::uniqueRules($this->pageId),
         ];
 
         $this->validate($rules);
@@ -200,7 +200,6 @@ class Form extends Component
         $data = [
             'product_category_id' => $this->product_category_id,
             'name' => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
-            'slug' => $this->slug,
             'price' => $this->price,
             'is_featured' => $this->is_featured,
             'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,

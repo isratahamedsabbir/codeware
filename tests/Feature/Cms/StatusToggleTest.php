@@ -26,7 +26,7 @@ beforeEach(function () {
 
 it('toggles a product status and its paired page from the list', function () {
     $product = Product::factory()->create(['status' => 'inactive']);
-    $page = Page::create(['user_id' => $this->admin->id, 'product_id' => $product->id, 'type' => 'product', 'title' => $product->name, 'slug' => $product->slug, 'status' => 'inactive']);
+    $page = Page::create(['user_id' => $this->admin->id, 'product_id' => $product->id, 'type' => 'product', 'title' => $product->name, 'status' => 'inactive']);
 
     Livewire::test(ProductsIndex::class)->call('toggleStatus', $product->id);
 
@@ -40,7 +40,7 @@ it('toggles a product status and its paired page from the list', function () {
 
 it('toggles a product category status and its paired page from the list', function () {
     $category = ProductCategory::factory()->create(['status' => 'inactive']);
-    $page = Page::create(['user_id' => $this->admin->id, 'category_id' => $category->id, 'type' => 'product_category', 'title' => $category->name, 'slug' => $category->slug, 'status' => 'inactive']);
+    $page = Page::create(['user_id' => $this->admin->id, 'category_id' => $category->id, 'type' => 'product_category', 'title' => $category->name, 'status' => 'inactive']);
 
     Livewire::test(ProductCategoriesIndex::class)->call('toggleStatus', $category->id);
 
@@ -50,7 +50,7 @@ it('toggles a product category status and its paired page from the list', functi
 
 it('toggles a post category status and its paired page from the list', function () {
     $category = PostCategory::factory()->create(['status' => 'inactive']);
-    $page = Page::create(['user_id' => $this->admin->id, 'category_id' => $category->id, 'type' => 'post_category', 'title' => $category->name, 'slug' => $category->slug, 'status' => 'inactive']);
+    $page = Page::create(['user_id' => $this->admin->id, 'category_id' => $category->id, 'type' => 'post_category', 'title' => $category->name, 'status' => 'inactive']);
 
     Livewire::test(PostCategoriesIndex::class)->call('toggleStatus', $category->id);
 
@@ -60,7 +60,7 @@ it('toggles a post category status and its paired page from the list', function 
 
 it('toggles a post status, sets published_at once, and syncs its paired page from the list', function () {
     $post = Post::factory()->create(['status' => 'inactive', 'published_at' => null]);
-    $page = Page::create(['user_id' => $this->admin->id, 'post_id' => $post->id, 'type' => 'post', 'title' => $post->title, 'slug' => $post->slug, 'status' => 'inactive']);
+    $page = Page::create(['user_id' => $this->admin->id, 'post_id' => $post->id, 'type' => 'post', 'title' => $post->title, 'status' => 'inactive']);
 
     Livewire::test(PostsIndex::class)->call('toggleStatus', $post->id);
 
@@ -87,7 +87,7 @@ it('toggles a tag status from the list', function () {
 
 it('toggles a page status and its linked entity from the list', function () {
     $product = Product::factory()->create(['status' => 'inactive']);
-    $page = Page::create(['user_id' => $this->admin->id, 'product_id' => $product->id, 'type' => 'product', 'title' => $product->name, 'slug' => $product->slug, 'status' => 'inactive']);
+    $page = Page::create(['user_id' => $this->admin->id, 'product_id' => $product->id, 'type' => 'product', 'title' => $product->name, 'status' => 'inactive']);
 
     Livewire::test(PagesIndex::class)->set('typeFilter', 'all')->call('toggleStatus', $page->id);
 

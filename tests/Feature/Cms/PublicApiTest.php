@@ -5,6 +5,11 @@ use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\Setting;
 use App\Models\Tag;
+use App\Models\User;
+
+beforeEach(function () {
+    $this->admin = User::factory()->create(['is_admin' => true]);
+});
 
 it('returns published posts only', function () {
     Post::factory()->published()->create(['title' => ['en' => 'Live Post', 'bn' => '']]);
@@ -43,6 +48,7 @@ it('returns a single published post by slug', function () {
     $post = Post::factory()->published()->create([
         'title' => ['en' => 'Single Post', 'bn' => ''],
     ]);
+    pairPageFor($post, 'post', 'single-post', $this->admin->id);
 
     $response = $this->getJson("/api/v1/posts/{$post->slug}");
 
@@ -53,6 +59,7 @@ it('returns a single published post by slug', function () {
 
 it('returns 404 for draft post slug on public endpoint', function () {
     $post = Post::factory()->draft()->create();
+    pairPageFor($post, 'post', 'draft-post', $this->admin->id);
 
     $this->getJson("/api/v1/posts/{$post->slug}")->assertNotFound();
 });
@@ -113,7 +120,8 @@ it('returns layout header and footer', function () {
 });
 
 it('filters posts by category slug', function () {
-    $cat = PostCategory::factory()->create(['slug' => 'news']);
+    $cat = PostCategory::factory()->create();
+    pairPageFor($cat, 'post_category', 'news', $this->admin->id);
     Post::factory()->published()->create(['category_id' => $cat->id, 'title' => ['en' => 'News Post', 'bn' => '']]);
     Post::factory()->published()->create(['title' => ['en' => 'Other Post', 'bn' => '']]);
 

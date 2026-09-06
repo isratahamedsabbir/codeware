@@ -19,7 +19,9 @@ it('creates a companion page when opening the puck editor for a product that has
     Livewire::test(ProductsIndex::class)->call('openPuckEditor', $product->id);
 
     $page = Page::where(['type' => 'product', 'product_id' => $product->id])->sole();
-    expect($page->slug)->toBe($product->slug)
+    // $product's `page` relation was already cached as null by the assertion above,
+    // so re-fetch fresh rather than reading the stale cached relation via ->slug.
+    expect($page->slug)->toBe($product->fresh()->slug)
         ->and($page->status)->toBe('active');
 });
 
@@ -30,7 +32,6 @@ it('reuses the existing companion page when opening the puck editor for a produc
         'product_id' => $product->id,
         'type' => 'product',
         'title' => $product->name,
-        'slug' => $product->slug,
         'status' => $product->status,
     ]);
 

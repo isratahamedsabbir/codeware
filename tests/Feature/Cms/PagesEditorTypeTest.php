@@ -13,14 +13,7 @@ beforeEach(function () {
 
 it('opens the puck editor with the page own type, not always "page"', function () {
     $category = ProductCategory::factory()->create();
-    $page = Page::create([
-        'user_id' => $this->admin->id,
-        'category_id' => $category->id,
-        'type' => 'product_category',
-        'title' => ['en' => 'Category page'],
-        'slug' => $category->slug,
-        'status' => 'active',
-    ]);
+    $page = pairPageFor($category, 'product_category', 'category-page', $this->admin->id);
 
     $component = Livewire::test(PagesForm::class, ['id' => $page->id])
         ->call('openPuckEditor');

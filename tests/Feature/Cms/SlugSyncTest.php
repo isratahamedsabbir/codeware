@@ -38,7 +38,8 @@ it('live-types the product slug from the name as you type, until manually edited
 });
 
 it('does not auto-touch an existing product\'s slug when only its name is edited', function () {
-    $product = Product::factory()->create(['slug' => 'stable_slug']);
+    $product = Product::factory()->create();
+    pairPageFor($product, 'product', 'stable_slug', $this->admin->id);
 
     Livewire::test(ProductForm::class, ['id' => $product->id])
         ->set('name_en', 'A Brand New Name')
@@ -68,18 +69,15 @@ it('keeps a product\'s slug and its paired page\'s slug identical after saving',
         ->set('name_en', 'Synced Product')
         ->call('save');
 
-    $product = Product::where('slug', 'synced_product')->sole();
-    $page = Page::where(['type' => 'product', 'product_id' => $product->id])->sole();
+    $page = Page::where(['type' => 'product', 'slug' => 'synced_product'])->sole();
+    $product = Product::findOrFail($page->product_id);
 
-    expect($page->slug)->toBe($product->slug);
+    expect($product->slug)->toBe($page->slug);
 });
 
 it('rejects a product slug that collides with an existing page slug from a different entity', function () {
-    $post = Post::factory()->create(['slug' => 'shared_slug']);
-    Page::create([
-        'type' => 'post', 'post_id' => $post->id, 'user_id' => $this->admin->id,
-        'title' => ['en' => 'Post'], 'slug' => 'shared_slug', 'status' => 'active',
-    ]);
+    $post = Post::factory()->create();
+    pairPageFor($post, 'post', 'shared_slug', $this->admin->id);
 
     Livewire::test(ProductForm::class)
         ->set('name_en', 'Some Product')
@@ -105,8 +103,8 @@ it('locks the slug field for a linked page and ignores any edit attempt on save,
         ->set('name_en', 'Editable Product')
         ->call('save');
 
-    $product = Product::where('slug', 'editable_product')->sole();
-    $page = Page::where(['type' => 'product', 'product_id' => $product->id])->sole();
+    $page = Page::where(['type' => 'product', 'slug' => 'editable_product'])->sole();
+    $product = Product::findOrFail($page->product_id);
 
     $component = Livewire::test(PageForm::class, ['id' => $page->id]);
     expect($component->instance()->isLinked())->toBeTrue();
@@ -122,8 +120,8 @@ it('locks the slug field for a linked page and ignores any edit attempt on save,
         ->set('name_en', 'Original Category')
         ->call('save');
 
-    $category = PostCategory::where('slug', 'original_category')->sole();
-    $page = Page::where(['type' => 'post_category', 'category_id' => $category->id])->sole();
+    $page = Page::where(['type' => 'post_category', 'slug' => 'original_category'])->sole();
+    $category = PostCategory::findOrFail($page->category_id);
 
     Livewire::test(PageForm::class, ['id' => $page->id])
         ->set('slug', 'renamed_category')
@@ -150,11 +148,8 @@ it('does not affect other pages when editing a plain (non-typed) page\'s slug', 
 });
 
 it('rejects a page slug that collides with an existing product slug', function () {
-    $product = Product::factory()->create(['slug' => 'taken_slug']);
-    Page::create([
-        'type' => 'product', 'product_id' => $product->id, 'user_id' => $this->admin->id,
-        'title' => ['en' => 'Product'], 'slug' => 'taken_slug', 'status' => 'active',
-    ]);
+    $product = Product::factory()->create();
+    pairPageFor($product, 'product', 'taken_slug', $this->admin->id);
 
     Livewire::test(PageForm::class)
         ->set('title_en', 'New Page')
@@ -170,11 +165,8 @@ it('marks a newly-typed product slug available (green) when it is unique', funct
 });
 
 it('marks a product slug unavailable (red) when it collides with another page slug', function () {
-    $post = Post::factory()->create(['slug' => 'taken_by_post']);
-    Page::create([
-        'type' => 'post', 'post_id' => $post->id, 'user_id' => $this->admin->id,
-        'title' => ['en' => 'Post'], 'slug' => 'taken_by_post', 'status' => 'active',
-    ]);
+    $post = Post::factory()->create();
+    pairPageFor($post, 'post', 'taken_by_post', $this->admin->id);
 
     Livewire::test(ProductForm::class)
         ->set('name_en', 'Some Product')
@@ -183,7 +175,8 @@ it('marks a product slug unavailable (red) when it collides with another page sl
 });
 
 it('re-checks product slug availability on direct manual edits, not just auto-typing', function () {
-    $product = Product::factory()->create(['slug' => 'existing_one']);
+    $product = Product::factory()->create();
+    pairPageFor($product, 'product', 'existing_one', $this->admin->id);
 
     Livewire::test(ProductForm::class)
         ->set('name_en', 'Fresh Product')
@@ -195,18 +188,16 @@ it('re-checks product slug availability on direct manual edits, not just auto-ty
 });
 
 it('marks an existing product\'s own unchanged slug as available when editing', function () {
-    $product = Product::factory()->create(['slug' => 'my_own_slug']);
+    $product = Product::factory()->create();
+    pairPageFor($product, 'product', 'my_own_slug', $this->admin->id);
 
     Livewire::test(ProductForm::class, ['id' => $product->id])
         ->assertSet('slugAvailable', true);
 });
 
 it('checks slug availability the same way for posts, categories, and pages', function () {
-    $existingPost = Post::factory()->create(['slug' => 'blog_slug_taken']);
-    Page::create([
-        'type' => 'post', 'post_id' => $existingPost->id, 'user_id' => $this->admin->id,
-        'title' => ['en' => 'Post'], 'slug' => 'blog_slug_taken', 'status' => 'active',
-    ]);
+    $existingPost = Post::factory()->create();
+    pairPageFor($existingPost, 'post', 'blog_slug_taken', $this->admin->id);
 
     Livewire::test(PostForm::class)
         ->set('title_en', 'New Blog Post')
@@ -232,11 +223,8 @@ it('checks slug availability the same way for posts, categories, and pages', fun
 it('keeps a product\'s page slug in sync when the slug is changed via the REST admin API alone', function () {
     Sanctum::actingAs($this->admin);
 
-    $product = Product::factory()->create(['slug' => 'old_api_slug']);
-    Page::create([
-        'type' => 'product', 'product_id' => $product->id, 'user_id' => $this->admin->id,
-        'title' => ['en' => 'Title'], 'slug' => 'old_api_slug', 'status' => 'active',
-    ]);
+    $product = Product::factory()->create();
+    pairPageFor($product, 'product', 'old_api_slug', $this->admin->id);
 
     // Only the slug is sent — no SEO fields — which used to skip the Page sync entirely.
     $this->putJson("/api/v1/admin/products/{$product->id}", ['slug' => 'new_api_slug'])
@@ -249,11 +237,8 @@ it('keeps a product\'s page slug in sync when the slug is changed via the REST a
 it('keeps a post\'s page slug in sync when the slug is changed via the REST admin API alone', function () {
     Sanctum::actingAs($this->admin);
 
-    $post = Post::factory()->create(['slug' => 'old_post_api_slug']);
-    Page::create([
-        'type' => 'post', 'post_id' => $post->id, 'user_id' => $this->admin->id,
-        'title' => ['en' => 'Title'], 'slug' => 'old_post_api_slug', 'status' => 'active',
-    ]);
+    $post = Post::factory()->create();
+    pairPageFor($post, 'post', 'old_post_api_slug', $this->admin->id);
 
     $this->putJson("/api/v1/admin/posts/{$post->id}", ['slug' => 'new_post_api_slug'])
         ->assertOk();
@@ -268,20 +253,16 @@ it('creates a matching page slug when a post is created via the REST admin API',
     $this->postJson('/api/v1/admin/posts', ['title' => ['en' => 'API Created Post']])
         ->assertCreated();
 
-    $post = Post::where('slug', 'api_created_post')->sole();
-    $page = Page::where(['type' => 'post', 'post_id' => $post->id])->sole();
+    $page = Page::where(['type' => 'post', 'slug' => 'api_created_post'])->sole();
 
-    expect($page->slug)->toBe('api_created_post');
+    expect($page->post)->not->toBeNull();
 });
 
 it('keeps a product category\'s page slug in sync when edited via the REST admin API alone', function () {
     Sanctum::actingAs($this->admin);
 
-    $category = ProductCategory::factory()->create(['slug' => 'old_cat_api_slug']);
-    Page::create([
-        'type' => 'product_category', 'category_id' => $category->id, 'user_id' => $this->admin->id,
-        'title' => ['en' => 'Title'], 'slug' => 'old_cat_api_slug', 'status' => 'active',
-    ]);
+    $category = ProductCategory::factory()->create();
+    pairPageFor($category, 'product_category', 'old_cat_api_slug', $this->admin->id);
 
     $this->putJson("/api/v1/admin/product-categories/{$category->id}", ['slug' => 'new_cat_api_slug'])
         ->assertOk();
@@ -296,8 +277,7 @@ it('creates a matching page slug when a product category is created via the REST
     $this->postJson('/api/v1/admin/product-categories', ['name' => ['en' => 'API Created Category']])
         ->assertCreated();
 
-    $category = ProductCategory::where('slug', 'api_created_category')->sole();
-    $page = Page::where(['type' => 'product_category', 'category_id' => $category->id])->sole();
+    $page = Page::where(['type' => 'product_category', 'slug' => 'api_created_category'])->sole();
 
-    expect($page->slug)->toBe('api_created_category');
+    expect($page->category)->not->toBeNull();
 });

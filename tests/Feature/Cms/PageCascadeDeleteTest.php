@@ -43,7 +43,6 @@ function createPageCascadeTestPair(string $type, array $entityAttributes = []): 
         ...$fk,
         'user_id' => User::factory()->create()->id,
         'title' => ['en' => 'Title'],
-        'slug' => $entity->slug,
         'status' => 'active',
     ]);
 

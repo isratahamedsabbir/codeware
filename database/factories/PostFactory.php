@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
 class PostFactory extends Factory
 {
@@ -17,7 +16,6 @@ class PostFactory extends Factory
             'user_id' => User::factory(),
             'category_id' => null,
             'title' => ['en' => $title, 'bn' => $title],
-            'slug' => Str::slug($title),
             'content' => ['en' => $puckContent, 'bn' => $puckContent],
             'featured_image' => null,
             'status' => 'inactive',

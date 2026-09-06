@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('product_category_id')->nullable()->constrained('categories')->nullOnDelete();
             $table->json('name');
-            $table->string('slug')->unique();
             $table->json('excerpt')->nullable();
             $table->json('description')->nullable();
             $table->json('specifications')->nullable();

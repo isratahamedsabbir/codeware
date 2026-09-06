@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\Product;
 use App\Support\PageCascade;
+use App\Support\Slug;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -17,7 +18,7 @@ class ProductController extends Controller
         $perPage = max(1, min((int) $request->query('per_page', 15), 100));
 
         $products = Product::withTrashed()
-            ->with('category:id,slug')
+            ->with(['category.page', 'page'])
             ->orderBy('sort_order')
             ->orderByDesc('updated_at')
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
@@ -51,7 +52,7 @@ class ProductController extends Controller
             'name' => 'required|array',
             'name.en' => 'required|string|max:255',
             'name.bn' => 'nullable|string|max:255',
-            'slug' => 'nullable|string|unique:products,slug',
+            'slug' => ['nullable', 'string', ...Slug::uniqueRules(null)],
             'product_category_id' => 'nullable|exists:categories,id,type,product',
             'description' => 'nullable|array',
             'description.en' => 'nullable|string',
@@ -77,6 +78,10 @@ class ProductController extends Controller
         $pageFields = collect($validated)->only(['og_image', 'seo_title', 'seo_description', 'puck_data'])->all();
         unset($validated['og_image'], $validated['seo_title'], $validated['seo_description'], $validated['puck_data']);
 
+        // The slug lives on the paired Page only — the product has no column for it.
+        $slug = $validated['slug'] ?? null;
+        unset($validated['slug']);
+
         $product = Product::create($validated)->refresh();
 
         if ($mediaIds !== null) {
@@ -89,12 +94,12 @@ class ProductController extends Controller
         // Always keep the paired Page in sync (slug especially) regardless of
         // whether this request touched any SEO fields — a Livewire admin edit
         // syncs unconditionally too, so the two paths can't drift apart.
-        Page::updateOrCreate(
+        $page = Page::updateOrCreate(
             ['type' => 'product', 'product_id' => $product->id],
             array_filter([
                 'user_id' => $request->user()?->id,
                 'title' => $product->getTranslations('name'),
-                'slug' => $product->slug,
+                'slug' => $slug,
                 'status' => $product->status,
                 'sort_order' => $product->sort_order,
                 'description' => $product->getTranslations('description') ?: null,
@@ -102,7 +107,7 @@ class ProductController extends Controller
             ])
         );
 
-        return response()->json(['data' => ['id' => $product->id, 'slug' => $product->slug]], 201);
+        return response()->json(['data' => ['id' => $product->id, 'slug' => $page->slug]], 201);
     }
 
     public function update(Request $request, int $id): JsonResponse
@@ -113,7 +118,7 @@ class ProductController extends Controller
             'name' => 'sometimes|array',
             'name.en' => 'required_with:name|string|max:255',
             'name.bn' => 'nullable|string|max:255',
-            'slug' => 'nullable|string|unique:products,slug,'.$id,
+            'slug' => ['nullable', 'string', ...Slug::uniqueRules($product->page?->id)],
             'product_category_id' => 'sometimes|nullable|exists:categories,id,type,product',
             'description' => 'sometimes|nullable|array',
             'description.en' => 'nullable|string',
@@ -139,6 +144,10 @@ class ProductController extends Controller
         $pageFields = collect($validated)->only(['og_image', 'seo_title', 'seo_description', 'puck_data'])->all();
         unset($validated['og_image'], $validated['seo_title'], $validated['seo_description'], $validated['puck_data']);
 
+        // The slug lives on the paired Page only — the product has no column for it.
+        $slug = $validated['slug'] ?? null;
+        unset($validated['slug']);
+
         $product->update($validated);
 
         if ($mediaIds !== false) {
@@ -151,12 +160,15 @@ class ProductController extends Controller
         // Always keep the paired Page in sync (slug especially) regardless of
         // whether this request touched any SEO fields — a Livewire admin edit
         // syncs unconditionally too, so the two paths can't drift apart.
-        Page::updateOrCreate(
+        // $product->page may already be cached (from the ?->id lookup above for
+        // the uniqueness rule) — read the slug off this fresh return value
+        // instead of $product->slug, which would resolve the stale cached page.
+        $page = Page::updateOrCreate(
             ['type' => 'product', 'product_id' => $product->id],
             array_filter([
                 'user_id' => $request->user()?->id,
                 'title' => $product->getTranslations('name'),
-                'slug' => $product->slug,
+                'slug' => $slug,
                 'status' => $product->status,
                 'sort_order' => $product->sort_order,
                 'description' => $product->getTranslations('description') ?: null,
@@ -164,7 +176,7 @@ class ProductController extends Controller
             ])
         );
 
-        return response()->json(['data' => ['id' => $product->id, 'slug' => $product->slug]]);
+        return response()->json(['data' => ['id' => $product->id, 'slug' => $page->slug]]);
     }
 
     public function destroy(int $id): Response

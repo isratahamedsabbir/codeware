@@ -72,22 +72,22 @@ class Sitemap extends Component
         );
 
         $entries = $entries->merge(
-            Product::active()->get(['slug', 'updated_at'])
+            Product::active()->with('page:id,product_id,slug')->get(['id', 'updated_at'])
                 ->map(fn (Product $product) => $this->entry($base.'/products/'.$product->slug, $product->updated_at))
         );
 
         $entries = $entries->merge(
-            ProductCategory::where('status', 'active')->get(['slug', 'updated_at'])
+            ProductCategory::where('status', 'active')->with('page:id,category_id,slug')->get(['id', 'updated_at'])
                 ->map(fn (ProductCategory $category) => $this->entry($base.'/products/category/'.$category->slug, $category->updated_at))
         );
 
         $entries = $entries->merge(
-            PostCategory::where('status', 'active')->get(['slug', 'updated_at'])
+            PostCategory::where('status', 'active')->with('page:id,category_id,slug')->get(['id', 'updated_at'])
                 ->map(fn (PostCategory $category) => $this->entry($base.'/blog/category/'.$category->slug, $category->updated_at))
         );
 
         $entries = $entries->merge(
-            Post::published()->get(['slug', 'updated_at'])
+            Post::published()->with('page:id,post_id,slug')->get(['id', 'updated_at'])
                 ->map(fn (Post $post) => $this->entry($base.'/blog/'.$post->slug, $post->updated_at))
         );
 

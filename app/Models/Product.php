@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Support\Slug;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,7 +19,7 @@ class Product extends Model
     public array $translatable = ['name', 'description'];
 
     protected $fillable = [
-        'product_category_id', 'name', 'slug', 'description',
+        'product_category_id', 'name', 'description',
         'faq',
         'featured_image', 'status', 'price', 'is_featured',
         'sort_order',
@@ -32,18 +32,17 @@ class Product extends Model
         'sort_order' => 'integer',
     ];
 
-    protected static function booted(): void
+    /**
+     * `slug` is a virtual accessor (see below), not a real column — Eloquent
+     * only includes accessor-only attributes in toArray()/JSON output when
+     * they're appended here, otherwise dumping the whole model silently drops
+     * it (e.g. Admin API's `'category' => $p->category`).
+     */
+    protected $appends = ['slug'];
+
+    protected function slug(): Attribute
     {
-        static::saving(function (Product $product) {
-            if (empty($product->slug)) {
-                $name = is_array($product->name)
-                    ? ($product->name['en'] ?? reset($product->name))
-                    : $product->name;
-                $product->slug = Slug::make($name);
-            } else {
-                $product->slug = Slug::lower($product->slug);
-            }
-        });
+        return Attribute::make(get: fn () => $this->page?->slug);
     }
 
     public function category(): BelongsTo

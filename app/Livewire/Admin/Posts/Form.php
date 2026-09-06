@@ -59,7 +59,7 @@ class Form extends Component
             $this->postId = $id;
             $this->title_en = $post->getTranslation('title', 'en', false) ?? '';
             $this->title_bn = $post->getTranslation('title', 'bn', false) ?? '';
-            $this->slug = $post->slug;
+            $this->slug = $post->slug ?? '';
             $this->category_id = $post->category_id;
             $this->featured_image = $post->featured_image ?? '';
             $this->tag_ids = $post->tags->pluck('id')->all();
@@ -102,13 +102,13 @@ class Form extends Component
 
     private function checkSlugAvailability(): void
     {
-        $this->slugAvailable = Slug::isAvailable($this->slug, $this->pageId, 'posts', $this->postId);
+        $this->slugAvailable = Slug::isAvailable($this->slug, $this->pageId);
     }
 
     #[Computed]
     public function categories()
     {
-        return PostCategory::orderBy('slug')->get();
+        return PostCategory::orderBy('name->en')->get();
     }
 
     #[Computed]
@@ -144,7 +144,7 @@ class Form extends Component
         $rules = $this->getRules();
         $rules['slug'] = [
             'required', 'string', 'max:255',
-            ...Slug::uniqueRules($this->pageId, 'posts', $this->postId),
+            ...Slug::uniqueRules($this->pageId),
         ];
         $rules['tag_ids.*'] = 'exists:tags,id';
 
@@ -177,7 +177,7 @@ class Form extends Component
         $rules = $this->getRules();
         $rules['slug'] = [
             'required', 'string', 'max:255',
-            ...Slug::uniqueRules($this->pageId, 'posts', $this->postId),
+            ...Slug::uniqueRules($this->pageId),
         ];
         $rules['tag_ids.*'] = 'exists:tags,id';
 
@@ -197,7 +197,6 @@ class Form extends Component
         $data = [
             'user_id' => auth()->id(),
             'title' => array_filter(['en' => $this->title_en, 'bn' => $this->title_bn]),
-            'slug' => $this->slug,
             'category_id' => $this->category_id,
             'featured_image' => $this->featured_image ?: null,
         ];

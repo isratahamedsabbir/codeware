@@ -47,7 +47,6 @@ class Index extends Component
             'product_id' => $product->id,
             'type' => 'product',
             'title' => $product->name,
-            'slug' => $product->slug,
             'status' => $product->status,
         ]);
 
@@ -111,7 +110,7 @@ class Index extends Component
                 ->when($this->search, fn ($q) => $q
                     ->where('name->en', 'like', "%{$this->search}%")
                     ->orWhere('name->bn', 'like', "%{$this->search}%")
-                    ->orWhere('slug', 'like', "%{$this->search}%"))
+                    ->orWhereHas('page', fn ($p) => $p->where('slug', 'like', "%{$this->search}%")))
                 ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
                 ->orderBy('sort_order')
                 ->orderBy('id')

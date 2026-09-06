@@ -8,13 +8,12 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;
 
 /**
- * Single source of truth for slug formatting and uniqueness. Products, Posts,
- * ProductCategories, and PostCategories each own their slug and push it into
- * their paired Page on save (see each Form's persist*() method); Page never
- * writes it back — for a linked Page, Pages/Form.php re-reads the slug from
- * the entity on every save instead of trusting its own field, so the entity
- * stays the single source of truth and the two can never drift apart. A slug
- * used anywhere must still be globally unique, not just within its own table.
+ * Single source of truth for slug formatting and uniqueness. Page owns the
+ * slug for every slug-bearing entity — Products, Posts, ProductCategories,
+ * and PostCategories have no slug column of their own; they read it via an
+ * accessor that proxies to their paired Page (see each model's slug()
+ * accessor), and every admin Form/REST controller writes the typed slug onto
+ * the paired Page only. Uniqueness is therefore just a `pages.slug` check.
  */
 class Slug
 {
@@ -38,21 +37,14 @@ class Slug
     }
 
     /**
-     * Validation rules for a slug field: always checked against `pages` (every
-     * slug-bearing entity has one), plus the entity's own table when given —
-     * a defensive second check in case a row is ever missing its paired page.
+     * Validation rules for a slug field: checked against `pages`, the only
+     * table that still stores one.
      *
      * @return array<int, Unique>
      */
-    public static function uniqueRules(?int $pageId, ?string $entityTable = null, ?int $entityId = null): array
+    public static function uniqueRules(?int $pageId): array
     {
-        $rules = [Rule::unique('pages', 'slug')->ignore($pageId)];
-
-        if ($entityTable) {
-            $rules[] = Rule::unique($entityTable, 'slug')->ignore($entityId);
-        }
-
-        return $rules;
+        return [Rule::unique('pages', 'slug')->ignore($pageId)];
     }
 
     /**
@@ -60,28 +52,15 @@ class Slug
      * red/green indicator while the admin is still typing — an empty slug
      * counts as available (nothing to flag yet).
      */
-    public static function isAvailable(string $slug, ?int $pageId, ?string $entityTable = null, ?int $entityId = null): bool
+    public static function isAvailable(string $slug, ?int $pageId): bool
     {
         if ($slug === '') {
             return true;
         }
 
-        $taken = DB::table('pages')
+        return ! DB::table('pages')
             ->where('slug', $slug)
             ->when($pageId, fn ($q) => $q->where('id', '!=', $pageId))
             ->exists();
-
-        if ($taken) {
-            return false;
-        }
-
-        if ($entityTable) {
-            $taken = DB::table($entityTable)
-                ->where('slug', $slug)
-                ->when($entityId, fn ($q) => $q->where('id', '!=', $entityId))
-                ->exists();
-        }
-
-        return ! $taken;
     }
 }
