@@ -269,7 +269,7 @@
             <x-admin-user-menu />
         </flux:header>
 
-        <div class="flex-1 px-4 pt-3 pb-4 md:px-4 md:pt-3 md:pb-4 max-w-[1600px] w-full mx-auto">
+        <div class="flex-1 p-3 max-w-[1600px] w-full mx-auto">
             @unless ($hidePageHeading ?? false)
                 <div class="mb-3 flex items-center justify-between gap-4 flex-wrap">
                     <div>
