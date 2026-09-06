@@ -98,7 +98,7 @@
         {{-- Indexing --}}
         <div class="lg:col-span-2 min-w-0 border-t border-zinc-100 pt-5">
             <flux:heading size="sm" class="mb-3">Indexing</flux:heading>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-7 gap-y-3">
+            <div class="space-y-3">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-zinc-700">No-Index</p>
