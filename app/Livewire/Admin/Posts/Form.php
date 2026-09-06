@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Posts;
 
+use App\Concerns\HasSeoFields;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\PostCategory;
@@ -16,6 +17,8 @@ use Livewire\Component;
 
 class Form extends Component
 {
+    use HasSeoFields;
+
     public ?int $postId = null;
 
     public ?int $pageId = null;
@@ -64,9 +67,8 @@ class Form extends Component
             $this->featured_image = $post->featured_image ?? '';
             $this->tag_ids = $post->tags->pluck('id')->all();
 
-            // SEO now lives entirely on the paired Page record, edited via the Page
-            // screen — this form only keeps the Page in sync on title/slug/status.
             $this->pageId = $post->page?->id;
+            $this->hydrateSeoFieldsFromPage($post->page);
 
             $this->checkSlugAvailability();
         }
@@ -86,6 +88,7 @@ class Form extends Component
             $this->slug = $this->autoSlug;
         }
 
+        $this->syncCanonicalSlug();
         $this->checkSlugAvailability();
     }
 
@@ -97,6 +100,7 @@ class Form extends Component
     public function updatedSlug(): void
     {
         $this->slug = Slug::lower($this->slug);
+        $this->syncCanonicalSlug();
         $this->checkSlugAvailability();
     }
 
@@ -221,6 +225,7 @@ class Form extends Component
                 'title' => array_filter(['en' => $this->title_en, 'bn' => $this->title_bn]),
                 'slug' => $this->slug,
                 'status' => $post->status,
+                ...$this->seoPagePayload(),
             ]
         );
         $this->pageId = $page->id;

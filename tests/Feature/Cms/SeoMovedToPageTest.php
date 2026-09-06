@@ -10,12 +10,12 @@ use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\Sanctum;
 use Livewire\Livewire;
 
-// SEO fields (seo_title, seo_description, og_image) were moved off products/posts
-// entirely — the paired `pages` row (Product::page()/Post::page()) is now the only place
-// they live. These fields are single-language (not translatable) — meta data doesn't
-// need a per-locale value. SEO is edited exclusively on the Page screen now, so the
-// product/post admin forms no longer expose or write these fields at all — only the
-// non-SEO sync (title/slug/status/description) still flows from those forms to the page.
+// SEO fields (seo_title, seo_description, og_image, ...) were moved off products/posts
+// entirely — the paired `pages` row (Product::page()/Post::page()) is the only place they
+// live in storage. These fields are single-language (not translatable) — meta data doesn't
+// need a per-locale value. The product/post/category admin forms load and save these fields
+// via App\Concerns\HasSeoFields, writing straight onto the paired Page — there's no separate
+// copy on the entity itself, so there's nothing for the two sides to drift out of sync on.
 
 it('no longer has seo columns on products or posts', function () {
     expect(Schema::hasColumn('products', 'seo_title'))->toBeFalse()
@@ -26,9 +26,9 @@ it('no longer has seo columns on products or posts', function () {
         ->and(Schema::hasColumn('posts', 'og_image'))->toBeFalse();
 });
 
-// --- Livewire admin forms no longer touch SEO ---
+// --- Livewire admin forms load and save SEO on the paired page ---
 
-it('does not expose seo fields on the product admin form', function () {
+it('loads seo fields from the paired page on the product admin form', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $this->actingAs($admin);
 
@@ -42,10 +42,32 @@ it('does not expose seo fields on the product admin form', function () {
     ]);
 
     Livewire::test(ProductForm::class, ['id' => $product->id])
-        ->assertSet('pageId', Page::where(['type' => 'product', 'product_id' => $product->id])->value('id'));
+        ->assertSet('pageId', Page::where(['type' => 'product', 'product_id' => $product->id])->value('id'))
+        ->assertSet('seo_title', 'Page SEO Title')
+        ->assertSet('seo_description', 'Page SEO Description')
+        ->assertSet('og_image', '/og.png');
 });
 
-it('saving a product leaves its page\'s seo fields untouched', function () {
+it('saves edited seo fields from the product admin form onto the paired page', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $this->actingAs($admin);
+
+    $product = Product::factory()->create();
+    Page::create([
+        'type' => 'product', 'product_id' => $product->id, 'user_id' => $admin->id,
+        'title' => ['en' => 'Title'], 'status' => 'active',
+        'seo_title' => 'Old SEO Title',
+    ]);
+
+    Livewire::test(ProductForm::class, ['id' => $product->id])
+        ->set('seo_title', 'New SEO Title')
+        ->call('save');
+
+    $page = Page::where(['type' => 'product', 'product_id' => $product->id])->firstOrFail();
+    expect($page->seo_title)->toBe('New SEO Title');
+});
+
+it('saving a product leaves its page\'s seo fields untouched when the admin didn\'t edit them', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $this->actingAs($admin);
 
@@ -64,7 +86,7 @@ it('saving a product leaves its page\'s seo fields untouched', function () {
     expect($page->seo_title)->toBe('Existing SEO Title');
 });
 
-it('does not expose seo fields on the post admin form', function () {
+it('loads seo fields from the paired page on the post admin form', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $this->actingAs($admin);
 
@@ -78,10 +100,32 @@ it('does not expose seo fields on the post admin form', function () {
     ]);
 
     Livewire::test(PostForm::class, ['id' => $post->id])
-        ->assertSet('pageId', Page::where(['type' => 'post', 'post_id' => $post->id])->value('id'));
+        ->assertSet('pageId', Page::where(['type' => 'post', 'post_id' => $post->id])->value('id'))
+        ->assertSet('seo_title', 'Post Page SEO Title')
+        ->assertSet('seo_description', 'Post Page SEO Description')
+        ->assertSet('og_image', '/post-og.png');
 });
 
-it('saving a post leaves its page\'s seo fields untouched', function () {
+it('saves edited seo fields from the post admin form onto the paired page', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $this->actingAs($admin);
+
+    $post = Post::factory()->create();
+    Page::create([
+        'type' => 'post', 'post_id' => $post->id, 'user_id' => $admin->id,
+        'title' => ['en' => 'Title'], 'status' => 'active',
+        'seo_title' => 'Old Post SEO Title',
+    ]);
+
+    Livewire::test(PostForm::class, ['id' => $post->id])
+        ->set('seo_title', 'New Post SEO Title')
+        ->call('save');
+
+    $page = Page::where(['type' => 'post', 'post_id' => $post->id])->firstOrFail();
+    expect($page->seo_title)->toBe('New Post SEO Title');
+});
+
+it('saving a post leaves its page\'s seo fields untouched when the admin didn\'t edit them', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $this->actingAs($admin);
 

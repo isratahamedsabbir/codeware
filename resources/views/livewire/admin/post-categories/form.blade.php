@@ -23,7 +23,8 @@
         </flux:button>
     @endpush
 
-    <div class="w-full bg-white rounded-[5px] shadow-sm p-6">
+    <div class="w-full space-y-4">
+    <div class="bg-white rounded-[5px] shadow-sm p-6">
 
             <div x-data="{ locale: 'en' }">
 
@@ -100,6 +101,9 @@
             </button>
         </div>
 
+    </div>
+
+    @include('partials.admin-seo-fields')
     </div>
 
     <livewire:admin.media-library.picker-modal key="post-categories-form-picker-modal" />

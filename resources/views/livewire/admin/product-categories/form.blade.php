@@ -25,7 +25,8 @@
 
     <div class="flex gap-5 items-start">
         {{-- ── MAIN ── --}}
-        <div class="flex-1 min-w-0 bg-white rounded-[5px] shadow-sm p-6">
+        <div class="flex-1 min-w-0 space-y-4">
+        <div class="bg-white rounded-[5px] shadow-sm p-6">
 
             <div x-data="{ locale: 'en' }">
 
@@ -83,6 +84,9 @@
                 </div>
 
             </div>
+        </div>
+
+        @include('partials.admin-seo-fields')
         </div>
 
         {{-- ── SIDEBAR ── --}}

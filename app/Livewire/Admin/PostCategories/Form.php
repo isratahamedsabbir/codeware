@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\PostCategories;
 
+use App\Concerns\HasSeoFields;
 use App\Models\Page;
 use App\Models\PostCategory;
 use App\Support\AdminActivity;
@@ -11,6 +12,8 @@ use Livewire\Component;
 
 class Form extends Component
 {
+    use HasSeoFields;
+
     public ?int $categoryId = null;
 
     public ?int $pageId = null;
@@ -52,9 +55,8 @@ class Form extends Component
             $this->description_en = $category->getTranslation('description', 'en', false) ?? '';
             $this->description_bn = $category->getTranslation('description', 'bn', false) ?? '';
 
-            // SEO now lives entirely on the paired Page record, edited via the Page
-            // screen — this form only keeps the Page in sync on title/slug/status.
             $this->pageId = $category->page?->id;
+            $this->hydrateSeoFieldsFromPage($category->page);
 
             $this->checkSlugAvailability();
         }
@@ -74,6 +76,7 @@ class Form extends Component
             $this->slug = $this->autoSlug;
         }
 
+        $this->syncCanonicalSlug();
         $this->checkSlugAvailability();
     }
 
@@ -85,6 +88,7 @@ class Form extends Component
     public function updatedSlug(): void
     {
         $this->slug = Slug::lower($this->slug);
+        $this->syncCanonicalSlug();
         $this->checkSlugAvailability();
     }
 
@@ -135,6 +139,7 @@ class Form extends Component
                 'slug' => $this->slug,
                 'status' => $category->status,
                 'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
+                ...$this->seoPagePayload(),
             ]
         );
         $this->pageId = $page->id;

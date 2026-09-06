@@ -2,16 +2,18 @@
 
 namespace App\Livewire\Admin\Pages;
 
+use App\Concerns\HasSeoFields;
 use App\Models\Page;
 use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\Slug;
-use Illuminate\Support\Str;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 class Form extends Component
 {
+    use HasSeoFields;
+
     public ?int $pageId = null;
 
     /**
@@ -47,60 +49,14 @@ class Form extends Component
      */
     public ?bool $slugAvailable = null;
 
-    #[Validate('nullable|string|max:255')]
-    public string $seo_title = '';
-
-    #[Validate('nullable|string')]
-    public string $seo_description = '';
-
     #[Validate('nullable|string|max:100')]
     public string $template = 'puck';
-
-    public ?string $og_image = null;
-
-    public string $ogImagePickerId = '';
-
-    #[Validate('nullable|string|max:255')]
-    public string $og_title = '';
-
-    #[Validate('nullable|string|max:255')]
-    public string $og_description = '';
-
-    public ?string $twitter_image = null;
-
-    public string $twitterImagePickerId = '';
-
-    #[Validate('nullable|string|max:255')]
-    public string $twitter_title = '';
-
-    #[Validate('nullable|string|max:255')]
-    public string $twitter_description = '';
-
-    public bool $no_index = false;
-
-    public bool $no_follow = false;
-
-    #[Validate('nullable|string|max:255')]
-    public string $canonical_base = '';
-
-    #[Validate('nullable|string|max:255')]
-    public string $canonical_slug = '';
-
-    /**
-     * The last auto-generated canonical_slug value, so we know whether the
-     * admin has manually diverged from it — same "follow until edited" pattern
-     * as autoSlug, but tracking the page's slug instead of the title.
-     */
-    public string $autoCanonicalSlug = '';
 
     /** @var array<int, array{key: string, type: string, value: string}> */
     public array $constant = [];
 
     public function mount(?int $id = null): void
     {
-        $this->ogImagePickerId = 'page-og-image-picker-'.Str::uuid()->toString();
-        $this->twitterImagePickerId = 'page-twitter-image-picker-'.Str::uuid()->toString();
-
         if ($id) {
             $page = Page::findOrFail($id);
             $this->pageId = $id;
@@ -111,27 +67,8 @@ class Form extends Component
             $this->title_en = $page->getTranslation('title', 'en', false) ?? '';
             $this->title_bn = $page->getTranslation('title', 'bn', false) ?? '';
             $this->slug = $page->slug;
-            $this->seo_title = $page->seo_title ?? '';
-            $this->seo_description = $page->seo_description ?? '';
             $this->template = $page->template ?? 'puck';
-            $this->og_image = $page->og_image ?? null;
-            $this->og_title = $page->og_title ?? '';
-            $this->og_description = $page->og_description ?? '';
-            $this->twitter_image = $page->twitter_image ?? null;
-            $this->twitter_title = $page->twitter_title ?? '';
-            $this->twitter_description = $page->twitter_description ?? '';
-            $this->no_index = (bool) $page->no_index;
-            $this->no_follow = (bool) $page->no_follow;
-            $this->canonical_base = $page->canonical_base ?? '';
-            $this->canonical_slug = $page->canonical_slug ?? $page->slug;
-
-            // A never-set (or still-matching) canonical_slug is still following the
-            // page slug — keep it auto-syncing. One saved as something else is a
-            // deliberate override, so leave autoCanonicalSlug unmatchable ('') to
-            // stop future title/slug edits from clobbering it.
-            if ($page->canonical_slug === null || $page->canonical_slug === $page->slug) {
-                $this->autoCanonicalSlug = $this->slug;
-            }
+            $this->hydrateSeoFieldsFromPage($page);
 
             // Older rows were saved with the since-removed single-line "text" type
             // (or no type at all) — fold both into textarea so they still render/edit correctly.
@@ -182,18 +119,6 @@ class Form extends Component
         $this->slug = Slug::lower($this->slug);
         $this->syncCanonicalSlug();
         $this->checkSlugAvailability();
-    }
-
-    /**
-     * Keeps canonical_slug following the page slug the same way slug follows
-     * the title — only while the admin hasn't typed a custom canonical path.
-     */
-    private function syncCanonicalSlug(): void
-    {
-        if ($this->canonical_slug === '' || $this->canonical_slug === $this->autoCanonicalSlug) {
-            $this->autoCanonicalSlug = $this->slug;
-            $this->canonical_slug = $this->autoCanonicalSlug;
-        }
     }
 
     private function checkSlugAvailability(): void
@@ -309,18 +234,7 @@ class Form extends Component
             'title' => array_filter(['en' => $this->title_en, 'bn' => $this->title_bn]),
             'slug' => $this->slug,
             'template' => $this->template ?: 'puck',
-            'og_image' => $this->og_image ?: null,
-            'seo_title' => $this->seo_title ?: null,
-            'seo_description' => $this->seo_description ?: null,
-            'og_title' => $this->og_title ?: null,
-            'og_description' => $this->og_description ?: null,
-            'twitter_image' => $this->twitter_image ?: null,
-            'twitter_title' => $this->twitter_title ?: null,
-            'twitter_description' => $this->twitter_description ?: null,
-            'no_index' => $this->no_index,
-            'no_follow' => $this->no_follow,
-            'canonical_base' => $this->canonical_base ?: null,
-            'canonical_slug' => $this->canonical_slug ?: null,
+            ...$this->seoPagePayload(),
             'constant' => collect($this->constant)->filter(fn ($pair) => filled($pair['key'] ?? null))->values()->all(),
         ];
 
@@ -368,14 +282,6 @@ class Form extends Component
     public function isLinked(): bool
     {
         return $this->type !== 'page';
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    public function canonicalBaseOptions(): array
-    {
-        return json_decode(Setting::get('seo_canonical_urls', '[]') ?: '[]', true) ?: [];
     }
 
     public function render()
