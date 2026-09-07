@@ -46,6 +46,13 @@ class SettingsSeeder extends Seeder
                 'is_public' => true,
             ],
             [
+                'key' => 'copyright_name',
+                'value' => 'Codeware Limited',
+                'type' => 'string',
+                'group' => 'general',
+                'is_public' => true,
+            ],
+            [
                 'key' => 'pagination_per_page',
                 'value' => '10',
                 'type' => 'integer',

@@ -294,7 +294,7 @@
         <footer class="shrink-0 border-t border-zinc-200/70 bg-white/60 backdrop-blur px-4 py-4 md:px-6">
             <div
                 class="max-w-[1600px] w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-medium text-zinc-400">
-                <p>&copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</p>
+                <p>&copy; {{ date('Y') }} {{ \App\Models\Setting::get('copyright_name', 'Codeware Limited') }}. All rights reserved.</p>
                 <p class="flex items-center gap-1.5 text-zinc-400">
                     <flux:icon.cube class="size-3.5" />
                     v{{ config('app.version') }}

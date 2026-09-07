@@ -284,7 +284,7 @@
 
         {{-- Footer --}}
         <p class="auth-footer text-center text-xs font-medium select-none">
-            &copy; {{ date('Y') }} Codeware Limited. All rights reserved.
+            &copy; {{ date('Y') }} {{ \App\Models\Setting::get('copyright_name', 'Codeware Limited') }}. All rights reserved.
         </p>
 
     </div>
