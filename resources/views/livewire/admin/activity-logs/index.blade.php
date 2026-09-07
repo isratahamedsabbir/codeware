@@ -56,6 +56,7 @@
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Details</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">URL</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">IP Address</th>
+                        <th class="px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
@@ -99,10 +100,15 @@
                             <td class="px-4 py-3">
                                 <span class="font-mono text-xs text-zinc-600">{{ $log->ip_address ?? '—' }}</span>
                             </td>
+                            <td class="px-4 py-3">
+                                <x-admin-row-actions :actions="[
+                                    ['wireClick' => 'viewLog(' . $log->id . ')', 'icon' => 'eye', 'label' => 'View details', 'color' => 'primary'],
+                                ]" />
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-16 text-center">
+                            <td colspan="7" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <circle cx="12" cy="12" r="10" />
@@ -121,5 +127,51 @@
     <div class="px-6 py-3">
         {{ $logs->links() }}
     </div>
+
+    {{-- View Details Modal --}}
+    <flux:modal name="view-log-details" class="md:w-[600px]"
+        x-on:open-modal.window="if ($event.detail.name === 'view-log-details') $flux.modal('view-log-details').show()">
+        @if ($viewingLogId)
+            @php $log = \App\Models\AdminActivityLog::with('user')->find($viewingLogId); @endphp
+            @if ($log)
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between border-b border-zinc-100 pb-3">
+                        <flux:heading>{{ ucfirst($log->action) }}</flux:heading>
+                        <flux:modal.close>
+                            <button wire:click="closeLogDetails" class="text-zinc-400 hover:text-zinc-600 transition-colors">
+                                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </flux:modal.close>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div><span class="text-zinc-400">Admin:</span> <span class="text-zinc-900 font-medium">{{ $log->user?->name ?? 'Unknown' }}</span></div>
+                        <div><span class="text-zinc-400">Date:</span> <span class="text-zinc-900">{{ $log->created_at->toDisplay('d M Y, h:i A') }}</span></div>
+                        <div><span class="text-zinc-400">Method:</span> <span class="text-zinc-900 font-mono">{{ $log->method ?? '—' }}</span></div>
+                        <div><span class="text-zinc-400">IP Address:</span> <span class="text-zinc-900 font-mono">{{ $log->ip_address ?? '—' }}</span></div>
+                    </div>
+                    <div class="border-t border-zinc-100 pt-3 space-y-3">
+                        <div>
+                            <span class="text-zinc-400 text-sm">Description:</span>
+                            <p class="text-sm text-zinc-700 leading-relaxed whitespace-pre-wrap mt-1">{{ $log->description ?? 'Page viewed' }}</p>
+                        </div>
+                        @if ($log->url)
+                            <div>
+                                <span class="text-zinc-400 text-sm">URL:</span>
+                                <p class="text-xs font-mono text-zinc-600 break-all mt-1">{{ $log->url }}</p>
+                            </div>
+                        @endif
+                        @if ($log->user_agent)
+                            <div>
+                                <span class="text-zinc-400 text-sm">User Agent:</span>
+                                <p class="text-xs font-mono text-zinc-600 break-all mt-1">{{ $log->user_agent }}</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
+        @endif
+    </flux:modal>
 
 </div>
