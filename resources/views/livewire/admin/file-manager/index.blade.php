@@ -300,7 +300,10 @@
                                 @endif
 
                                 <button wire:dblclick="open(@js($entry['name']))" title="{{ $entry['name'] }}"
-                                    class="w-full flex flex-col items-center gap-1.5 p-3 rounded-lg border border-transparent hover:border-zinc-200 hover:bg-zinc-50 transition-colors text-center">
+                                    @if ($this->canManage)
+                                        x-on:click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleChecked(@js($entry['name'])) }"
+                                    @endif
+                                    class="w-full flex flex-col items-center gap-1.5 p-3 rounded-lg border transition-colors text-center {{ in_array($entry['name'], $checked, true) ? 'border-indigo-300 bg-indigo-50/70 hover:bg-indigo-50' : 'border-transparent hover:border-zinc-200 hover:bg-zinc-50' }}">
                                     <div class="w-9 h-9 flex items-center justify-center shrink-0">
                                         @if ($entry['is_dir'])
                                             <svg class="w-8 h-8 text-amber-400" viewBox="0 0 24 24" fill="currentColor">

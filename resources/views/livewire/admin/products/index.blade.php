@@ -176,113 +176,14 @@
 
                             {{-- Actions --}}
                             <td class="px-4 py-2">
-                                <div class="flex items-center justify-end gap-1.5">
-
-                                    {{-- Edit --}}
-                                    <div class="relative group">
-                                        <a href="{{ route('admin.products.edit', $product->id) }}" wire:navigate
-                                            aria-label="Edit product"
-                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-primary text-primary hover:bg-primary hover:text-white hover:-translate-y-px"
-                                            style="box-shadow:none"
-                                            onmouseover="this.style.boxShadow='0 3px 8px rgba(99,102,241,.35)'"
-                                            onmouseout="this.style.boxShadow='none'">
-                                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2">
-                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                            </svg>
-                                        </a>
-                                        <span
-                                            class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[11px] font-medium bg-primary text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                            Edit
-                                            <span
-                                                class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-primary"></span>
-                                        </span>
-                                    </div>
-
-                                    {{-- Page (SEO) --}}
-                                    <div class="relative group">
-                                        @if ($product->page)
-                                            <a href="{{ route('admin.pages.edit', $product->page->id) }}" wire:navigate
-                                                aria-label="Edit page"
-                                                class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-secondary text-secondary hover:bg-secondary hover:text-white hover:-translate-y-px"
-                                                style="box-shadow:none"
-                                                onmouseover="this.style.boxShadow='0 3px 8px rgba(139,92,246,.35)'"
-                                                onmouseout="this.style.boxShadow='none'">
-                                                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="2">
-                                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                                                    <polyline points="14 2 14 8 20 8" />
-                                                </svg>
-                                            </a>
-                                        @else
-                                            <span aria-label="No page yet"
-                                                class="inline-flex items-center justify-center w-7 h-7 rounded-lg border bg-zinc-50 text-zinc-300 cursor-not-allowed">
-                                                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="2">
-                                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                                                    <polyline points="14 2 14 8 20 8" />
-                                                </svg>
-                                            </span>
-                                        @endif
-                                        <span
-                                            class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[11px] font-medium bg-secondary text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                            Page
-                                            <span
-                                                class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-secondary"></span>
-                                        </span>
-                                    </div>
-
-                                    {{-- Content / Layout --}}
-                                    <div class="relative group">
-                                        <button wire:click="openPuckEditor({{ $product->id }})"
-                                            aria-label="Edit layout"
-                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-secondary text-secondary hover:bg-secondary hover:text-white hover:-translate-y-px cursor-pointer"
-                                            style="box-shadow:none"
-                                            onmouseover="this.style.boxShadow='0 3px 8px rgba(139,92,246,.35)'"
-                                            onmouseout="this.style.boxShadow='none'">
-                                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2">
-                                                <rect x="3" y="3" width="7" height="7" />
-                                                <rect x="14" y="3" width="7" height="7" />
-                                                <rect x="14" y="14" width="7" height="7" />
-                                                <rect x="3" y="14" width="7" height="7" />
-                                            </svg>
-                                        </button>
-                                        <span
-                                            class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[11px] font-medium bg-secondary text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                            Layout
-                                            <span
-                                                class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-secondary"></span>
-                                        </span>
-                                    </div>
-
-                                    {{-- Delete --}}
-                                    <div class="relative group">
-                                        <button wire:click="confirmDelete({{ $product->id }})"
-                                            aria-label="Delete product"
-                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white hover:-translate-y-px cursor-pointer"
-                                            style="box-shadow:none"
-                                            onmouseover="this.style.boxShadow='0 3px 8px rgba(225,29,72,.35)'"
-                                            onmouseout="this.style.boxShadow='none'">
-                                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2">
-                                                <polyline points="3 6 5 6 21 6" />
-                                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                                                <path d="M10 11v6" />
-                                                <path d="M14 11v6" />
-                                                <path d="M9 6V4h6v2" />
-                                            </svg>
-                                        </button>
-                                        <span
-                                            class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[11px] font-medium bg-rose-500 text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                            Delete
-                                            <span
-                                                class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-rose-500"></span>
-                                        </span>
-                                    </div>
-
-                                </div>
+                                <x-admin-row-actions :actions="[
+                                    ['href' => route('admin.products.edit', $product->id), 'icon' => 'pencil', 'label' => 'Edit', 'color' => 'primary'],
+                                    $product->page
+                                        ? ['href' => route('admin.pages.edit', $product->page->id), 'icon' => 'document', 'label' => 'Page', 'color' => 'secondary']
+                                        : ['icon' => 'document', 'label' => 'Page', 'color' => 'secondary', 'disabled' => true],
+                                    ['wireClick' => 'openPuckEditor(' . $product->id . ')', 'icon' => 'squares', 'label' => 'Layout', 'color' => 'secondary'],
+                                    ['wireClick' => 'confirmDelete(' . $product->id . ')', 'icon' => 'trash', 'label' => 'Delete', 'color' => 'rose-500'],
+                                ]" />
                             </td>
 
                         </tr>

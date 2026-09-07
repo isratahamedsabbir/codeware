@@ -338,6 +338,19 @@
                         <flux:input wire:model="settings.floating_button_link" placeholder="https://example.com" />
                     </flux:field>
                 </x-admin-section-card>
+
+                {{-- Table actions display --}}
+                <x-admin-section-card header-border="border-zinc-100" icon="ellipsis-horizontal" title="Table Actions" class="max-w-md"
+                    description="How action buttons (Edit, Delete, ...) appear on admin list tables.">
+                    <flux:field>
+                        <flux:label>Display style</flux:label>
+                        <select wire:model="settings.admin_actions_display"
+                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                            <option value="inline">Inline icon buttons</option>
+                            <option value="dropdown">Three-dot dropdown menu</option>
+                        </select>
+                    </flux:field>
+                </x-admin-section-card>
             </div>
         </div>
 

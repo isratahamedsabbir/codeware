@@ -130,92 +130,12 @@
 
                             {{-- Actions --}}
                             <td class="px-4 py-2">
-                                <div class="flex items-center justify-end gap-1.5">
-
-                                    {{-- Make default --}}
-                                    @unless ($language->is_default)
-                                        <div class="relative group">
-                                            <button wire:click="makeDefault({{ $language->id }})"
-                                                aria-label="{{ __('Set as default') }}"
-                                                class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-white hover:-translate-y-px"
-                                                style="box-shadow:none"
-                                                onmouseover="this.style.boxShadow='0 3px 8px rgba(245,158,11,.35)'"
-                                                onmouseout="this.style.boxShadow='none'">
-                                                <flux:icon.star class="w-3.5 h-3.5" />
-                                            </button>
-                                            <span class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[11px] font-medium bg-amber-500 text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                                {{ __('Set as default') }}
-                                                <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-amber-500"></span>
-                                            </span>
-                                        </div>
-                                    @endunless
-
-                                    {{-- Toggle active --}}
-                                    <div class="relative group">
-                                        <button wire:click="toggleActive({{ $language->id }})"
-                                            aria-label="{{ $language->is_active ? __('Deactivate') : __('Activate') }}"
-                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-zinc-400 text-zinc-500 hover:bg-zinc-600 hover:text-white hover:border-zinc-600 hover:-translate-y-px"
-                                            style="box-shadow:none"
-                                            onmouseover="this.style.boxShadow='0 3px 8px rgba(82,82,91,.35)'"
-                                            onmouseout="this.style.boxShadow='none'">
-                                            @if ($language->is_active)
-                                                <flux:icon.eye-slash class="w-3.5 h-3.5" />
-                                            @else
-                                                <flux:icon.eye class="w-3.5 h-3.5" />
-                                            @endif
-                                        </button>
-                                        <span class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[11px] font-medium bg-zinc-600 text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                            {{ $language->is_active ? __('Deactivate') : __('Activate') }}
-                                            <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-600"></span>
-                                        </span>
-                                    </div>
-
-                                    {{-- Edit --}}
-                                    <div class="relative group">
-                                        <a href="{{ route('admin.languages.edit', $language->id) }}" wire:navigate
-                                            aria-label="{{ __('Edit language') }}"
-                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-primary text-primary hover:bg-primary hover:text-white hover:-translate-y-px"
-                                            style="box-shadow:none"
-                                            onmouseover="this.style.boxShadow='0 3px 8px rgba(99,102,241,.35)'"
-                                            onmouseout="this.style.boxShadow='none'">
-                                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2">
-                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                            </svg>
-                                        </a>
-                                        <span class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[11px] font-medium bg-primary text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                            {{ __('Edit') }}
-                                            <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-primary"></span>
-                                        </span>
-                                    </div>
-
-                                    {{-- Delete --}}
-                                    @unless ($language->is_default)
-                                        <div class="relative group">
-                                            <button wire:click="confirmDelete({{ $language->id }})"
-                                                aria-label="{{ __('Delete language') }}"
-                                                class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white hover:-translate-y-px"
-                                                style="box-shadow:none"
-                                                onmouseover="this.style.boxShadow='0 3px 8px rgba(225,29,72,.35)'"
-                                                onmouseout="this.style.boxShadow='none'">
-                                                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="2">
-                                                    <polyline points="3 6 5 6 21 6" />
-                                                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                                                    <path d="M10 11v6" />
-                                                    <path d="M14 11v6" />
-                                                    <path d="M9 6V4h6v2" />
-                                                </svg>
-                                            </button>
-                                            <span class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[11px] font-medium bg-rose-500 text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                                {{ __('Delete') }}
-                                                <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-rose-500"></span>
-                                            </span>
-                                        </div>
-                                    @endunless
-
-                                </div>
+                                <x-admin-row-actions :actions="[
+                                    ['wireClick' => 'makeDefault(' . $language->id . ')', 'icon' => 'star', 'label' => __('Set as default'), 'color' => 'amber-500', 'visible' => ! $language->is_default],
+                                    ['wireClick' => 'toggleActive(' . $language->id . ')', 'icon' => $language->is_active ? 'eye-slash' : 'eye', 'label' => $language->is_active ? __('Deactivate') : __('Activate'), 'color' => 'zinc-500'],
+                                    ['href' => route('admin.languages.edit', $language->id), 'icon' => 'pencil', 'label' => __('Edit'), 'color' => 'primary'],
+                                    ['wireClick' => 'confirmDelete(' . $language->id . ')', 'icon' => 'trash', 'label' => __('Delete'), 'color' => 'rose-500', 'visible' => ! $language->is_default],
+                                ]" />
                             </td>
 
                         </tr>

@@ -53,19 +53,19 @@ $scrollIntoViewJsSnippet = ($scrollTo !== false)
                 </div>
 
                 <div>
-                    <span class="inline-flex rtl:flex-row-reverse">
+                    <span class="inline-flex items-center gap-1.5 rtl:flex-row-reverse">
                         <span>
                             {{-- Previous Page Link --}}
                             @if ($paginator->onFirstPage())
                                 <span aria-disabled="true" aria-label="{{ __('pagination.previous') }}">
-                                    <span class="flex h-8 w-8 items-center justify-center text-zinc-300 bg-white border border-zinc-200 cursor-not-allowed rounded-l dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-600" aria-hidden="true">
+                                    <span class="flex h-8 w-8 items-center justify-center text-zinc-300 bg-white border border-zinc-200 cursor-not-allowed rounded-md dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-600" aria-hidden="true">
                                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
                                         </svg>
                                     </span>
                                 </span>
                             @else
-                                <button type="button" wire:click="previousPage('{{ $paginator->getPageName() }}')" x-on:click="{{ $scrollIntoViewJsSnippet }}" dusk="previousPage{{ $paginator->getPageName() == 'page' ? '' : '.' . $paginator->getPageName() }}.after" class="flex h-8 w-8 items-center justify-center text-zinc-500 bg-white border border-zinc-200 rounded-l hover:border-zinc-300 hover:text-zinc-700 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-colors dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-200" aria-label="{{ __('pagination.previous') }}">
+                                <button type="button" wire:click="previousPage('{{ $paginator->getPageName() }}')" x-on:click="{{ $scrollIntoViewJsSnippet }}" dusk="previousPage{{ $paginator->getPageName() == 'page' ? '' : '.' . $paginator->getPageName() }}.after" class="flex h-8 w-8 items-center justify-center text-zinc-500 bg-white border border-zinc-200 rounded-md hover:border-zinc-300 hover:text-zinc-700 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-colors dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-200" aria-label="{{ __('pagination.previous') }}">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
                                     </svg>
@@ -78,7 +78,7 @@ $scrollIntoViewJsSnippet = ($scrollTo !== false)
                             {{-- "Three Dots" Separator --}}
                             @if (is_string($element))
                                 <span aria-disabled="true">
-                                    <span class="flex h-8 min-w-8 -ml-px items-center justify-center px-2 text-sm font-medium text-zinc-400 bg-white border border-zinc-200 cursor-default dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-500">{{ $element }}</span>
+                                    <span class="flex h-8 min-w-8 items-center justify-center px-2 text-sm font-medium text-zinc-400 bg-white border border-zinc-200 rounded-md cursor-default dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-500">{{ $element }}</span>
                                 </span>
                             @endif
 
@@ -88,10 +88,10 @@ $scrollIntoViewJsSnippet = ($scrollTo !== false)
                                     <span wire:key="paginator-{{ $paginator->getPageName() }}-page{{ $page }}">
                                         @if ($page == $paginator->currentPage())
                                             <span aria-current="page">
-                                                <span class="flex h-8 min-w-8 -ml-px items-center justify-center px-2 text-sm font-medium text-white bg-primary border border-primary cursor-default">{{ $page }}</span>
+                                                <span class="flex h-8 min-w-8 items-center justify-center px-2 text-sm font-medium text-white bg-primary border border-primary rounded-md cursor-default">{{ $page }}</span>
                                             </span>
                                         @else
-                                            <button type="button" wire:click="gotoPage({{ $page }}, '{{ $paginator->getPageName() }}')" x-on:click="{{ $scrollIntoViewJsSnippet }}" class="flex h-8 min-w-8 -ml-px items-center justify-center px-2 text-sm font-medium text-zinc-600 bg-white border border-zinc-200 hover:border-zinc-300 hover:text-zinc-800 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-colors dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:text-white" aria-label="{{ __('Go to page :page', ['page' => $page]) }}">
+                                            <button type="button" wire:click="gotoPage({{ $page }}, '{{ $paginator->getPageName() }}')" x-on:click="{{ $scrollIntoViewJsSnippet }}" class="flex h-8 min-w-8 items-center justify-center px-2 text-sm font-medium text-zinc-600 bg-white border border-zinc-200 rounded-md hover:border-zinc-300 hover:text-zinc-800 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-colors dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:text-white" aria-label="{{ __('Go to page :page', ['page' => $page]) }}">
                                                 {{ $page }}
                                             </button>
                                         @endif
@@ -103,14 +103,14 @@ $scrollIntoViewJsSnippet = ($scrollTo !== false)
                         <span>
                             {{-- Next Page Link --}}
                             @if ($paginator->hasMorePages())
-                                <button type="button" wire:click="nextPage('{{ $paginator->getPageName() }}')" x-on:click="{{ $scrollIntoViewJsSnippet }}" dusk="nextPage{{ $paginator->getPageName() == 'page' ? '' : '.' . $paginator->getPageName() }}.after" class="flex h-8 w-8 -ml-px items-center justify-center text-zinc-500 bg-white border border-zinc-200 rounded-r hover:border-zinc-300 hover:text-zinc-700 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-colors dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-200" aria-label="{{ __('pagination.next') }}">
+                                <button type="button" wire:click="nextPage('{{ $paginator->getPageName() }}')" x-on:click="{{ $scrollIntoViewJsSnippet }}" dusk="nextPage{{ $paginator->getPageName() == 'page' ? '' : '.' . $paginator->getPageName() }}.after" class="flex h-8 w-8 items-center justify-center text-zinc-500 bg-white border border-zinc-200 rounded-md hover:border-zinc-300 hover:text-zinc-700 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-colors dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-200" aria-label="{{ __('pagination.next') }}">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
                                     </svg>
                                 </button>
                             @else
                                 <span aria-disabled="true" aria-label="{{ __('pagination.next') }}">
-                                    <span class="flex h-8 w-8 -ml-px items-center justify-center text-zinc-300 bg-white border border-zinc-200 cursor-not-allowed rounded-r dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-600" aria-hidden="true">
+                                    <span class="flex h-8 w-8 items-center justify-center text-zinc-300 bg-white border border-zinc-200 cursor-not-allowed rounded-md dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-600" aria-hidden="true">
                                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
                                         </svg>

@@ -147,6 +147,11 @@ class SettingsSeeder extends Seeder
             ['key' => 'floating_button_enabled', 'value' => '0', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
             ['key' => 'floating_button_action',  'value' => 'top', 'type' => 'string', 'group' => 'other', 'is_public' => false],
             ['key' => 'floating_button_link',    'value' => '', 'type' => 'string', 'group' => 'other', 'is_public' => false],
+
+            // ── Table actions display (admin panel) ── how row action buttons
+            // (Edit, Delete, ...) render on admin list tables — inline icon
+            // buttons, or collapsed behind a single three-dot dropdown.
+            ['key' => 'admin_actions_display', 'value' => 'inline', 'type' => 'select', 'group' => 'other', 'is_public' => false],
         ];
 
         foreach ($settings as $setting) {
