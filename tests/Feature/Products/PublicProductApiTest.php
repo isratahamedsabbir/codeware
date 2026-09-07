@@ -44,6 +44,24 @@ it('product categories listing includes puck_data nested under page', function (
         ->assertJsonPath('data.0.page.puck_data', $puckData);
 });
 
+it('returns a single product category by slug with page data', function () {
+    $puckData = ['root' => ['props' => []], 'content' => [['type' => 'CategoryHero']]];
+    $category = ProductCategory::factory()->create(['name' => ['en' => 'Fertilizers', 'bn' => '']]);
+    $page = pairPageFor($category, 'product_category', 'fertilizers', $this->admin->id);
+    $page->update(['puck_data' => $puckData]);
+
+    $this->getJson('/api/v1/product-categories/fertilizers')
+        ->assertOk()
+        ->assertJsonPath('data.slug', 'fertilizers')
+        ->assertJsonPath('data.name', 'Fertilizers')
+        ->assertJsonPath('data.page.puck_data', $puckData)
+        ->assertJsonStructure(['data' => ['id', 'name', 'slug', 'icon', 'sort_order', 'page']]);
+});
+
+it('returns 404 for an unknown product category slug', function () {
+    $this->getJson('/api/v1/product-categories/does-not-exist')->assertNotFound();
+});
+
 it('returns only active products on public listing', function () {
     Product::factory()->published()->create(['name' => ['en' => 'Visible', 'bn' => '']]);
     Product::factory()->draft()->create(['name' => ['en' => 'Hidden', 'bn' => '']]);

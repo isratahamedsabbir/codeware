@@ -61,6 +61,7 @@ Route::get('/settings/public', [SettingsController::class, 'public'])->name('set
 Route::get('/layout', [LayoutController::class, 'show'])->name('layout.show');
 
 Route::get('/product-categories', [ProductCategoryController::class, 'index'])->name('product-categories.index');
+Route::get('/product-categories/{slug}', [ProductCategoryController::class, 'show'])->name('product-categories.show');
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
 

@@ -24,15 +24,33 @@ class ProductCategoryController extends Controller
         $categories = ProductCategory::with('page')->orderBy('sort_order')->get();
 
         return response()->json([
-            'data' => $categories->map(fn ($cat) => [
-                'id' => $cat->id,
-                'name' => $cat->getTranslation('name', $locale, useFallbackLocale: true),
-                'slug' => $cat->slug,
-                'icon' => $cat->icon,
-                'sort_order' => $cat->sort_order,
-                'page' => $this->formatPage($cat->page),
-            ]),
+            'data' => $categories->map(fn ($cat) => $this->formatCategory($cat, $locale)),
         ]);
+    }
+
+    public function show(Request $request, string $slug): JsonResponse
+    {
+        $locale = $this->resolveLocale($request);
+
+        $category = ProductCategory::with('page')
+            ->whereHas('page', fn ($q) => $q->where('slug', $slug))
+            ->firstOrFail();
+
+        return response()->json([
+            'data' => $this->formatCategory($category, $locale),
+        ]);
+    }
+
+    private function formatCategory(ProductCategory $category, string $locale): array
+    {
+        return [
+            'id' => $category->id,
+            'name' => $category->getTranslation('name', $locale, useFallbackLocale: true),
+            'slug' => $category->slug,
+            'icon' => $category->icon,
+            'sort_order' => $category->sort_order,
+            'page' => $this->formatPage($category->page),
+        ];
     }
 
     private function formatPage(?Page $page): ?array
