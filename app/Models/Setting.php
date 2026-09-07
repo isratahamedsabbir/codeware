@@ -32,20 +32,6 @@ class Setting extends Model
         Cache::forever('settings:cache-version', self::cacheVersion() + 1);
     }
 
-    /**
-     * All settings exposed to the public API (is_public = true), as key => value.
-     * Cached like an individual Setting::get() key — busted by any Setting::set()
-     * call, since that bumps the shared cache version.
-     *
-     * @return array<string, mixed>
-     */
-    public static function publicMap(): array
-    {
-        return Cache::rememberForever(self::cacheKey('__public'), function () {
-            return static::where('is_public', true)->get()->pluck('value', 'key')->all();
-        });
-    }
-
     private static function cacheKey(string $key): string
     {
         return 'setting:v'.self::cacheVersion().":{$key}";
