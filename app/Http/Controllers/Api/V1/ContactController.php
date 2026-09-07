@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Mail\TemplateDrivenMail;
 use App\Models\Contact;
+use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -88,7 +89,7 @@ class ContactController extends Controller
             ->map(fn ($value, $label) => '<strong>'.e($label).':</strong> '.nl2br(e((string) $value)))
             ->implode('<br>');
 
-        Mail::to('contact@idesk360.com')->send(new TemplateDrivenMail(
+        Mail::to(Setting::get('contact_email') ?: 'contact@idesk360.com')->send(new TemplateDrivenMail(
             $data['subject'].' - '.$data['full_name'],
             $body,
             $data['view_name'] ?? 'emails.template-driven',

@@ -1,7 +1,37 @@
 <?php
 
 use App\Mail\TemplateDrivenMail;
+use App\Models\Setting;
 use Illuminate\Support\Facades\Mail;
+
+it('falls back to the default support email when contact_email is not configured', function () {
+    Mail::fake();
+
+    $this->postJson('/api/v1/contacts', [
+        'full_name' => 'John Doe',
+        'phone_number' => '+8801712345678',
+        'email' => 'john@example.com',
+        'subject' => 'Product Inquiry',
+        'message' => 'I would like to know more about your products.',
+    ])->assertCreated();
+
+    Mail::assertSent(TemplateDrivenMail::class, fn (TemplateDrivenMail $mail) => $mail->hasTo('contact@idesk360.com'));
+});
+
+it('sends contact form submissions to the configured contact_email setting', function () {
+    Mail::fake();
+    Setting::set('contact_email', 'support@codeware.test');
+
+    $this->postJson('/api/v1/contacts', [
+        'full_name' => 'John Doe',
+        'phone_number' => '+8801712345678',
+        'email' => 'john@example.com',
+        'subject' => 'Product Inquiry',
+        'message' => 'I would like to know more about your products.',
+    ])->assertCreated();
+
+    Mail::assertSent(TemplateDrivenMail::class, fn (TemplateDrivenMail $mail) => $mail->hasTo('support@codeware.test'));
+});
 
 it('submits a contact form successfully', function () {
     Mail::fake();
