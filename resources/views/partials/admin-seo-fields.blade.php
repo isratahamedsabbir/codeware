@@ -27,7 +27,7 @@
         {{-- Meta tags --}}
         <div class="lg:col-span-2 min-w-0 border-t border-zinc-100 pt-5">
             <flux:heading size="sm" class="mb-3">Meta Tags</flux:heading>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-7 gap-y-4">
+            <div class="space-y-4">
                 <flux:field>
                     <flux:label>Meta Title</flux:label>
                     <flux:input wire:model="seo_title" placeholder="SEO-optimized title" />
