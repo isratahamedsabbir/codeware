@@ -1,10 +1,10 @@
-<div>
-    <div class="mb-3">
+<div class="flex flex-col h-full">
+    <div class="mb-3 shrink-0">
         @include('partials.admin-breadcrumbs')
     </div>
 
     <div
-        class="flex flex-col md:flex-row h-full min-h-100 md:min-h-130 gap-4"
+        class="flex-1 min-h-0 flex flex-col md:flex-row gap-4"
         x-data="{
         authId: {{ auth()->id() }},
         activeId: @entangle('conversationId'),
