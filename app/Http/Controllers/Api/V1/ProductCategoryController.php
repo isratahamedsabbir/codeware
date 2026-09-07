@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\CmsSection;
 use App\Models\Page;
 use App\Models\ProductCategory;
 use Illuminate\Http\JsonResponse;
@@ -37,13 +38,13 @@ class ProductCategoryController extends Controller
             ->firstOrFail();
 
         return response()->json([
-            'data' => $this->formatCategory($category, $locale),
+            'data' => $this->formatCategory($category, $locale, withCms: true),
         ]);
     }
 
-    private function formatCategory(ProductCategory $category, string $locale): array
+    private function formatCategory(ProductCategory $category, string $locale, bool $withCms = false): array
     {
-        return [
+        $data = [
             'id' => $category->id,
             'name' => $category->getTranslation('name', $locale, useFallbackLocale: true),
             'slug' => $category->slug,
@@ -51,6 +52,30 @@ class ProductCategoryController extends Controller
             'sort_order' => $category->sort_order,
             'page' => $this->formatPage($category->page),
         ];
+
+        if ($withCms) {
+            $data['cms'] = $this->formatCms($category->page);
+        }
+
+        return $data;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function formatCms(?Page $page): array
+    {
+        if (! $page) {
+            return [];
+        }
+
+        return CmsSection::cachedForPage($page->id)->map(fn (CmsSection $cms) => [
+            'id' => $cms->id,
+            'page_id' => $cms->page_id,
+            'name' => $cms->name,
+            'cards' => $cms->localizedCards(),
+            'constant' => $cms->constantMap(),
+        ])->values()->all();
     }
 
     private function formatPage(?Page $page): ?array
@@ -73,6 +98,7 @@ class ProductCategoryController extends Controller
                 'no_follow' => $page->no_follow,
             ],
             'puck_data' => $page->puck_data,
+            'constant' => $page->constantMap(),
         ];
     }
 }

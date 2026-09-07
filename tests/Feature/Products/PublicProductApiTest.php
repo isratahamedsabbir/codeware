@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\CmsSection;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductCategory;
@@ -59,7 +60,39 @@ it('returns a single product category by slug with page data', function () {
         ->assertJsonStructure(['data' => ['id', 'name', 'slug', 'icon', 'sort_order', 'page' => [
             'meta_data' => ['seo_title', 'seo_description', 'og_title', 'og_description', 'og_image', 'twitter_title', 'twitter_description', 'twitter_image', 'no_index', 'no_follow'],
             'puck_data',
+            'constant',
         ]]]);
+});
+
+it('includes the paired page\'s own constant map inside page.constant', function () {
+    $category = ProductCategory::factory()->create();
+    $page = pairPageFor($category, 'product_category', 'constant-category', $this->admin->id);
+    $page->update(['constant' => [['key' => 'badge', 'value' => 'New']]]);
+
+    $this->getJson('/api/v1/product-categories/constant-category')
+        ->assertOk()
+        ->assertJsonPath('data.page.constant.badge', 'New');
+});
+
+it('includes the page\'s cms sections on a single product category, but not on the listing', function () {
+    $category = ProductCategory::factory()->create();
+    $page = pairPageFor($category, 'product_category', 'cms-category', $this->admin->id);
+    CmsSection::factory()->create([
+        'page_id' => $page->id, 'name' => 'hero', 'status' => 'active',
+        'cards' => [['image' => '/hero.jpg', 'title' => 'Hero', 'description' => 'Section']],
+        'constant' => [['key' => 'note', 'value' => 'Hello']],
+    ]);
+
+    $this->getJson('/api/v1/product-categories/cms-category')
+        ->assertOk()
+        ->assertJsonCount(1, 'data.cms')
+        ->assertJsonPath('data.cms.0.name', 'hero')
+        ->assertJsonPath('data.cms.0.cards.0.title', 'Hero')
+        ->assertJsonPath('data.cms.0.constant.note', 'Hello');
+
+    $this->getJson('/api/v1/product-categories')
+        ->assertOk()
+        ->assertJsonMissingPath('data.0.cms');
 });
 
 it('returns 404 for an unknown product category slug', function () {
@@ -144,6 +177,26 @@ it('related_products excludes current product', function () {
 
     $ids = collect($response->json('data.related_products'))->pluck('id');
     expect($ids)->not->toContain($product->id);
+});
+
+it('includes the paired page\'s constant map and cms sections on a single product', function () {
+    $product = Product::factory()->published()->create();
+    $page = pairPageFor($product, 'product', 'cms-product', $this->admin->id);
+    $page->update(['constant' => [['key' => 'warranty', 'value' => '1 year']]]);
+    CmsSection::factory()->create([
+        'page_id' => $page->id, 'name' => 'specs', 'status' => 'active',
+        'constant' => [['key' => 'weight', 'value' => '2kg']],
+    ]);
+
+    $this->getJson("/api/v1/products/{$product->slug}")
+        ->assertOk()
+        ->assertJsonPath('data.page.constant.warranty', '1 year')
+        ->assertJsonPath('data.cms.0.name', 'specs')
+        ->assertJsonPath('data.cms.0.constant.weight', '2kg');
+
+    $this->getJson('/api/v1/products')
+        ->assertOk()
+        ->assertJsonMissingPath('data.0.cms');
 });
 
 it('returns 404 for inactive product slug on public endpoint', function () {

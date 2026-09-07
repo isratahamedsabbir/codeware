@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\CmsSection;
 use App\Models\Page;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -65,6 +66,13 @@ class PageController extends Controller
         if ($withContent) {
             $data['content'] = $page->getTranslation('content', $locale, useFallbackLocale: true);
             $data['constant'] = $page->constantMap();
+            $data['cms'] = CmsSection::cachedForPage($page->id)->map(fn (CmsSection $cms) => [
+                'id' => $cms->id,
+                'page_id' => $cms->page_id,
+                'name' => $cms->name,
+                'cards' => $cms->localizedCards(),
+                'constant' => $cms->constantMap(),
+            ])->values()->all();
         }
 
         return $data;

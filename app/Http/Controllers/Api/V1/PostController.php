@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\CmsSection;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\Setting;
@@ -80,6 +81,7 @@ class PostController extends Controller
 
         if ($withContent) {
             $data['content'] = $post->getTranslation('content', $locale, useFallbackLocale: true);
+            $data['cms'] = $this->formatCms($post->page);
         }
 
         return $data;
@@ -105,6 +107,25 @@ class PostController extends Controller
                 'no_follow' => $page->no_follow,
             ],
             'puck_data' => $page->puck_data,
+            'constant' => $page->constantMap(),
         ];
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function formatCms(?Page $page): array
+    {
+        if (! $page) {
+            return [];
+        }
+
+        return CmsSection::cachedForPage($page->id)->map(fn (CmsSection $cms) => [
+            'id' => $cms->id,
+            'page_id' => $cms->page_id,
+            'name' => $cms->name,
+            'cards' => $cms->localizedCards(),
+            'constant' => $cms->constantMap(),
+        ])->values()->all();
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\CmsSection;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\PostCategory;
@@ -99,6 +100,24 @@ it('includes puck_data in both the pages listing and a single page', function ()
     $this->getJson("/api/v1/pages/{$page->slug}")
         ->assertOk()
         ->assertJsonPath('data.puck_data', $puckData);
+});
+
+it('includes the page\'s cms sections on a single page, but not on the listing', function () {
+    $page = Page::factory()->published()->create(['constant' => [['key' => 'note', 'value' => 'Hello']]]);
+    CmsSection::factory()->create([
+        'page_id' => $page->id, 'name' => 'hero', 'status' => 'active',
+        'constant' => [['key' => 'cta', 'value' => 'Sign up']],
+    ]);
+
+    $this->getJson("/api/v1/pages/{$page->slug}")
+        ->assertOk()
+        ->assertJsonPath('data.constant.note', 'Hello')
+        ->assertJsonPath('data.cms.0.name', 'hero')
+        ->assertJsonPath('data.cms.0.constant.cta', 'Sign up');
+
+    $this->getJson('/api/v1/pages')
+        ->assertOk()
+        ->assertJsonMissingPath('data.0.cms');
 });
 
 it('returns public settings grouped by category', function () {

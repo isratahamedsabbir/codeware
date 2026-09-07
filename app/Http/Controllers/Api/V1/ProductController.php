@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\CmsSection;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\Setting;
@@ -97,6 +98,7 @@ class ProductController extends Controller
                 'sort_order' => $m->pivot->sort_order,
             ])->values();
             $data['related_products'] = $related->map(fn ($p) => $this->formatProduct($p, $locale))->values();
+            $data['cms'] = $this->formatCms($product->page);
         }
 
         return $data;
@@ -122,6 +124,25 @@ class ProductController extends Controller
                 'no_follow' => $page->no_follow,
             ],
             'puck_data' => $page->puck_data,
+            'constant' => $page->constantMap(),
         ];
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function formatCms(?Page $page): array
+    {
+        if (! $page) {
+            return [];
+        }
+
+        return CmsSection::cachedForPage($page->id)->map(fn (CmsSection $cms) => [
+            'id' => $cms->id,
+            'page_id' => $cms->page_id,
+            'name' => $cms->name,
+            'cards' => $cms->localizedCards(),
+            'constant' => $cms->constantMap(),
+        ])->values()->all();
     }
 }
