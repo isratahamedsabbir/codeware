@@ -137,6 +137,12 @@ class SettingsSeeder extends Seeder
             // ── Editor ──
             ['key' => 'puck_session_minutes',    'value' => '30', 'type' => 'integer', 'group' => 'editor', 'is_public' => false],
 
+            // ── Custom Code ── raw HTML/JS injected into <head> / before </body> by the
+            // frontend (e.g. Google Analytics, Facebook Pixel) — public since the
+            // frontend needs the raw markup, not just a flag.
+            ['key' => 'custom_head_code',         'value' => '', 'type' => 'textarea', 'group' => 'custom-code', 'is_public' => true],
+            ['key' => 'custom_body_code',         'value' => '', 'type' => 'textarea', 'group' => 'custom-code', 'is_public' => true],
+
             // ── Floating button (admin panel) ──
             ['key' => 'floating_button_enabled', 'value' => '0', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
             ['key' => 'floating_button_action',  'value' => 'top', 'type' => 'string', 'group' => 'other', 'is_public' => false],

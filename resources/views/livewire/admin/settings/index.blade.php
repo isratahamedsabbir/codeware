@@ -24,6 +24,9 @@
             <button type="button" @click="tab = 'other'"
                 :class="tab==='other'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="mx-4 rounded-none! py-3 text-sm -mb-px">Other</button>
+            <button type="button" @click="tab = 'custom-code'"
+                :class="tab==='custom-code'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
+                class="mx-4 rounded-none! py-3 text-sm -mb-px">Custom Code</button>
             <button type="button" @click="tab = 'constant'"
                 :class="tab==='constant'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="mx-4 rounded-none! py-3 text-sm -mb-px">Constant</button>
@@ -330,6 +333,30 @@
                     <flux:field x-show="$wire.settings.floating_button_action === 'link'">
                         <flux:label>Link URL</flux:label>
                         <flux:input wire:model="settings.floating_button_link" placeholder="https://example.com" />
+                    </flux:field>
+                </x-admin-section-card>
+            </div>
+        </div>
+
+        {{-- Custom Code tab --}}
+        <div x-show="tab === 'custom-code'">
+            <div class="max-w-[1600px] space-y-5">
+                <div class="max-w-2xl rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm dark:bg-amber-950 dark:border-amber-800 dark:text-amber-300">
+                    <strong>{{ __('Careful') }}:</strong>
+                    {{ __('This code runs as-is on every visitor\'s browser (e.g. analytics or pixel scripts). Only paste code from sources you trust.') }}
+                </div>
+
+                <x-admin-section-card header-border="border-zinc-100" icon="code-bracket" title="Head Code" class="max-w-2xl"
+                    description="Injected into <head>, before it closes — meta tags, verification tags, analytics.">
+                    <flux:field>
+                        <flux:textarea wire:model="settings.custom_head_code" class="h-40 font-mono text-xs" placeholder="<script>...</script>" />
+                    </flux:field>
+                </x-admin-section-card>
+
+                <x-admin-section-card header-border="border-zinc-100" icon="code-bracket" title="Body Code" class="max-w-2xl"
+                    description="Injected just before </body> closes — chat widgets, tracking pixels, deferred scripts.">
+                    <flux:field>
+                        <flux:textarea wire:model="settings.custom_body_code" class="h-40 font-mono text-xs" placeholder="<script>...</script>" />
                     </flux:field>
                 </x-admin-section-card>
             </div>

@@ -158,6 +158,42 @@ it('saves colors settings through the form', function () {
     expect(Setting::where('key', 'secondary_color')->value('value'))->toBe('#2563eb');
 });
 
+it('does not show custom code settings in the general tab', function () {
+    Setting::factory()->create(['key' => 'custom_head_code', 'value' => '', 'group' => 'custom-code', 'type' => 'textarea']);
+
+    Livewire::test(SettingsIndex::class)
+        ->assertViewHas('groupedSettings', function ($groups) {
+            return ! $groups->has('custom-code');
+        });
+});
+
+it('renders the custom code tab', function () {
+    Livewire::test(SettingsIndex::class)
+        ->assertSee('Custom Code')
+        ->assertSee('Head Code')
+        ->assertSee('Body Code');
+});
+
+it('saves custom head and body code through the form', function () {
+    Livewire::test(SettingsIndex::class)
+        ->set('settings.custom_head_code', '<script>console.log("head")</script>')
+        ->set('settings.custom_body_code', '<script>console.log("body")</script>')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(Setting::where('key', 'custom_head_code')->value('value'))->toBe('<script>console.log("head")</script>');
+    expect(Setting::where('key', 'custom_body_code')->value('value'))->toBe('<script>console.log("body")</script>');
+});
+
+it('seeder creates custom code settings, public so the frontend can inject them', function () {
+    $this->artisan('db:seed', ['--class' => 'SettingsSeeder']);
+
+    foreach (['custom_head_code', 'custom_body_code'] as $key) {
+        $setting = Setting::where('key', $key)->firstOrFail();
+        expect((bool) $setting->is_public)->toBeTrue();
+    }
+});
+
 it('seeder creates seo settings', function () {
     $this->artisan('db:seed', ['--class' => 'SettingsSeeder']);
 
