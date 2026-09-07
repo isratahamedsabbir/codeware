@@ -82,13 +82,6 @@
         }
     "
 >
-    <button type="button" x-on:click="commandOpenPalette()"
-        class="hidden sm:inline-flex items-center gap-2 h-8 px-2.5 rounded-lg border border-zinc-200 text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50 transition-colors dark:border-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-        aria-label="{{ __('Open command palette') }}">
-        <flux:icon.magnifying-glass class="size-4" />
-        <kbd class="text-[10px] font-semibold tracking-wide">Ctrl Shift K</kbd>
-    </button>
-
     <div x-show="commandOpen" x-cloak
         class="fixed inset-0 z-50 flex items-start justify-center px-4 pt-24"
         x-on:click.self="commandClosePalette()">

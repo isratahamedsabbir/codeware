@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\V1\Auth\EmailVerificationController;
 use App\Http\Controllers\Api\V1\Auth\LoginController;
 use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Auth\RegisterController;
+use App\Http\Controllers\Api\V1\ChatController;
 use App\Http\Controllers\Api\V1\CmsController;
 use App\Http\Controllers\Api\V1\ContactController;
 use App\Http\Controllers\Api\V1\LayoutController;
@@ -72,6 +73,17 @@ Route::post('/book-demo', [ContactController::class, 'bookDemo'])->name('book-de
 Route::middleware('feature:orders')->group(function () {
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('/orders/{orderNumber}', [OrderController::class, 'show'])->name('orders.show');
+});
+
+// Public guest chat — REST equivalent of the Frontend\ChatWidget Livewire component,
+// for clients (e.g. the Next.js frontend) that can't run Livewire.
+Route::middleware('feature:chat')->prefix('chat')->name('chat.')->group(function () {
+    Route::post('/otp/request', [ChatController::class, 'requestOtp'])
+        ->middleware('throttle:6,1')->name('otp.request');
+    Route::post('/otp/verify', [ChatController::class, 'verifyOtp'])
+        ->middleware('throttle:6,1')->name('otp.verify');
+    Route::get('/messages', [ChatController::class, 'messages'])->name('messages.index');
+    Route::post('/messages', [ChatController::class, 'sendMessage'])->name('messages.store');
 });
 
 // Admin endpoints — require Sanctum token AND admin role
