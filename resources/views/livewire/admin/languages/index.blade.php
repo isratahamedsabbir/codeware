@@ -65,7 +65,7 @@
                             $done    = (int) ($translated[$language->code] ?? 0);
                             $percent = $totalKeys > 0 ? (int) round(min($done, $totalKeys) / $totalKeys * 100) : 0;
                         @endphp
-                        <tr class="hover:bg-indigo-50/30 transition-colors">
+                        <tr class="hover:bg-indigo-50/30 transition-colors" x-data="{ open: false }" @contextmenu.prevent="open = true">
 
                             {{-- Id --}}
                             <td class="px-2 py-2 text-center text-xs text-zinc-500">

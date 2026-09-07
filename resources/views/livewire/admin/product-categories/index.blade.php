@@ -62,7 +62,7 @@
                 </thead>
                 <tbody x-ref="sortableRows" class="divide-y divide-gray-200">
                     @forelse ($categories as $category)
-                        <tr class="hover:bg-indigo-50/30 transition-colors" data-category-id="{{ $category->id }}">
+                        <tr class="hover:bg-indigo-50/30 transition-colors" data-category-id="{{ $category->id }}" x-data="{ open: false }" @contextmenu.prevent="open = true">
 
                             {{-- Drag handle --}}
                             <td class="px-2 py-2 text-center">

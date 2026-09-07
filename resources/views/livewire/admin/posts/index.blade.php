@@ -55,7 +55,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($posts as $post)
-                        <tr class="hover:bg-indigo-50/30 transition-colors">
+                        <tr class="hover:bg-indigo-50/30 transition-colors" x-data="{ open: false }" @contextmenu.prevent="open = true">
 
                             {{-- ID --}}
                             <td class="px-4 py-2">

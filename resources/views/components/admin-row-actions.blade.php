@@ -31,7 +31,10 @@
 @endphp
 
 @if ($mode === 'dropdown')
-    <div class="relative flex justify-center" x-data="{ open: false }" @click.outside="open = false">
+    {{-- `open` is declared on the enclosing <tr> (see each index.blade.php's row
+    tag), not here, so right-clicking anywhere in the row can also open this
+    same menu — not just the trigger button below. --}}
+    <div class="relative flex justify-center" @click.outside="open = false">
         <button type="button" @click="open = !open" aria-label="Actions"
             class="inline-flex items-center justify-center w-7 h-7 rounded border border-zinc-200 text-zinc-500 hover:bg-zinc-100 transition-colors cursor-pointer">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -39,7 +42,7 @@
             </svg>
         </button>
         <div x-show="open" x-cloak x-transition.origin.top.right
-            class="absolute right-0 mt-1 w-40 bg-white rounded-lg border border-zinc-200 shadow-lg py-1 z-30 dark:bg-zinc-800 dark:border-zinc-700">
+            class="absolute top-full right-0 mt-1 w-40 bg-white rounded-lg border border-zinc-200 shadow-lg py-1 z-30 dark:bg-zinc-800 dark:border-zinc-700">
             @foreach ($visible as $action)
                 @php $palette = $palettes[$action['color'] ?? 'primary'] ?? $palettes['primary']; @endphp
                 @if ($action['disabled'] ?? false)
