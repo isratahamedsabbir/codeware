@@ -124,9 +124,9 @@ class Form extends Component
         if ($this->cmsId) {
             CmsSection::findOrFail($this->cmsId)->update($data);
         } else {
-            // New sections stay inactive until switched on from the list — status
-            // is no longer editable from this form, see Index::toggleStatus().
-            $data['status'] = 'inactive';
+            // New sections start active — status is no longer editable from this
+            // form, see Index::toggleStatus() to turn one off later.
+            $data['status'] = 'active';
             $data['sort_order'] = (int) CmsSection::where('page_id', $this->pageId)->max('sort_order') + 1;
             $cms = CmsSection::create($data);
             $this->cmsId = $cms->id;

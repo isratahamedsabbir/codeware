@@ -38,6 +38,18 @@ it('only shows sections that belong to the page it was opened for', function () 
         ->assertSee('team');
 });
 
+it('creates a new cms section as active by default', function () {
+    $page = Page::factory()->create();
+
+    Livewire::test(CmsForm::class, ['pageId' => $page->id])
+        ->set('name', 'hero')
+        ->call('save');
+
+    $cms = CmsSection::where('page_id', $page->id)->where('name', 'hero')->sole();
+
+    expect($cms->status)->toBe('active');
+});
+
 it('creates a cms section with a name and cards', function () {
     $page = Page::factory()->create();
 
