@@ -31,17 +31,22 @@
 @endphp
 
 @if ($mode === 'dropdown')
-    {{-- `open` is declared on the enclosing <tr> (see each index.blade.php's row
-    tag), not here, so right-clicking anywhere in the row can also open this
-    same menu — not just the trigger button below. --}}
-    <div class="relative flex justify-center" @click.outside="open = false">
-        <button type="button" @click="open = !open" aria-label="Actions"
+    {{-- A shared Alpine store (not per-row local state) tracks which single row's
+    menu is open, so opening one always closes any other — see
+    resources/js/row-actions-store.js. The <tr> in each index.blade.php
+    right-clicks by dispatching a real click at [data-actions-trigger] below,
+    reusing this same toggle logic rather than duplicating it. --}}
+    <div class="relative flex justify-center" x-data="{ uid: Math.random() }"
+        @click.outside="if ($store.rowActions.openId === uid) $store.rowActions.openId = null">
+        <button type="button" data-actions-trigger
+            @click="$store.rowActions.openId = ($store.rowActions.openId === uid ? null : uid)"
+            aria-label="Actions"
             class="inline-flex items-center justify-center w-7 h-7 rounded border border-zinc-200 text-zinc-500 hover:bg-zinc-100 transition-colors cursor-pointer">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
             </svg>
         </button>
-        <div x-show="open" x-cloak x-transition.origin.top.right
+        <div x-show="$store.rowActions.openId === uid" x-cloak x-transition.origin.top.right
             class="absolute top-full right-0 mt-1 w-40 bg-white rounded-lg border border-zinc-200 shadow-lg py-1 z-30 dark:bg-zinc-800 dark:border-zinc-700">
             @foreach ($visible as $action)
                 @php $palette = $palettes[$action['color'] ?? 'primary'] ?? $palettes['primary']; @endphp
@@ -51,13 +56,13 @@
                         {{ $action['label'] }}
                     </span>
                 @elseif (isset($action['href']))
-                    <a href="{{ $action['href'] }}" wire:navigate @click="open = false"
+                    <a href="{{ $action['href'] }}" wire:navigate @click="$store.rowActions.openId = null"
                         class="flex items-center gap-2 px-3 py-1.5 text-xs {{ $palette['menuText'] }}">
                         <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
                         {{ $action['label'] }}
                     </a>
                 @else
-                    <button type="button" wire:click="{{ $action['wireClick'] }}" @click="open = false"
+                    <button type="button" wire:click="{{ $action['wireClick'] }}" @click="$store.rowActions.openId = null"
                         class="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-left cursor-pointer {{ $palette['menuText'] }}">
                         <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
                         {{ $action['label'] }}

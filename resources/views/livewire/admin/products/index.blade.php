@@ -76,7 +76,7 @@
                 </thead>
                 <tbody x-ref="sortableRows" class="divide-y divide-gray-200">
                     @forelse ($products as $product)
-                        <tr class="hover:bg-indigo-50/30 transition-colors" data-product-id="{{ $product->id }}" x-data="{ open: false }" @contextmenu.prevent="open = true">
+                        <tr class="hover:bg-indigo-50/30 transition-colors" data-product-id="{{ $product->id }}" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
 
                             {{-- Drag handle --}}
                             <td class="px-2 py-2 text-center">

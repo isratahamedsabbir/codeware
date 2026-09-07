@@ -55,7 +55,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($posts as $post)
-                        <tr class="hover:bg-indigo-50/30 transition-colors" x-data="{ open: false }" @contextmenu.prevent="open = true">
+                        <tr class="hover:bg-indigo-50/30 transition-colors" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
 
                             {{-- ID --}}
                             <td class="px-4 py-2">
