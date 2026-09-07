@@ -35,14 +35,17 @@
         {{-- General tab --}}
         <div x-show="tab === 'general'">
             <div class="max-w-[1600px]">
-                {{-- General renders first, Images stacks directly beneath it full-width,
-                     then every other group stacks beneath those, in $groupOrder's order. --}}
-                <div class="flex gap-5 flex-wrap items-start">
+                {{-- General sits on the left spanning both rows; Localization and
+                     Pagination stack to its right; Images and anything else fall
+                     to a full-width row underneath. --}}
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
                     @foreach ($groupedSettings as $group => $items)
                         <div class="{{ match ($group) {
-                            'general' => 'w-full order-1',
-                            'images' => 'w-full order-2',
-                            default => 'w-full order-3',
+                            'general' => 'order-1 lg:row-span-2',
+                            'localization' => 'order-2',
+                            'pagination' => 'order-3',
+                            'images' => 'order-4 lg:col-span-2',
+                            default => 'order-5 lg:col-span-2',
                         } }}">
                             @php
                                 $groupIcon = match ($group) {
