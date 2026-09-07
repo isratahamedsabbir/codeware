@@ -48,14 +48,18 @@ it('returns a single product category by slug with page data', function () {
     $puckData = ['root' => ['props' => []], 'content' => [['type' => 'CategoryHero']]];
     $category = ProductCategory::factory()->create(['name' => ['en' => 'Fertilizers', 'bn' => '']]);
     $page = pairPageFor($category, 'product_category', 'fertilizers', $this->admin->id);
-    $page->update(['puck_data' => $puckData]);
+    $page->update(['puck_data' => $puckData, 'seo_title' => 'Fertilizers SEO Title']);
 
     $this->getJson('/api/v1/product-categories/fertilizers')
         ->assertOk()
         ->assertJsonPath('data.slug', 'fertilizers')
         ->assertJsonPath('data.name', 'Fertilizers')
         ->assertJsonPath('data.page.puck_data', $puckData)
-        ->assertJsonStructure(['data' => ['id', 'name', 'slug', 'icon', 'sort_order', 'page']]);
+        ->assertJsonPath('data.page.meta_data.seo_title', 'Fertilizers SEO Title')
+        ->assertJsonStructure(['data' => ['id', 'name', 'slug', 'icon', 'sort_order', 'page' => [
+            'meta_data' => ['seo_title', 'seo_description', 'og_title', 'og_description', 'og_image', 'twitter_title', 'twitter_description', 'twitter_image', 'no_index', 'no_follow'],
+            'puck_data',
+        ]]]);
 });
 
 it('returns 404 for an unknown product category slug', function () {

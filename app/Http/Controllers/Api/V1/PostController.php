@@ -92,16 +92,18 @@ class PostController extends Controller
         }
 
         return [
-            'seo_title' => $page->seo_title,
-            'seo_description' => $page->seo_description,
-            'og_title' => $page->og_title,
-            'og_description' => $page->og_description,
-            'og_image' => $page->og_image,
-            'twitter_title' => $page->twitter_title,
-            'twitter_description' => $page->twitter_description,
-            'twitter_image' => $page->twitter_image,
-            'no_index' => $page->no_index,
-            'no_follow' => $page->no_follow,
+            'meta_data' => [
+                'seo_title' => $page->seo_title,
+                'seo_description' => $page->seo_description,
+                'og_title' => $page->og_title,
+                'og_description' => $page->og_description,
+                'og_image' => $page->og_image,
+                'twitter_title' => $page->twitter_title,
+                'twitter_description' => $page->twitter_description,
+                'twitter_image' => $page->twitter_image,
+                'no_index' => $page->no_index,
+                'no_follow' => $page->no_follow,
+            ],
             'puck_data' => $page->puck_data,
         ];
     }

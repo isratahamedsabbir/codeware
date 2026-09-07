@@ -82,7 +82,9 @@ it('returns a single published page by slug', function () {
 
     $response->assertOk()
         ->assertJsonPath('data.slug', $page->slug)
-        ->assertJsonStructure(['data' => ['id', 'slug', 'title', 'content', 'puck_data']]);
+        ->assertJsonStructure(['data' => ['id', 'slug', 'title', 'content', 'puck_data', 'meta_data' => [
+            'seo_title', 'seo_description', 'og_title', 'og_description', 'og_image', 'twitter_title', 'twitter_description', 'twitter_image', 'no_index', 'no_follow',
+        ]]]);
 });
 
 it('includes puck_data in both the pages listing and a single page', function () {
