@@ -10,6 +10,7 @@ use App\Models\ProductCategory;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class DemoContentSeeder extends Seeder
 {
@@ -33,7 +34,7 @@ class DemoContentSeeder extends Seeder
             type: 'product_category',
             keys: ['category_id' => $category->id],
             title: $category->name,
-            slug: $category->slug,
+            slug: $this->slugFor($category->getTranslation('name', 'en'), $category->id),
             status: $category->status,
             sortOrder: $category->sort_order,
             description: $category->description,
@@ -49,7 +50,7 @@ class DemoContentSeeder extends Seeder
             type: 'product',
             keys: ['product_id' => $product->id],
             title: $product->name,
-            slug: $product->slug,
+            slug: $this->slugFor($product->getTranslation('name', 'en'), $product->id),
             status: $product->status,
             sortOrder: $product->sort_order,
             description: $product->description,
@@ -60,7 +61,7 @@ class DemoContentSeeder extends Seeder
             type: 'post_category',
             keys: ['category_id' => $category->id],
             title: $category->name,
-            slug: $category->slug,
+            slug: $this->slugFor($category->getTranslation('name', 'en'), $category->id),
             status: $category->status,
             sortOrder: $category->sort_order,
             description: $category->description,
@@ -78,7 +79,7 @@ class DemoContentSeeder extends Seeder
             type: 'post',
             keys: ['post_id' => $post->id],
             title: $post->title,
-            slug: $post->slug,
+            slug: $this->slugFor($post->getTranslation('title', 'en'), $post->id),
             status: $post->status,
             description: $post->description,
         ));
@@ -102,5 +103,18 @@ class DemoContentSeeder extends Seeder
                 'description' => $description,
             ], fn ($value) => $value !== null),
         );
+    }
+
+    /**
+     * The entity's own `slug` is a virtual accessor read off its paired Page
+     * (see Product/ProductCategory/Post/PostCategory::slug()) — right after
+     * `factory()->create()`, before that Page exists, it's always null. The
+     * page we're about to create needs a real slug, so derive one straight
+     * from the English name/title instead, with the id appended to keep
+     * faker-generated names (which can repeat) unique.
+     */
+    private function slugFor(string $name, int $id): string
+    {
+        return Str::slug($name).'-'.$id;
     }
 }

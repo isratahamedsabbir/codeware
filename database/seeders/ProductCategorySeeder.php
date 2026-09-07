@@ -25,13 +25,14 @@ class ProductCategorySeeder extends Seeder
         foreach ($categories as $cat) {
             $slug = Str::slug($cat['en']);
 
-            $category = ProductCategory::firstOrCreate(
-                ['slug' => $slug],
-                [
+            // `slug` isn't a real column on categories (it's a virtual accessor
+            // derived from the paired Page — see ProductCategory::slug()), so
+            // the lookup here has to key off the translatable `name` instead.
+            $category = ProductCategory::where('name->en', $cat['en'])->first()
+                ?? ProductCategory::create([
                     'name' => ['en' => $cat['en'], 'bn' => $cat['bn']],
                     'sort_order' => $cat['sort_order'],
-                ]
-            );
+                ]);
 
             Page::updateOrCreate(
                 ['type' => 'product_category', 'category_id' => $category->id],
