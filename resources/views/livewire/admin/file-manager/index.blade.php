@@ -64,7 +64,7 @@
                                     <path d="M13 11l9-9" />
                                     <path d="M17 2h5v5" />
                                 </svg>
-                                Move Selected ({{ count($checked) }})
+                                Move ({{ count($checked) }})
                             </button>
                             <button wire:click="openTransferModalSelected('copy')"
                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 transition-colors">
@@ -72,18 +72,9 @@
                                     <rect x="9" y="9" width="13" height="13" rx="2" />
                                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                                 </svg>
-                                Copy Selected ({{ count($checked) }})
+                                Copy ({{ count($checked) }})
                             </button>
                         @endif
-                        <a href="{{ route('admin.file-manager.download-zip', ['path' => $path, 'names' => $checked]) }}"
-                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 transition-colors">
-                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                <polyline points="7 10 12 15 17 10" />
-                                <line x1="12" y1="15" x2="12" y2="3" />
-                            </svg>
-                            Download Selected ({{ count($checked) }})
-                        </a>
                         <button wire:click="zipSelected"
                             class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors">
                             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -91,7 +82,7 @@
                                 <path d="M1 3h22v5H1z" />
                                 <line x1="10" y1="12" x2="14" y2="12" />
                             </svg>
-                            Zip Selected ({{ count($checked) }})
+                            Zip ({{ count($checked) }})
                         </button>
                         <button wire:click="confirmDeleteSelected"
                             class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors">
@@ -102,7 +93,7 @@
                                 <path d="M14 11v6" />
                                 <path d="M9 6V4h6v2" />
                             </svg>
-                            Delete Selected ({{ count($checked) }})
+                            Delete ({{ count($checked) }})
                         </button>
                     @endif
 
@@ -185,7 +176,7 @@
                         </a>
                         @if ($editable && $this->canManage)
                             <button wire:click="saveFile" :disabled="! dirty" wire:loading.attr="disabled"
-                                class="admin-btn-save inline-flex items-center gap-2 px-4 text-sm font-medium rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                                class="admin-btn-save inline-flex items-center gap-2 px-4 h-10 text-sm font-medium rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                                 Save
                             </button>
                         @endif

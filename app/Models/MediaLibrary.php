@@ -83,13 +83,19 @@ class MediaLibrary extends Model
         return null;
     }
 
+    /**
+     * Always rebuilt from the disk's current config rather than trusting the
+     * absolute URL baked into the `url` column at upload time — that stored
+     * value reflects whatever APP_URL was active on that server at that
+     * moment, so it goes stale/wrong the instant the app moves to another
+     * host (dev -> staging/VM) even after APP_URL is fixed there. Falling
+     * back to the stored value only covers rows with no path at all.
+     */
     public function getUrlAttribute(): ?string
     {
-        $url = $this->attributes['url'] ?? null;
-
-        if (!$url && $this->path) {
-            $url = Storage::disk($this->disk)->url($this->path);
-        }
+        $url = $this->path
+            ? Storage::disk($this->disk)->url($this->path)
+            : ($this->attributes['url'] ?? null);
 
         if ($url && !str_starts_with($url, 'http://') && !str_starts_with($url, 'https://')) {
             $url = url($url);
