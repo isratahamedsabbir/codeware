@@ -56,7 +56,7 @@
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">{{ __('Code') }}</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">{{ __('Translated') }}</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">{{ __('Status') }}</th>
-                        <th class="px-4 py-2.5 text-right text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">{{ __('Actions') }}</th>
+                        <th class="px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">

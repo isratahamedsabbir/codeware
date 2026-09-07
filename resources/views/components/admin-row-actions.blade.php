@@ -64,7 +64,7 @@
         </div>
     </div>
 @else
-    <div class="flex items-center justify-end gap-1.5">
+    <div class="flex items-center justify-center gap-1.5">
         @foreach ($visible as $action)
             @php $palette = $palettes[$action['color'] ?? 'primary'] ?? $palettes['primary']; @endphp
             <div class="relative group">
