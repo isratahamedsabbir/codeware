@@ -6,7 +6,9 @@
                 class="text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors">
                 <span class="flex items-center gap-1.5">
                     <flux:icon.language class="size-5" />
-                    <span class="text-xs font-semibold uppercase max-sm:hidden">{{ $current }}</span>
+                    <span class="text-xs font-semibold uppercase max-sm:hidden">
+                        {{ $languages->firstWhere('code', $current)?->flag }} {{ $current }}
+                    </span>
                 </span>
             </flux:button>
 
@@ -16,6 +18,9 @@
                         <flux:menu.item wire:click="switchTo('{{ $language->code }}')"
                             :icon="$language->code === $current ? 'check' : null">
                             <span class="flex items-center gap-2">
+                                @if ($language->flag)
+                                    <span>{{ $language->flag }}</span>
+                                @endif
                                 <span>{{ $language->native_name ?: $language->name }}</span>
                                 <span class="text-[10px] font-semibold uppercase text-zinc-400">{{ $language->code }}</span>
                             </span>

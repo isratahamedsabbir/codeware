@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Products;
 
 use App\Concerns\HasSeoFields;
+use App\Concerns\HasTranslatableFields;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductCategory;
@@ -16,24 +17,20 @@ use Livewire\Component;
 
 class Form extends Component
 {
-    use HasSeoFields;
+    use HasSeoFields, HasTranslatableFields;
 
     public ?int $productId = null;
 
     public ?int $pageId = null;
 
-    #[Validate('required|string|max:255')]
-    public string $name_en = '';
-
-    #[Validate('nullable|string|max:255')]
-    public string $name_bn = '';
+    public array $name = [];
 
     #[Validate('nullable|string|max:255')]
     public string $slug = '';
 
     /**
      * The last auto-generated slug value, so we know whether the admin has
-     * manually diverged from it — see updatedNameEn().
+     * manually diverged from it — see updated().
      */
     public string $autoSlug = '';
 
@@ -50,11 +47,7 @@ class Form extends Component
 
     public bool $is_featured = false;
 
-    #[Validate('nullable|string')]
-    public string $description_en = '';
-
-    #[Validate('nullable|string')]
-    public string $description_bn = '';
+    public array $description = [];
 
     public string $featured_image = '';
 
@@ -67,14 +60,11 @@ class Form extends Component
         if ($id) {
             $product = Product::findOrFail($id);
             $this->productId = $id;
-            $this->name_en = $product->getTranslation('name', 'en', false) ?? '';
-            $this->name_bn = $product->getTranslation('name', 'bn', false) ?? '';
+            $this->hydrateTranslatable($product, ['name', 'description']);
             $this->slug = $product->slug ?? '';
             $this->product_category_id = $product->product_category_id;
             $this->price = (string) $product->price;
             $this->is_featured = (bool) $product->is_featured;
-            $this->description_en = $product->getTranslation('description', 'en', false) ?? '';
-            $this->description_bn = $product->getTranslation('description', 'bn', false) ?? '';
 
             $this->featured_image = $product->featured_image ?? '';
 
@@ -86,14 +76,20 @@ class Form extends Component
     }
 
     /**
-     * Live slug-as-you-type — regenerates from the English name only while the
-     * slug still matches what we last auto-generated (i.e. the admin hasn't
-     * typed a custom one), or is empty. Editing an existing product's name
-     * never touches its already-set slug this way, since autoSlug starts
-     * empty and never matches a loaded slug.
+     * Live slug-as-you-type — regenerates from the primary locale's name only
+     * while the slug still matches what we last auto-generated (i.e. the
+     * admin hasn't typed a custom one), or is empty. Editing an existing
+     * product's name never touches its already-set slug this way, since
+     * autoSlug starts empty and never matches a loaded slug. Livewire's magic
+     * updated{Field}() hooks don't fire for array sub-key mutations like
+     * "name.en", so this lives in the generic updated() catch-all instead.
      */
-    public function updatedNameEn(string $value): void
+    public function updated(string $name, mixed $value): void
     {
+        if (! $this->isPrimaryLocaleUpdate($name, 'name')) {
+            return;
+        }
+
         if ($this->slug === '' || $this->slug === $this->autoSlug) {
             $this->autoSlug = Slug::make($value);
             $this->slug = $this->autoSlug;
@@ -146,11 +142,14 @@ class Form extends Component
 
     public function saveAndOpenPageBuilder(): void
     {
-        if (empty($this->slug) && $this->name_en) {
-            $this->slug = Slug::make($this->name_en);
+        if (empty($this->slug) && $this->primaryValue('name')) {
+            $this->slug = Slug::make($this->primaryValue('name'));
         }
 
-        $rules = $this->getRules();
+        $rules = array_merge($this->getRules(), $this->translatableRules([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]));
         $rules['slug'] = [
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
@@ -178,11 +177,14 @@ class Form extends Component
 
     public function save(): void
     {
-        if (empty($this->slug) && $this->name_en) {
-            $this->slug = Slug::make($this->name_en);
+        if (empty($this->slug) && $this->primaryValue('name')) {
+            $this->slug = Slug::make($this->primaryValue('name'));
         }
 
-        $rules = $this->getRules();
+        $rules = array_merge($this->getRules(), $this->translatableRules([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]));
         $rules['slug'] = [
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
@@ -203,10 +205,10 @@ class Form extends Component
 
         $data = [
             'product_category_id' => $this->product_category_id,
-            'name' => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
+            'name' => $this->translatablePayload('name'),
             'price' => $this->price,
             'is_featured' => $this->is_featured,
-            'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
+            'description' => $this->translatablePayload('description') ?: null,
             'featured_image' => $this->featured_image ?: null,
         ];
 
@@ -225,10 +227,10 @@ class Form extends Component
             ['type' => 'product', 'product_id' => $product->id],
             [
                 'user_id' => auth()->id(),
-                'title' => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
+                'title' => $this->translatablePayload('name'),
                 'slug' => $this->slug,
                 'status' => $product->status,
-                'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
+                'description' => $this->translatablePayload('description') ?: null,
                 ...$this->seoPagePayload(),
             ]
         );
@@ -236,7 +238,7 @@ class Form extends Component
 
         AdminActivity::log(
             $creating ? 'created' : 'updated',
-            "Product #{$product->id}: {$this->name_en}",
+            "Product #{$product->id}: {$this->primaryValue('name')}",
         );
     }
 

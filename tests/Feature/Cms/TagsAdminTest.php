@@ -24,7 +24,7 @@ it('displays existing tags', function () {
 
 it('can create a tag', function () {
     Livewire::test(TagsForm::class)
-        ->set('name_en', 'News')
+        ->set('name.en', 'News')
         ->call('save');
 
     expect(Tag::whereJsonContains('name->en', 'News')->exists())->toBeTrue();
@@ -32,16 +32,16 @@ it('can create a tag', function () {
 
 it('validates tag name is required', function () {
     Livewire::test(TagsForm::class)
-        ->set('name_en', '')
+        ->set('name.en', '')
         ->call('save')
-        ->assertHasErrors(['name_en']);
+        ->assertHasErrors(['name.en']);
 });
 
 it('can edit a tag', function () {
     $tag = Tag::factory()->create(['name' => ['en' => 'Old', 'bn' => '']]);
 
     Livewire::test(TagsForm::class, ['id' => $tag->id])
-        ->set('name_en', 'Updated')
+        ->set('name.en', 'Updated')
         ->call('save');
 
     expect($tag->refresh()->getTranslation('name', 'en', false))->toBe('Updated');

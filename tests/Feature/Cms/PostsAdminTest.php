@@ -22,7 +22,7 @@ it('displays posts in the table', function () {
 
 it('can create a post with metadata', function () {
     Livewire::test(PostsForm::class)
-        ->set('title_en', 'My First Post')
+        ->set('title.en', 'My First Post')
         ->call('save');
 
     expect(Post::whereJsonContains('title->en', 'My First Post')->exists())->toBeTrue();
@@ -30,9 +30,9 @@ it('can create a post with metadata', function () {
 
 it('validates english title is required', function () {
     Livewire::test(PostsForm::class)
-        ->set('title_en', '')
+        ->set('title.en', '')
         ->call('save')
-        ->assertHasErrors(['title_en']);
+        ->assertHasErrors(['title.en']);
 });
 
 it('can filter posts by status', function () {
@@ -66,7 +66,7 @@ it('opens the puck editor for an existing post', function () {
 
 it('saves and opens the puck editor for a new post', function () {
     $component = Livewire::test(PostsForm::class)
-        ->set('title_en', 'Brand New Post')
+        ->set('title.en', 'Brand New Post')
         ->call('saveAndOpenPageBuilder');
 
     expect(Post::whereJsonContains('title->en', 'Brand New Post')->exists())->toBeTrue();

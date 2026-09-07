@@ -8,50 +8,28 @@
 
     <div class="w-full bg-white rounded-[5px] shadow-sm p-6">
 
-            <div x-data="{ locale: 'en' }">
+            <x-admin-locale-tabs>
+                @foreach (\App\Support\Locale::active() as $language)
+                    <x-admin-locale-panel :code="$language->code">
+                        <flux:field>
+                            <flux:label>
+                                Name
+                                @if ($language->code === $this->primaryLocale)<span class="text-red-500 ml-0.5">*</span>@endif
+                            </flux:label>
+                            <flux:input wire:model="name.{{ $language->code }}"
+                                placeholder="{{ $language->code === $this->primaryLocale ? 'Tag name' : 'Tag name ('.($language->native_name ?: $language->name).')' }}" />
+                            @if ($language->code === $this->primaryLocale)<flux:error name="name.{{ $language->code }}" />@endif
+                        </flux:field>
+                    </x-admin-locale-panel>
+                @endforeach
 
-                {{-- Locale Tabs --}}
-                <div class="flex gap-2 -mx-6 px-6 pb-3 mb-3 border-b border-zinc-200 dark:border-zinc-700">
-                    <button type="button"
-                        :class="locale === 'en' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'"
-                        class="px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors"
-                        @click="locale='en'">EN</button>
-                    <button type="button"
-                        :class="locale === 'bn' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'"
-                        class="px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors"
-                        @click="locale='bn'">বাং</button>
-                </div>
-
-                {{-- English --}}
-                <div x-show="locale==='en'" class="space-y-4">
-                    <flux:field>
-                        <flux:label>Name <span class="text-red-500 ml-0.5">*</span></flux:label>
-                        <flux:input wire:model="name_en" placeholder="Tag name in English" />
-                        <flux:error name="name_en" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Slug</flux:label>
-                        <flux:input wire:model="slug" placeholder="auto-generated-from-name" />
-                        <p class="text-xs text-zinc-400 mt-1">Leave blank to auto-generate from the English name</p>
-                        <flux:error name="slug" />
-                    </flux:field>
-                </div>
-
-                {{-- Bengali --}}
-                <div x-show="locale==='bn'" class="space-y-4">
-                    <flux:field>
-                        <flux:label>নাম</flux:label>
-                        <flux:input wire:model="name_bn" placeholder="বাংলায় ট্যাগের নাম" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Slug</flux:label>
-                        <flux:input wire:model="slug" placeholder="auto-generated-from-name" />
-                        <p class="text-xs text-zinc-400 mt-1">Leave blank to auto-generate from the English name</p>
-                        <flux:error name="slug" />
-                    </flux:field>
-                </div>
-
-            </div>
+                <flux:field>
+                    <flux:label>Slug</flux:label>
+                    <flux:input wire:model="slug" placeholder="auto-generated-from-name" />
+                    <p class="text-xs text-zinc-400 mt-1">Leave blank to auto-generate from the primary language's name</p>
+                    <flux:error name="slug" />
+                </flux:field>
+            </x-admin-locale-tabs>
 
         {{-- Footer --}}
         <div class="-mx-6 -mb-6 mt-6 flex items-center gap-3 flex-wrap rounded-b-lg border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-700 dark:bg-zinc-800/40">

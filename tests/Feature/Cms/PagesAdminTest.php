@@ -22,7 +22,7 @@ it('displays pages in the table', function () {
 
 it('can create a page', function () {
     Livewire::test(PagesForm::class)
-        ->set('title_en', 'Contact')
+        ->set('title.en', 'Contact')
         ->call('save');
 
     expect(Page::whereJsonContains('title->en', 'Contact')->exists())->toBeTrue();
@@ -30,9 +30,9 @@ it('can create a page', function () {
 
 it('validates english title is required', function () {
     Livewire::test(PagesForm::class)
-        ->set('title_en', '')
+        ->set('title.en', '')
         ->call('save')
-        ->assertHasErrors(['title_en']);
+        ->assertHasErrors(['title.en']);
 });
 
 it('can reorder pages', function () {
@@ -67,7 +67,7 @@ it('opens the puck editor for an existing page', function () {
 
 it('saves and opens the puck editor for a new page', function () {
     $component = Livewire::test(PagesForm::class)
-        ->set('title_en', 'Brand New Page')
+        ->set('title.en', 'Brand New Page')
         ->call('saveAndOpenPageBuilder');
 
     expect(Page::whereJsonContains('title->en', 'Brand New Page')->exists())->toBeTrue();

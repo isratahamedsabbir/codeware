@@ -11,23 +11,21 @@
         {{-- ── MAIN ── --}}
         <div class="flex-1 min-w-0 space-y-4">
         <div class="bg-white rounded-[5px] shadow-sm p-6">
-            <div x-data="{ locale: 'en' }">
-                <div class="flex gap-2 -mx-6 px-6 pb-3 mb-3 border-b border-zinc-200 dark:border-zinc-700">
-                    <button type="button"
-                        :class="locale === 'en' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'"
-                        class="px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors"
-                        @click="locale='en'">EN</button>
-                    <button type="button"
-                        :class="locale === 'bn' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'"
-                        class="px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors"
-                        @click="locale='bn'">বাং</button>
-                </div>
-                <div x-show="locale==='en'" class="space-y-4">
-                    <flux:field>
-                        <flux:label>Title <span class="text-red-500 ml-0.5">*</span></flux:label>
-                        <flux:input wire:model.live.debounce.400ms="title_en" placeholder="Page title in English" />
-                        <flux:error name="title_en" />
-                    </flux:field>
+            <x-admin-locale-tabs>
+                @foreach (\App\Support\Locale::active() as $language)
+                    <x-admin-locale-panel :code="$language->code">
+                        <flux:field>
+                            <flux:label>
+                                Title
+                                @if ($language->code === $this->primaryLocale)<span class="text-red-500 ml-0.5">*</span>@endif
+                            </flux:label>
+                            <flux:input wire:model.live.debounce.400ms="title.{{ $language->code }}"
+                                placeholder="{{ $language->code === $this->primaryLocale ? 'Page title' : 'Page title ('.($language->native_name ?: $language->name).')' }}" />
+                            @if ($language->code === $this->primaryLocale)<flux:error name="title.{{ $language->code }}" />@endif
+                        </flux:field>
+                    </x-admin-locale-panel>
+                @endforeach
+
                     <flux:field>
                         <flux:label>Slug</flux:label>
                         <flux:input wire:model.live.debounce.400ms="slug" placeholder="auto-generated-from-title" :disabled="$this->isLinked()" />
@@ -38,32 +36,11 @@
                         @elseif ($slugAvailable === true && $slug !== '')
                             <p class="text-xs text-green-600 mt-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>This slug is available</p>
                         @else
-                            <p class="text-xs text-zinc-400 mt-1">Auto-generated from the English title as you type — edit it if you'd like a different one</p>
+                            <p class="text-xs text-zinc-400 mt-1">Auto-generated from the primary language's title as you type — edit it if you'd like a different one</p>
                         @endif
                         <flux:error name="slug" />
                     </flux:field>
-                </div>
-                <div x-show="locale==='bn'" class="space-y-4">
-                    <flux:field>
-                        <flux:label>শিরোনাম <span class="text-red-500 ml-0.5">*</span></flux:label>
-                        <flux:input wire:model="title_bn" placeholder="বাংলায় পেজের শিরোনাম" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Slug</flux:label>
-                        <flux:input wire:model.live.debounce.400ms="slug" placeholder="auto-generated-from-title" :disabled="$this->isLinked()" />
-                        @if ($this->isLinked())
-                            <p class="text-xs text-zinc-400 mt-1">Managed on the linked product/post/category — edit it from there</p>
-                        @elseif ($slugAvailable === false)
-                            <p class="text-xs text-red-500 mt-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span>This slug is already taken</p>
-                        @elseif ($slugAvailable === true && $slug !== '')
-                            <p class="text-xs text-green-600 mt-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>This slug is available</p>
-                        @else
-                            <p class="text-xs text-zinc-400 mt-1">Auto-generated from the English title as you type — edit it if you'd like a different one</p>
-                        @endif
-                        <flux:error name="slug" />
-                    </flux:field>
-                </div>
-            </div>
+            </x-admin-locale-tabs>
         </div>
 
         @include('partials.admin-seo-fields')

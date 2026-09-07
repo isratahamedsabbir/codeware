@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\ProductCategories;
 
 use App\Concerns\HasSeoFields;
+use App\Concerns\HasTranslatableFields;
 use App\Models\Page;
 use App\Models\ProductCategory;
 use App\Support\AdminActivity;
@@ -13,24 +14,20 @@ use Livewire\Component;
 
 class Form extends Component
 {
-    use HasSeoFields;
+    use HasSeoFields, HasTranslatableFields;
 
     public ?int $categoryId = null;
 
     public ?int $pageId = null;
 
-    #[Validate('required|string|max:255')]
-    public string $name_en = '';
-
-    #[Validate('nullable|string|max:255')]
-    public string $name_bn = '';
+    public array $name = [];
 
     #[Validate('nullable|string|max:255')]
     public string $slug = '';
 
     /**
      * The last auto-generated slug value, so we know whether the admin has
-     * manually diverged from it — see updatedNameEn().
+     * manually diverged from it — see updated().
      */
     public string $autoSlug = '';
 
@@ -51,8 +48,7 @@ class Form extends Component
         if ($id) {
             $cat = ProductCategory::findOrFail($id);
             $this->categoryId = $id;
-            $this->name_en = $cat->getTranslation('name', 'en', false) ?? '';
-            $this->name_bn = $cat->getTranslation('name', 'bn', false) ?? '';
+            $this->hydrateTranslatable($cat, ['name']);
             $this->slug = $cat->slug ?? '';
             $this->icon = $cat->icon ?? null;
 
@@ -64,14 +60,20 @@ class Form extends Component
     }
 
     /**
-     * Live slug-as-you-type — regenerates from the English name only while the
-     * slug still matches what we last auto-generated (i.e. the admin hasn't
-     * typed a custom one), or is empty. Editing an existing category's name
-     * never touches its already-set slug this way, since autoSlug starts
-     * empty and never matches a loaded slug.
+     * Live slug-as-you-type — regenerates from the primary locale's name only
+     * while the slug still matches what we last auto-generated (i.e. the
+     * admin hasn't typed a custom one), or is empty. Editing an existing
+     * category's name never touches its already-set slug this way, since
+     * autoSlug starts empty and never matches a loaded slug. Livewire's magic
+     * updated{Field}() hooks don't fire for array sub-key mutations like
+     * "name.en", so this lives in the generic updated() catch-all instead.
      */
-    public function updatedNameEn(string $value): void
+    public function updated(string $name, mixed $value): void
     {
+        if (! $this->isPrimaryLocaleUpdate($name, 'name')) {
+            return;
+        }
+
         if ($this->slug === '' || $this->slug === $this->autoSlug) {
             $this->autoSlug = Slug::make($value);
             $this->slug = $this->autoSlug;
@@ -100,11 +102,13 @@ class Form extends Component
 
     public function save(): void
     {
-        if (empty($this->slug) && $this->name_en) {
-            $this->slug = Slug::make($this->name_en);
+        if (empty($this->slug) && $this->primaryValue('name')) {
+            $this->slug = Slug::make($this->primaryValue('name'));
         }
 
-        $rules = $this->getRules();
+        $rules = array_merge($this->getRules(), $this->translatableRules([
+            'name' => 'required|string|max:255',
+        ]));
         $rules['slug'] = [
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
@@ -115,7 +119,7 @@ class Form extends Component
         $creating = $this->categoryId === null;
 
         $data = [
-            'name' => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
+            'name' => $this->translatablePayload('name'),
             'icon' => $this->icon ?: null,
         ];
 
@@ -136,7 +140,7 @@ class Form extends Component
             ['type' => 'product_category', 'category_id' => $category->id],
             [
                 'user_id' => auth()->id(),
-                'title' => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
+                'title' => $this->translatablePayload('name'),
                 'slug' => $this->slug,
                 'status' => $category->status,
                 ...$this->seoPagePayload(),
@@ -146,7 +150,7 @@ class Form extends Component
 
         AdminActivity::log(
             $creating ? 'created' : 'updated',
-            "Product Category: {$this->name_en}",
+            "Product Category: {$this->primaryValue('name')}",
         );
 
         $this->redirect(route('admin.product-categories'), navigate: true);

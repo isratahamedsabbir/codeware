@@ -111,7 +111,7 @@ it('does not expose a status field on the product form', function () {
 
 it('creates new records inactive by default across resources', function () {
     Livewire::test(App\Livewire\Admin\Tags\Form::class)
-        ->set('name_en', 'Fresh Tag')
+        ->set('name.en', 'Fresh Tag')
         ->call('save');
 
     expect(Tag::where('slug', 'fresh-tag')->sole()->status)->toBe('inactive');

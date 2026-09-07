@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Locale;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -21,7 +22,7 @@ class Tag extends Model
         static::saving(function (Tag $tag) {
             if (empty($tag->slug)) {
                 $name = is_array($tag->name)
-                    ? ($tag->name['en'] ?? reset($tag->name))
+                    ? ($tag->name[Locale::primary()] ?? reset($tag->name))
                     : $tag->name;
                 $tag->slug = Str::slug($name);
             }

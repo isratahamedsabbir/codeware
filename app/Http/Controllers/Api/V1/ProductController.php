@@ -7,6 +7,7 @@ use App\Models\CmsSection;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\Setting;
+use App\Support\Locale;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -16,7 +17,7 @@ class ProductController extends Controller
     {
         $locale = $request->query('locale');
 
-        return in_array($locale, ['en', 'bn'], true) ? $locale : 'en';
+        return is_string($locale) && Locale::isSupported($locale) ? $locale : Locale::default();
     }
 
     public function index(Request $request): JsonResponse

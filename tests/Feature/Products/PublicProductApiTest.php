@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\CmsSection;
+use App\Models\Language;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductCategory;
@@ -207,6 +208,8 @@ it('returns 404 for inactive product slug on public endpoint', function () {
 });
 
 it('returns product name for bn locale', function () {
+    Language::create(['code' => 'bn', 'name' => 'Bengali', 'native_name' => 'বাংলা', 'is_active' => true]);
+
     Product::factory()->published()->create(['name' => ['en' => 'English Name', 'bn' => 'বাংলা নাম']]);
 
     $this->getJson('/api/v1/products?locale=bn')
@@ -237,6 +240,8 @@ it('public product detail includes faq for locale', function () {
 });
 
 it('public product detail returns faq in bn locale', function () {
+    Language::create(['code' => 'bn', 'name' => 'Bengali', 'native_name' => 'বাংলা', 'is_active' => true]);
+
     $faq = [['question' => ['en' => 'What is this?', 'bn' => 'এটি কি?'], 'answer' => ['en' => 'A product.', 'bn' => 'একটি পণ্য।']]];
     $product = Product::factory()->published()->create(['faq' => $faq]);
     pairPageFor($product, 'product', 'faq-product-bn', $this->admin->id);

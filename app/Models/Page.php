@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Locale;
 use App\Support\Slug;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -37,7 +38,7 @@ class Page extends Model
         static::saving(function (Page $page) {
             if (empty($page->slug)) {
                 $title = is_array($page->title)
-                    ? ($page->title['en'] ?? reset($page->title))
+                    ? ($page->title[Locale::primary()] ?? reset($page->title))
                     : $page->title;
                 $page->slug = Slug::make($title);
             } else {

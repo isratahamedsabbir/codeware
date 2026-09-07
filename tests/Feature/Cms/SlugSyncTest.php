@@ -28,12 +28,12 @@ it('formats slugs with underscores and strips special characters', function () {
 
 it('live-types the product slug from the name as you type, until manually edited', function () {
     $component = Livewire::test(ProductForm::class)
-        ->set('name_en', 'Blue Running Shoes')
+        ->set('name.en', 'Blue Running Shoes')
         ->assertSet('slug', 'blue_running_shoes');
 
     // Manually diverging from the auto-generated value stops further auto-updates.
     $component->set('slug', 'custom-shoe-slug')
-        ->set('name_en', 'Blue Running Shoes V2')
+        ->set('name.en', 'Blue Running Shoes V2')
         ->assertSet('slug', 'custom-shoe-slug');
 });
 
@@ -42,31 +42,31 @@ it('does not auto-touch an existing product\'s slug when only its name is edited
     pairPageFor($product, 'product', 'stable_slug', $this->admin->id);
 
     Livewire::test(ProductForm::class, ['id' => $product->id])
-        ->set('name_en', 'A Brand New Name')
+        ->set('name.en', 'A Brand New Name')
         ->assertSet('slug', 'stable_slug');
 });
 
 it('live-types slugs for posts, product categories, and post categories the same way', function () {
     Livewire::test(PostForm::class)
-        ->set('title_en', 'My First Blog Post')
+        ->set('title.en', 'My First Blog Post')
         ->assertSet('slug', 'my_first_blog_post');
 
     Livewire::test(ProductCategoryForm::class)
-        ->set('name_en', 'Home Appliances')
+        ->set('name.en', 'Home Appliances')
         ->assertSet('slug', 'home_appliances');
 
     Livewire::test(PostCategoryForm::class)
-        ->set('name_en', 'Company News')
+        ->set('name.en', 'Company News')
         ->assertSet('slug', 'company_news');
 
     Livewire::test(PageForm::class)
-        ->set('title_en', 'About Us')
+        ->set('title.en', 'About Us')
         ->assertSet('slug', 'about_us');
 });
 
 it('keeps a product\'s slug and its paired page\'s slug identical after saving', function () {
     Livewire::test(ProductForm::class)
-        ->set('name_en', 'Synced Product')
+        ->set('name.en', 'Synced Product')
         ->call('save');
 
     $page = Page::where(['type' => 'product', 'slug' => 'synced_product'])->sole();
@@ -80,7 +80,7 @@ it('rejects a product slug that collides with an existing page slug from a diffe
     pairPageFor($post, 'post', 'shared_slug', $this->admin->id);
 
     Livewire::test(ProductForm::class)
-        ->set('name_en', 'Some Product')
+        ->set('name.en', 'Some Product')
         ->set('slug', 'shared_slug')
         ->call('save')
         ->assertHasErrors(['slug']);
@@ -88,11 +88,11 @@ it('rejects a product slug that collides with an existing page slug from a diffe
 
 it('rejects a product category slug that collides with a post category, since categories are now globally unique', function () {
     Livewire::test(PostCategoryForm::class)
-        ->set('name_en', 'Shared Category')
+        ->set('name.en', 'Shared Category')
         ->call('save');
 
     Livewire::test(ProductCategoryForm::class)
-        ->set('name_en', 'Something Else')
+        ->set('name.en', 'Something Else')
         ->set('slug', 'shared_category')
         ->call('save')
         ->assertHasErrors(['slug']);
@@ -100,7 +100,7 @@ it('rejects a product category slug that collides with a post category, since ca
 
 it('locks the slug field for a linked page and ignores any edit attempt on save, keeping the product authoritative', function () {
     Livewire::test(ProductForm::class)
-        ->set('name_en', 'Editable Product')
+        ->set('name.en', 'Editable Product')
         ->call('save');
 
     $page = Page::where(['type' => 'product', 'slug' => 'editable_product'])->sole();
@@ -117,7 +117,7 @@ it('locks the slug field for a linked page and ignores any edit attempt on save,
 
 it('locks the slug field for a linked page and ignores any edit attempt on save, keeping the post category authoritative', function () {
     Livewire::test(PostCategoryForm::class)
-        ->set('name_en', 'Original Category')
+        ->set('name.en', 'Original Category')
         ->call('save');
 
     $page = Page::where(['type' => 'post_category', 'slug' => 'original_category'])->sole();
@@ -133,7 +133,7 @@ it('locks the slug field for a linked page and ignores any edit attempt on save,
 
 it('does not affect other pages when editing a plain (non-typed) page\'s slug', function () {
     Livewire::test(PageForm::class)
-        ->set('title_en', 'Plain Page')
+        ->set('title.en', 'Plain Page')
         ->call('save');
 
     $page = Page::where('slug', 'plain_page')->sole();
@@ -152,7 +152,7 @@ it('rejects a page slug that collides with an existing product slug', function (
     pairPageFor($product, 'product', 'taken_slug', $this->admin->id);
 
     Livewire::test(PageForm::class)
-        ->set('title_en', 'New Page')
+        ->set('title.en', 'New Page')
         ->set('slug', 'taken_slug')
         ->call('save')
         ->assertHasErrors(['slug']);
@@ -160,7 +160,7 @@ it('rejects a page slug that collides with an existing product slug', function (
 
 it('marks a newly-typed product slug available (green) when it is unique', function () {
     Livewire::test(ProductForm::class)
-        ->set('name_en', 'Totally Unique Product')
+        ->set('name.en', 'Totally Unique Product')
         ->assertSet('slugAvailable', true);
 });
 
@@ -169,7 +169,7 @@ it('marks a product slug unavailable (red) when it collides with another page sl
     pairPageFor($post, 'post', 'taken_by_post', $this->admin->id);
 
     Livewire::test(ProductForm::class)
-        ->set('name_en', 'Some Product')
+        ->set('name.en', 'Some Product')
         ->set('slug', 'taken_by_post')
         ->assertSet('slugAvailable', false);
 });
@@ -179,7 +179,7 @@ it('re-checks product slug availability on direct manual edits, not just auto-ty
     pairPageFor($product, 'product', 'existing_one', $this->admin->id);
 
     Livewire::test(ProductForm::class)
-        ->set('name_en', 'Fresh Product')
+        ->set('name.en', 'Fresh Product')
         ->assertSet('slugAvailable', true)
         ->set('slug', 'existing_one')
         ->assertSet('slugAvailable', false)
@@ -200,20 +200,20 @@ it('checks slug availability the same way for posts, categories, and pages', fun
     pairPageFor($existingPost, 'post', 'blog_slug_taken', $this->admin->id);
 
     Livewire::test(PostForm::class)
-        ->set('title_en', 'New Blog Post')
+        ->set('title.en', 'New Blog Post')
         ->set('slug', 'blog_slug_taken')
         ->assertSet('slugAvailable', false);
 
     Livewire::test(ProductCategoryForm::class)
-        ->set('name_en', 'Brand New Category')
+        ->set('name.en', 'Brand New Category')
         ->assertSet('slugAvailable', true);
 
     Livewire::test(PostCategoryForm::class)
-        ->set('name_en', 'Another Fresh Category')
+        ->set('name.en', 'Another Fresh Category')
         ->assertSet('slugAvailable', true);
 
     Livewire::test(PageForm::class)
-        ->set('title_en', 'New Page')
+        ->set('title.en', 'New Page')
         ->set('slug', 'blog_slug_taken')
         ->assertSet('slugAvailable', false);
 });

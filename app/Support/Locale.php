@@ -62,6 +62,21 @@ class Locale
     }
 
     /**
+     * The language flagged is_default in the Language table — guaranteed to
+     * exist, be active, and be undeletable (see Language::makeDefault(),
+     * Languages\Form). This is the "required" locale for translatable
+     * content fields (Products, Posts, Pages, ...) and the source for their
+     * slug generation — distinct from default(), which tracks the
+     * separately admin-editable app_locale Setting governing which locale
+     * the site/UI currently renders in. The two usually coincide but are not
+     * guaranteed to.
+     */
+    public static function primary(): string
+    {
+        return static::active()->firstWhere('is_default', true)?->code ?? static::default();
+    }
+
+    /**
      * @return Collection<int, Language>
      */
     public static function active(): Collection

@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\PostCategories;
 
 use App\Concerns\HasSeoFields;
+use App\Concerns\HasTranslatableFields;
 use App\Models\Page;
 use App\Models\PostCategory;
 use App\Support\AdminActivity;
@@ -12,24 +13,20 @@ use Livewire\Component;
 
 class Form extends Component
 {
-    use HasSeoFields;
+    use HasSeoFields, HasTranslatableFields;
 
     public ?int $categoryId = null;
 
     public ?int $pageId = null;
 
-    #[Validate('required|string|max:255')]
-    public string $name_en = '';
-
-    #[Validate('nullable|string|max:255')]
-    public string $name_bn = '';
+    public array $name = [];
 
     #[Validate('nullable|string|max:255')]
     public string $slug = '';
 
     /**
      * The last auto-generated slug value, so we know whether the admin has
-     * manually diverged from it — see updatedNameEn().
+     * manually diverged from it — see updated().
      */
     public string $autoSlug = '';
 
@@ -38,22 +35,15 @@ class Form extends Component
      */
     public ?bool $slugAvailable = null;
 
-    #[Validate('nullable|string')]
-    public string $description_en = '';
-
-    #[Validate('nullable|string')]
-    public string $description_bn = '';
+    public array $description = [];
 
     public function mount(?int $id = null): void
     {
         if ($id) {
             $category = PostCategory::findOrFail($id);
             $this->categoryId = $id;
-            $this->name_en = $category->getTranslation('name', 'en', false) ?? '';
-            $this->name_bn = $category->getTranslation('name', 'bn', false) ?? '';
+            $this->hydrateTranslatable($category, ['name', 'description']);
             $this->slug = $category->slug ?? '';
-            $this->description_en = $category->getTranslation('description', 'en', false) ?? '';
-            $this->description_bn = $category->getTranslation('description', 'bn', false) ?? '';
 
             $this->pageId = $category->page?->id;
             $this->hydrateSeoFieldsFromPage($category->page);
@@ -63,14 +53,20 @@ class Form extends Component
     }
 
     /**
-     * Live slug-as-you-type — regenerates from the English name only while the
-     * slug still matches what we last auto-generated (i.e. the admin hasn't
-     * typed a custom one), or is empty. Editing an existing category's name
-     * never touches its already-set slug this way, since autoSlug starts
-     * empty and never matches a loaded slug.
+     * Live slug-as-you-type — regenerates from the primary locale's name only
+     * while the slug still matches what we last auto-generated (i.e. the
+     * admin hasn't typed a custom one), or is empty. Editing an existing
+     * category's name never touches its already-set slug this way, since
+     * autoSlug starts empty and never matches a loaded slug. Livewire's magic
+     * updated{Field}() hooks don't fire for array sub-key mutations like
+     * "name.en", so this lives in the generic updated() catch-all instead.
      */
-    public function updatedNameEn(string $value): void
+    public function updated(string $name, mixed $value): void
     {
+        if (! $this->isPrimaryLocaleUpdate($name, 'name')) {
+            return;
+        }
+
         if ($this->slug === '' || $this->slug === $this->autoSlug) {
             $this->autoSlug = Slug::make($value);
             $this->slug = $this->autoSlug;
@@ -99,11 +95,14 @@ class Form extends Component
 
     public function save(): void
     {
-        if (empty($this->slug) && $this->name_en) {
-            $this->slug = Slug::make($this->name_en);
+        if (empty($this->slug) && $this->primaryValue('name')) {
+            $this->slug = Slug::make($this->primaryValue('name'));
         }
 
-        $rules = $this->getRules();
+        $rules = array_merge($this->getRules(), $this->translatableRules([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]));
         $rules['slug'] = [
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
@@ -114,8 +113,8 @@ class Form extends Component
         $creating = $this->categoryId === null;
 
         $data = [
-            'name' => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
-            'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
+            'name' => $this->translatablePayload('name'),
+            'description' => $this->translatablePayload('description') ?: null,
         ];
 
         if ($this->categoryId) {
@@ -135,10 +134,10 @@ class Form extends Component
             ['type' => 'post_category', 'category_id' => $category->id],
             [
                 'user_id' => auth()->id(),
-                'title' => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
+                'title' => $this->translatablePayload('name'),
                 'slug' => $this->slug,
                 'status' => $category->status,
-                'description' => array_filter(['en' => $this->description_en, 'bn' => $this->description_bn]) ?: null,
+                'description' => $this->translatablePayload('description') ?: null,
                 ...$this->seoPagePayload(),
             ]
         );
@@ -146,7 +145,7 @@ class Form extends Component
 
         AdminActivity::log(
             $creating ? 'created' : 'updated',
-            "Post Category: {$this->name_en}",
+            "Post Category: {$this->primaryValue('name')}",
         );
 
         $this->redirect(route('admin.post-categories'), navigate: true);

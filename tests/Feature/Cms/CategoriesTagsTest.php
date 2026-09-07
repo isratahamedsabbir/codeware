@@ -25,8 +25,8 @@ it('displays existing blog categories', function () {
 
 it('can create a blog category', function () {
     Livewire::test(PostCategoriesForm::class)
-        ->set('name_en', 'PHP')
-        ->set('description_en', 'PHP tutorials')
+        ->set('name.en', 'PHP')
+        ->set('description.en', 'PHP tutorials')
         ->call('save');
 
     expect(PostCategory::whereJsonContains('name->en', 'PHP')->exists())->toBeTrue();
@@ -34,9 +34,9 @@ it('can create a blog category', function () {
 
 it('validates blog category name is required', function () {
     Livewire::test(PostCategoriesForm::class)
-        ->set('name_en', '')
+        ->set('name.en', '')
         ->call('save')
-        ->assertHasErrors(['name_en']);
+        ->assertHasErrors(['name.en']);
 });
 
 it('can delete a blog category', function () {

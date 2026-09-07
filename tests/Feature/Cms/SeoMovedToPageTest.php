@@ -79,7 +79,7 @@ it('saving a product leaves its page\'s seo fields untouched when the admin didn
     ]);
 
     Livewire::test(ProductForm::class, ['id' => $product->id])
-        ->set('name_en', 'Updated Product Name')
+        ->set('name.en', 'Updated Product Name')
         ->call('save');
 
     $page = Page::where(['type' => 'product', 'product_id' => $product->id])->firstOrFail();
@@ -137,7 +137,7 @@ it('saving a post leaves its page\'s seo fields untouched when the admin didn\'t
     ]);
 
     Livewire::test(PostForm::class, ['id' => $post->id])
-        ->set('title_en', 'Updated Post Title')
+        ->set('title.en', 'Updated Post Title')
         ->call('save');
 
     $page = Page::where(['type' => 'post', 'post_id' => $post->id])->firstOrFail();

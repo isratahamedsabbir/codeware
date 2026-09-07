@@ -3,12 +3,14 @@
 namespace App\Livewire\Admin\Posts;
 
 use App\Concerns\HasSeoFields;
+use App\Concerns\HasTranslatableFields;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\Setting;
 use App\Models\Tag;
 use App\Support\AdminActivity;
+use App\Support\Locale;
 use App\Support\Slug;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
@@ -17,24 +19,20 @@ use Livewire\Component;
 
 class Form extends Component
 {
-    use HasSeoFields;
+    use HasSeoFields, HasTranslatableFields;
 
     public ?int $postId = null;
 
     public ?int $pageId = null;
 
-    #[Validate('required|string|max:255')]
-    public string $title_en = '';
-
-    #[Validate('nullable|string|max:255')]
-    public string $title_bn = '';
+    public array $title = [];
 
     #[Validate('nullable|string|max:255')]
     public string $slug = '';
 
     /**
      * The last auto-generated slug value, so we know whether the admin has
-     * manually diverged from it — see updatedTitleEn().
+     * manually diverged from it — see updated().
      */
     public string $autoSlug = '';
 
@@ -60,8 +58,7 @@ class Form extends Component
         if ($id) {
             $post = Post::with('page', 'tags')->findOrFail($id);
             $this->postId = $id;
-            $this->title_en = $post->getTranslation('title', 'en', false) ?? '';
-            $this->title_bn = $post->getTranslation('title', 'bn', false) ?? '';
+            $this->hydrateTranslatable($post, ['title']);
             $this->slug = $post->slug ?? '';
             $this->category_id = $post->category_id;
             $this->featured_image = $post->featured_image ?? '';
@@ -75,14 +72,21 @@ class Form extends Component
     }
 
     /**
-     * Live slug-as-you-type — regenerates from the English title only while
-     * the slug still matches what we last auto-generated (i.e. the admin
-     * hasn't typed a custom one), or is empty. Editing an existing post's
-     * title never touches its already-set slug this way, since autoSlug
-     * starts empty and never matches a loaded slug.
+     * Live slug-as-you-type — regenerates from the primary locale's title
+     * only while the slug still matches what we last auto-generated (i.e.
+     * the admin hasn't typed a custom one), or is empty. Editing an existing
+     * post's title never touches its already-set slug this way, since
+     * autoSlug starts empty and never matches a loaded slug. Livewire's
+     * magic updated{Field}() hooks don't fire for array sub-key mutations
+     * like "title.en", so this lives in the generic updated() catch-all
+     * instead.
      */
-    public function updatedTitleEn(string $value): void
+    public function updated(string $name, mixed $value): void
     {
+        if (! $this->isPrimaryLocaleUpdate($name, 'title')) {
+            return;
+        }
+
         if ($this->slug === '' || $this->slug === $this->autoSlug) {
             $this->autoSlug = Slug::make($value);
             $this->slug = $this->autoSlug;
@@ -112,7 +116,7 @@ class Form extends Component
     #[Computed]
     public function categories()
     {
-        return PostCategory::orderBy('name->en')->get();
+        return PostCategory::orderBy('name->'.Locale::primary())->get();
     }
 
     #[Computed]
@@ -141,11 +145,13 @@ class Form extends Component
 
     public function saveAndOpenPageBuilder(): void
     {
-        if (empty($this->slug) && $this->title_en) {
-            $this->slug = Slug::make($this->title_en);
+        if (empty($this->slug) && $this->primaryValue('title')) {
+            $this->slug = Slug::make($this->primaryValue('title'));
         }
 
-        $rules = $this->getRules();
+        $rules = array_merge($this->getRules(), $this->translatableRules([
+            'title' => 'required|string|max:255',
+        ]));
         $rules['slug'] = [
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
@@ -174,11 +180,13 @@ class Form extends Component
 
     public function save(): void
     {
-        if (empty($this->slug) && $this->title_en) {
-            $this->slug = Slug::make($this->title_en);
+        if (empty($this->slug) && $this->primaryValue('title')) {
+            $this->slug = Slug::make($this->primaryValue('title'));
         }
 
-        $rules = $this->getRules();
+        $rules = array_merge($this->getRules(), $this->translatableRules([
+            'title' => 'required|string|max:255',
+        ]));
         $rules['slug'] = [
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
@@ -200,7 +208,7 @@ class Form extends Component
 
         $data = [
             'user_id' => auth()->id(),
-            'title' => array_filter(['en' => $this->title_en, 'bn' => $this->title_bn]),
+            'title' => $this->translatablePayload('title'),
             'category_id' => $this->category_id,
             'featured_image' => $this->featured_image ?: null,
         ];
@@ -222,7 +230,7 @@ class Form extends Component
             ['type' => 'post', 'post_id' => $post->id],
             [
                 'user_id' => auth()->id(),
-                'title' => array_filter(['en' => $this->title_en, 'bn' => $this->title_bn]),
+                'title' => $this->translatablePayload('title'),
                 'slug' => $this->slug,
                 'status' => $post->status,
                 ...$this->seoPagePayload(),
@@ -232,7 +240,7 @@ class Form extends Component
 
         AdminActivity::log(
             $creating ? 'created' : 'updated',
-            "Post #{$post->id}: {$this->title_en}",
+            "Post #{$post->id}: {$this->primaryValue('title')}",
         );
     }
 

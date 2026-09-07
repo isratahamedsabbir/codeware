@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Tags;
 
+use App\Concerns\HasTranslatableFields;
 use App\Models\Tag;
 use App\Support\AdminActivity;
 use Illuminate\Support\Str;
@@ -10,13 +11,11 @@ use Livewire\Component;
 
 class Form extends Component
 {
+    use HasTranslatableFields;
+
     public ?int $tagId = null;
 
-    #[Validate('required|string|max:255')]
-    public string $name_en = '';
-
-    #[Validate('nullable|string|max:255')]
-    public string $name_bn = '';
+    public array $name = [];
 
     #[Validate('nullable|string|max:255')]
     public string $slug = '';
@@ -26,19 +25,20 @@ class Form extends Component
         if ($id) {
             $tag = Tag::findOrFail($id);
             $this->tagId = $id;
-            $this->name_en = $tag->getTranslation('name', 'en', false) ?? '';
-            $this->name_bn = $tag->getTranslation('name', 'bn', false) ?? '';
+            $this->hydrateTranslatable($tag, ['name']);
             $this->slug = $tag->slug;
         }
     }
 
     public function save(): void
     {
-        if (empty($this->slug) && $this->name_en) {
-            $this->slug = Str::slug($this->name_en);
+        if (empty($this->slug) && $this->primaryValue('name')) {
+            $this->slug = Str::slug($this->primaryValue('name'));
         }
 
-        $rules = $this->getRules();
+        $rules = array_merge($this->getRules(), $this->translatableRules([
+            'name' => 'required|string|max:255',
+        ]));
         $rules['slug'] = $this->tagId
             ? 'required|string|max:255|unique:tags,slug,'.$this->tagId
             : 'required|string|max:255|unique:tags,slug';
@@ -48,7 +48,7 @@ class Form extends Component
         $creating = $this->tagId === null;
 
         $data = [
-            'name' => array_filter(['en' => $this->name_en, 'bn' => $this->name_bn]),
+            'name' => $this->translatablePayload('name'),
             'slug' => $this->slug,
         ];
 
@@ -65,7 +65,7 @@ class Form extends Component
 
         AdminActivity::log(
             $creating ? 'created' : 'updated',
-            "Tag: {$this->name_en}",
+            "Tag: {$this->primaryValue('name')}",
         );
 
         $this->redirect(route('admin.tags'), navigate: true);

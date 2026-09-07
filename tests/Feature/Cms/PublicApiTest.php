@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\CmsSection;
+use App\Models\Language;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\PostCategory;
@@ -36,6 +37,8 @@ it('returns paginated posts with meta', function () {
 });
 
 it('returns translated title with locale param', function () {
+    Language::create(['code' => 'bn', 'name' => 'Bengali', 'native_name' => 'বাংলা', 'is_active' => true]);
+
     Post::factory()->published()->create([
         'title' => ['en' => 'English Title', 'bn' => 'বাংলা শিরোনাম'],
     ]);
@@ -199,6 +202,8 @@ it('filters posts by category slug', function () {
 });
 
 it('returns tags on published posts', function () {
+    Language::create(['code' => 'bn', 'name' => 'Bengali', 'native_name' => 'বাংলা', 'is_active' => true]);
+
     $tag = Tag::factory()->create(['name' => ['en' => 'Laravel', 'bn' => 'লারাভেল']]);
     $post = Post::factory()->published()->create(['title' => ['en' => 'Tagged Post', 'bn' => '']]);
     $post->tags()->attach($tag);
