@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Permissions;
 
 use App\Concerns\HasPerPage;
 use Illuminate\Support\Str;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -25,6 +26,13 @@ class Index extends Component
         $this->resetPage();
     }
 
+    /**
+     * Listens for a global JS event rather than relying on wire:click, since
+     * the trigger button lives in @push('page-header-actions') — rendered by
+     * the layout in the header, outside this component's own DOM root, where
+     * wire:click has no component to route to.
+     */
+    #[On('open-permission-create-modal')]
     public function openCreateModal(): void
     {
         $this->reset('newName');

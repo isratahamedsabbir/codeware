@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\MediaLibrary;
 use App\Models\MediaLibrary;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
@@ -56,6 +57,13 @@ class Index extends Component
         $this->resetPage();
     }
 
+    /**
+     * Listens for a global JS event rather than relying on wire:click, since
+     * the trigger button lives in @push('page-header-actions') — rendered by
+     * the layout in the header, outside this component's own DOM root, where
+     * wire:click has no component to route to.
+     */
+    #[On('open-media-upload-modal')]
     public function openUploadModal(): void
     {
         $this->authorize('create', MediaLibrary::class);

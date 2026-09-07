@@ -1,5 +1,9 @@
 @push('page-header-actions')
-    <flux:button variant="ghost" size="sm" icon="arrow-up-tray" wire:click="openUploadModal">
+    {{-- Plain onclick, not wire:click — this button is rendered by the layout's
+         header (outside this Livewire component's own DOM root via @push/@stack),
+         so wire:click has no component to route to. Livewire.dispatch() works
+         regardless of DOM position; see the #[On(...)] listener in Index.php. --}}
+    <flux:button variant="ghost" size="sm" icon="arrow-up-tray" onclick="Livewire.dispatch('open-media-upload-modal')">
         Upload Files
     </flux:button>
 @endpush
