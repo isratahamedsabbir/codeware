@@ -29,7 +29,9 @@ it('drives the default theme nav from the pages list, not the frontend menu', fu
     Setting::set('site_theme', 'default');
     MenuItem::where('group', 'frontend')->update(['label' => 'RENAMED']);
 
-    $this->get('/')->assertOk()->assertSee('About Us')->assertDontSee('RENAMED');
+    // The default theme's homepage is a bare login/dashboard card with no nav
+    // — the pages-list-driven nav lives on its other pages (about/contact/faq).
+    $this->get('/about')->assertOk()->assertSee('About Us')->assertDontSee('RENAMED');
 });
 
 it('drives the portfolio and ecommerce theme nav from the frontend menu, not the pages list', function () {

@@ -3,7 +3,9 @@
 
 <head>
     @include('partials.head')
-    <meta name="robots" content="noindex, nofollow">
+    @if (($noindex ?? true) !== false)
+        <meta name="robots" content="noindex, nofollow">
+    @endif
     @if (filled($description ?? null))
         <meta name="description" content="{{ $description }}">
     @endif
