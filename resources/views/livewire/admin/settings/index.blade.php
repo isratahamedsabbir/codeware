@@ -130,12 +130,12 @@
 
         {{-- Currency tab --}}
         <div x-show="tab === 'currency'">
-            <div class="max-w-[1600px] space-y-6">
+            <div class="max-w-[1600px] space-y-5">
                 <flux:text class="text-zinc-500">
                     Set the currency used across the site for product pricing and payments.
                 </flux:text>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
                 <x-admin-section-card header-border="border-zinc-100" icon="banknotes" title="Currency">
                     <flux:field>
@@ -173,7 +173,7 @@
 
         {{-- Theme tab --}}
         <div x-show="tab === 'theme'">
-            <div class="max-w-[1600px] space-y-6">
+            <div class="max-w-[1600px] space-y-5">
 
                 <x-admin-section-card header-border="border-zinc-100" icon="globe-alt" title="Frontend"
                     description="Choose the design shown to visitors on the public site.">
@@ -214,7 +214,7 @@
 
         {{-- Env tab --}}
         <div x-show="tab === 'env'">
-            <div class="max-w-[1600px] space-y-6">
+            <div class="max-w-[1600px] space-y-5">
                 <div class="max-w-2xl rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm dark:bg-amber-950 dark:border-amber-800 dark:text-amber-300">
                     <strong>{{ __('Careful') }}:</strong>
                     {{ __('These edit the live .env file this server runs on. A wrong value can take the site down until it is fixed. A backup of the current file is saved automatically before every change. Mail credentials live on the Email Templates page instead.') }}
@@ -307,7 +307,7 @@
 
         {{-- Other tab --}}
         <div x-show="tab === 'other'">
-            <div class="max-w-[1600px] space-y-6">
+            <div class="max-w-[1600px] space-y-5">
                 {{-- Floating action button --}}
                 <x-admin-section-card header-border="border-zinc-100" x-data icon="cursor-arrow-rays" title="Floating Button" class="max-w-md"
                     description="Shows a floating button in the corner of every admin page.">
@@ -337,7 +337,7 @@
 
         {{-- Constant tab --}}
         <div x-show="tab === 'constant'">
-            <div class="max-w-[1600px] space-y-6">
+            <div class="max-w-[1600px] space-y-5">
                 <x-admin-section-card header-border="border-zinc-100" icon="variable" title="Constant"
                     description="Freeform key/value pairs, available site-wide — not tied to any page or CMS section.">
                     <x-slot:actions>

@@ -4,7 +4,7 @@
     </flux:button>
 @endpush
 
-<div class="space-y-4">
+<div class="space-y-5">
 
     {{-- ─── Filters ─────────────────────────────────────────────────────────── --}}
     <div class="rounded-[5px] border border-slate-200 bg-white px-5 py-4">

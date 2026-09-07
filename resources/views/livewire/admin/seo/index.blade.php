@@ -1,9 +1,9 @@
-<div class="max-w-[1600px] space-y-6">
+<div class="max-w-[1600px] space-y-5">
     <flux:text class="text-zinc-500">
         Control search engine visibility and social sharing metadata for your site.
     </flux:text>
 
-    <div class="space-y-4">
+    <div class="space-y-5">
 
     <x-admin-section-card icon="document-text" title="Meta Tags"
         description="What search engines like Google show in results.">

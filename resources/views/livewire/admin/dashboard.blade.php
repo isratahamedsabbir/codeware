@@ -1,6 +1,6 @@
 <div>
     {{-- Greeting & Overview Header --}}
-    <div class="admin-dashboard-hero flex flex-col sm:flex-row sm:items-center rounded-lg! justify-between gap-4 mb-4 px-4 py-2 sm:px-4"> 
+    <div class="admin-dashboard-hero flex flex-col sm:flex-row sm:items-center rounded-lg! justify-between gap-4 mb-5 px-4 py-2 sm:px-4"> 
         <div>
             <!-- <span class="inline-flex items-center gap-1.5 rounded-full bg-blue-600 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
                 <flux:icon.sparkles class="size-3.5" />
@@ -33,7 +33,7 @@
     </div>
 
     {{-- Stats Grid (Clean, flat SaaS cards) --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-5">
 
         {{-- Products Card --}}
         <div class="admin-card admin-stat-card admin-showcase-stat relative border-0! border-t-4! border-primary! shadow-sm!">
@@ -103,7 +103,7 @@
     </div>
 
     {{-- Charts Row --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
 
         {{-- Bar Chart: Content by Type --}}
         <div class="admin-card admin-chart-card p-5 sm:p-5 shadow-sm! lg:col-span-2">
@@ -268,9 +268,9 @@
     @endscript
 
     {{-- Quick Actions Section --}}
-    <div class="mb-4">
+    <div class="mb-5">
         <h2 class="text-xs font-bold text-zinc-800 uppercase tracking-widest mb-4">Workspace Quick Actions</h2>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-5">
 
             {{-- Catalog action --}}
             <a href="{{ route('admin.products') }}" wire:navigate.hover
@@ -312,7 +312,7 @@
     </div>
 
     {{-- Activity & Feed Lists --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
         {{-- Recent Products Feed --}}
         <div class="space-y-4">

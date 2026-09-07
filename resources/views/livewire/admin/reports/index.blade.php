@@ -1,7 +1,7 @@
 <div class="space-y-5">
 
     {{-- Summary cards --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <div class="bg-white rounded-[5px] border border-zinc-100 shadow-sm p-5">
             <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Total Orders</p>
             <p class="text-2xl font-bold text-zinc-900">{{ number_format($totalOrders) }}</p>
