@@ -55,6 +55,17 @@ it('can soft-delete a post', function () {
     expect(Post::withTrashed()->find($post->id))->not->toBeNull();
 });
 
+it('opens and closes the view details modal for a post', function () {
+    $post = Post::factory()->create(['title' => ['en' => 'Hello World', 'bn' => '']]);
+
+    Livewire::test(PostsIndex::class)
+        ->call('viewDetails', $post->id)
+        ->assertSet('viewingId', $post->id)
+        ->assertSee('Hello World')
+        ->call('closeDetails')
+        ->assertSet('viewingId', null);
+});
+
 it('opens the puck editor for an existing post', function () {
     $post = Post::factory()->create();
 

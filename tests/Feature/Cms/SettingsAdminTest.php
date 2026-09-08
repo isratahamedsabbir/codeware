@@ -243,15 +243,13 @@ it('saves currency settings through the form', function () {
     expect(Setting::where('key', 'decimal_places')->value('value'))->toBe('2');
 });
 
-it('renders app locale as a select populated from active languages, not a free-text input', function () {
+it('does not render app locale on the settings page — it is switched from the admin header locale switcher instead', function () {
     Language::create(['code' => 'en', 'name' => 'English', 'native_name' => 'English', 'is_active' => true]);
     Language::create(['code' => 'bn', 'name' => 'Bengali', 'native_name' => 'বাংলা', 'is_active' => true]);
     Setting::factory()->create(['key' => 'app_locale', 'value' => 'en', 'group' => 'localization', 'type' => 'string']);
 
     Livewire::test(SettingsIndex::class)
-        ->assertSee('App Locale')
-        ->assertSeeHtml('<option value="en">English</option>')
-        ->assertSeeHtml('<option value="bn">বাংলা</option>');
+        ->assertDontSee('App Locale');
 });
 
 it('renders site theme as a select populated from available theme folders, not a free-text input', function () {

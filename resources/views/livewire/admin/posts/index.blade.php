@@ -117,6 +117,7 @@
                             {{-- Actions --}}
                             <td class="px-4 py-2">
                                 <x-admin-row-actions :actions="[
+                                    ['wireClick' => 'viewDetails(' . $post->id . ')', 'icon' => 'eye', 'label' => 'View', 'color' => 'zinc-500'],
                                     ['href' => route('admin.posts.edit', $post->id), 'icon' => 'pencil', 'label' => 'Edit', 'color' => 'primary'],
                                     $post->page
                                         ? ['href' => route('admin.pages.edit', $post->page->id), 'icon' => 'document', 'label' => 'Page', 'color' => 'secondary']
@@ -149,6 +150,48 @@
     <div class="px-6 py-3">
         {{ $posts->links() }}
     </div>
+
+    {{-- View Modal --}}
+    <flux:modal name="post-view" class="md:w-[600px]"
+        x-on:open-modal.window="if ($event.detail.name === 'post-view') $flux.modal('post-view').show()">
+        @if ($viewingId)
+            @php $viewedPost = \App\Models\Post::with(['category', 'page', 'user'])->find($viewingId); @endphp
+            @if ($viewedPost)
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between border-b border-zinc-100 pb-3">
+                        <flux:heading>{{ $viewedPost->getTranslation('title', 'en', false) }}</flux:heading>
+                        <flux:modal.close>
+                            <button wire:click="closeDetails" class="text-zinc-400 hover:text-zinc-600 transition-colors">
+                                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </flux:modal.close>
+                    </div>
+                    @if ($viewedPost->getTranslation('title', 'bn', false))
+                        <div class="text-sm text-zinc-500">{{ $viewedPost->getTranslation('title', 'bn', false) }}</div>
+                    @endif
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div><span class="text-zinc-400">Slug:</span> <span class="text-zinc-900 font-mono">{{ $viewedPost->slug ?: '—' }}</span></div>
+                        <div><span class="text-zinc-400">Category:</span> <span class="text-zinc-900">{{ $viewedPost->category?->getTranslation('name', 'en', false) ?: '—' }}</span></div>
+                        <div><span class="text-zinc-400">Author:</span> <span class="text-zinc-900">{{ $viewedPost->user?->name ?: '—' }}</span></div>
+                        <div><span class="text-zinc-400">Status:</span> <span class="text-zinc-900">{{ ucfirst($viewedPost->status) }}</span></div>
+                        <div><span class="text-zinc-400">Published:</span> <span class="text-zinc-900">{{ $viewedPost->published_at?->toDisplay('d M Y') ?: '—' }}</span></div>
+                        <div><span class="text-zinc-400">Reading time:</span> <span class="text-zinc-900">{{ $viewedPost->reading_time }} min</span></div>
+                    </div>
+                    @php
+                        $content = $viewedPost->getTranslation('content', 'en', false);
+                        $contentText = is_array($content) ? '' : strip_tags((string) $content);
+                    @endphp
+                    @if ($contentText)
+                        <div class="border-t border-zinc-100 pt-3">
+                            <p class="text-sm text-zinc-700 leading-relaxed">{{ Illuminate\Support\Str::limit($contentText, 500) }}</p>
+                        </div>
+                    @endif
+                </div>
+            @endif
+        @endif
+    </flux:modal>
 
     {{-- Delete Modal --}}
     <flux:modal name="post-delete" class="md:w-80"

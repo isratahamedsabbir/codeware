@@ -61,6 +61,7 @@
                             <x-admin-section-card header-border="border-zinc-100" :icon="$groupIcon" :title="ucfirst($group ?? 'General')">
                                 <div class="{{ $group === 'images' ? 'grid grid-cols-2 sm:grid-cols-4 gap-4' : 'space-y-4' }}">
                                 @foreach ($items as $setting)
+                                    @continue ($setting->key === 'app_locale')
                                     <flux:field>
                                         @php
                                             $isMediaPicker = in_array($setting->key, ['site_icon', 'site_icon_white', 'favicon', 'loader'], true);
@@ -88,16 +89,6 @@
                                                      :style="'background-color: ' + ($wire.settings['{{ $setting->key }}'] || '#ffffff')"></div>
                                                 <flux:input wire:model="settings.{{ $setting->key }}" placeholder="#000000" class="flex-1 font-mono" />
                                             </div>
-                                        @elseif ($setting->key === 'app_locale')
-                                            <select wire:model="settings.{{ $setting->key }}"
-                                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                                                @foreach (\App\Support\Locale::active() as $language)
-                                                    <option value="{{ $language->code }}">{{ $language->native_name ?: $language->name }}</option>
-                                                @endforeach
-                                            </select>
-                                            <flux:text class="text-xs text-zinc-500">
-                                                {{ __('The default language the site renders in. Manage languages under the Localization menu.') }}
-                                            </flux:text>
                                         @elseif ($setting->key === 'pagination_per_page')
                                             <flux:input type="number" min="1" max="100" wire:model="settings.{{ $setting->key }}" />
                                             <flux:text class="text-xs text-zinc-500">

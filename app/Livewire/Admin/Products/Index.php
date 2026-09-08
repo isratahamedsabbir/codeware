@@ -21,6 +21,8 @@ class Index extends Component
 
     public ?int $deletingId = null;
 
+    public ?int $viewingId = null;
+
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -81,6 +83,17 @@ class Index extends Component
 
         AdminActivity::log('updated', "Product #{$product->id}: {$product->name} ".($product->is_featured ? 'marked featured' : 'unmarked featured'));
         $this->dispatch('notify', message: 'Product featured status updated');
+    }
+
+    public function viewDetails(int $id): void
+    {
+        $this->viewingId = $id;
+        $this->dispatch('open-modal', name: 'product-view');
+    }
+
+    public function closeDetails(): void
+    {
+        $this->viewingId = null;
     }
 
     public function confirmDelete(int $id): void
