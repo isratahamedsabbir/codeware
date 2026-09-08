@@ -164,6 +164,13 @@ class SettingsSeeder extends Seeder
             // (Edit, Delete, ...) render on admin list tables — inline icon
             // buttons, or collapsed behind a single three-dot dropdown.
             ['key' => 'admin_actions_display', 'value' => 'inline', 'type' => 'select', 'group' => 'other', 'is_public' => false],
+
+            // ── Watermark (admin panel) ── stamps every future Media Library
+            // upload with this image at this position/opacity (see ImageWatermarker).
+            ['key' => 'watermark_enabled',  'value' => '0', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
+            ['key' => 'watermark_image',    'value' => '', 'type' => 'string', 'group' => 'other', 'is_public' => false],
+            ['key' => 'watermark_position', 'value' => 'bottom-right', 'type' => 'select', 'group' => 'other', 'is_public' => false],
+            ['key' => 'watermark_opacity',  'value' => '50', 'type' => 'integer', 'group' => 'other', 'is_public' => false],
         ];
 
         foreach ($settings as $setting) {

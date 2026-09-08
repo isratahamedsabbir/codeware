@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\MediaLibrary;
+use App\Support\ImageWatermarker;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -50,6 +51,8 @@ class MediaController extends Controller
 
         $mime = $file->getMimeType();
         $fileType = explode('/', $mime)[0];
+
+        ImageWatermarker::applyIfEnabled('public', $path, $mime);
 
         $media = MediaLibrary::create([
             'uuid' => (string) \Illuminate\Support\Str::uuid(),

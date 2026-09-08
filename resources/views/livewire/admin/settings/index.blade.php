@@ -365,6 +365,36 @@
                         </select>
                     </flux:field>
                 </x-admin-section-card>
+
+                {{-- Watermark --}}
+                <x-admin-section-card header-border="border-zinc-100" icon="photo" title="Watermark" class="max-w-md"
+                    description="Stamps this image onto every file uploaded to the Media Library.">
+                    <x-slot:actions>
+                        <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
+                            <input type="checkbox" wire:model="settings.watermark_enabled" class="rounded border-zinc-300 text-primary" />
+                            Enable
+                        </label>
+                    </x-slot:actions>
+
+                    <x-media-picker model="settings.watermark_image" label="Watermark Image" hint="PNG with transparency works best"
+                        placeholder="Select watermark image from library" mimes="png,jpg,jpeg,webp" only-images dropzone />
+
+                    <flux:field>
+                        <flux:label>Position</flux:label>
+                        <select wire:model="settings.watermark_position"
+                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                            <option value="top-left">Top left</option>
+                            <option value="top-right">Top right</option>
+                            <option value="bottom-left">Bottom left</option>
+                            <option value="bottom-right">Bottom right</option>
+                            <option value="center">Center</option>
+                        </select>
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>Opacity ({{ $settings['watermark_opacity'] ?? 50 }}%)</flux:label>
+                        <input type="range" min="0" max="100" wire:model="settings.watermark_opacity" class="w-full" />
+                    </flux:field>
+                </x-admin-section-card>
             </div>
         </div>
 

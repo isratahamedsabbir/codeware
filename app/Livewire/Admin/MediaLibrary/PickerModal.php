@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\MediaLibrary;
 
 use App\Models\MediaLibrary;
+use App\Support\ImageWatermarker;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -165,6 +166,8 @@ class PickerModal extends Component
         $path = $file->store('media', 'public');
         $mimeType = $file->getMimeType();
         $fileType = $this->getFileType($mimeType);
+
+        ImageWatermarker::applyIfEnabled('public', $path, $mimeType);
 
         $metadata = [];
 
