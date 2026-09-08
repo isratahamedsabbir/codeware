@@ -83,7 +83,7 @@
 
                             {{-- Date --}}
                             <td class="px-4 py-2">
-                                <span class="text-sm text-zinc-500 whitespace-nowrap">{{ $contact->created_at->toDisplay('d M Y') }}</span>
+                                <span class="text-sm text-zinc-500 whitespace-nowrap">{{ $contact->created_at->toDisplay() }}</span>
                             </td>
 
                             {{-- Status --}}
@@ -141,7 +141,7 @@
                         @if ($contact->phone_number)
                             <div><span class="text-zinc-400">Phone:</span> <span class="text-zinc-900">{{ $contact->phone_number }}</span></div>
                         @endif
-                        <div><span class="text-zinc-400">Date:</span> <span class="text-zinc-900">{{ $contact->created_at->toDisplay('d M Y, h:i A') }}</span></div>
+                        <div><span class="text-zinc-400">Date:</span> <span class="text-zinc-900">{{ $contact->created_at->toDisplay() }}</span></div>
                     </div>
                     <div class="border-t border-zinc-100 pt-3">
                         <p class="text-sm text-zinc-700 leading-relaxed whitespace-pre-wrap">{{ $contact->message }}</p>

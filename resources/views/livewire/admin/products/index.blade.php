@@ -237,7 +237,7 @@
                         <div><span class="text-zinc-400">Price:</span> <span class="text-zinc-900">{{ number_format((float) $viewedProduct->price, 2) }}</span></div>
                         <div><span class="text-zinc-400">Status:</span> <span class="text-zinc-900">{{ ucfirst($viewedProduct->status) }}</span></div>
                         <div><span class="text-zinc-400">Featured:</span> <span class="text-zinc-900">{{ $viewedProduct->is_featured ? 'Yes' : 'No' }}</span></div>
-                        <div><span class="text-zinc-400">Created:</span> <span class="text-zinc-900">{{ $viewedProduct->created_at->toDisplay('d M Y, h:i A') }}</span></div>
+                        <div><span class="text-zinc-400">Created:</span> <span class="text-zinc-900">{{ $viewedProduct->created_at->toDisplay() }}</span></div>
                     </div>
                     @if ($viewedProduct->getTranslation('description', 'en', false))
                         <div class="border-t border-zinc-100 pt-3">

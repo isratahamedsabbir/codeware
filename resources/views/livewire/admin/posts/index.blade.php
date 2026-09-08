@@ -176,7 +176,7 @@
                         <div><span class="text-zinc-400">Category:</span> <span class="text-zinc-900">{{ $viewedPost->category?->getTranslation('name', 'en', false) ?: '—' }}</span></div>
                         <div><span class="text-zinc-400">Author:</span> <span class="text-zinc-900">{{ $viewedPost->user?->name ?: '—' }}</span></div>
                         <div><span class="text-zinc-400">Status:</span> <span class="text-zinc-900">{{ ucfirst($viewedPost->status) }}</span></div>
-                        <div><span class="text-zinc-400">Published:</span> <span class="text-zinc-900">{{ $viewedPost->published_at?->toDisplay('d M Y') ?: '—' }}</span></div>
+                        <div><span class="text-zinc-400">Published:</span> <span class="text-zinc-900">{{ $viewedPost->published_at?->toDisplay() ?: '—' }}</span></div>
                         <div><span class="text-zinc-400">Reading time:</span> <span class="text-zinc-900">{{ $viewedPost->reading_time }} min</span></div>
                     </div>
                     @php

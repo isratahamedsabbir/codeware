@@ -63,7 +63,7 @@
                     @forelse ($logs as $log)
                         <tr class="hover:bg-indigo-50/30 transition-colors">
                             <td class="px-4 py-3 text-sm text-zinc-500 whitespace-nowrap">
-                                {{ $log->created_at->toDisplay('M d, Y h:i A') }}
+                                {{ $log->created_at->toDisplay() }}
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
@@ -147,7 +147,7 @@
                     </div>
                     <div class="grid grid-cols-2 gap-3 text-sm">
                         <div><span class="text-zinc-400">Admin:</span> <span class="text-zinc-900 font-medium">{{ $log->user?->name ?? 'Unknown' }}</span></div>
-                        <div><span class="text-zinc-400">Date:</span> <span class="text-zinc-900">{{ $log->created_at->toDisplay('d M Y, h:i A') }}</span></div>
+                        <div><span class="text-zinc-400">Date:</span> <span class="text-zinc-900">{{ $log->created_at->toDisplay() }}</span></div>
                         <div><span class="text-zinc-400">Method:</span> <span class="text-zinc-900 font-mono">{{ $log->method ?? '—' }}</span></div>
                         <div><span class="text-zinc-400">IP Address:</span> <span class="text-zinc-900 font-mono">{{ $log->ip_address ?? '—' }}</span></div>
                     </div>

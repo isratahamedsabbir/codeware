@@ -72,7 +72,7 @@
 
                             {{-- Date --}}
                             <td class="px-4 py-2">
-                                <span class="text-sm text-zinc-500 whitespace-nowrap">{{ $subscriber->created_at->toDisplay('d M Y') }}</span>
+                                <span class="text-sm text-zinc-500 whitespace-nowrap">{{ $subscriber->created_at->toDisplay() }}</span>
                             </td>
 
                             {{-- Actions --}}

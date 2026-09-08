@@ -190,7 +190,7 @@
                                 {{ $selectedMedia->title ?? $selectedMedia->original_filename }}</p>
                             <p class="text-xs text-slate-500">
                                 {{ $selectedMedia->formatted_size }} ·
-                                {{ $selectedMedia->created_at->toDisplay('M d, Y') }}
+                                {{ $selectedMedia->created_at->toDisplay() }}
                             </p>
                         </div>
                     </div>
@@ -384,7 +384,7 @@
                             <div>
                                 <p class="text-[10px] font-medium uppercase tracking-widest text-slate-500 mb-1">
                                     Uploaded</p>
-                                <p class="text-sm text-slate-800">{{ $mediaItem->created_at->toDisplay('M d, Y') }}</p>
+                                <p class="text-sm text-slate-800">{{ $mediaItem->created_at->toDisplay() }}</p>
                             </div>
                             <div>
                                 <p class="text-[10px] font-medium uppercase tracking-widest text-slate-500 mb-1">Type

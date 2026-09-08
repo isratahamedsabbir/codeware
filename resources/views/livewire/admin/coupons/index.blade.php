@@ -92,7 +92,7 @@
                             <td class="px-4 py-2 text-xs text-zinc-500">
                                 @if ($coupon->expires_at)
                                     <span class="{{ $coupon->isExpired() ? 'text-rose-500' : '' }}">
-                                        {{ $coupon->expires_at->toDisplay('M d, Y') }}
+                                        {{ $coupon->expires_at->toDisplay() }}
                                     </span>
                                 @else
                                     Never
