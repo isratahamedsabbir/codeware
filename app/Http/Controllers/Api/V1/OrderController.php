@@ -111,6 +111,7 @@ class OrderController extends Controller
             'subtotal' => (float) $order->subtotal,
             'total' => (float) $order->total,
             'created_at' => $order->created_at?->toIso8601String(),
+            'created_at_display' => $order->created_at?->toDisplay(),
             'items' => $order->items->map(fn ($item) => [
                 'product_name' => $item->product_name,
                 'unit_price' => (float) $item->unit_price,
@@ -126,6 +127,7 @@ class OrderController extends Controller
                 'amount' => (float) $t->amount,
                 'status' => $t->status,
                 'paid_at' => $t->paid_at?->toIso8601String(),
+                'paid_at_display' => $t->paid_at?->toDisplay(),
             ]);
         }
 

@@ -36,6 +36,7 @@ class ProductController extends Controller
                 'product_category_id' => $p->product_category_id,
                 'category' => $p->category,
                 'deleted_at' => $p->deleted_at?->toIso8601String(),
+                'deleted_at_display' => $p->deleted_at?->toDisplay(),
             ]),
             'meta' => [
                 'current_page' => $products->currentPage(),

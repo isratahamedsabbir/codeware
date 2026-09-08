@@ -32,7 +32,9 @@ class PostController extends Controller
                 'featured_image' => $post->featured_image,
                 'reading_time' => $post->reading_time,
                 'published_at' => $post->published_at?->toIso8601String(),
+                'published_at_display' => $post->published_at?->toDisplay(),
                 'deleted_at' => $post->deleted_at?->toIso8601String(),
+                'deleted_at_display' => $post->deleted_at?->toDisplay(),
                 'category' => $post->category,
                 'author' => $post->user ? ['id' => $post->user->id, 'name' => $post->user->name] : null,
                 'tags' => $post->tags->map(fn ($tag) => [
@@ -64,11 +66,13 @@ class PostController extends Controller
                 'featured_image' => $post->featured_image,
                 'reading_time' => $post->reading_time,
                 'published_at' => $post->published_at?->toIso8601String(),
+                'published_at_display' => $post->published_at?->toDisplay(),
                 'og_image' => $post->page?->og_image,
                 'seo_title' => $post->page?->seo_title,
                 'seo_description' => $post->page?->seo_description,
                 'puck_data' => $post->page?->puck_data,
                 'deleted_at' => $post->deleted_at?->toIso8601String(),
+                'deleted_at_display' => $post->deleted_at?->toDisplay(),
                 'category' => $post->category,
                 'author' => $post->user ? ['id' => $post->user->id, 'name' => $post->user->name] : null,
                 'tags' => $post->tags->map(fn ($tag) => [

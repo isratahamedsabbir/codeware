@@ -147,7 +147,9 @@ class UserController extends Controller
             'is_admin' => (bool) $user->is_admin,
             'roles' => $user->roles->pluck('name')->values(),
             'email_verified_at' => $user->email_verified_at?->toIso8601String(),
+            'email_verified_at_display' => $user->email_verified_at?->toDisplay(),
             'created_at' => $user->created_at?->toIso8601String(),
+            'created_at_display' => $user->created_at?->toDisplay(),
         ];
     }
 }

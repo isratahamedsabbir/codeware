@@ -16,6 +16,19 @@ if (! function_exists('display_timezone')) {
     }
 }
 
+if (! function_exists('display_date_format')) {
+    /**
+     * PHP date() format string used to render dates for display — via the
+     * toDisplay() Carbon macro (with no explicit $format) and in API
+     * responses' "*_display" fields. Set via the "date_format" setting in
+     * Settings, e.g. "d M Y, h:i A" -> "08 Sep 2026, 08:59 AM".
+     */
+    function display_date_format(): string
+    {
+        return Setting::get('date_format', 'd M Y, h:i A');
+    }
+}
+
 if (! function_exists('cms_cards')) {
     /**
      * A CMS section's Cards, looked up by page slug + section Name (the

@@ -25,6 +25,7 @@ class PageController extends Controller
                 'template' => $page->template,
                 'sort_order' => $page->sort_order,
                 'deleted_at' => $page->deleted_at?->toIso8601String(),
+                'deleted_at_display' => $page->deleted_at?->toDisplay(),
             ]);
 
         return response()->json(['data' => $pages]);
@@ -60,9 +61,11 @@ class PageController extends Controller
                 'no_follow' => $page->no_follow,
                 'constant' => $page->constant,
                 'deleted_at' => $page->deleted_at?->toIso8601String(),
+                'deleted_at_display' => $page->deleted_at?->toDisplay(),
                 'revisions' => $page->revisions->map(fn ($r) => [
                     'id' => $r->id,
                     'created_at' => $r->created_at->toIso8601String(),
+                    'created_at_display' => $r->created_at->toDisplay(),
                 ]),
             ],
         ]);

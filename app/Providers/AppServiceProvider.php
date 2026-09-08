@@ -136,11 +136,14 @@ class AppServiceProvider extends ServiceProvider
 
         // Dates are stored/computed internally in UTC (config('app.timezone')) — this
         // formats one for display in the admin's configured timezone (see the "timezone"
-        // setting and display_timezone()). Registered on both Carbon and CarbonImmutable
-        // since Date::use() above makes Eloquent/now() produce CarbonImmutable, but some
-        // dates (e.g. from third-party packages) may still be plain Carbon.
-        $toDisplay = function (string $format = 'M d, Y g:i A') {
-            return $this->setTimezone(display_timezone())->format($format);
+        // setting and display_timezone()). With no $format given, falls back to the
+        // "date_format" setting (see display_date_format()) so API responses and any
+        // other unformatted call sites all follow the same admin-configurable format.
+        // Registered on both Carbon and CarbonImmutable since Date::use() above makes
+        // Eloquent/now() produce CarbonImmutable, but some dates (e.g. from third-party
+        // packages) may still be plain Carbon.
+        $toDisplay = function (?string $format = null) {
+            return $this->setTimezone(display_timezone())->format($format ?? display_date_format());
         };
 
         Carbon::macro('toDisplay', $toDisplay);

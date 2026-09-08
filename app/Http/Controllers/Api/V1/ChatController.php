@@ -189,6 +189,7 @@ class ChatController extends Controller
             'sender_id' => $message->sender_id,
             'body' => $message->body,
             'created_at' => $message->created_at?->toIso8601String(),
+            'created_at_display' => $message->created_at?->toDisplay(),
         ];
     }
 

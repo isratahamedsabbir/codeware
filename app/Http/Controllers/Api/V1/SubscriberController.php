@@ -37,6 +37,7 @@ class SubscriberController extends Controller
                 'email' => $subscriber->email,
                 'status' => $subscriber->status,
                 'created_at' => $subscriber->created_at?->toIso8601String(),
+                'created_at_display' => $subscriber->created_at?->toDisplay(),
             ],
             'message' => 'Thanks for subscribing!',
         ], 201);

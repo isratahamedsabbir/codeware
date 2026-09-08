@@ -26,7 +26,9 @@ class SubscriberController extends Controller
                 'email' => $subscriber->email,
                 'status' => $subscriber->status,
                 'created_at' => $subscriber->created_at?->toIso8601String(),
+                'created_at_display' => $subscriber->created_at?->toDisplay(),
                 'updated_at' => $subscriber->updated_at?->toIso8601String(),
+                'updated_at_display' => $subscriber->updated_at?->toDisplay(),
             ]),
             'meta' => [
                 'current_page' => $subscribers->currentPage(),
@@ -47,7 +49,9 @@ class SubscriberController extends Controller
                 'email' => $subscriber->email,
                 'status' => $subscriber->status,
                 'created_at' => $subscriber->created_at?->toIso8601String(),
+                'created_at_display' => $subscriber->created_at?->toDisplay(),
                 'updated_at' => $subscriber->updated_at?->toIso8601String(),
+                'updated_at_display' => $subscriber->updated_at?->toDisplay(),
             ],
         ]);
     }

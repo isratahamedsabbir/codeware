@@ -108,7 +108,9 @@ class ContactController extends Controller
                 'message' => $contact->message,
                 'status' => $contact->status,
                 'created_at' => $contact->created_at?->toIso8601String(),
+                'created_at_display' => $contact->created_at?->toDisplay(),
                 'updated_at' => $contact->updated_at?->toIso8601String(),
+                'updated_at_display' => $contact->updated_at?->toDisplay(),
             ],
             'message' => 'Your information has been received. Our support team will contact you very soon.',
         ], 201);

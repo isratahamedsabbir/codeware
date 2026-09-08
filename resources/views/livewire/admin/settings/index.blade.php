@@ -108,6 +108,25 @@
                                             <flux:text class="text-xs text-zinc-500">
                                                 {{ __('Dates are stored in UTC and shown to users in this timezone.') }}
                                             </flux:text>
+                                        @elseif ($setting->key === 'date_format')
+                                            @php
+                                                $dateFormatOptions = [
+                                                    'd M Y, h:i A' => '08 Sep 2026, 08:59 AM',
+                                                    'M d, Y g:i A' => 'Sep 08, 2026 8:59 AM',
+                                                    'd/m/Y h:i A' => '08/09/2026 08:59 AM',
+                                                    'm/d/Y h:i A' => '09/08/2026 08:59 AM',
+                                                    'Y-m-d H:i' => '2026-09-08 08:59',
+                                                ];
+                                            @endphp
+                                            <select wire:model="settings.{{ $setting->key }}"
+                                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                                                @foreach ($dateFormatOptions as $format => $example)
+                                                    <option value="{{ $format }}">{{ $example }}</option>
+                                                @endforeach
+                                            </select>
+                                            <flux:text class="text-xs text-zinc-500">
+                                                {{ __('How dates are shown across the admin panel and in API responses (the "_display" fields alongside each date).') }}
+                                            </flux:text>
                                         @elseif ($setting->key === 'site_icon' || $setting->key === 'site_icon_white' || $setting->key === 'favicon' || $setting->key === 'loader')
                                             <x-media-picker model="settings.{{ $setting->key }}"
                                                 label="{{ match ($setting->key) { 'favicon' => 'Favicon', 'loader' => 'Loader', 'site_icon_white' => 'White Icon', default => 'Site Icon' } }}"

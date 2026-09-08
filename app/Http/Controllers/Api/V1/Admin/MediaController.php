@@ -27,6 +27,7 @@ class MediaController extends Controller
                 'file_size' => $item->file_size,
                 'alt_text' => $item->alt_text,
                 'created_at' => $item->created_at->toIso8601String(),
+                'created_at_display' => $item->created_at->toDisplay(),
             ]),
             'meta' => [
                 'current_page' => $media->currentPage(),
@@ -72,6 +73,7 @@ class MediaController extends Controller
                 'file_size' => $media->file_size,
                 'alt_text' => $media->alt_text,
                 'created_at' => $media->created_at->toIso8601String(),
+                'created_at_display' => $media->created_at->toDisplay(),
             ],
         ], 201);
     }

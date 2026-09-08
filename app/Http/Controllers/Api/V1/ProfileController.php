@@ -48,7 +48,9 @@ class ProfileController extends Controller
             'email' => $user->email,
             'photo_url' => $user->photo_url,
             'email_verified_at' => $user->email_verified_at?->toIso8601String(),
+            'email_verified_at_display' => $user->email_verified_at?->toDisplay(),
             'created_at' => $user->created_at?->toIso8601String(),
+            'created_at_display' => $user->created_at?->toDisplay(),
         ];
     }
 }

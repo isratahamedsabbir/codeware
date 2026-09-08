@@ -29,8 +29,11 @@ class ContactController extends Controller
                 'message'      => $contact->message,
                 'status'       => $contact->status,
                 'created_at'   => $contact->created_at?->toIso8601String(),
+                'created_at_display' => $contact->created_at?->toDisplay(),
                 'updated_at'   => $contact->updated_at?->toIso8601String(),
+                'updated_at_display' => $contact->updated_at?->toDisplay(),
                 'deleted_at'   => $contact->deleted_at?->toIso8601String(),
+                'deleted_at_display' => $contact->deleted_at?->toDisplay(),
             ]),
             'meta' => [
                 'current_page' => $contacts->currentPage(),
@@ -55,8 +58,11 @@ class ContactController extends Controller
                 'message'      => $contact->message,
                 'status'       => $contact->status,
                 'created_at'   => $contact->created_at?->toIso8601String(),
+                'created_at_display' => $contact->created_at?->toDisplay(),
                 'updated_at'   => $contact->updated_at?->toIso8601String(),
+                'updated_at_display' => $contact->updated_at?->toDisplay(),
                 'deleted_at'   => $contact->deleted_at?->toIso8601String(),
+                'deleted_at_display' => $contact->deleted_at?->toDisplay(),
             ],
         ]);
     }
