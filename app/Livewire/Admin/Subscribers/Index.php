@@ -18,6 +18,8 @@ class Index extends Component
 
     public ?int $deletingId = null;
 
+    public ?int $viewingId = null;
+
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -26,6 +28,17 @@ class Index extends Component
     public function updatedStatusFilter(): void
     {
         $this->resetPage();
+    }
+
+    public function viewDetails(int $id): void
+    {
+        $this->viewingId = $id;
+        $this->dispatch('open-modal', name: 'subscriber-view');
+    }
+
+    public function closeDetails(): void
+    {
+        $this->viewingId = null;
     }
 
     public function confirmDelete(int $id): void

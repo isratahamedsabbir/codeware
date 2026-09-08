@@ -78,6 +78,7 @@
                             {{-- Actions --}}
                             <td class="px-4 py-2">
                                 <x-admin-row-actions :actions="[
+                                    ['wireClick' => 'viewDetails(' . $subscriber->id . ')', 'icon' => 'eye', 'label' => 'View', 'color' => 'zinc-500'],
                                     ['wireClick' => 'confirmDelete(' . $subscriber->id . ')', 'icon' => 'trash', 'label' => 'Delete', 'color' => 'rose-500'],
                                 ]" />
                             </td>
@@ -103,6 +104,44 @@
     <div class="px-6 py-3">
         {{ $subscribers->links() }}
     </div>
+
+    {{-- View Modal --}}
+    <flux:modal name="subscriber-view" class="md:w-[500px]"
+        x-on:open-modal.window="if ($event.detail.name === 'subscriber-view') $flux.modal('subscriber-view').show()">
+        @if ($viewingId)
+            @php $viewedSubscriber = \App\Models\Subscriber::find($viewingId); @endphp
+            @if ($viewedSubscriber)
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between border-b border-zinc-100 pb-3">
+                        <flux:heading>{{ $viewedSubscriber->email }}</flux:heading>
+                        <flux:modal.close>
+                            <button wire:click="closeDetails" class="text-zinc-400 hover:text-zinc-600 transition-colors">
+                                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </flux:modal.close>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div><span class="text-zinc-400">ID:</span> <span class="text-zinc-900 font-mono">#{{ $viewedSubscriber->id }}</span></div>
+                        <div><span class="text-zinc-400">Status:</span>
+                            @if ($viewedSubscriber->status === 'subscribed')
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-600 border border-green-200">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Subscribed
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600 border border-red-200">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Unsubscribed
+                                </span>
+                            @endif
+                        </div>
+                        <div><span class="text-zinc-400">Subscribed at:</span> <span class="text-zinc-900">{{ $viewedSubscriber->created_at->toDisplay() }}</span></div>
+                        <div><span class="text-zinc-400">Last updated:</span> <span class="text-zinc-900">{{ $viewedSubscriber->updated_at->toDisplay() }}</span></div>
+                    </div>
+                </div>
+            @endif
+        @endif
+    </flux:modal>
 
     {{-- Delete Modal --}}
     <flux:modal name="subscriber-delete" class="md:w-80"
