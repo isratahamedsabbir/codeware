@@ -148,9 +148,7 @@
                     Set the currency used across the site for product pricing and payments.
                 </flux:text>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-
-                <x-admin-section-card header-border="border-zinc-100" icon="banknotes" title="Currency">
+                <x-admin-section-card header-border="border-zinc-100" icon="banknotes" title="Currency" class="max-w-2xl">
                     <flux:field>
                         <flux:label>Currency Code</flux:label>
                         <flux:input wire:model="settings.currency_code" placeholder="BDT, USD, EUR" class="uppercase" />
@@ -171,16 +169,15 @@
                         <flux:label>Decimal Places</flux:label>
                         <flux:input type="number" wire:model="settings.decimal_places" min="0" max="4" />
                     </flux:field>
-                </x-admin-section-card>
 
-                <x-admin-section-card header-border="border-zinc-100" icon="eye" title="Preview" icon-color="bg-blue-500/10 text-blue-600">
-                    <div class="rounded-lg bg-zinc-50 dark:bg-zinc-800/50 px-4 py-6 text-center">
-                        <span class="text-2xl font-bold text-zinc-800 dark:text-zinc-100" x-data
-                            x-text="($wire.settings.currency_position || 'left') === 'right' ? '1,250.00 ' + ($wire.settings.currency_symbol || '৳') : ($wire.settings.currency_symbol || '৳') + '1,250.00'"></span>
-                    </div>
+                    <flux:field>
+                        <flux:label>Preview</flux:label>
+                        <div class="rounded-lg bg-zinc-50 dark:bg-zinc-800/50 px-4 py-6 text-center">
+                            <span class="text-2xl font-bold text-zinc-800 dark:text-zinc-100" x-data
+                                x-text="($wire.settings.currency_position || 'left') === 'right' ? '1,250.00 ' + ($wire.settings.currency_symbol || '৳') : ($wire.settings.currency_symbol || '৳') + '1,250.00'"></span>
+                        </div>
+                    </flux:field>
                 </x-admin-section-card>
-
-                </div>
             </div>
         </div>
 
