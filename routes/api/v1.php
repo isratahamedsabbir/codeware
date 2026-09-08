@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Api\V1\Admin\ProductCategoryController as AdminProductCategoryController;
 use App\Http\Controllers\Api\V1\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Api\V1\Admin\SettingsController as AdminSettingsController;
+use App\Http\Controllers\Api\V1\Admin\SubscriberController as AdminSubscriberController;
 use App\Http\Controllers\Api\V1\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\V1\Auth\EmailVerificationController;
 use App\Http\Controllers\Api\V1\Auth\LoginController;
@@ -24,6 +25,7 @@ use App\Http\Controllers\Api\V1\ProductCategoryController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\SettingsController;
+use App\Http\Controllers\Api\V1\SubscriberController;
 use Illuminate\Support\Facades\Route;
 
 // Customer account auth — API-only (no admin panel UI), backed by the same `users`
@@ -70,6 +72,8 @@ Route::get('/cms', [CmsController::class, 'index'])->name('cms.index');
 Route::post('/contacts', [ContactController::class, 'store'])->name('contacts.store');
 Route::post('/request-demo', [ContactController::class, 'requestDemo'])->name('request-demo.store');
 Route::post('/book-demo', [ContactController::class, 'bookDemo'])->name('book-demo.store');
+
+Route::post('/subscribers', [SubscriberController::class, 'store'])->name('subscribers.store');
 
 Route::middleware('feature:orders')->group(function () {
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
@@ -120,6 +124,10 @@ Route::middleware(['auth:sanctum', 'can:access-admin'])->prefix('admin')->name('
     Route::get('/contacts/{id}', [AdminContactController::class, 'show'])->name('contacts.show');
     Route::put('/contacts/{id}', [AdminContactController::class, 'update'])->name('contacts.update');
     Route::delete('/contacts/{id}', [AdminContactController::class, 'destroy'])->name('contacts.destroy');
+
+    Route::get('/subscribers', [AdminSubscriberController::class, 'index'])->name('subscribers.index');
+    Route::get('/subscribers/{id}', [AdminSubscriberController::class, 'show'])->name('subscribers.show');
+    Route::delete('/subscribers/{id}', [AdminSubscriberController::class, 'destroy'])->name('subscribers.destroy');
 
     // Stricter than the rest of this group: mirrors `access-admin-system` on the
     // Livewire side (routes/admin.php) — Users and Settings (including Layout,

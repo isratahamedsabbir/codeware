@@ -52,20 +52,22 @@ class AdminMenuSeeder extends Seeder
 
         $this->standalone('Contacts', 'inbox', 'admin.contacts', 7);
 
-        $this->standalone('Pages', 'document', 'admin.pages', 8);
+        $this->standalone('Subscribers', 'envelope-open', 'admin.subscribers', 8);
 
-        $this->group('Localization', 9, [
+        $this->standalone('Pages', 'document', 'admin.pages', 9);
+
+        $this->group('Localization', 10, [
             ['Languages', 'language', 'admin.languages'],
             ['Translations', 'chat-bubble-left-right', 'admin.translations'],
         ]);
 
-        $this->group('Access Control', 10, [
+        $this->group('Access Control', 11, [
             ['Roles', 'shield-check', 'admin.roles'],
             ['Permissions', 'lock-closed', 'admin.permissions'],
             ['Users', 'users', 'admin.users'],
         ]);
 
-        $this->group('Advance', 11, [
+        $this->group('Advance', 12, [
             ['Sitemap', 'map', 'admin.advance.sitemap'],
             ['Robots.txt', 'globe-alt', 'admin.advance.robots'],
             ['Database', 'circle-stack', 'admin.advance.database'],

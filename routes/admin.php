@@ -94,6 +94,11 @@ Route::middleware('can:access-admin-system')->group(function () {
         Route::get('/contacts', App\Livewire\Admin\Contacts\Index::class)->name('contacts');
     });
 
+    // Newsletter Subscribers (read-only)
+    Route::middleware('feature:newsletter')->group(function () {
+        Route::get('/subscribers', App\Livewire\Admin\Subscribers\Index::class)->name('subscribers');
+    });
+
     // Roles & Permissions
     Route::get('/roles', App\Livewire\Admin\Roles\Index::class)->name('roles');
     Route::get('/roles/create', App\Livewire\Admin\Roles\Form::class)->name('roles.create');

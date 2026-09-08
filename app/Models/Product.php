@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Mail\TemplateDrivenMail;
+use App\Support\Locale;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,11 +12,33 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Mail;
 use Spatie\Translatable\HasTranslations;
 
 class Product extends Model
 {
     use HasFactory, HasTranslations, SoftDeletes;
+
+    protected static function booted(): void
+    {
+        static::created(function (Product $product) {
+            if (! Setting::get('notify_subscribers_on_new_product')) {
+                return;
+            }
+
+            $name = is_array($product->name)
+                ? ($product->name[Locale::primary()] ?? reset($product->name))
+                : $product->name;
+
+            Subscriber::subscribed()->pluck('email')->each(function (string $email) use ($name) {
+                Mail::to($email)->queue(new TemplateDrivenMail(
+                    'New Product: '.$name,
+                    'A new product <strong>'.e($name).'</strong> has just been added. Check it out!',
+                    'emails.template-driven',
+                ));
+            });
+        });
+    }
 
     public array $translatable = ['name', 'description'];
 

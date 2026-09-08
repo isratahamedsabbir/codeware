@@ -46,6 +46,13 @@ class SettingsSeeder extends Seeder
                 'is_public' => true,
             ],
             [
+                'key' => 'notify_subscribers_on_new_product',
+                'value' => '1',
+                'type' => 'boolean',
+                'group' => 'general',
+                'is_public' => false,
+            ],
+            [
                 'key' => 'copyright_name',
                 'value' => 'Codeware Limited',
                 'type' => 'string',
