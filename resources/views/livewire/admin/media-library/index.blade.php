@@ -196,18 +196,35 @@
                     </div>
 
                     {{-- Actions --}}
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2" x-data="{
+                            isPicker: new URLSearchParams(window.location.search).get('picker') === '1',
+                        }">
                         <button type="button" wire:click="viewDetails({{ $selectedMedia->id }})"
                             class="rounded-md border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium tracking-wide text-slate-600 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1">
                             Edit Details
                         </button>
 
-                        <button type="button" x-data
+                        {{-- Normal browsing: preview the file. Only meaningful inside the
+                        legacy iframe-embedded picker (?picker=1&picker_id=...) does this
+                        bar instead need to hand the selection back to the parent window. --}}
+                        @if ($selectedMedia->isImage())
+                            <button type="button" x-show="!isPicker"
+                                @click="$dispatch('open-lightbox', { url: '{{ $selectedMedia->url }}' })"
+                                class="rounded-md border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium tracking-wide text-slate-600 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1">
+                                View
+                            </button>
+                        @else
+                            <a href="{{ $selectedMedia->url }}" target="_blank" rel="noopener" x-show="!isPicker"
+                                class="rounded-md border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium tracking-wide text-slate-600 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1">
+                                View
+                            </a>
+                        @endif
+
+                        <button type="button" x-show="isPicker"
                             @click="
                                 const urlParams = new URLSearchParams(window.location.search);
                                 const pickerId = urlParams.get('picker_id');
-                                const isPicker = urlParams.get('picker') === '1';
-                                if (!isPicker || !pickerId) { $wire.call('confirmSelection'); return; }
+                                if (!pickerId) { $wire.call('confirmSelection'); return; }
                                 const el = document.getElementById('selected-media-data');
                                 if (!el) return;
                                 window.parent.postMessage({
@@ -237,6 +254,24 @@
                 </div>
             @endif
         @endif
+    </div>
+
+    {{-- ─── Image Lightbox ──────────────────────────────────────────────────── --}}
+    {{-- Same z-50 the Upload/Edit Details modals below use — matters because
+    this admin theme ships a pre-built Tailwind stylesheet, so an arbitrary
+    value like z-[100] that isn't already used elsewhere compiles to nothing
+    until assets are rebuilt, silently leaving the element at z-index:auto.
+    Triggered via a window event so the "View" button can stay wherever it is. --}}
+    <div x-data="{ open: false, url: '' }" x-on:open-lightbox.window="open = true; url = $event.detail.url"
+        x-show="open" x-cloak @click.self="open = false" @keydown.escape.window="open = false"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6">
+        <img :src="url" alt="" class="max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl" />
+        <button type="button" @click="open = false"
+            class="absolute top-4 right-4 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+        </button>
     </div>
 
     {{-- ─── Upload Modal ────────────────────────────────────────────────────── --}}
