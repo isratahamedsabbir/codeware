@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Mail\TemplateDrivenMail;
+use App\Services\EmailTemplateService;
 use App\Support\Locale;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Mail;
 use Spatie\Translatable\HasTranslations;
 
 class Product extends Model
@@ -30,13 +29,17 @@ class Product extends Model
                 ? ($product->name[Locale::primary()] ?? reset($product->name))
                 : $product->name;
 
-            Subscriber::subscribed()->pluck('email')->each(function (string $email) use ($name) {
-                Mail::to($email)->queue(new TemplateDrivenMail(
-                    'New Product: '.$name,
-                    'A new product <strong>'.e($name).'</strong> has just been added. Check it out!',
-                    'emails.template-driven',
-                ));
-            });
+            $variables = [
+                'product_name' => $name,
+                'product_url' => rtrim(config('app.frontend_url'), '/').'/products/'.$product->slug,
+                'site_name' => Setting::get('site_name'),
+            ];
+
+            $emailTemplateService = app(EmailTemplateService::class);
+
+            Subscriber::subscribed()->pluck('email')->each(
+                fn (string $email) => $emailTemplateService->send('new_product_notification', $email, $variables)
+            );
         });
     }
 

@@ -44,8 +44,9 @@
                             'general' => 'order-1 lg:row-span-2',
                             'localization' => 'order-2',
                             'pagination' => 'order-3',
-                            'images' => 'order-4 lg:col-span-2',
-                            default => 'order-5 lg:col-span-2',
+                            'newsletter' => 'order-4',
+                            'images' => 'order-5 lg:col-span-2',
+                            default => 'order-6 lg:col-span-2',
                         } }}">
                             @php
                                 $groupIcon = match ($group) {
@@ -53,6 +54,7 @@
                                     'images' => 'photo',
                                     'pagination' => 'document-duplicate',
                                     'localization' => 'language',
+                                    'newsletter' => 'megaphone',
                                     default => 'squares-2x2',
                                 };
                             @endphp
@@ -73,6 +75,11 @@
                                                     class="rounded border-zinc-300 text-primary" />
                                                 <span class="text-sm text-zinc-600">Enable</span>
                                             </div>
+                                            @if ($setting->key === 'notify_subscribers_on_new_product')
+                                                <flux:text class="text-xs text-zinc-500">
+                                                    {{ __('When enabled, everyone on the Subscribers list gets an email as soon as a new product is created.') }}
+                                                </flux:text>
+                                            @endif
                                         @elseif ($setting->type === 'color')
                                             <div class="flex items-center gap-3">
                                                 <div class="w-10 h-10 rounded-lg border border-zinc-300 shrink-0"

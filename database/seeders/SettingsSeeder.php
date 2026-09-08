@@ -46,13 +46,6 @@ class SettingsSeeder extends Seeder
                 'is_public' => true,
             ],
             [
-                'key' => 'notify_subscribers_on_new_product',
-                'value' => '1',
-                'type' => 'boolean',
-                'group' => 'general',
-                'is_public' => false,
-            ],
-            [
                 'key' => 'copyright_name',
                 'value' => 'Codeware Limited',
                 'type' => 'string',
@@ -150,6 +143,10 @@ class SettingsSeeder extends Seeder
 
             // ── Editor ──
             ['key' => 'puck_session_minutes',    'value' => '30', 'type' => 'integer', 'group' => 'editor', 'is_public' => false],
+
+            // ── Newsletter ── whether a subscriber email blast fires when a new
+            // product is created (Product::booted()).
+            ['key' => 'notify_subscribers_on_new_product', 'value' => '1', 'type' => 'boolean', 'group' => 'newsletter', 'is_public' => false],
 
             // ── Custom Code ── raw HTML/JS injected into <head> / before </body> by the
             // frontend (e.g. Google Analytics, Facebook Pixel) — public since the

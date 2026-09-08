@@ -66,6 +66,15 @@ class EmailTemplatesSeeder extends Seeder
                 'active' => true,
             ],
             [
+                'key' => 'new_product_notification',
+                'name' => 'New Product Notification (Subscriber)',
+                'description' => 'Sent to newsletter subscribers when a new product is added.',
+                'subject_template' => 'New Product: {{product_name}}',
+                'body_template' => '<p>Hi there,</p><p>A new product has just been added to {{site_name}}:</p><h3>{{product_name}}</h3><p>👉 {{product_url}}</p><p>Best regards,<br>{{site_name}} Team</p>',
+                'variables' => ['product_name', 'product_url', 'site_name'],
+                'active' => true,
+            ],
+            [
                 'key' => 'mail_settings_test',
                 'name' => 'Test Email (Mail Settings)',
                 'description' => 'Sent by the "Send Test Email" action on the Email Templates page to verify mail settings.',

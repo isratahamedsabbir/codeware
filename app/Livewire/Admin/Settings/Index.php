@@ -267,7 +267,7 @@ class Index extends Component
         // the view), so their relative order here doesn't matter; anything not listed
         // falls to the end in whatever order it comes. Pagination gets its own card
         // (via its own 'pagination' group) rather than sharing General's.
-        $groupOrder = ['general' => 0, 'pagination' => 1, 'images' => 2, 'localization' => 3];
+        $groupOrder = ['general' => 0, 'pagination' => 1, 'images' => 2, 'localization' => 3, 'newsletter' => 4];
 
         return view('livewire.admin.settings.index', [
             // 'frontend' (site_theme) and 'colors' live under the Theme tab, not here.
