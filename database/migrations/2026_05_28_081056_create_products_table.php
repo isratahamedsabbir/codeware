@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('datasheet_url')->nullable();
             $table->string('status', 20)->default('active');
             $table->decimal('price', 10, 2)->default(0);
+            $table->decimal('discount_price', 10, 2)->nullable();
             $table->boolean('is_featured')->default(false);
             $table->unsignedSmallInteger('sort_order')->default(0);
             $table->softDeletes();

@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Products;
 
 use App\Concerns\HasSeoFields;
 use App\Concerns\HasTranslatableFields;
+use App\Models\MediaLibrary;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductCategory;
@@ -45,6 +46,9 @@ class Form extends Component
     #[Validate('required|numeric|min:0')]
     public string $price = '0';
 
+    #[Validate('nullable|numeric|min:0|lt:price')]
+    public string $discount_price = '';
+
     public bool $is_featured = false;
 
     public array $description = [];
@@ -53,9 +57,21 @@ class Form extends Component
 
     public string $featuredImagePickerId = '';
 
+    /**
+     * Ordered Media Library ids for the product's gallery — order in this array
+     * is the display order, persisted to product_media.sort_order on save (see
+     * persistProduct()). Kept as plain ids rather than binding the picker to
+     * hydrated MediaLibrary models directly so re-ordering is a cheap array
+     * operation instead of re-fetching.
+     */
+    public array $gallery_ids = [];
+
+    public string $galleryPickerId = '';
+
     public function mount(?int $id = null): void
     {
         $this->featuredImagePickerId = 'featured-image-'.Str::uuid()->toString();
+        $this->galleryPickerId = 'product-gallery-'.Str::uuid()->toString();
 
         if ($id) {
             $product = Product::findOrFail($id);
@@ -64,15 +80,61 @@ class Form extends Component
             $this->slug = $product->slug ?? '';
             $this->product_category_id = $product->product_category_id;
             $this->price = (string) $product->price;
+            $this->discount_price = $product->discount_price !== null ? (string) $product->discount_price : '';
             $this->is_featured = (bool) $product->is_featured;
 
             $this->featured_image = $product->featured_image ?? '';
+            $this->gallery_ids = $product->gallery->pluck('id')->all();
 
             $this->pageId = $product->page?->id;
             $this->hydrateSeoFieldsFromPage($product->page);
 
             $this->checkSlugAvailability();
         }
+    }
+
+    #[Computed]
+    public function galleryMedia()
+    {
+        $media = MediaLibrary::whereIn('id', $this->gallery_ids)->get()->keyBy('id');
+
+        return collect($this->gallery_ids)->map(fn ($id) => $media->get($id))->filter()->values();
+    }
+
+    public function addGalleryImage(int $id): void
+    {
+        if (! in_array($id, $this->gallery_ids, true) && MediaLibrary::whereKey($id)->exists()) {
+            $this->gallery_ids[] = $id;
+        }
+    }
+
+    /**
+     * @param  array<int, int>  $ids
+     */
+    public function addGalleryImages(array $ids): void
+    {
+        $validIds = MediaLibrary::whereIn('id', $ids)->pluck('id')->all();
+
+        // Preserve the order the picker returned them in (the order they were
+        // clicked/selected), not whatever whereIn() happened to fetch them in.
+        foreach ($ids as $id) {
+            if (in_array($id, $validIds, true) && ! in_array($id, $this->gallery_ids, true)) {
+                $this->gallery_ids[] = $id;
+            }
+        }
+    }
+
+    public function removeGalleryImage(int $id): void
+    {
+        $this->gallery_ids = array_values(array_diff($this->gallery_ids, [$id]));
+    }
+
+    /**
+     * @param  array<int, int>  $order  Media ids in their new display order.
+     */
+    public function reorderGallery(array $order): void
+    {
+        $this->gallery_ids = array_values(array_intersect($order, $this->gallery_ids));
     }
 
     /**
@@ -207,6 +269,7 @@ class Form extends Component
             'product_category_id' => $this->product_category_id,
             'name' => $this->translatablePayload('name'),
             'price' => $this->price,
+            'discount_price' => $this->discount_price !== '' ? $this->discount_price : null,
             'is_featured' => $this->is_featured,
             'description' => $this->translatablePayload('description') ?: null,
             'featured_image' => $this->featured_image ?: null,
@@ -222,6 +285,10 @@ class Form extends Component
             $product = Product::create($data);
             $this->productId = $product->id;
         }
+
+        $product->gallery()->sync(
+            collect($this->gallery_ids)->mapWithKeys(fn ($id, $index) => [$id => ['sort_order' => $index]])->all()
+        );
 
         $page = Page::updateOrCreate(
             ['type' => 'product', 'product_id' => $product->id],

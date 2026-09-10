@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\MediaLibrary;
 use App\Models\MediaLibrary;
 use App\Support\ImageWatermarker;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -22,6 +23,24 @@ class PickerModal extends Component
     public string $filterType = 'all';
 
     public ?int $selectedMediaId = null;
+
+    /**
+     * Only used when $multiple is true (the product gallery picker) — every other
+     * caller (featured image, OG image, ...) stays single-select via $selectedMediaId.
+     *
+     * @var array<int, int>
+     */
+    public array $selectedMediaIds = [];
+
+    /**
+     * Set by the caller that opened this picker (see openPicker()) — when true,
+     * plain clicks still replace the selection (so the common case, picking one
+     * image, needs no modifier key) but Ctrl/Cmd+click toggles a click into the
+     * existing selection instead of replacing it, matching OS file-picker
+     * conventions. Single-select callers never set this, so their behavior is
+     * unchanged.
+     */
+    public bool $multiple = false;
 
     public string $activeTab = 'library'; // library | upload
 
@@ -51,14 +70,16 @@ class PickerModal extends Component
 
     public int $maxSizeKb = 2048;
 
-    public function openPicker(string $pickerId, bool $onlyImages = false, string $mimes = 'jpg,jpeg,png,gif,webp', int $maxSizeKb = 2048): void
+    public function openPicker(string $pickerId, bool $onlyImages = false, string $mimes = 'jpg,jpeg,png,gif,webp', int $maxSizeKb = 2048, bool $multiple = false): void
     {
         $this->pickerId = $pickerId;
         $this->onlyImages = $onlyImages;
         $this->restrictMimes = $mimes;
         $this->maxSizeKb = $maxSizeKb;
+        $this->multiple = $multiple;
         $this->show = true;
         $this->selectedMediaId = null;
+        $this->selectedMediaIds = [];
         $this->search = '';
         $this->filterType = $onlyImages ? 'image' : 'all';
         $this->activeTab = 'library';
@@ -71,17 +92,71 @@ class PickerModal extends Component
     {
         $this->show = false;
         $this->selectedMediaId = null;
+        $this->selectedMediaIds = [];
+        $this->multiple = false;
         $this->pickerId = '';
         $this->dispatch('media-picker-closed');
     }
 
-    public function selectMedia(int $id): void
+    /**
+     * $additive is true only for a Ctrl/Cmd+click while $multiple is on — every
+     * other case (single-select callers, or a plain click even in multi mode)
+     * replaces the selection outright, so picking one image never needs a
+     * modifier key.
+     */
+    public function selectMedia(int $id, bool $additive = false): void
     {
-        $this->selectedMediaId = $this->selectedMediaId === $id ? null : $id;
+        if (! $this->multiple) {
+            $this->selectedMediaId = $this->selectedMediaId === $id ? null : $id;
+
+            return;
+        }
+
+        $this->selectedMediaId = $id;
+
+        if ($additive) {
+            $this->selectedMediaIds = in_array($id, $this->selectedMediaIds, true)
+                ? array_values(array_diff($this->selectedMediaIds, [$id]))
+                : [...$this->selectedMediaIds, $id];
+        } else {
+            $this->selectedMediaIds = [$id];
+        }
+    }
+
+    public function deselectMedia(int $id): void
+    {
+        $this->selectedMediaIds = array_values(array_diff($this->selectedMediaIds, [$id]));
+
+        if ($this->selectedMediaId === $id) {
+            $this->selectedMediaId = null;
+        }
     }
 
     public function confirmSelection(): void
     {
+        if ($this->multiple) {
+            $items = MediaLibrary::whereIn('id', $this->selectedMediaIds)->get()
+                ->filter(fn (MediaLibrary $media) => ! $this->onlyImages || $media->isImage());
+
+            if ($items->isEmpty()) {
+                return;
+            }
+
+            $this->dispatch('mediaPickerSelectedMultiple',
+                pickerId: $this->pickerId,
+                items: $items->map(fn (MediaLibrary $media) => [
+                    'id' => $media->id,
+                    'url' => $media->url,
+                    'title' => $media->title ?? $media->original_filename,
+                    'alt' => $media->alt_text ?? '',
+                ])->values()->all(),
+            );
+
+            $this->closePicker();
+
+            return;
+        }
+
         if ($this->selectedMediaId === null) {
             return;
         }
@@ -94,6 +169,7 @@ class PickerModal extends Component
 
         $this->dispatch('mediaPickerSelected',
             pickerId: $this->pickerId,
+            id: $media->id,
             url: $media->url,
             title: $media->title ?? $media->original_filename,
             alt: $media->alt_text ?? '',
@@ -180,16 +256,16 @@ class PickerModal extends Component
         }
 
         $media = MediaLibrary::create([
-            'filename'          => basename($path),
+            'filename' => basename($path),
             'original_filename' => $file->getClientOriginalName(),
-            'mime_type'         => $mimeType,
-            'file_type'         => $fileType,
-            'file_size'         => $file->getSize(),
-            'disk'              => 'public',
-            'path'              => $path,
-            'url'               => \Illuminate\Support\Facades\Storage::disk('public')->url($path),
-            'uploaded_by'       => auth()->id(),
-            'metadata'          => $metadata,
+            'mime_type' => $mimeType,
+            'file_type' => $fileType,
+            'file_size' => $file->getSize(),
+            'disk' => 'public',
+            'path' => $path,
+            'url' => Storage::disk('public')->url($path),
+            'uploaded_by' => auth()->id(),
+            'metadata' => $metadata,
         ]);
 
         return $media->id;

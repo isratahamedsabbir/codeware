@@ -129,7 +129,12 @@
 
                             {{-- Price --}}
                             <td class="px-4 py-2">
-                                <span class="text-sm text-zinc-700 font-medium">{{ number_format((float) $product->price, 2) }}</span>
+                                @if ($product->hasDiscount())
+                                    <span class="text-sm text-zinc-400 line-through">{{ number_format((float) $product->price, 2) }}</span>
+                                    <span class="text-sm text-rose-600 font-medium ml-1">{{ number_format((float) $product->discount_price, 2) }}</span>
+                                @else
+                                    <span class="text-sm text-zinc-700 font-medium">{{ number_format((float) $product->price, 2) }}</span>
+                                @endif
                             </td>
 
                             {{-- Status --}}
@@ -234,7 +239,15 @@
                     <div class="grid grid-cols-2 gap-3 text-sm">
                         <div><span class="text-zinc-400">Slug:</span> <span class="text-zinc-900 font-mono">{{ $viewedProduct->slug ?: '—' }}</span></div>
                         <div><span class="text-zinc-400">Category:</span> <span class="text-zinc-900">{{ $viewedProduct->category?->getTranslation('name', 'en', false) ?: '—' }}</span></div>
-                        <div><span class="text-zinc-400">Price:</span> <span class="text-zinc-900">{{ number_format((float) $viewedProduct->price, 2) }}</span></div>
+                        <div>
+                            <span class="text-zinc-400">Price:</span>
+                            @if ($viewedProduct->hasDiscount())
+                                <span class="text-zinc-400 line-through">{{ number_format((float) $viewedProduct->price, 2) }}</span>
+                                <span class="text-rose-600 font-medium">{{ number_format((float) $viewedProduct->discount_price, 2) }}</span>
+                            @else
+                                <span class="text-zinc-900">{{ number_format((float) $viewedProduct->price, 2) }}</span>
+                            @endif
+                        </div>
                         <div><span class="text-zinc-400">Status:</span> <span class="text-zinc-900">{{ ucfirst($viewedProduct->status) }}</span></div>
                         <div><span class="text-zinc-400">Featured:</span> <span class="text-zinc-900">{{ $viewedProduct->is_featured ? 'Yes' : 'No' }}</span></div>
                         <div><span class="text-zinc-400">Created:</span> <span class="text-zinc-900">{{ $viewedProduct->created_at->toDisplay() }}</span></div>

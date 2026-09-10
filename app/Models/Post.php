@@ -16,10 +16,10 @@ class Post extends Model
 {
     use HasFactory, HasTranslations, SoftDeletes;
 
-    public array $translatable = ['title', 'content'];
+    public array $translatable = ['title', 'description', 'content'];
 
     protected $fillable = [
-        'user_id', 'category_id', 'title',
+        'user_id', 'category_id', 'title', 'description',
         'content', 'featured_image', 'status', 'published_at',
         'reading_time',
     ];

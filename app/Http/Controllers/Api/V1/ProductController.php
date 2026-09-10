@@ -75,6 +75,7 @@ class ProductController extends Controller
             'slug' => $product->slug,
             'name' => $product->getTranslation('name', $locale, useFallbackLocale: true),
             'price' => (float) $product->price,
+            'discount_price' => $product->hasDiscount() ? (float) $product->discount_price : null,
             'featured_image' => $product->featured_image,
             'is_featured' => $product->is_featured,
             // 'sort_order'      => $product->sort_order,

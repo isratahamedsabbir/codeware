@@ -1,4 +1,4 @@
-<div x-data @open-media-picker.window="$wire.openPicker($event.detail.pickerId, $event.detail.onlyImages, $event.detail.mimes, $event.detail.maxSizeKb)"
+<div x-data @open-media-picker.window="$wire.openPicker($event.detail.pickerId, $event.detail.onlyImages, $event.detail.mimes, $event.detail.maxSizeKb, !!$event.detail.multiple)"
     @keydown.escape.window="$wire.closePicker()">
     {{-- ============================================================
          MEDIA PICKER MODAL — WordPress-style two-panel layout
@@ -54,6 +54,16 @@
                                 class="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-500">{{ $total }}</span>
                         </span>
                     </button>
+
+                    @if ($multiple)
+                        <span class="ml-auto mr-6 flex items-center gap-1.5 self-center text-[11px] font-bold text-slate-400">
+                            <kbd class="rounded border border-slate-300 bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-500">Ctrl</kbd>
+                            + click to select multiple
+                            @if (count($selectedMediaIds) > 0)
+                                <span class="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-primary">{{ count($selectedMediaIds) }} selected</span>
+                            @endif
+                        </span>
+                    @endif
                 </div>
 
                 {{-- ══════════════════════ UPLOAD TAB ══════════════════════ --}}
@@ -173,10 +183,13 @@
                                 @if ($media->count() > 0)
                                     <div class="grid grid-cols-4 gap-3 sm:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8">
                                         @foreach ($media as $item)
+                                            @php
+                                                $isSelected = $multiple ? in_array($item->id, $selectedMediaIds, true) : $selectedMediaId === $item->id;
+                                            @endphp
                                             <button type="button" wire:key="picker-item-{{ $item->id }}"
-                                                wire:click="selectMedia({{ $item->id }})"
+                                                wire:click="selectMedia({{ $item->id }}, $event.ctrlKey || $event.metaKey)"
                                                 class="group relative aspect-square overflow-hidden rounded-xl border-2 transition-all focus:outline-none
-                                    {{ $selectedMediaId === $item->id
+                                    {{ $isSelected
                                         ? 'border-blue-500 ring-2 ring-blue-400/40 shadow-md shadow-blue-500/20'
                                         : 'border-slate-200 hover:border-blue-300 hover:shadow-sm' }}">
                                                 @if ($item->isImage())
@@ -219,7 +232,7 @@
                                                 </div>
 
                                                 {{-- Selected check badge --}}
-                                                @if ($selectedMediaId === $item->id)
+                                                @if ($isSelected)
                                                     <div
                                                         class="absolute right-1.5 top-1.5 rounded-full bg-blue-500 p-0.5 shadow">
                                                         <svg class="h-3.5 w-3.5 text-white" fill="currentColor"
@@ -375,12 +388,23 @@
                                     <div class="border-t border-slate-200 p-4">
                                         <button type="button" wire:click="confirmSelection"
                                             class="w-full rounded-xl bg-primary px-4 py-3 text-sm font-black text-white shadow-sm hover:bg-blue-700 active:scale-95 transition-all">
-                                            Select this file
+                                            @if ($multiple && count($selectedMediaIds) > 1)
+                                                Select {{ count($selectedMediaIds) }} Files
+                                            @else
+                                                Select this file
+                                            @endif
                                         </button>
-                                        <button type="button" wire:click="selectMedia({{ $selectedMedia->id }})"
-                                            class="mt-2 w-full rounded-xl px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 transition-colors">
-                                            Deselect
-                                        </button>
+                                        @if ($multiple)
+                                            <button type="button" wire:click="deselectMedia({{ $selectedMedia->id }})"
+                                                class="mt-2 w-full rounded-xl px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 transition-colors">
+                                                Remove from selection
+                                            </button>
+                                        @else
+                                            <button type="button" wire:click="selectMedia({{ $selectedMedia->id }})"
+                                                class="mt-2 w-full rounded-xl px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 transition-colors">
+                                                Deselect
+                                            </button>
+                                        @endif
                                     </div>
                                 </div>
                             @else

@@ -3,7 +3,9 @@
 namespace App\Livewire\Admin\Coupons;
 
 use App\Models\Coupon;
+use App\Models\Product;
 use App\Support\AdminActivity;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
@@ -29,10 +31,13 @@ class Form extends Component
     #[Validate('nullable|date')]
     public string $expires_at = '';
 
+    /** @var array<int, int> */
+    public array $product_ids = [];
+
     public function mount(?int $id = null): void
     {
         if ($id) {
-            $coupon = Coupon::findOrFail($id);
+            $coupon = Coupon::with('products')->findOrFail($id);
             $this->couponId = $id;
             $this->code = $coupon->code;
             $this->type = $coupon->type;
@@ -40,7 +45,14 @@ class Form extends Component
             $this->min_order_amount = $coupon->min_order_amount !== null ? (string) $coupon->min_order_amount : '';
             $this->max_uses = $coupon->max_uses !== null ? (string) $coupon->max_uses : '';
             $this->expires_at = $coupon->expires_at?->format('Y-m-d') ?? '';
+            $this->product_ids = $coupon->products->pluck('id')->all();
         }
+    }
+
+    #[Computed]
+    public function products()
+    {
+        return Product::orderBy('id')->get();
     }
 
     public function save(): void
@@ -53,6 +65,9 @@ class Form extends Component
         if ($this->type === 'percentage') {
             $rules['value'] = 'required|numeric|min:0|max:100';
         }
+
+        $rules['product_ids'] = 'array';
+        $rules['product_ids.*'] = 'exists:products,id';
 
         $this->validate($rules);
 
@@ -68,15 +83,18 @@ class Form extends Component
         $creating = $this->couponId === null;
 
         if ($this->couponId) {
-            Coupon::findOrFail($this->couponId)->update($data);
+            $coupon = Coupon::findOrFail($this->couponId);
+            $coupon->update($data);
             $this->dispatch('notify', message: 'Coupon updated successfully');
         } else {
             // New coupons stay inactive until switched on from the list — status is
             // no longer editable from this form, see Index::toggleStatus().
             $data['status'] = 'inactive';
-            Coupon::create($data);
+            $coupon = Coupon::create($data);
             $this->dispatch('notify', message: 'Coupon created successfully');
         }
+
+        $coupon->products()->sync($this->product_ids);
 
         AdminActivity::log(
             $creating ? 'created' : 'updated',

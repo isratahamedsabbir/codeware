@@ -53,6 +53,26 @@
             <flux:error name="expires_at" />
         </flux:field>
 
+        <flux:field>
+            <flux:label>Applies To</flux:label>
+            <p class="text-xs text-zinc-400 mb-2">Leave every product unchecked for this coupon to apply to any order. Check one or more to restrict it to just those products.</p>
+
+            <div class="max-h-64 overflow-y-auto chat-scroll rounded-lg border border-zinc-200 divide-y divide-zinc-100">
+                @forelse ($this->products as $product)
+                    <label wire:key="coupon-product-{{ $product->id }}" class="flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-zinc-50 group">
+                        <input type="checkbox" wire:model="product_ids" value="{{ $product->id }}"
+                            class="w-4 h-4 rounded border-zinc-300 text-indigo-500 focus:ring-indigo-400 cursor-pointer" />
+                        <span class="text-sm text-zinc-700 group-hover:text-zinc-900 transition-colors">
+                            {{ is_array($product->name) ? ($product->name[\App\Support\Locale::primary()] ?? reset($product->name)) : $product->name }}
+                        </span>
+                    </label>
+                @empty
+                    <p class="text-xs text-zinc-400 px-3 py-4">No products yet.</p>
+                @endforelse
+            </div>
+            <flux:error name="product_ids" />
+        </flux:field>
+
         {{-- Footer --}}
         <div class="-mx-6 -mb-6 mt-6 flex items-center gap-3 flex-wrap rounded-b-lg border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-700 dark:bg-zinc-800/40">
             <button wire:click="save" wire:loading.attr="disabled" wire:target="save"

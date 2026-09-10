@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Coupon extends Model
 {
@@ -43,9 +44,33 @@ class Coupon extends Model
         });
     }
 
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class);
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', 'active');
+    }
+
+    /**
+     * A coupon with no linked products applies site-wide (the historical/default
+     * behavior); linking products at all switches it to an allow-list.
+     */
+    public function isRestrictedToProducts(): bool
+    {
+        return $this->relationLoaded('products')
+            ? $this->products->isNotEmpty()
+            : $this->products()->exists();
+    }
+
+    public function appliesToProduct(int $productId): bool
+    {
+        return ! $this->isRestrictedToProducts()
+            || ($this->relationLoaded('products')
+                ? $this->products->contains('id', $productId)
+                : $this->products()->whereKey($productId)->exists());
     }
 
     public function isExpired(): bool

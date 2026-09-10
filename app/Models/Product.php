@@ -48,13 +48,14 @@ class Product extends Model
     protected $fillable = [
         'product_category_id', 'name', 'description',
         'faq',
-        'featured_image', 'status', 'price', 'is_featured',
+        'featured_image', 'status', 'price', 'discount_price', 'is_featured',
         'sort_order',
     ];
 
     protected $casts = [
         'faq' => 'array',
         'price' => 'decimal:2',
+        'discount_price' => 'decimal:2',
         'is_featured' => 'boolean',
         'sort_order' => 'integer',
     ];
@@ -87,6 +88,16 @@ class Product extends Model
     public function page(): HasOne
     {
         return $this->hasOne(Page::class, 'product_id')->where('type', 'product');
+    }
+
+    /**
+     * A discount price only counts if it's actually cheaper than the regular
+     * price — guards against a stale/mistaken discount_price left equal to or
+     * above price still showing a "sale" badge.
+     */
+    public function hasDiscount(): bool
+    {
+        return $this->discount_price !== null && (float) $this->discount_price < (float) $this->price;
     }
 
     public function scopeActive(Builder $query): Builder

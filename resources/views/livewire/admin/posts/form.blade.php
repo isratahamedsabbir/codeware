@@ -32,7 +32,7 @@
 
             <x-admin-locale-tabs>
                 @foreach (\App\Support\Locale::active() as $language)
-                    <x-admin-locale-panel :code="$language->code">
+                    <x-admin-locale-panel :code="$language->code" class="space-y-3">
                         <flux:field>
                             <flux:label>
                                 Title
@@ -41,6 +41,14 @@
                             <flux:input wire:model.live.debounce.400ms="title.{{ $language->code }}"
                                 placeholder="{{ $language->code === $this->primaryLocale ? 'Post title' : 'Post title ('.($language->native_name ?: $language->name).')' }}" />
                             @if ($language->code === $this->primaryLocale)<flux:error name="title.{{ $language->code }}" />@endif
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label>Description</flux:label>
+                            <flux:textarea wire:model.live.debounce.400ms="description.{{ $language->code }}" rows="4"
+                                placeholder="{{ $language->code === $this->primaryLocale ? 'Short post summary' : 'Short post summary ('.($language->native_name ?: $language->name).')' }}" />
+                            <p class="text-xs text-zinc-400 mt-1">Shown in blog listings and as a fallback description — the full post body is built separately in the page builder.</p>
+                            @if ($language->code === $this->primaryLocale)<flux:error name="description.{{ $language->code }}" />@endif
                         </flux:field>
                     </x-admin-locale-panel>
                 @endforeach

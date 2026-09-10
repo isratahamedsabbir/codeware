@@ -27,6 +27,8 @@ class Form extends Component
 
     public array $title = [];
 
+    public array $description = [];
+
     #[Validate('nullable|string|max:255')]
     public string $slug = '';
 
@@ -58,7 +60,7 @@ class Form extends Component
         if ($id) {
             $post = Post::with('page', 'tags')->findOrFail($id);
             $this->postId = $id;
-            $this->hydrateTranslatable($post, ['title']);
+            $this->hydrateTranslatable($post, ['title', 'description']);
             $this->slug = $post->slug ?? '';
             $this->category_id = $post->category_id;
             $this->featured_image = $post->featured_image ?? '';
@@ -151,6 +153,7 @@ class Form extends Component
 
         $rules = array_merge($this->getRules(), $this->translatableRules([
             'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
         ]));
         $rules['slug'] = [
             'required', 'string', 'max:255',
@@ -186,6 +189,7 @@ class Form extends Component
 
         $rules = array_merge($this->getRules(), $this->translatableRules([
             'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
         ]));
         $rules['slug'] = [
             'required', 'string', 'max:255',
@@ -209,6 +213,7 @@ class Form extends Component
         $data = [
             'user_id' => auth()->id(),
             'title' => $this->translatablePayload('title'),
+            'description' => $this->translatablePayload('description') ?: null,
             'category_id' => $this->category_id,
             'featured_image' => $this->featured_image ?: null,
         ];
@@ -231,6 +236,7 @@ class Form extends Component
             [
                 'user_id' => auth()->id(),
                 'title' => $this->translatablePayload('title'),
+                'description' => $this->translatablePayload('description') ?: null,
                 'slug' => $this->slug,
                 'status' => $post->status,
                 ...$this->seoPagePayload(),
