@@ -55,7 +55,7 @@ class ProductController extends Controller
 
         $related = $product->product_category_id
             ? Product::active()
-                ->with('category')
+                ->with(['category', 'page'])
                 ->where('product_category_id', $product->product_category_id)
                 ->where('id', '!=', $product->id)
                 ->orderBy('sort_order')
