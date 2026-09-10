@@ -23,6 +23,7 @@ class AdminMenuSeeder extends Seeder
         $this->group('Products', 3, [
             ['Product Categories', 'squares-2x2', 'admin.product-categories'],
             ['Products', 'cube', 'admin.products'],
+            ['Attributes', 'adjustments-horizontal', 'admin.product-attributes'],
         ]);
 
         $this->group('Sales', 4, [

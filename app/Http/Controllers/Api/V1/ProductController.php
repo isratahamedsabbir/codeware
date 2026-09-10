@@ -99,6 +99,23 @@ class ProductController extends Controller
                 'alt' => $m->alt_text ?? '',
                 'sort_order' => $m->pivot->sort_order,
             ])->values();
+            $data['variations'] = collect($product->variations ?? [])->map(fn ($attribute) => [
+                'name' => $attribute['name'] ?? '',
+                'values' => collect($attribute['values'] ?? [])->map(function ($value) {
+                    $price = ($value['price'] ?? null) !== null ? (float) $value['price'] : null;
+                    $discountPrice = ($value['discount_price'] ?? null) !== null ? (float) $value['discount_price'] : null;
+
+                    return [
+                        'name' => $value['name'] ?? '',
+                        'price' => $price,
+                        // Only counts if it's actually cheaper than this value's own
+                        // price — same guard as Product::hasDiscount().
+                        'discount_price' => $discountPrice !== null && $price !== null && $discountPrice < $price
+                            ? $discountPrice
+                            : null,
+                    ];
+                })->values(),
+            ])->values();
             $data['related_products'] = $related->map(fn ($p) => $this->formatProduct($p, $locale))->values();
             $data['cms'] = $this->formatCms($product->page);
         }

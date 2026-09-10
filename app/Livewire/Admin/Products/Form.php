@@ -7,6 +7,7 @@ use App\Concerns\HasTranslatableFields;
 use App\Models\MediaLibrary;
 use App\Models\Page;
 use App\Models\Product;
+use App\Models\ProductAttribute;
 use App\Models\ProductCategory;
 use App\Models\Setting;
 use App\Support\AdminActivity;
@@ -68,6 +69,19 @@ class Form extends Component
 
     public string $galleryPickerId = '';
 
+    /**
+     * Attribute groups shown as option pickers on the product page (e.g. "Size"
+     * with values Small/Medium/Large), each value optionally overriding the
+     * product's price. No per-combination matrix or stock tracking — one
+     * attribute's values are independent choices, not crossed with another
+     * attribute's. Not translatable (unlike name/description) — just plain
+     * text. Shape: [['name' => 'Size', 'values' => [['name' => 'Small',
+     * 'price' => '500.00'], ...]], ...].
+     *
+     * @var array<int, array{name: string, values: array<int, array{name: string, price: string}>}>
+     */
+    public array $variations = [];
+
     public function mount(?int $id = null): void
     {
         $this->featuredImagePickerId = 'featured-image-'.Str::uuid()->toString();
@@ -85,6 +99,17 @@ class Form extends Component
 
             $this->featured_image = $product->featured_image ?? '';
             $this->gallery_ids = $product->gallery->pluck('id')->all();
+            // Normalizes rows saved before the discount_price column existed on a
+            // value, so their input renders empty instead of Livewire choking on
+            // a wire:model path the array doesn't have yet.
+            $this->variations = collect($product->variations ?? [])->map(fn ($attribute) => [
+                'name' => $attribute['name'],
+                'values' => collect($attribute['values'] ?? [])->map(fn ($value) => [
+                    'name' => $value['name'],
+                    'price' => $value['price'] ?? '',
+                    'discount_price' => $value['discount_price'] ?? '',
+                ])->all(),
+            ])->all();
 
             $this->pageId = $product->page?->id;
             $this->hydrateSeoFieldsFromPage($product->page);
@@ -137,6 +162,64 @@ class Form extends Component
         $this->gallery_ids = array_values(array_intersect($order, $this->gallery_ids));
     }
 
+    public function addVariationAttribute(): void
+    {
+        $this->variations[] = ['name' => '', 'values' => []];
+    }
+
+    public function removeVariationAttribute(int $index): void
+    {
+        unset($this->variations[$index]);
+        $this->variations = array_values($this->variations);
+    }
+
+    public function addVariationValue(int $attributeIndex): void
+    {
+        if (! isset($this->variations[$attributeIndex])) {
+            return;
+        }
+
+        $this->variations[$attributeIndex]['values'][] = ['name' => '', 'price' => '', 'discount_price' => ''];
+    }
+
+    public function removeVariationValue(int $attributeIndex, int $valueIndex): void
+    {
+        if (! isset($this->variations[$attributeIndex]['values'][$valueIndex])) {
+            return;
+        }
+
+        unset($this->variations[$attributeIndex]['values'][$valueIndex]);
+        $this->variations[$attributeIndex]['values'] = array_values($this->variations[$attributeIndex]['values']);
+    }
+
+    /**
+     * Drops attribute/value rows left with no name — mirrors how Settings'
+     * freeform Constant rows are filtered on save (see
+     * Admin\Settings\Index::save()), so an admin doesn't have to manually
+     * clean up an empty row they added and decided not to fill in.
+     *
+     * @return array<int, array{name: string, values: array<int, array{name: string, price: string, discount_price: ?string}>}>
+     */
+    private function cleanedVariations(): array
+    {
+        return collect($this->variations)
+            ->filter(fn ($attribute) => filled($attribute['name'] ?? null))
+            ->map(fn ($attribute) => [
+                'name' => $attribute['name'],
+                'values' => collect($attribute['values'] ?? [])
+                    ->filter(fn ($value) => filled($value['name'] ?? null))
+                    ->map(fn ($value) => [
+                        'name' => $value['name'],
+                        'price' => filled($value['price'] ?? null) ? $value['price'] : null,
+                        'discount_price' => filled($value['discount_price'] ?? null) ? $value['discount_price'] : null,
+                    ])
+                    ->values()
+                    ->all(),
+            ])
+            ->values()
+            ->all();
+    }
+
     /**
      * Live slug-as-you-type — regenerates from the primary locale's name only
      * while the slug still matches what we last auto-generated (i.e. the
@@ -184,6 +267,12 @@ class Form extends Component
         return ProductCategory::orderBy('sort_order')->get();
     }
 
+    #[Computed]
+    public function productAttributes()
+    {
+        return ProductAttribute::orderBy('sort_order')->orderBy('name')->get();
+    }
+
     public function openPuckEditor(): void
     {
         if (! $this->pageId) {
@@ -216,6 +305,8 @@ class Form extends Component
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
         ];
+        $rules['variations.*.values.*.price'] = 'nullable|numeric|min:0';
+        $rules['variations.*.values.*.discount_price'] = 'nullable|numeric|min:0|lt:variations.*.values.*.price';
 
         $this->validate($rules);
 
@@ -251,6 +342,8 @@ class Form extends Component
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
         ];
+        $rules['variations.*.values.*.price'] = 'nullable|numeric|min:0';
+        $rules['variations.*.values.*.discount_price'] = 'nullable|numeric|min:0|lt:variations.*.values.*.price';
 
         $this->validate($rules);
 
@@ -273,6 +366,7 @@ class Form extends Component
             'is_featured' => $this->is_featured,
             'description' => $this->translatablePayload('description') ?: null,
             'featured_image' => $this->featured_image ?: null,
+            'variations' => $this->cleanedVariations(),
         ];
 
         if ($this->productId) {

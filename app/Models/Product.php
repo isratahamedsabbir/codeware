@@ -47,13 +47,14 @@ class Product extends Model
 
     protected $fillable = [
         'product_category_id', 'name', 'description',
-        'faq',
+        'faq', 'variations',
         'featured_image', 'status', 'price', 'discount_price', 'is_featured',
         'sort_order',
     ];
 
     protected $casts = [
         'faq' => 'array',
+        'variations' => 'array',
         'price' => 'decimal:2',
         'discount_price' => 'decimal:2',
         'is_featured' => 'boolean',
