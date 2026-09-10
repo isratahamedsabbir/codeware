@@ -27,6 +27,9 @@
             <button type="button" @click="tab = 'custom-code'"
                 :class="tab==='custom-code'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="mx-4 rounded-none! py-3 text-sm -mb-px">Custom Code</button>
+            <button type="button" @click="tab = 'tracking'"
+                :class="tab==='tracking'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
+                class="mx-4 rounded-none! py-3 text-sm -mb-px">Tracking</button>
             <button type="button" @click="tab = 'constant'"
                 :class="tab==='constant'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="mx-4 rounded-none! py-3 text-sm -mb-px">Constant</button>
@@ -417,6 +420,19 @@
                     description="Injected just before </body> closes — chat widgets, tracking pixels, deferred scripts.">
                     <flux:field>
                         <flux:textarea wire:model="settings.custom_body_code" class="h-40 font-mono text-xs" placeholder="<script>...</script>" />
+                    </flux:field>
+                </x-admin-section-card>
+            </div>
+        </div>
+
+        {{-- Tracking tab --}}
+        <div x-show="tab === 'tracking'">
+            <div class="max-w-[1600px] space-y-5">
+                <x-admin-section-card header-border="border-zinc-100" icon="chart-bar" title="Google Pixel" class="max-w-2xl"
+                    description="The Measurement/Pixel ID (e.g. G-XXXXXXXXXX or AW-XXXXXXXXX) exposed via the public settings API for the frontend to use.">
+                    <flux:field>
+                        <flux:label>Google Pixel ID</flux:label>
+                        <flux:input wire:model="settings.google_pixel_id" placeholder="G-XXXXXXXXXX" class="font-mono" />
                     </flux:field>
                 </x-admin-section-card>
             </div>

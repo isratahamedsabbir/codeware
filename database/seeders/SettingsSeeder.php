@@ -155,6 +155,10 @@ class SettingsSeeder extends Seeder
             ['key' => 'custom_head_code',         'value' => '', 'type' => 'textarea', 'group' => 'custom-code', 'is_public' => true],
             ['key' => 'custom_body_code',         'value' => '', 'type' => 'textarea', 'group' => 'custom-code', 'is_public' => true],
 
+            // ── Tracking ── Google Pixel / Measurement ID, exposed via the public
+            // settings API so the frontend can inject the gtag script itself.
+            ['key' => 'google_pixel_id', 'value' => '', 'type' => 'string', 'group' => 'tracking', 'is_public' => true],
+
             // ── Floating button (admin panel) ──
             ['key' => 'floating_button_enabled', 'value' => '0', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
             ['key' => 'floating_button_action',  'value' => 'top', 'type' => 'string', 'group' => 'other', 'is_public' => false],
