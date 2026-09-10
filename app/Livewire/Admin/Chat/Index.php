@@ -56,11 +56,17 @@ class Index extends Component
         return $conversation;
     }
 
+    /**
+     * Only the last 50 messages — an active conversation can otherwise grow
+     * without bound, which both bloats the payload and (paired with the flex
+     * layout below) keeps stretching the thread panel taller with every reply
+     * instead of scrolling within a fixed height.
+     */
     #[Computed]
     public function threadMessages(): Collection
     {
         return $this->activeConversation
-            ? $this->activeConversation->messages()->with('sender')->orderBy('created_at')->get()
+            ? $this->activeConversation->messages()->with('sender')->latest()->limit(50)->get()->sortBy('id')->values()
             : collect();
     }
 

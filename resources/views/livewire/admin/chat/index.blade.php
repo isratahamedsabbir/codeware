@@ -9,9 +9,36 @@
         authId: {{ auth()->id() }},
         activeId: @entangle('conversationId'),
         channel: null,
+        panelHeight: null,
         init() {
-            this.channel = window.Echo.private('App.Models.User.' + this.authId)
-                .listen('.message.sent', (event) => this.handleIncoming(event));
+            // The admin layout is a normal scrolling page (no fixed-height app
+            // shell), so flex-1/h-full never actually bound this panel — it just
+            // kept growing taller with every message instead of scrolling within
+            // a fixed height. Pin it to the remaining viewport height instead.
+            //
+            // This is stored as reactive Alpine state bound via :style below,
+            // rather than set directly on $el.style — a plain imperative style
+            // mutation gets wiped the next time Livewire morphs this element
+            // (its freshly server-rendered HTML never had that attribute), so
+            // the box would silently revert to unbounded on every re-render
+            // (new message, markConversationRead, etc). Alpine's own bindings
+            // are reapplied after each morph, so this survives it.
+            //
+            // Done before the Echo subscription below so a broken/unavailable
+            // Reverb connection can never stop the layout fix from applying.
+            this.syncHeight();
+            window.addEventListener('resize', () => this.syncHeight());
+
+            try {
+                this.channel = window.Echo.private('App.Models.User.' + this.authId)
+                    .listen('.message.sent', (event) => this.handleIncoming(event));
+            } catch (e) {
+                console.error('Chat: failed to subscribe to the private channel', e);
+            }
+        },
+        syncHeight() {
+            const top = this.$el.getBoundingClientRect().top;
+            this.panelHeight = `calc(100dvh - ${top}px - 1rem)`;
         },
         handleIncoming(event) {
             if (String(event.conversation_id) === String(this.activeId)) {
@@ -25,9 +52,10 @@
             }
         },
     }"
+    :style="panelHeight ? `height: ${panelHeight}; max-height: ${panelHeight}` : ''"
 >
     {{-- Conversation list --}}
-    <div class="w-full md:w-[320px] shrink-0 bg-white rounded-[5px] border border-zinc-100 shadow-sm flex-col overflow-hidden {{ $this->activeConversation ? 'hidden md:flex' : 'flex' }}">
+    <div class="w-full md:w-[320px] shrink-0 min-h-0 bg-white rounded-[5px] border border-zinc-100 shadow-sm flex-col overflow-hidden {{ $this->activeConversation ? 'hidden md:flex' : 'flex' }}">
         <div class="p-3 border-b border-zinc-100 relative">
             <flux:input
                 wire:model.live.debounce.300ms="userSearch"
@@ -55,7 +83,7 @@
             @endif
         </div>
 
-        <div class="flex-1 min-h-0 overflow-y-auto">
+        <div class="flex-1 min-h-0 overflow-y-auto chat-scroll">
             @forelse ($this->conversations as $conversation)
                 @php $other = $conversation->otherUser(auth()->user()); @endphp
                 <button
@@ -102,17 +130,16 @@
                 <div class="text-sm font-semibold text-zinc-800">{{ $other->name }}</div>
             </div>
 
-            {{--
-                flex-col-reverse (+ space-y-reverse) instead of scrolling-via-JS: the
-                container naturally sits pinned to its start-of-reversed-axis, which is
-                the newest message, with no scrollTop calculation needed — and it stays
-                pinned as messages are added, since that's just how the reversed flex
-                flow behaves. The message order is reversed here (newest first in the
-                DOM) so the reversed flow renders them in normal reading order visually
-                (oldest at top, newest at bottom).
-            --}}
-            <div class="flex-1 min-h-0 overflow-y-auto px-4 py-4 flex flex-col-reverse space-y-3 space-y-reverse">
-                @forelse ($this->threadMessages->reverse() as $message)
+            <div
+                x-ref="messageList"
+                x-init="
+                    const scrollToBottom = () => { $refs.messageList.scrollTop = $refs.messageList.scrollHeight; };
+                    scrollToBottom();
+                    new MutationObserver(() => $nextTick(scrollToBottom)).observe($refs.messageList, { childList: true });
+                "
+                class="flex-1 min-h-0 overflow-y-auto chat-scroll px-4 py-4 flex flex-col space-y-3"
+            >
+                @forelse ($this->threadMessages as $message)
                     @php $isMine = $message->sender_id === auth()->id(); @endphp
                     <div wire:key="message-{{ $message->id }}" class="flex {{ $isMine ? 'justify-end' : 'justify-start' }}">
                         <div class="max-w-[70%] rounded-2xl px-3.5 py-2 text-sm {{ $isMine ? 'bg-secondary text-white rounded-br-sm' : 'bg-zinc-100 text-zinc-800 rounded-bl-sm' }}">

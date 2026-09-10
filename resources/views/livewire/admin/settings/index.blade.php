@@ -293,34 +293,60 @@
                     @endif
                 </x-admin-section-card>
 
+                @php $socialGroups = ['Google Login', 'Facebook Login']; @endphp
+
                 @foreach ($this->envFields() as $groupLabel => $fields)
+                    @continue(in_array($groupLabel, $socialGroups, true))
                     <x-admin-section-card header-border="border-zinc-100" icon="server" :title="__($groupLabel)" class="max-w-2xl">
                         @foreach ($fields as $key => $meta)
-                            <flux:field>
-                                <flux:label>{{ __($meta['label']) }}</flux:label>
-                                @if ($meta['type'] === 'boolean')
-                                    <select wire:model="env.{{ $key }}"
-                                        class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                                        <option value="true">{{ __('True') }}</option>
-                                        <option value="false">{{ __('False') }}</option>
-                                    </select>
-                                @elseif ($meta['type'] === 'select')
-                                    <select wire:model="env.{{ $key }}"
-                                        class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                                        @foreach ($meta['options'] as $option)
-                                            <option value="{{ $option }}">{{ $option }}</option>
-                                        @endforeach
-                                    </select>
-                                @elseif ($meta['type'] === 'password')
-                                    <flux:input type="password" wire:model="env.{{ $key }}" />
-                                @else
-                                    <flux:input wire:model="env.{{ $key }}" />
-                                @endif
-                                <flux:error name="env.{{ $key }}" />
-                            </flux:field>
+                            @include('livewire.admin.settings.partials.env-field', ['key' => $key, 'meta' => $meta])
                         @endforeach
                     </x-admin-section-card>
                 @endforeach
+
+                {{-- Google Login --}}
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                    <x-admin-section-card header-border="border-zinc-100" icon="globe-alt" title="Google Login">
+                        @foreach ($this->envFields()['Google Login'] as $key => $meta)
+                            @include('livewire.admin.settings.partials.env-field', ['key' => $key, 'meta' => $meta])
+                        @endforeach
+                    </x-admin-section-card>
+
+                    <x-admin-section-card header-border="border-zinc-100" icon="book-open" title="Where to get these" body-class="px-6 py-5 space-y-3">
+                        <ol class="list-decimal list-inside space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
+                            <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">console.cloud.google.com</span> → create (or pick) a project.</li>
+                            <li>APIs &amp; Services → Credentials → Create Credentials → <strong>OAuth client ID</strong>.</li>
+                            <li>Application type: <strong>Web application</strong>.</li>
+                            <li>Under Authorized redirect URIs, paste the exact value from the <strong>Google Redirect URI</strong> field on the left (e.g. <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded break-all">{{ str_replace('${APP_URL}', config('app.url'), $env['GOOGLE_REDIRECT_URI'] ?? '') }}</span>).</li>
+                            <li>Create — copy the <strong>Client ID</strong> and <strong>Client secret</strong> it gives you into the fields on the left, then save.</li>
+                        </ol>
+                        <flux:text class="text-xs text-zinc-500">
+                            First time setting this up, Google may also ask you to configure the OAuth consent screen (app name, support email) before it lets you create the client ID.
+                        </flux:text>
+                    </x-admin-section-card>
+                </div>
+
+                {{-- Facebook Login --}}
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                    <x-admin-section-card header-border="border-zinc-100" icon="chat-bubble-left-right" title="Facebook Login">
+                        @foreach ($this->envFields()['Facebook Login'] as $key => $meta)
+                            @include('livewire.admin.settings.partials.env-field', ['key' => $key, 'meta' => $meta])
+                        @endforeach
+                    </x-admin-section-card>
+
+                    <x-admin-section-card header-border="border-zinc-100" icon="book-open" title="Where to get these" body-class="px-6 py-5 space-y-3">
+                        <ol class="list-decimal list-inside space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
+                            <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">developers.facebook.com</span> → My Apps → Create App → type <strong>Consumer</strong> (or "Other").</li>
+                            <li>Add the <strong>Facebook Login</strong> product to the app.</li>
+                            <li>App Settings → Basic — copy the <strong>App ID</strong> and <strong>App Secret</strong> into the fields on the left.</li>
+                            <li>Facebook Login → Settings → Valid OAuth Redirect URIs, paste the exact value from the <strong>Facebook Redirect URI</strong> field on the left (e.g. <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded break-all">{{ str_replace('${APP_URL}', config('app.url'), $env['FACEBOOK_REDIRECT_URI'] ?? '') }}</span>).</li>
+                            <li>Save changes on Facebook's side, then Save Environment Settings here.</li>
+                        </ol>
+                        <flux:text class="text-xs text-zinc-500">
+                            The app stays in "Development" mode by default — only you (and any testers you add under Roles) can log in with it until you submit it for App Review.
+                        </flux:text>
+                    </x-admin-section-card>
+                </div>
 
                 <flux:button variant="primary" wire:click="confirmSaveEnv" wire:loading.attr="disabled">
                     {{ __('Save Environment Settings') }}
@@ -427,14 +453,78 @@
 
         {{-- Tracking tab --}}
         <div x-show="tab === 'tracking'">
-            <div class="max-w-[1600px] space-y-5">
-                <x-admin-section-card header-border="border-zinc-100" icon="chart-bar" title="Google Pixel" class="max-w-2xl"
-                    description="The Measurement/Pixel ID (e.g. G-XXXXXXXXXX or AW-XXXXXXXXX) exposed via the public settings API for the frontend to use.">
-                    <flux:field>
-                        <flux:label>Google Pixel ID</flux:label>
-                        <flux:input wire:model="settings.google_pixel_id" placeholder="G-XXXXXXXXXX" class="font-mono" />
-                    </flux:field>
-                </x-admin-section-card>
+            <div class="max-w-[1600px]">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                    <x-admin-section-card header-border="border-zinc-100" icon="chart-bar" title="Google Pixel"
+                        description="The Measurement/Pixel ID (e.g. G-XXXXXXXXXX or AW-XXXXXXXXX) exposed via the public settings API for the frontend to use.">
+                        <flux:field>
+                            <flux:label>Google Pixel ID</flux:label>
+                            <flux:input wire:model="settings.google_pixel_id" placeholder="G-XXXXXXXXXX" class="font-mono" />
+                        </flux:field>
+                    </x-admin-section-card>
+
+                    <x-admin-section-card header-border="border-zinc-100" icon="book-open" title="Integration guide" body-class="px-6 py-5 space-y-5"
+                        description="Where the ID comes from, and how to wire it up in the Next.js frontend.">
+                        <div>
+                            <flux:heading size="sm" class="mb-2">1. Get the ID from Google</flux:heading>
+                            <ol class="list-decimal list-inside space-y-1 text-sm text-zinc-600 dark:text-zinc-400">
+                                <li>Google Analytics (GA4): <span class="text-zinc-500">analytics.google.com</span> → Admin → Data Streams → your web stream → copy the <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">Measurement ID</span> (<span class="font-mono text-xs">G-XXXXXXXXXX</span>).</li>
+                                <li>Google Ads conversion tracking: Ads → Tools → Conversions → copy the <span class="font-mono text-xs">AW-XXXXXXXXX</span> ID instead.</li>
+                                <li>Paste it into the field on the left and save.</li>
+                            </ol>
+                        </div>
+
+                        <div>
+                            <flux:heading size="sm" class="mb-2">2. Read it from Next.js</flux:heading>
+                            <flux:text class="text-xs text-zinc-500 mb-2">
+                                The value is already public — it comes back from
+                                <span class="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">GET /api/v1/settings/public</span>
+                                as <span class="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">data.tracking.google_pixel_id</span>. Fetch it once in the root layout and inject the gtag script:
+                            </flux:text>
+                            <pre class="rounded-lg bg-zinc-900 text-zinc-100 text-[11px] leading-relaxed p-3.5 overflow-x-auto" style="color-scheme: dark; background-color: #18181b !important; color: #f4f4f5 !important;"><code style="color: #f4f4f5 !important;">{{ '// app/layout.tsx
+import Script from "next/script";
+
+async function getPublicSettings() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings/public`, {
+    next: { revalidate: 3600 },
+  });
+  return (await res.json()).data;
+}
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const settings = await getPublicSettings();
+  const pixelId = settings.tracking?.google_pixel_id;
+
+  return (
+    <html lang="en">
+      <body>
+        {pixelId && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${pixelId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="gtag-init" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){ dataLayer.push(arguments); }
+                gtag("js", new Date());
+                gtag("config", "${pixelId}");
+              `}
+            </Script>
+          </>
+        )}
+        {children}
+      </body>
+    </html>
+  );
+}' }}</code></pre>
+                            <flux:text class="text-xs text-zinc-500 mt-2">
+                                Leave the field on the left blank to skip loading gtag entirely — the snippet above already guards for that.
+                            </flux:text>
+                        </div>
+                    </x-admin-section-card>
+                </div>
             </div>
         </div>
 

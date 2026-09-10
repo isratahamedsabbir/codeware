@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\Auth\EmailVerificationController;
 use App\Http\Controllers\Api\V1\Auth\LoginController;
 use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Auth\RegisterController;
+use App\Http\Controllers\Api\V1\Auth\SocialAuthController;
 use App\Http\Controllers\Api\V1\ChatController;
 use App\Http\Controllers\Api\V1\CmsController;
 use App\Http\Controllers\Api\V1\ContactController;
@@ -39,6 +40,11 @@ Route::prefix('auth')->name('auth.')->group(function () {
         ->middleware('throttle:6,1')->name('password.update');
     Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
         ->middleware(['signed', 'throttle:6,1'])->name('email.verify');
+
+    Route::get('/{provider}/redirect', [SocialAuthController::class, 'redirect'])
+        ->whereIn('provider', ['google', 'facebook'])->name('social.redirect');
+    Route::get('/{provider}/callback', [SocialAuthController::class, 'callback'])
+        ->whereIn('provider', ['google', 'facebook'])->name('social.callback');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');

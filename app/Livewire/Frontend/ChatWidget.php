@@ -186,6 +186,9 @@ class ChatWidget extends Component
         broadcast(new MessageSent($message));
     }
 
+    /**
+     * Only the last 50 messages — same reasoning as Admin\Chat\Index::threadMessages().
+     */
     #[Computed]
     public function messages(): Collection
     {
@@ -194,8 +197,11 @@ class ChatWidget extends Component
         }
 
         return ChatMessage::where('conversation_id', $this->conversationId)
-            ->orderBy('created_at')
-            ->get();
+            ->latest()
+            ->limit(50)
+            ->get()
+            ->sortBy('id')
+            ->values();
     }
 
     private function otpKey(): string

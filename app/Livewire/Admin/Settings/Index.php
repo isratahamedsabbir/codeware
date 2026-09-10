@@ -103,6 +103,16 @@ class Index extends Component
                 'APP_URL' => ['label' => 'App URL', 'type' => 'text'],
                 'FRONTEND_URL' => ['label' => 'Frontend URL', 'type' => 'text'],
             ],
+            'Google Login' => [
+                'GOOGLE_CLIENT_ID' => ['label' => 'Google Client ID', 'type' => 'text'],
+                'GOOGLE_CLIENT_SECRET' => ['label' => 'Google Client Secret', 'type' => 'password'],
+                'GOOGLE_REDIRECT_URI' => ['label' => 'Google Redirect URI', 'type' => 'text'],
+            ],
+            'Facebook Login' => [
+                'FACEBOOK_CLIENT_ID' => ['label' => 'Facebook App ID', 'type' => 'text'],
+                'FACEBOOK_CLIENT_SECRET' => ['label' => 'Facebook App Secret', 'type' => 'password'],
+                'FACEBOOK_REDIRECT_URI' => ['label' => 'Facebook Redirect URI', 'type' => 'text'],
+            ],
         ];
     }
 
@@ -113,6 +123,14 @@ class Index extends Component
             'env.APP_ENV' => 'required|in:local,staging,production,testing,developer',
             'env.APP_URL' => 'required|url',
             'env.FRONTEND_URL' => 'nullable|url',
+            'env.GOOGLE_CLIENT_ID' => 'nullable|string',
+            'env.GOOGLE_CLIENT_SECRET' => 'nullable|string',
+            // Not `url` — this intentionally holds a ${APP_URL}/... interpolation
+            // (phpdotenv resolves it at runtime), which a strict URL check would reject.
+            'env.GOOGLE_REDIRECT_URI' => 'nullable|string',
+            'env.FACEBOOK_CLIENT_ID' => 'nullable|string',
+            'env.FACEBOOK_CLIENT_SECRET' => 'nullable|string',
+            'env.FACEBOOK_REDIRECT_URI' => 'nullable|string',
         ];
 
         $this->validate($rules);

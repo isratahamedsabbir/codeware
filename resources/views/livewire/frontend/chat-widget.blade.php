@@ -90,7 +90,7 @@
 
             {{-- Step: chat --}}
             @if ($step === 'chat')
-                <div class="flex-1 overflow-y-auto px-4 py-3 space-y-2.5" wire:poll.3s>
+                <div class="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-2.5" wire:poll.3s>
                     @forelse ($this->messages as $message)
                         <div class="flex {{ $message->sender_id === $guestUserId ? 'justify-end' : 'justify-start' }}">
                             <div class="max-w-[80%] rounded-2xl px-3.5 py-2 text-sm {{ $message->sender_id === $guestUserId ? 'bg-primary text-white rounded-br-sm' : 'bg-zinc-100 text-zinc-800 rounded-bl-sm' }}">
