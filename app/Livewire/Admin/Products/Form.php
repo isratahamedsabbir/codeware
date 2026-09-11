@@ -75,28 +75,27 @@ class Form extends Component
     public string $galleryPickerId = '';
 
     /**
-     * Flat list of attribute+value option cards shown on the product page (e.g.
-     * "Size: Small"), each optionally overriding the product's price/stock. No
-     * combinatorial matrix — picking "Size: Small" and "Color: Red" doesn't
-     * imply a "Small Red" combination, they're independent option cards. Built
-     * one at a time via the Attribute+Value picker (addVariation()) rather
-     * than typed, since both attribute and value come from ProductAttribute's
-     * managed lists. Shape: [['attribute' => 'Size', 'value' => 'Small',
+     * Flat list of variant combinations (e.g. "Color: Red, Size: Small"), each
+     * optionally overriding the product's price/stock. Built via
+     * generateVariations(), which takes the checked values in
+     * $variationSelectedValues and produces the cartesian product across every
+     * attribute that has at least one value checked — combinations that
+     * already existed keep their price/discount/quantity, only new ones start
+     * blank. Shape: [['attributes' => ['Color' => 'Red', 'Size' => 'Small'],
      * 'price' => '500.00', 'discount_price' => null, 'quantity' => '10'], ...].
      *
-     * @var array<int, array{attribute: string, value: string, price: string, discount_price: string, quantity: string}>
+     * @var array<int, array{attributes: array<string, string>, price: string, discount_price: string, quantity: string}>
      */
     public array $variations = [];
 
     /**
-     * The Attribute+Value picker above the variation cards — cleared back to
-     * '' after each addVariation() so adding several values in a row just
-     * means re-picking Value (Attribute usually stays put via wire:model.live,
-     * see updatedVariationAttribute()).
+     * Backing state for the value checkboxes above the variation cards, keyed
+     * by attribute name (e.g. ['Color' => ['Red', 'Blue'], 'Size' =>
+     * ['Small']]). generateVariations() reads this to build the combinations.
+     *
+     * @var array<string, array<int, string>>
      */
-    public string $variationAttribute = '';
-
-    public string $variationValue = '';
+    public array $variationSelectedValues = [];
 
     public function mount(?int $id = null): void
     {
@@ -117,12 +116,22 @@ class Form extends Component
             $this->featured_image = $product->featured_image ?? '';
             $this->gallery_ids = $product->gallery->pluck('id')->all();
             $this->variations = collect($product->variations ?? [])->map(fn ($row) => [
-                'attribute' => $row['attribute'] ?? '',
-                'value' => $row['value'] ?? '',
+                // Older rows saved before combinations were supported only had
+                // a single 'attribute'/'value' pair — fold them into the same
+                // shape so existing data keeps working under the new picker.
+                'attributes' => $row['attributes'] ?? (filled($row['attribute'] ?? null) ? [$row['attribute'] => $row['value']] : []),
                 'price' => $row['price'] ?? '',
                 'discount_price' => $row['discount_price'] ?? '',
                 'quantity' => $row['quantity'] ?? '',
             ])->all();
+
+            foreach ($this->variations as $row) {
+                foreach ($row['attributes'] as $attributeName => $value) {
+                    if (! in_array($value, $this->variationSelectedValues[$attributeName] ?? [], true)) {
+                        $this->variationSelectedValues[$attributeName][] = $value;
+                    }
+                }
+            }
 
             $this->pageId = $product->page?->id;
             $this->hydrateSeoFieldsFromPage($product->page);
@@ -176,51 +185,69 @@ class Form extends Component
     }
 
     /**
-     * The Value picker's options — every value defined on the currently
-     * selected attribute (see App\Livewire\Admin\ProductAttributes\Form),
-     * empty while no attribute is picked yet or it has none defined.
-     *
-     * @return array<int, string>
+     * Builds every combination across the attributes that currently have at
+     * least one checked value (e.g. Color: Red, Blue + Size: Small produces
+     * Red/Small, Red/Large is skipped since Large isn't checked, Blue/Small).
+     * Attribute order follows productAttributes() so the combination order
+     * stays stable across regenerations. A combination that already exists
+     * keeps its price/discount/quantity; combinations no longer matching the
+     * checked values are dropped.
      */
-    #[Computed]
-    public function variationValueOptions(): array
+    public function generateVariations(): void
     {
-        return $this->productAttributes->firstWhere('name', $this->variationAttribute)?->values ?? [];
-    }
+        $axes = [];
 
-    /**
-     * Livewire's magic updated{Property}() hook — clears the stale Value
-     * selection the moment the Attribute changes, since the old value almost
-     * certainly doesn't belong to the newly picked attribute's list.
-     */
-    public function updatedVariationAttribute(): void
-    {
-        $this->variationValue = '';
-    }
+        foreach ($this->productAttributes as $attribute) {
+            $values = array_values(array_filter($this->variationSelectedValues[$attribute->name] ?? []));
 
-    public function addVariation(): void
-    {
-        if ($this->variationAttribute === '' || $this->variationValue === '') {
+            if ($values !== []) {
+                $axes[$attribute->name] = $values;
+            }
+        }
+
+        if ($axes === []) {
             return;
         }
 
-        $alreadyAdded = collect($this->variations)->contains(
-            fn ($row) => $row['attribute'] === $this->variationAttribute && $row['value'] === $this->variationValue
+        $combinations = [[]];
+
+        foreach ($axes as $attributeName => $values) {
+            $next = [];
+
+            foreach ($combinations as $combo) {
+                foreach ($values as $value) {
+                    $next[] = $combo + [$attributeName => $value];
+                }
+            }
+
+            $combinations = $next;
+        }
+
+        $existing = collect($this->variations)->keyBy(
+            fn ($row) => $this->variationComboKey($row['attributes'] ?? [])
         );
 
-        if (! $alreadyAdded) {
-            $this->variations[] = [
-                'attribute' => $this->variationAttribute,
-                'value' => $this->variationValue,
+        $this->variations = collect($combinations)
+            ->map(fn ($attributes) => $existing->get($this->variationComboKey($attributes)) ?? [
+                'attributes' => $attributes,
                 'price' => '',
                 'discount_price' => '',
                 'quantity' => '',
-            ];
-        }
+            ])
+            ->values()
+            ->all();
+    }
 
-        // Attribute stays picked — adding several values off the same
-        // attribute in a row is the common case.
-        $this->variationValue = '';
+    /**
+     * A stable identity for a combination regardless of the order its
+     * attributes happen to be in, used to match old rows against newly
+     * generated ones so their price/discount/quantity survive a regenerate.
+     */
+    private function variationComboKey(array $attributes): string
+    {
+        ksort($attributes);
+
+        return json_encode($attributes);
     }
 
     public function removeVariation(int $index): void
@@ -230,19 +257,18 @@ class Form extends Component
     }
 
     /**
-     * Drops any row left with no attribute/value picked — shouldn't normally
-     * happen since addVariation() already guards against it, but keeps save()
-     * safe regardless.
+     * Drops any row left with no attributes — shouldn't normally happen since
+     * generateVariations() already guards against it, but keeps save() safe
+     * regardless.
      *
-     * @return array<int, array{attribute: string, value: string, price: ?string, discount_price: ?string, quantity: ?string}>
+     * @return array<int, array{attributes: array<string, string>, price: ?string, discount_price: ?string, quantity: ?string}>
      */
     private function cleanedVariations(): array
     {
         return collect($this->variations)
-            ->filter(fn ($row) => filled($row['attribute'] ?? null) && filled($row['value'] ?? null))
+            ->filter(fn ($row) => filled($row['attributes'] ?? null))
             ->map(fn ($row) => [
-                'attribute' => $row['attribute'],
-                'value' => $row['value'],
+                'attributes' => $row['attributes'],
                 'price' => filled($row['price'] ?? null) ? $row['price'] : null,
                 'discount_price' => filled($row['discount_price'] ?? null) ? $row['discount_price'] : null,
                 'quantity' => filled($row['quantity'] ?? null) ? $row['quantity'] : null,

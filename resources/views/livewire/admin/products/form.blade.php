@@ -117,52 +117,43 @@
 
         {{-- Variations --}}
         <x-admin-section-card icon="adjustments-horizontal" title="Variations" icon-color="bg-violet-500/10 text-violet-600"
-            description="Optional attribute+value options (e.g. Size: Small) shown on the product page. Each can override the base price/stock — leave blank to keep the base value.">
+            description="Check the values that apply per attribute (e.g. Color: Red, Blue + Size: Small) then generate — every combination gets its own card to optionally override the base price/stock.">
 
-            {{-- Attribute + Value picker --}}
-            <div class="flex flex-wrap items-end gap-2 rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 mb-4">
-                <flux:field class="flex-1 min-w-40">
-                    <flux:label>Attribute</flux:label>
-                    @if ($this->productAttributes->isEmpty())
-                        <p class="text-xs text-zinc-400 mt-1.5">No attributes yet.
-                            <a href="{{ route('admin.product-attributes.create') }}" wire:navigate class="text-indigo-500 hover:underline">
-                                Create one
-                            </a>.
-                        </p>
-                    @else
-                        <flux:select wire:model.live="variationAttribute">
-                            <flux:select.option value="">— Select —</flux:select.option>
-                            @foreach ($this->productAttributes as $attributeOption)
-                                <flux:select.option :value="$attributeOption->name">{{ $attributeOption->name }}</flux:select.option>
-                            @endforeach
-                        </flux:select>
-                    @endif
-                </flux:field>
-                <flux:field class="flex-1 min-w-40">
-                    <flux:label>Value</flux:label>
-                    @if ($variationAttribute && empty($this->variationValueOptions))
-                        @php $pickedAttribute = $this->productAttributes->firstWhere('name', $variationAttribute); @endphp
-                        <p class="text-xs text-zinc-400 mt-1.5">
-                            No values for "{{ $variationAttribute }}" yet.
-                            @if ($pickedAttribute)
-                                <a href="{{ route('admin.product-attributes.edit', $pickedAttribute->id) }}" wire:navigate class="text-indigo-500 hover:underline">
-                                    Add some
-                                </a>.
-                            @endif
-                        </p>
-                    @else
-                        <flux:select wire:model.live="variationValue" :disabled="! $variationAttribute">
-                            <flux:select.option value="">— Select —</flux:select.option>
-                            @foreach ($this->variationValueOptions as $valueOption)
-                                <flux:select.option :value="$valueOption">{{ $valueOption }}</flux:select.option>
-                            @endforeach
-                        </flux:select>
-                    @endif
-                </flux:field>
-                <flux:field>
-                    <flux:label class="invisible">Add</flux:label>
-                    <flux:button size="sm" icon="plus" wire:click="addVariation" :disabled="! $variationAttribute || ! $variationValue">Add</flux:button>
-                </flux:field>
+            {{-- Attribute value checkboxes --}}
+            <div class="rounded-xl border border-zinc-200 bg-zinc-50/70 p-4 mb-4">
+                @if ($this->productAttributes->isEmpty())
+                    <p class="text-xs text-zinc-400">No attributes yet.
+                        <a href="{{ route('admin.product-attributes.create') }}" wire:navigate class="text-indigo-500 hover:underline">
+                            Create one
+                        </a>.
+                    </p>
+                @else
+                    <div class="space-y-4">
+                        @foreach ($this->productAttributes as $attribute)
+                            <flux:field>
+                                <flux:label>{{ $attribute->name }}</flux:label>
+                                @if (empty($attribute->values))
+                                    <p class="text-xs text-zinc-400 mt-1.5">
+                                        No values yet.
+                                        <a href="{{ route('admin.product-attributes.edit', $attribute->id) }}" wire:navigate class="text-indigo-500 hover:underline">
+                                            Add some
+                                        </a>.
+                                    </p>
+                                @else
+                                    <flux:checkbox.group wire:model="variationSelectedValues.{{ $attribute->name }}" variant="pills">
+                                        @foreach ($attribute->values as $valueOption)
+                                            <flux:checkbox value="{{ $valueOption }}" label="{{ $valueOption }}" />
+                                        @endforeach
+                                    </flux:checkbox.group>
+                                @endif
+                            </flux:field>
+                        @endforeach
+                    </div>
+
+                    <div class="flex justify-end mt-4 pt-4 border-t border-zinc-200">
+                        <flux:button size="sm" icon="squares-plus" wire:click="generateVariations">Generate Variations</flux:button>
+                    </div>
+                @endif
             </div>
 
             {{-- Cards --}}
@@ -170,10 +161,14 @@
                 @forelse ($variations as $i => $row)
                     <div wire:key="variation-{{ $i }}" class="group/var rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden transition-shadow hover:shadow-md">
                         <div class="flex items-center justify-between gap-2 px-3.5 py-2.5 border-b border-zinc-100 bg-linear-to-r from-violet-50/70 to-transparent">
-                            <div class="min-w-0 flex items-center gap-1.5 text-sm">
-                                <span class="font-semibold text-zinc-800 truncate">{{ $row['attribute'] }}</span>
-                                <span class="text-zinc-300">·</span>
-                                <span class="font-medium text-violet-600 truncate">{{ $row['value'] }}</span>
+                            <div class="min-w-0 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm">
+                                @foreach ($row['attributes'] as $attributeName => $value)
+                                    @if (! $loop->first)
+                                        <span class="text-zinc-300">·</span>
+                                    @endif
+                                    <span class="font-semibold text-zinc-800 truncate">{{ $attributeName }}</span>
+                                    <span class="font-medium text-violet-600 truncate">{{ $value }}</span>
+                                @endforeach
                             </div>
                             <button type="button" wire:click="removeVariation({{ $i }})"
                                 class="shrink-0 rounded-lg p-1 text-zinc-400 transition-colors hover:bg-rose-50 hover:text-rose-500 cursor-pointer" aria-label="Remove">
@@ -211,7 +206,7 @@
                             <flux:icon.adjustments-horizontal class="size-5" />
                         </div>
                         <p class="text-sm font-medium text-zinc-600">No variations yet</p>
-                        <p class="mt-1 text-xs text-zinc-400 max-w-sm mx-auto">Pick an attribute and a value above, then click Add if this product needs option-based pricing.</p>
+                        <p class="mt-1 text-xs text-zinc-400 max-w-sm mx-auto">Check the values that apply above, then click Generate Variations if this product needs option-based pricing.</p>
                     </div>
                 @endforelse
             </div>
