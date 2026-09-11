@@ -107,26 +107,30 @@ class ProductController extends Controller
             // Each row is one attribute combination (e.g. Color: Red, Size:
             // Small — see Admin\Products\Form::generateVariations()), flat
             // rather than grouped since a combination can span attributes.
-            $data['variations'] = collect($product->variations ?? [])->map(function ($row) {
-                $price = ($row['price'] ?? null) !== null ? (float) $row['price'] : null;
-                $discountPrice = ($row['discount_price'] ?? null) !== null ? (float) $row['discount_price'] : null;
-                $quantity = ($row['quantity'] ?? null) !== null ? (int) $row['quantity'] : null;
+            // Rows the admin toggled off (e.g. a generated combination that
+            // doesn't actually exist) never reach the public API.
+            $data['variations'] = collect($product->variations ?? [])
+                ->filter(fn ($row) => $row['visible'] ?? true)
+                ->map(function ($row) {
+                    $price = ($row['price'] ?? null) !== null ? (float) $row['price'] : null;
+                    $discountPrice = ($row['discount_price'] ?? null) !== null ? (float) $row['discount_price'] : null;
+                    $quantity = ($row['quantity'] ?? null) !== null ? (int) $row['quantity'] : null;
 
-                return [
-                    'attributes' => $row['attributes'] ?? [],
-                    'price' => $price,
-                    // Only counts if it's actually cheaper than this combination's
-                    // own price — same guard as Product::hasDiscount().
-                    'discount_price' => $discountPrice !== null && $price !== null && $discountPrice < $price
-                        ? $discountPrice
-                        : null,
-                    'quantity' => $quantity,
-                    // Null quantity means this combination doesn't override the
-                    // base product's stock tracking — same convention as
-                    // Product::inStock().
-                    'in_stock' => $quantity === null || $quantity > 0,
-                ];
-            })->values();
+                    return [
+                        'attributes' => $row['attributes'] ?? [],
+                        'price' => $price,
+                        // Only counts if it's actually cheaper than this combination's
+                        // own price — same guard as Product::hasDiscount().
+                        'discount_price' => $discountPrice !== null && $price !== null && $discountPrice < $price
+                            ? $discountPrice
+                            : null,
+                        'quantity' => $quantity,
+                        // Null quantity means this combination doesn't override the
+                        // base product's stock tracking — same convention as
+                        // Product::inStock().
+                        'in_stock' => $quantity === null || $quantity > 0,
+                    ];
+                })->values();
             $data['related_products'] = $related->map(fn ($p) => $this->formatProduct($p, $locale))->values();
             $data['cms'] = $this->formatCms($product->page);
         }

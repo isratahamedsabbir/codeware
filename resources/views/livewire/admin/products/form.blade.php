@@ -117,10 +117,10 @@
 
         {{-- Variations --}}
         <x-admin-section-card icon="adjustments-horizontal" title="Variations" icon-color="bg-violet-500/10 text-violet-600"
-            description="Check the values that apply per attribute (e.g. Color: Red, Blue + Size: Small) then generate — every combination gets its own card to optionally override the base price/stock.">
+            description="Pick which attributes apply to this product, then check the values that matter (e.g. Color: Red, Blue + Size: Small) — a card for every combination appears automatically, each optionally overriding the base price/stock.">
 
-            {{-- Attribute value checkboxes --}}
-            <div class="rounded-xl border border-zinc-200 bg-zinc-50/70 p-4 mb-4">
+            {{-- Which attributes apply to this product --}}
+            <div class="rounded-xl border border-zinc-200 bg-zinc-50/70 p-4 mb-3">
                 @if ($this->productAttributes->isEmpty())
                     <p class="text-xs text-zinc-400">No attributes yet.
                         <a href="{{ route('admin.product-attributes.create') }}" wire:navigate class="text-indigo-500 hover:underline">
@@ -128,8 +128,23 @@
                         </a>.
                     </p>
                 @else
+                    <flux:field>
+                        <flux:label>Attributes</flux:label>
+                        <flux:checkbox.group wire:model.live="variationActiveAttributes" variant="pills">
+                            @foreach ($this->productAttributes as $attribute)
+                                <flux:checkbox value="{{ $attribute->name }}" label="{{ $attribute->name }}" />
+                            @endforeach
+                        </flux:checkbox.group>
+                    </flux:field>
+                @endif
+            </div>
+
+            {{-- Attribute value checkboxes — only for the attributes picked above --}}
+            @if ($variationActiveAttributes !== [])
+                <div class="rounded-xl border border-zinc-200 bg-zinc-50/70 p-4 mb-4">
                     <div class="space-y-4">
                         @foreach ($this->productAttributes as $attribute)
+                            @continue (! in_array($attribute->name, $variationActiveAttributes, true))
                             <flux:field>
                                 <flux:label>{{ $attribute->name }}</flux:label>
                                 @if (empty($attribute->values))
@@ -140,7 +155,7 @@
                                         </a>.
                                     </p>
                                 @else
-                                    <flux:checkbox.group wire:model="variationSelectedValues.{{ $attribute->name }}" variant="pills">
+                                    <flux:checkbox.group wire:model.live="variationSelectedValues.{{ $attribute->name }}" variant="pills">
                                         @foreach ($attribute->values as $valueOption)
                                             <flux:checkbox value="{{ $valueOption }}" label="{{ $valueOption }}" />
                                         @endforeach
@@ -149,17 +164,14 @@
                             </flux:field>
                         @endforeach
                     </div>
-
-                    <div class="flex justify-end mt-4 pt-4 border-t border-zinc-200">
-                        <flux:button size="sm" icon="squares-plus" wire:click="generateVariations">Generate Variations</flux:button>
-                    </div>
-                @endif
-            </div>
+                </div>
+            @endif
 
             {{-- Cards --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 @forelse ($variations as $i => $row)
-                    <div wire:key="variation-{{ $i }}" class="group/var rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden transition-shadow hover:shadow-md">
+                    <div wire:key="variation-{{ $i }}"
+                        class="group/var rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden transition-shadow hover:shadow-md {{ ($row['visible'] ?? true) ? '' : 'opacity-60' }}">
                         <div class="flex items-center justify-between gap-2 px-3.5 py-2.5 border-b border-zinc-100 bg-linear-to-r from-violet-50/70 to-transparent">
                             <div class="min-w-0 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm">
                                 @foreach ($row['attributes'] as $attributeName => $value)
@@ -170,12 +182,17 @@
                                     <span class="font-medium text-violet-600 truncate">{{ $value }}</span>
                                 @endforeach
                             </div>
-                            <button type="button" wire:click="removeVariation({{ $i }})"
-                                class="shrink-0 rounded-lg p-1 text-zinc-400 transition-colors hover:bg-rose-50 hover:text-rose-500 cursor-pointer" aria-label="Remove">
-                                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
+                            <div class="shrink-0 flex items-center gap-2">
+                                <flux:tooltip content="Show on the storefront">
+                                    <flux:switch wire:model.live="variations.{{ $i }}.visible" size="sm" />
+                                </flux:tooltip>
+                                <button type="button" wire:click="removeVariation({{ $i }})"
+                                    class="rounded-lg p-1 text-zinc-400 transition-colors hover:bg-rose-50 hover:text-rose-500 cursor-pointer" aria-label="Remove">
+                                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                         <div class="p-3 grid grid-cols-3 gap-2">
                             <flux:field>
@@ -206,7 +223,7 @@
                             <flux:icon.adjustments-horizontal class="size-5" />
                         </div>
                         <p class="text-sm font-medium text-zinc-600">No variations yet</p>
-                        <p class="mt-1 text-xs text-zinc-400 max-w-sm mx-auto">Check the values that apply above, then click Generate Variations if this product needs option-based pricing.</p>
+                        <p class="mt-1 text-xs text-zinc-400 max-w-sm mx-auto">Pick the attributes and values that apply above if this product needs option-based pricing — cards appear automatically.</p>
                     </div>
                 @endforelse
             </div>

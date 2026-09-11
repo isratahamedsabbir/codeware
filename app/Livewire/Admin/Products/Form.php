@@ -80,13 +80,27 @@ class Form extends Component
      * generateVariations(), which takes the checked values in
      * $variationSelectedValues and produces the cartesian product across every
      * attribute that has at least one value checked — combinations that
-     * already existed keep their price/discount/quantity, only new ones start
-     * blank. Shape: [['attributes' => ['Color' => 'Red', 'Size' => 'Small'],
-     * 'price' => '500.00', 'discount_price' => null, 'quantity' => '10'], ...].
+     * already existed keep their price/discount/quantity/visible, only new
+     * ones start blank and visible. 'visible' controls whether the combination
+     * is exposed on the public API/storefront — a generated combination that
+     * doesn't actually exist (e.g. no Red XXL in stock) can be hidden instead
+     * of deleted, and regenerated back into existence later without losing
+     * its price. Shape: [['attributes' => ['Color' => 'Red', 'Size' =>
+     * 'Small'], 'price' => '500.00', 'discount_price' => null, 'quantity' =>
+     * '10', 'visible' => true], ...].
      *
-     * @var array<int, array{attributes: array<string, string>, price: string, discount_price: string, quantity: string}>
+     * @var array<int, array{attributes: array<string, string>, price: string, discount_price: string, quantity: string, visible: bool}>
      */
     public array $variations = [];
+
+    /**
+     * Which of the system's attributes (e.g. Color, Size, Material) are
+     * relevant for this product — controls which value pickers show below,
+     * so a product doesn't get cluttered with every attribute ever defined.
+     *
+     * @var array<int, string>
+     */
+    public array $variationActiveAttributes = [];
 
     /**
      * Backing state for the value checkboxes above the variation cards, keyed
@@ -123,10 +137,15 @@ class Form extends Component
                 'price' => $row['price'] ?? '',
                 'discount_price' => $row['discount_price'] ?? '',
                 'quantity' => $row['quantity'] ?? '',
+                'visible' => $row['visible'] ?? true,
             ])->all();
 
             foreach ($this->variations as $row) {
                 foreach ($row['attributes'] as $attributeName => $value) {
+                    if (! in_array($attributeName, $this->variationActiveAttributes, true)) {
+                        $this->variationActiveAttributes[] = $attributeName;
+                    }
+
                     if (! in_array($value, $this->variationSelectedValues[$attributeName] ?? [], true)) {
                         $this->variationSelectedValues[$attributeName][] = $value;
                     }
@@ -198,6 +217,10 @@ class Form extends Component
         $axes = [];
 
         foreach ($this->productAttributes as $attribute) {
+            if (! in_array($attribute->name, $this->variationActiveAttributes, true)) {
+                continue;
+            }
+
             $values = array_values(array_filter($this->variationSelectedValues[$attribute->name] ?? []));
 
             if ($values !== []) {
@@ -233,6 +256,7 @@ class Form extends Component
                 'price' => '',
                 'discount_price' => '',
                 'quantity' => '',
+                'visible' => true,
             ])
             ->values()
             ->all();
@@ -261,7 +285,7 @@ class Form extends Component
      * generateVariations() already guards against it, but keeps save() safe
      * regardless.
      *
-     * @return array<int, array{attributes: array<string, string>, price: ?string, discount_price: ?string, quantity: ?string}>
+     * @return array<int, array{attributes: array<string, string>, price: ?string, discount_price: ?string, quantity: ?string, visible: bool}>
      */
     private function cleanedVariations(): array
     {
@@ -272,6 +296,7 @@ class Form extends Component
                 'price' => filled($row['price'] ?? null) ? $row['price'] : null,
                 'discount_price' => filled($row['discount_price'] ?? null) ? $row['discount_price'] : null,
                 'quantity' => filled($row['quantity'] ?? null) ? $row['quantity'] : null,
+                'visible' => (bool) ($row['visible'] ?? true),
             ])
             ->values()
             ->all();
@@ -288,6 +313,12 @@ class Form extends Component
      */
     public function updated(string $name, mixed $value): void
     {
+        if ($name === 'variationActiveAttributes' || str_starts_with($name, 'variationSelectedValues.')) {
+            $this->generateVariations();
+
+            return;
+        }
+
         if (! $this->isPrimaryLocaleUpdate($name, 'name')) {
             return;
         }
