@@ -69,8 +69,20 @@
         <div class="w-[320px] shrink-0 space-y-4">
 
             {{-- Icon & Status --}}
-            <x-admin-section-card icon="swatch" title="Category Settings" body-class="px-4 py-4"
-                description="Icon shown for this category.">
+            <x-admin-section-card icon="swatch" title="Category Settings" body-class="px-4 py-4 space-y-4"
+                description="Icon and parent category.">
+                <flux:field>
+                    <flux:label>Parent category</flux:label>
+                    <flux:select wire:model="parentId">
+                        <flux:select.option value="">— None (top-level) —</flux:select.option>
+                        @foreach ($this->parentOptions as $option)
+                            <flux:select.option value="{{ $option['id'] }}">{{ $option['label'] }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+                    <p class="text-xs text-zinc-400 mt-1">Leave as top-level, or nest this under an existing category to make it a subcategory.</p>
+                    <flux:error name="parentId" />
+                </flux:field>
+
                 <x-media-picker model="icon" label="Icon" hint="64×64px, transparent" placeholder="Select icon image from library"
                     :picker-id="$iconPickerId" mimes="png,webp" :max-size-mb="1" only-images dropzone />
             </x-admin-section-card>

@@ -26,9 +26,9 @@ class ProductController extends Controller
         $perPage = max(1, min((int) $request->query('per_page', Setting::perPage()), 100));
 
         $products = Product::active()
-            ->with(['category.page', 'page'])
+            ->with(['categories.page', 'page'])
             ->orderBy('sort_order')
-            ->when($request->query('category'), fn ($q, $slug) => $q->whereHas('category.page', fn ($c) => $c->where('slug', $slug)))
+            ->when($request->query('category'), fn ($q, $slug) => $q->whereHas('categories.page', fn ($c) => $c->where('slug', $slug)))
             ->when($request->query('search'), fn ($q, $search) => $q->where("name->{$locale}", 'like', "%{$search}%"))
             ->when($request->query('featured') === '1', fn ($q) => $q->where('is_featured', true))
             ->paginate($perPage);
@@ -49,14 +49,16 @@ class ProductController extends Controller
         $locale = $this->resolveLocale($request);
 
         $product = Product::active()
-            ->with(['category.page', 'gallery', 'page'])
+            ->with(['categories.page', 'gallery', 'page'])
             ->whereHas('page', fn ($q) => $q->where('slug', $slug))
             ->firstOrFail();
 
-        $related = $product->product_category_id
+        $categoryIds = $product->categories->pluck('id');
+
+        $related = $categoryIds->isNotEmpty()
             ? Product::active()
-                ->with(['category', 'page'])
-                ->where('product_category_id', $product->product_category_id)
+                ->with(['categories', 'page'])
+                ->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $categoryIds))
                 ->where('id', '!=', $product->id)
                 ->orderBy('sort_order')
                 ->limit(4)
@@ -82,11 +84,11 @@ class ProductController extends Controller
             'featured_image' => $product->featured_image,
             'is_featured' => $product->is_featured,
             // 'sort_order'      => $product->sort_order,
-            'category' => $product->category ? [
-                'id' => $product->category->id,
-                'slug' => $product->category->slug,
-                'name' => $product->category->getTranslation('name', $locale, useFallbackLocale: true),
-            ] : null,
+            'categories' => $product->categories->map(fn ($category) => [
+                'id' => $category->id,
+                'slug' => $category->slug,
+                'name' => $category->getTranslation('name', $locale, useFallbackLocale: true),
+            ])->values(),
             'page' => $this->formatPage($product->page),
         ];
 

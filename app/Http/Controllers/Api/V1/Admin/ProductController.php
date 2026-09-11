@@ -18,7 +18,7 @@ class ProductController extends Controller
         $perPage = max(1, min((int) $request->query('per_page', 15), 100));
 
         $products = Product::withTrashed()
-            ->with(['category.page', 'page'])
+            ->with(['categories.page', 'page'])
             ->orderBy('sort_order')
             ->orderByDesc('updated_at')
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
@@ -33,8 +33,7 @@ class ProductController extends Controller
                 'is_featured' => $p->is_featured,
                 'sort_order' => $p->sort_order,
                 'featured_image' => $p->featured_image,
-                'product_category_id' => $p->product_category_id,
-                'category' => $p->category,
+                'categories' => $p->categories,
                 'deleted_at' => $p->deleted_at?->toIso8601String(),
                 'deleted_at_display' => $p->deleted_at?->toDisplay(),
             ]),
@@ -54,7 +53,8 @@ class ProductController extends Controller
             'name.en' => 'required|string|max:255',
             'name.bn' => 'nullable|string|max:255',
             'slug' => ['nullable', 'string', ...Slug::uniqueRules(null)],
-            'product_category_id' => 'nullable|exists:categories,id,type,product',
+            'category_ids' => 'nullable|array',
+            'category_ids.*' => 'integer|exists:categories,id,type,product',
             'description' => 'nullable|array',
             'description.en' => 'nullable|string',
             'description.bn' => 'nullable|string',
@@ -74,6 +74,9 @@ class ProductController extends Controller
         $mediaIds = $validated['media_ids'] ?? null;
         unset($validated['media_ids']);
 
+        $categoryIds = $validated['category_ids'] ?? [];
+        unset($validated['category_ids']);
+
         // SEO fields, OG image, and the puck-builder content all live on the paired
         // Page, not on the product itself.
         $pageFields = collect($validated)->only(['og_image', 'seo_title', 'seo_description', 'puck_data'])->all();
@@ -84,6 +87,8 @@ class ProductController extends Controller
         unset($validated['slug']);
 
         $product = Product::create($validated)->refresh();
+
+        $product->categories()->sync($categoryIds);
 
         if ($mediaIds !== null) {
             $sync = collect($mediaIds)
@@ -120,7 +125,8 @@ class ProductController extends Controller
             'name.en' => 'required_with:name|string|max:255',
             'name.bn' => 'nullable|string|max:255',
             'slug' => ['nullable', 'string', ...Slug::uniqueRules($product->page?->id)],
-            'product_category_id' => 'sometimes|nullable|exists:categories,id,type,product',
+            'category_ids' => 'sometimes|nullable|array',
+            'category_ids.*' => 'integer|exists:categories,id,type,product',
             'description' => 'sometimes|nullable|array',
             'description.en' => 'nullable|string',
             'description.bn' => 'nullable|string',
@@ -140,6 +146,9 @@ class ProductController extends Controller
         $mediaIds = array_key_exists('media_ids', $validated) ? $validated['media_ids'] : false;
         unset($validated['media_ids']);
 
+        $categoryIds = array_key_exists('category_ids', $validated) ? $validated['category_ids'] : false;
+        unset($validated['category_ids']);
+
         // SEO fields, OG image, and the puck-builder content all live on the paired
         // Page, not on the product itself.
         $pageFields = collect($validated)->only(['og_image', 'seo_title', 'seo_description', 'puck_data'])->all();
@@ -150,6 +159,10 @@ class ProductController extends Controller
         unset($validated['slug']);
 
         $product->update($validated);
+
+        if ($categoryIds !== false) {
+            $product->categories()->sync((array) $categoryIds);
+        }
 
         if ($mediaIds !== false) {
             $sync = collect((array) $mediaIds)

@@ -8,7 +8,6 @@
 
     {{-- Header --}}
     <div class="flex items-center gap-3 p-4 flex-wrap">
-        <x-per-page-select :options="$this->perPageOptions()" />
         {{-- Search --}}
         <div class="relative max-w-xs ml-auto">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" viewBox="0 0 24 24"
@@ -89,8 +88,11 @@
                             </td>
 
                             {{-- Name --}}
-                            <td class="px-4 py-2">
-                                <div class="font-medium text-zinc-900 text-sm leading-snug">
+                            <td class="px-4 py-2" style="padding-left: {{ 16 + ($category->depth * 24) }}px">
+                                <div class="font-medium text-zinc-900 text-sm leading-snug flex items-center gap-1.5">
+                                    @if ($category->depth > 0)
+                                        <span class="text-zinc-300">↳</span>
+                                    @endif
                                     <x-truncate :text="$category->getTranslation('name', 'en', false)" />
                                 </div>
                                 @if ($category->getTranslation('name', 'bn', false))
@@ -181,11 +183,6 @@
                 </tbody>
             </table>
         </div> 
-    </div>
-
-    {{-- Pagination --}}
-    <div class="px-6 py-3">
-        {{ $categories->links() }}
     </div>
 
     {{-- Delete Modal --}}

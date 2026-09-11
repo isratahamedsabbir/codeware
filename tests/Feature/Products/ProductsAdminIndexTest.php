@@ -13,9 +13,9 @@ beforeEach(function () {
 
 it('opens and closes the view details modal for a product', function () {
     $product = Product::factory()->create([
-        'product_category_id' => ProductCategory::factory(),
         'name' => ['en' => 'Wireless Mouse', 'bn' => ''],
     ]);
+    $product->categories()->attach(ProductCategory::factory()->create());
 
     Livewire::test(ProductsIndex::class)
         ->call('viewDetails', $product->id)

@@ -43,8 +43,8 @@ class DemoContentSeeder extends Seeder
         $products = Product::factory()
             ->count(12)
             ->published()
-            ->sequence(fn () => ['product_category_id' => $productCategories->random()->id])
             ->create();
+        $products->each(fn (Product $product) => $product->categories()->attach($productCategories->random()->id));
         $products->random(3)->each(fn (Product $p) => $p->update(['is_featured' => true]));
         $products->each(fn (Product $product) => $this->createPage(
             type: 'product',

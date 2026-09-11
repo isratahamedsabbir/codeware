@@ -2,17 +2,13 @@
 
 namespace App\Livewire\Admin\ProductCategories;
 
-use App\Concerns\HasPerPage;
 use App\Models\ProductCategory;
 use App\Support\AdminActivity;
 use App\Support\PageCascade;
 use Livewire\Component;
-use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use HasPerPage, WithPagination;
-
     public string $search = '';
 
     public ?int $deletingId = null;
@@ -27,11 +23,6 @@ class Index extends Component
     public function closeDetails(): void
     {
         $this->viewingId = null;
-    }
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
     }
 
     public function reorder(array $order): void
@@ -74,16 +65,24 @@ class Index extends Component
 
     public function render()
     {
+        $all = ProductCategory::query()
+            ->with('page')
+            ->withCount('products')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
+        $tree = ProductCategory::tree($all);
+
+        if ($this->search !== '') {
+            $needle = mb_strtolower($this->search);
+            $tree = $tree->filter(fn (ProductCategory $category) => str_contains(mb_strtolower($category->getTranslation('name', 'en', false) ?: ''), $needle)
+                || str_contains(mb_strtolower($category->getTranslation('name', 'bn', false) ?: ''), $needle))
+                ->values();
+        }
+
         return view('livewire.admin.product-categories.index', [
-            'categories' => ProductCategory::query()
-                ->when($this->search, fn ($q) => $q
-                    ->where('name->en', 'like', "%{$this->search}%")
-                    ->orWhere('name->bn', 'like', "%{$this->search}%"))
-                ->with('page')
-                ->withCount('products')
-                ->orderBy('sort_order')
-                ->orderBy('id')
-                ->paginate($this->perPage),
+            'categories' => $tree,
         ])->layout('layouts.admin', ['title' => 'Product Categories']);
     }
 }

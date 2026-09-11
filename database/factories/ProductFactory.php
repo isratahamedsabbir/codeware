@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\ProductCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ProductFactory extends Factory
@@ -12,7 +11,6 @@ class ProductFactory extends Factory
         $name = fake()->words(3, true);
 
         return [
-            'product_category_id' => ProductCategory::factory(),
             'name' => ['en' => ucfirst($name), 'bn' => ucfirst($name)],
             'description' => ['en' => fake()->paragraph(), 'bn' => fake()->paragraph()],
             'featured_image' => null,

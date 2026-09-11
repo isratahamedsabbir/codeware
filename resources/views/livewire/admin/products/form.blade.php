@@ -64,17 +64,6 @@
                         @endif
                         <flux:error name="slug" />
                     </flux:field>
-                    <flux:field>
-                        <flux:label>Category</flux:label>
-                        <flux:select wire:model="product_category_id">
-                            <flux:select.option value="">— None —</flux:select.option>
-                            @foreach ($this->productCategories as $cat)
-                                <flux:select.option value="{{ $cat->id }}">
-                                    {{ $cat->getTranslation('name', \App\Support\Locale::primary(), false) }}</flux:select.option>
-                            @endforeach
-                        </flux:select>
-                        <flux:error name="product_category_id" />
-                    </flux:field>
 
                 {{-- Pricing & Stock (not translatable — shown regardless of locale tab) --}}
                 <div class="mt-5 rounded-xl border border-zinc-200 overflow-hidden" wire:key="pricing-stock-panel">
@@ -256,6 +245,22 @@
 
         {{-- ── SIDEBAR ── --}}
         <div class="w-[320px] shrink-0 space-y-3">
+
+            {{-- Categories --}}
+            <x-admin-section-card icon="tag" title="Categories" icon-color="bg-amber-500/10 text-amber-600"
+                body-class="px-4 py-3" description="A product can belong to more than one category.">
+                <flux:checkbox.group wire:model="category_ids" class="flex-col items-stretch gap-0.5 max-h-72 overflow-y-auto border border-zinc-200 rounded-lg p-2">
+                    @forelse ($this->categoryTree as $cat)
+                        <div class="rounded-md py-2 hover:bg-zinc-50 transition-colors" style="padding-left: {{ 8 + $cat->depth * 20 }}px">
+                            <flux:checkbox value="{{ $cat->id }}"
+                                label="{{ $cat->depth > 0 ? '↳ ' : '' }}{{ $cat->getTranslation('name', \App\Support\Locale::primary(), false) }}" />
+                        </div>
+                    @empty
+                        <p class="text-xs text-zinc-400 px-2 py-1">No categories yet — create one from Product Categories first.</p>
+                    @endforelse
+                </flux:checkbox.group>
+                <flux:error name="category_ids" />
+            </x-admin-section-card>
 
             {{-- Featured Image --}}
             <x-admin-section-card icon="photo" title="Thumbnail Image" icon-color="bg-blue-500/10 text-blue-600"

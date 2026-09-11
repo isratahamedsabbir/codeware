@@ -3,7 +3,6 @@
 use App\Mail\TemplateDrivenMail;
 use App\Models\EmailTemplate;
 use App\Models\Product;
-use App\Models\ProductCategory;
 use App\Models\Setting;
 use App\Models\Subscriber;
 use Illuminate\Support\Facades\Mail;
@@ -21,7 +20,7 @@ it('emails subscribed subscribers when a new product is created', function () {
     $subscribed = Subscriber::factory()->create(['email' => 'jane@example.com']);
     Subscriber::factory()->unsubscribed()->create(['email' => 'john@example.com']);
 
-    Product::factory()->create(['product_category_id' => ProductCategory::factory(), 'name' => ['en' => 'Wireless Mouse', 'bn' => '']]);
+    Product::factory()->create(['name' => ['en' => 'Wireless Mouse', 'bn' => '']]);
 
     Mail::assertSent(TemplateDrivenMail::class, fn (TemplateDrivenMail $mail) => $mail->hasTo('jane@example.com')
         && $mail->subjectLine === 'New Product: Wireless Mouse'
@@ -35,7 +34,7 @@ it('does not email subscribers when the setting is disabled', function () {
 
     Subscriber::factory()->create();
 
-    Product::factory()->create(['product_category_id' => ProductCategory::factory()]);
+    Product::factory()->create();
 
     Mail::assertNothingSent();
 });
@@ -46,7 +45,7 @@ it('does not email subscribers when the template is missing', function () {
 
     Subscriber::factory()->create();
 
-    Product::factory()->create(['product_category_id' => ProductCategory::factory()]);
+    Product::factory()->create();
 
     Mail::assertNothingSent();
 });

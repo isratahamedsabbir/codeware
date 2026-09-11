@@ -46,10 +46,8 @@ it('only includes products matching the status filter', function () {
 
 it('includes the category name for products that have one', function () {
     $category = ProductCategory::factory()->create(['name' => ['en' => 'Electronics', 'bn' => '']]);
-    Product::factory()->published()->create([
-        'name' => ['en' => 'Laptop', 'bn' => ''],
-        'product_category_id' => $category->id,
-    ]);
+    $product = Product::factory()->published()->create(['name' => ['en' => 'Laptop', 'bn' => '']]);
+    $product->categories()->attach($category);
 
     $csv = $this->get(route('admin.products.export'))->streamedContent();
 

@@ -41,8 +41,10 @@ class Form extends Component
      */
     public ?bool $slugAvailable = null;
 
-    #[Validate('nullable|integer|exists:categories,id,type,product')]
-    public ?int $product_category_id = null;
+    /**
+     * @var array<int, int>
+     */
+    public array $category_ids = [];
 
     #[Validate('required|numeric|min:0')]
     public string $price = '0';
@@ -108,7 +110,7 @@ class Form extends Component
             $this->productId = $id;
             $this->hydrateTranslatable($product, ['name', 'description']);
             $this->slug = $product->slug ?? '';
-            $this->product_category_id = $product->product_category_id;
+            $this->category_ids = $product->categories->pluck('id')->all();
             $this->price = (string) $product->price;
             $this->discount_price = $product->discount_price !== null ? (string) $product->discount_price : '';
             $this->quantity = $product->quantity !== null ? (string) $product->quantity : '';
@@ -299,6 +301,16 @@ class Form extends Component
         return ProductCategory::orderBy('sort_order')->get();
     }
 
+    /**
+     * Every category, depth-first flattened for the Categories checkbox
+     * picker — subcategories render indented directly under their parent.
+     */
+    #[Computed]
+    public function categoryTree()
+    {
+        return ProductCategory::tree($this->productCategories);
+    }
+
     #[Computed]
     public function productAttributes()
     {
@@ -340,6 +352,8 @@ class Form extends Component
         $rules['variations.*.price'] = 'nullable|numeric|min:0';
         $rules['variations.*.discount_price'] = 'nullable|numeric|min:0|lt:variations.*.price';
         $rules['variations.*.quantity'] = 'nullable|integer|min:0';
+        $rules['category_ids'] = 'array';
+        $rules['category_ids.*'] = 'integer|exists:categories,id,type,product';
 
         $this->validate($rules);
 
@@ -378,6 +392,8 @@ class Form extends Component
         $rules['variations.*.price'] = 'nullable|numeric|min:0';
         $rules['variations.*.discount_price'] = 'nullable|numeric|min:0|lt:variations.*.price';
         $rules['variations.*.quantity'] = 'nullable|integer|min:0';
+        $rules['category_ids'] = 'array';
+        $rules['category_ids.*'] = 'integer|exists:categories,id,type,product';
 
         $this->validate($rules);
 
@@ -393,7 +409,6 @@ class Form extends Component
         $creating = $this->productId === null;
 
         $data = [
-            'product_category_id' => $this->product_category_id,
             'name' => $this->translatablePayload('name'),
             'price' => $this->price,
             'discount_price' => $this->discount_price !== '' ? $this->discount_price : null,
@@ -419,6 +434,8 @@ class Form extends Component
         $product->gallery()->sync(
             collect($this->gallery_ids)->mapWithKeys(fn ($id, $index) => [$id => ['sort_order' => $index]])->all()
         );
+
+        $product->categories()->sync($this->category_ids);
 
         $page = Page::updateOrCreate(
             ['type' => 'product', 'product_id' => $product->id],

@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_category_id')->nullable()->constrained('categories')->nullOnDelete();
             $table->json('name');
             $table->json('excerpt')->nullable();
             $table->json('description')->nullable();

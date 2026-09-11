@@ -336,8 +336,8 @@
                                 <p class="text-sm font-semibold text-zinc-800 truncate">
                                     {{ $product->getTranslation('name', 'en', false) }}
                                 </p>
-                                @if($product->category)
-                                    <p class="text-xs text-zinc-400 truncate mt-0.5">{{ $product->category->getTranslation('name', 'en', false) }}</p>
+                                @if($product->categories->isNotEmpty())
+                                    <p class="text-xs text-zinc-400 truncate mt-0.5">{{ $product->categories->map(fn ($c) => $c->getTranslation('name', 'en', false))->implode(', ') }}</p>
                                 @endif
                             </div>
                         </div>

@@ -68,7 +68,8 @@ it('generates a sitemap.xml from published content', function () {
     Page::factory()->create(['type' => 'page', 'status' => 'active', 'no_index' => false, 'slug' => 'about-us']);
     $category = ProductCategory::factory()->create(['status' => 'active']);
     pairPageFor($category, 'product_category', 'gadgets', $this->admin->id);
-    $product = Product::factory()->create(['product_category_id' => $category->id, 'status' => 'active']);
+    $product = Product::factory()->create(['status' => 'active']);
+    $product->categories()->attach($category);
     pairPageFor($product, 'product', 'widget', $this->admin->id);
 
     Livewire::test(Sitemap::class)->call('generate');

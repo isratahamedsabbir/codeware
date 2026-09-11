@@ -113,7 +113,8 @@ it('returns only active products on public listing', function () {
 it('filters products by category slug', function () {
     $cat = ProductCategory::factory()->create();
     pairPageFor($cat, 'product_category', 'fertilizers', $this->admin->id);
-    Product::factory()->published()->create(['product_category_id' => $cat->id]);
+    $product = Product::factory()->published()->create();
+    $product->categories()->attach($cat);
     Product::factory()->published()->create();
 
     $this->getJson('/api/v1/products?category=fertilizers')
@@ -153,25 +154,27 @@ it('returns paginated products with meta', function () {
 it('returns full product detail by slug with gallery and related', function () {
     $cat = ProductCategory::factory()->create();
     $product = Product::factory()->published()->create([
-        'product_category_id' => $cat->id,
         'name' => ['en' => 'Detail Product', 'bn' => ''],
     ]);
+    $product->categories()->attach($cat);
     pairPageFor($product, 'product', 'detail-product', $this->admin->id);
-    Product::factory()->published()->create(['product_category_id' => $cat->id]);
+    $sibling = Product::factory()->published()->create();
+    $sibling->categories()->attach($cat);
 
     $this->getJson("/api/v1/products/{$product->slug}")
         ->assertOk()
         ->assertJsonPath('data.slug', $product->slug)
         ->assertJsonStructure(['data' => [
             'id', 'slug', 'name', 'description',
-            'featured_image', 'gallery', 'related_products', 'category',
+            'featured_image', 'gallery', 'related_products', 'categories',
         ]])
         ->assertJsonCount(1, 'data.related_products');
 });
 
 it('related_products excludes current product', function () {
     $cat = ProductCategory::factory()->create();
-    $product = Product::factory()->published()->create(['product_category_id' => $cat->id]);
+    $product = Product::factory()->published()->create();
+    $product->categories()->attach($cat);
     pairPageFor($product, 'product', 'related-excludes-self', $this->admin->id);
 
     $response = $this->getJson("/api/v1/products/{$product->slug}");

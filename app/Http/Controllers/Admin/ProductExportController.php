@@ -20,7 +20,7 @@ class ProductExportController extends Controller
         $status = (string) $request->query('status', '');
 
         $products = Product::query()
-            ->with(['category', 'page'])
+            ->with(['categories', 'page'])
             ->when($search, fn ($q) => $q
                 ->where('name->en', 'like', "%{$search}%")
                 ->orWhere('name->bn', 'like', "%{$search}%")
@@ -46,7 +46,7 @@ class ProductExportController extends Controller
                     $product->getTranslation('name', 'en', false),
                     $product->getTranslation('name', 'bn', false),
                     $product->slug,
-                    $product->category?->getTranslation('name', 'en', false),
+                    $product->categories->map(fn ($c) => $c->getTranslation('name', 'en', false))->implode(', '),
                     $product->price,
                     $product->status,
                     $product->is_featured ? 'Yes' : 'No',

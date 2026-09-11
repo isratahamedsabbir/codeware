@@ -125,16 +125,16 @@
 
                             {{-- Category --}}
                             <td class="hidden lg:table-cell px-4 py-2">
-                                @if ($product->category)
-                                    <span class="inline-flex w-max items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500 border border-zinc-200">
+                                @forelse ($product->categories as $cat)
+                                    <span class="inline-flex w-max items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500 border border-zinc-200 mb-1">
                                         <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
                                         </svg>
-                                        <x-truncate :text="$product->category->getTranslation('name', 'en', false)" />
+                                        <x-truncate :text="$cat->getTranslation('name', 'en', false)" />
                                     </span>
-                                @else
+                                @empty
                                     <span class="text-zinc-300 text-sm">—</span>
-                                @endif
+                                @endforelse
                             </td>
 
                             {{-- Price --}}
@@ -224,7 +224,7 @@
                                         —
                                     @endif
                                 </x-admin-row-details.item>
-                                <x-admin-row-details.item label="Category">{{ $product->category?->getTranslation('name', 'en', false) ?: '—' }}</x-admin-row-details.item>
+                                <x-admin-row-details.item label="Category">{{ $product->categories->isNotEmpty() ? $product->categories->map(fn ($c) => $c->getTranslation('name', 'en', false))->implode(', ') : '—' }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Featured">{{ $product->is_featured ? 'Yes' : 'No' }}</x-admin-row-details.item>
                             </x-admin-row-details>
                         @endif

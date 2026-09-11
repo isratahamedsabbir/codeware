@@ -78,13 +78,16 @@ it('admin can create a product', function () {
     Sanctum::actingAs($this->admin);
     $cat = ProductCategory::factory()->create();
 
-    $this->postJson('/api/v1/admin/products', [
+    $response = $this->postJson('/api/v1/admin/products', [
         'name' => ['en' => 'Test Product', 'bn' => ''],
-        'product_category_id' => $cat->id,
+        'category_ids' => [$cat->id],
         'status' => 'inactive',
     ])->assertCreated()->assertJsonPath('data.slug', 'test_product');
 
     expect(Page::where(['type' => 'product', 'slug' => 'test_product'])->exists())->toBeTrue();
+
+    $product = Product::findOrFail($response->json('data.id'));
+    expect($product->categories->pluck('id')->all())->toBe([$cat->id]);
 });
 
 it('admin can create a product with gallery sync', function () {

@@ -7,8 +7,11 @@ use App\Concerns\HasTranslatableFields;
 use App\Models\Page;
 use App\Models\ProductCategory;
 use App\Support\AdminActivity;
+use App\Support\Locale;
 use App\Support\Slug;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
@@ -17,6 +20,8 @@ class Form extends Component
     use HasSeoFields, HasTranslatableFields;
 
     public ?int $categoryId = null;
+
+    public ?int $parentId = null;
 
     public ?int $pageId = null;
 
@@ -48,6 +53,7 @@ class Form extends Component
         if ($id) {
             $cat = ProductCategory::findOrFail($id);
             $this->categoryId = $id;
+            $this->parentId = $cat->parent_id;
             $this->hydrateTranslatable($cat, ['name']);
             $this->slug = $cat->slug ?? '';
             $this->icon = $cat->icon ?? null;
@@ -100,6 +106,50 @@ class Form extends Component
         $this->slugAvailable = Slug::isAvailable($this->slug, $this->pageId);
     }
 
+    /**
+     * Flattened, indented list of every category this one could legally be
+     * parented under — excludes itself and all of its own descendants (at any
+     * depth) so the dropdown can never be used to create a cycle.
+     *
+     * @return array<int, array{id: int, label: string, depth: int}>
+     */
+    #[Computed]
+    public function parentOptions(): array
+    {
+        $all = ProductCategory::orderBy('sort_order')->get();
+
+        $excluded = [];
+        if ($this->categoryId) {
+            $excluded = $this->descendantIds($this->categoryId, $all);
+            $excluded[] = $this->categoryId;
+        }
+
+        return ProductCategory::tree($all)
+            ->reject(fn (ProductCategory $cat) => in_array($cat->id, $excluded, true))
+            ->map(fn (ProductCategory $cat) => [
+                'id' => $cat->id,
+                'label' => str_repeat('— ', $cat->depth).$cat->getTranslation('name', Locale::primary(), false),
+                'depth' => $cat->depth,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function descendantIds(int $id, Collection $all): array
+    {
+        $childIds = $all->where('parent_id', $id)->pluck('id')->all();
+        $descendants = $childIds;
+
+        foreach ($childIds as $childId) {
+            $descendants = [...$descendants, ...$this->descendantIds($childId, $all)];
+        }
+
+        return $descendants;
+    }
+
     public function save(): void
     {
         if (empty($this->slug) && $this->primaryValue('name')) {
@@ -113,14 +163,26 @@ class Form extends Component
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
         ];
+        $rules['parentId'] = 'nullable|integer|exists:categories,id,type,product';
 
         $this->validate($rules);
+
+        if ($this->parentId && $this->categoryId) {
+            $invalidParents = [$this->categoryId, ...$this->descendantIds($this->categoryId, ProductCategory::orderBy('sort_order')->get())];
+
+            if (in_array($this->parentId, $invalidParents, true)) {
+                $this->addError('parentId', 'A category cannot be parented under itself or one of its own subcategories.');
+
+                return;
+            }
+        }
 
         $creating = $this->categoryId === null;
 
         $data = [
             'name' => $this->translatablePayload('name'),
             'icon' => $this->icon ?: null,
+            'parent_id' => $this->parentId,
         ];
 
         if ($this->categoryId) {
