@@ -56,7 +56,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($users as $user)
-                        <tr class="group hover:bg-indigo-50/30 transition-colors" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
+                        <tr class="group/row hover:bg-indigo-50/30 transition-colors" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
 
                             {{-- Expand toggle (small screens only, where columns are hidden) --}}
                             <td class="px-2 py-2 text-center">
@@ -122,7 +122,7 @@
                             </td>
 
                             {{-- Actions --}}
-                            <td class="sticky right-0 z-10 bg-white group-hover:bg-indigo-50/30 border-l border-zinc-100 px-4 py-2">
+                            <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-50/30 border-l border-zinc-100 px-4 py-2">
                                 <x-admin-row-actions :actions="[
                                     ['href' => route('admin.users.edit', $user->id), 'icon' => 'pencil', 'label' => 'Edit', 'color' => 'primary'],
                                     ['wireClick' => 'confirmDelete(' . $user->id . ')', 'icon' => 'trash', 'label' => 'Delete', 'color' => 'rose-500'],
