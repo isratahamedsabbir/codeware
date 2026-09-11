@@ -199,8 +199,10 @@
                                 <flux:label class="text-[11px] text-zinc-500">Qty</flux:label>
                                 <flux:input type="number" step="1" min="0" size="sm"
                                     wire:model="variations.{{ $i }}.quantity" placeholder="∞" />
-                                <flux:error name="variations.{{ $i }}.quantity" />
                             </flux:field>
+                            <div class="col-span-3">
+                                <flux:error name="variations.{{ $i }}.quantity" />
+                            </div>
                         </div>
                     </div>
                 @empty

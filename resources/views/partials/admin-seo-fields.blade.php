@@ -22,7 +22,7 @@
         </div>
 
         {{-- Meta tags --}}
-        <div class="lg:col-span-2 min-w-0 border-t border-zinc-100 pt-5">
+        <div class="lg:col-span-2 min-w-0">
             <div class="space-y-4">
                 <flux:field>
                     <flux:label>Meta Title</flux:label>
@@ -38,7 +38,7 @@
         </div>
 
         {{-- Open Graph --}}
-        <div class="lg:col-span-2 min-w-0 border-t border-zinc-100 pt-5">
+        <div class="lg:col-span-2 min-w-0">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-7 gap-y-4">
                 <div class="space-y-4 min-w-0">
                     <flux:field>
@@ -64,7 +64,7 @@
         </div>
 
         {{-- Twitter Card --}}
-        <div class="lg:col-span-2 min-w-0 border-t border-zinc-100 pt-5">
+        <div class="lg:col-span-2 min-w-0">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-7 gap-y-4">
                 <div class="space-y-4 min-w-0">
                     <flux:field>
@@ -90,7 +90,7 @@
         </div>
 
         {{-- Indexing --}}
-        <div class="lg:col-span-2 min-w-0 border-t border-zinc-100 pt-5">
+        <div class="lg:col-span-2 min-w-0">
             <div class="space-y-3">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
