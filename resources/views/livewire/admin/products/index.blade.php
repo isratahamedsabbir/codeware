@@ -16,7 +16,7 @@
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
         </select>
-        <flux:button variant="ghost" icon="arrow-down-tray" href="{{ route('admin.products.export', ['search' => $search, 'status' => $statusFilter]) }}" class="ml-auto">
+        <flux:button size="sm" variant="ghost" icon="arrow-down-tray" href="{{ route('admin.products.export', ['search' => $search, 'status' => $statusFilter]) }}" class="ml-auto">
             Export CSV
         </flux:button>
         {{-- Search --}}
@@ -307,11 +307,11 @@
             </flux:text>
             <div class="flex gap-2 pt-1">
                 <button wire:click="delete"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">
+                    class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">
                     Delete
                 </button>
                 <flux:modal.close>
-                    <flux:button variant="ghost">Cancel</flux:button>
+                    <flux:button size="sm" variant="ghost">Cancel</flux:button>
                 </flux:modal.close>
             </div>
         </div>

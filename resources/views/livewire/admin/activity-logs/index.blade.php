@@ -24,7 +24,7 @@
 
         @if ($search || $actionFilter || $userFilter)
             <button wire:click="clearFilters"
-                class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100 transition-colors cursor-pointer">
+                class="inline-flex items-center gap-1.5 px-3 h-8 text-sm font-medium rounded-lg text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100 transition-colors cursor-pointer">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M18 6L6 18" />
                     <path d="M6 6l12 12" />

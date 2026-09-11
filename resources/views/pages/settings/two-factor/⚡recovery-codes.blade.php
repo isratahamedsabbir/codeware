@@ -62,7 +62,7 @@ new class extends Component {
 
     <div class="px-6">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <flux:button
+            <flux:button size="sm"
                 x-show="!showRecoveryCodes"
                 icon="eye"
                 icon:variant="outline"
@@ -74,7 +74,7 @@ new class extends Component {
                 {{ __('View recovery codes') }}
             </flux:button>
 
-            <flux:button
+            <flux:button size="sm"
                 x-show="showRecoveryCodes"
                 icon="eye-slash"
                 icon:variant="outline"
@@ -87,7 +87,7 @@ new class extends Component {
             </flux:button>
 
             @if (filled($recoveryCodes))
-                <flux:button
+                <flux:button size="sm"
                     x-show="showRecoveryCodes"
                     icon="arrow-path"
                     variant="filled"

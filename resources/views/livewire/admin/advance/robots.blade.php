@@ -25,7 +25,7 @@
             <flux:button variant="primary" size="sm" wire:click="save" wire:loading.attr="disabled">
                 Save
             </flux:button>
-            <flux:button variant="ghost" wire:click="resetToDefault">
+            <flux:button size="sm" variant="ghost" wire:click="resetToDefault">
                 Reset to Default
             </flux:button>
         </div>

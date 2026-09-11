@@ -19,7 +19,7 @@
         <p class="text-sm text-zinc-500">
             {{ __('Drag to reorder, toggle items on or off, or add a new group or link. Changes to :menu apply immediately.', ['menu' => optional($menus->firstWhere('slug', $activeGroup))->name ?? $activeGroup]) }}
         </p>
-        <flux:button variant="primary" class="admin-btn-success" icon="plus" wire:click="openCreate()">
+        <flux:button size="sm" variant="primary" class="admin-btn-success" icon="plus" wire:click="openCreate()">
             {{ __('New menu item') }}
         </flux:button>
     </div>
@@ -306,7 +306,7 @@
 
             <div class="flex gap-2 pt-1">
                 <button wire:click="save" wire:loading.attr="disabled"
-                    class="admin-btn-save inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
+                    class="admin-btn-save inline-flex items-center gap-2 px-5 h-8 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
                     {{ $editingId ? __('Update') : __('Create') }}
                 </button>
                 <flux:modal.close>
@@ -334,7 +334,7 @@
 
             <div class="flex gap-2 pt-1">
                 <button wire:click="createMenu" wire:loading.attr="disabled"
-                    class="admin-btn-save inline-flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
+                    class="admin-btn-save inline-flex items-center gap-2 px-5 h-8 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
                     {{ __('Create') }}
                 </button>
                 <flux:modal.close>

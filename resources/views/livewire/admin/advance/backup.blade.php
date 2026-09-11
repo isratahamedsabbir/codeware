@@ -16,7 +16,7 @@
         </div>
 
         <div class="pt-1">
-            <flux:button variant="primary" icon="archive-box-arrow-down" wire:click="download" wire:loading.attr="disabled" wire:target="download">
+            <flux:button size="sm" variant="primary" icon="archive-box-arrow-down" wire:click="download" wire:loading.attr="disabled" wire:target="download">
                 <span wire:loading.remove wire:target="download">Download Storage Backup (.zip)</span>
                 <span wire:loading wire:target="download">Zipping files…</span>
             </flux:button>

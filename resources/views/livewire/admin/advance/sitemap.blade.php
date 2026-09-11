@@ -22,7 +22,7 @@
         </div>
 
         <div class="flex items-center gap-3 pt-1">
-            <flux:button variant="primary" wire:click="generate" wire:loading.attr="disabled">
+            <flux:button size="sm" variant="primary" wire:click="generate" wire:loading.attr="disabled">
                 Generate Sitemap
             </flux:button>
 

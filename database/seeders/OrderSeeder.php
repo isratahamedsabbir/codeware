@@ -22,7 +22,7 @@ class OrderSeeder extends Seeder
 
         Order::query()->delete();
 
-        collect(range(1, 30))->each(function () use ($products) {
+        collect(range(1, 100))->each(function () use ($products) {
             $status = fake()->randomElement(Order::STATUSES);
             $paymentStatus = $this->paymentStatusFor($status);
             $paymentMethod = fake()->randomElement(self::PAYMENT_METHODS);

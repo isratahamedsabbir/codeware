@@ -134,7 +134,7 @@
                     <flux:error name="paymentStatus" />
                 </flux:field>
 
-                <flux:button variant="primary" wire:click="updateStatus" wire:loading.attr="disabled" class="w-full">
+                <flux:button size="sm" variant="primary" wire:click="updateStatus" wire:loading.attr="disabled" class="w-full">
                     Save Changes
                 </flux:button>
             </x-admin-section-card>

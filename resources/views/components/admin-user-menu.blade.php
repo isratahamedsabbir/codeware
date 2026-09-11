@@ -1,5 +1,5 @@
 <flux:dropdown position="bottom" align="end">
-    <flux:button variant="subtle" square class="!p-1.5">
+    <flux:button size="sm" variant="subtle" square class="!p-1.5">
         <div class="flex items-center">
             @if (auth()->user()->photo_url)
                 <img src="{{ auth()->user()->photo_url }}" alt="{{ auth()->user()->name }}"

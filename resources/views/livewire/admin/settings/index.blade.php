@@ -258,11 +258,11 @@
                     </x-slot:actions>
 
                     @if ($maintenanceMode)
-                        <flux:button variant="danger" wire:click="disableMaintenanceMode" wire:loading.attr="disabled">
+                        <flux:button size="sm" variant="danger" wire:click="disableMaintenanceMode" wire:loading.attr="disabled">
                             Bring Site Back Online
                         </flux:button>
                     @else
-                        <flux:button variant="outline" wire:click="confirmEnableMaintenanceMode" wire:loading.attr="disabled">
+                        <flux:button size="sm" variant="outline" wire:click="confirmEnableMaintenanceMode" wire:loading.attr="disabled">
                             Enable Maintenance Mode
                         </flux:button>
                     @endif
@@ -283,11 +283,11 @@
                     </x-slot:actions>
 
                     @if ($debugMode)
-                        <flux:button variant="danger" wire:click="disableDebugMode" wire:loading.attr="disabled">
+                        <flux:button size="sm" variant="danger" wire:click="disableDebugMode" wire:loading.attr="disabled">
                             Turn Debug Mode Off
                         </flux:button>
                     @else
-                        <flux:button variant="outline" wire:click="confirmEnableDebugMode" wire:loading.attr="disabled">
+                        <flux:button size="sm" variant="outline" wire:click="confirmEnableDebugMode" wire:loading.attr="disabled">
                             Enable Debug Mode
                         </flux:button>
                     @endif
@@ -348,7 +348,7 @@
                     </x-admin-section-card>
                 </div>
 
-                <flux:button variant="primary" wire:click="confirmSaveEnv" wire:loading.attr="disabled">
+                <flux:button size="sm" variant="primary" wire:click="confirmSaveEnv" wire:loading.attr="disabled">
                     {{ __('Save Environment Settings') }}
                 </flux:button>
             </div>
@@ -534,7 +534,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <x-admin-section-card header-border="border-zinc-100" icon="variable" title="Constant"
                     description="Freeform key/value pairs, available site-wide — not tied to any page or CMS section.">
                     <x-slot:actions>
-                        <flux:button size="xs" variant="outline" icon="plus" wire:click="addConstant">Add field</flux:button>
+                        <flux:button size="sm" variant="outline" icon="plus" wire:click="addConstant">Add field</flux:button>
                     </x-slot:actions>
 
                     <flux:error name="constants" />
@@ -635,11 +635,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </flux:text>
             <div class="flex gap-2 pt-1">
                 <button wire:click="saveEnv" wire:loading.attr="disabled"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white bg-amber-600 hover:bg-amber-700 transition-colors border-none cursor-pointer">
+                    class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-amber-600 hover:bg-amber-700 transition-colors border-none cursor-pointer">
                     {{ __('Save anyway') }}
                 </button>
                 <flux:modal.close>
-                    <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                    <flux:button size="sm" variant="ghost">{{ __('Cancel') }}</flux:button>
                 </flux:modal.close>
             </div>
         </div>
@@ -661,11 +661,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </flux:text>
             <div class="flex gap-2 pt-1">
                 <button wire:click="enableMaintenanceMode" wire:loading.attr="disabled"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">
+                    class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">
                     {{ __('Take site offline') }}
                 </button>
                 <flux:modal.close>
-                    <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                    <flux:button size="sm" variant="ghost">{{ __('Cancel') }}</flux:button>
                 </flux:modal.close>
             </div>
         </div>
@@ -687,11 +687,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </flux:text>
             <div class="flex gap-2 pt-1">
                 <button wire:click="enableDebugMode" wire:loading.attr="disabled"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white bg-amber-600 hover:bg-amber-700 transition-colors border-none cursor-pointer">
+                    class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-amber-600 hover:bg-amber-700 transition-colors border-none cursor-pointer">
                     {{ __('Enable debug mode') }}
                 </button>
                 <flux:modal.close>
-                    <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                    <flux:button size="sm" variant="ghost">{{ __('Cancel') }}</flux:button>
                 </flux:modal.close>
             </div>
         </div>

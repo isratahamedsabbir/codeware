@@ -1,6 +1,6 @@
 <div wire:poll.30s>
     <flux:dropdown position="bottom" align="end">
-        <flux:button variant="subtle" square class="!p-1.5 relative" aria-label="Notifications">
+        <flux:button size="sm" variant="subtle" square class="!p-1.5 relative" aria-label="Notifications">
             <span class="relative inline-flex">
                 <flux:icon.bell class="size-5 text-zinc-500" />
                 @if ($unreadCount > 0)

@@ -30,17 +30,17 @@
             {{ __('Edit the wording used across the admin panel. Blank entries fall back to the default language.') }}
         </p>
         <div class="flex items-center gap-3 flex-wrap">
-            <flux:button variant="outline" icon="arrow-path" wire:click="scan" wire:loading.attr="disabled" wire:target="scan">
+            <flux:button size="sm" variant="outline" icon="arrow-path" wire:click="scan" wire:loading.attr="disabled" wire:target="scan">
                 {{ __('Scan source') }}
             </flux:button>
 
             <flux:modal.trigger name="translation-add">
-                <flux:button variant="outline" icon="plus">
+                <flux:button size="sm" variant="outline" icon="plus">
                     {{ __('Add key') }}
                 </flux:button>
             </flux:modal.trigger>
 
-            <flux:button variant="primary" class="admin-btn-save" icon="check" wire:click="save" wire:loading.attr="disabled" wire:target="save">
+            <flux:button size="sm" variant="primary" class="admin-btn-save" icon="check" wire:click="save" wire:loading.attr="disabled" wire:target="save">
                 {{ __('Save changes') }}
             </flux:button>
         </div>
@@ -214,11 +214,11 @@
 
             <div class="flex gap-2 pt-1">
                 <button wire:click="addKey" wire:loading.attr="disabled" wire:target="addKey"
-                    class="admin-btn-save inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors border-none cursor-pointer">
+                    class="admin-btn-save inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors border-none cursor-pointer">
                     {{ __('Add key') }}
                 </button>
                 <flux:modal.close>
-                    <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                    <flux:button size="sm" variant="ghost">{{ __('Cancel') }}</flux:button>
                 </flux:modal.close>
             </div>
         </div>
@@ -249,11 +249,11 @@
             @endif
             <div class="flex gap-2 pt-1">
                 <button wire:click="delete"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">
+                    class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">
                     {{ __('Delete') }}
                 </button>
                 <flux:modal.close>
-                    <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                    <flux:button size="sm" variant="ghost">{{ __('Cancel') }}</flux:button>
                 </flux:modal.close>
             </div>
         </div>

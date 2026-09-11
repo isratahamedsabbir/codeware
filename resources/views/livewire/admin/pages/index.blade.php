@@ -220,9 +220,9 @@
                 <flux:error name="puckSessionMinutes" />
             </flux:field>
             <div class="flex gap-2 pt-1">
-                <flux:button variant="primary" wire:click="saveEditorSettings">Save</flux:button>
+                <flux:button size="sm" variant="primary" wire:click="saveEditorSettings">Save</flux:button>
                 <flux:modal.close>
-                    <flux:button variant="ghost">Cancel</flux:button>
+                    <flux:button size="sm" variant="ghost">Cancel</flux:button>
                 </flux:modal.close>
             </div>
         </div>
@@ -247,11 +247,11 @@
             </flux:text>
             <div class="flex gap-2 pt-1">
                 <button wire:click="delete"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">
+                    class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">
                     Delete
                 </button>
                 <flux:modal.close>
-                    <flux:button variant="ghost">Cancel</flux:button>
+                    <flux:button size="sm" variant="ghost">Cancel</flux:button>
                 </flux:modal.close>
             </div>
         </div>

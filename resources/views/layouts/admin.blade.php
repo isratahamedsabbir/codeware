@@ -227,9 +227,9 @@
         <flux:header sticky class="admin-header shrink-0 gap-1">
             <flux:sidebar.toggle class="lg:hidden mr-1" icon="bars-2" inset="left" />
             <flux:sidebar.collapse class="max-lg:hidden" />
-            <flux:button variant="subtle" square x-data x-on:click="location.reload()" icon="arrow-path"
+            <flux:button size="sm" variant="subtle" square x-data x-on:click="location.reload()" icon="arrow-path"
                 aria-label="Refresh" class="max-lg:hidden" />
-            <flux:button variant="subtle" square :href="config('app.frontend_url')" icon="arrow-top-right-on-square"
+            <flux:button size="sm" variant="subtle" square :href="config('app.frontend_url')" icon="arrow-top-right-on-square"
                 target="_blank" aria-label="Open frontend" class="max-lg:hidden" />
 
             <div class="flex-1"></div>

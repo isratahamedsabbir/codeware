@@ -49,7 +49,7 @@
             </flux:field>
 
             <div class="flex items-center gap-3 pt-1">
-                <flux:button variant="primary" type="submit">Save Changes</flux:button>
+                <flux:button size="sm" variant="primary" type="submit">Save Changes</flux:button>
             </div>
         </form>
     </div>
@@ -81,7 +81,7 @@
             </flux:field>
 
             <div class="flex items-center gap-3 pt-1">
-                <flux:button variant="primary" type="submit">Update Password</flux:button>
+                <flux:button size="sm" variant="primary" type="submit">Update Password</flux:button>
             </div>
         </form>
     </div>

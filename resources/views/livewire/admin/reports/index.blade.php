@@ -73,7 +73,7 @@
                 </div>
 
                 <a href="{{ route('admin.reports.export', $this->filters()) }}"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-zinc-200 text-zinc-600 bg-white hover:bg-zinc-50 transition-colors shrink-0">
+                    class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg border border-zinc-200 text-zinc-600 bg-white hover:bg-zinc-50 transition-colors shrink-0">
                     <flux:icon.arrow-down-tray class="size-4" />
                     Export CSV
                 </a>
@@ -82,7 +82,7 @@
             <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
                 <x-date-range-picker :from="$fromDate" :to="$toDate" />
 
-                <flux:button variant="ghost" wire:click="resetFilters" class="sm:ml-auto">Reset</flux:button>
+                <flux:button size="sm" variant="ghost" wire:click="resetFilters" class="sm:ml-auto">Reset</flux:button>
             </div>
         </div>
 

@@ -19,7 +19,7 @@
     <x-admin-section-card icon="rectangle-group" title="Cards" icon-color="bg-blue-500/10 text-blue-600"
         description="Repeatable image/title/description tiles for this section.">
         <x-slot:actions>
-            <flux:button size="xs" variant="outline" icon="plus" wire:click="addCard">Add card</flux:button>
+            <flux:button size="sm" variant="outline" icon="plus" wire:click="addCard">Add card</flux:button>
         </x-slot:actions>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -72,7 +72,7 @@
     <x-admin-section-card icon="variable" title="Constant" icon-color="bg-indigo-500/10 text-indigo-600"
         description="Freeform key/value pairs — SEO tags, custom flags, or extra content.">
         <x-slot:actions>
-            <flux:button size="xs" variant="outline" icon="plus" wire:click="addConstant">Add field</flux:button>
+            <flux:button size="sm" variant="outline" icon="plus" wire:click="addConstant">Add field</flux:button>
         </x-slot:actions>
         <flux:error name="constant" />
 

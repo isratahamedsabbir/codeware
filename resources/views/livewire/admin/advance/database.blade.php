@@ -16,7 +16,7 @@
         </div>
 
         <div class="pt-1">
-            <flux:button variant="primary" icon="arrow-down-tray" wire:click="download" wire:loading.attr="disabled" wire:target="download">
+            <flux:button size="sm" variant="primary" icon="arrow-down-tray" wire:click="download" wire:loading.attr="disabled" wire:target="download">
                 <span wire:loading.remove wire:target="download">Download Database (.sql)</span>
                 <span wire:loading wire:target="download">Preparing dump…</span>
             </flux:button>

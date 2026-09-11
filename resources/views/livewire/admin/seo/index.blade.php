@@ -72,12 +72,12 @@
                 <div class="flex items-center gap-2">
                     <flux:input wire:model="canonicalUrls.{{ $index }}" placeholder="https://example.com"
                         class="flex-1" />
-                    <flux:button variant="subtle" square icon="trash"
+                    <flux:button size="sm" variant="subtle" square icon="trash"
                         wire:click="removeCanonicalUrl({{ $index }})" aria-label="Remove link" />
                 </div>
             @endforeach
         </div>
-        <flux:button variant="ghost" icon="plus" wire:click="addCanonicalUrl">
+        <flux:button size="sm" variant="ghost" icon="plus" wire:click="addCanonicalUrl">
             Add Link
         </flux:button>
     </x-admin-section-card>

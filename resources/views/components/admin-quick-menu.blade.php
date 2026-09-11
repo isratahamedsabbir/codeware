@@ -4,7 +4,7 @@
 
 @if ($quickMenuItems->isNotEmpty())
     <flux:dropdown position="bottom" align="end">
-        <flux:button variant="subtle" square class="!p-1.5" aria-label="{{ __('Short menu') }}">
+        <flux:button size="sm" variant="subtle" square class="!p-1.5" aria-label="{{ __('Short menu') }}">
             <flux:icon.bolt class="size-5 text-zinc-500" />
         </flux:button>
 

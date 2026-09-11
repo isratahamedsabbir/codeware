@@ -1,7 +1,7 @@
 <div>
     @if ($languages->count() > 1)
         <flux:dropdown position="bottom" align="end">
-            <flux:button variant="subtle" icon-trailing="chevron-down"
+            <flux:button size="sm" variant="subtle" icon-trailing="chevron-down"
                 :title="__('Change language')" :aria-label="__('Change language')"
                 class="text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors">
                 <span class="flex items-center gap-1.5">

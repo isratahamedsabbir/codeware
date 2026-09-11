@@ -50,10 +50,10 @@
                 <flux:input type="number" step="0.01" min="0" wire:model.live.debounce.500ms="priceMax" placeholder="Max price" class="w-28" />
             </div>
 
-            <flux:button variant="ghost" icon="arrow-down-tray" href="{{ route('admin.orders.export', $this->filters()) }}" class="sm:ml-auto">
+            <flux:button size="sm" variant="ghost" icon="arrow-down-tray" href="{{ route('admin.orders.export', $this->filters()) }}" class="sm:ml-auto">
                 Export Filtered
             </flux:button>
-            <flux:button variant="ghost" wire:click="resetFilters">Reset</flux:button>
+            <flux:button size="sm" variant="ghost" wire:click="resetFilters">Reset</flux:button>
         </div>
     </div>
 

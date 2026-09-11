@@ -73,7 +73,7 @@
                         @enderror
                     </div>
 
-                    <flux:button
+                    <flux:button size="sm"
                         variant="primary"
                         type="submit"
                         class="w-full"

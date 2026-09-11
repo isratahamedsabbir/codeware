@@ -49,7 +49,7 @@
         <x-admin-section-card icon="variable" title="Constant" icon-color="bg-indigo-500/10 text-indigo-600"
             description="Freeform key/value pairs — custom flags or extra content.">
             <x-slot:actions>
-                <flux:button size="xs" variant="outline" icon="plus" wire:click="addConstant">Add field</flux:button>
+                <flux:button size="sm" variant="outline" icon="plus" wire:click="addConstant">Add field</flux:button>
             </x-slot:actions>
 
                 <flux:error name="constant" />

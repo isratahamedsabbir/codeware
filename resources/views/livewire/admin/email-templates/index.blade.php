@@ -222,7 +222,7 @@
             </div>
 
             <div class="flex gap-2 pt-1">
-                <flux:button variant="primary" wire:click="confirmSaveMailSettings" wire:loading.attr="disabled">
+                <flux:button size="sm" variant="primary" wire:click="confirmSaveMailSettings" wire:loading.attr="disabled">
                     {{ __('Save Mail Settings') }}
                 </flux:button>
             </div>
@@ -239,7 +239,7 @@
                         <flux:input type="email" wire:model="testEmailAddress" placeholder="you@example.com" />
                         <flux:error name="testEmailAddress" />
                     </div>
-                    <flux:button variant="outline" wire:click="sendTestEmail" wire:loading.attr="disabled" wire:target="sendTestEmail">
+                    <flux:button size="sm" variant="outline" wire:click="sendTestEmail" wire:loading.attr="disabled" wire:target="sendTestEmail">
                         {{ __('Send Test Email') }}
                     </flux:button>
                 </div>
@@ -263,11 +263,11 @@
             </flux:text>
             <div class="flex gap-2 pt-1">
                 <button wire:click="saveMailSettings" wire:loading.attr="disabled"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white bg-amber-600 hover:bg-amber-700 transition-colors border-none cursor-pointer">
+                    class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-amber-600 hover:bg-amber-700 transition-colors border-none cursor-pointer">
                     {{ __('Save anyway') }}
                 </button>
                 <flux:modal.close>
-                    <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                    <flux:button size="sm" variant="ghost">{{ __('Cancel') }}</flux:button>
                 </flux:modal.close>
             </div>
         </div>

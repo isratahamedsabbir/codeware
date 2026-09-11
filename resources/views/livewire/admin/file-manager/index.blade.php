@@ -171,17 +171,17 @@
                     <p class="text-sm font-semibold text-zinc-800 font-mono truncate">{{ $selected }}</p>
                     <div class="flex items-center gap-2 shrink-0">
                         <a href="{{ route('admin.file-manager.raw', ['path' => $selected, 'download' => 1]) }}"
-                            class="inline-flex items-center gap-2 px-4 h-10 text-sm font-medium rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 transition-colors">
+                            class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 transition-colors">
                             Download
                         </a>
                         @if ($editable && $this->canManage)
                             <button wire:click="saveFile" :disabled="! dirty" wire:loading.attr="disabled"
-                                class="admin-btn-save inline-flex items-center gap-2 px-4 h-10 text-sm font-medium rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                                class="admin-btn-save inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                                 Save
                             </button>
                         @endif
                         <button wire:click="closePreview"
-                            class="inline-flex items-center gap-2 px-4 h-10 text-sm font-medium rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 transition-colors">
+                            class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 transition-colors">
                             Close
                         </button>
                     </div>
@@ -361,11 +361,11 @@
             </flux:field>
             <div class="flex gap-2 pt-1">
                 <button wire:click="createEntry" wire:loading.attr="disabled"
-                    class="admin-btn-save inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
+                    class="admin-btn-save inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
                     Create
                 </button>
                 <flux:modal.close>
-                    <flux:button variant="ghost">Cancel</flux:button>
+                    <flux:button size="sm" variant="ghost">Cancel</flux:button>
                 </flux:modal.close>
             </div>
         </div>
@@ -392,11 +392,11 @@
             </flux:field>
             <div class="flex gap-2 pt-1">
                 <button wire:click="composeFile" wire:loading.attr="disabled"
-                    class="admin-btn-save inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
+                    class="admin-btn-save inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
                     Create
                 </button>
                 <flux:modal.close>
-                    <flux:button variant="ghost">Cancel</flux:button>
+                    <flux:button size="sm" variant="ghost">Cancel</flux:button>
                 </flux:modal.close>
             </div>
         </div>
@@ -415,11 +415,11 @@
             </flux:field>
             <div class="flex gap-2 pt-1">
                 <button wire:click="renameEntry" wire:loading.attr="disabled"
-                    class="admin-btn-save inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
+                    class="admin-btn-save inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
                     Rename
                 </button>
                 <flux:modal.close>
-                    <flux:button variant="ghost">Cancel</flux:button>
+                    <flux:button size="sm" variant="ghost">Cancel</flux:button>
                 </flux:modal.close>
             </div>
         </div>
@@ -485,11 +485,11 @@
 
             <div class="flex gap-2 pt-1">
                 <button wire:click="transferEntry" wire:loading.attr="disabled"
-                    class="admin-btn-save inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
+                    class="admin-btn-save inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
                     {{ $transferMode === 'copy' ? 'Copy' : 'Move' }} here
                 </button>
                 <flux:modal.close>
-                    <flux:button variant="ghost">Cancel</flux:button>
+                    <flux:button size="sm" variant="ghost">Cancel</flux:button>
                 </flux:modal.close>
             </div>
         </div>
@@ -520,11 +520,11 @@
                 it will be deleted too.</flux:text>
             <div class="flex gap-2 pt-1">
                 <button wire:click="{{ $deletingSelected ? 'deleteSelected' : 'deleteEntry' }}"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">
+                    class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">
                     Delete
                 </button>
                 <flux:modal.close>
-                    <flux:button variant="ghost">Cancel</flux:button>
+                    <flux:button size="sm" variant="ghost">Cancel</flux:button>
                 </flux:modal.close>
             </div>
         </div>

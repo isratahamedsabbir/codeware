@@ -111,11 +111,11 @@
             </flux:field>
             <div class="flex gap-2 pt-1">
                 <button wire:click="create"
-                    class="admin-btn-save inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white transition-colors border-none cursor-pointer">
+                    class="admin-btn-save inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white transition-colors border-none cursor-pointer">
                     Create
                 </button>
                 <flux:modal.close>
-                    <flux:button variant="ghost">Cancel</flux:button>
+                    <flux:button size="sm" variant="ghost">Cancel</flux:button>
                 </flux:modal.close>
             </div>
         </div>
