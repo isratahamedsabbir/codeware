@@ -35,20 +35,22 @@
     {{-- Table --}}
     <div class="overflow-x-auto p-4">
         <div class="border border-zinc-100 rounded-lg">
-            <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
+            <table class="w-full divide-y divide-gray-200">
                 <colgroup>
                     <col style="width:5%">
+                    <col class="hidden lg:table-column" style="width:5%">
                     <col style="width:36%">
                     <col style="width:20%">
-                    <col style="width:14%">
-                    <col style="width:25%">
+                    <col class="hidden lg:table-column" style="width:14%">
+                    <col style="width:20%">
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
-                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
+                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
+                        <th class="hidden lg:table-cell px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">User</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Roles</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Type</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Type</th>
                         <th class="px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
@@ -56,8 +58,14 @@
                     @forelse ($users as $user)
                         <tr class="hover:bg-indigo-50/30 transition-colors" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
 
+                            {{-- Expand toggle (small screens only, where columns are hidden) --}}
+                            <td class="px-2 py-2 text-center">
+                                <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $user->id"
+                                    wire:click="{{ $viewingId === $user->id ? 'closeDetails' : 'viewDetails('.$user->id.')' }}" />
+                            </td>
+
                             {{-- Id --}}
-                            <td class="px-2 py-2 text-center text-xs text-zinc-500">
+                            <td class="hidden lg:table-cell px-2 py-2 text-center text-xs text-zinc-500">
                                 {{ $user->id }}
                             </td>
 
@@ -99,7 +107,7 @@
                             </td>
 
                             {{-- Type --}}
-                            <td class="px-4 py-2">
+                            <td class="hidden lg:table-cell px-4 py-2">
                                 @if ($user->is_admin)
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-600 border border-green-200">
                                         <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
@@ -122,9 +130,15 @@
                             </td>
 
                         </tr>
+                        @if ($viewingId === $user->id)
+                            <x-admin-row-details colspan="6">
+                                <x-admin-row-details.item label="ID">#{{ $user->id }}</x-admin-row-details.item>
+                                <x-admin-row-details.item label="Type">{{ $user->is_admin ? 'Admin' : 'Standard' }}</x-admin-row-details.item>
+                            </x-admin-row-details>
+                        @endif
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-16 text-center">
+                            <td colspan="6" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />

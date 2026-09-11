@@ -72,9 +72,9 @@
 
                             {{-- Slug --}}
                             <td class="px-4 py-2">
-                                <span class="font-mono text-xs text-zinc-600 truncate block">
+                                <x-copy-text :text="$tag->slug" class="font-mono text-xs text-zinc-600 block">
                                     <x-truncate :text="$tag->slug" />
-                                </span>
+                                </x-copy-text>
                             </td>
 
                             {{-- Status --}}

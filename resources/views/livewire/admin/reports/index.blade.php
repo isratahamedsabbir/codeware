@@ -91,33 +91,45 @@
                 <table class="w-full divide-y divide-gray-200">
                     <thead>
                         <tr class="bg-zinc-50">
+                            <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
                             <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Order #</th>
                             <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Customer</th>
-                            <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Method</th>
-                            <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Payment</th>
+                            <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Method</th>
+                            <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Payment</th>
                             <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
                             <th class="px-4 py-2.5 text-right text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Total</th>
-                            <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Placed</th>
+                            <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Placed</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
                         @forelse ($orders as $order)
                             <tr class="hover:bg-indigo-50/30 transition-colors">
+                                <td class="px-2 py-3 text-center">
+                                    <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $order->id"
+                                        wire:click="{{ $viewingId === $order->id ? 'closeDetails' : 'viewDetails('.$order->id.')' }}" />
+                                </td>
                                 <td class="px-4 py-3 font-mono text-xs text-zinc-700">
                                     <a href="{{ route('admin.orders.show', $order->id) }}" wire:navigate class="hover:underline">
                                         <x-truncate :text="$order->order_number" />
                                     </a>
                                 </td>
                                 <td class="px-4 py-3 text-sm text-zinc-800"><x-truncate :text="$order->customer_name" /></td>
-                                <td class="px-4 py-3 text-sm text-zinc-600">{{ \App\Support\PaymentMethods::label($order->payment_method) }}</td>
-                                <td class="px-4 py-3 text-sm text-zinc-600">{{ ucfirst($order->payment_status) }}</td>
+                                <td class="hidden lg:table-cell px-4 py-3 text-sm text-zinc-600">{{ \App\Support\PaymentMethods::label($order->payment_method) }}</td>
+                                <td class="hidden lg:table-cell px-4 py-3 text-sm text-zinc-600">{{ ucfirst($order->payment_status) }}</td>
                                 <td class="px-4 py-3 text-sm text-zinc-600">{{ ucfirst($order->status) }}</td>
                                 <td class="px-4 py-3 text-sm font-medium text-zinc-900 text-right">{{ number_format((float) $order->total, 2) }}</td>
-                                <td class="px-4 py-3 text-xs text-zinc-500">{{ $order->created_at->toDisplay() }}</td>
+                                <td class="hidden lg:table-cell px-4 py-3 text-xs text-zinc-500">{{ $order->created_at->toDisplay() }}</td>
                             </tr>
+                            @if ($viewingId === $order->id)
+                                <x-admin-row-details colspan="8">
+                                    <x-admin-row-details.item label="Method">{{ \App\Support\PaymentMethods::label($order->payment_method) }}</x-admin-row-details.item>
+                                    <x-admin-row-details.item label="Payment">{{ ucfirst($order->payment_status) }}</x-admin-row-details.item>
+                                    <x-admin-row-details.item label="Placed">{{ $order->created_at->toDisplay() }}</x-admin-row-details.item>
+                                </x-admin-row-details>
+                            @endif
                         @empty
                             <tr>
-                                <td colspan="7" class="px-6 py-16 text-center text-sm text-zinc-500">No orders match these filters.</td>
+                                <td colspan="8" class="px-6 py-16 text-center text-sm text-zinc-500">No orders match these filters.</td>
                             </tr>
                         @endforelse
                     </tbody>

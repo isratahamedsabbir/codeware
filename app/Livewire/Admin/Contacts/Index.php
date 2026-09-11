@@ -12,11 +12,20 @@ class Index extends Component
     use HasPerPage, WithPagination;
 
     public string $search = '';
+
     public string $statusFilter = '';
+
     public ?int $viewingMessageId = null;
 
-    public function updatedSearch(): void { $this->resetPage(); }
-    public function updatedStatusFilter(): void { $this->resetPage(); }
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedStatusFilter(): void
+    {
+        $this->resetPage();
+    }
 
     public function updateStatus(int $id, string $status): void
     {
@@ -27,7 +36,6 @@ class Index extends Component
     public function viewMessage(int $id): void
     {
         $this->viewingMessageId = $id;
-        $this->dispatch('open-modal', name: 'view-message');
     }
 
     public function closeMessage(): void

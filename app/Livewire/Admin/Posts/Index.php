@@ -77,7 +77,6 @@ class Index extends Component
     public function viewDetails(int $id): void
     {
         $this->viewingId = $id;
-        $this->dispatch('open-modal', name: 'post-view');
     }
 
     public function closeDetails(): void

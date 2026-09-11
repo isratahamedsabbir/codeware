@@ -49,36 +49,44 @@
             }
         }">
         <div class="border border-zinc-100 rounded-lg">
-            <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
+            <table class="w-full divide-y divide-gray-200">
                 <colgroup>
+                    <col style="width:4%">
                     <col style="width:5%">
-                    <col style="width:5%">
+                    <col class="hidden lg:table-column" style="width:5%">
                     <col style="width:14%">
-                    <col style="width:11%">
-                    <col style="width:11%">
+                    <col class="hidden lg:table-column" style="width:11%">
+                    <col class="hidden lg:table-column" style="width:11%">
                     <col style="width:10%">
                     <col style="width:9%">
                     <col style="width:9%">
-                    <col style="width:8%">
-                    <col style="width:18%">
+                    <col class="hidden lg:table-column" style="width:8%">
+                    <col style="width:14%">
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">#</th>
+                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Name</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Slug</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Category</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Slug</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Category</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Price</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Stock</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Featured</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Featured</th>
                         <th class="px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody x-ref="sortableRows" class="divide-y divide-gray-200">
                     @forelse ($products as $product)
                         <tr class="hover:bg-indigo-50/30 transition-colors" data-product-id="{{ $product->id }}" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
+
+                            {{-- Expand toggle (small screens only, where columns are hidden) --}}
+                            <td class="px-2 py-2 text-center">
+                                <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $product->id"
+                                    wire:click="{{ $viewingId === $product->id ? 'closeDetails' : 'viewDetails('.$product->id.')' }}" />
+                            </td>
 
                             {{-- Drag handle --}}
                             <td class="px-2 py-2 text-center">
@@ -92,7 +100,7 @@
                             </td>
 
                             {{-- ID --}}
-                            <td class="px-4 py-2">
+                            <td class="hidden lg:table-cell px-4 py-2">
                                 <span class="text-sm text-zinc-500 font-mono">{{ $product->id }}</span>
                             </td>
 
@@ -109,14 +117,14 @@
                             </td>
 
                             {{-- Slug --}}
-                            <td class="px-4 py-2">
-                                <span class="font-mono text-xs text-zinc-600 truncate block">
+                            <td class="hidden lg:table-cell px-4 py-2">
+                                <x-copy-text :text="$product->slug" class="font-mono text-xs text-zinc-600 block">
                                     <x-truncate :text="$product->slug" />
-                                </span>
+                                </x-copy-text>
                             </td>
 
                             {{-- Category --}}
-                            <td class="px-4 py-2">
+                            <td class="hidden lg:table-cell px-4 py-2">
                                 @if ($product->category)
                                     <span class="inline-flex w-max items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500 border border-zinc-200">
                                         <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -172,7 +180,7 @@
                             </td>
 
                             {{-- Featured --}}
-                            <td class="px-4 py-2">
+                            <td class="hidden lg:table-cell px-4 py-2">
                                 @if ($product->is_featured)
                                     <button type="button" wire:click="toggleFeatured({{ $product->id }})"
                                         aria-label="Unmark as featured"
@@ -197,7 +205,6 @@
                             {{-- Actions --}}
                             <td class="px-4 py-2">
                                 <x-admin-row-actions :actions="[
-                                    ['wireClick' => 'viewDetails(' . $product->id . ')', 'icon' => 'eye', 'label' => 'View', 'color' => 'zinc-500'],
                                     ['href' => route('admin.products.edit', $product->id), 'icon' => 'pencil', 'label' => 'Edit', 'color' => 'primary'],
                                     $product->page
                                         ? ['href' => route('admin.pages.edit', $product->page->id), 'icon' => 'document', 'label' => 'Page', 'color' => 'secondary']
@@ -208,9 +215,22 @@
                             </td>
 
                         </tr>
+                        @if ($viewingId === $product->id)
+                            <x-admin-row-details colspan="11">
+                                <x-admin-row-details.item label="Slug">
+                                    @if ($product->slug)
+                                        <x-copy-text :text="$product->slug" class="font-mono">{{ $product->slug }}</x-copy-text>
+                                    @else
+                                        —
+                                    @endif
+                                </x-admin-row-details.item>
+                                <x-admin-row-details.item label="Category">{{ $product->category?->getTranslation('name', 'en', false) ?: '—' }}</x-admin-row-details.item>
+                                <x-admin-row-details.item label="Featured">{{ $product->is_featured ? 'Yes' : 'No' }}</x-admin-row-details.item>
+                            </x-admin-row-details>
+                        @endif
                     @empty
                         <tr>
-                            <td colspan="10" class="px-6 py-16 text-center">
+                            <td colspan="11" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -230,63 +250,6 @@
     <div class="px-6 py-3">
         {{ $products->links() }}
     </div>
-
-    {{-- View Modal --}}
-    <flux:modal name="product-view" class="md:w-[600px]"
-        x-on:open-modal.window="if ($event.detail.name === 'product-view') $flux.modal('product-view').show()">
-        @if ($viewingId)
-            @php $viewedProduct = \App\Models\Product::with(['category', 'page'])->find($viewingId); @endphp
-            @if ($viewedProduct)
-                <div class="space-y-4">
-                    <div class="flex items-center justify-between border-b border-zinc-100 pb-3">
-                        <flux:heading>{{ $viewedProduct->getTranslation('name', 'en', false) }}</flux:heading>
-                        <flux:modal.close>
-                            <button wire:click="closeDetails" class="text-zinc-400 hover:text-zinc-600 transition-colors">
-                                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                                </svg>
-                            </button>
-                        </flux:modal.close>
-                    </div>
-                    @if ($viewedProduct->getTranslation('name', 'bn', false))
-                        <div class="text-sm text-zinc-500">{{ $viewedProduct->getTranslation('name', 'bn', false) }}</div>
-                    @endif
-                    <div class="grid grid-cols-2 gap-3 text-sm">
-                        <div><span class="text-zinc-400">Slug:</span> <span class="text-zinc-900 font-mono">{{ $viewedProduct->slug ?: '—' }}</span></div>
-                        <div><span class="text-zinc-400">Category:</span> <span class="text-zinc-900">{{ $viewedProduct->category?->getTranslation('name', 'en', false) ?: '—' }}</span></div>
-                        <div>
-                            <span class="text-zinc-400">Price:</span>
-                            @if ($viewedProduct->hasDiscount())
-                                <span class="text-zinc-400 line-through">{{ number_format((float) $viewedProduct->price, 2) }}</span>
-                                <span class="text-rose-600 font-medium">{{ number_format((float) $viewedProduct->discount_price, 2) }}</span>
-                            @else
-                                <span class="text-zinc-900">{{ number_format((float) $viewedProduct->price, 2) }}</span>
-                            @endif
-                        </div>
-                        <div>
-                            <span class="text-zinc-400">Stock:</span>
-                            @if ($viewedProduct->quantity === null)
-                                <span class="text-zinc-900">Unlimited</span>
-                            @elseif ($viewedProduct->quantity > 0)
-                                <span class="text-zinc-900">{{ $viewedProduct->quantity }}</span>
-                            @else
-                                <span class="text-rose-600 font-medium">Out of stock</span>
-                            @endif
-                        </div>
-                        <div><span class="text-zinc-400">Status:</span> <span class="text-zinc-900">{{ ucfirst($viewedProduct->status) }}</span></div>
-                        <div><span class="text-zinc-400">Featured:</span> <span class="text-zinc-900">{{ $viewedProduct->is_featured ? 'Yes' : 'No' }}</span></div>
-                        <div><span class="text-zinc-400">Shipping:</span> <span class="text-zinc-900">{{ $viewedProduct->charge_shipping ? 'Charged' : 'Free' }}</span></div>
-                        <div><span class="text-zinc-400">Created:</span> <span class="text-zinc-900">{{ $viewedProduct->created_at->toDisplay() }}</span></div>
-                    </div>
-                    @if ($viewedProduct->getTranslation('description', 'en', false))
-                        <div class="border-t border-zinc-100 pt-3">
-                            <p class="text-sm text-zinc-700 leading-relaxed">{{ $viewedProduct->getTranslation('description', 'en', false) }}</p>
-                        </div>
-                    @endif
-                </div>
-            @endif
-        @endif
-    </flux:modal>
 
     {{-- Delete Modal --}}
     <flux:modal name="product-delete" class="md:w-80"

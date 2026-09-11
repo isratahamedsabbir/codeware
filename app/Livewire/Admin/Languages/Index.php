@@ -15,8 +15,22 @@ class Index extends Component
     use HasPerPage, WithPagination;
 
     public string $search = '';
+
     public string $statusFilter = '';
+
     public ?int $deletingId = null;
+
+    public ?int $viewingId = null;
+
+    public function viewDetails(int $id): void
+    {
+        $this->viewingId = $id;
+    }
+
+    public function closeDetails(): void
+    {
+        $this->viewingId = null;
+    }
 
     public function updatedSearch(): void
     {
@@ -109,8 +123,8 @@ class Index extends Component
             ->pluck('aggregate', 'locale');
 
         return view('livewire.admin.languages.index', [
-            'languages'  => $languages,
-            'totalKeys'  => Translation::distinct()->count('key'),
+            'languages' => $languages,
+            'totalKeys' => Translation::distinct()->count('key'),
             'translated' => $translated,
         ])->layout('layouts.admin', ['title' => __('Languages')]);
     }

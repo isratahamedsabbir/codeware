@@ -13,6 +13,18 @@ class Index extends Component
 {
     use HasPerPage, WithPagination;
 
+    public ?int $viewingId = null;
+
+    public function viewDetails(int $id): void
+    {
+        $this->viewingId = $id;
+    }
+
+    public function closeDetails(): void
+    {
+        $this->viewingId = null;
+    }
+
     public string $statusFilter = '';
 
     public string $paymentStatusFilter = '';

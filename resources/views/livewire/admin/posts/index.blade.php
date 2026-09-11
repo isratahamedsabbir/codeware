@@ -34,21 +34,23 @@
     {{-- Table --}}
     <div class="overflow-x-auto">
         <div class="border border-zinc-100 rounded-lg">
-            <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
+            <table class="w-full divide-y divide-gray-200">
                 <colgroup>
                     <col style="width:5%">
+                    <col class="hidden lg:table-column" style="width:5%">
                     <col style="width:26%">
-                    <col style="width:22%">
-                    <col style="width:16%">
+                    <col class="hidden lg:table-column" style="width:22%">
+                    <col class="hidden lg:table-column" style="width:16%">
                     <col style="width:11%">
-                    <col style="width:20%">
+                    <col style="width:15%">
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">#</th>
+                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Title</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Slug</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Category</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Slug</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Category</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
                         <th class="px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -57,8 +59,14 @@
                     @forelse ($posts as $post)
                         <tr class="hover:bg-indigo-50/30 transition-colors" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
 
+                            {{-- Expand toggle (small screens only, where columns are hidden) --}}
+                            <td class="px-2 py-2 text-center">
+                                <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $post->id"
+                                    wire:click="{{ $viewingId === $post->id ? 'closeDetails' : 'viewDetails('.$post->id.')' }}" />
+                            </td>
+
                             {{-- ID --}}
-                            <td class="px-4 py-2">
+                            <td class="hidden lg:table-cell px-4 py-2">
                                 <span class="text-sm text-zinc-500 font-mono">{{ $post->id }}</span>
                             </td>
 
@@ -75,14 +83,14 @@
                             </td>
 
                             {{-- Slug --}}
-                            <td class="px-4 py-2">
-                                <span class="font-mono text-xs text-zinc-600 truncate block">
+                            <td class="hidden lg:table-cell px-4 py-2">
+                                <x-copy-text :text="$post->slug" class="font-mono text-xs text-zinc-600 block">
                                     <x-truncate :text="$post->slug" />
-                                </span>
+                                </x-copy-text>
                             </td>
 
                             {{-- Category --}}
-                            <td class="px-4 py-2">
+                            <td class="hidden lg:table-cell px-4 py-2">
                                 @if ($post->category)
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500 border border-zinc-200 w-max">
                                         <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -117,7 +125,6 @@
                             {{-- Actions --}}
                             <td class="px-4 py-2">
                                 <x-admin-row-actions :actions="[
-                                    ['wireClick' => 'viewDetails(' . $post->id . ')', 'icon' => 'eye', 'label' => 'View', 'color' => 'zinc-500'],
                                     ['href' => route('admin.posts.edit', $post->id), 'icon' => 'pencil', 'label' => 'Edit', 'color' => 'primary'],
                                     $post->page
                                         ? ['href' => route('admin.pages.edit', $post->page->id), 'icon' => 'document', 'label' => 'Page', 'color' => 'secondary']
@@ -128,9 +135,21 @@
                             </td>
 
                         </tr>
+                        @if ($viewingId === $post->id)
+                            <x-admin-row-details colspan="7">
+                                <x-admin-row-details.item label="Slug">
+                                    @if ($post->slug)
+                                        <x-copy-text :text="$post->slug" class="font-mono">{{ $post->slug }}</x-copy-text>
+                                    @else
+                                        —
+                                    @endif
+                                </x-admin-row-details.item>
+                                <x-admin-row-details.item label="Category">{{ $post->category?->getTranslation('name', 'en', false) ?: '—' }}</x-admin-row-details.item>
+                            </x-admin-row-details>
+                        @endif
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-16 text-center">
+                            <td colspan="7" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -150,48 +169,6 @@
     <div class="px-6 py-3">
         {{ $posts->links() }}
     </div>
-
-    {{-- View Modal --}}
-    <flux:modal name="post-view" class="md:w-[600px]"
-        x-on:open-modal.window="if ($event.detail.name === 'post-view') $flux.modal('post-view').show()">
-        @if ($viewingId)
-            @php $viewedPost = \App\Models\Post::with(['category', 'page', 'user'])->find($viewingId); @endphp
-            @if ($viewedPost)
-                <div class="space-y-4">
-                    <div class="flex items-center justify-between border-b border-zinc-100 pb-3">
-                        <flux:heading>{{ $viewedPost->getTranslation('title', 'en', false) }}</flux:heading>
-                        <flux:modal.close>
-                            <button wire:click="closeDetails" class="text-zinc-400 hover:text-zinc-600 transition-colors">
-                                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                                </svg>
-                            </button>
-                        </flux:modal.close>
-                    </div>
-                    @if ($viewedPost->getTranslation('title', 'bn', false))
-                        <div class="text-sm text-zinc-500">{{ $viewedPost->getTranslation('title', 'bn', false) }}</div>
-                    @endif
-                    <div class="grid grid-cols-2 gap-3 text-sm">
-                        <div><span class="text-zinc-400">Slug:</span> <span class="text-zinc-900 font-mono">{{ $viewedPost->slug ?: '—' }}</span></div>
-                        <div><span class="text-zinc-400">Category:</span> <span class="text-zinc-900">{{ $viewedPost->category?->getTranslation('name', 'en', false) ?: '—' }}</span></div>
-                        <div><span class="text-zinc-400">Author:</span> <span class="text-zinc-900">{{ $viewedPost->user?->name ?: '—' }}</span></div>
-                        <div><span class="text-zinc-400">Status:</span> <span class="text-zinc-900">{{ ucfirst($viewedPost->status) }}</span></div>
-                        <div><span class="text-zinc-400">Published:</span> <span class="text-zinc-900">{{ $viewedPost->published_at?->toDisplay() ?: '—' }}</span></div>
-                        <div><span class="text-zinc-400">Reading time:</span> <span class="text-zinc-900">{{ $viewedPost->reading_time }} min</span></div>
-                    </div>
-                    @php
-                        $content = $viewedPost->getTranslation('content', 'en', false);
-                        $contentText = is_array($content) ? '' : strip_tags((string) $content);
-                    @endphp
-                    @if ($contentText)
-                        <div class="border-t border-zinc-100 pt-3">
-                            <p class="text-sm text-zinc-700 leading-relaxed">{{ Illuminate\Support\Str::limit($contentText, 500) }}</p>
-                        </div>
-                    @endif
-                </div>
-            @endif
-        @endif
-    </flux:modal>
 
     {{-- Delete Modal --}}
     <flux:modal name="post-delete" class="md:w-80"

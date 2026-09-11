@@ -39,23 +39,25 @@
             }
         }">
         <div class="border border-zinc-100 rounded-lg">
-            <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
+            <table class="w-full divide-y divide-gray-200">
                 <colgroup>
                     <col style="width:5%">
                     <col style="width:5%">
+                    <col class="hidden lg:table-column" style="width:5%">
                     <col style="width:23%">
-                    <col style="width:20%">
-                    <col style="width:10%">
+                    <col class="hidden lg:table-column" style="width:20%">
+                    <col class="hidden lg:table-column" style="width:10%">
                     <col style="width:15%">
-                    <col style="width:22%">
+                    <col style="width:17%">
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">#</th>
+                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Name</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Slug</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Icon</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Slug</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Icon</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
                         <th class="px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -63,6 +65,12 @@
                 <tbody x-ref="sortableRows" class="divide-y divide-gray-200">
                     @forelse ($categories as $category)
                         <tr class="hover:bg-indigo-50/30 transition-colors" data-category-id="{{ $category->id }}" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
+
+                            {{-- Expand toggle (small screens only, where columns are hidden) --}}
+                            <td class="px-2 py-2 text-center">
+                                <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $category->id"
+                                    wire:click="{{ $viewingId === $category->id ? 'closeDetails' : 'viewDetails('.$category->id.')' }}" />
+                            </td>
 
                             {{-- Drag handle --}}
                             <td class="px-2 py-2 text-center">
@@ -76,7 +84,7 @@
                             </td>
 
                             {{-- ID --}}
-                            <td class="px-4 py-2">
+                            <td class="hidden lg:table-cell px-4 py-2">
                                 <span class="text-sm text-zinc-500 font-mono">{{ $category->id }}</span>
                             </td>
 
@@ -93,14 +101,14 @@
                             </td>
 
                             {{-- Slug --}}
-                            <td class="px-4 py-2">
-                                <span class="font-mono text-xs text-zinc-600 truncate block">
+                            <td class="hidden lg:table-cell px-4 py-2">
+                                <x-copy-text :text="$category->slug" class="font-mono text-xs text-zinc-600 block">
                                     <x-truncate :text="$category->slug" />
-                                </span>
+                                </x-copy-text>
                             </td>
 
                             {{-- Icon --}}
-                            <td class="px-4 py-2">
+                            <td class="hidden lg:table-cell px-4 py-2">
                                 @if ($category->icon)
                                     <img src="{{ $category->icon }}" alt="Icon"
                                         class="w-8 h-8 rounded-lg object-cover border border-zinc-100" />
@@ -141,9 +149,27 @@
                             </td>
 
                         </tr>
+                        @if ($viewingId === $category->id)
+                            <x-admin-row-details colspan="7">
+                                <x-admin-row-details.item label="Slug">
+                                    @if ($category->slug)
+                                        <x-copy-text :text="$category->slug" class="font-mono">{{ $category->slug }}</x-copy-text>
+                                    @else
+                                        —
+                                    @endif
+                                </x-admin-row-details.item>
+                                <x-admin-row-details.item label="Icon">
+                                    @if ($category->icon)
+                                        <img src="{{ $category->icon }}" alt="Icon" class="w-8 h-8 rounded-lg object-cover border border-zinc-100 ml-auto">
+                                    @else
+                                        —
+                                    @endif
+                                </x-admin-row-details.item>
+                            </x-admin-row-details>
+                        @endif
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-16 text-center">
+                            <td colspan="7" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />

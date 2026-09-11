@@ -32,27 +32,29 @@
     {{-- Table --}}
     <div class="overflow-x-auto">
         <div class="border border-zinc-100 rounded-lg">
-            <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
+            <table class="w-full divide-y divide-gray-200">
                 <colgroup>
-                    <col style="width:6%">
+                    <col style="width:5%">
+                    <col class="hidden lg:table-column" style="width:6%">
                     <col style="width:14%">
-                    <col style="width:14%">
-                    <col style="width:12%">
-                    <col style="width:12%">
-                    <col style="width:12%">
-                    <col style="width:12%">
+                    <col style="width:9%">
+                    <col class="hidden lg:table-column" style="width:12%">
+                    <col class="hidden lg:table-column" style="width:12%">
+                    <col class="hidden lg:table-column" style="width:12%">
+                    <col class="hidden lg:table-column" style="width:12%">
                     <col style="width:9%">
                     <col style="width:9%">
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
-                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
+                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
+                        <th class="hidden lg:table-cell px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Code</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Discount</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Applies to</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Min order</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Usage</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Expires</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Applies to</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Min order</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Usage</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Expires</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
                         <th class="px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -61,8 +63,14 @@
                     @forelse ($coupons as $coupon)
                         <tr class="hover:bg-indigo-50/30 transition-colors" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
 
+                            {{-- Expand toggle (small screens only, where columns are hidden) --}}
+                            <td class="px-2 py-2 text-center">
+                                <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $coupon->id"
+                                    wire:click="{{ $viewingId === $coupon->id ? 'closeDetails' : 'viewDetails('.$coupon->id.')' }}" />
+                            </td>
+
                             {{-- Id --}}
-                            <td class="px-2 py-2 text-center text-xs text-zinc-500">
+                            <td class="hidden lg:table-cell px-2 py-2 text-center text-xs text-zinc-500">
                                 {{ $coupon->id }}
                             </td>
 
@@ -81,7 +89,7 @@
                             </td>
 
                             {{-- Applies to --}}
-                            <td class="px-4 py-2 text-xs">
+                            <td class="hidden lg:table-cell px-4 py-2 text-xs">
                                 @if ($coupon->products_count > 0)
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200">
                                         {{ $coupon->products_count }} {{ Str::plural('product', $coupon->products_count) }}
@@ -92,17 +100,17 @@
                             </td>
 
                             {{-- Min order --}}
-                            <td class="px-4 py-2 text-xs text-zinc-500">
+                            <td class="hidden lg:table-cell px-4 py-2 text-xs text-zinc-500">
                                 {{ $coupon->min_order_amount !== null ? \App\Models\Setting::get('currency_symbol', '৳').number_format((float) $coupon->min_order_amount, 2) : '—' }}
                             </td>
 
                             {{-- Usage --}}
-                            <td class="px-4 py-2 text-xs text-zinc-500">
+                            <td class="hidden lg:table-cell px-4 py-2 text-xs text-zinc-500">
                                 {{ $coupon->used_count }}{{ $coupon->max_uses !== null ? ' / '.$coupon->max_uses : '' }}
                             </td>
 
                             {{-- Expires --}}
-                            <td class="px-4 py-2 text-xs text-zinc-500">
+                            <td class="hidden lg:table-cell px-4 py-2 text-xs text-zinc-500">
                                 @if ($coupon->expires_at)
                                     <span class="{{ $coupon->isExpired() ? 'text-rose-500' : '' }}">
                                         {{ $coupon->expires_at->toDisplay() }}
@@ -140,9 +148,29 @@
                             </td>
 
                         </tr>
+                        @if ($viewingId === $coupon->id)
+                            <x-admin-row-details colspan="10">
+                                <x-admin-row-details.item label="Applies to">
+                                    @if ($coupon->products_count > 0)
+                                        <div class="flex flex-wrap gap-1 justify-end">
+                                            @foreach ($coupon->products as $product)
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                                    {{ $product->getTranslation('name', 'en', false) }}
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        All products
+                                    @endif
+                                </x-admin-row-details.item>
+                                <x-admin-row-details.item label="Min order">{{ $coupon->min_order_amount !== null ? \App\Models\Setting::get('currency_symbol', '৳').number_format((float) $coupon->min_order_amount, 2) : '—' }}</x-admin-row-details.item>
+                                <x-admin-row-details.item label="Usage">{{ $coupon->used_count }}{{ $coupon->max_uses !== null ? ' / '.$coupon->max_uses : '' }}</x-admin-row-details.item>
+                                <x-admin-row-details.item label="Expires">{{ $coupon->expires_at?->toDisplay() ?: 'Never' }}</x-admin-row-details.item>
+                            </x-admin-row-details>
+                        @endif
                     @empty
                         <tr>
-                            <td colspan="9" class="px-6 py-16 text-center">
+                            <td colspan="10" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M9 5H7a2 2 0 0 0-2 2v3a2 2 0 0 1-2 2 2 2 0 0 1 2 2v3a2 2 0 0 0 2 2h2m6-14h2a2 2 0 0 1 2 2v3a2 2 0 0 0 2 2 2 2 0 0 0-2 2v3a2 2 0 0 1-2 2h-2" />

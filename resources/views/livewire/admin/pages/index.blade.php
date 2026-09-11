@@ -69,32 +69,40 @@
             }
         }">
         <div class="border border-zinc-100 rounded-lg">
-            <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
+            <table class="w-full divide-y divide-gray-200">
                 <colgroup>
                     <col style="width:5%">
                     <col style="width:5%">
+                    <col class="hidden lg:table-column" style="width:5%">
                     <col style="width:19%">
-                    <col style="width:15%">
-                    <col style="width:12%">
+                    <col class="hidden lg:table-column" style="width:14%">
+                    <col class="hidden lg:table-column" style="width:11%">
                     <col style="width:11%">
-                    <col style="width:12%">
-                    <col style="width:21%">
+                    <col class="hidden lg:table-column" style="width:11%">
+                    <col style="width:19%">
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">#</th>
+                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Title</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Slug</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Type</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Slug</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Type</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Template</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Template</th>
                         <th class="px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody x-ref="sortableRows" class="divide-y divide-gray-200">
                     @forelse ($pages as $page)
                         <tr class="hover:bg-indigo-50/30 transition-colors" data-page-id="{{ $page->id }}" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
+
+                            {{-- Expand toggle (small screens only, where columns are hidden) --}}
+                            <td class="px-2 py-2 text-center">
+                                <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $page->id"
+                                    wire:click="{{ $viewingId === $page->id ? 'closeDetails' : 'viewDetails('.$page->id.')' }}" />
+                            </td>
 
                             {{-- Drag handle --}}
                             <td class="px-2 py-2 text-center">
@@ -108,7 +116,7 @@
                             </td>
 
                             {{-- ID --}}
-                            <td class="px-4 py-2">
+                            <td class="hidden lg:table-cell px-4 py-2">
                                 <span class="text-sm text-zinc-500 font-mono">{{ $page->id }}</span>
                             </td>
 
@@ -125,14 +133,14 @@
                             </td>
 
                             {{-- Slug --}}
-                            <td class="px-4 py-2">
-                                <span class="font-mono text-xs text-zinc-600 truncate block">
+                            <td class="hidden lg:table-cell px-4 py-2">
+                                <x-copy-text :text="$page->slug" class="font-mono text-xs text-zinc-600 block">
                                     <x-truncate :text="$page->slug" />
-                                </span>
+                                </x-copy-text>
                             </td>
 
                             {{-- Type --}}
-                            <td class="px-4 py-2">
+                            <td class="hidden lg:table-cell px-4 py-2">
                                 @php
                                     $typeColors = [
                                         'page' => 'bg-zinc-100 text-zinc-600 border-zinc-200',
@@ -167,7 +175,7 @@
                             </td>
 
                             {{-- Template --}}
-                            <td class="px-4 py-2">
+                            <td class="hidden lg:table-cell px-4 py-2">
                                 <span class="text-sm text-zinc-600">{{ $page->template }}</span>
                             </td>
 
@@ -182,9 +190,22 @@
                             </td>
 
                         </tr>
+                        @if ($viewingId === $page->id)
+                            <x-admin-row-details colspan="8">
+                                <x-admin-row-details.item label="Slug">
+                                    @if ($page->slug)
+                                        <x-copy-text :text="$page->slug" class="font-mono">{{ $page->slug }}</x-copy-text>
+                                    @else
+                                        —
+                                    @endif
+                                </x-admin-row-details.item>
+                                <x-admin-row-details.item label="Type">{{ \App\Livewire\Admin\Pages\Index::TYPES[$page->type] ?? $page->type }}</x-admin-row-details.item>
+                                <x-admin-row-details.item label="Template">{{ $page->template }}</x-admin-row-details.item>
+                            </x-admin-row-details>
+                        @endif
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-16 text-center">
+                            <td colspan="8" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />

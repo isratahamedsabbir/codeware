@@ -19,6 +19,8 @@ class Index extends Component
 
     public ?int $deletingId = null;
 
+    public ?int $viewingId = null;
+
     public function mount(int $pageId): void
     {
         $this->pageId = Page::findOrFail($pageId)->id;
@@ -49,6 +51,16 @@ class Index extends Component
 
         AdminActivity::log('updated', "CMS section: {$cms->name} ".($newStatus === 'active' ? 'activated' : 'deactivated'));
         $this->dispatch('notify', message: 'CMS section status updated');
+    }
+
+    public function viewDetails(int $id): void
+    {
+        $this->viewingId = $id;
+    }
+
+    public function closeDetails(): void
+    {
+        $this->viewingId = null;
     }
 
     public function confirmDelete(int $id): void

@@ -19,6 +19,18 @@ class Index extends Component
 
     public ?int $deletingId = null;
 
+    public ?int $viewingId = null;
+
+    public function viewDetails(int $id): void
+    {
+        $this->viewingId = $id;
+    }
+
+    public function closeDetails(): void
+    {
+        $this->viewingId = null;
+    }
+
     public function updatedSearch(): void
     {
         $this->resetPage();

@@ -24,19 +24,21 @@
     {{-- Table --}}
     <div class="overflow-x-auto">
         <div class="border border-zinc-100 rounded-lg">
-            <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
+            <table class="w-full divide-y divide-gray-200">
                 <colgroup>
                     <col style="width:5%">
+                    <col class="hidden lg:table-column" style="width:5%">
                     <col style="width:35%">
+                    <col class="hidden lg:table-column" style="width:18%">
                     <col style="width:18%">
-                    <col style="width:18%">
-                    <col style="width:24%">
+                    <col style="width:19%">
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
-                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
+                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
+                        <th class="hidden lg:table-cell px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Role</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Users</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Users</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Permissions</th>
                         <th class="px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -45,8 +47,14 @@
                     @forelse ($roles as $role)
                         <tr class="hover:bg-indigo-50/30 transition-colors" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
 
+                            {{-- Expand toggle (small screens only, where columns are hidden) --}}
+                            <td class="px-2 py-2 text-center">
+                                <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $role->id"
+                                    wire:click="{{ $viewingId === $role->id ? 'closeDetails' : 'viewDetails('.$role->id.')' }}" />
+                            </td>
+
                             {{-- Id --}}
-                            <td class="px-2 py-2 text-center text-xs text-zinc-500">
+                            <td class="hidden lg:table-cell px-2 py-2 text-center text-xs text-zinc-500">
                                 {{ $role->id }}
                             </td>
 
@@ -69,7 +77,7 @@
                             </td>
 
                             {{-- Users --}}
-                            <td class="px-4 py-2">
+                            <td class="hidden lg:table-cell px-4 py-2">
                                 <span class="text-sm text-zinc-700">{{ $role->users_count }}</span>
                             </td>
 
@@ -89,9 +97,15 @@
                             </td>
 
                         </tr>
+                        @if ($viewingId === $role->id)
+                            <x-admin-row-details colspan="6">
+                                <x-admin-row-details.item label="ID">#{{ $role->id }}</x-admin-row-details.item>
+                                <x-admin-row-details.item label="Users">{{ $role->users_count }}</x-admin-row-details.item>
+                            </x-admin-row-details>
+                        @endif
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-16 text-center">
+                            <td colspan="6" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />

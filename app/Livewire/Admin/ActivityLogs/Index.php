@@ -23,7 +23,6 @@ class Index extends Component
     public function viewLog(int $id): void
     {
         $this->viewingLogId = $id;
-        $this->dispatch('open-modal', name: 'view-log-details');
     }
 
     public function closeLogDetails(): void

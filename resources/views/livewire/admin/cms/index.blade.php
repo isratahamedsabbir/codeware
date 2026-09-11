@@ -45,19 +45,21 @@
             }
         }">
         <div class="border border-zinc-100 rounded-lg">
-            <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
+            <table class="w-full divide-y divide-gray-200">
                 <colgroup>
                     <col style="width:5%">
                     <col style="width:5%">
+                    <col class="hidden lg:table-column" style="width:5%">
                     <col style="width:20%">
-                    <col style="width:31%">
+                    <col style="width:26%">
                     <col style="width:14%">
                     <col style="width:15%">
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">#</th>
+                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Name</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Content</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
@@ -67,6 +69,12 @@
                 <tbody x-ref="sortableRows" class="divide-y divide-gray-200">
                     @forelse ($sections as $cms)
                         <tr class="hover:bg-indigo-50/30 transition-colors" data-cms-id="{{ $cms->id }}" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
+
+                            {{-- Expand toggle (small screens only, where columns are hidden) --}}
+                            <td class="px-2 py-2 text-center">
+                                <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $cms->id"
+                                    wire:click="{{ $viewingId === $cms->id ? 'closeDetails' : 'viewDetails('.$cms->id.')' }}" />
+                            </td>
 
                             {{-- Drag handle --}}
                             <td class="px-2 py-2 text-center">
@@ -80,7 +88,7 @@
                             </td>
 
                             {{-- ID --}}
-                            <td class="px-4 py-2">
+                            <td class="hidden lg:table-cell px-4 py-2">
                                 <span class="text-sm text-zinc-500 font-mono">{{ $cms->id }}</span>
                             </td>
 
@@ -127,9 +135,37 @@
                             </td>
 
                         </tr>
+                        @if ($viewingId === $cms->id)
+                            <x-admin-row-details colspan="6">
+                                @if (filled($cms->constantMap()))
+                                    <x-admin-row-details.item label="Constants">
+                                        <div class="text-left">
+                                            @foreach ($cms->constantMap() as $key => $value)
+                                                <div>{{ $key }}: {{ $value }}</div>
+                                            @endforeach
+                                        </div>
+                                    </x-admin-row-details.item>
+                                @endif
+                                @foreach ($cms->localizedCards() as $card)
+                                    <x-admin-row-details.item label="Card {{ $loop->iteration }}">
+                                        <div class="flex items-center gap-2 justify-end">
+                                            @if ($card['image'])
+                                                <img src="{{ $card['image'] }}" alt="" class="w-8 h-8 rounded-lg object-cover border border-zinc-100 shrink-0">
+                                            @endif
+                                            <div class="text-left">
+                                                <div class="font-medium">{{ $card['title'] ?: '—' }}</div>
+                                                @if ($card['description'])
+                                                    <div class="text-xs text-zinc-500">{{ $card['description'] }}</div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </x-admin-row-details.item>
+                                @endforeach
+                            </x-admin-row-details>
+                        @endif
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-16 text-center">
+                            <td colspan="6" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <rect x="3" y="3" width="7" height="7" />
