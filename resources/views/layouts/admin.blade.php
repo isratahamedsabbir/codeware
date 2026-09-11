@@ -22,6 +22,7 @@
         $favicon = \App\Models\Setting::get('favicon');
         $adminPrimaryColor = \App\Models\Setting::get('primary_color', '#1e7bc4');
         $adminSecondaryColor = \App\Models\Setting::get('secondary_color', '#7cc242');
+        $calculatorEnabled = (bool) \App\Models\Setting::get('calculator_enabled', true);
     @endphp
     @if ($favicon)
         <link rel="icon" href="{{ $favicon }}" sizes="any">
@@ -241,12 +242,14 @@
 
                 <livewire:admin.locale-switcher />
 
-                <button type="button" x-data
-                    @click="$dispatch('toggle-calculator')"
-                    title="{{ __('Calculator') }}" aria-label="{{ __('Calculator') }}"
-                    class="inline-flex size-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100">
-                    <flux:icon.calculator class="size-5" />
-                </button>
+                @if ($calculatorEnabled)
+                    <button type="button" x-data
+                        @click="$dispatch('toggle-calculator')"
+                        title="{{ __('Calculator') }}" aria-label="{{ __('Calculator') }}"
+                        class="inline-flex size-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100">
+                        <flux:icon.calculator class="size-5" />
+                    </button>
+                @endif
 
                 <button type="button" x-data="{ dark: document.documentElement.classList.contains('dark') }"
                     @click="dark = !dark; document.documentElement.classList.toggle('dark', dark); localStorage.setItem('admin-theme', dark ? 'dark' : 'light')"
@@ -312,9 +315,11 @@
 
     <div x-data x-on:notify.window="toastr.success($event.detail.message)"></div>
 
-    @persist('admin-calculator')
-        @include('partials.admin-calculator')
-    @endpersist
+    @if ($calculatorEnabled)
+        @persist('admin-calculator')
+            @include('partials.admin-calculator')
+        @endpersist
+    @endif
 
     @include('partials.admin-floating-button')
 

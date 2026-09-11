@@ -275,7 +275,15 @@ class Index extends Component
         $constants = collect($this->constants)->filter(fn ($pair) => filled($pair['key'] ?? null))->values()->all();
         Setting::set('constants', json_encode($constants));
 
-        $this->dispatch('notify', message: 'Settings saved.');
+        // A real browser reload of the current page, rather than a dispatched
+        // toast, so the whole admin shell re-renders on a fresh request —
+        // header icons, colors, and anything else read from Setting::get()
+        // in layouts.admin only reflect a change after that, since Livewire's
+        // own re-render never touches the surrounding layout. (Redirecting to
+        // request()->fullUrl() would resolve to the Livewire update endpoint
+        // itself, not the page — hence a plain client-side reload instead.)
+        session()->flash('success', 'Settings saved.');
+        $this->js('window.location.reload()');
     }
 
     public function render()

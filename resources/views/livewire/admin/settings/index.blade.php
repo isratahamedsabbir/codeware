@@ -64,13 +64,12 @@
                             <x-admin-section-card header-border="border-zinc-100" :icon="$groupIcon" :title="ucfirst($group ?? 'General')">
                                 <div class="{{ $group === 'images' ? 'grid grid-cols-2 sm:grid-cols-4 gap-4' : 'space-y-4' }}">
                                 @foreach ($items as $setting)
-                                    @continue ($setting->key === 'app_locale')
                                     <flux:field>
                                         @php
                                             $isMediaPicker = in_array($setting->key, ['site_icon', 'site_icon_white', 'favicon', 'loader'], true);
                                         @endphp
                                         @unless ($isMediaPicker)
-                                            <flux:label>{{ ucwords(str_replace('_', ' ', $setting->key)) }}</flux:label>
+                                            <flux:label>{{ $setting->key === 'app_locale' ? 'Language' : ucwords(str_replace('_', ' ', $setting->key)) }}</flux:label>
                                         @endunless
                                         @if ($setting->type === 'boolean')
                                             <div class="flex items-center gap-2">
@@ -96,6 +95,18 @@
                                             <flux:input type="number" min="1" max="100" wire:model="settings.{{ $setting->key }}" />
                                             <flux:text class="text-xs text-zinc-500">
                                                 {{ __('Default number of items per page on the public site (products, posts, etc.). A request can still override this with its own ?per_page= value.') }}
+                                            </flux:text>
+                                        @elseif ($setting->key === 'app_locale')
+                                            <select wire:model="settings.{{ $setting->key }}"
+                                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                                                @foreach (\App\Support\Locale::active() as $language)
+                                                    <option value="{{ $language->code }}">
+                                                        {{ $language->flag ? $language->flag.' ' : '' }}{{ $language->native_name ?: $language->name }} ({{ strtoupper($language->code) }})
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <flux:text class="text-xs text-zinc-500">
+                                                {{ __('The admin panel language — same as the header language switcher, applies to every admin user.') }}
                                             </flux:text>
                                         @elseif ($setting->key === 'timezone')
                                             <select wire:model="settings.{{ $setting->key }}"
@@ -420,6 +431,24 @@
                         <flux:label>Opacity ({{ $settings['watermark_opacity'] ?? 50 }}%)</flux:label>
                         <input type="range" min="0" max="100" wire:model="settings.watermark_opacity" class="w-full" />
                     </flux:field>
+                </x-admin-section-card>
+
+                {{-- Calculator widget --}}
+                <x-admin-section-card header-border="border-zinc-100" icon="calculator" title="Calculator" class="max-w-md"
+                    description="Adds a calculator icon to the admin header for quick math.">
+                    <x-slot:actions>
+                        <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
+                            <input type="checkbox" wire:model="settings.calculator_enabled" class="rounded border-zinc-300 text-primary" />
+                            Enable
+                        </label>
+                    </x-slot:actions>
+
+                    <p class="text-xs text-zinc-400">
+                        Shortcut: <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">Ctrl</span> +
+                        <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">Alt</span> +
+                        <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">C</span>
+                        opens or closes it from anywhere.
+                    </p>
                 </x-admin-section-card>
             </div>
         </div>

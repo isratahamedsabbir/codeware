@@ -175,6 +175,10 @@ class SettingsSeeder extends Seeder
             ['key' => 'watermark_image',    'value' => '', 'type' => 'string', 'group' => 'other', 'is_public' => false],
             ['key' => 'watermark_position', 'value' => 'bottom-right', 'type' => 'select', 'group' => 'other', 'is_public' => false],
             ['key' => 'watermark_opacity',  'value' => '50', 'type' => 'integer', 'group' => 'other', 'is_public' => false],
+
+            // ── Calculator widget (admin panel) ── floating draggable calculator
+            // opened from the header icon or the Ctrl+Alt+C shortcut.
+            ['key' => 'calculator_enabled', 'value' => '1', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
         ];
 
         foreach ($settings as $setting) {

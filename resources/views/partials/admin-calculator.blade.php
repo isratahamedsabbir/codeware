@@ -64,6 +64,7 @@
         },
     }"
     x-on:toggle-calculator.window="open = ! open"
+    x-on:keydown.ctrl.alt.c.window="open = ! open"
     x-on:pointermove.window="onDrag($event)"
     x-on:pointerup.window="stopDrag()">
 
