@@ -76,19 +76,72 @@
                         <flux:error name="product_category_id" />
                     </flux:field>
 
-                {{-- Price (not translatable — shown regardless of locale tab) --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
-                    <flux:field>
-                        <flux:label>Price</flux:label>
-                        <flux:input type="number" wire:model="price" min="0" step="0.01" />
-                        <flux:error name="price" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Discount Price</flux:label>
-                        <flux:input type="number" wire:model="discount_price" min="0" step="0.01" placeholder="No discount" />
-                        <p class="text-xs text-zinc-400 mt-1">Shown as a strikethrough sale price. Leave blank for no discount.</p>
-                        <flux:error name="discount_price" />
-                    </flux:field>
+                {{-- Pricing & Stock (not translatable — shown regardless of locale tab) --}}
+                <div class="mt-5 rounded-xl border border-zinc-200 overflow-hidden" wire:key="pricing-stock-panel">
+                    <div class="flex items-center gap-2.5 px-4 py-3 bg-emerald-50/60 border-b border-zinc-200">
+                        <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
+                            <flux:icon.banknotes class="size-4" />
+                        </div>
+                        <flux:heading size="sm">Pricing & Stock</flux:heading>
+                    </div>
+
+                    <div class="p-4 space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <flux:field>
+                                <flux:label>Price</flux:label>
+                                <flux:input type="number" wire:model.live.debounce.400ms="price" min="0" step="0.01" />
+                                <flux:error name="price" />
+                            </flux:field>
+                            <flux:field>
+                                <flux:label>Discount Price</flux:label>
+                                <flux:input type="number" wire:model.live.debounce.400ms="discount_price" min="0" step="0.01" placeholder="No discount" />
+                                <flux:error name="discount_price" />
+                            </flux:field>
+                        </div>
+                        @if ($discount_price !== '' && is_numeric($price) && is_numeric($discount_price) && (float) $discount_price < (float) $price && (float) $price > 0)
+                            <p class="text-xs text-emerald-600 font-medium -mt-1">
+                                {{ round((1 - ((float) $discount_price / (float) $price)) * 100) }}% off — shown as a strikethrough sale price.
+                            </p>
+                        @else
+                            <p class="text-xs text-zinc-400 -mt-1">Leave Discount Price blank to sell at the regular price.</p>
+                        @endif
+
+                        <div class="border-t border-zinc-100 pt-4">
+                            <div class="flex flex-wrap items-end gap-3">
+                                <flux:field class="max-w-45">
+                                    <flux:label>Quantity</flux:label>
+                                    <flux:input type="number" wire:model.live.debounce.400ms="quantity" min="0" step="1" placeholder="Unlimited" />
+                                    <flux:error name="quantity" />
+                                </flux:field>
+                                <div class="mb-1">
+                                    @if ($quantity === '')
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500">
+                                            Unlimited stock
+                                        </span>
+                                    @elseif ((int) $quantity > 0)
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-200">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                            {{ (int) $quantity }} in stock
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-600 border border-rose-200">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                            Out of stock
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                            <p class="text-xs text-zinc-400 mt-1.5">Leave blank if stock isn't tracked for this product.</p>
+                        </div>
+
+                        <div class="border-t border-zinc-100 pt-4 flex items-center justify-between gap-3">
+                            <div>
+                                <p class="text-sm font-medium text-zinc-700">Charge Shipping</p>
+                                <p class="text-xs text-zinc-400">Turn off for digital products or items that always ship free.</p>
+                            </div>
+                            <flux:switch wire:model="charge_shipping" />
+                        </div>
+                    </div>
                 </div>
 
             </x-admin-locale-tabs>
@@ -146,13 +199,35 @@
                                 <flux:error name="variations.{{ $i }}.name" />
                             </flux:field>
 
+                            @php
+                                $selectedAttribute = $this->productAttributes->firstWhere('name', $attribute['name']);
+                                $availableValues = $selectedAttribute->values ?? [];
+                            @endphp
+
                             <div class="rounded-lg bg-zinc-50/70 border border-zinc-100 p-3 space-y-2">
-                                @forelse ($attribute['values'] as $j => $value)
+                                @if (! $attribute['name'])
+                                    <p class="text-xs text-zinc-400 px-1 py-1">Select an attribute name first.</p>
+                                @elseif (empty($availableValues))
+                                    <p class="text-xs text-zinc-400 px-1 py-1">
+                                        No values defined for "{{ $attribute['name'] }}" yet.
+                                        @if ($selectedAttribute)
+                                            <a href="{{ route('admin.product-attributes.edit', $selectedAttribute->id) }}" wire:navigate class="text-indigo-500 hover:underline">
+                                                Add some
+                                            </a>.
+                                        @endif
+                                    </p>
+                                @else
+                                    @forelse ($attribute['values'] as $j => $value)
                                     <div wire:key="variation-attr-{{ $i }}-value-{{ $j }}"
                                         class="group/val flex flex-wrap items-end gap-2 rounded-lg bg-white border border-zinc-200 p-2.5">
                                         <flux:field class="flex-1 min-w-35">
                                             <flux:label class="text-[11px] text-zinc-500">Value</flux:label>
-                                            <flux:input wire:model="variations.{{ $i }}.values.{{ $j }}.name" placeholder="e.g. Small" size="sm" />
+                                            <flux:select wire:model="variations.{{ $i }}.values.{{ $j }}.name" size="sm">
+                                                <flux:select.option value="">— Select —</flux:select.option>
+                                                @foreach ($availableValues as $valueOption)
+                                                    <flux:select.option :value="$valueOption">{{ $valueOption }}</flux:select.option>
+                                                @endforeach
+                                            </flux:select>
                                         </flux:field>
                                         <flux:field class="w-28">
                                             <flux:label class="text-[11px] text-zinc-500">Price</flux:label>
@@ -166,6 +241,12 @@
                                                 wire:model="variations.{{ $i }}.values.{{ $j }}.discount_price" placeholder="No discount" />
                                             <flux:error name="variations.{{ $i }}.values.{{ $j }}.discount_price" />
                                         </flux:field>
+                                        <flux:field class="w-24">
+                                            <flux:label class="text-[11px] text-zinc-500">Qty</flux:label>
+                                            <flux:input type="number" step="1" min="0" size="sm"
+                                                wire:model="variations.{{ $i }}.values.{{ $j }}.quantity" placeholder="Unlimited" />
+                                            <flux:error name="variations.{{ $i }}.values.{{ $j }}.quantity" />
+                                        </flux:field>
                                         <button type="button" wire:click="removeVariationValue({{ $i }}, {{ $j }})"
                                             class="shrink-0 mb-0.5 rounded-lg p-2 text-zinc-300 opacity-0 group-hover/val:opacity-100 transition-all hover:bg-rose-50 hover:text-rose-500 cursor-pointer" aria-label="Remove value">
                                             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -174,16 +255,17 @@
                                         </button>
                                     </div>
                                 @empty
-                                    <p class="text-xs text-zinc-400 px-1 py-1">No values yet — add at least one (e.g. "Small", "Medium").</p>
+                                    <p class="text-xs text-zinc-400 px-1 py-1">No values selected yet.</p>
                                 @endforelse
 
-                                <button type="button" wire:click="addVariationValue({{ $i }})"
-                                    class="flex items-center gap-1.5 text-xs font-medium text-violet-600 hover:text-violet-700 transition-colors cursor-pointer">
-                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                                    </svg>
-                                    Add value
-                                </button>
+                                    <button type="button" wire:click="addVariationValue({{ $i }})"
+                                        class="flex items-center gap-1.5 text-xs font-medium text-violet-600 hover:text-violet-700 transition-colors cursor-pointer">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                        </svg>
+                                        Add value
+                                    </button>
+                                @endif
                             </div>
                         </div>
                     </div>

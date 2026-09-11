@@ -50,6 +50,11 @@ class Form extends Component
     #[Validate('nullable|numeric|min:0|lt:price')]
     public string $discount_price = '';
 
+    #[Validate('nullable|integer|min:0')]
+    public string $quantity = '';
+
+    public bool $charge_shipping = true;
+
     public bool $is_featured = false;
 
     public array $description = [];
@@ -95,6 +100,8 @@ class Form extends Component
             $this->product_category_id = $product->product_category_id;
             $this->price = (string) $product->price;
             $this->discount_price = $product->discount_price !== null ? (string) $product->discount_price : '';
+            $this->quantity = $product->quantity !== null ? (string) $product->quantity : '';
+            $this->charge_shipping = (bool) $product->charge_shipping;
             $this->is_featured = (bool) $product->is_featured;
 
             $this->featured_image = $product->featured_image ?? '';
@@ -108,6 +115,7 @@ class Form extends Component
                     'name' => $value['name'],
                     'price' => $value['price'] ?? '',
                     'discount_price' => $value['discount_price'] ?? '',
+                    'quantity' => $value['quantity'] ?? '',
                 ])->all(),
             ])->all();
 
@@ -179,7 +187,7 @@ class Form extends Component
             return;
         }
 
-        $this->variations[$attributeIndex]['values'][] = ['name' => '', 'price' => '', 'discount_price' => ''];
+        $this->variations[$attributeIndex]['values'][] = ['name' => '', 'price' => '', 'discount_price' => '', 'quantity' => ''];
     }
 
     public function removeVariationValue(int $attributeIndex, int $valueIndex): void
@@ -198,7 +206,7 @@ class Form extends Component
      * Admin\Settings\Index::save()), so an admin doesn't have to manually
      * clean up an empty row they added and decided not to fill in.
      *
-     * @return array<int, array{name: string, values: array<int, array{name: string, price: string, discount_price: ?string}>}>
+     * @return array<int, array{name: string, values: array<int, array{name: string, price: string, discount_price: ?string, quantity: ?string}>}>
      */
     private function cleanedVariations(): array
     {
@@ -212,6 +220,7 @@ class Form extends Component
                         'name' => $value['name'],
                         'price' => filled($value['price'] ?? null) ? $value['price'] : null,
                         'discount_price' => filled($value['discount_price'] ?? null) ? $value['discount_price'] : null,
+                        'quantity' => filled($value['quantity'] ?? null) ? $value['quantity'] : null,
                     ])
                     ->values()
                     ->all(),
@@ -270,7 +279,7 @@ class Form extends Component
     #[Computed]
     public function productAttributes()
     {
-        return ProductAttribute::orderBy('sort_order')->orderBy('name')->get();
+        return ProductAttribute::orderBy('name')->get();
     }
 
     public function openPuckEditor(): void
@@ -307,6 +316,7 @@ class Form extends Component
         ];
         $rules['variations.*.values.*.price'] = 'nullable|numeric|min:0';
         $rules['variations.*.values.*.discount_price'] = 'nullable|numeric|min:0|lt:variations.*.values.*.price';
+        $rules['variations.*.values.*.quantity'] = 'nullable|integer|min:0';
 
         $this->validate($rules);
 
@@ -344,6 +354,7 @@ class Form extends Component
         ];
         $rules['variations.*.values.*.price'] = 'nullable|numeric|min:0';
         $rules['variations.*.values.*.discount_price'] = 'nullable|numeric|min:0|lt:variations.*.values.*.price';
+        $rules['variations.*.values.*.quantity'] = 'nullable|integer|min:0';
 
         $this->validate($rules);
 
@@ -363,6 +374,8 @@ class Form extends Component
             'name' => $this->translatablePayload('name'),
             'price' => $this->price,
             'discount_price' => $this->discount_price !== '' ? $this->discount_price : null,
+            'quantity' => $this->quantity !== '' ? $this->quantity : null,
+            'charge_shipping' => $this->charge_shipping,
             'is_featured' => $this->is_featured,
             'description' => $this->translatablePayload('description') ?: null,
             'featured_image' => $this->featured_image ?: null,

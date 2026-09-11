@@ -14,8 +14,14 @@ class Form extends Component
     #[Validate('required|string|max:255')]
     public string $name = '';
 
-    #[Validate('nullable|integer|min:0')]
-    public string $sort_order = '0';
+    /**
+     * Predefined values an admin can pick from when adding this attribute to a
+     * product's Variations (e.g. Size → Small/Medium/Large) — the product form
+     * only lets them select one of these, never type a new one.
+     *
+     * @var array<int, string>
+     */
+    public array $values = [];
 
     public function mount(?int $id = null): void
     {
@@ -23,8 +29,19 @@ class Form extends Component
             $attribute = ProductAttribute::findOrFail($id);
             $this->attributeId = $id;
             $this->name = $attribute->name;
-            $this->sort_order = (string) $attribute->sort_order;
+            $this->values = $attribute->values ?? [];
         }
+    }
+
+    public function addValue(): void
+    {
+        $this->values[] = '';
+    }
+
+    public function removeValue(int $index): void
+    {
+        unset($this->values[$index]);
+        $this->values = array_values($this->values);
     }
 
     public function save(): void
@@ -33,13 +50,18 @@ class Form extends Component
         $rules['name'] = $this->attributeId
             ? 'required|string|max:255|unique:product_attributes,name,'.$this->attributeId
             : 'required|string|max:255|unique:product_attributes,name';
+        $rules['values.*'] = 'nullable|string|max:255';
 
         $this->validate($rules);
 
-        $data = [
-            'name' => $this->name,
-            'sort_order' => $this->sort_order !== '' ? $this->sort_order : 0,
-        ];
+        $cleanedValues = collect($this->values)
+            ->map(fn ($value) => trim($value))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        $data = ['name' => $this->name, 'values' => $cleanedValues];
 
         $creating = $this->attributeId === null;
 

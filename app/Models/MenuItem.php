@@ -50,6 +50,7 @@ class MenuItem extends Model
         'admin.orders',
         'admin.reports',
         'admin.coupons',
+        'admin.shipping-methods',
         'admin.advance',
     ];
 
@@ -78,6 +79,7 @@ class MenuItem extends Model
         'admin.orders' => 'orders',
         'admin.reports' => 'orders',
         'admin.coupons' => 'orders',
+        'admin.shipping-methods' => 'orders',
         'admin.advance' => 'advance',
     ];
 

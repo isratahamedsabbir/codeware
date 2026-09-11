@@ -44,7 +44,6 @@ class Index extends Component
         return view('livewire.admin.product-attributes.index', [
             'productAttributes' => ProductAttribute::query()
                 ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
-                ->orderBy('sort_order')
                 ->orderBy('name')
                 ->paginate($this->perPage),
         ])->layout('layouts.admin', ['title' => 'Product Attributes']);

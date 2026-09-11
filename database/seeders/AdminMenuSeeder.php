@@ -29,6 +29,7 @@ class AdminMenuSeeder extends Seeder
         $this->group('Sales', 4, [
             ['Orders', 'shopping-bag', 'admin.orders'],
             ['Coupons', 'ticket', 'admin.coupons'],
+            ['Shipping', 'truck', 'admin.shipping-methods'],
             ['Reports', 'chart-bar', 'admin.reports'],
         ]);
 

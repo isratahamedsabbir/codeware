@@ -15,11 +15,28 @@
             <flux:error name="name" />
         </flux:field>
 
-        <flux:field class="max-w-xs">
-            <flux:label>Sort Order</flux:label>
-            <flux:input type="number" wire:model="sort_order" min="0" />
-            <p class="text-xs text-zinc-400 mt-1">Lower numbers appear first in the picker.</p>
-            <flux:error name="sort_order" />
+        <flux:field>
+            <flux:label>Values</flux:label>
+            <p class="text-xs text-zinc-400 mb-2">The choices an admin can pick from for this attribute on a product — e.g. Small, Medium, Large. They select from this list, never type a new one.</p>
+
+            <div class="space-y-2">
+                @forelse ($values as $i => $value)
+                    <div wire:key="attribute-value-{{ $i }}" class="flex items-center gap-2">
+                        <flux:input wire:model="values.{{ $i }}" placeholder="e.g. Small" class="flex-1" />
+                        <button type="button" wire:click="removeValue({{ $i }})"
+                            class="shrink-0 rounded-lg p-2 text-zinc-400 transition-colors hover:bg-rose-50 hover:text-rose-500 cursor-pointer" aria-label="Remove value">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <flux:error name="values.{{ $i }}" />
+                @empty
+                    <p class="text-xs text-zinc-400 px-1 py-1">No values yet.</p>
+                @endforelse
+
+                <flux:button size="xs" variant="outline" icon="plus" wire:click="addValue">Add value</flux:button>
+            </div>
         </flux:field>
 
         {{-- Footer --}}

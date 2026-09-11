@@ -9,12 +9,12 @@ class ProductAttribute extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'sort_order'];
+    protected $fillable = ['name', 'values'];
 
     protected function casts(): array
     {
         return [
-            'sort_order' => 'integer',
+            'values' => 'array',
         ];
     }
 }

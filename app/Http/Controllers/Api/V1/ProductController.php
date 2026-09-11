@@ -76,6 +76,9 @@ class ProductController extends Controller
             'name' => $product->getTranslation('name', $locale, useFallbackLocale: true),
             'price' => (float) $product->price,
             'discount_price' => $product->hasDiscount() ? (float) $product->discount_price : null,
+            'quantity' => $product->quantity,
+            'in_stock' => $product->inStock(),
+            'charge_shipping' => $product->charge_shipping,
             'featured_image' => $product->featured_image,
             'is_featured' => $product->is_featured,
             // 'sort_order'      => $product->sort_order,
@@ -104,6 +107,7 @@ class ProductController extends Controller
                 'values' => collect($attribute['values'] ?? [])->map(function ($value) {
                     $price = ($value['price'] ?? null) !== null ? (float) $value['price'] : null;
                     $discountPrice = ($value['discount_price'] ?? null) !== null ? (float) $value['discount_price'] : null;
+                    $quantity = ($value['quantity'] ?? null) !== null ? (int) $value['quantity'] : null;
 
                     return [
                         'name' => $value['name'] ?? '',
@@ -113,6 +117,10 @@ class ProductController extends Controller
                         'discount_price' => $discountPrice !== null && $price !== null && $discountPrice < $price
                             ? $discountPrice
                             : null,
+                        'quantity' => $quantity,
+                        // Null quantity means stock isn't tracked for this value —
+                        // same convention as Product::inStock().
+                        'in_stock' => $quantity === null || $quantity > 0,
                     ];
                 })->values(),
             ])->values();

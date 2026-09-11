@@ -53,13 +53,14 @@
                 <colgroup>
                     <col style="width:5%">
                     <col style="width:5%">
-                    <col style="width:15%">
-                    <col style="width:13%">
-                    <col style="width:13%">
+                    <col style="width:14%">
+                    <col style="width:11%">
+                    <col style="width:11%">
                     <col style="width:10%">
                     <col style="width:9%">
-                    <col style="width:10%">
-                    <col style="width:20%">
+                    <col style="width:9%">
+                    <col style="width:8%">
+                    <col style="width:18%">
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
@@ -69,6 +70,7 @@
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Slug</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Category</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Price</th>
+                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Stock</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Featured</th>
                         <th class="px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
@@ -137,6 +139,19 @@
                                 @endif
                             </td>
 
+                            {{-- Stock --}}
+                            <td class="px-4 py-2">
+                                @if ($product->quantity === null)
+                                    <span class="text-xs text-zinc-400">Unlimited</span>
+                                @elseif ($product->quantity > 0)
+                                    <span class="text-sm text-zinc-700">{{ $product->quantity }}</span>
+                                @else
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-600 border border-rose-200">
+                                        Out of stock
+                                    </span>
+                                @endif
+                            </td>
+
                             {{-- Status --}}
                             <td class="px-4 py-2">
                                 @if ($product->status === 'active')
@@ -195,7 +210,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-6 py-16 text-center">
+                            <td colspan="10" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -248,8 +263,19 @@
                                 <span class="text-zinc-900">{{ number_format((float) $viewedProduct->price, 2) }}</span>
                             @endif
                         </div>
+                        <div>
+                            <span class="text-zinc-400">Stock:</span>
+                            @if ($viewedProduct->quantity === null)
+                                <span class="text-zinc-900">Unlimited</span>
+                            @elseif ($viewedProduct->quantity > 0)
+                                <span class="text-zinc-900">{{ $viewedProduct->quantity }}</span>
+                            @else
+                                <span class="text-rose-600 font-medium">Out of stock</span>
+                            @endif
+                        </div>
                         <div><span class="text-zinc-400">Status:</span> <span class="text-zinc-900">{{ ucfirst($viewedProduct->status) }}</span></div>
                         <div><span class="text-zinc-400">Featured:</span> <span class="text-zinc-900">{{ $viewedProduct->is_featured ? 'Yes' : 'No' }}</span></div>
+                        <div><span class="text-zinc-400">Shipping:</span> <span class="text-zinc-900">{{ $viewedProduct->charge_shipping ? 'Charged' : 'Free' }}</span></div>
                         <div><span class="text-zinc-400">Created:</span> <span class="text-zinc-900">{{ $viewedProduct->created_at->toDisplay() }}</span></div>
                     </div>
                     @if ($viewedProduct->getTranslation('description', 'en', false))

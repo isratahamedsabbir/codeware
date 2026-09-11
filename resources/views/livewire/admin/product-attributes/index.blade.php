@@ -26,16 +26,16 @@
         <div class="border border-zinc-100 rounded-lg">
             <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
                 <colgroup>
-                    <col style="width:10%">
-                    <col style="width:50%">
-                    <col style="width:20%">
+                    <col style="width:8%">
+                    <col style="width:27%">
+                    <col style="width:45%">
                     <col style="width:20%">
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Name</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Sort order</th>
+                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Values</th>
                         <th class="px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
@@ -55,9 +55,24 @@
                                 </div>
                             </td>
 
-                            {{-- Sort order --}}
-                            <td class="px-4 py-2 text-sm text-zinc-500">
-                                {{ $attribute->sort_order }}
+                            {{-- Values --}}
+                            <td class="px-4 py-2">
+                                @if (empty($attribute->values))
+                                    <span class="text-zinc-300 text-sm">—</span>
+                                @else
+                                    <div class="flex flex-wrap gap-1">
+                                        @foreach (array_slice($attribute->values, 0, 4) as $value)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-violet-50 text-violet-600 border border-violet-200">
+                                                {{ $value }}
+                                            </span>
+                                        @endforeach
+                                        @if (count($attribute->values) > 4)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-zinc-100 text-zinc-500">
+                                                +{{ count($attribute->values) - 4 }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                @endif
                             </td>
 
                             {{-- Actions --}}

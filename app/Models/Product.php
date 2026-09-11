@@ -48,7 +48,7 @@ class Product extends Model
     protected $fillable = [
         'product_category_id', 'name', 'description',
         'faq', 'variations',
-        'featured_image', 'status', 'price', 'discount_price', 'is_featured',
+        'featured_image', 'status', 'price', 'discount_price', 'quantity', 'charge_shipping', 'is_featured',
         'sort_order',
     ];
 
@@ -57,6 +57,8 @@ class Product extends Model
         'variations' => 'array',
         'price' => 'decimal:2',
         'discount_price' => 'decimal:2',
+        'quantity' => 'integer',
+        'charge_shipping' => 'boolean',
         'is_featured' => 'boolean',
         'sort_order' => 'integer',
     ];
@@ -99,6 +101,15 @@ class Product extends Model
     public function hasDiscount(): bool
     {
         return $this->discount_price !== null && (float) $this->discount_price < (float) $this->price;
+    }
+
+    /**
+     * A null quantity means stock isn't tracked for this product — always
+     * considered in stock. Otherwise in stock only while quantity is positive.
+     */
+    public function inStock(): bool
+    {
+        return $this->quantity === null || $this->quantity > 0;
     }
 
     public function scopeActive(Builder $query): Builder

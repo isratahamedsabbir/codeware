@@ -155,6 +155,10 @@ Route::middleware('can:access-admin-system')->group(function () {
         Route::get('/coupons', App\Livewire\Admin\Coupons\Index::class)->name('coupons');
         Route::get('/coupons/create', App\Livewire\Admin\Coupons\Form::class)->name('coupons.create');
         Route::get('/coupons/{id}/edit', App\Livewire\Admin\Coupons\Form::class)->name('coupons.edit');
+
+        Route::get('/shipping-methods', App\Livewire\Admin\ShippingMethods\Index::class)->name('shipping-methods');
+        Route::get('/shipping-methods/create', App\Livewire\Admin\ShippingMethods\Form::class)->name('shipping-methods.create');
+        Route::get('/shipping-methods/{id}/edit', App\Livewire\Admin\ShippingMethods\Form::class)->name('shipping-methods.edit');
     });
 });
 
