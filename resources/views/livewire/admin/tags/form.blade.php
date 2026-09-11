@@ -24,9 +24,8 @@
                 @endforeach
 
                 <flux:field>
-                    <flux:label>Slug</flux:label>
+                    <flux:label>Slug<x-field-hint text="Leave blank to auto-generate from the primary language's name" /></flux:label>
                     <flux:input wire:model="slug" placeholder="auto-generated-from-name" />
-                    <p class="text-xs text-zinc-400 mt-1">Leave blank to auto-generate from the primary language's name</p>
                     <flux:error name="slug" />
                 </flux:field>
             </x-admin-locale-tabs>

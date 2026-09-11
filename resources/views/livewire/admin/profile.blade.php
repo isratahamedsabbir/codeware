@@ -43,9 +43,8 @@
             </flux:field>
 
             <flux:field>
-                <flux:label>Email</flux:label>
+                <flux:label>Email<x-field-hint text="Email cannot be changed here." /></flux:label>
                 <flux:input :value="$email" type="email" readonly disabled />
-                <p class="text-xs text-zinc-400 mt-1">Email cannot be changed here.</p>
             </flux:field>
 
             <div class="flex items-center gap-3 pt-1">

@@ -5,7 +5,7 @@
         {{-- Canonical URL --}}
         <div class="lg:col-span-2 min-w-0">
             <flux:field>
-                <flux:label>Canonical URL</flux:label>
+                <flux:label>Canonical URL<x-field-hint text="The base is managed in Settings → SEO → Canonical Base Links. The path defaults to the slug but can be edited independently." /></flux:label>
                 <div class="flex items-center gap-2">
                     <select wire:model="canonical_base"
                         class="rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700 shrink-0">
@@ -16,9 +16,6 @@
                     </select>
                     <flux:input wire:model.live.debounce.400ms="canonical_slug" placeholder="page-slug" class="flex-1" />
                 </div>
-                <p class="text-xs text-zinc-400 mt-1">
-                    The base is managed in Settings → SEO → Canonical Base Links. The path defaults to the slug but can be edited independently.
-                </p>
                 <flux:error name="canonical_base" />
                 <flux:error name="canonical_slug" />
             </flux:field>
@@ -100,16 +97,16 @@
             <flux:heading size="sm" class="mb-3">Indexing</flux:heading>
             <div class="space-y-3">
                 <div class="flex items-center justify-between">
-                    <div>
+                    <div class="flex items-center">
                         <p class="text-sm font-medium text-zinc-700">No-Index</p>
-                        <p class="text-xs text-zinc-400">Prevent search engines from indexing this</p>
+                        <x-field-hint text="Prevent search engines from indexing this" />
                     </div>
                     <flux:switch wire:model="no_index" />
                 </div>
                 <div class="flex items-center justify-between">
-                    <div>
+                    <div class="flex items-center">
                         <p class="text-sm font-medium text-zinc-700">No-Follow</p>
-                        <p class="text-xs text-zinc-400">Prevent search engines from following links on this</p>
+                        <x-field-hint text="Prevent search engines from following links on this" />
                     </div>
                     <flux:switch wire:model="no_follow" />
                 </div>

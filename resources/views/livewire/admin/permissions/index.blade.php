@@ -103,10 +103,8 @@
                 <flux:heading>New permission</flux:heading>
             </div>
             <flux:field>
-                <flux:label>Permission name <span class="text-red-500 ml-0.5">*</span></flux:label>
+                <flux:label>Permission name <span class="text-red-500 ml-0.5">*</span><x-field-hint text='Saved in lowercase, e.g. <span class="font-mono">Export Reports</span> becomes <span class="font-mono">export-reports</span>' /></flux:label>
                 <flux:input wire:model="newName" placeholder="e.g. export reports" />
-                <p class="text-xs text-zinc-400 mt-1">Saved in lowercase, e.g. <span class="font-mono">Export Reports</span>
-                    becomes <span class="font-mono">export-reports</span></p>
                 <flux:error name="newName" />
             </flux:field>
             <div class="flex gap-2 pt-1">

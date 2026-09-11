@@ -12,10 +12,8 @@
         <div class="bg-white rounded-[5px] shadow-sm p-6">
             <div class="space-y-5">
                 <flux:field>
-                    <flux:label>Role name <span class="text-red-500 ml-0.5">*</span></flux:label>
+                    <flux:label>Role name <span class="text-red-500 ml-0.5">*</span><x-field-hint text='Saved in lowercase, e.g. <span class="font-mono">Content Manager</span> becomes <span class="font-mono">content-manager</span>' /></flux:label>
                     <flux:input wire:model="name" placeholder="e.g. manager, editor, author" />
-                    <p class="text-xs text-zinc-400 mt-1">Saved in lowercase, e.g. <span
-                            class="font-mono">Content Manager</span> becomes <span class="font-mono">content-manager</span></p>
                     <flux:error name="name" />
                 </flux:field>
 

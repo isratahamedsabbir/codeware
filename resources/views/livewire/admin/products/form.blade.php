@@ -43,10 +43,9 @@
                         </flux:field>
 
                         <flux:field>
-                            <flux:label>Description</flux:label>
+                            <flux:label>Description<x-field-hint text="Shown in listings and as a fallback description — the full page content is built separately in the page builder." /></flux:label>
                             <flux:textarea wire:model.live.debounce.400ms="description.{{ $language->code }}" rows="4"
                                 placeholder="{{ $language->code === $this->primaryLocale ? 'Short product summary' : 'Short product summary ('.($language->native_name ?: $language->name).')' }}" />
-                            <p class="text-xs text-zinc-400 mt-1">Shown in listings and as a fallback description — the full page content is built separately in the page builder.</p>
                             @if ($language->code === $this->primaryLocale)<flux:error name="description.{{ $language->code }}" />@endif
                         </flux:field>
                     </x-admin-locale-panel>
@@ -98,7 +97,7 @@
                         <div class="border-t border-zinc-100 pt-4">
                             <div class="flex flex-wrap items-end gap-3">
                                 <flux:field class="max-w-45">
-                                    <flux:label>Quantity</flux:label>
+                                    <flux:label>Quantity<x-field-hint text="Leave blank if stock isn't tracked for this product." /></flux:label>
                                     <flux:input type="number" wire:model.live.debounce.400ms="quantity" min="0" step="1" placeholder="Unlimited" />
                                     <flux:error name="quantity" />
                                 </flux:field>
@@ -120,13 +119,12 @@
                                     @endif
                                 </div>
                             </div>
-                            <p class="text-xs text-zinc-400 mt-1.5">Leave blank if stock isn't tracked for this product.</p>
                         </div>
 
                         <div class="border-t border-zinc-100 pt-4 flex items-center justify-between gap-3">
-                            <div>
+                            <div class="flex items-center">
                                 <p class="text-sm font-medium text-zinc-700">Charge Shipping</p>
-                                <p class="text-xs text-zinc-400">Turn off for digital products or items that always ship free.</p>
+                                <x-field-hint text="Turn off for digital products or items that always ship free." />
                             </div>
                             <flux:switch wire:model="charge_shipping" />
                         </div>

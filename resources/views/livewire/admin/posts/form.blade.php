@@ -44,10 +44,9 @@
                         </flux:field>
 
                         <flux:field>
-                            <flux:label>Description</flux:label>
+                            <flux:label>Description<x-field-hint text="Shown in blog listings and as a fallback description — the full post body is built separately in the page builder." /></flux:label>
                             <flux:textarea wire:model.live.debounce.400ms="description.{{ $language->code }}" rows="4"
                                 placeholder="{{ $language->code === $this->primaryLocale ? 'Short post summary' : 'Short post summary ('.($language->native_name ?: $language->name).')' }}" />
-                            <p class="text-xs text-zinc-400 mt-1">Shown in blog listings and as a fallback description — the full post body is built separately in the page builder.</p>
                             @if ($language->code === $this->primaryLocale)<flux:error name="description.{{ $language->code }}" />@endif
                         </flux:field>
                     </x-admin-locale-panel>

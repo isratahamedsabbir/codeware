@@ -9,15 +9,13 @@
     <div class="w-full max-w-2xl bg-white rounded-[5px] shadow-sm p-6 space-y-4">
 
         <flux:field>
-            <flux:label>Name <span class="text-red-500 ml-0.5">*</span></flux:label>
+            <flux:label>Name <span class="text-red-500 ml-0.5">*</span><x-field-hint text="Shows up as a pickable option when adding Variations to a product." /></flux:label>
             <flux:input wire:model="name" placeholder="e.g. Size, Color, Material" />
-            <p class="text-xs text-zinc-400 mt-1">Shows up as a pickable option when adding Variations to a product.</p>
             <flux:error name="name" />
         </flux:field>
 
         <flux:field>
-            <flux:label>Values</flux:label>
-            <p class="text-xs text-zinc-400 mb-2">The choices an admin can pick from for this attribute on a product — e.g. Small, Medium, Large. They select from this list, never type a new one.</p>
+            <flux:label>Values<x-field-hint text="The choices an admin can pick from for this attribute on a product — e.g. Small, Medium, Large. They select from this list, never type a new one." /></flux:label>
 
             <div class="space-y-2">
                 @forelse ($values as $i => $value)

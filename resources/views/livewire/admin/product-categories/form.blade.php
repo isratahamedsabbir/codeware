@@ -72,14 +72,13 @@
             <x-admin-section-card icon="swatch" title="Category Settings" body-class="px-4 py-4 space-y-4"
                 description="Icon and parent category.">
                 <flux:field>
-                    <flux:label>Parent category</flux:label>
+                    <flux:label>Parent category<x-field-hint text="Leave as top-level, or nest this under an existing category to make it a subcategory." /></flux:label>
                     <flux:select wire:model="parentId">
                         <flux:select.option value="">— None (top-level) —</flux:select.option>
                         @foreach ($this->parentOptions as $option)
                             <flux:select.option value="{{ $option['id'] }}">{{ $option['label'] }}</flux:select.option>
                         @endforeach
                     </flux:select>
-                    <p class="text-xs text-zinc-400 mt-1">Leave as top-level, or nest this under an existing category to make it a subcategory.</p>
                     <flux:error name="parentId" />
                 </flux:field>
 

@@ -9,9 +9,8 @@
     <div class="w-full max-w-2xl bg-white rounded-[5px] shadow-sm p-6 space-y-4">
 
         <flux:field>
-            <flux:label>Name <span class="text-red-500 ml-0.5">*</span></flux:label>
+            <flux:label>Name <span class="text-red-500 ml-0.5">*</span><x-field-hint text="Shown to customers as a shipping option at checkout." /></flux:label>
             <flux:input wire:model="name" placeholder="e.g. Standard Delivery, Inside Dhaka" />
-            <p class="text-xs text-zinc-400 mt-1">Shown to customers as a shipping option at checkout.</p>
             <flux:error name="name" />
         </flux:field>
 

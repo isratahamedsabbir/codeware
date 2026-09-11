@@ -9,9 +9,8 @@
     <div class="w-full bg-white rounded-[5px] shadow-sm p-6 space-y-4">
 
         <flux:field>
-            <flux:label>Code <span class="text-red-500 ml-0.5">*</span></flux:label>
+            <flux:label>Code <span class="text-red-500 ml-0.5">*</span><x-field-hint text="Customers enter this at checkout — always stored uppercase." /></flux:label>
             <flux:input wire:model="code" placeholder="e.g. SAVE20" class="uppercase font-mono" />
-            <p class="text-xs text-zinc-400 mt-1">Customers enter this at checkout — always stored uppercase.</p>
             <flux:error name="code" />
         </flux:field>
 
@@ -47,15 +46,13 @@
         </div>
 
         <flux:field class="max-w-xs">
-            <flux:label>Expires On</flux:label>
+            <flux:label>Expires On<x-field-hint text="Leave blank for a coupon that never expires." /></flux:label>
             <flux:input type="date" wire:model="expires_at" />
-            <p class="text-xs text-zinc-400 mt-1">Leave blank for a coupon that never expires.</p>
             <flux:error name="expires_at" />
         </flux:field>
 
         <flux:field>
-            <flux:label>Applies To</flux:label>
-            <p class="text-xs text-zinc-400 mb-2">Leave every product unchecked for this coupon to apply to any order. Check one or more to restrict it to just those products.</p>
+            <flux:label>Applies To<x-field-hint text="Leave every product unchecked for this coupon to apply to any order. Check one or more to restrict it to just those products." /></flux:label>
 
             <div class="max-h-64 overflow-y-auto chat-scroll rounded-lg border border-zinc-200 divide-y divide-zinc-100">
                 @forelse ($this->products as $product)
