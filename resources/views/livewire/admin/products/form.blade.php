@@ -149,134 +149,99 @@
 
         {{-- Variations --}}
         <x-admin-section-card icon="adjustments-horizontal" title="Variations" icon-color="bg-violet-500/10 text-violet-600"
-            description="Optional attribute-based options (e.g. Size, Color) shown on the product page. Each value can override the base price — leave a value's price blank to keep the base price.">
-            <x-slot:actions>
-                @if ($variations)
-                    <flux:button size="xs" variant="outline" icon="plus" wire:click="addVariationAttribute">Add attribute</flux:button>
-                @endif
-            </x-slot:actions>
+            description="Optional attribute+value options (e.g. Size: Small) shown on the product page. Each can override the base price/stock — leave blank to keep the base value.">
 
-            <div class="space-y-3">
-                @forelse ($variations as $i => $attribute)
-                    <div wire:key="variation-attr-{{ $i }}" class="group/attr rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden transition-shadow hover:shadow-md">
-                        <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-zinc-100 bg-linear-to-r from-violet-50/70 to-transparent">
-                            <div class="flex items-center gap-2.5">
-                                <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-violet-500/10 text-[12px] font-bold text-violet-600">
-                                    {{ $i + 1 }}
-                                </div>
-                                <div class="min-w-0">
-                                    <flux:heading size="sm">{{ $attribute['name'] ?: 'New attribute' }}</flux:heading>
-                                    <p class="text-[11px] text-zinc-400 leading-tight">
-                                        {{ count($attribute['values']) }} {{ Str::plural('value', count($attribute['values'])) }}
-                                    </p>
-                                </div>
+            {{-- Attribute + Value picker --}}
+            <div class="flex flex-wrap items-end gap-2 rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 mb-4">
+                <flux:field class="flex-1 min-w-40">
+                    <flux:label>Attribute</flux:label>
+                    @if ($this->productAttributes->isEmpty())
+                        <p class="text-xs text-zinc-400 mt-1.5">No attributes yet.
+                            <a href="{{ route('admin.product-attributes.create') }}" wire:navigate class="text-indigo-500 hover:underline">
+                                Create one
+                            </a>.
+                        </p>
+                    @else
+                        <flux:select wire:model.live="variationAttribute">
+                            <flux:select.option value="">— Select —</flux:select.option>
+                            @foreach ($this->productAttributes as $attributeOption)
+                                <flux:select.option :value="$attributeOption->name">{{ $attributeOption->name }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                    @endif
+                </flux:field>
+                <flux:field class="flex-1 min-w-40">
+                    <flux:label>Value</flux:label>
+                    @if ($variationAttribute && empty($this->variationValueOptions))
+                        @php $pickedAttribute = $this->productAttributes->firstWhere('name', $variationAttribute); @endphp
+                        <p class="text-xs text-zinc-400 mt-1.5">
+                            No values for "{{ $variationAttribute }}" yet.
+                            @if ($pickedAttribute)
+                                <a href="{{ route('admin.product-attributes.edit', $pickedAttribute->id) }}" wire:navigate class="text-indigo-500 hover:underline">
+                                    Add some
+                                </a>.
+                            @endif
+                        </p>
+                    @else
+                        <flux:select wire:model.live="variationValue" :disabled="! $variationAttribute">
+                            <flux:select.option value="">— Select —</flux:select.option>
+                            @foreach ($this->variationValueOptions as $valueOption)
+                                <flux:select.option :value="$valueOption">{{ $valueOption }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                    @endif
+                </flux:field>
+                <flux:field>
+                    <flux:label class="invisible">Add</flux:label>
+                    <flux:button size="sm" icon="plus" wire:click="addVariation" :disabled="! $variationAttribute || ! $variationValue">Add</flux:button>
+                </flux:field>
+            </div>
+
+            {{-- Cards --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                @forelse ($variations as $i => $row)
+                    <div wire:key="variation-{{ $i }}" class="group/var rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden transition-shadow hover:shadow-md">
+                        <div class="flex items-center justify-between gap-2 px-3.5 py-2.5 border-b border-zinc-100 bg-linear-to-r from-violet-50/70 to-transparent">
+                            <div class="min-w-0 flex items-center gap-1.5 text-sm">
+                                <span class="font-semibold text-zinc-800 truncate">{{ $row['attribute'] }}</span>
+                                <span class="text-zinc-300">·</span>
+                                <span class="font-medium text-violet-600 truncate">{{ $row['value'] }}</span>
                             </div>
-                            <button type="button" wire:click="removeVariationAttribute({{ $i }})"
-                                class="shrink-0 rounded-lg p-1.5 text-zinc-400 opacity-0 group-hover/attr:opacity-100 transition-all hover:bg-rose-50 hover:text-rose-500 cursor-pointer" aria-label="Remove attribute">
-                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <button type="button" wire:click="removeVariation({{ $i }})"
+                                class="shrink-0 rounded-lg p-1 text-zinc-400 opacity-0 group-hover/var:opacity-100 transition-all hover:bg-rose-50 hover:text-rose-500 cursor-pointer" aria-label="Remove">
+                                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
                         </div>
-
-                        <div class="p-4 space-y-4">
-                            <flux:field class="max-w-xs">
-                                <flux:label>Attribute Name <span class="text-red-500 ml-0.5">*</span></flux:label>
-                                @if ($this->productAttributes->isEmpty())
-                                    <p class="text-xs text-zinc-400">No attributes yet.
-                                        <a href="{{ route('admin.product-attributes.create') }}" wire:navigate class="text-indigo-500 hover:underline">
-                                            Create one
-                                        </a>.
-                                    </p>
-                                @else
-                                    <flux:select wire:model.live="variations.{{ $i }}.name">
-                                        <flux:select.option value="">— Select —</flux:select.option>
-                                        @foreach ($this->productAttributes as $attributeOption)
-                                            <flux:select.option :value="$attributeOption->name">{{ $attributeOption->name }}</flux:select.option>
-                                        @endforeach
-                                    </flux:select>
-                                @endif
-                                <flux:error name="variations.{{ $i }}.name" />
+                        <div class="p-3 grid grid-cols-3 gap-2">
+                            <flux:field>
+                                <flux:label class="text-[11px] text-zinc-500">Price</flux:label>
+                                <flux:input type="number" step="0.01" min="0" size="sm"
+                                    wire:model="variations.{{ $i }}.price" placeholder="Base" />
+                                <flux:error name="variations.{{ $i }}.price" />
                             </flux:field>
-
-                            @php
-                                $selectedAttribute = $this->productAttributes->firstWhere('name', $attribute['name']);
-                                $availableValues = $selectedAttribute->values ?? [];
-                            @endphp
-
-                            <div class="rounded-lg bg-zinc-50/70 border border-zinc-100 p-3 space-y-2">
-                                @if (! $attribute['name'])
-                                    <p class="text-xs text-zinc-400 px-1 py-1">Select an attribute name first.</p>
-                                @elseif (empty($availableValues))
-                                    <p class="text-xs text-zinc-400 px-1 py-1">
-                                        No values defined for "{{ $attribute['name'] }}" yet.
-                                        @if ($selectedAttribute)
-                                            <a href="{{ route('admin.product-attributes.edit', $selectedAttribute->id) }}" wire:navigate class="text-indigo-500 hover:underline">
-                                                Add some
-                                            </a>.
-                                        @endif
-                                    </p>
-                                @else
-                                    @forelse ($attribute['values'] as $j => $value)
-                                    <div wire:key="variation-attr-{{ $i }}-value-{{ $j }}"
-                                        class="group/val flex flex-wrap items-end gap-2 rounded-lg bg-white border border-zinc-200 p-2.5">
-                                        <flux:field class="flex-1 min-w-35">
-                                            <flux:label class="text-[11px] text-zinc-500">Value</flux:label>
-                                            <flux:select wire:model="variations.{{ $i }}.values.{{ $j }}.name" size="sm">
-                                                <flux:select.option value="">— Select —</flux:select.option>
-                                                @foreach ($availableValues as $valueOption)
-                                                    <flux:select.option :value="$valueOption">{{ $valueOption }}</flux:select.option>
-                                                @endforeach
-                                            </flux:select>
-                                        </flux:field>
-                                        <flux:field class="w-28">
-                                            <flux:label class="text-[11px] text-zinc-500">Price</flux:label>
-                                            <flux:input type="number" step="0.01" min="0" size="sm"
-                                                wire:model="variations.{{ $i }}.values.{{ $j }}.price" placeholder="Base price" />
-                                            <flux:error name="variations.{{ $i }}.values.{{ $j }}.price" />
-                                        </flux:field>
-                                        <flux:field class="w-28">
-                                            <flux:label class="text-[11px] text-zinc-500">Discount</flux:label>
-                                            <flux:input type="number" step="0.01" min="0" size="sm"
-                                                wire:model="variations.{{ $i }}.values.{{ $j }}.discount_price" placeholder="No discount" />
-                                            <flux:error name="variations.{{ $i }}.values.{{ $j }}.discount_price" />
-                                        </flux:field>
-                                        <flux:field class="w-24">
-                                            <flux:label class="text-[11px] text-zinc-500">Qty</flux:label>
-                                            <flux:input type="number" step="1" min="0" size="sm"
-                                                wire:model="variations.{{ $i }}.values.{{ $j }}.quantity" placeholder="Unlimited" />
-                                            <flux:error name="variations.{{ $i }}.values.{{ $j }}.quantity" />
-                                        </flux:field>
-                                        <button type="button" wire:click="removeVariationValue({{ $i }}, {{ $j }})"
-                                            class="shrink-0 mb-0.5 rounded-lg p-2 text-zinc-300 opacity-0 group-hover/val:opacity-100 transition-all hover:bg-rose-50 hover:text-rose-500 cursor-pointer" aria-label="Remove value">
-                                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                @empty
-                                    <p class="text-xs text-zinc-400 px-1 py-1">No values selected yet.</p>
-                                @endforelse
-
-                                    <button type="button" wire:click="addVariationValue({{ $i }})"
-                                        class="flex items-center gap-1.5 text-xs font-medium text-violet-600 hover:text-violet-700 transition-colors cursor-pointer">
-                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                                        </svg>
-                                        Add value
-                                    </button>
-                                @endif
-                            </div>
+                            <flux:field>
+                                <flux:label class="text-[11px] text-zinc-500">Discount</flux:label>
+                                <flux:input type="number" step="0.01" min="0" size="sm"
+                                    wire:model="variations.{{ $i }}.discount_price" placeholder="None" />
+                                <flux:error name="variations.{{ $i }}.discount_price" />
+                            </flux:field>
+                            <flux:field>
+                                <flux:label class="text-[11px] text-zinc-500">Qty</flux:label>
+                                <flux:input type="number" step="1" min="0" size="sm"
+                                    wire:model="variations.{{ $i }}.quantity" placeholder="∞" />
+                                <flux:error name="variations.{{ $i }}.quantity" />
+                            </flux:field>
                         </div>
                     </div>
                 @empty
-                    <div class="rounded-xl border-2 border-dashed border-zinc-200 py-10 px-6 text-center">
+                    <div class="sm:col-span-2 rounded-xl border-2 border-dashed border-zinc-200 py-10 px-6 text-center">
                         <div class="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-violet-500/10 text-violet-500">
                             <flux:icon.adjustments-horizontal class="size-5" />
                         </div>
                         <p class="text-sm font-medium text-zinc-600">No variations yet</p>
-                        <p class="mt-1 text-xs text-zinc-400 max-w-sm mx-auto">Add an attribute like "Size" or "Color" if this product needs option-based pricing.</p>
-                        <flux:button size="sm" variant="primary" icon="plus" class="mt-4" wire:click="addVariationAttribute">Add attribute</flux:button>
+                        <p class="mt-1 text-xs text-zinc-400 max-w-sm mx-auto">Pick an attribute and a value above, then click Add if this product needs option-based pricing.</p>
                     </div>
                 @endforelse
             </div>

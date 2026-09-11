@@ -75,17 +75,28 @@ class Form extends Component
     public string $galleryPickerId = '';
 
     /**
-     * Attribute groups shown as option pickers on the product page (e.g. "Size"
-     * with values Small/Medium/Large), each value optionally overriding the
-     * product's price. No per-combination matrix or stock tracking — one
-     * attribute's values are independent choices, not crossed with another
-     * attribute's. Not translatable (unlike name/description) — just plain
-     * text. Shape: [['name' => 'Size', 'values' => [['name' => 'Small',
-     * 'price' => '500.00'], ...]], ...].
+     * Flat list of attribute+value option cards shown on the product page (e.g.
+     * "Size: Small"), each optionally overriding the product's price/stock. No
+     * combinatorial matrix — picking "Size: Small" and "Color: Red" doesn't
+     * imply a "Small Red" combination, they're independent option cards. Built
+     * one at a time via the Attribute+Value picker (addVariation()) rather
+     * than typed, since both attribute and value come from ProductAttribute's
+     * managed lists. Shape: [['attribute' => 'Size', 'value' => 'Small',
+     * 'price' => '500.00', 'discount_price' => null, 'quantity' => '10'], ...].
      *
-     * @var array<int, array{name: string, values: array<int, array{name: string, price: string}>}>
+     * @var array<int, array{attribute: string, value: string, price: string, discount_price: string, quantity: string}>
      */
     public array $variations = [];
+
+    /**
+     * The Attribute+Value picker above the variation cards — cleared back to
+     * '' after each addVariation() so adding several values in a row just
+     * means re-picking Value (Attribute usually stays put via wire:model.live,
+     * see updatedVariationAttribute()).
+     */
+    public string $variationAttribute = '';
+
+    public string $variationValue = '';
 
     public function mount(?int $id = null): void
     {
@@ -106,17 +117,12 @@ class Form extends Component
 
             $this->featured_image = $product->featured_image ?? '';
             $this->gallery_ids = $product->gallery->pluck('id')->all();
-            // Normalizes rows saved before the discount_price column existed on a
-            // value, so their input renders empty instead of Livewire choking on
-            // a wire:model path the array doesn't have yet.
-            $this->variations = collect($product->variations ?? [])->map(fn ($attribute) => [
-                'name' => $attribute['name'],
-                'values' => collect($attribute['values'] ?? [])->map(fn ($value) => [
-                    'name' => $value['name'],
-                    'price' => $value['price'] ?? '',
-                    'discount_price' => $value['discount_price'] ?? '',
-                    'quantity' => $value['quantity'] ?? '',
-                ])->all(),
+            $this->variations = collect($product->variations ?? [])->map(fn ($row) => [
+                'attribute' => $row['attribute'] ?? '',
+                'value' => $row['value'] ?? '',
+                'price' => $row['price'] ?? '',
+                'discount_price' => $row['discount_price'] ?? '',
+                'quantity' => $row['quantity'] ?? '',
             ])->all();
 
             $this->pageId = $product->page?->id;
@@ -170,60 +176,77 @@ class Form extends Component
         $this->gallery_ids = array_values(array_intersect($order, $this->gallery_ids));
     }
 
-    public function addVariationAttribute(): void
+    /**
+     * The Value picker's options — every value defined on the currently
+     * selected attribute (see App\Livewire\Admin\ProductAttributes\Form),
+     * empty while no attribute is picked yet or it has none defined.
+     *
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function variationValueOptions(): array
     {
-        $this->variations[] = ['name' => '', 'values' => []];
+        return $this->productAttributes->firstWhere('name', $this->variationAttribute)?->values ?? [];
     }
 
-    public function removeVariationAttribute(int $index): void
+    /**
+     * Livewire's magic updated{Property}() hook — clears the stale Value
+     * selection the moment the Attribute changes, since the old value almost
+     * certainly doesn't belong to the newly picked attribute's list.
+     */
+    public function updatedVariationAttribute(): void
+    {
+        $this->variationValue = '';
+    }
+
+    public function addVariation(): void
+    {
+        if ($this->variationAttribute === '' || $this->variationValue === '') {
+            return;
+        }
+
+        $alreadyAdded = collect($this->variations)->contains(
+            fn ($row) => $row['attribute'] === $this->variationAttribute && $row['value'] === $this->variationValue
+        );
+
+        if (! $alreadyAdded) {
+            $this->variations[] = [
+                'attribute' => $this->variationAttribute,
+                'value' => $this->variationValue,
+                'price' => '',
+                'discount_price' => '',
+                'quantity' => '',
+            ];
+        }
+
+        // Attribute stays picked — adding several values off the same
+        // attribute in a row is the common case.
+        $this->variationValue = '';
+    }
+
+    public function removeVariation(int $index): void
     {
         unset($this->variations[$index]);
         $this->variations = array_values($this->variations);
     }
 
-    public function addVariationValue(int $attributeIndex): void
-    {
-        if (! isset($this->variations[$attributeIndex])) {
-            return;
-        }
-
-        $this->variations[$attributeIndex]['values'][] = ['name' => '', 'price' => '', 'discount_price' => '', 'quantity' => ''];
-    }
-
-    public function removeVariationValue(int $attributeIndex, int $valueIndex): void
-    {
-        if (! isset($this->variations[$attributeIndex]['values'][$valueIndex])) {
-            return;
-        }
-
-        unset($this->variations[$attributeIndex]['values'][$valueIndex]);
-        $this->variations[$attributeIndex]['values'] = array_values($this->variations[$attributeIndex]['values']);
-    }
-
     /**
-     * Drops attribute/value rows left with no name — mirrors how Settings'
-     * freeform Constant rows are filtered on save (see
-     * Admin\Settings\Index::save()), so an admin doesn't have to manually
-     * clean up an empty row they added and decided not to fill in.
+     * Drops any row left with no attribute/value picked — shouldn't normally
+     * happen since addVariation() already guards against it, but keeps save()
+     * safe regardless.
      *
-     * @return array<int, array{name: string, values: array<int, array{name: string, price: string, discount_price: ?string, quantity: ?string}>}>
+     * @return array<int, array{attribute: string, value: string, price: ?string, discount_price: ?string, quantity: ?string}>
      */
     private function cleanedVariations(): array
     {
         return collect($this->variations)
-            ->filter(fn ($attribute) => filled($attribute['name'] ?? null))
-            ->map(fn ($attribute) => [
-                'name' => $attribute['name'],
-                'values' => collect($attribute['values'] ?? [])
-                    ->filter(fn ($value) => filled($value['name'] ?? null))
-                    ->map(fn ($value) => [
-                        'name' => $value['name'],
-                        'price' => filled($value['price'] ?? null) ? $value['price'] : null,
-                        'discount_price' => filled($value['discount_price'] ?? null) ? $value['discount_price'] : null,
-                        'quantity' => filled($value['quantity'] ?? null) ? $value['quantity'] : null,
-                    ])
-                    ->values()
-                    ->all(),
+            ->filter(fn ($row) => filled($row['attribute'] ?? null) && filled($row['value'] ?? null))
+            ->map(fn ($row) => [
+                'attribute' => $row['attribute'],
+                'value' => $row['value'],
+                'price' => filled($row['price'] ?? null) ? $row['price'] : null,
+                'discount_price' => filled($row['discount_price'] ?? null) ? $row['discount_price'] : null,
+                'quantity' => filled($row['quantity'] ?? null) ? $row['quantity'] : null,
             ])
             ->values()
             ->all();
@@ -314,9 +337,9 @@ class Form extends Component
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
         ];
-        $rules['variations.*.values.*.price'] = 'nullable|numeric|min:0';
-        $rules['variations.*.values.*.discount_price'] = 'nullable|numeric|min:0|lt:variations.*.values.*.price';
-        $rules['variations.*.values.*.quantity'] = 'nullable|integer|min:0';
+        $rules['variations.*.price'] = 'nullable|numeric|min:0';
+        $rules['variations.*.discount_price'] = 'nullable|numeric|min:0|lt:variations.*.price';
+        $rules['variations.*.quantity'] = 'nullable|integer|min:0';
 
         $this->validate($rules);
 
@@ -352,9 +375,9 @@ class Form extends Component
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
         ];
-        $rules['variations.*.values.*.price'] = 'nullable|numeric|min:0';
-        $rules['variations.*.values.*.discount_price'] = 'nullable|numeric|min:0|lt:variations.*.values.*.price';
-        $rules['variations.*.values.*.quantity'] = 'nullable|integer|min:0';
+        $rules['variations.*.price'] = 'nullable|numeric|min:0';
+        $rules['variations.*.discount_price'] = 'nullable|numeric|min:0|lt:variations.*.price';
+        $rules['variations.*.quantity'] = 'nullable|integer|min:0';
 
         $this->validate($rules);
 

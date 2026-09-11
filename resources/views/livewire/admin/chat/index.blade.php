@@ -1,6 +1,13 @@
 <div class="flex flex-col h-full">
-    <div class="mb-3 shrink-0">
-        @include('partials.admin-breadcrumbs')
+    <div class="mb-3 shrink-0 flex items-center justify-between gap-4 flex-wrap">
+        <div>
+            @include('partials.admin-breadcrumbs')
+        </div>
+        @can('access-admin-system')
+            <flux:button size="sm" variant="outline" icon="bolt" wire:click="openReverbSettings">
+                Reverb Settings
+            </flux:button>
+        @endcan
     </div>
 
     <div
@@ -177,4 +184,75 @@
         @endif
     </div>
     </div>
+
+    @can('access-admin-system')
+        <flux:modal name="reverb-settings" class="md:w-120"
+            x-on:open-modal.window="if ($event.detail.name === 'reverb-settings') $flux.modal('reverb-settings').show()"
+            x-on:close-modal.window="if ($event.detail.name === 'reverb-settings') $flux.modal('reverb-settings').close()">
+            <div class="space-y-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+                        <flux:icon.bolt class="w-5 h-5 text-amber-500" />
+                    </div>
+                    <flux:heading>{{ __('Reverb Settings') }}</flux:heading>
+                </div>
+                <flux:text class="text-sm text-zinc-500">
+                    {{ __('Powers real-time chat updates. These write straight to the live .env file — a wrong value can break live updates until fixed.') }}
+                </flux:text>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <flux:field>
+                        <flux:label>App ID</flux:label>
+                        <flux:input wire:model="reverbSettings.REVERB_APP_ID" />
+                        <flux:error name="reverbSettings.REVERB_APP_ID" />
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>App Key</flux:label>
+                        <flux:input wire:model="reverbSettings.REVERB_APP_KEY" />
+                        <flux:error name="reverbSettings.REVERB_APP_KEY" />
+                    </flux:field>
+                </div>
+
+                <flux:field>
+                    <flux:label>App Secret</flux:label>
+                    <flux:input type="password" wire:model="reverbSettings.REVERB_APP_SECRET" />
+                    <flux:error name="reverbSettings.REVERB_APP_SECRET" />
+                </flux:field>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <flux:field class="sm:col-span-2">
+                        <flux:label>Host</flux:label>
+                        <flux:input wire:model="reverbSettings.REVERB_HOST" />
+                        <flux:error name="reverbSettings.REVERB_HOST" />
+                    </flux:field>
+                    <flux:field>
+                        <flux:label>Port</flux:label>
+                        <flux:input type="number" wire:model="reverbSettings.REVERB_PORT" />
+                        <flux:error name="reverbSettings.REVERB_PORT" />
+                    </flux:field>
+                </div>
+
+                <flux:field class="max-w-35">
+                    <flux:label>Scheme</flux:label>
+                    <select wire:model="reverbSettings.REVERB_SCHEME"
+                        class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                        <option value="https">https</option>
+                        <option value="http">http</option>
+                    </select>
+                    <flux:error name="reverbSettings.REVERB_SCHEME" />
+                </flux:field>
+
+                <div class="flex gap-2 pt-1">
+                    <button wire:click="saveReverbSettings" wire:loading.attr="disabled" wire:target="saveReverbSettings"
+                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-white bg-amber-600 hover:bg-amber-700 transition-colors border-none cursor-pointer disabled:opacity-60">
+                        <span wire:loading.remove wire:target="saveReverbSettings">{{ __('Save') }}</span>
+                        <span wire:loading wire:target="saveReverbSettings">{{ __('Saving...') }}</span>
+                    </button>
+                    <flux:modal.close>
+                        <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
+                    </flux:modal.close>
+                </div>
+            </div>
+        </flux:modal>
+    @endcan
 </div>

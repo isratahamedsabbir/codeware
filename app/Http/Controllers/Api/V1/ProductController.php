@@ -102,28 +102,33 @@ class ProductController extends Controller
                 'alt' => $m->alt_text ?? '',
                 'sort_order' => $m->pivot->sort_order,
             ])->values();
-            $data['variations'] = collect($product->variations ?? [])->map(fn ($attribute) => [
-                'name' => $attribute['name'] ?? '',
-                'values' => collect($attribute['values'] ?? [])->map(function ($value) {
-                    $price = ($value['price'] ?? null) !== null ? (float) $value['price'] : null;
-                    $discountPrice = ($value['discount_price'] ?? null) !== null ? (float) $value['discount_price'] : null;
-                    $quantity = ($value['quantity'] ?? null) !== null ? (int) $value['quantity'] : null;
+            // Stored flat (one row per attribute+value, see Admin\Products\Form)
+            // but grouped here by attribute for the frontend, same shape as before.
+            $data['variations'] = collect($product->variations ?? [])
+                ->groupBy('attribute')
+                ->map(fn ($rows, $attributeName) => [
+                    'name' => $attributeName,
+                    'values' => $rows->map(function ($row) {
+                        $price = ($row['price'] ?? null) !== null ? (float) $row['price'] : null;
+                        $discountPrice = ($row['discount_price'] ?? null) !== null ? (float) $row['discount_price'] : null;
+                        $quantity = ($row['quantity'] ?? null) !== null ? (int) $row['quantity'] : null;
 
-                    return [
-                        'name' => $value['name'] ?? '',
-                        'price' => $price,
-                        // Only counts if it's actually cheaper than this value's own
-                        // price — same guard as Product::hasDiscount().
-                        'discount_price' => $discountPrice !== null && $price !== null && $discountPrice < $price
-                            ? $discountPrice
-                            : null,
-                        'quantity' => $quantity,
-                        // Null quantity means stock isn't tracked for this value —
-                        // same convention as Product::inStock().
-                        'in_stock' => $quantity === null || $quantity > 0,
-                    ];
-                })->values(),
-            ])->values();
+                        return [
+                            'name' => $row['value'] ?? '',
+                            'price' => $price,
+                            // Only counts if it's actually cheaper than this value's own
+                            // price — same guard as Product::hasDiscount().
+                            'discount_price' => $discountPrice !== null && $price !== null && $discountPrice < $price
+                                ? $discountPrice
+                                : null,
+                            'quantity' => $quantity,
+                            // Null quantity means stock isn't tracked for this value —
+                            // same convention as Product::inStock().
+                            'in_stock' => $quantity === null || $quantity > 0,
+                        ];
+                    })->values(),
+                ])
+                ->values();
             $data['related_products'] = $related->map(fn ($p) => $this->formatProduct($p, $locale))->values();
             $data['cms'] = $this->formatCms($product->page);
         }

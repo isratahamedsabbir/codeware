@@ -5,7 +5,11 @@ namespace App\Livewire\Admin\Chat;
 use App\Events\MessageSent;
 use App\Models\Conversation;
 use App\Models\User;
+use App\Support\AdminActivity;
+use App\Support\EnvFile;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -18,6 +22,17 @@ class Index extends Component
     public string $userSearch = '';
 
     public string $messageBody = '';
+
+    /**
+     * The Reverb (WebSocket broadcasting) credentials this chat's real-time
+     * updates depend on — edited from a modal on this page since a broken
+     * value here is exactly what breaks live chat. Only the client-facing
+     * REVERB_* keys, not REVERB_SERVER_*: those configure the reverb:start
+     * process itself, not something this admin-facing form should touch.
+     *
+     * @var array<string, string>
+     */
+    public array $reverbSettings = [];
 
     public function mount(?User $recipient = null): void
     {
@@ -147,6 +162,55 @@ class Index extends Component
             ->where('sender_id', '!=', auth()->id())
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
+    }
+
+    public function openReverbSettings(): void
+    {
+        abort_unless(Gate::allows('access-admin-system'), 403);
+
+        $current = EnvFile::all();
+
+        $this->reverbSettings = [
+            'REVERB_APP_ID' => $current['REVERB_APP_ID'] ?? '',
+            'REVERB_APP_KEY' => $current['REVERB_APP_KEY'] ?? '',
+            'REVERB_APP_SECRET' => $current['REVERB_APP_SECRET'] ?? '',
+            'REVERB_HOST' => $current['REVERB_HOST'] ?? '',
+            'REVERB_PORT' => $current['REVERB_PORT'] ?? '',
+            'REVERB_SCHEME' => $current['REVERB_SCHEME'] ?? 'https',
+        ];
+
+        $this->dispatch('open-modal', name: 'reverb-settings');
+    }
+
+    public function saveReverbSettings(): void
+    {
+        abort_unless(Gate::allows('access-admin-system'), 403);
+
+        $this->validate([
+            'reverbSettings.REVERB_APP_ID' => 'required|string|max:255',
+            'reverbSettings.REVERB_APP_KEY' => 'required|string|max:255',
+            'reverbSettings.REVERB_APP_SECRET' => 'required|string|max:255',
+            'reverbSettings.REVERB_HOST' => 'required|string|max:255',
+            'reverbSettings.REVERB_PORT' => 'required|integer|min:1|max:65535',
+            'reverbSettings.REVERB_SCHEME' => 'required|in:http,https',
+        ]);
+
+        try {
+            // VITE_REVERB_* already reference these via ${REVERB_...} interpolation
+            // in .env, so writing just the REVERB_* keys is enough to update both.
+            EnvFile::set($this->reverbSettings);
+        } catch (\RuntimeException $e) {
+            $this->dispatch('notify', message: 'Could not save Reverb settings: '.$e->getMessage());
+
+            return;
+        }
+
+        Artisan::call('config:clear');
+
+        AdminActivity::log('updated', 'Reverb broadcasting settings updated');
+
+        $this->dispatch('close-modal', name: 'reverb-settings');
+        $this->dispatch('notify', message: 'Reverb settings saved. Restart the Reverb server (reverb:start) and rebuild frontend assets (npm run build) for the change to fully take effect.');
     }
 
     public function render()
