@@ -59,12 +59,12 @@
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Slug</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Icon</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
-                        <th class="px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
+                        <th class="sticky right-0 z-10 bg-zinc-50 border-l border-zinc-100 px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody x-ref="sortableRows" class="divide-y divide-gray-200">
                     @forelse ($categories as $category)
-                        <tr class="hover:bg-indigo-50/30 transition-colors" data-category-id="{{ $category->id }}" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
+                        <tr class="group hover:bg-indigo-50/30 transition-colors" data-category-id="{{ $category->id }}" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
 
                             {{-- Expand toggle (small screens only, where columns are hidden) --}}
                             <td class="px-2 py-2 text-center">
@@ -138,7 +138,7 @@
                             </td>
 
                             {{-- Actions --}}
-                            <td class="px-4 py-2">
+                            <td class="sticky right-0 z-10 bg-white group-hover:bg-indigo-50/30 border-l border-zinc-100 px-4 py-2">
                                 <x-admin-row-actions :actions="[
                                     ['href' => route('admin.product-categories.edit', $category->id), 'icon' => 'pencil', 'label' => 'Edit', 'color' => 'primary'],
                                     $category->page
