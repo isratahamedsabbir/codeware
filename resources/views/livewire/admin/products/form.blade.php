@@ -208,7 +208,7 @@
                                 <span class="font-medium text-violet-600 truncate">{{ $row['value'] }}</span>
                             </div>
                             <button type="button" wire:click="removeVariation({{ $i }})"
-                                class="shrink-0 rounded-lg p-1 text-zinc-400 opacity-0 group-hover/var:opacity-100 transition-all hover:bg-rose-50 hover:text-rose-500 cursor-pointer" aria-label="Remove">
+                                class="shrink-0 rounded-lg p-1 text-zinc-400 transition-colors hover:bg-rose-50 hover:text-rose-500 cursor-pointer" aria-label="Remove">
                                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M6 18L18 6M6 6l12 12" />
                                 </svg>
