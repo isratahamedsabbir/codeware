@@ -154,7 +154,8 @@
                                 @if ($product->quantity > 0)
                                     <span class="text-sm text-zinc-700">{{ $product->quantity }}</span>
                                 @else
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-600 border border-rose-200">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-600 border border-rose-200 whitespace-nowrap">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
                                         Out of stock
                                     </span>
                                 @endif

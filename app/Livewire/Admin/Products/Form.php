@@ -348,7 +348,7 @@ class Form extends Component
         ];
         $rules['variations.*.price'] = 'nullable|numeric|min:0';
         $rules['variations.*.discount_price'] = 'nullable|numeric|min:0|lt:variations.*.price';
-        $rules['variations.*.quantity'] = 'nullable|integer|min:0';
+        $rules['variations.*.quantity'] = 'nullable|integer|min:0|lte:quantity';
         $rules['category_ids'] = 'array';
         $rules['category_ids.*'] = 'integer|exists:categories,id,type,product';
 
@@ -388,7 +388,7 @@ class Form extends Component
         ];
         $rules['variations.*.price'] = 'nullable|numeric|min:0';
         $rules['variations.*.discount_price'] = 'nullable|numeric|min:0|lt:variations.*.price';
-        $rules['variations.*.quantity'] = 'nullable|integer|min:0';
+        $rules['variations.*.quantity'] = 'nullable|integer|min:0|lte:quantity';
         $rules['category_ids'] = 'array';
         $rules['category_ids.*'] = 'integer|exists:categories,id,type,product';
 
