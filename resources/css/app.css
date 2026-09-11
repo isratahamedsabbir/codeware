@@ -1034,3 +1034,9 @@ html.dark .jodit-status-bar {
     background: var(--color-surface-bg) !important;
     color: var(--color-text-strong);
 }
+
+/* Header calculator widget — key grid buttons */
+
+.admin-calc-key {
+    @apply flex h-full min-h-10 items-center justify-center rounded-lg bg-zinc-100 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-200 cursor-pointer border-none dark:bg-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-600;
+}

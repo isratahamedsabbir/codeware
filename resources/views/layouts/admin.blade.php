@@ -239,7 +239,14 @@
 
                 <x-admin-quick-menu />
 
-                <livewire:admin.locale-switcher /> 
+                <livewire:admin.locale-switcher />
+
+                <button type="button" x-data
+                    @click="$dispatch('toggle-calculator')"
+                    title="{{ __('Calculator') }}" aria-label="{{ __('Calculator') }}"
+                    class="inline-flex size-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100">
+                    <flux:icon.calculator class="size-5" />
+                </button>
 
                 <button type="button" x-data="{ dark: document.documentElement.classList.contains('dark') }"
                     @click="dark = !dark; document.documentElement.classList.toggle('dark', dark); localStorage.setItem('admin-theme', dark ? 'dark' : 'light')"
@@ -304,6 +311,10 @@
     </flux:main>
 
     <div x-data x-on:notify.window="toastr.success($event.detail.message)"></div>
+
+    @persist('admin-calculator')
+        @include('partials.admin-calculator')
+    @endpersist
 
     @include('partials.admin-floating-button')
 
