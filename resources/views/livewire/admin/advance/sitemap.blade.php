@@ -5,11 +5,8 @@
         </div>
     @endif
 
-    <flux:text class="text-zinc-500">
-        Generates <code>sitemap.xml</code> from every published page, product, category and post — ready for search engines to crawl.
-    </flux:text>
-
-    <x-admin-section-card icon="map" title="Sitemap" icon-color="bg-sky-500/10 text-sky-600">
+    <x-admin-section-card icon="map" title="Sitemap" icon-color="bg-sky-500/10 text-sky-600"
+        description="Generates sitemap.xml from every published page, product, category and post — ready for search engines to crawl.">
         <div class="grid grid-cols-2 gap-4 text-sm">
             <div>
                 <div class="text-zinc-400 text-xs uppercase tracking-wide mb-1">URLs</div>

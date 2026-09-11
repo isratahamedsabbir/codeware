@@ -65,48 +65,35 @@
                     </flux:field>
 
                 {{-- Pricing & Stock (not translatable — shown regardless of locale tab) --}}
-                <div class="mt-5 rounded-xl border border-zinc-200 overflow-hidden" wire:key="pricing-stock-panel">
-                    <div class="flex items-center gap-2.5 px-4 py-3 bg-emerald-50/60 border-b border-zinc-200">
-                        <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
-                            <flux:icon.banknotes class="size-4" />
-                        </div>
-                        <flux:heading size="sm">Pricing & Stock</flux:heading>
+                <div class="border-t border-zinc-100 pt-5 mt-5" wire:key="pricing-stock-panel">
+                    <flux:heading size="sm" class="mb-3">Pricing & Stock</flux:heading>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <flux:field>
+                            <flux:label>Price</flux:label>
+                            <flux:input type="number" wire:model.live.debounce.400ms="price" min="0" step="0.01" />
+                            <flux:error name="price" />
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>Discount Price</flux:label>
+                            <flux:input type="number" wire:model.live.debounce.400ms="discount_price" min="0" step="0.01" placeholder="No discount" />
+                            <flux:error name="discount_price" />
+                        </flux:field>
                     </div>
+                    @if ($discount_price !== '' && is_numeric($price) && is_numeric($discount_price) && (float) $discount_price < (float) $price && (float) $price > 0)
+                        <p class="text-xs text-emerald-600 font-medium -mt-1">
+                            {{ round((1 - ((float) $discount_price / (float) $price)) * 100) }}% off — shown as a strikethrough sale price.
+                        </p>
+                    @else
+                        <p class="text-xs text-zinc-400 -mt-1">Leave Discount Price blank to sell at the regular price.</p>
+                    @endif
 
-                    <div class="p-4 space-y-4">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <flux:field>
-                                <flux:label>Price</flux:label>
-                                <flux:input type="number" wire:model.live.debounce.400ms="price" min="0" step="0.01" />
-                                <flux:error name="price" />
-                            </flux:field>
-                            <flux:field>
-                                <flux:label>Discount Price</flux:label>
-                                <flux:input type="number" wire:model.live.debounce.400ms="discount_price" min="0" step="0.01" placeholder="No discount" />
-                                <flux:error name="discount_price" />
-                            </flux:field>
-                        </div>
-                        @if ($discount_price !== '' && is_numeric($price) && is_numeric($discount_price) && (float) $discount_price < (float) $price && (float) $price > 0)
-                            <p class="text-xs text-emerald-600 font-medium -mt-1">
-                                {{ round((1 - ((float) $discount_price / (float) $price)) * 100) }}% off — shown as a strikethrough sale price.
-                            </p>
-                        @else
-                            <p class="text-xs text-zinc-400 -mt-1">Leave Discount Price blank to sell at the regular price.</p>
-                        @endif
-
-                        <div class="border-t border-zinc-100 pt-4">
-                            <div class="flex flex-wrap items-end gap-3">
-                                <flux:field class="max-w-45">
-                                    <flux:label>Quantity<x-field-hint text="Leave blank if stock isn't tracked for this product." /></flux:label>
-                                    <flux:input type="number" wire:model.live.debounce.400ms="quantity" min="0" step="1" placeholder="Unlimited" />
-                                    <flux:error name="quantity" />
-                                </flux:field>
-                                <div class="mb-1">
-                                    @if ($quantity === '')
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500">
-                                            Unlimited stock
-                                        </span>
-                                    @elseif ((int) $quantity > 0)
+                    <div class="border-t border-zinc-100 pt-4 mt-4">
+                        <flux:field>
+                            <flux:label>
+                                Quantity<x-field-hint text="Leave blank to mark this product out of stock." />
+                                <x-slot:trailing>
+                                    @if ($quantity !== '' && (int) $quantity > 0)
                                         <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-200">
                                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                             {{ (int) $quantity }} in stock
@@ -117,17 +104,11 @@
                                             Out of stock
                                         </span>
                                     @endif
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="border-t border-zinc-100 pt-4 flex items-center justify-between gap-3">
-                            <div class="flex items-center">
-                                <p class="text-sm font-medium text-zinc-700">Charge Shipping</p>
-                                <x-field-hint text="Turn off for digital products or items that always ship free." />
-                            </div>
-                            <flux:switch wire:model="charge_shipping" />
-                        </div>
+                                </x-slot:trailing>
+                            </flux:label>
+                            <flux:input type="number" wire:model.live.debounce.400ms="quantity" min="0" step="1" placeholder="0" />
+                            <flux:error name="quantity" />
+                        </flux:field>
                     </div>
                 </div>
 

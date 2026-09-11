@@ -61,6 +61,7 @@
                     <col style="width:9%">
                     <col style="width:9%">
                     <col class="hidden lg:table-column" style="width:8%">
+                    <col class="hidden lg:table-column" style="width:8%">
                     <col style="width:14%">
                 </colgroup>
                 <thead>
@@ -75,6 +76,7 @@
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Stock</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Featured</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Shipping</th>
                         <th class="sticky right-0 z-10 bg-zinc-50 border-l border-zinc-100 px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
@@ -149,9 +151,7 @@
 
                             {{-- Stock --}}
                             <td class="px-4 py-2">
-                                @if ($product->quantity === null)
-                                    <span class="text-xs text-zinc-400">Unlimited</span>
-                                @elseif ($product->quantity > 0)
+                                @if ($product->quantity > 0)
                                     <span class="text-sm text-zinc-700">{{ $product->quantity }}</span>
                                 @else
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-600 border border-rose-200">
@@ -202,6 +202,25 @@
                                 @endif
                             </td>
 
+                            {{-- Shipping --}}
+                            <td class="hidden lg:table-cell px-4 py-2">
+                                @if ($product->charge_shipping)
+                                    <button type="button" wire:click="toggleChargeShipping({{ $product->id }})"
+                                        aria-label="Turn off shipping charge"
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-sky-50 text-sky-700 border border-sky-200 cursor-pointer hover:bg-sky-100">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
+                                        Charged
+                                    </button>
+                                @else
+                                    <button type="button" wire:click="toggleChargeShipping({{ $product->id }})"
+                                        aria-label="Turn on shipping charge"
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-50 text-zinc-400 border border-zinc-200 cursor-pointer hover:bg-zinc-100">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-zinc-300"></span>
+                                        Free
+                                    </button>
+                                @endif
+                            </td>
+
                             {{-- Actions --}}
                             <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-50/30 border-l border-zinc-100 px-4 py-2">
                                 <x-admin-row-actions :actions="[
@@ -216,7 +235,7 @@
 
                         </tr>
                         @if ($viewingId === $product->id)
-                            <x-admin-row-details colspan="11">
+                            <x-admin-row-details colspan="12">
                                 <x-admin-row-details.item label="Slug">
                                     @if ($product->slug)
                                         <x-copy-text :text="$product->slug" class="font-mono">{{ $product->slug }}</x-copy-text>
@@ -226,11 +245,12 @@
                                 </x-admin-row-details.item>
                                 <x-admin-row-details.item label="Category">{{ $product->categories->isNotEmpty() ? $product->categories->map(fn ($c) => $c->getTranslation('name', 'en', false))->implode(', ') : '—' }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Featured">{{ $product->is_featured ? 'Yes' : 'No' }}</x-admin-row-details.item>
+                                <x-admin-row-details.item label="Shipping">{{ $product->charge_shipping ? 'Charged' : 'Free' }}</x-admin-row-details.item>
                             </x-admin-row-details>
                         @endif
                     @empty
                         <tr>
-                            <td colspan="11" class="px-6 py-16 text-center">
+                            <td colspan="12" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />

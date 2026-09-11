@@ -157,11 +157,8 @@
         {{-- Currency tab --}}
         <div x-show="tab === 'currency'">
             <div class="max-w-[1600px] space-y-5">
-                <flux:text class="text-zinc-500">
-                    Set the currency used across the site for product pricing and payments.
-                </flux:text>
-
-                <x-admin-section-card header-border="border-zinc-100" icon="banknotes" title="Currency" class="max-w-2xl">
+                <x-admin-section-card header-border="border-zinc-100" icon="banknotes" title="Currency" class="max-w-2xl"
+                    description="Set the currency used across the site for product pricing and payments.">
                     <flux:field>
                         <flux:label>Currency Code</flux:label>
                         <flux:input wire:model="settings.currency_code" placeholder="BDT, USD, EUR" class="uppercase" />

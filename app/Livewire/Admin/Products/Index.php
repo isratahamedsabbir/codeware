@@ -85,6 +85,15 @@ class Index extends Component
         $this->dispatch('notify', message: 'Product featured status updated');
     }
 
+    public function toggleChargeShipping(int $id): void
+    {
+        $product = Product::findOrFail($id);
+        $product->update(['charge_shipping' => ! $product->charge_shipping]);
+
+        AdminActivity::log('updated', "Product #{$product->id}: {$product->name} ".($product->charge_shipping ? 'shipping charge enabled' : 'shipping charge disabled'));
+        $this->dispatch('notify', message: 'Product shipping charge updated');
+    }
+
     public function viewDetails(int $id): void
     {
         $this->viewingId = $id;

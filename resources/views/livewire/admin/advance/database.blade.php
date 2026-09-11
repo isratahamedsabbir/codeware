@@ -1,9 +1,6 @@
 <div class="max-w-2xl space-y-6">
-    <flux:text class="text-zinc-500">
-        Downloads a full SQL dump (schema + data) of the live database — useful before a risky migration or as an off-site backup.
-    </flux:text>
-
-    <x-admin-section-card icon="circle-stack" :title="$connectionName" icon-color="bg-indigo-500/10 text-indigo-600">
+    <x-admin-section-card icon="circle-stack" :title="$connectionName" icon-color="bg-indigo-500/10 text-indigo-600"
+        description="Downloads a full SQL dump (schema + data) of the live database — useful before a risky migration or as an off-site backup.">
         <div class="grid grid-cols-2 gap-4 text-sm">
             <div>
                 <div class="text-zinc-400 text-xs uppercase tracking-wide mb-1">Tables</div>

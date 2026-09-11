@@ -103,12 +103,11 @@ class Product extends Model
     }
 
     /**
-     * A null quantity means stock isn't tracked for this product — always
-     * considered in stock. Otherwise in stock only while quantity is positive.
+     * A blank/null quantity means out of stock, same as an explicit 0.
      */
     public function inStock(): bool
     {
-        return $this->quantity === null || $this->quantity > 0;
+        return (int) $this->quantity > 0;
     }
 
     public function scopeActive(Builder $query): Builder

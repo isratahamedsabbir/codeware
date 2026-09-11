@@ -55,8 +55,6 @@ class Form extends Component
     #[Validate('nullable|integer|min:0')]
     public string $quantity = '';
 
-    public bool $charge_shipping = true;
-
     public bool $is_featured = false;
 
     public array $description = [];
@@ -114,7 +112,6 @@ class Form extends Component
             $this->price = (string) $product->price;
             $this->discount_price = $product->discount_price !== null ? (string) $product->discount_price : '';
             $this->quantity = $product->quantity !== null ? (string) $product->quantity : '';
-            $this->charge_shipping = (bool) $product->charge_shipping;
             $this->is_featured = (bool) $product->is_featured;
 
             $this->featured_image = $product->featured_image ?? '';
@@ -412,8 +409,7 @@ class Form extends Component
             'name' => $this->translatablePayload('name'),
             'price' => $this->price,
             'discount_price' => $this->discount_price !== '' ? $this->discount_price : null,
-            'quantity' => $this->quantity !== '' ? $this->quantity : null,
-            'charge_shipping' => $this->charge_shipping,
+            'quantity' => $this->quantity !== '' ? $this->quantity : 0,
             'is_featured' => $this->is_featured,
             'description' => $this->translatablePayload('description') ?: null,
             'featured_image' => $this->featured_image ?: null,

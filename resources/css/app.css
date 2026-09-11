@@ -735,8 +735,12 @@ flux\:table\:row:hover {
 
 /* ── Flux Controls Beautiful Styling overrides ── */
 
+/* Guaranteed gap between one field's control and the next field's label —
+   applied as a margin (not just an internal grid gap) so it holds even when
+   a field sits outside its neighbor's space-y-* wrapper (e.g. a translatable
+   field followed by a plain one, as in the product form). */
 [data-flux-field]:not(ui-radio, ui-checkbox) {
-    @apply grid gap-1.5;
+    @apply grid gap-2.5 mb-4;
 }
 
 [data-flux-label] {

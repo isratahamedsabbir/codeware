@@ -1,9 +1,6 @@
 <div class="max-w-2xl space-y-6">
-    <flux:text class="text-zinc-500">
-        Downloads everything under <code>storage/app</code> — uploaded media, generated files and .env backups — as a single zip.
-    </flux:text>
-
-    <x-admin-section-card icon="archive-box" title="Storage" icon-color="bg-emerald-500/10 text-emerald-600">
+    <x-admin-section-card icon="archive-box" title="Storage" icon-color="bg-emerald-500/10 text-emerald-600"
+        description="Downloads everything under storage/app — uploaded media, generated files and .env backups — as a single zip.">
         <div class="grid grid-cols-2 gap-4 text-sm">
             <div>
                 <div class="text-zinc-400 text-xs uppercase tracking-wide mb-1">Files</div>

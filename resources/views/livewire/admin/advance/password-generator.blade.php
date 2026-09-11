@@ -1,9 +1,6 @@
 <div class="max-w-2xl space-y-6">
-    <flux:text class="text-zinc-500">
-        Generate strong, random passwords using a cryptographically secure generator.
-    </flux:text>
-
-    <x-admin-section-card icon="key" title="Password Generator" icon-color="bg-amber-500/10 text-amber-600">
+    <x-admin-section-card icon="key" title="Password Generator" icon-color="bg-amber-500/10 text-amber-600"
+        description="Generate strong, random passwords using a cryptographically secure generator.">
 
         <div x-data="{ copied: false, copy() { navigator.clipboard.writeText($refs.password.value); this.copied = true; setTimeout(() => this.copied = false, 1500); } }"
             class="flex items-center gap-2">

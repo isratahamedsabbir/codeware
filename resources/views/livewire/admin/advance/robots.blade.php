@@ -5,11 +5,8 @@
         </div>
     @endif
 
-    <flux:text class="text-zinc-500">
-        Controls what search engine crawlers are allowed to access, served at <code>/robots.txt</code>.
-    </flux:text>
-
-    <x-admin-section-card icon="document-text" title="Robots.txt" icon-color="bg-amber-500/10 text-amber-600">
+    <x-admin-section-card icon="document-text" title="Robots.txt" icon-color="bg-amber-500/10 text-amber-600"
+        description="Controls what search engine crawlers are allowed to access, served at /robots.txt.">
         @if ($updatedAt)
             <x-slot:actions>
                 <span class="text-xs text-zinc-400">Last updated {{ $updatedAt }}</span>
