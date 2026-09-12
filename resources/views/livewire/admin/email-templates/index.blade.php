@@ -12,13 +12,6 @@
 
         {{-- ── Sidebar: Template Inventory ──────────────────────────────────── --}}
         <aside class="space-y-3 lg:sticky lg:top-6 self-start">
-            <div class="flex items-center justify-between px-1">
-                <span class="text-[10px] font-medium uppercase tracking-widest text-slate-500">Template Inventory</span>
-                <span
-                    class="text-[10px] font-medium text-slate-500 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded-md">
-                    {{ count($templates) }}
-                </span>
-            </div>
             <div class="space-y-1.5 max-h-[700px] overflow-y-auto pr-1 custom-scrollbar">
                 @foreach ($templates as $template)
                     <button type="button" wire:key="email-template-list-{{ $template->id }}"

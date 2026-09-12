@@ -1,8 +1,4 @@
 <div class="max-w-[1600px] space-y-6">
-    <flux:text class="text-zinc-500">
-        Social profile links for your site. These appear across the site (footer, contact sections, etc.).
-    </flux:text>
-
     @php
         $colors = [
             'facebook' => '#1877f2',

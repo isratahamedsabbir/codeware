@@ -108,39 +108,41 @@
         <div x-show="tab === 'theme'">
             <div class="max-w-[1600px] space-y-5">
 
-                <x-admin-section-card header-border="border-zinc-100" icon="globe-alt" title="Frontend"
-                    description="Choose the design shown to visitors on the public site.">
-                    <flux:field class="max-w-sm">
-                        <flux:label>Site Design</flux:label>
-                        <select wire:model="settings.site_theme"
-                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                            @foreach (\App\Support\Themes::all() as $slug => $label)
-                                <option value="{{ $slug }}">{{ $label }}</option>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                    <x-admin-section-card header-border="border-zinc-100" icon="swatch" title="Backend"
+                        description="Colors used across the admin panel, including buttons.">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            @foreach ($colorSettings as $setting)
+                                <flux:field>
+                                    <flux:label>{{ ucwords(str_replace('_', ' ', $setting->key)) }}</flux:label>
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg border border-zinc-300 shrink-0"
+                                             style="background-color: {{ $settings[$setting->key] ?? '#ffffff' }}"
+                                             x-data
+                                             :style="'background-color: ' + ($wire.settings['{{ $setting->key }}'] || '#ffffff')"></div>
+                                        <flux:input wire:model="settings.{{ $setting->key }}" placeholder="#000000" class="flex-1 font-mono" />
+                                    </div>
+                                </flux:field>
                             @endforeach
-                        </select>
-                        <flux:text class="text-xs text-zinc-500">
-                            {{ __('The design shown at your site\'s homepage (:url).', ['url' => url('/')]) }}
-                        </flux:text>
-                    </flux:field>
-                </x-admin-section-card>
+                        </div>
+                    </x-admin-section-card>
 
-                <x-admin-section-card header-border="border-zinc-100" icon="swatch" title="Backend"
-                    description="Colors used across the admin panel, including buttons.">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
-                        @foreach ($colorSettings as $setting)
-                            <flux:field>
-                                <flux:label>{{ ucwords(str_replace('_', ' ', $setting->key)) }}</flux:label>
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-lg border border-zinc-300 shrink-0"
-                                         style="background-color: {{ $settings[$setting->key] ?? '#ffffff' }}"
-                                         x-data
-                                         :style="'background-color: ' + ($wire.settings['{{ $setting->key }}'] || '#ffffff')"></div>
-                                    <flux:input wire:model="settings.{{ $setting->key }}" placeholder="#000000" class="flex-1 font-mono" />
-                                </div>
-                            </flux:field>
-                        @endforeach
-                    </div>
-                </x-admin-section-card>
+                    <x-admin-section-card header-border="border-zinc-100" icon="globe-alt" title="Frontend"
+                        description="Choose the design shown to visitors on the public site.">
+                        <flux:field class="max-w-sm">
+                            <flux:label>Site Design</flux:label>
+                            <select wire:model="settings.site_theme"
+                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                                @foreach (\App\Support\Themes::all() as $slug => $label)
+                                    <option value="{{ $slug }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <flux:text class="text-xs text-zinc-500">
+                                {{ __('The design shown at your site\'s homepage (:url).', ['url' => url('/')]) }}
+                            </flux:text>
+                        </flux:field>
+                    </x-admin-section-card>
+                </div>
 
             </div>
         </div>

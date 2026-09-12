@@ -16,7 +16,7 @@ it('renders the seo screen with meta and open graph fields', function () {
         ->assertStatus(200)
         ->assertSee('Meta Title')
         ->assertSee('Meta Description')
-        ->assertSee('Open Graph')
+        ->assertSee('OG Title')
         ->assertSee('OG Image');
 });
 
