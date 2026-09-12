@@ -308,6 +308,40 @@ it('switches a constant value field to file picker when File is clicked', functi
         ->assertSee('mp-constants-0-value', false);
 });
 
+it('auto-expands a newly added constant field', function () {
+    Livewire::test(SettingsIndex::class)
+        ->call('addConstant')
+        ->assertSet('openConstants', [0]);
+});
+
+it('keeps a constant field expanded while typing its key, rather than collapsing it', function () {
+    Livewire::test(SettingsIndex::class)
+        ->call('addConstant')
+        ->set('constants.0.key', 'support_email')
+        ->assertSet('openConstants', [0]);
+});
+
+it('toggling one constant field does not affect the others', function () {
+    Livewire::test(SettingsIndex::class)
+        ->call('addConstant') // openConstants = [0]
+        ->call('addConstant') // openConstants = [0, 1]
+        ->call('toggleConstant', 0) // close 0 -> [1]
+        ->call('toggleConstant', 1) // close 1 -> []
+        ->assertSet('openConstants', [])
+        ->call('toggleConstant', 0) // reopen 0 only -> [0]
+        ->assertSet('openConstants', [0]);
+});
+
+it('drops a removed constant field from the open list and reindexes the rest', function () {
+    Livewire::test(SettingsIndex::class)
+        ->call('addConstant') // openConstants = [0]
+        ->call('addConstant') // openConstants = [0, 1]
+        ->call('addConstant') // openConstants = [0, 1, 2]
+        ->call('toggleConstant', 0) // close 0 -> [1, 2]
+        ->call('removeConstant', 1) // index 1 removed, index 2 shifts down to 1
+        ->assertSet('openConstants', [1]);
+});
+
 it('saves constants and makes them readable through the setting_constant() helper', function () {
     Livewire::test(SettingsIndex::class)
         ->call('addConstant')

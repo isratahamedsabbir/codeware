@@ -19,6 +19,18 @@ class Index extends Component
     /** @var array<int, array{key: string, type: string, value: string}> */
     public array $constants = [];
 
+    /**
+     * Indices of $constants rows currently expanded in the UI — tracked
+     * server-side (rather than client-only Alpine state per row) so a Livewire
+     * re-render from an unrelated input (e.g. typing in another row's Key
+     * field) can't reset it: deriving "open" from whether the key is blank
+     * on every render meant collapsed state flip-flopped as soon as a key
+     * stopped being blank, and a re-render reset every row at once.
+     *
+     * @var array<int, int>
+     */
+    public array $openConstants = [];
+
     public bool $maintenanceMode = false;
 
     public bool $debugMode = false;
@@ -68,12 +80,20 @@ class Index extends Component
     public function addConstant(): void
     {
         $this->constants[] = ['key' => '', 'type' => 'textarea', 'value' => ''];
+        $this->openConstants[] = array_key_last($this->constants);
     }
 
     public function removeConstant(int $index): void
     {
         unset($this->constants[$index]);
         $this->constants = array_values($this->constants);
+
+        $this->openConstants = collect($this->openConstants)
+            ->reject(fn ($i) => $i === $index)
+            ->map(fn ($i) => $i > $index ? $i - 1 : $i)
+            ->unique()
+            ->values()
+            ->all();
     }
 
     public function setConstantType(int $index, string $type): void
@@ -83,6 +103,15 @@ class Index extends Component
         }
 
         $this->constants[$index]['type'] = $type;
+    }
+
+    public function toggleConstant(int $index): void
+    {
+        if (in_array($index, $this->openConstants, true)) {
+            $this->openConstants = array_values(array_diff($this->openConstants, [$index]));
+        } else {
+            $this->openConstants[] = $index;
+        }
     }
 
     /**

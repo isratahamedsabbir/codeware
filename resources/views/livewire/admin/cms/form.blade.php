@@ -9,42 +9,59 @@
     {{-- Basics --}}
     <x-admin-section-card icon="squares-2x2" :title="$page->getTranslation('title', 'en', false)">
         <flux:field>
-            <flux:label>Name</flux:label>
-            <flux:input wire:model.live="name" placeholder="e.g. hero, features, cta" />
+            <div class="flex rounded-lg border border-zinc-300 overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+                <span class="flex items-center px-3 bg-zinc-50 border-r border-zinc-300 text-sm text-zinc-500">
+                    Name
+                </span>
+                <input type="text" wire:model.live="name" placeholder="e.g. hero, features, cta"
+                    class="flex-1 min-w-0 border-0 px-3 py-2 text-sm text-zinc-700 placeholder:text-zinc-400 focus:outline-none focus:ring-0" />
+            </div>
             <flux:error name="name" />
         </flux:field>
     </x-admin-section-card>
 
     {{-- Cards --}}
     <x-admin-section-card icon="rectangle-group" title="Cards" icon-color="bg-blue-500/10 text-blue-600"
-        description="Repeatable image/title/description tiles for this section.">
+        description="Repeatable image/title/description tiles for this section."
+        collapsible :collapsed="true">
         <x-slot:actions>
-            <flux:button size="sm" variant="outline" icon="plus" wire:click="addCard">Add card</flux:button>
+            <flux:button size="sm" variant="outline" icon="plus" wire:click="addCard" x-on:click="open = true">Add card</flux:button>
         </x-slot:actions>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-3">
         @forelse ($cards as $i => $card)
-            <div class="group relative rounded-[5px] border border-zinc-200 bg-zinc-50/60 overflow-hidden transition-colors hover:border-zinc-300">
-                <div class="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-zinc-200 bg-white">
-                    <div class="flex items-center gap-2">
+            @php $cardOpen = in_array($i, $openCards, true); @endphp
+            <div wire:key="cms-card-row-{{ $i }}" class="group relative rounded-[5px] border border-zinc-200 bg-zinc-50/60 overflow-hidden transition-colors hover:border-zinc-300">
+                <div wire:click="toggleCard({{ $i }})" role="button" tabindex="0"
+                    class="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-zinc-200 bg-white cursor-pointer select-none">
+                    <div class="flex items-center gap-2 min-w-0">
                         <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-zinc-300 text-[11px] font-semibold text-zinc-500">
                             {{ $i + 1 }}
                         </div>
-                        <flux:heading size="sm">Card</flux:heading>
+                        <flux:heading size="sm" class="truncate">
+                            {{ ($card['title'] ?? '') !== '' ? $card['title'] : 'Card '.($i + 1) }}
+                        </flux:heading>
                     </div>
 
-                    <button type="button" wire:click="removeCard({{ $i }})"
-                        class="shrink-0 rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-rose-50 hover:text-rose-500 cursor-pointer" aria-label="Remove card">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+                    <div class="flex items-center gap-1 shrink-0">
+                        <button type="button" wire:click.stop="removeCard({{ $i }})"
+                            class="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-rose-50 hover:text-rose-500 cursor-pointer" aria-label="Remove card">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                        <button type="button" wire:click.stop="toggleCard({{ $i }})"
+                            class="flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 cursor-pointer"
+                            aria-expanded="{{ $cardOpen ? 'true' : 'false' }}" aria-label="Toggle card">
+                            <flux:icon.chevron-down class="size-4 transition-transform {{ $cardOpen ? 'rotate-180' : '' }}" />
+                        </button>
+                    </div>
                 </div>
 
-                <div class="p-4 space-y-3">
+                <div class="p-4 space-y-3 {{ $cardOpen ? '' : 'hidden' }}">
                     <flux:field>
                         <flux:label>Title</flux:label>
-                        <flux:input wire:model="cards.{{ $i }}.title" placeholder="e.g. Fast Delivery" class="font-medium" />
+                        <flux:input wire:model.live="cards.{{ $i }}.title" placeholder="e.g. Fast Delivery" class="font-medium" />
                     </flux:field>
                     <flux:field>
                         <flux:label>Description</flux:label>
@@ -55,7 +72,7 @@
                 </div>
             </div>
         @empty
-            <div class="col-span-full rounded-[5px] border border-dashed border-zinc-200 py-10 text-center">
+            <div class="rounded-[5px] border border-dashed border-zinc-200 py-10 text-center">
                 <svg class="mx-auto mb-2 h-8 w-8 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <rect x="3" y="3" width="7" height="7" rx="1" />
                     <rect x="14" y="3" width="7" height="7" rx="1" />
@@ -70,32 +87,44 @@
 
     {{-- Constant --}}
     <x-admin-section-card icon="variable" title="Constant" icon-color="bg-indigo-500/10 text-indigo-600"
-        description="Freeform key/value pairs — SEO tags, custom flags, or extra content.">
+        description="Freeform key/value pairs — SEO tags, custom flags, or extra content." collapsible :collapsed="true">
         <x-slot:actions>
-            <flux:button size="sm" variant="outline" icon="plus" wire:click="addConstant">Add field</flux:button>
+            <flux:button size="sm" variant="outline" icon="plus" wire:click="addConstant" x-on:click="open = true">Add field</flux:button>
         </x-slot:actions>
         <flux:error name="constant" />
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-3">
         @forelse ($constant as $i => $pair)
-            <div wire:key="constant-row-{{ $i }}" class="group relative rounded-[5px] border border-zinc-200 bg-zinc-50/60 overflow-hidden transition-colors hover:border-zinc-300">
-                <div class="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-zinc-200 bg-white">
-                    <div class="flex items-center gap-2">
+            @php $constantOpen = in_array($i, $openConstants, true); @endphp
+            <div wire:key="constant-row-{{ $i }}"
+                class="group relative rounded-[5px] border border-zinc-200 bg-zinc-50/60 overflow-hidden transition-colors hover:border-zinc-300">
+                <div wire:click="toggleConstant({{ $i }})" role="button" tabindex="0"
+                    class="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-zinc-200 bg-white cursor-pointer select-none">
+                    <div class="flex items-center gap-2 min-w-0">
                         <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-zinc-300 text-[11px] font-semibold text-zinc-500">
                             {{ $i + 1 }}
                         </div>
-                        <flux:heading size="sm">Field</flux:heading>
+                        <flux:heading size="sm" class="truncate font-mono">
+                            {{ ($pair['key'] ?? '') !== '' ? $pair['key'] : 'Field '.($i + 1) }}
+                        </flux:heading>
                     </div>
 
-                    <button type="button" wire:click="removeConstant({{ $i }})"
-                        class="shrink-0 rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-rose-50 hover:text-rose-500 cursor-pointer" aria-label="Remove field">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+                    <div class="flex items-center gap-1 shrink-0">
+                        <button type="button" wire:click.stop="removeConstant({{ $i }})"
+                            class="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-rose-50 hover:text-rose-500 cursor-pointer" aria-label="Remove field">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                        <button type="button" wire:click.stop="toggleConstant({{ $i }})"
+                            class="flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 cursor-pointer"
+                            aria-expanded="{{ $constantOpen ? 'true' : 'false' }}" aria-label="Toggle field">
+                            <flux:icon.chevron-down class="size-4 transition-transform {{ $constantOpen ? 'rotate-180' : '' }}" />
+                        </button>
+                    </div>
                 </div>
 
-                <div class="p-4 space-y-3">
+                <div class="p-4 space-y-3 {{ $constantOpen ? '' : 'hidden' }}">
                     <flux:field>
                         <div class="grid grid-cols-2 gap-1.5 rounded-lg bg-zinc-100 p-1">
                             <button type="button" wire:click="setConstantType({{ $i }}, 'textarea')"
@@ -135,7 +164,7 @@
                 </div>
             </div>
         @empty
-            <div class="col-span-full rounded-[5px] border border-dashed border-zinc-200 py-10 text-center">
+            <div class="rounded-[5px] border border-dashed border-zinc-200 py-10 text-center">
                 <svg class="mx-auto mb-2 h-8 w-8 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" />
                 </svg>

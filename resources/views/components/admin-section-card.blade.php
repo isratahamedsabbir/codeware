@@ -27,7 +27,7 @@
         </div>
         <div class="flex items-center gap-2 shrink-0">
             @isset($actions)
-                <div>{{ $actions }}</div>
+                <div @if ($collapsible) @click.stop @endif>{{ $actions }}</div>
             @endisset
             @if ($collapsible)
                 <button type="button" class="flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 cursor-pointer"

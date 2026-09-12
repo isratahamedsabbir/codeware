@@ -73,6 +73,48 @@ it('creates a cms section with a name and cards', function () {
         ->and($cms->constant[0]['value'])->toBe('website');
 });
 
+it('auto-expands a newly added card', function () {
+    $page = Page::factory()->create();
+
+    Livewire::test(CmsForm::class, ['pageId' => $page->id])
+        ->call('addCard')
+        ->assertSet('openCards', [0]);
+});
+
+it('keeps a card expanded while typing its title, rather than collapsing it', function () {
+    $page = Page::factory()->create();
+
+    Livewire::test(CmsForm::class, ['pageId' => $page->id])
+        ->call('addCard')
+        ->set('cards.0.title', 'Fast Delivery')
+        ->assertSet('openCards', [0]);
+});
+
+it('toggling one card does not affect the others', function () {
+    $page = Page::factory()->create();
+
+    Livewire::test(CmsForm::class, ['pageId' => $page->id])
+        ->call('addCard') // openCards = [0]
+        ->call('addCard') // openCards = [0, 1]
+        ->call('toggleCard', 0) // close 0 -> [1]
+        ->call('toggleCard', 1) // close 1 -> []
+        ->assertSet('openCards', [])
+        ->call('toggleCard', 0) // reopen 0 only -> [0]
+        ->assertSet('openCards', [0]);
+});
+
+it('drops a removed card from the open list and reindexes the rest', function () {
+    $page = Page::factory()->create();
+
+    Livewire::test(CmsForm::class, ['pageId' => $page->id])
+        ->call('addCard') // openCards = [0]
+        ->call('addCard') // openCards = [0, 1]
+        ->call('addCard') // openCards = [0, 1, 2]
+        ->call('toggleCard', 0) // close 0 -> [1, 2]
+        ->call('removeCard', 1) // index 1 removed, index 2 shifts down to 1
+        ->assertSet('openCards', [1]);
+});
+
 it('can add and remove multiple constant fields before saving', function () {
     $page = Page::factory()->create();
 

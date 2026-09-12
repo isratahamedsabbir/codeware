@@ -52,6 +52,16 @@ class Form extends Component
     /** @var array<int, array{key: string, type: string, value: string}> */
     public array $constant = [];
 
+    /**
+     * Indices of $constant rows currently expanded in the UI — tracked
+     * server-side (rather than client-only Alpine state per row) so a
+     * Livewire re-render from an unrelated input can't reset it. See
+     * Settings\Index::$openConstants for the full rationale.
+     *
+     * @var array<int, int>
+     */
+    public array $openConstants = [];
+
     public function mount(?int $id = null): void
     {
         if ($id) {
@@ -103,12 +113,20 @@ class Form extends Component
     public function addConstant(): void
     {
         $this->constant[] = ['key' => '', 'type' => 'textarea', 'value' => ''];
+        $this->openConstants[] = array_key_last($this->constant);
     }
 
     public function removeConstant(int $index): void
     {
         unset($this->constant[$index]);
         $this->constant = array_values($this->constant);
+
+        $this->openConstants = collect($this->openConstants)
+            ->reject(fn ($i) => $i === $index)
+            ->map(fn ($i) => $i > $index ? $i - 1 : $i)
+            ->unique()
+            ->values()
+            ->all();
     }
 
     public function setConstantType(int $index, string $type): void
@@ -118,6 +136,15 @@ class Form extends Component
         }
 
         $this->constant[$index]['type'] = $type;
+    }
+
+    public function toggleConstant(int $index): void
+    {
+        if (in_array($index, $this->openConstants, true)) {
+            $this->openConstants = array_values(array_diff($this->openConstants, [$index]));
+        } else {
+            $this->openConstants[] = $index;
+        }
     }
 
     public function updated(string $name, mixed $value): void
