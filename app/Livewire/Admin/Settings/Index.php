@@ -151,10 +151,13 @@ class Index extends Component
 
         Artisan::call('config:clear');
 
+        $this->persistGeneralSettings();
+
         AdminActivity::log('updated', 'Environment settings updated');
 
         $this->dispatch('close-modal', name: 'env-save-confirm');
-        $this->dispatch('notify', message: 'Environment settings saved. Configuration cache cleared.');
+        session()->flash('success', 'Environment settings saved. Configuration cache cleared.');
+        $this->js('window.location.reload()');
     }
 
     public function confirmEnableMaintenanceMode(): void
@@ -268,12 +271,7 @@ class Index extends Component
             'constants.*.value' => 'nullable|string|max:1000',
         ]);
 
-        foreach ($this->settings as $key => $value) {
-            Setting::set($key, $value);
-        }
-
-        $constants = collect($this->constants)->filter(fn ($pair) => filled($pair['key'] ?? null))->values()->all();
-        Setting::set('constants', json_encode($constants));
+        $this->persistGeneralSettings();
 
         // A real browser reload of the current page, rather than a dispatched
         // toast, so the whole admin shell re-renders on a fresh request —
@@ -284,6 +282,25 @@ class Index extends Component
         // itself, not the page — hence a plain client-side reload instead.)
         session()->flash('success', 'Settings saved.');
         $this->js('window.location.reload()');
+    }
+
+    /**
+     * Persists every plain (DB-backed) Setting, as opposed to the .env-backed
+     * fields on the Env tab which go through EnvFile::set() instead — see
+     * saveEnv(). Shared by save() and saveEnv(), since the Env tab now also
+     * hosts Tracking's Google Pixel ID, an ordinary Setting rather than an
+     * env value, and a single "Save Environment Settings" click there should
+     * persist both without the admin needing to know they're stored
+     * differently under the hood.
+     */
+    private function persistGeneralSettings(): void
+    {
+        foreach ($this->settings as $key => $value) {
+            Setting::set($key, $value);
+        }
+
+        $constants = collect($this->constants)->filter(fn ($pair) => filled($pair['key'] ?? null))->values()->all();
+        Setting::set('constants', json_encode($constants));
     }
 
     public function render()

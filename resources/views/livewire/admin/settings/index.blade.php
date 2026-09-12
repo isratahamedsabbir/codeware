@@ -27,9 +27,6 @@
             <button type="button" @click="tab = 'custom-code'"
                 :class="tab==='custom-code'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="mx-4 rounded-none! py-3 text-sm -mb-px">Custom Code</button>
-            <button type="button" @click="tab = 'tracking'"
-                :class="tab==='tracking'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
-                class="mx-4 rounded-none! py-3 text-sm -mb-px">Tracking</button>
             <button type="button" @click="tab = 'constant'"
                 :class="tab==='constant'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="mx-4 rounded-none! py-3 text-sm -mb-px">Constant</button>
@@ -38,126 +35,29 @@
         {{-- General tab --}}
         <div x-show="tab === 'general'">
             <div class="max-w-[1600px]">
-                {{-- General sits on the left spanning both rows; Localization and
-                     Pagination stack to its right; Images and anything else fall
-                     to a full-width row underneath. --}}
+                {{-- General sits on the left; Localization, Pagination and Newsletter
+                     stack tightly to its right in their own column (so their combined
+                     height — not each card's own grid row — determines the gap between
+                     them, however many small groups exist); Images and anything else
+                     fall to a full-width row underneath. Explicit placement rather than
+                     order+row-span, since the latter leaves a blank cell the moment the
+                     right-hand cards don't add up to exactly two rows. --}}
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                    @if (isset($groupedSettings['general']))
+                        @include('partials.admin-settings-group-card', ['group' => 'general', 'items' => $groupedSettings['general']])
+                    @endif
+
+                    <div class="space-y-5">
+                        @foreach (['localization', 'pagination', 'newsletter'] as $rightGroup)
+                            @continue (! isset($groupedSettings[$rightGroup]))
+                            @include('partials.admin-settings-group-card', ['group' => $rightGroup, 'items' => $groupedSettings[$rightGroup]])
+                        @endforeach
+                    </div>
+
                     @foreach ($groupedSettings as $group => $items)
-                        <div class="{{ match ($group) {
-                            'general' => 'order-1 lg:row-span-2',
-                            'localization' => 'order-2',
-                            'pagination' => 'order-3',
-                            'newsletter' => 'order-4',
-                            'images' => 'order-5 lg:col-span-2',
-                            default => 'order-6 lg:col-span-2',
-                        } }}">
-                            @php
-                                $groupIcon = match ($group) {
-                                    'general' => 'information-circle',
-                                    'images' => 'photo',
-                                    'pagination' => 'document-duplicate',
-                                    'localization' => 'language',
-                                    'newsletter' => 'megaphone',
-                                    default => 'squares-2x2',
-                                };
-                            @endphp
-                            <x-admin-section-card header-border="border-zinc-100" :icon="$groupIcon" :title="ucfirst($group ?? 'General')">
-                                <div class="{{ $group === 'images' ? 'grid grid-cols-2 sm:grid-cols-4 gap-4' : 'space-y-4' }}">
-                                @foreach ($items as $setting)
-                                    <flux:field>
-                                        @php
-                                            $isMediaPicker = in_array($setting->key, ['site_icon', 'site_icon_white', 'favicon', 'loader'], true);
-                                        @endphp
-                                        @unless ($isMediaPicker)
-                                            <flux:label>{{ $setting->key === 'app_locale' ? 'Language' : ucwords(str_replace('_', ' ', $setting->key)) }}</flux:label>
-                                        @endunless
-                                        @if ($setting->type === 'boolean')
-                                            <div class="flex items-center gap-2">
-                                                <input type="checkbox"
-                                                    wire:model="settings.{{ $setting->key }}"
-                                                    class="rounded border-zinc-300 text-primary" />
-                                                <span class="text-sm text-zinc-600">Enable</span>
-                                            </div>
-                                            @if ($setting->key === 'notify_subscribers_on_new_product')
-                                                <flux:text class="text-xs text-zinc-500">
-                                                    {{ __('When enabled, everyone on the Subscribers list gets an email as soon as a new product is created.') }}
-                                                </flux:text>
-                                            @endif
-                                        @elseif ($setting->type === 'color')
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-10 h-10 rounded-lg border border-zinc-300 shrink-0"
-                                                     style="background-color: {{ $settings[$setting->key] ?? '#ffffff' }}"
-                                                     x-data
-                                                     :style="'background-color: ' + ($wire.settings['{{ $setting->key }}'] || '#ffffff')"></div>
-                                                <flux:input wire:model="settings.{{ $setting->key }}" placeholder="#000000" class="flex-1 font-mono" />
-                                            </div>
-                                        @elseif ($setting->key === 'pagination_per_page')
-                                            <flux:input type="number" min="1" max="100" wire:model="settings.{{ $setting->key }}" />
-                                            <flux:text class="text-xs text-zinc-500">
-                                                {{ __('Default number of items per page on the public site (products, posts, etc.). A request can still override this with its own ?per_page= value.') }}
-                                            </flux:text>
-                                        @elseif ($setting->key === 'app_locale')
-                                            <select wire:model="settings.{{ $setting->key }}"
-                                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                                                @foreach (\App\Support\Locale::active() as $language)
-                                                    <option value="{{ $language->code }}">
-                                                        {{ $language->flag ? $language->flag.' ' : '' }}{{ $language->native_name ?: $language->name }} ({{ strtoupper($language->code) }})
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            <flux:text class="text-xs text-zinc-500">
-                                                {{ __('The admin panel language — same as the header language switcher, applies to every admin user.') }}
-                                            </flux:text>
-                                        @elseif ($setting->key === 'timezone')
-                                            <select wire:model="settings.{{ $setting->key }}"
-                                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                                                @foreach (\App\Support\Timezones::grouped() as $region => $zones)
-                                                    <optgroup label="{{ $region }}">
-                                                        @foreach ($zones as $zone)
-                                                            <option value="{{ $zone }}">{{ $zone }}</option>
-                                                        @endforeach
-                                                    </optgroup>
-                                                @endforeach
-                                            </select>
-                                            <flux:text class="text-xs text-zinc-500">
-                                                {{ __('Dates are stored in UTC and shown to users in this timezone.') }}
-                                            </flux:text>
-                                        @elseif ($setting->key === 'date_format')
-                                            @php
-                                                $dateFormatOptions = [
-                                                    'd M Y, h:i A' => '08 Sep 2026, 08:59 AM',
-                                                    'M d, Y g:i A' => 'Sep 08, 2026 8:59 AM',
-                                                    'd/m/Y h:i A' => '08/09/2026 08:59 AM',
-                                                    'm/d/Y h:i A' => '09/08/2026 08:59 AM',
-                                                    'Y-m-d H:i' => '2026-09-08 08:59',
-                                                ];
-                                            @endphp
-                                            <select wire:model="settings.{{ $setting->key }}"
-                                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                                                @foreach ($dateFormatOptions as $format => $example)
-                                                    <option value="{{ $format }}">{{ $example }}</option>
-                                                @endforeach
-                                            </select>
-                                            <flux:text class="text-xs text-zinc-500">
-                                                {{ __('How dates are shown across the admin panel and in API responses (the "_display" fields alongside each date).') }}
-                                            </flux:text>
-                                        @elseif ($setting->key === 'site_icon' || $setting->key === 'site_icon_white' || $setting->key === 'favicon' || $setting->key === 'loader')
-                                            <x-media-picker model="settings.{{ $setting->key }}"
-                                                label="{{ match ($setting->key) { 'favicon' => 'Favicon', 'loader' => 'Loader', 'site_icon_white' => 'White Icon', default => 'Site Icon' } }}"
-                                                hint="{{ match ($setting->key) { 'favicon' => '32×32px, square', 'loader' => '200×200px, square', 'site_icon_white' => '512×512px, transparent', default => '512×512px, transparent' } }}"
-                                                placeholder="{{ match ($setting->key) { 'loader' => 'Choose a loading animation from the library', 'favicon' => 'Choose a favicon from the library', 'site_icon_white' => 'Choose a white icon from the library', default => 'Choose a site icon from the library' } }}"
-                                                mimes="{{ match ($setting->key) { 'favicon' => 'ico,png', 'loader' => 'gif,png,jpg', default => 'png,webp' } }}"
-                                                :max-size-mb="$setting->key === 'favicon' ? 1 : 2"
-                                                only-images dropzone />
-                                        @elseif ($setting->type === 'textarea')
-                                            <flux:textarea wire:model="settings.{{ $setting->key }}" class="h-24" />
-                                        @else
-                                            <flux:input wire:model="settings.{{ $setting->key }}" />
-                                        @endif
-                                    </flux:field>
-                                @endforeach
-                                </div>
-                            </x-admin-section-card>
+                        @continue (in_array($group, ['general', 'localization', 'pagination', 'newsletter'], true))
+                        <div class="lg:col-span-2">
+                            @include('partials.admin-settings-group-card', ['group' => $group, 'items' => $items])
                         </div>
                     @endforeach
                 </div>
@@ -168,28 +68,30 @@
         {{-- Currency tab --}}
         <div x-show="tab === 'currency'">
             <div class="max-w-[1600px] space-y-5">
-                <x-admin-section-card header-border="border-zinc-100" icon="banknotes" title="Currency" class="max-w-2xl"
+                <x-admin-section-card header-border="border-zinc-100" icon="banknotes" title="Currency"
                     description="Set the currency used across the site for product pricing and payments.">
-                    <flux:field>
-                        <flux:label>Currency Code</flux:label>
-                        <flux:input wire:model="settings.currency_code" placeholder="BDT, USD, EUR" class="uppercase" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Currency Symbol</flux:label>
-                        <flux:input wire:model="settings.currency_symbol" placeholder="৳, $, €" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Symbol Position</flux:label>
-                        <select wire:model="settings.currency_position"
-                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                            <option value="left">Left (৳1,250.00)</option>
-                            <option value="right">Right (1,250.00 ৳)</option>
-                        </select>
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Decimal Places</flux:label>
-                        <flux:input type="number" wire:model="settings.decimal_places" min="0" max="4" />
-                    </flux:field>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <flux:field>
+                            <flux:label>Currency Code</flux:label>
+                            <flux:input wire:model="settings.currency_code" placeholder="BDT, USD, EUR" class="uppercase" />
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>Currency Symbol</flux:label>
+                            <flux:input wire:model="settings.currency_symbol" placeholder="৳, $, €" />
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>Symbol Position</flux:label>
+                            <select wire:model="settings.currency_position"
+                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                                <option value="left">Left (৳1,250.00)</option>
+                                <option value="right">Right (1,250.00 ৳)</option>
+                            </select>
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>Decimal Places</flux:label>
+                            <flux:input type="number" wire:model="settings.decimal_places" min="0" max="4" />
+                        </flux:field>
+                    </div>
 
                     <flux:field>
                         <flux:label>Preview</flux:label>
@@ -246,69 +148,73 @@
         {{-- Env tab --}}
         <div x-show="tab === 'env'">
             <div class="max-w-[1600px] space-y-5">
-                <div class="max-w-2xl rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm dark:bg-amber-950 dark:border-amber-800 dark:text-amber-300">
+                <div class="rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm dark:bg-amber-950 dark:border-amber-800 dark:text-amber-300">
                     <strong>{{ __('Careful') }}:</strong>
                     {{ __('These edit the live .env file this server runs on. A wrong value can take the site down until it is fixed. A backup of the current file is saved automatically before every change. Mail credentials live on the Email Templates page instead.') }}
                 </div>
 
-                {{-- Maintenance mode --}}
-                <x-admin-section-card header-border="border-zinc-100" icon="wrench" title="Maintenance Mode"
-                    icon-color="{{ $maintenanceMode ? 'bg-red-500/10 text-red-600' : 'bg-primary/10 text-primary' }}"
-                    description="Takes the public site offline for every visitor. The admin panel and login stay reachable either way."
-                    class="max-w-2xl {{ $maintenanceMode ? 'border-red-300! dark:border-red-800!' : '' }}">
-                    <x-slot:actions>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                    {{-- Maintenance mode --}}
+                    <x-admin-section-card header-border="border-zinc-100" icon="wrench" title="Maintenance Mode"
+                        icon-color="{{ $maintenanceMode ? 'bg-red-500/10 text-red-600' : 'bg-primary/10 text-primary' }}"
+                        description="Takes the public site offline for every visitor. The admin panel and login stay reachable either way."
+                        class="w-full {{ $maintenanceMode ? 'border-red-300! dark:border-red-800!' : '' }}">
+                        <x-slot:actions>
+                            @if ($maintenanceMode)
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-red-50 dark:bg-red-950 px-3 py-1 text-xs font-semibold text-red-700 dark:text-red-300 ring-1 ring-red-600/20">
+                                    <span class="size-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                                    Site is offline
+                                </span>
+                            @endif
+                        </x-slot:actions>
+
                         @if ($maintenanceMode)
-                            <span class="inline-flex items-center gap-1.5 rounded-full bg-red-50 dark:bg-red-950 px-3 py-1 text-xs font-semibold text-red-700 dark:text-red-300 ring-1 ring-red-600/20">
-                                <span class="size-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                                Site is offline
-                            </span>
+                            <flux:button size="sm" variant="danger" wire:click="disableMaintenanceMode" wire:loading.attr="disabled">
+                                Bring Site Back Online
+                            </flux:button>
+                        @else
+                            <flux:button size="sm" variant="outline" wire:click="confirmEnableMaintenanceMode" wire:loading.attr="disabled">
+                                Enable Maintenance Mode
+                            </flux:button>
                         @endif
-                    </x-slot:actions>
+                    </x-admin-section-card>
 
-                    @if ($maintenanceMode)
-                        <flux:button size="sm" variant="danger" wire:click="disableMaintenanceMode" wire:loading.attr="disabled">
-                            Bring Site Back Online
-                        </flux:button>
-                    @else
-                        <flux:button size="sm" variant="outline" wire:click="confirmEnableMaintenanceMode" wire:loading.attr="disabled">
-                            Enable Maintenance Mode
-                        </flux:button>
-                    @endif
-                </x-admin-section-card>
+                    {{-- Debug mode --}}
+                    <x-admin-section-card header-border="border-zinc-100" icon="bug-ant" title="Debug Mode"
+                        icon-color="{{ $debugMode ? 'bg-amber-500/10 text-amber-600' : 'bg-primary/10 text-primary' }}"
+                        description="Shows full error details and stack traces to visitors. Leave this off in production."
+                        class="w-full {{ $debugMode ? 'border-amber-300! dark:border-amber-800!' : '' }}">
+                        <x-slot:actions>
+                            @if ($debugMode)
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300 ring-1 ring-amber-600/20">
+                                    <span class="size-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                    Debug on
+                                </span>
+                            @endif
+                        </x-slot:actions>
 
-                {{-- Debug mode --}}
-                <x-admin-section-card header-border="border-zinc-100" icon="bug-ant" title="Debug Mode"
-                    icon-color="{{ $debugMode ? 'bg-amber-500/10 text-amber-600' : 'bg-primary/10 text-primary' }}"
-                    description="Shows full error details and stack traces to visitors. Leave this off in production."
-                    class="max-w-2xl {{ $debugMode ? 'border-amber-300! dark:border-amber-800!' : '' }}">
-                    <x-slot:actions>
                         @if ($debugMode)
-                            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300 ring-1 ring-amber-600/20">
-                                <span class="size-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                                Debug on
-                            </span>
+                            <flux:button size="sm" variant="danger" wire:click="disableDebugMode" wire:loading.attr="disabled">
+                                Turn Debug Mode Off
+                            </flux:button>
+                        @else
+                            <flux:button size="sm" variant="outline" wire:click="confirmEnableDebugMode" wire:loading.attr="disabled">
+                                Enable Debug Mode
+                            </flux:button>
                         @endif
-                    </x-slot:actions>
-
-                    @if ($debugMode)
-                        <flux:button size="sm" variant="danger" wire:click="disableDebugMode" wire:loading.attr="disabled">
-                            Turn Debug Mode Off
-                        </flux:button>
-                    @else
-                        <flux:button size="sm" variant="outline" wire:click="confirmEnableDebugMode" wire:loading.attr="disabled">
-                            Enable Debug Mode
-                        </flux:button>
-                    @endif
-                </x-admin-section-card>
+                    </x-admin-section-card>
+                </div>
 
                 @php $socialGroups = ['Google Login', 'Facebook Login']; @endphp
 
                 @foreach ($this->envFields() as $groupLabel => $fields)
                     @continue(in_array($groupLabel, $socialGroups, true))
-                    <x-admin-section-card header-border="border-zinc-100" icon="server" :title="__($groupLabel)" class="max-w-2xl">
-                        @foreach ($fields as $key => $meta)
-                            @include('livewire.admin.settings.partials.env-field', ['key' => $key, 'meta' => $meta])
-                        @endforeach
+                    <x-admin-section-card header-border="border-zinc-100" icon="server" :title="__($groupLabel)">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            @foreach ($fields as $key => $meta)
+                                @include('livewire.admin.settings.partials.env-field', ['key' => $key, 'meta' => $meta])
+                            @endforeach
+                        </div>
                     </x-admin-section-card>
                 @endforeach
 
@@ -356,6 +262,79 @@
                     </x-admin-section-card>
                 </div>
 
+                {{-- Tracking --}}
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                    <x-admin-section-card header-border="border-zinc-100" icon="chart-bar" title="Google Pixel"
+                        description="The Measurement/Pixel ID (e.g. G-XXXXXXXXXX or AW-XXXXXXXXX) exposed via the public settings API for the frontend to use.">
+                        <flux:field>
+                            <flux:label>Google Pixel ID</flux:label>
+                            <flux:input wire:model="settings.google_pixel_id" placeholder="G-XXXXXXXXXX" class="font-mono" />
+                        </flux:field>
+                    </x-admin-section-card>
+
+                    <x-admin-section-card header-border="border-zinc-100" icon="book-open" title="Integration guide" body-class="px-6 py-5 space-y-5"
+                        description="Where the ID comes from, and how to wire it up in the Next.js frontend.">
+                        <div>
+                            <flux:heading size="sm" class="mb-2">1. Get the ID from Google</flux:heading>
+                            <ol class="list-decimal list-inside space-y-1 text-sm text-zinc-600 dark:text-zinc-400">
+                                <li>Google Analytics (GA4): <span class="text-zinc-500">analytics.google.com</span> → Admin → Data Streams → your web stream → copy the <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">Measurement ID</span> (<span class="font-mono text-xs">G-XXXXXXXXXX</span>).</li>
+                                <li>Google Ads conversion tracking: Ads → Tools → Conversions → copy the <span class="font-mono text-xs">AW-XXXXXXXXX</span> ID instead.</li>
+                                <li>Paste it into the field on the left and save.</li>
+                            </ol>
+                        </div>
+
+                        <div>
+                            <flux:heading size="sm" class="mb-2">2. Read it from Next.js</flux:heading>
+                            <flux:text class="text-xs text-zinc-500 mb-2">
+                                The value is already public — it comes back from
+                                <span class="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">GET /api/v1/settings/public</span>
+                                as <span class="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">data.tracking.google_pixel_id</span>. Fetch it once in the root layout and inject the gtag script:
+                            </flux:text>
+                            <pre class="rounded-lg bg-zinc-900 text-zinc-100 text-[11px] leading-relaxed p-3.5 overflow-x-auto" style="color-scheme: dark; background-color: #18181b !important; color: #f4f4f5 !important;"><code style="color: #f4f4f5 !important;">{{ '// app/layout.tsx
+import Script from "next/script";
+
+async function getPublicSettings() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings/public`, {
+    next: { revalidate: 3600 },
+  });
+  return (await res.json()).data;
+}
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const settings = await getPublicSettings();
+  const pixelId = settings.tracking?.google_pixel_id;
+
+  return (
+    <html lang="en">
+      <body>
+        {pixelId && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${pixelId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="gtag-init" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){ dataLayer.push(arguments); }
+                gtag("js", new Date());
+                gtag("config", "${pixelId}");
+              `}
+            </Script>
+          </>
+        )}
+        {children}
+      </body>
+    </html>
+  );
+}' }}</code></pre>
+                            <flux:text class="text-xs text-zinc-500 mt-2">
+                                Leave the field on the left blank to skip loading gtag entirely — the snippet above already guards for that.
+                            </flux:text>
+                        </div>
+                    </x-admin-section-card>
+                </div>
+
                 <flux:button size="sm" variant="primary" wire:click="confirmSaveEnv" wire:loading.attr="disabled">
                     {{ __('Save Environment Settings') }}
                 </flux:button>
@@ -364,7 +343,8 @@
 
         {{-- Other tab --}}
         <div x-show="tab === 'other'">
-            <div class="max-w-[1600px] space-y-5">
+            <div class="max-w-[1600px]">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
                 {{-- Floating action button --}}
                 <x-admin-section-card header-border="border-zinc-100" x-data icon="cursor-arrow-rays" title="Floating Button" class="max-w-md"
                     description="Shows a floating button in the corner of every admin page.">
@@ -468,107 +448,31 @@
                         opens or closes it from anywhere.
                     </p>
                 </x-admin-section-card>
+                </div>
             </div>
         </div>
 
         {{-- Custom Code tab --}}
         <div x-show="tab === 'custom-code'">
             <div class="max-w-[1600px] space-y-5">
-                <div class="max-w-2xl rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm dark:bg-amber-950 dark:border-amber-800 dark:text-amber-300">
+                <div class="rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm dark:bg-amber-950 dark:border-amber-800 dark:text-amber-300">
                     <strong>{{ __('Careful') }}:</strong>
                     {{ __('This code runs as-is on every visitor\'s browser (e.g. analytics or pixel scripts). Only paste code from sources you trust.') }}
                 </div>
 
-                <x-admin-section-card header-border="border-zinc-100" icon="code-bracket" title="Head Code" class="max-w-2xl"
+                <x-admin-section-card header-border="border-zinc-100" icon="code-bracket" title="Head Code"
                     description="Injected into <head>, before it closes — meta tags, verification tags, analytics.">
                     <flux:field>
-                        <flux:textarea wire:model="settings.custom_head_code" class="h-40 font-mono text-xs" placeholder="<script>...</script>" />
+                        <flux:textarea wire:model="settings.custom_head_code" class="h-40 w-full font-mono text-xs" placeholder="<script>...</script>" />
                     </flux:field>
                 </x-admin-section-card>
 
-                <x-admin-section-card header-border="border-zinc-100" icon="code-bracket" title="Body Code" class="max-w-2xl"
+                <x-admin-section-card header-border="border-zinc-100" icon="code-bracket" title="Body Code"
                     description="Injected just before </body> closes — chat widgets, tracking pixels, deferred scripts.">
                     <flux:field>
-                        <flux:textarea wire:model="settings.custom_body_code" class="h-40 font-mono text-xs" placeholder="<script>...</script>" />
+                        <flux:textarea wire:model="settings.custom_body_code" class="h-40 w-full font-mono text-xs" placeholder="<script>...</script>" />
                     </flux:field>
                 </x-admin-section-card>
-            </div>
-        </div>
-
-        {{-- Tracking tab --}}
-        <div x-show="tab === 'tracking'">
-            <div class="max-w-[1600px]">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
-                    <x-admin-section-card header-border="border-zinc-100" icon="chart-bar" title="Google Pixel"
-                        description="The Measurement/Pixel ID (e.g. G-XXXXXXXXXX or AW-XXXXXXXXX) exposed via the public settings API for the frontend to use.">
-                        <flux:field>
-                            <flux:label>Google Pixel ID</flux:label>
-                            <flux:input wire:model="settings.google_pixel_id" placeholder="G-XXXXXXXXXX" class="font-mono" />
-                        </flux:field>
-                    </x-admin-section-card>
-
-                    <x-admin-section-card header-border="border-zinc-100" icon="book-open" title="Integration guide" body-class="px-6 py-5 space-y-5"
-                        description="Where the ID comes from, and how to wire it up in the Next.js frontend.">
-                        <div>
-                            <flux:heading size="sm" class="mb-2">1. Get the ID from Google</flux:heading>
-                            <ol class="list-decimal list-inside space-y-1 text-sm text-zinc-600 dark:text-zinc-400">
-                                <li>Google Analytics (GA4): <span class="text-zinc-500">analytics.google.com</span> → Admin → Data Streams → your web stream → copy the <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">Measurement ID</span> (<span class="font-mono text-xs">G-XXXXXXXXXX</span>).</li>
-                                <li>Google Ads conversion tracking: Ads → Tools → Conversions → copy the <span class="font-mono text-xs">AW-XXXXXXXXX</span> ID instead.</li>
-                                <li>Paste it into the field on the left and save.</li>
-                            </ol>
-                        </div>
-
-                        <div>
-                            <flux:heading size="sm" class="mb-2">2. Read it from Next.js</flux:heading>
-                            <flux:text class="text-xs text-zinc-500 mb-2">
-                                The value is already public — it comes back from
-                                <span class="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">GET /api/v1/settings/public</span>
-                                as <span class="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">data.tracking.google_pixel_id</span>. Fetch it once in the root layout and inject the gtag script:
-                            </flux:text>
-                            <pre class="rounded-lg bg-zinc-900 text-zinc-100 text-[11px] leading-relaxed p-3.5 overflow-x-auto" style="color-scheme: dark; background-color: #18181b !important; color: #f4f4f5 !important;"><code style="color: #f4f4f5 !important;">{{ '// app/layout.tsx
-import Script from "next/script";
-
-async function getPublicSettings() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings/public`, {
-    next: { revalidate: 3600 },
-  });
-  return (await res.json()).data;
-}
-
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const settings = await getPublicSettings();
-  const pixelId = settings.tracking?.google_pixel_id;
-
-  return (
-    <html lang="en">
-      <body>
-        {pixelId && (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${pixelId}`}
-              strategy="afterInteractive"
-            />
-            <Script id="gtag-init" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){ dataLayer.push(arguments); }
-                gtag("js", new Date());
-                gtag("config", "${pixelId}");
-              `}
-            </Script>
-          </>
-        )}
-        {children}
-      </body>
-    </html>
-  );
-}' }}</code></pre>
-                            <flux:text class="text-xs text-zinc-500 mt-2">
-                                Leave the field on the left blank to skip loading gtag entirely — the snippet above already guards for that.
-                            </flux:text>
-                        </div>
-                    </x-admin-section-card>
-                </div>
             </div>
         </div>
 
@@ -654,7 +558,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </div>
         </div>
 
-        {{-- Save --}}
+        {{-- Save — hidden on the Env tab, where "Save Environment Settings"
+             above already persists both the .env fields and any plain
+             Settings on that tab (Tracking's Google Pixel ID) in one click. --}}
         <div class="mt-6" x-show="tab !== 'env'">
             <flux:button variant="primary" size="sm" wire:click="save" wire:loading.attr="disabled">
                 Save Settings
