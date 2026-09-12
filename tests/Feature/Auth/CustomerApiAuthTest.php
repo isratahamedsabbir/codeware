@@ -25,6 +25,7 @@ it('registers a new customer, issues a token, and sends a verification email', f
 
     $user = User::where('email', 'jane@example.com')->sole();
     expect((bool) $user->is_admin)->toBeFalse();
+    expect($user->hasRole('customer'))->toBeTrue();
 
     Notification::assertSentTo($user, VerifyEmail::class);
 });

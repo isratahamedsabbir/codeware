@@ -2,6 +2,11 @@
 
 use App\Models\ProductVendor;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
+
+beforeEach(function () {
+    $this->seed(RolePermissionSeeder::class);
+});
 
 test('guests are redirected to login from the vendor portal', function () {
     $this->get(route('vendor.dashboard'))->assertRedirect('/login');
@@ -9,14 +14,24 @@ test('guests are redirected to login from the vendor portal', function () {
 
 test('a user with no vendors assigned is forbidden from the vendor portal', function () {
     $user = User::factory()->create(['is_admin' => false]);
+    $user->assignRole('vendor');
 
     $this->actingAs($user)->get(route('vendor.dashboard'))->assertForbidden();
     $this->actingAs($user)->get(route('vendor.products'))->assertForbidden();
     $this->actingAs($user)->get(route('vendor.orders'))->assertForbidden();
 });
 
-test('a user assigned to a vendor can access the vendor portal', function () {
+test('a user assigned to a vendor but without the vendor role is forbidden from the vendor portal', function () {
     $user = User::factory()->create(['is_admin' => false]);
+    $vendor = ProductVendor::factory()->create();
+    $vendor->users()->attach($user);
+
+    $this->actingAs($user)->get(route('vendor.dashboard'))->assertForbidden();
+});
+
+test('a user with the vendor role and an assigned vendor can access the vendor portal', function () {
+    $user = User::factory()->create(['is_admin' => false]);
+    $user->assignRole('vendor');
     $vendor = ProductVendor::factory()->create();
     $vendor->users()->attach($user);
 
@@ -33,6 +48,7 @@ test('an admin user is not automatically granted vendor portal access', function
 
 test('the dashboard route sends a vendor-only user to the vendor portal', function () {
     $user = User::factory()->create(['is_admin' => false]);
+    $user->assignRole('vendor');
     $vendor = ProductVendor::factory()->create();
     $vendor->users()->attach($user);
 

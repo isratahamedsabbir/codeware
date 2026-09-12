@@ -1,4 +1,9 @@
 @push('page-header-actions')
+    @can('access-admin-system')
+        <flux:button variant="ghost" size="sm" icon="cog-6-tooth" href="{{ route('admin.settings') }}?tab=env#VENDOR_URL" wire:navigate>
+            Settings
+        </flux:button>
+    @endcan
     <flux:button variant="ghost" size="sm" icon="plus" href="{{ route('admin.product-vendors.create') }}" wire:navigate>
         New vendor
     </flux:button>

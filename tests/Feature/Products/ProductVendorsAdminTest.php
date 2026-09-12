@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\ProductVendor;
 use App\Models\User;
 use App\Models\VendorDocument;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -29,6 +30,21 @@ it('renders the product vendors index with existing vendors', function () {
     Livewire::test(ProductVendorIndex::class)
         ->assertOk()
         ->assertSee('Acme Supplies');
+});
+
+it('shows a Settings shortcut to the vendor portal url for an admin, but not for staff', function () {
+    $this->get(route('admin.product-vendors'))
+        ->assertOk()
+        ->assertSee(route('admin.settings').'?tab=env#VENDOR_URL', false);
+
+    $this->seed(RolePermissionSeeder::class);
+    $staff = User::factory()->create(['is_admin' => false]);
+    $staff->assignRole('staff');
+
+    $this->actingAs($staff)
+        ->get(route('admin.product-vendors'))
+        ->assertOk()
+        ->assertDontSee(route('admin.settings').'?tab=env#VENDOR_URL', false);
 });
 
 it('filters vendors by search', function () {

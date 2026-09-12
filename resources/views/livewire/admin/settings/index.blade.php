@@ -1,9 +1,24 @@
 <div>
     {{-- Alpine tab switcher: General | Currency | ... --}}
     <div x-data="{
-        tab: localStorage.getItem('admin-settings-tab') || 'general',
+        tab: new URLSearchParams(location.search).get('tab') || localStorage.getItem('admin-settings-tab') || 'general',
         init() {
             this.$watch('tab', (value) => localStorage.setItem('admin-settings-tab', value));
+
+            // A link into this page can point straight at one field, e.g.
+            // .../settings?tab=env#VENDOR_URL (see Product Vendors' Settings
+            // button) — scroll it into view and flash it once the tab's
+            // x-show transition has actually rendered it.
+            if (location.hash) {
+                const id = 'env-field-' + location.hash.slice(1);
+                this.$nextTick(() => setTimeout(() => {
+                    const el = document.getElementById(id);
+                    if (! el) return;
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.classList.add('ring-2', 'ring-primary', 'rounded-lg');
+                    setTimeout(() => el.classList.remove('ring-2', 'ring-primary', 'rounded-lg'), 2000);
+                }, 150));
+            }
         }
     }">
 

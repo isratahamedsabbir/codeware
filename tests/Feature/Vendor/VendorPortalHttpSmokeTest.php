@@ -5,9 +5,12 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVendor;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 
 it('renders the vendor order show page over real HTTP', function () {
+    $this->seed(RolePermissionSeeder::class);
     $user = User::factory()->create(['is_admin' => false]);
+    $user->assignRole('vendor');
     $vendor = ProductVendor::factory()->create();
     $vendor->users()->attach($user);
     $product = Product::factory()->create(['vendor_id' => $vendor->id]);

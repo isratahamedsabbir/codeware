@@ -53,5 +53,16 @@ class RolePermissionSeeder extends Seeder
             'view product categories', 'create product categories', 'update product categories', 'delete product categories',
             'view media', 'upload media', 'delete media',
         ]);
+
+        // Vendor: no admin-panel permissions at all — this role only gates entry to
+        // the separate Vendor Portal (see access-vendor-portal in AppServiceProvider),
+        // it grants nothing under /admin/*.
+        Role::findOrCreate('vendor', 'web');
+
+        // Customer: the default tier for everyone who registers through the public
+        // site/API (see CreateNewUser) — no admin-panel permissions, access-admin
+        // already excludes it. Every user belongs to some role; this is the
+        // catch-all for the ones that aren't admin/staff/vendor.
+        Role::findOrCreate('customer', 'web');
     }
 }

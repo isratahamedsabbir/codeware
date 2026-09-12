@@ -131,6 +131,12 @@ class Index extends Component
                 'APP_ENV' => ['label' => 'Environment', 'type' => 'select', 'options' => ['local', 'staging', 'production', 'testing', 'developer']],
                 'APP_URL' => ['label' => 'App URL', 'type' => 'text'],
                 'FRONTEND_URL' => ['label' => 'Frontend URL', 'type' => 'text'],
+                // Vendor Portal subdomain (see bootstrap/app.php) — e.g.
+                // https://vendor.codeware.test locally, https://vendor.codeware.com
+                // in production. Requires the corresponding DNS/hosts entry to
+                // already exist; this only changes which host Laravel routes to
+                // App\Livewire\Vendor\* and where vendor.* URLs point.
+                'VENDOR_URL' => ['label' => 'Vendor Portal URL', 'type' => 'text'],
             ],
             'Google Login' => [
                 'GOOGLE_CLIENT_ID' => ['label' => 'Google Client ID', 'type' => 'text'],
@@ -156,6 +162,7 @@ class Index extends Component
             'env.APP_ENV' => 'required|in:local,staging,production,testing,developer',
             'env.APP_URL' => 'required|url',
             'env.FRONTEND_URL' => 'nullable|url',
+            'env.VENDOR_URL' => 'nullable|url',
             'env.GOOGLE_CLIENT_ID' => 'nullable|string',
             'env.GOOGLE_CLIENT_SECRET' => 'nullable|string',
             // Not `url` — this intentionally holds a ${APP_URL}/... interpolation
@@ -185,6 +192,12 @@ class Index extends Component
         }
 
         Artisan::call('config:clear');
+
+        // VENDOR_URL controls which host the Vendor Portal route group binds to
+        // (see bootstrap/app.php) — if routes are ever cached (route:cache, as a
+        // production deploy might run), that cache would keep serving the old
+        // host until cleared here too.
+        Artisan::call('route:clear');
 
         $this->persistGeneralSettings();
 

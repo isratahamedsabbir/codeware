@@ -19,15 +19,21 @@ return Application::configure(basePath: dirname(__DIR__))
         channels: __DIR__.'/../routes/channels.php',
         health: '/up',
         then: function () {
+            // Vendor portal — its own subdomain rather than a path prefix.
+            // Production: vendor.codeware.com. Local: vendor.codeware.test.
+            $vendorSubdomain = env('VENDOR_SUBDOMAIN', 'vendor');
+            $appHost = parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST) ?: 'localhost';
+            $vendorHost = parse_url((string) env('VENDOR_URL', ''), PHP_URL_HOST) ?: $vendorSubdomain.'.'.$appHost;
+
+            Route::middleware(['web', 'auth', 'can:access-vendor-portal'])
+                ->domain($vendorHost)
+                ->name('vendor.')
+                ->group(base_path('routes/vendor.php'));
+
             Route::middleware(['web', 'auth', 'admin', 'activity-log'])
                 ->prefix('admin')
                 ->name('admin.')
                 ->group(base_path('routes/admin.php'));
-
-            Route::middleware(['web', 'auth', 'can:access-vendor-portal'])
-                ->prefix('vendor')
-                ->name('vendor.')
-                ->group(base_path('routes/vendor.php'));
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {

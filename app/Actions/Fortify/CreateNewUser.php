@@ -7,6 +7,7 @@ use App\Concerns\ProfileValidationRules;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
+use Spatie\Permission\Models\Role;
 
 class CreateNewUser implements CreatesNewUsers
 {
@@ -24,10 +25,19 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
         ])->validate();
 
-        return User::create([
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],
         ]);
+
+        // Every user belongs to some role (admin/staff/vendor/customer) — this is
+        // the default tier for anyone signing up through the public site or API,
+        // shared by both registration paths since both funnel through here.
+        // findOrCreate rather than a bare name lookup so this never depends on
+        // RolePermissionSeeder having already run in this environment/test.
+        $user->assignRole(Role::findOrCreate('customer', 'web'));
+
+        return $user;
     }
 }

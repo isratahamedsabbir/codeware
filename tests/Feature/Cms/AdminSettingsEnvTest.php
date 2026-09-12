@@ -182,6 +182,33 @@ it('allows a blank frontend url', function () {
     expect(EnvFile::get('FRONTEND_URL'))->toBe('');
 });
 
+it('saves the vendor portal url', function () {
+    Livewire::test(SettingsIndex::class)
+        ->set('env.VENDOR_URL', 'https://vendor.example.test')
+        ->call('confirmSaveEnv')
+        ->call('saveEnv')
+        ->assertHasNoErrors();
+
+    expect(EnvFile::get('VENDOR_URL'))->toBe('https://vendor.example.test');
+});
+
+it('rejects an invalid vendor portal url', function () {
+    Livewire::test(SettingsIndex::class)
+        ->set('env.VENDOR_URL', 'not-a-url')
+        ->call('confirmSaveEnv')
+        ->assertHasErrors(['env.VENDOR_URL']);
+});
+
+it('allows a blank vendor portal url', function () {
+    Livewire::test(SettingsIndex::class)
+        ->set('env.VENDOR_URL', '')
+        ->call('confirmSaveEnv')
+        ->call('saveEnv')
+        ->assertHasNoErrors();
+
+    expect(EnvFile::get('VENDOR_URL'))->toBe('');
+});
+
 it('leaves a line completely untouched, quoting style included, when its value did not change', function () {
     // Passing back MAIL_FROM_NAME's own current value must not rewrite its line at all —
     // otherwise every save silently strips quotes from every untouched field, which for a

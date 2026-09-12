@@ -75,7 +75,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                     @forelse ($roles as $role)
                         <label class="flex items-start gap-2.5 cursor-pointer select-none group border border-zinc-200 rounded-lg px-4 py-3 hover:border-indigo-300 hover:bg-indigo-50/40 transition-colors">
-                            <input type="checkbox" wire:model="selectedRoles" value="{{ $role->name }}"
+                            <input type="checkbox" wire:model.live="selectedRoles" value="{{ $role->name }}"
                                 class="mt-0.5 size-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 focus:ring-2 cursor-pointer">
                             <div class="min-w-0">
                                 <div class="text-sm text-zinc-800 group-hover:text-zinc-900 font-medium leading-snug">
@@ -116,20 +116,24 @@
                 </label>
             </x-admin-section-card>
 
-            {{-- Vendor Access --}}
-            <x-admin-section-card icon="building-storefront" title="Vendor Access" icon-color="bg-amber-500/10 text-amber-600"
-                body-class="px-4 py-3" description="Vendors this user can log in and see in the Vendor Portal.">
-                <flux:checkbox.group wire:model="vendor_ids" class="flex-col items-stretch gap-0.5 max-h-56 overflow-y-auto">
-                    @forelse ($vendors as $vendor)
-                        <div class="rounded-md py-1 px-1 hover:bg-zinc-50 transition-colors">
-                            <flux:checkbox value="{{ $vendor->id }}" label="{{ $vendor->name }}" />
-                        </div>
-                    @empty
-                        <p class="text-xs text-zinc-400 px-2 py-1">No vendors yet.</p>
-                    @endforelse
-                </flux:checkbox.group>
-                <flux:error name="vendor_ids" />
-            </x-admin-section-card>
+            {{-- Vendor Access — only meaningful once the Vendor role (below) is
+                 selected; see Form::save(), which clears any assignment made here
+                 if that role isn't checked when saved. --}}
+            @if (in_array('vendor', $selectedRoles))
+                <x-admin-section-card icon="building-storefront" title="Vendor Access" icon-color="bg-amber-500/10 text-amber-600"
+                    body-class="px-4 py-3" description="Vendors this user can log in and see in the Vendor Portal.">
+                    <flux:checkbox.group wire:model="vendor_ids" class="flex-col items-stretch gap-0.5 max-h-56 overflow-y-auto">
+                        @forelse ($vendors as $vendor)
+                            <div class="rounded-md py-1 px-1 hover:bg-zinc-50 transition-colors">
+                                <flux:checkbox value="{{ $vendor->id }}" label="{{ $vendor->name }}" />
+                            </div>
+                        @empty
+                            <p class="text-xs text-zinc-400 px-2 py-1">No vendors yet.</p>
+                        @endforelse
+                    </flux:checkbox.group>
+                    <flux:error name="vendor_ids" />
+                </x-admin-section-card>
+            @endif
 
             {{-- Signature --}}
             <x-admin-section-card icon="pencil" title="Signature" icon-color="bg-indigo-500/10 text-indigo-600"
@@ -219,6 +223,49 @@
                         </div>
                     </div>
                 </div>
+            </x-admin-section-card>
+
+            {{-- Documents --}}
+            <x-admin-section-card icon="document-text" title="Documents" icon-color="bg-cyan-500/10 text-cyan-600"
+                body-class="px-4 py-3" description="ID, contract, certificate — PDF, DOC, or image files.">
+                @if ($userId)
+                    <div class="space-y-3">
+                        <div>
+                            <input type="file" wire:model="newDocuments" multiple
+                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
+                                class="block w-full text-xs text-zinc-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-zinc-100 file:text-zinc-700 hover:file:bg-zinc-200 cursor-pointer">
+                            <flux:error name="newDocuments.*" />
+                            @if ($newDocuments)
+                                <button type="button" wire:click="uploadDocuments"
+                                    wire:loading.attr="disabled" wire:target="uploadDocuments"
+                                    class="mt-2 text-xs font-medium text-indigo-600 hover:text-indigo-700 cursor-pointer">
+                                    <span wire:loading.remove wire:target="uploadDocuments">Upload selected</span>
+                                    <span wire:loading wire:target="uploadDocuments">Uploading…</span>
+                                </button>
+                            @endif
+                        </div>
+
+                        <ul class="space-y-1.5">
+                            @forelse ($documents as $document)
+                                <li class="flex items-center justify-between gap-2 text-xs bg-zinc-50 border border-zinc-100 rounded-md px-2.5 py-1.5">
+                                    <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($document->file) }}" target="_blank"
+                                        class="min-w-0 truncate text-zinc-700 hover:text-indigo-600 font-medium" title="{{ $document->name }}">
+                                        {{ $document->name }}
+                                    </a>
+                                    <button type="button" wire:click="deleteDocument({{ $document->id }})"
+                                        wire:confirm="Delete this document?"
+                                        class="shrink-0 text-zinc-400 hover:text-red-600 cursor-pointer">
+                                        <flux:icon.trash class="size-3.5" />
+                                    </button>
+                                </li>
+                            @empty
+                                <p class="text-xs text-zinc-400 px-1">No documents uploaded yet.</p>
+                            @endforelse
+                        </ul>
+                    </div>
+                @else
+                    <p class="text-xs text-zinc-400">Save the user first, then upload documents.</p>
+                @endif
             </x-admin-section-card>
 
         </div>

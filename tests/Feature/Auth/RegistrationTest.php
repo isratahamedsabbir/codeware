@@ -27,6 +27,17 @@ test('new users can register', function () {
     $this->assertAuthenticated();
 });
 
+test('a newly registered user is assigned the customer role', function () {
+    $this->post(route('register.store'), [
+        'name' => 'John Doe',
+        'email' => 'test@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ])->assertSessionHasNoErrors();
+
+    expect(User::where('email', 'test@example.com')->sole()->hasRole('customer'))->toBeTrue();
+});
+
 test('registered email is stored lowercase regardless of input case', function () {
     $this->post(route('register.store'), [
         'name' => 'John Doe',

@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Users;
 
 use App\Models\ProductVendor;
 use App\Models\User;
+use App\Models\UserDocument;
 use App\Support\AdminActivity;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -56,6 +57,9 @@ class Form extends Component
      */
     public ?string $signature = null;
 
+    /** Freshly-chosen document uploads, pending until uploadDocuments() persists them. */
+    public array $newDocuments = [];
+
     public function mount(?int $id = null): void
     {
         if ($id) {
@@ -75,6 +79,44 @@ class Form extends Component
     {
         $this->validate(['photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048']);
         $this->removePhoto = false;
+    }
+
+    /**
+     * Uploads any pending documents against an already-saved user — a new user
+     * has no id to attach them to, so the Documents section only appears once
+     * editing an existing one (see the Blade view).
+     */
+    public function uploadDocuments(): void
+    {
+        $this->validate([
+            'newDocuments.*' => 'file|max:10240|mimes:pdf,doc,docx,jpg,jpeg,png,webp',
+        ]);
+
+        foreach ($this->newDocuments as $file) {
+            $path = $file->storeAs('user-documents', Str::uuid().'.'.$file->getClientOriginalExtension(), 'public');
+
+            UserDocument::create([
+                'user_id' => $this->userId,
+                'name' => $file->getClientOriginalName(),
+                'file' => $path,
+            ]);
+        }
+
+        $this->newDocuments = [];
+        $this->dispatch('notify', message: 'Document(s) uploaded successfully');
+    }
+
+    public function deleteDocument(int $documentId): void
+    {
+        $document = UserDocument::where('user_id', $this->userId)->findOrFail($documentId);
+
+        if (Storage::disk('public')->exists($document->file)) {
+            Storage::disk('public')->delete($document->file);
+        }
+
+        $document->delete();
+
+        $this->dispatch('notify', message: 'Document deleted');
     }
 
     public function save(): void
@@ -113,7 +155,13 @@ class Form extends Component
         );
 
         $user->syncRoles($this->selectedRoles);
-        $user->vendors()->sync($this->vendor_ids);
+
+        // Only a user with the 'vendor' role may hold vendor assignments — sync
+        // an empty set instead of $this->vendor_ids when the role isn't selected,
+        // so removing the role also revokes any access-vendor-portal already
+        // granted through a prior assignment (see the gate in AppServiceProvider).
+        $vendorIds = in_array('vendor', $this->selectedRoles, true) ? $this->vendor_ids : [];
+        $user->vendors()->sync($vendorIds);
 
         $this->dispatch('notify', message: $this->userId ? 'User updated successfully' : 'User created successfully');
 
@@ -182,6 +230,9 @@ class Form extends Component
         return view('livewire.admin.users.form', [
             'roles' => Role::withCount('permissions')->orderBy('name')->get(),
             'vendors' => ProductVendor::orderBy('name')->get(['id', 'name']),
+            'documents' => $this->userId
+                ? UserDocument::where('user_id', $this->userId)->latest()->get()
+                : collect(),
         ])->layout('layouts.admin', ['title' => $this->userId ? 'Edit User' : 'New User']);
     }
 }
