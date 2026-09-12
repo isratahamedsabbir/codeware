@@ -6,6 +6,7 @@ use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
+use App\Models\ProductVendor;
 use App\Models\User;
 
 beforeEach(function () {
@@ -221,6 +222,18 @@ it('includes the assigned brand on a product, and null when unassigned', functio
     $this->getJson("/api/v1/products/{$unbranded->slug}")
         ->assertOk()
         ->assertJsonPath('data.brand', null);
+});
+
+it('includes sku but never exposes vendor on the public product endpoint', function () {
+    $vendor = ProductVendor::factory()->create(['name' => 'Acme Supplies']);
+    $product = Product::factory()->published()->create(['sku' => 'PUB-SKU-1', 'vendor_id' => $vendor->id]);
+    pairPageFor($product, 'product', 'sku-product', $this->admin->id);
+
+    $response = $this->getJson("/api/v1/products/{$product->slug}")
+        ->assertOk()
+        ->assertJsonPath('data.sku', 'PUB-SKU-1');
+
+    expect($response->json('data'))->not->toHaveKey('vendor');
 });
 
 it('related_products excludes current product', function () {

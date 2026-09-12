@@ -65,6 +65,12 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::define('access-admin-system', fn ($user) => (bool) $user->is_admin || $user->hasRole('admin'));
 
+        // Vendor portal (App\Livewire\Vendor\*) — a separate, unrelated door from
+        // access-admin above: a vendor-assigned user is never is_admin/admin/staff,
+        // and the portal deliberately doesn't reuse any admin route/gate, so it
+        // can't accidentally inherit access to the rest of /admin/*.
+        Gate::define('access-vendor-portal', fn ($user) => $user->vendors()->exists());
+
         // File Manager reads/writes anywhere under the project root (including .env),
         // so — unlike most admin screens — it gets its own granular gates rather than
         // riding solely on the blanket access-admin check: 'view' for browsing/downloading,

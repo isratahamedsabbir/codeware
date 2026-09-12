@@ -25,6 +25,7 @@ class AdminMenuSeeder extends Seeder
             ['Products', 'cube', 'admin.products'],
             ['Attributes', 'adjustments-horizontal', 'admin.product-attributes'],
             ['Brands', 'star', 'admin.product-brands'],
+            ['Vendors', 'briefcase', 'admin.product-vendors'],
         ]);
 
         $this->group('Sales', 4, [

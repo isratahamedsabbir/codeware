@@ -10,6 +10,7 @@ use App\Support\Slug;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
@@ -18,7 +19,7 @@ class ProductController extends Controller
         $perPage = max(1, min((int) $request->query('per_page', 15), 100));
 
         $products = Product::withTrashed()
-            ->with(['categories.page', 'brand', 'page'])
+            ->with(['categories.page', 'brand', 'vendor', 'page'])
             ->orderBy('sort_order')
             ->orderByDesc('updated_at')
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
@@ -31,12 +32,14 @@ class ProductController extends Controller
                 'name' => $p->getTranslations('name'),
                 'status' => $p->status,
                 'product_type' => $p->product_type,
+                'sku' => $p->sku,
                 'is_featured' => $p->is_featured,
                 'is_upcoming' => $p->is_upcoming,
                 'sort_order' => $p->sort_order,
                 'featured_image' => $p->featured_image,
                 'categories' => $p->categories,
                 'brand' => $p->brand,
+                'vendor' => $p->vendor,
                 'deleted_at' => $p->deleted_at?->toIso8601String(),
                 'deleted_at_display' => $p->deleted_at?->toDisplay(),
             ]),
@@ -57,6 +60,8 @@ class ProductController extends Controller
             'name.bn' => 'nullable|string|max:255',
             'slug' => ['nullable', 'string', ...Slug::uniqueRules(null)],
             'brand_id' => 'nullable|integer|exists:product_brands,id',
+            'vendor_id' => 'nullable|integer|exists:product_vendors,id',
+            'sku' => 'nullable|string|max:100|unique:products,sku',
             'category_ids' => 'nullable|array',
             'category_ids.*' => 'integer|exists:categories,id,type,product',
             'description' => 'nullable|array',
@@ -142,6 +147,8 @@ class ProductController extends Controller
             'name.bn' => 'nullable|string|max:255',
             'slug' => ['nullable', 'string', ...Slug::uniqueRules($product->page?->id)],
             'brand_id' => 'sometimes|nullable|integer|exists:product_brands,id',
+            'vendor_id' => 'sometimes|nullable|integer|exists:product_vendors,id',
+            'sku' => ['sometimes', 'nullable', 'string', 'max:100', Rule::unique('products', 'sku')->ignore($product->id)],
             'category_ids' => 'sometimes|nullable|array',
             'category_ids.*' => 'integer|exists:categories,id,type,product',
             'description' => 'sometimes|nullable|array',

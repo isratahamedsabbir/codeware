@@ -38,6 +38,45 @@ it('blocks staff from admin invoice routes', function () {
         ->assertForbidden();
 });
 
+it('lets an admin view the print-only shipping address page', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $order = Order::factory()->create([
+        'customer_name' => 'Jane Doe',
+        'customer_phone' => '01712345678',
+        'shipping_address' => "123 Main St\nDhaka",
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.orders.address', $order))
+        ->assertOk()
+        ->assertSee($order->order_number)
+        ->assertSee('Jane Doe')
+        ->assertSee('01712345678')
+        ->assertSee('123 Main St')
+        ->assertSee('data:image/png;base64,', false);
+});
+
+it('does not show order items or totals on the address page', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $order = Order::factory()->has(OrderItem::factory()->count(2)->state(['product_name' => 'Secret Widget']), 'items')->create();
+
+    $this->actingAs($admin)
+        ->get(route('admin.orders.address', $order))
+        ->assertOk()
+        ->assertDontSee('Secret Widget');
+});
+
+it('blocks staff from the admin address route', function () {
+    $this->seed(RolePermissionSeeder::class);
+    $staff = User::factory()->create(['is_admin' => false]);
+    $staff->assignRole('staff');
+    $order = Order::factory()->create();
+
+    $this->actingAs($staff)
+        ->get(route('admin.orders.address', $order))
+        ->assertForbidden();
+});
+
 it('serves the public invoice page for a validly signed url', function () {
     $order = Order::factory()->has(OrderItem::factory()->count(2), 'items')->create();
 

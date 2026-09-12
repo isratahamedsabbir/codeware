@@ -48,7 +48,7 @@ class Product extends Model
 
     protected $fillable = [
         'name', 'description',
-        'brand_id', 'variations',
+        'brand_id', 'vendor_id', 'sku', 'variations',
         'featured_image', 'status', 'product_type', 'price', 'discount_price', 'quantity', 'charge_shipping', 'is_featured',
         'is_upcoming', 'sort_order',
     ];
@@ -85,6 +85,11 @@ class Product extends Model
     public function brand(): BelongsTo
     {
         return $this->belongsTo(ProductBrand::class, 'brand_id');
+    }
+
+    public function vendor(): BelongsTo
+    {
+        return $this->belongsTo(ProductVendor::class, 'vendor_id');
     }
 
     public function gallery(): BelongsToMany

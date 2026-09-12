@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\ProductAttribute;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
+use App\Models\ProductVendor;
 use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\Slug;
@@ -37,6 +38,9 @@ class Form extends Component
      */
     public string $autoSlug = '';
 
+    #[Validate('nullable|string|max:100')]
+    public string $sku = '';
+
     /**
      * null = not yet checked, true = available (green), false = taken (red).
      */
@@ -49,6 +53,9 @@ class Form extends Component
 
     #[Validate('nullable|integer|exists:product_brands,id')]
     public string $brand_id = '';
+
+    #[Validate('nullable|integer|exists:product_vendors,id')]
+    public string $vendor_id = '';
 
     #[Validate('required|in:physical,digital')]
     public string $product_type = 'physical';
@@ -140,6 +147,8 @@ class Form extends Component
             $this->slug = $product->slug ?? '';
             $this->category_ids = $product->categories->pluck('id')->all();
             $this->brand_id = $product->brand_id !== null ? (string) $product->brand_id : '';
+            $this->vendor_id = $product->vendor_id !== null ? (string) $product->vendor_id : '';
+            $this->sku = $product->sku ?? '';
             $this->product_type = $product->product_type;
             $this->price = (string) $product->price;
             $this->discount_price = $product->discount_price !== null ? (string) $product->discount_price : '';
@@ -439,6 +448,12 @@ class Form extends Component
         return ProductBrand::orderBy('sort_order')->orderBy('name')->get();
     }
 
+    #[Computed]
+    public function productVendors()
+    {
+        return ProductVendor::orderBy('sort_order')->orderBy('name')->get();
+    }
+
     public function openPuckEditor(): void
     {
         if (! $this->pageId) {
@@ -470,6 +485,10 @@ class Form extends Component
         $rules['slug'] = [
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
+        ];
+        $rules['sku'] = [
+            'nullable', 'string', 'max:100',
+            $this->productId ? 'unique:products,sku,'.$this->productId : 'unique:products,sku',
         ];
         $rules['variations.*.price'] = 'nullable|numeric|min:0';
         $rules['variations.*.discount_price'] = 'nullable|numeric|min:0|lt:variations.*.price';
@@ -512,6 +531,10 @@ class Form extends Component
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
         ];
+        $rules['sku'] = [
+            'nullable', 'string', 'max:100',
+            $this->productId ? 'unique:products,sku,'.$this->productId : 'unique:products,sku',
+        ];
         $rules['variations.*.price'] = 'nullable|numeric|min:0';
         $rules['variations.*.discount_price'] = 'nullable|numeric|min:0|lt:variations.*.price';
         $rules['variations.*.quantity'] = 'nullable|integer|min:0|lte:quantity';
@@ -535,6 +558,8 @@ class Form extends Component
         $data = [
             'name' => $this->translatablePayload('name'),
             'brand_id' => $this->brand_id !== '' ? (int) $this->brand_id : null,
+            'vendor_id' => $this->vendor_id !== '' ? (int) $this->vendor_id : null,
+            'sku' => $this->sku !== '' ? $this->sku : null,
             'product_type' => $this->product_type,
             'price' => $this->price,
             'discount_price' => $this->discount_price !== '' ? $this->discount_price : null,

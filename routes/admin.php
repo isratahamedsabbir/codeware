@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\ProductExportController;
 use App\Http\Controllers\Admin\ReportExportController;
 use App\Http\Controllers\Admin\UserCardController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\ProductLabelController;
 use App\Livewire\Admin\About;
 use App\Livewire\Admin\Advance\Backup;
 use App\Livewire\Admin\Advance\Database;
@@ -84,7 +85,9 @@ Route::middleware('feature:products')->group(function () {
     Route::get('/products', App\Livewire\Admin\Products\Index::class)->name('products');
     Route::get('/products/export', [ProductExportController::class, 'export'])->name('products.export');
     Route::get('/products/create', App\Livewire\Admin\Products\Form::class)->name('products.create');
+    Route::get('/products/{id}', App\Livewire\Admin\Products\Show::class)->name('products.show');
     Route::get('/products/{id}/edit', App\Livewire\Admin\Products\Form::class)->name('products.edit');
+    Route::get('/products/{id}/label', [ProductLabelController::class, 'download'])->name('products.label');
 
     Route::get('/product-categories', App\Livewire\Admin\ProductCategories\Index::class)->name('product-categories');
     Route::get('/product-categories/create', App\Livewire\Admin\ProductCategories\Form::class)->name('product-categories.create');
@@ -97,6 +100,10 @@ Route::middleware('feature:products')->group(function () {
     Route::get('/product-brands', App\Livewire\Admin\ProductBrands\Index::class)->name('product-brands');
     Route::get('/product-brands/create', App\Livewire\Admin\ProductBrands\Form::class)->name('product-brands.create');
     Route::get('/product-brands/{id}/edit', App\Livewire\Admin\ProductBrands\Form::class)->name('product-brands.edit');
+
+    Route::get('/product-vendors', App\Livewire\Admin\ProductVendors\Index::class)->name('product-vendors');
+    Route::get('/product-vendors/create', App\Livewire\Admin\ProductVendors\Form::class)->name('product-vendors.create');
+    Route::get('/product-vendors/{id}/edit', App\Livewire\Admin\ProductVendors\Form::class)->name('product-vendors.edit');
 });
 
 // System-only screens — Admin/Super Admin only, not Staff (see access-admin-system gate)
@@ -156,6 +163,7 @@ Route::middleware('can:access-admin-system')->group(function () {
         Route::get('/orders/{id}', Show::class)->name('orders.show');
         Route::get('/orders/{order}/invoice', [InvoiceController::class, 'show'])->name('orders.invoice');
         Route::get('/orders/{order}/invoice/download', [InvoiceController::class, 'download'])->name('orders.invoice.download');
+        Route::get('/orders/{order}/address', [InvoiceController::class, 'address'])->name('orders.address');
 
         Route::get('/reports', App\Livewire\Admin\Reports\Index::class)->name('reports');
         Route::get('/reports/export', [ReportExportController::class, 'export'])->name('reports.export');

@@ -5,6 +5,10 @@
             View Invoice
         </flux:button>
 
+        <flux:button variant="outline" size="sm" icon="printer" href="{{ route('admin.orders.address', $order) }}" target="_blank">
+            Print Address
+        </flux:button>
+
         <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.orders') }}" wire:navigate>
             Back to Orders
         </flux:button>

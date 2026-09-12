@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
@@ -57,6 +58,16 @@ class User extends Authenticatable
     public function conversations(): Builder
     {
         return Conversation::forUser($this);
+    }
+
+    /**
+     * Vendor(s) this user can access the vendor portal for (App\Livewire\Vendor\*)
+     * — see 'access-vendor-portal' gate. A user can be assigned to more than one
+     * vendor, in which case the portal shows products/orders across all of them.
+     */
+    public function vendors(): BelongsToMany
+    {
+        return $this->belongsToMany(ProductVendor::class, 'product_vendor_user', 'user_id', 'vendor_id');
     }
 
     /**

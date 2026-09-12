@@ -252,6 +252,7 @@
                             {{-- Actions --}}
                             <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-50/30 border-l border-zinc-100 px-4 py-2">
                                 <x-admin-row-actions :actions="[
+                                    ['href' => route('admin.products.show', $product->id), 'icon' => 'eye', 'label' => 'View', 'color' => 'secondary'],
                                     ['href' => route('admin.products.edit', $product->id), 'icon' => 'pencil', 'label' => 'Edit', 'color' => 'primary'],
                                     $product->page
                                         ? ['href' => route('admin.pages.edit', $product->page->id), 'icon' => 'document', 'label' => 'Page', 'color' => 'secondary']

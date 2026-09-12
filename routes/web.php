@@ -4,6 +4,7 @@ use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\TestController;
 use App\Models\Setting;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [FrontendController::class, 'home'])->name('home');
@@ -27,7 +28,20 @@ Route::middleware('signed')->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::redirect('dashboard', '/admin')->name('dashboard');
+    // A vendor-assigned user never passes access-admin (they're not
+    // is_admin/admin/staff), so a blanket redirect to /admin would just get
+    // them 403'd by AdminMiddleware — send them to their own portal instead.
+    // Everyone else keeps landing on /admin, same as the previous plain
+    // Route::redirect('dashboard', '/admin').
+    Route::get('dashboard', function () {
+        $user = auth()->user();
+
+        if (! Gate::forUser($user)->allows('access-admin') && Gate::forUser($user)->allows('access-vendor-portal')) {
+            return redirect()->route('vendor.dashboard');
+        }
+
+        return redirect('/admin');
+    })->name('dashboard');
 });
 
 Route::get('/token', function () {

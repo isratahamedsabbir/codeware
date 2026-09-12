@@ -5,6 +5,7 @@ use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
+use App\Models\ProductVendor;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 
@@ -134,6 +135,60 @@ it('rejects a product with a non-existent brand_id', function () {
         'name' => ['en' => 'Bad Brand Product', 'bn' => ''],
         'brand_id' => 999999,
     ])->assertStatus(422)->assertJsonValidationErrors('brand_id');
+});
+
+it('admin can create a product with a vendor and sku', function () {
+    Sanctum::actingAs($this->admin);
+    $vendor = ProductVendor::factory()->create();
+
+    $response = $this->postJson('/api/v1/admin/products', [
+        'name' => ['en' => 'Vendored Product', 'bn' => ''],
+        'vendor_id' => $vendor->id,
+        'sku' => 'ABC-123',
+        'status' => 'inactive',
+    ])->assertCreated();
+
+    $product = Product::findOrFail($response->json('data.id'));
+    expect($product->vendor_id)->toBe($vendor->id);
+    expect($product->vendor->name)->toBe($vendor->name);
+    expect($product->sku)->toBe('ABC-123');
+});
+
+it('rejects a duplicate sku', function () {
+    Sanctum::actingAs($this->admin);
+    Product::factory()->create(['sku' => 'DUP-1']);
+
+    $this->postJson('/api/v1/admin/products', [
+        'name' => ['en' => 'Duplicate SKU Product', 'bn' => ''],
+        'sku' => 'DUP-1',
+    ])->assertStatus(422)->assertJsonValidationErrors('sku');
+});
+
+it('admin can update a product\'s vendor and sku', function () {
+    Sanctum::actingAs($this->admin);
+    $product = Product::factory()->create();
+    $vendor = ProductVendor::factory()->create();
+
+    $this->putJson("/api/v1/admin/products/{$product->id}", [
+        'vendor_id' => $vendor->id,
+        'sku' => 'XYZ-789',
+    ])->assertOk();
+
+    $product->refresh();
+    expect($product->vendor_id)->toBe($vendor->id);
+    expect($product->sku)->toBe('XYZ-789');
+});
+
+it('allows keeping a product\'s own sku unchanged when updating', function () {
+    Sanctum::actingAs($this->admin);
+    $product = Product::factory()->create(['sku' => 'KEEP-1']);
+
+    $this->putJson("/api/v1/admin/products/{$product->id}", [
+        'sku' => 'KEEP-1',
+        'status' => 'active',
+    ])->assertOk();
+
+    expect($product->fresh()->sku)->toBe('KEEP-1');
 });
 
 it('admin can create a product with gallery sync', function () {

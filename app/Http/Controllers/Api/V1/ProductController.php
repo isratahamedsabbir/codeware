@@ -84,6 +84,7 @@ class ProductController extends Controller
             'in_stock' => $product->inStock(),
             'charge_shipping' => $product->charge_shipping,
             'featured_image' => $product->featured_image,
+            'sku' => $product->sku,
             'product_type' => $product->product_type,
             'is_featured' => $product->is_featured,
             'is_upcoming' => $product->is_upcoming,
