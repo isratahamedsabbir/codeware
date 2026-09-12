@@ -17,8 +17,9 @@ return new class extends Migration
         Schema::create('faqs', function (Blueprint $table) {
             $table->id();
             $table->morphs('faqable');
-            $table->json('question');
-            $table->json('answer');
+            $table->string('question');
+            $table->text('answer')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->unsignedSmallInteger('sort_order')->default(0);
             $table->timestamps();
         });

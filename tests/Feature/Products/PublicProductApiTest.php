@@ -231,9 +231,9 @@ it('public product detail includes puck_data from the paired page', function () 
         ->assertJsonPath('data.page.puck_data', $puckData);
 });
 
-it('public product detail includes faq for locale', function () {
+it('public product detail includes faq', function () {
     $product = Product::factory()->published()->create();
-    $product->faqs()->create(['question' => ['en' => 'What is this?', 'bn' => 'এটি কি?'], 'answer' => ['en' => 'A product.', 'bn' => 'একটি পণ্য।']]);
+    $product->faqs()->create(['question' => 'What is this?', 'answer' => 'A product.']);
     pairPageFor($product, 'product', 'faq-product', $this->admin->id);
 
     $this->getJson("/api/v1/products/{$product->slug}")
@@ -242,17 +242,16 @@ it('public product detail includes faq for locale', function () {
         ->assertJsonPath('data.faq.0.answer', 'A product.');
 });
 
-it('public product detail returns faq in bn locale', function () {
-    Language::create(['code' => 'bn', 'name' => 'Bengali', 'native_name' => 'বাংলা', 'is_active' => true]);
-
+it('public product detail excludes inactive faqs', function () {
     $product = Product::factory()->published()->create();
-    $product->faqs()->create(['question' => ['en' => 'What is this?', 'bn' => 'এটি কি?'], 'answer' => ['en' => 'A product.', 'bn' => 'একটি পণ্য।']]);
-    pairPageFor($product, 'product', 'faq-product-bn', $this->admin->id);
+    $product->faqs()->create(['question' => 'Visible?', 'answer' => 'Yes.', 'is_active' => true]);
+    $product->faqs()->create(['question' => 'Hidden?', 'answer' => 'No.', 'is_active' => false]);
+    pairPageFor($product, 'product', 'faq-product-inactive', $this->admin->id);
 
-    $this->getJson("/api/v1/products/{$product->slug}?locale=bn")
-        ->assertOk()
-        ->assertJsonPath('data.faq.0.question', 'এটি কি?')
-        ->assertJsonPath('data.faq.0.answer', 'একটি পণ্য।');
+    $response = $this->getJson("/api/v1/products/{$product->slug}")->assertOk();
+
+    expect($response->json('data.faq'))->toHaveCount(1);
+    $response->assertJsonPath('data.faq.0.question', 'Visible?');
 });
 
 it('public product listing includes puck_data nested under page, never at the top level', function () {

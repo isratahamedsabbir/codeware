@@ -117,7 +117,8 @@
 
         {{-- Variations --}}
         <x-admin-section-card icon="adjustments-horizontal" title="Variations" icon-color="bg-violet-500/10 text-violet-600"
-            description="Pick which attributes apply to this product, then check the values that matter (e.g. Color: Red, Blue + Size: Small) — a card for every combination appears automatically, each optionally overriding the base price/stock.">
+            description="Pick which attributes apply to this product, then check the values that matter (e.g. Color: Red, Blue + Size: Small) — a card for every combination appears automatically, each optionally overriding the base price/stock."
+            collapsible :collapsed="true">
 
             {{-- Which attributes apply to this product --}}
             <div class="rounded-xl border border-zinc-200 bg-zinc-50/70 p-4 mb-3">
@@ -231,41 +232,36 @@
 
         {{-- FAQ --}}
         <x-admin-section-card icon="question-mark-circle" title="FAQ" icon-color="bg-sky-500/10 text-sky-600"
-            description="Product-specific questions and answers, shown in a FAQ section on the product page.">
+            description="Product-specific questions and answers, shown in a FAQ section on the product page."
+            collapsible :collapsed="true">
 
             <div class="space-y-3">
                 @forelse ($faqs as $i => $row)
-                    <div wire:key="faq-{{ $i }}" class="rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+                    <div wire:key="faq-{{ $i }}" class="rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden {{ ($row['is_active'] ?? true) ? '' : 'opacity-60' }}">
                         <div class="flex items-center justify-between gap-2 px-3.5 py-2.5 border-b border-zinc-100 bg-linear-to-r from-sky-50/70 to-transparent">
                             <span class="text-xs font-semibold text-zinc-500">Question {{ $i + 1 }}</span>
-                            <button type="button" wire:click="removeFaq({{ $i }})"
-                                class="rounded-lg p-1 text-zinc-400 transition-colors hover:bg-rose-50 hover:text-rose-500 cursor-pointer" aria-label="Remove">
-                                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
+                            <div class="flex items-center gap-2">
+                                <flux:tooltip content="Show on the storefront">
+                                    <flux:switch wire:model.live="faqs.{{ $i }}.is_active" size="sm" />
+                                </flux:tooltip>
+                                <button type="button" wire:click="removeFaq({{ $i }})"
+                                    class="rounded-lg p-1 text-zinc-400 transition-colors hover:bg-rose-50 hover:text-rose-500 cursor-pointer" aria-label="Remove">
+                                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                        <div class="p-3.5">
-                            <x-admin-locale-tabs>
-                                @foreach (\App\Support\Locale::active() as $language)
-                                    <x-admin-locale-panel :code="$language->code" class="space-y-3">
-                                        <flux:field>
-                                            <flux:label>
-                                                Question
-                                                @if ($language->code === $this->primaryLocale)<span class="text-red-500 ml-0.5">*</span>@endif
-                                            </flux:label>
-                                            <flux:input wire:model="faqs.{{ $i }}.question.{{ $language->code }}"
-                                                placeholder="{{ $language->code === $this->primaryLocale ? 'e.g. What is the warranty period?' : 'Question ('.($language->native_name ?: $language->name).')' }}" />
-                                            @if ($language->code === $this->primaryLocale)<flux:error name="faqs.{{ $i }}.question.{{ $language->code }}" />@endif
-                                        </flux:field>
-                                        <flux:field>
-                                            <flux:label>Answer</flux:label>
-                                            <flux:textarea wire:model="faqs.{{ $i }}.answer.{{ $language->code }}" rows="3"
-                                                placeholder="{{ $language->code === $this->primaryLocale ? 'Answer' : 'Answer ('.($language->native_name ?: $language->name).')' }}" />
-                                        </flux:field>
-                                    </x-admin-locale-panel>
-                                @endforeach
-                            </x-admin-locale-tabs>
+                        <div class="p-3.5 space-y-3">
+                            <flux:field>
+                                <flux:label>Question</flux:label>
+                                <flux:input wire:model="faqs.{{ $i }}.question" placeholder="e.g. What is the warranty period?" />
+                                <flux:error name="faqs.{{ $i }}.question" />
+                            </flux:field>
+                            <flux:field>
+                                <flux:label>Answer</flux:label>
+                                <flux:textarea wire:model="faqs.{{ $i }}.answer" rows="3" placeholder="Answer" />
+                            </flux:field>
                         </div>
                     </div>
                 @empty
@@ -294,11 +290,11 @@
             {{-- Categories --}}
             <x-admin-section-card icon="tag" title="Categories" icon-color="bg-amber-500/10 text-amber-600"
                 body-class="px-4 py-3" description="A product can belong to more than one category.">
-                <flux:checkbox.group wire:model="category_ids" class="flex-col items-stretch gap-0.5 max-h-72 overflow-y-auto border border-zinc-200 rounded-lg p-2">
+                <flux:checkbox.group wire:model="category_ids" class="flex-col items-stretch gap-0 max-h-72 overflow-y-auto border border-zinc-200 rounded-lg p-2">
                     @forelse ($this->categoryTree as $cat)
-                        <div class="rounded-md py-2 hover:bg-zinc-50 transition-colors" style="padding-left: {{ 8 + $cat->depth * 20 }}px">
+                        <div class="rounded-md py-0 hover:bg-zinc-50 transition-colors [&_ui-label]:text-xs [&_ui-label]:leading-4 [&_ui-checkbox]:size-4" style="padding-left: {{ 8 + $cat->depth * 8 }}px">
                             <flux:checkbox value="{{ $cat->id }}"
-                                label="{{ $cat->depth > 0 ? '↳ ' : '' }}{{ $cat->getTranslation('name', \App\Support\Locale::primary(), false) }}" />
+                                label="{{ $cat->getTranslation('name', \App\Support\Locale::primary(), false) }}" />
                         </div>
                     @empty
                         <p class="text-xs text-zinc-400 px-2 py-1">No categories yet — create one from Product Categories first.</p>

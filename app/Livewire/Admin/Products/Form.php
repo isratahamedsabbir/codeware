@@ -114,9 +114,10 @@ class Form extends Component
     /**
      * Backed by the shared `faqs` table (App\Concerns\HasFaqs), not a column
      * on the product itself — see persistProduct(), which replaces the whole
-     * list via Product::syncFaqs() on every save.
+     * list via Product::syncFaqs() on every save. Not translatable — `is_active`
+     * controls whether a question shows on the storefront.
      *
-     * @var array<int, array{question: array<string, string>, answer: array<string, string>}>
+     * @var array<int, array{question: string, answer: string, is_active: bool}>
      */
     public array $faqs = [];
 
@@ -162,8 +163,9 @@ class Form extends Component
             }
 
             $this->faqs = $product->faqs->map(fn ($faq) => [
-                'question' => $faq->getTranslations('question'),
-                'answer' => $faq->getTranslations('answer'),
+                'question' => $faq->question,
+                'answer' => $faq->answer ?? '',
+                'is_active' => (bool) $faq->is_active,
             ])->all();
 
             $this->pageId = $product->page?->id;
@@ -296,7 +298,7 @@ class Form extends Component
 
     public function addFaq(): void
     {
-        $this->faqs[] = ['question' => [], 'answer' => []];
+        $this->faqs[] = ['question' => '', 'answer' => '', 'is_active' => true];
     }
 
     public function removeFaq(int $index): void
@@ -306,18 +308,19 @@ class Form extends Component
     }
 
     /**
-     * Drops any row left with no primary-locale question — e.g. a blank card
-     * added via addFaq() and never filled in.
+     * Drops any row left with no question — e.g. a blank card added via
+     * addFaq() and never filled in.
      *
-     * @return array<int, array{question: array<string, string>, answer: array<string, string>}>
+     * @return array<int, array{question: string, answer: string, is_active: bool}>
      */
     private function cleanedFaqs(): array
     {
         return collect($this->faqs)
-            ->filter(fn ($row) => filled($row['question'][$this->primaryLocale] ?? null))
+            ->filter(fn ($row) => filled($row['question'] ?? null))
             ->map(fn ($row) => [
-                'question' => array_filter($row['question'] ?? []),
-                'answer' => array_filter($row['answer'] ?? []),
+                'question' => $row['question'],
+                'answer' => $row['answer'] ?? '',
+                'is_active' => (bool) ($row['is_active'] ?? true),
             ])
             ->values()
             ->all();
@@ -449,6 +452,7 @@ class Form extends Component
         $rules['variations.*.price'] = 'nullable|numeric|min:0';
         $rules['variations.*.discount_price'] = 'nullable|numeric|min:0|lt:variations.*.price';
         $rules['variations.*.quantity'] = 'nullable|integer|min:0|lte:quantity';
+        $rules['faqs.*.question'] = 'nullable|string|max:255';
         $rules['category_ids'] = 'array';
         $rules['category_ids.*'] = 'integer|exists:categories,id,type,product';
 
@@ -489,6 +493,7 @@ class Form extends Component
         $rules['variations.*.price'] = 'nullable|numeric|min:0';
         $rules['variations.*.discount_price'] = 'nullable|numeric|min:0|lt:variations.*.price';
         $rules['variations.*.quantity'] = 'nullable|integer|min:0|lte:quantity';
+        $rules['faqs.*.question'] = 'nullable|string|max:255';
         $rules['category_ids'] = 'array';
         $rules['category_ids.*'] = 'integer|exists:categories,id,type,product';
 

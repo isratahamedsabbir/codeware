@@ -1,6 +1,6 @@
 <x-admin-section-card icon="magnifying-glass" title="Search Engine (SEO) Settings"
     icon-color="bg-sky-500/10 text-sky-600" body-class="px-6 py-5 grid grid-cols-1 lg:grid-cols-2 gap-x-7 gap-y-5"
-    description="Meta tags and indexing controls.">
+    description="Meta tags and indexing controls." collapsible :collapsed="true">
 
         {{-- Canonical URL --}}
         <div class="lg:col-span-2 min-w-0">

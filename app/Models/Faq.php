@@ -4,17 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Spatie\Translatable\HasTranslations;
 
 class Faq extends Model
 {
-    use HasTranslations;
-
-    public array $translatable = ['question', 'answer'];
-
-    protected $fillable = ['faqable_type', 'faqable_id', 'question', 'answer', 'sort_order'];
+    protected $fillable = ['faqable_type', 'faqable_id', 'question', 'answer', 'is_active', 'sort_order'];
 
     protected $casts = [
+        'is_active' => 'boolean',
         'sort_order' => 'integer',
     ];
 

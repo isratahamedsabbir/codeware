@@ -22,7 +22,7 @@ trait HasFaqs
      * Replaces the entire FAQ list for this model in one go — admin save
      * flows submit the whole list every time rather than diffing it.
      *
-     * @param  array<int, array{question: array<string, string>, answer: array<string, string>}>  $items
+     * @param  array<int, array{question: string, answer: ?string, is_active: bool}>  $items
      */
     public function syncFaqs(array $items): void
     {
@@ -30,8 +30,9 @@ trait HasFaqs
 
         foreach (array_values($items) as $index => $item) {
             $this->faqs()->create([
-                'question' => $item['question'] ?? [],
-                'answer' => $item['answer'] ?? [],
+                'question' => $item['question'] ?? '',
+                'answer' => $item['answer'] ?? null,
+                'is_active' => $item['is_active'] ?? true,
                 'sort_order' => $index,
             ]);
         }

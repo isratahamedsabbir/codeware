@@ -155,24 +155,23 @@ it('admin can save faq when updating a product', function () {
     $product = Product::factory()->create();
 
     $faq = [
-        ['question' => ['en' => 'What is this?', 'bn' => 'এটি কি?'], 'answer' => ['en' => 'A product.', 'bn' => 'একটি পণ্য।']],
+        ['question' => 'What is this?', 'answer' => 'A product.', 'is_active' => false],
     ];
 
     $this->putJson("/api/v1/admin/products/{$product->id}", ['faq' => $faq])
         ->assertOk();
 
     $saved = Product::find($product->id)->faqs->first();
-    expect($saved->getTranslation('question', 'en'))->toBe('What is this?');
-    expect($saved->getTranslation('question', 'bn'))->toBe('এটি কি?');
-    expect($saved->getTranslation('answer', 'en'))->toBe('A product.');
-    expect($saved->getTranslation('answer', 'bn'))->toBe('একটি পণ্য।');
+    expect($saved->question)->toBe('What is this?');
+    expect($saved->answer)->toBe('A product.');
+    expect($saved->is_active)->toBeFalse();
 });
 
 it('admin can create a product with puck_data and faq, puck_data landing on the paired page', function () {
     Sanctum::actingAs($this->admin);
 
     $puckData = ['root' => ['props' => []], 'content' => []];
-    $faq = [['question' => ['en' => 'Q?', 'bn' => ''], 'answer' => ['en' => 'A.', 'bn' => '']]];
+    $faq = [['question' => 'Q?', 'answer' => 'A.']];
 
     $this->postJson('/api/v1/admin/products', [
         'name' => ['en' => 'Puck Product', 'bn' => ''],
@@ -185,6 +184,6 @@ it('admin can create a product with puck_data and faq, puck_data landing on the 
     $product = Product::findOrFail($page->product_id);
     $savedFaq = $product->faqs->first();
     expect($page->puck_data)->toBe($puckData);
-    expect($savedFaq->getTranslation('question', 'en'))->toBe('Q?');
-    expect($savedFaq->getTranslation('answer', 'en'))->toBe('A.');
+    expect($savedFaq->question)->toBe('Q?');
+    expect($savedFaq->answer)->toBe('A.');
 });
