@@ -2,6 +2,7 @@
 
 use App\Livewire\Admin\Users\Form as UsersForm;
 use App\Livewire\Admin\Users\Index as UsersIndex;
+use App\Models\ProductVendor;
 use App\Models\User;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
@@ -95,6 +96,35 @@ it('validates unique email on update', function () {
         ->set('email', 'taken@example.com')
         ->call('save')
         ->assertHasErrors(['email']);
+});
+
+it('assigns a user to more than one vendor', function () {
+    $vendorA = ProductVendor::factory()->create();
+    $vendorB = ProductVendor::factory()->create();
+
+    Livewire::test(UsersForm::class)
+        ->set('name', 'Vendor Rep')
+        ->set('email', 'rep@example.com')
+        ->set('password', 'password123')
+        ->set('vendor_ids', [$vendorA->id, $vendorB->id])
+        ->call('save');
+
+    $user = User::where('email', 'rep@example.com')->sole();
+    expect($user->vendors->pluck('id')->sort()->values()->all())->toBe([$vendorA->id, $vendorB->id]);
+});
+
+it('updates a user\'s assigned vendors, removing ones no longer selected', function () {
+    $vendorA = ProductVendor::factory()->create();
+    $vendorB = ProductVendor::factory()->create();
+    $user = User::factory()->create();
+    $user->vendors()->attach([$vendorA->id, $vendorB->id]);
+
+    Livewire::test(UsersForm::class, ['id' => $user->id])
+        ->assertSet('vendor_ids', fn ($ids) => in_array($vendorA->id, $ids) && in_array($vendorB->id, $ids))
+        ->set('vendor_ids', [$vendorA->id])
+        ->call('save');
+
+    expect($user->fresh()->vendors->pluck('id')->all())->toBe([$vendorA->id]);
 });
 
 it('cannot delete own account', function () {

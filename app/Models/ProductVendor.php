@@ -13,7 +13,7 @@ class ProductVendor extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'logo', 'address', 'status', 'sort_order'];
+    protected $fillable = ['name', 'logo', 'signature', 'address', 'status', 'sort_order'];
 
     protected $casts = [
         'sort_order' => 'integer',
@@ -32,6 +32,11 @@ class ProductVendor extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'product_vendor_user', 'vendor_id', 'user_id');
+    }
+
+    public function documents(): HasMany
+    {
+        return $this->hasMany(VendorDocument::class, 'vendor_id');
     }
 
     public function scopeActive(Builder $query): Builder

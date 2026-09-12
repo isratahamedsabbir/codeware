@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Users;
 
+use App\Models\ProductVendor;
 use App\Models\User;
 use App\Support\AdminActivity;
 use Illuminate\Support\Facades\Storage;
@@ -32,6 +33,14 @@ class Form extends Component
 
     public array $selectedRoles = [];
 
+    /**
+     * Vendor ids this user can log into the Vendor Portal for — a user can be
+     * assigned to more than one vendor, see User::vendors().
+     *
+     * @var array<int, int>
+     */
+    public array $vendor_ids = [];
+
     /** A freshly-chosen upload, previewed via ->temporaryUrl() until saved. */
     public $photo = null;
 
@@ -56,6 +65,7 @@ class Form extends Component
             $this->email = $user->email;
             $this->isAdmin = (bool) $user->is_admin;
             $this->selectedRoles = $user->roles->pluck('name')->toArray();
+            $this->vendor_ids = $user->vendors->pluck('id')->all();
             $this->signature = $user->signature;
             $this->existingPhotoPath = $user->photo;
         }
@@ -75,6 +85,8 @@ class Form extends Component
             'password' => ['nullable', 'string', 'min:8'],
             'isAdmin' => ['boolean'],
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'vendor_ids' => ['array'],
+            'vendor_ids.*' => ['integer', 'exists:product_vendors,id'],
         ]);
 
         $user = $this->userId
@@ -101,6 +113,7 @@ class Form extends Component
         );
 
         $user->syncRoles($this->selectedRoles);
+        $user->vendors()->sync($this->vendor_ids);
 
         $this->dispatch('notify', message: $this->userId ? 'User updated successfully' : 'User created successfully');
 
@@ -168,6 +181,7 @@ class Form extends Component
     {
         return view('livewire.admin.users.form', [
             'roles' => Role::withCount('permissions')->orderBy('name')->get(),
+            'vendors' => ProductVendor::orderBy('name')->get(['id', 'name']),
         ])->layout('layouts.admin', ['title' => $this->userId ? 'Edit User' : 'New User']);
     }
 }

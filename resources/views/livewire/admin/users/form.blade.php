@@ -116,6 +116,21 @@
                 </label>
             </x-admin-section-card>
 
+            {{-- Vendor Access --}}
+            <x-admin-section-card icon="building-storefront" title="Vendor Access" icon-color="bg-amber-500/10 text-amber-600"
+                body-class="px-4 py-3" description="Vendors this user can log in and see in the Vendor Portal.">
+                <flux:checkbox.group wire:model="vendor_ids" class="flex-col items-stretch gap-0.5 max-h-56 overflow-y-auto">
+                    @forelse ($vendors as $vendor)
+                        <div class="rounded-md py-1 px-1 hover:bg-zinc-50 transition-colors">
+                            <flux:checkbox value="{{ $vendor->id }}" label="{{ $vendor->name }}" />
+                        </div>
+                    @empty
+                        <p class="text-xs text-zinc-400 px-2 py-1">No vendors yet.</p>
+                    @endforelse
+                </flux:checkbox.group>
+                <flux:error name="vendor_ids" />
+            </x-admin-section-card>
+
             {{-- Signature --}}
             <x-admin-section-card icon="pencil" title="Signature" icon-color="bg-indigo-500/10 text-indigo-600"
                 body-class="px-4 py-3" description="Draw or upload a signature image.">

@@ -5,6 +5,9 @@ use App\Livewire\Admin\ProductVendors\Index as ProductVendorIndex;
 use App\Models\Product;
 use App\Models\ProductVendor;
 use App\Models\User;
+use App\Models\VendorDocument;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -50,47 +53,96 @@ it('creates a vendor, active by default', function () {
         ->and($vendor->status)->toBe('active');
 });
 
-it('creates a vendor with an address and assigned users', function () {
-    $userA = User::factory()->create();
-    $userB = User::factory()->create();
-
+it('creates a vendor with an address', function () {
     Livewire::test(ProductVendorForm::class)
         ->set('name', 'Acme Supplies')
         ->set('address', '123 Market St')
-        ->set('user_ids', [$userA->id, $userB->id])
         ->call('save');
 
     $vendor = ProductVendor::sole();
     expect($vendor->address)->toBe('123 Market St');
-    expect($vendor->users->pluck('id')->sort()->values()->all())->toBe([$userA->id, $userB->id]);
 });
 
-it('assigns the same user to more than one vendor', function () {
-    $user = User::factory()->create();
-    $vendorA = ProductVendor::factory()->create();
+it('saves a signature drawn on the pad as an image file', function () {
+    Storage::fake('public');
+    $dataUri = 'data:image/png;base64,'.base64_encode('fake-png-bytes');
 
     Livewire::test(ProductVendorForm::class)
-        ->set('name', 'Second Vendor')
-        ->set('user_ids', [$user->id])
+        ->set('name', 'Acme Supplies')
+        ->set('signature', $dataUri)
         ->call('save');
 
-    $vendorA->users()->attach($user);
-
-    expect($user->fresh()->vendors()->count())->toBe(2);
+    $vendor = ProductVendor::sole();
+    expect($vendor->signature)->not->toBeNull();
+    Storage::disk('public')->assertExists($vendor->signature);
 });
 
-it('updates a vendor\'s assigned users, removing ones no longer selected', function () {
-    $userA = User::factory()->create();
-    $userB = User::factory()->create();
-    $vendor = ProductVendor::factory()->create();
-    $vendor->users()->attach([$userA->id, $userB->id]);
+it('replaces the old signature file when a new one is saved', function () {
+    Storage::fake('public');
+    $vendor = ProductVendor::factory()->create(['signature' => 'signatures/old.png']);
+    Storage::disk('public')->put('signatures/old.png', 'old-bytes');
+    $dataUri = 'data:image/png;base64,'.base64_encode('new-png-bytes');
 
     Livewire::test(ProductVendorForm::class, ['id' => $vendor->id])
-        ->assertSet('user_ids', fn ($ids) => in_array($userA->id, $ids) && in_array($userB->id, $ids))
-        ->set('user_ids', [$userA->id])
+        ->set('signature', $dataUri)
         ->call('save');
 
-    expect($vendor->fresh()->users->pluck('id')->all())->toBe([$userA->id]);
+    Storage::disk('public')->assertMissing('signatures/old.png');
+    expect($vendor->fresh()->signature)->not->toBe('signatures/old.png');
+});
+
+it('clears the signature when removed on the pad', function () {
+    Storage::fake('public');
+    $vendor = ProductVendor::factory()->create(['signature' => 'signatures/old.png']);
+    Storage::disk('public')->put('signatures/old.png', 'old-bytes');
+
+    Livewire::test(ProductVendorForm::class, ['id' => $vendor->id])
+        ->set('signature', null)
+        ->call('save');
+
+    expect($vendor->fresh()->signature)->toBeNull();
+    Storage::disk('public')->assertMissing('signatures/old.png');
+});
+
+it('uploads documents against an existing vendor', function () {
+    Storage::fake('public');
+    $vendor = ProductVendor::factory()->create();
+
+    Livewire::test(ProductVendorForm::class, ['id' => $vendor->id])
+        ->set('newDocuments', [
+            UploadedFile::fake()->create('trade-license.pdf', 100, 'application/pdf'),
+            UploadedFile::fake()->image('nid.jpg'),
+        ])
+        ->call('uploadDocuments');
+
+    expect($vendor->documents()->count())->toBe(2);
+    $document = $vendor->documents()->where('name', 'trade-license.pdf')->sole();
+    Storage::disk('public')->assertExists($document->file);
+});
+
+it('rejects a document of an unsupported file type', function () {
+    Storage::fake('public');
+    $vendor = ProductVendor::factory()->create();
+
+    Livewire::test(ProductVendorForm::class, ['id' => $vendor->id])
+        ->set('newDocuments', [UploadedFile::fake()->create('malware.exe', 10)])
+        ->call('uploadDocuments')
+        ->assertHasErrors(['newDocuments.0']);
+
+    expect($vendor->documents()->count())->toBe(0);
+});
+
+it('deletes a vendor document', function () {
+    Storage::fake('public');
+    $vendor = ProductVendor::factory()->create();
+    Storage::disk('public')->put('vendor-documents/doc.pdf', 'contents');
+    $document = VendorDocument::create(['vendor_id' => $vendor->id, 'name' => 'doc.pdf', 'file' => 'vendor-documents/doc.pdf']);
+
+    Livewire::test(ProductVendorForm::class, ['id' => $vendor->id])
+        ->call('deleteDocument', $document->id);
+
+    expect(VendorDocument::find($document->id))->toBeNull();
+    Storage::disk('public')->assertMissing('vendor-documents/doc.pdf');
 });
 
 it('rejects a duplicate vendor name', function () {
