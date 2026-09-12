@@ -54,6 +54,16 @@
             this.y = Math.min(Math.max(0, e.clientY - this.dragOffsetY), window.innerHeight - rect.height);
         },
         stopDrag() { this.dragging = false; },
+
+        downloadAsText() {
+            const blob = new Blob([this.note], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'sticky-note.txt';
+            link.click();
+            URL.revokeObjectURL(url);
+        },
     }"
     x-on:toggle-sticky-note.window="open = ! open"
     x-on:keydown.ctrl.alt.n.window="open = ! open"
@@ -71,11 +81,18 @@
                 <flux:icon.document-text class="size-3.5" />
                 {{ __('Sticky Note') }}
             </span>
-            <button type="button" x-on:pointerdown.stop x-on:click="open = false"
-                title="{{ __('Off') }}" aria-label="{{ __('Off') }}"
-                class="inline-flex size-6 items-center justify-center rounded-md text-amber-500 transition-colors hover:bg-rose-100 hover:text-rose-500 cursor-pointer">
-                <flux:icon.power class="size-3.5" />
-            </button>
+            <div class="flex items-center gap-1">
+                <button type="button" x-on:pointerdown.stop x-on:click="downloadAsText()"
+                    title="{{ __('Save as text file') }}" aria-label="{{ __('Save as text file') }}"
+                    class="inline-flex size-6 items-center justify-center rounded-md text-amber-500 transition-colors hover:bg-amber-200/70 hover:text-amber-700 cursor-pointer">
+                    <flux:icon.arrow-down-tray class="size-3.5" />
+                </button>
+                <button type="button" x-on:pointerdown.stop x-on:click="open = false"
+                    title="{{ __('Off') }}" aria-label="{{ __('Off') }}"
+                    class="inline-flex size-6 items-center justify-center rounded-md text-amber-500 transition-colors hover:bg-rose-100 hover:text-rose-500 cursor-pointer">
+                    <flux:icon.power class="size-3.5" />
+                </button>
+            </div>
         </div>
 
         {{-- Note body --}}
