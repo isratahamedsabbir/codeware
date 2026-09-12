@@ -245,6 +245,7 @@
                             @endif
                         </div>
 
+                        {{-- Name/link only — deliberately no uploader attribution. --}}
                         <ul class="space-y-1.5">
                             @forelse ($documents as $document)
                                 <li class="flex items-center justify-between gap-2 text-xs bg-zinc-50 border border-zinc-100 rounded-md px-2.5 py-1.5">

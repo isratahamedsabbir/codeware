@@ -114,24 +114,30 @@
                             </td>
                             <td class="hidden lg:table-cell px-4 py-2 text-xs text-zinc-500">{{ $order->created_at->toDisplay() }}</td>
                             <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-50/30 border-l border-zinc-100 px-4 py-2">
-                                <div class="flex items-center justify-end gap-1.5">
-                                    <div class="relative group">
-                                        <a href="{{ route('admin.orders.show', $order->id) }}" wire:navigate
-                                            aria-label="View order"
-                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-primary text-primary hover:bg-primary hover:text-white hover:-translate-y-px"
-                                            style="box-shadow:none"
-                                            onmouseover="this.style.boxShadow='0 3px 8px rgba(99,102,241,.35)'"
-                                            onmouseout="this.style.boxShadow='none'">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <x-admin-row-actions :actions="[
+                                        ['href' => route('admin.orders.show', $order->id), 'icon' => 'eye', 'label' => 'View', 'color' => 'primary'],
+                                    ]" />
+
+                                    {{-- One trigger, Admin/Customer sub-choice — a nested menu the
+                                         shared row-actions dropdown doesn't support (it's a flat
+                                         list), so this uses Flux's own dropdown/menu instead of a
+                                         hand-rolled `absolute` one: this cell sits inside a
+                                         horizontally-scrolling, sticky-column table, where a plain
+                                         `position: absolute` popover gets clipped/misplaced by the
+                                         scroll container. Flux's dropdown positions itself past that. --}}
+                                    <flux:dropdown position="bottom" align="end">
+                                        <button type="button" aria-label="Resend email"
+                                            class="inline-flex items-center justify-center w-7 h-7 rounded border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white transition-all duration-150 cursor-pointer">
                                             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                                <circle cx="12" cy="12" r="3" />
+                                                <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                                             </svg>
-                                        </a>
-                                        <span class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[11px] font-medium bg-primary text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                            View
-                                            <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-primary"></span>
-                                        </span>
-                                    </div>
+                                        </button>
+                                        <flux:menu>
+                                            <flux:menu.item wire:click="resendEmail({{ $order->id }}, 'admin')">Admin</flux:menu.item>
+                                            <flux:menu.item wire:click="resendEmail({{ $order->id }}, 'customer')">Customer</flux:menu.item>
+                                        </flux:menu>
+                                    </flux:dropdown>
                                 </div>
                             </td>
                         </tr>

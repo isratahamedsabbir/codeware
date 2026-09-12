@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->string('logo')->nullable();
             $table->string('signature')->nullable();
+            $table->string('mobile')->nullable();
+            $table->string('email')->nullable();
             $table->text('address')->nullable();
             $table->string('status', 20)->default('active');
             $table->unsignedSmallInteger('sort_order')->default(0);

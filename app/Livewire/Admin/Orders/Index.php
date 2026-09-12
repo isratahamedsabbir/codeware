@@ -5,6 +5,8 @@ namespace App\Livewire\Admin\Orders;
 use App\Concerns\HasPerPage;
 use App\Models\Order;
 use App\Models\Product;
+use App\Services\OrderEmailService;
+use App\Support\AdminActivity;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Livewire\Component;
@@ -26,6 +28,32 @@ class Index extends Component
     public function closeDetails(): void
     {
         $this->viewingId = null;
+    }
+
+    /**
+     * Manual fallback for the automatic send on order creation (see
+     * Order::booted()) — in case that send failed (SMTP hiccup, etc.) and
+     * needs to be retried, or the admin just wants to re-notify someone.
+     */
+    public function resendEmail(int $orderId, string $audience): void
+    {
+        $order = Order::findOrFail($orderId);
+        $service = app(OrderEmailService::class);
+
+        $sent = match ($audience) {
+            'customer' => $service->sendCustomerConfirmation($order),
+            'admin' => $service->sendAdminNotification($order),
+            default => false,
+        };
+
+        if (! $sent) {
+            $this->dispatch('notify', message: "Could not send the {$audience} email — check the email template and recipient address.");
+
+            return;
+        }
+
+        AdminActivity::log('updated', "Resent {$audience} email for Order: {$order->order_number}");
+        $this->dispatch('notify', message: ucfirst($audience).' email sent.');
     }
 
     public string $statusFilter = '';

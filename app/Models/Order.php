@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\OrderEmailService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -36,6 +37,15 @@ class Order extends Model
             if (empty($order->order_number)) {
                 $order->order_number = static::generateOrderNumber();
             }
+        });
+
+        // A confirmation to the customer and a notification to the admin —
+        // both best-effort (see OrderEmailService), so a mail failure never
+        // blocks the order itself from being created.
+        static::created(function (Order $order) {
+            $service = app(OrderEmailService::class);
+            $service->sendCustomerConfirmation($order);
+            $service->sendAdminNotification($order);
         });
     }
 

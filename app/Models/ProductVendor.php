@@ -13,7 +13,7 @@ class ProductVendor extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'logo', 'signature', 'address', 'status', 'sort_order'];
+    protected $fillable = ['name', 'logo', 'signature', 'mobile', 'email', 'address', 'status', 'sort_order'];
 
     protected $casts = [
         'sort_order' => 'integer',

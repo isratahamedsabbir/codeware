@@ -174,6 +174,17 @@ it('rejects a document of an unsupported file type', function () {
     expect($user->documents()->count())->toBe(0);
 });
 
+it('lists uploaded documents by name, without showing who uploaded them', function () {
+    $user = User::factory()->create();
+    $user->documents()->create(['name' => 'nid.pdf', 'file' => 'user-documents/x.pdf']);
+
+    $html = Livewire::test(UsersForm::class, ['id' => $user->id])->html();
+
+    expect($html)->toContain('nid.pdf')
+        ->not->toContain('uploaded by')
+        ->not->toContain('Uploaded by');
+});
+
 it('deletes a user document', function () {
     Storage::fake('public');
     $user = User::factory()->create();

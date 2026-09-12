@@ -1,6 +1,7 @@
 @push('page-header-actions')
     @can('access-admin-system')
-        <flux:button variant="ghost" size="sm" icon="cog-6-tooth" href="{{ route('admin.settings') }}?tab=env#VENDOR_URL" wire:navigate>
+        <flux:button variant="ghost" size="sm" icon="cog-6-tooth"
+            x-on:click="$dispatch('open-modal', { name: 'vendor-url-settings' })">
             Settings
         </flux:button>
     @endcan
@@ -148,5 +149,39 @@
             </div>
         </div>
     </flux:modal>
+
+    {{-- Settings Modal — Vendor Portal URL. Whole block gated (not just the
+         trigger button above) so the markup never reaches a staff response
+         at all, regardless of whether it's shown. --}}
+    @can('access-admin-system')
+        <flux:modal name="vendor-url-settings" class="md:w-96"
+            x-on:open-modal.window="if ($event.detail.name === 'vendor-url-settings') $flux.modal('vendor-url-settings').show()"
+            x-on:close-modal.window="if ($event.detail.name === 'vendor-url-settings') $flux.modal('vendor-url-settings').close()">
+            <div class="space-y-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <flux:icon.cog-6-tooth class="w-5 h-5 text-primary" />
+                    </div>
+                    <flux:heading>Vendor Portal Settings</flux:heading>
+                </div>
+                <flux:text class="text-sm text-zinc-500">
+                    The subdomain vendor-assigned users are sent to when they log in — e.g. <span class="font-mono text-xs">https://vendor.codeware.com</span>. Changing this edits the live .env file and requires a matching DNS/hosts entry to already point at this server.
+                </flux:text>
+                <flux:field>
+                    <flux:label>Vendor Portal URL</flux:label>
+                    <flux:input wire:model="vendorUrl" placeholder="https://vendor.codeware.test" />
+                    <flux:error name="vendorUrl" />
+                </flux:field>
+                <div class="flex gap-2 pt-1">
+                    <flux:button size="sm" variant="primary" wire:click="saveVendorUrl" wire:loading.attr="disabled">
+                        Save
+                    </flux:button>
+                    <flux:modal.close>
+                        <flux:button size="sm" variant="ghost">Cancel</flux:button>
+                    </flux:modal.close>
+                </div>
+            </div>
+        </flux:modal>
+    @endcan
 
 </div>

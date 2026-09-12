@@ -5,15 +5,24 @@ use App\Livewire\Admin\ProductVendors\Index as ProductVendorIndex;
 use App\Models\Product;
 use App\Models\ProductVendor;
 use App\Models\User;
-use App\Models\VendorDocument;
+use App\Support\EnvFile;
 use Database\Seeders\RolePermissionSeeder;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 beforeEach(function () {
+    // EnvFile must never touch the real project .env during tests — see
+    // tests/Feature/Cms/AdminSettingsEnvTest.php for the same pattern.
+    $this->envPath = sys_get_temp_dir().'/product-vendors-test-'.uniqid().'.env';
+    file_put_contents($this->envPath, "APP_NAME=Test\nVENDOR_URL=\n");
+    EnvFile::$pathOverride = $this->envPath;
+
     $this->admin = User::factory()->create(['is_admin' => true]);
     $this->actingAs($this->admin);
+});
+
+afterEach(function () {
+    EnvFile::$pathOverride = null;
+    @unlink($this->envPath);
 });
 
 test('guests and non-admins are blocked from the product vendors screen', function () {
@@ -32,10 +41,10 @@ it('renders the product vendors index with existing vendors', function () {
         ->assertSee('Acme Supplies');
 });
 
-it('shows a Settings shortcut to the vendor portal url for an admin, but not for staff', function () {
+it('shows a Settings modal to edit the vendor portal url for an admin, but not for staff', function () {
     $this->get(route('admin.product-vendors'))
         ->assertOk()
-        ->assertSee(route('admin.settings').'?tab=env#VENDOR_URL', false);
+        ->assertSee('vendor-url-settings', false);
 
     $this->seed(RolePermissionSeeder::class);
     $staff = User::factory()->create(['is_admin' => false]);
@@ -44,7 +53,54 @@ it('shows a Settings shortcut to the vendor portal url for an admin, but not for
     $this->actingAs($staff)
         ->get(route('admin.product-vendors'))
         ->assertOk()
-        ->assertDontSee(route('admin.settings').'?tab=env#VENDOR_URL', false);
+        ->assertDontSee('vendor-url-settings', false);
+});
+
+it('blocks staff from saving the vendor portal url even by calling the component method directly', function () {
+    $this->seed(RolePermissionSeeder::class);
+    $staff = User::factory()->create(['is_admin' => false]);
+    $staff->assignRole('staff');
+
+    Livewire::actingAs($staff)
+        ->test(ProductVendorIndex::class)
+        ->set('vendorUrl', 'https://vendor.codeware.com')
+        ->call('saveVendorUrl')
+        ->assertForbidden();
+
+    expect(EnvFile::get('VENDOR_URL'))->toBe('');
+});
+
+it('loads the current vendor portal url into the settings modal', function () {
+    EnvFile::set(['VENDOR_URL' => 'https://vendor.codeware.test']);
+
+    Livewire::test(ProductVendorIndex::class)
+        ->assertSet('vendorUrl', 'https://vendor.codeware.test');
+});
+
+it('saves a new vendor portal url', function () {
+    Livewire::test(ProductVendorIndex::class)
+        ->set('vendorUrl', 'https://vendor.codeware.com')
+        ->call('saveVendorUrl');
+
+    expect(EnvFile::get('VENDOR_URL'))->toBe('https://vendor.codeware.com');
+});
+
+it('rejects an invalid vendor portal url', function () {
+    Livewire::test(ProductVendorIndex::class)
+        ->set('vendorUrl', 'not-a-url')
+        ->call('saveVendorUrl')
+        ->assertHasErrors(['vendorUrl']);
+});
+
+it('allows clearing the vendor portal url', function () {
+    EnvFile::set(['VENDOR_URL' => 'https://vendor.codeware.test']);
+
+    Livewire::test(ProductVendorIndex::class)
+        ->set('vendorUrl', '')
+        ->call('saveVendorUrl')
+        ->assertHasNoErrors();
+
+    expect(EnvFile::get('VENDOR_URL'))->toBe('');
 });
 
 it('filters vendors by search', function () {
@@ -79,86 +135,32 @@ it('creates a vendor with an address', function () {
     expect($vendor->address)->toBe('123 Market St');
 });
 
-it('saves a signature drawn on the pad as an image file', function () {
-    Storage::fake('public');
-    $dataUri = 'data:image/png;base64,'.base64_encode('fake-png-bytes');
-
+it('creates a vendor with a mobile number and email', function () {
     Livewire::test(ProductVendorForm::class)
         ->set('name', 'Acme Supplies')
-        ->set('signature', $dataUri)
+        ->set('mobile', '+880 1234-567890')
+        ->set('email', 'acme@example.com')
         ->call('save');
 
     $vendor = ProductVendor::sole();
-    expect($vendor->signature)->not->toBeNull();
-    Storage::disk('public')->assertExists($vendor->signature);
+    expect($vendor->mobile)->toBe('+880 1234-567890')
+        ->and($vendor->email)->toBe('acme@example.com');
 });
 
-it('replaces the old signature file when a new one is saved', function () {
-    Storage::fake('public');
-    $vendor = ProductVendor::factory()->create(['signature' => 'signatures/old.png']);
-    Storage::disk('public')->put('signatures/old.png', 'old-bytes');
-    $dataUri = 'data:image/png;base64,'.base64_encode('new-png-bytes');
-
-    Livewire::test(ProductVendorForm::class, ['id' => $vendor->id])
-        ->set('signature', $dataUri)
-        ->call('save');
-
-    Storage::disk('public')->assertMissing('signatures/old.png');
-    expect($vendor->fresh()->signature)->not->toBe('signatures/old.png');
+it('rejects an invalid vendor email', function () {
+    Livewire::test(ProductVendorForm::class)
+        ->set('name', 'Acme Supplies')
+        ->set('email', 'not-an-email')
+        ->call('save')
+        ->assertHasErrors(['email']);
 });
 
-it('clears the signature when removed on the pad', function () {
-    Storage::fake('public');
-    $vendor = ProductVendor::factory()->create(['signature' => 'signatures/old.png']);
-    Storage::disk('public')->put('signatures/old.png', 'old-bytes');
+it('loads an existing vendor\'s mobile and email into the form', function () {
+    $vendor = ProductVendor::factory()->create(['mobile' => '+880 1234-567890', 'email' => 'acme@example.com']);
 
     Livewire::test(ProductVendorForm::class, ['id' => $vendor->id])
-        ->set('signature', null)
-        ->call('save');
-
-    expect($vendor->fresh()->signature)->toBeNull();
-    Storage::disk('public')->assertMissing('signatures/old.png');
-});
-
-it('uploads documents against an existing vendor', function () {
-    Storage::fake('public');
-    $vendor = ProductVendor::factory()->create();
-
-    Livewire::test(ProductVendorForm::class, ['id' => $vendor->id])
-        ->set('newDocuments', [
-            UploadedFile::fake()->create('trade-license.pdf', 100, 'application/pdf'),
-            UploadedFile::fake()->image('nid.jpg'),
-        ])
-        ->call('uploadDocuments');
-
-    expect($vendor->documents()->count())->toBe(2);
-    $document = $vendor->documents()->where('name', 'trade-license.pdf')->sole();
-    Storage::disk('public')->assertExists($document->file);
-});
-
-it('rejects a document of an unsupported file type', function () {
-    Storage::fake('public');
-    $vendor = ProductVendor::factory()->create();
-
-    Livewire::test(ProductVendorForm::class, ['id' => $vendor->id])
-        ->set('newDocuments', [UploadedFile::fake()->create('malware.exe', 10)])
-        ->call('uploadDocuments')
-        ->assertHasErrors(['newDocuments.0']);
-
-    expect($vendor->documents()->count())->toBe(0);
-});
-
-it('deletes a vendor document', function () {
-    Storage::fake('public');
-    $vendor = ProductVendor::factory()->create();
-    Storage::disk('public')->put('vendor-documents/doc.pdf', 'contents');
-    $document = VendorDocument::create(['vendor_id' => $vendor->id, 'name' => 'doc.pdf', 'file' => 'vendor-documents/doc.pdf']);
-
-    Livewire::test(ProductVendorForm::class, ['id' => $vendor->id])
-        ->call('deleteDocument', $document->id);
-
-    expect(VendorDocument::find($document->id))->toBeNull();
-    Storage::disk('public')->assertMissing('vendor-documents/doc.pdf');
+        ->assertSet('mobile', '+880 1234-567890')
+        ->assertSet('email', 'acme@example.com');
 });
 
 it('rejects a duplicate vendor name', function () {

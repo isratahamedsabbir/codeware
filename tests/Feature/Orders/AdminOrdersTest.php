@@ -2,6 +2,8 @@
 
 use App\Livewire\Admin\Orders\Index as OrdersIndex;
 use App\Livewire\Admin\Orders\Show as OrdersShow;
+use App\Mail\TemplateDrivenMail;
+use App\Models\EmailTemplate;
 use App\Models\Feature;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -10,6 +12,7 @@ use App\Models\Setting;
 use App\Models\Transaction;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -134,4 +137,49 @@ it('is blocked when the orders feature is disabled', function () {
 
     $this->get(route('admin.orders'))->assertNotFound();
     $this->get(route('admin.coupons'))->assertNotFound();
+});
+
+it('resends the customer confirmation email from the orders list', function () {
+    Mail::fake();
+    EmailTemplate::factory()->create(['key' => 'order_confirmation', 'active' => true]);
+    $order = Order::factory()->create(['customer_email' => 'jane@example.com']);
+    Mail::fake(); // reset — the automatic send-on-create already fired once
+
+    Livewire::test(OrdersIndex::class)
+        ->call('resendEmail', $order->id, 'customer');
+
+    Mail::assertSent(TemplateDrivenMail::class, fn ($mail) => $mail->hasTo('jane@example.com'));
+});
+
+it('resends the admin notification email from the orders list', function () {
+    Mail::fake();
+    EmailTemplate::factory()->create(['key' => 'order_admin_notification', 'active' => true]);
+    Setting::set('order_email', 'shop-admin@example.com');
+    $order = Order::factory()->create();
+    Mail::fake();
+
+    Livewire::test(OrdersIndex::class)
+        ->call('resendEmail', $order->id, 'admin');
+
+    Mail::assertSent(TemplateDrivenMail::class, fn ($mail) => $mail->hasTo('shop-admin@example.com'));
+});
+
+it('notifies instead of crashing when a resend has no active template to send', function () {
+    $order = Order::factory()->create();
+
+    Livewire::test(OrdersIndex::class)
+        ->call('resendEmail', $order->id, 'customer')
+        ->assertDispatched('notify');
+});
+
+it('rejects an unknown resend audience without sending anything', function () {
+    Mail::fake();
+    EmailTemplate::factory()->create(['key' => 'order_confirmation', 'active' => true]);
+    $order = Order::factory()->create();
+    Mail::fake();
+
+    Livewire::test(OrdersIndex::class)
+        ->call('resendEmail', $order->id, 'someone-else');
+
+    Mail::assertNothingSent();
 });
