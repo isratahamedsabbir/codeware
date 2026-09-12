@@ -8,6 +8,7 @@ use App\Models\MediaLibrary;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductAttribute;
+use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use App\Models\Setting;
 use App\Support\AdminActivity;
@@ -45,6 +46,12 @@ class Form extends Component
      * @var array<int, int>
      */
     public array $category_ids = [];
+
+    #[Validate('nullable|integer|exists:product_brands,id')]
+    public string $brand_id = '';
+
+    #[Validate('required|in:physical,digital')]
+    public string $product_type = 'physical';
 
     #[Validate('required|numeric|min:0')]
     public string $price = '0';
@@ -132,6 +139,8 @@ class Form extends Component
             $this->hydrateTranslatable($product, ['name', 'description']);
             $this->slug = $product->slug ?? '';
             $this->category_ids = $product->categories->pluck('id')->all();
+            $this->brand_id = $product->brand_id !== null ? (string) $product->brand_id : '';
+            $this->product_type = $product->product_type;
             $this->price = (string) $product->price;
             $this->discount_price = $product->discount_price !== null ? (string) $product->discount_price : '';
             $this->quantity = $product->quantity !== null ? (string) $product->quantity : '';
@@ -296,6 +305,13 @@ class Form extends Component
         $this->variations = array_values($this->variations);
     }
 
+    public function setProductType(string $type): void
+    {
+        if (in_array($type, ['physical', 'digital'], true)) {
+            $this->product_type = $type;
+        }
+    }
+
     public function addFaq(): void
     {
         $this->faqs[] = ['question' => '', 'answer' => '', 'is_active' => true];
@@ -417,6 +433,12 @@ class Form extends Component
         return ProductAttribute::orderBy('name')->get();
     }
 
+    #[Computed]
+    public function productBrands()
+    {
+        return ProductBrand::orderBy('sort_order')->orderBy('name')->get();
+    }
+
     public function openPuckEditor(): void
     {
         if (! $this->pageId) {
@@ -512,6 +534,8 @@ class Form extends Component
 
         $data = [
             'name' => $this->translatablePayload('name'),
+            'brand_id' => $this->brand_id !== '' ? (int) $this->brand_id : null,
+            'product_type' => $this->product_type,
             'price' => $this->price,
             'discount_price' => $this->discount_price !== '' ? $this->discount_price : null,
             'quantity' => $this->quantity !== '' ? $this->quantity : 0,

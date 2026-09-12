@@ -26,11 +26,13 @@ class ProductController extends Controller
         $perPage = max(1, min((int) $request->query('per_page', Setting::perPage()), 100));
 
         $products = Product::active()
-            ->with(['categories.page', 'page'])
+            ->with(['categories.page', 'brand', 'page'])
             ->orderBy('sort_order')
             ->when($request->query('category'), fn ($q, $slug) => $q->whereHas('categories.page', fn ($c) => $c->where('slug', $slug)))
             ->when($request->query('search'), fn ($q, $search) => $q->where("name->{$locale}", 'like', "%{$search}%"))
             ->when($request->query('featured') === '1', fn ($q) => $q->where('is_featured', true))
+            ->when($request->query('upcoming') === '1', fn ($q) => $q->where('is_upcoming', true))
+            ->when(in_array($request->query('type'), ['physical', 'digital'], true), fn ($q) => $q->where('product_type', $request->query('type')))
             ->paginate($perPage);
 
         return response()->json([
@@ -49,7 +51,7 @@ class ProductController extends Controller
         $locale = $this->resolveLocale($request);
 
         $product = Product::active()
-            ->with(['categories.page', 'gallery', 'page', 'faqs'])
+            ->with(['categories.page', 'brand', 'gallery', 'page', 'faqs'])
             ->whereHas('page', fn ($q) => $q->where('slug', $slug))
             ->firstOrFail();
 
@@ -82,8 +84,15 @@ class ProductController extends Controller
             'in_stock' => $product->inStock(),
             'charge_shipping' => $product->charge_shipping,
             'featured_image' => $product->featured_image,
+            'product_type' => $product->product_type,
             'is_featured' => $product->is_featured,
+            'is_upcoming' => $product->is_upcoming,
             // 'sort_order'      => $product->sort_order,
+            'brand' => $product->brand ? [
+                'id' => $product->brand->id,
+                'name' => $product->brand->name,
+                'logo' => $product->brand->logo,
+            ] : null,
             'categories' => $product->categories->map(fn ($category) => [
                 'id' => $category->id,
                 'slug' => $category->slug,

@@ -62,6 +62,7 @@
                     <col style="width:9%">
                     <col class="hidden lg:table-column" style="width:8%">
                     <col class="hidden lg:table-column" style="width:8%">
+                    <col class="hidden lg:table-column" style="width:8%">
                     <col style="width:14%">
                 </colgroup>
                 <thead>
@@ -76,6 +77,7 @@
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Stock</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Featured</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Upcoming</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Shipping</th>
                         <th class="sticky right-0 z-10 bg-zinc-50 border-l border-zinc-100 px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -203,6 +205,31 @@
                                 @endif
                             </td>
 
+                            {{-- Upcoming --}}
+                            <td class="hidden lg:table-cell px-4 py-2">
+                                @if ($product->is_upcoming)
+                                    <button type="button" wire:click="toggleUpcoming({{ $product->id }})"
+                                        aria-label="Unmark as upcoming"
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-violet-50 text-violet-700 border border-violet-200 cursor-pointer hover:bg-violet-100">
+                                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="9" />
+                                            <polyline points="12 7 12 12 15 15" />
+                                        </svg>
+                                        Upcoming
+                                    </button>
+                                @else
+                                    <button type="button" wire:click="toggleUpcoming({{ $product->id }})"
+                                        aria-label="Mark as upcoming"
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-50 text-zinc-400 border border-zinc-200 cursor-pointer hover:bg-zinc-100">
+                                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="9" />
+                                            <polyline points="12 7 12 12 15 15" />
+                                        </svg>
+                                        Not Upcoming
+                                    </button>
+                                @endif
+                            </td>
+
                             {{-- Shipping --}}
                             <td class="hidden lg:table-cell px-4 py-2">
                                 @if ($product->charge_shipping)
@@ -236,7 +263,7 @@
 
                         </tr>
                         @if ($viewingId === $product->id)
-                            <x-admin-row-details colspan="12">
+                            <x-admin-row-details colspan="13">
                                 <x-admin-row-details.item label="Slug">
                                     @if ($product->slug)
                                         <x-copy-text :text="$product->slug" class="font-mono">{{ $product->slug }}</x-copy-text>
@@ -245,13 +272,15 @@
                                     @endif
                                 </x-admin-row-details.item>
                                 <x-admin-row-details.item label="Category">{{ $product->categories->isNotEmpty() ? $product->categories->map(fn ($c) => $c->getTranslation('name', 'en', false))->implode(', ') : '—' }}</x-admin-row-details.item>
+                                <x-admin-row-details.item label="Type">{{ $product->product_type === 'digital' ? 'Digital' : 'Physical' }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Featured">{{ $product->is_featured ? 'Yes' : 'No' }}</x-admin-row-details.item>
+                                <x-admin-row-details.item label="Upcoming">{{ $product->is_upcoming ? 'Yes' : 'No' }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Shipping">{{ $product->charge_shipping ? 'Charged' : 'Free' }}</x-admin-row-details.item>
                             </x-admin-row-details>
                         @endif
                     @empty
                         <tr>
-                            <td colspan="12" class="px-6 py-16 text-center">
+                            <td colspan="13" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />

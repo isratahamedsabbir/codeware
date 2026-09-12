@@ -4,6 +4,7 @@ use App\Models\CmsSection;
 use App\Models\Language;
 use App\Models\Page;
 use App\Models\Product;
+use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use App\Models\User;
 
@@ -141,6 +142,39 @@ it('filters products by featured flag', function () {
         ->assertJsonCount(1, 'data');
 });
 
+it('filters products by upcoming flag', function () {
+    Product::factory()->published()->upcoming()->create();
+    Product::factory()->published()->create();
+
+    $this->getJson('/api/v1/products?upcoming=1')
+        ->assertOk()
+        ->assertJsonCount(1, 'data');
+});
+
+it('filters products by type', function () {
+    Product::factory()->published()->digital()->create();
+    Product::factory()->published()->create();
+
+    $this->getJson('/api/v1/products?type=digital')
+        ->assertOk()
+        ->assertJsonCount(1, 'data');
+});
+
+it('includes product_type on a product, defaulting to physical', function () {
+    $physical = Product::factory()->published()->create();
+    pairPageFor($physical, 'product', 'physical-product', $this->admin->id);
+    $digital = Product::factory()->published()->digital()->create();
+    pairPageFor($digital, 'product', 'digital-product', $this->admin->id);
+
+    $this->getJson("/api/v1/products/{$physical->slug}")
+        ->assertOk()
+        ->assertJsonPath('data.product_type', 'physical');
+
+    $this->getJson("/api/v1/products/{$digital->slug}")
+        ->assertOk()
+        ->assertJsonPath('data.product_type', 'digital');
+});
+
 it('returns paginated products with meta', function () {
     Product::factory()->count(5)->published()->create();
 
@@ -169,6 +203,24 @@ it('returns full product detail by slug with gallery and related', function () {
             'featured_image', 'gallery', 'related_products', 'categories',
         ]])
         ->assertJsonCount(1, 'data.related_products');
+});
+
+it('includes the assigned brand on a product, and null when unassigned', function () {
+    $brand = ProductBrand::factory()->create(['name' => 'Acme', 'logo' => '/storage/media/acme.png']);
+    $product = Product::factory()->published()->create(['brand_id' => $brand->id]);
+    pairPageFor($product, 'product', 'branded-product', $this->admin->id);
+
+    $this->getJson("/api/v1/products/{$product->slug}")
+        ->assertOk()
+        ->assertJsonPath('data.brand.name', 'Acme')
+        ->assertJsonPath('data.brand.logo', '/storage/media/acme.png');
+
+    $unbranded = Product::factory()->published()->create(['brand_id' => null]);
+    pairPageFor($unbranded, 'product', 'unbranded-product', $this->admin->id);
+
+    $this->getJson("/api/v1/products/{$unbranded->slug}")
+        ->assertOk()
+        ->assertJsonPath('data.brand', null);
 });
 
 it('related_products excludes current product', function () {

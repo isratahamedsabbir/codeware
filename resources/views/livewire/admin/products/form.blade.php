@@ -64,8 +64,28 @@
                         <flux:error name="slug" />
                     </flux:field>
 
+                {{-- Product Type (not translatable — shown regardless of locale tab) --}}
+                <div class="mt-4" wire:key="product-type-panel">
+                    <flux:field>
+                        <flux:label>Product Type</flux:label>
+                        <div class="grid grid-cols-2 gap-1.5 rounded-lg bg-zinc-100 p-1 max-w-xs">
+                            <button type="button" wire:click="setProductType('physical')"
+                                class="flex items-center justify-center gap-1.5 rounded-md py-2 text-xs font-medium transition-colors cursor-pointer {{ $product_type === 'physical' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700' }}">
+                                <flux:icon.cube class="h-3.5 w-3.5 shrink-0" />
+                                Physical
+                            </button>
+                            <button type="button" wire:click="setProductType('digital')"
+                                class="flex items-center justify-center gap-1.5 rounded-md py-2 text-xs font-medium transition-colors cursor-pointer {{ $product_type === 'digital' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700' }}">
+                                <flux:icon.arrow-down-tray class="h-3.5 w-3.5 shrink-0" />
+                                Digital
+                            </button>
+                        </div>
+                        <flux:error name="product_type" />
+                    </flux:field>
+                </div>
+
                 {{-- Pricing & Stock (not translatable — shown regardless of locale tab) --}}
-                <div class="border-t border-zinc-100 pt-5 mt-5" wire:key="pricing-stock-panel">
+                <div class="mt-4" wire:key="pricing-stock-panel">
                     <flux:heading size="sm" class="mb-3">Pricing & Stock</flux:heading>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -88,7 +108,7 @@
                         <p class="text-xs text-zinc-400 -mt-1">Leave Discount Price blank to sell at the regular price.</p>
                     @endif
 
-                    <div class="border-t border-zinc-100 pt-4 mt-4">
+                    <div class="mt-4">
                         <flux:field>
                             <flux:label>
                                 Quantity<x-field-hint text="Leave blank to mark this product out of stock." />
@@ -286,6 +306,25 @@
 
         {{-- ── SIDEBAR ── --}}
         <div class="w-[320px] shrink-0 space-y-3">
+
+            {{-- Brand --}}
+            <x-admin-section-card icon="star" title="Brand" icon-color="bg-yellow-500/10 text-yellow-600"
+                body-class="px-4 py-3" description="Optional — which brand this product belongs to.">
+                <select wire:model="brand_id" class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                    <option value="">No brand</option>
+                    @foreach ($this->productBrands as $brand)
+                        <option value="{{ $brand->id }}">{{ $brand->name }}</option>
+                    @endforeach
+                </select>
+                @if ($this->productBrands->isEmpty())
+                    <p class="text-xs text-zinc-400 mt-1.5">No brands yet.
+                        <a href="{{ route('admin.product-brands.create') }}" wire:navigate class="text-indigo-500 hover:underline">
+                            Create one
+                        </a>.
+                    </p>
+                @endif
+                <flux:error name="brand_id" />
+            </x-admin-section-card>
 
             {{-- Categories --}}
             <x-admin-section-card icon="tag" title="Categories" icon-color="bg-amber-500/10 text-amber-600"

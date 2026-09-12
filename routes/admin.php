@@ -93,6 +93,10 @@ Route::middleware('feature:products')->group(function () {
     Route::get('/product-attributes', App\Livewire\Admin\ProductAttributes\Index::class)->name('product-attributes');
     Route::get('/product-attributes/create', App\Livewire\Admin\ProductAttributes\Form::class)->name('product-attributes.create');
     Route::get('/product-attributes/{id}/edit', App\Livewire\Admin\ProductAttributes\Form::class)->name('product-attributes.edit');
+
+    Route::get('/product-brands', App\Livewire\Admin\ProductBrands\Index::class)->name('product-brands');
+    Route::get('/product-brands/create', App\Livewire\Admin\ProductBrands\Form::class)->name('product-brands.create');
+    Route::get('/product-brands/{id}/edit', App\Livewire\Admin\ProductBrands\Form::class)->name('product-brands.edit');
 });
 
 // System-only screens — Admin/Super Admin only, not Staff (see access-admin-system gate)

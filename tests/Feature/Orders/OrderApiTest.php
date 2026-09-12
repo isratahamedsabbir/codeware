@@ -88,6 +88,23 @@ it('rejects an order for an inactive product', function () {
     expect(Order::count())->toBe(0);
 });
 
+it('rejects an order for an upcoming product', function () {
+    $product = Product::factory()->published()->upcoming()->create();
+
+    $this->postJson('/api/v1/orders', [
+        'customer_name' => 'Jane Doe',
+        'customer_email' => 'jane@example.com',
+        'customer_phone' => '01712345678',
+        'shipping_address' => '123 Main St, Dhaka',
+        'payment_method' => 'cod',
+        'items' => [
+            ['product_id' => $product->id, 'quantity' => 1],
+        ],
+    ])->assertJsonValidationErrors(['items.0.product_id']);
+
+    expect(Order::count())->toBe(0);
+});
+
 it('rejects a payment method that is not cod and not enabled in settings', function () {
     $product = Product::factory()->published()->create();
 

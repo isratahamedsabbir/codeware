@@ -30,7 +30,7 @@ class OrderController extends Controller
             'items.*.product_id' => [
                 'required',
                 'integer',
-                Rule::exists('products', 'id')->where('status', 'active'),
+                Rule::exists('products', 'id')->where('status', 'active')->where('is_upcoming', false),
             ],
             'items.*.quantity' => 'required|integer|min:1|max:1000',
         ]);

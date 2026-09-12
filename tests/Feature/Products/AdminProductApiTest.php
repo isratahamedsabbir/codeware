@@ -3,6 +3,7 @@
 use App\Models\MediaLibrary;
 use App\Models\Page;
 use App\Models\Product;
+use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
@@ -88,6 +89,51 @@ it('admin can create a product', function () {
 
     $product = Product::findOrFail($response->json('data.id'));
     expect($product->categories->pluck('id')->all())->toBe([$cat->id]);
+    expect($product->product_type)->toBe('physical');
+});
+
+it('admin can create a digital product', function () {
+    Sanctum::actingAs($this->admin);
+
+    $response = $this->postJson('/api/v1/admin/products', [
+        'name' => ['en' => 'E-book', 'bn' => ''],
+        'product_type' => 'digital',
+    ])->assertCreated();
+
+    expect(Product::findOrFail($response->json('data.id'))->product_type)->toBe('digital');
+});
+
+it('rejects an invalid product_type', function () {
+    Sanctum::actingAs($this->admin);
+
+    $this->postJson('/api/v1/admin/products', [
+        'name' => ['en' => 'Bad Type Product', 'bn' => ''],
+        'product_type' => 'subscription',
+    ])->assertStatus(422)->assertJsonValidationErrors('product_type');
+});
+
+it('admin can create a product with a brand assigned', function () {
+    Sanctum::actingAs($this->admin);
+    $brand = ProductBrand::factory()->create();
+
+    $response = $this->postJson('/api/v1/admin/products', [
+        'name' => ['en' => 'Branded Product', 'bn' => ''],
+        'brand_id' => $brand->id,
+        'status' => 'inactive',
+    ])->assertCreated();
+
+    $product = Product::findOrFail($response->json('data.id'));
+    expect($product->brand_id)->toBe($brand->id);
+    expect($product->brand->name)->toBe($brand->name);
+});
+
+it('rejects a product with a non-existent brand_id', function () {
+    Sanctum::actingAs($this->admin);
+
+    $this->postJson('/api/v1/admin/products', [
+        'name' => ['en' => 'Bad Brand Product', 'bn' => ''],
+        'brand_id' => 999999,
+    ])->assertStatus(422)->assertJsonValidationErrors('brand_id');
 });
 
 it('admin can create a product with gallery sync', function () {
@@ -117,6 +163,30 @@ it('admin can update a product', function () {
     ])->assertOk();
 
     expect(Product::find($product->id)->status)->toBe('active');
+});
+
+it('admin can update a product\'s brand, and clear it back to null', function () {
+    Sanctum::actingAs($this->admin);
+    $product = Product::factory()->create();
+    $brand = ProductBrand::factory()->create();
+
+    $this->putJson("/api/v1/admin/products/{$product->id}", ['brand_id' => $brand->id])
+        ->assertOk();
+    expect(Product::find($product->id)->brand_id)->toBe($brand->id);
+
+    $this->putJson("/api/v1/admin/products/{$product->id}", ['brand_id' => null])
+        ->assertOk();
+    expect(Product::find($product->id)->brand_id)->toBeNull();
+});
+
+it('admin can update a product\'s type', function () {
+    Sanctum::actingAs($this->admin);
+    $product = Product::factory()->create(['product_type' => 'physical']);
+
+    $this->putJson("/api/v1/admin/products/{$product->id}", ['product_type' => 'digital'])
+        ->assertOk();
+
+    expect(Product::find($product->id)->product_type)->toBe('digital');
 });
 
 it('admin can soft-delete a product', function () {

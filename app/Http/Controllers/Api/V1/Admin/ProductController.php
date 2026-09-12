@@ -18,7 +18,7 @@ class ProductController extends Controller
         $perPage = max(1, min((int) $request->query('per_page', 15), 100));
 
         $products = Product::withTrashed()
-            ->with(['categories.page', 'page'])
+            ->with(['categories.page', 'brand', 'page'])
             ->orderBy('sort_order')
             ->orderByDesc('updated_at')
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
@@ -30,10 +30,13 @@ class ProductController extends Controller
                 'slug' => $p->slug,
                 'name' => $p->getTranslations('name'),
                 'status' => $p->status,
+                'product_type' => $p->product_type,
                 'is_featured' => $p->is_featured,
+                'is_upcoming' => $p->is_upcoming,
                 'sort_order' => $p->sort_order,
                 'featured_image' => $p->featured_image,
                 'categories' => $p->categories,
+                'brand' => $p->brand,
                 'deleted_at' => $p->deleted_at?->toIso8601String(),
                 'deleted_at_display' => $p->deleted_at?->toDisplay(),
             ]),
@@ -53,6 +56,7 @@ class ProductController extends Controller
             'name.en' => 'required|string|max:255',
             'name.bn' => 'nullable|string|max:255',
             'slug' => ['nullable', 'string', ...Slug::uniqueRules(null)],
+            'brand_id' => 'nullable|integer|exists:product_brands,id',
             'category_ids' => 'nullable|array',
             'category_ids.*' => 'integer|exists:categories,id,type,product',
             'description' => 'nullable|array',
@@ -60,7 +64,9 @@ class ProductController extends Controller
             'description.bn' => 'nullable|string',
             'featured_image' => 'nullable|string',
             'status' => 'sometimes|in:active,inactive',
+            'product_type' => 'sometimes|in:physical,digital',
             'is_featured' => 'sometimes|boolean',
+            'is_upcoming' => 'sometimes|boolean',
             'sort_order' => 'nullable|integer|min:0',
             'og_image' => 'nullable|string',
             'seo_title' => 'nullable|string|max:255',
@@ -135,6 +141,7 @@ class ProductController extends Controller
             'name.en' => 'required_with:name|string|max:255',
             'name.bn' => 'nullable|string|max:255',
             'slug' => ['nullable', 'string', ...Slug::uniqueRules($product->page?->id)],
+            'brand_id' => 'sometimes|nullable|integer|exists:product_brands,id',
             'category_ids' => 'sometimes|nullable|array',
             'category_ids.*' => 'integer|exists:categories,id,type,product',
             'description' => 'sometimes|nullable|array',
@@ -142,7 +149,9 @@ class ProductController extends Controller
             'description.bn' => 'nullable|string',
             'featured_image' => 'sometimes|nullable|string',
             'status' => 'sometimes|in:active,inactive',
+            'product_type' => 'sometimes|in:physical,digital',
             'is_featured' => 'sometimes|boolean',
+            'is_upcoming' => 'sometimes|boolean',
             'sort_order' => 'sometimes|integer|min:0',
             'og_image' => 'sometimes|nullable|string',
             'seo_title' => 'sometimes|nullable|string|max:255',

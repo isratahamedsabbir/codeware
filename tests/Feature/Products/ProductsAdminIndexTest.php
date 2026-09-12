@@ -24,3 +24,13 @@ it('opens and closes the view details modal for a product', function () {
         ->call('closeDetails')
         ->assertSet('viewingId', null);
 });
+
+it('toggles a product\'s upcoming status', function () {
+    $product = Product::factory()->create(['is_upcoming' => false]);
+
+    Livewire::test(ProductsIndex::class)->call('toggleUpcoming', $product->id);
+    expect($product->refresh()->is_upcoming)->toBeTrue();
+
+    Livewire::test(ProductsIndex::class)->call('toggleUpcoming', $product->id);
+    expect($product->refresh()->is_upcoming)->toBeFalse();
+});

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -47,9 +48,9 @@ class Product extends Model
 
     protected $fillable = [
         'name', 'description',
-        'variations',
-        'featured_image', 'status', 'price', 'discount_price', 'quantity', 'charge_shipping', 'is_featured',
-        'sort_order',
+        'brand_id', 'variations',
+        'featured_image', 'status', 'product_type', 'price', 'discount_price', 'quantity', 'charge_shipping', 'is_featured',
+        'is_upcoming', 'sort_order',
     ];
 
     protected $casts = [
@@ -59,6 +60,7 @@ class Product extends Model
         'quantity' => 'integer',
         'charge_shipping' => 'boolean',
         'is_featured' => 'boolean',
+        'is_upcoming' => 'boolean',
         'sort_order' => 'integer',
     ];
 
@@ -78,6 +80,11 @@ class Product extends Model
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(ProductCategory::class, 'category_product', 'product_id', 'category_id');
+    }
+
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(ProductBrand::class, 'brand_id');
     }
 
     public function gallery(): BelongsToMany
@@ -110,6 +117,11 @@ class Product extends Model
         return (int) $this->quantity > 0;
     }
 
+    public function isDigital(): bool
+    {
+        return $this->product_type === 'digital';
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', 'active');
@@ -123,5 +135,20 @@ class Product extends Model
     public function scopeFeatured(Builder $query): Builder
     {
         return $query->where('is_featured', true);
+    }
+
+    public function scopeUpcoming(Builder $query): Builder
+    {
+        return $query->where('is_upcoming', true);
+    }
+
+    public function scopeDigital(Builder $query): Builder
+    {
+        return $query->where('product_type', 'digital');
+    }
+
+    public function scopePhysical(Builder $query): Builder
+    {
+        return $query->where('product_type', 'physical');
     }
 }

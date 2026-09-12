@@ -15,8 +15,10 @@ class ProductFactory extends Factory
             'description' => ['en' => fake()->paragraph(), 'bn' => fake()->paragraph()],
             'featured_image' => null,
             'status' => 'inactive',
+            'product_type' => 'physical',
             'price' => fake()->randomFloat(2, 100, 5000),
             'is_featured' => false,
+            'is_upcoming' => false,
             'sort_order' => 0,
         ];
     }
@@ -34,5 +36,15 @@ class ProductFactory extends Factory
     public function featured(): static
     {
         return $this->state(['is_featured' => true]);
+    }
+
+    public function upcoming(): static
+    {
+        return $this->state(['is_upcoming' => true]);
+    }
+
+    public function digital(): static
+    {
+        return $this->state(['product_type' => 'digital']);
     }
 }

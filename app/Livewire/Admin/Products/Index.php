@@ -85,6 +85,15 @@ class Index extends Component
         $this->dispatch('notify', message: 'Product featured status updated');
     }
 
+    public function toggleUpcoming(int $id): void
+    {
+        $product = Product::findOrFail($id);
+        $product->update(['is_upcoming' => ! $product->is_upcoming]);
+
+        AdminActivity::log('updated', "Product #{$product->id}: {$product->name} ".($product->is_upcoming ? 'marked upcoming' : 'unmarked upcoming'));
+        $this->dispatch('notify', message: 'Product upcoming status updated');
+    }
+
     public function toggleChargeShipping(int $id): void
     {
         $product = Product::findOrFail($id);
