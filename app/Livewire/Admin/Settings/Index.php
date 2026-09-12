@@ -321,8 +321,9 @@ class Index extends Component
         return view('livewire.admin.settings.index', [
             // 'frontend' (site_theme) and 'colors' live under the Theme tab, not here.
             // 'other' is hand-rendered in its own tab (the Floating Button card) rather
-            // than through this generic per-group loop.
-            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'seo', 'colors', 'currency', 'frontend', 'other', 'editor', 'custom-code', 'tracking'])
+            // than through this generic per-group loop. 'shop' (shop_enabled) is
+            // controlled only via the header toggle (ShopToggle), never a form field here.
+            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'seo', 'colors', 'currency', 'frontend', 'other', 'editor', 'custom-code', 'tracking', 'shop'])
                 ->get()
                 ->groupBy('group')
                 ->sortBy(fn ($items, $group) => $groupOrder[$group] ?? count($groupOrder)),

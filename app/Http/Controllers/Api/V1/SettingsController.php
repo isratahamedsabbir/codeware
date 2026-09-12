@@ -29,6 +29,7 @@ class SettingsController extends Controller
                 'currency' => $this->group('currency'),
                 'theme' => $this->group('colors'),
                 'tracking' => $this->group('tracking'),
+                'shop' => $this->group('shop'),
                 'constant' => $this->constants(),
                 'seo' => $seo,
                 'social_links' => SocialLink::urlsCached(),

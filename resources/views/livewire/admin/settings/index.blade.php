@@ -484,6 +484,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                         opens or closes it from anywhere.
                     </p>
                 </x-admin-section-card>
+
+                {{-- Shop toggle --}}
+                <x-admin-section-card header-border="border-zinc-100" icon="building-storefront" title="Shop Toggle" class="max-w-md"
+                    description="Adds a Shop On/Off button to the admin header for quickly closing the storefront to new orders.">
+                    <x-slot:actions>
+                        <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
+                            <input type="checkbox" wire:model="settings.shop_toggle_enabled" class="rounded border-zinc-300 text-primary" />
+                            Enable
+                        </label>
+                    </x-slot:actions>
+
+                    <p class="text-xs text-zinc-400">
+                        While the shop is off, customers cannot place new orders.
+                    </p>
+                </x-admin-section-card>
                 </div>
             </div>
         </div>

@@ -24,6 +24,7 @@
         $adminSecondaryColor = \App\Models\Setting::get('secondary_color', '#7cc242');
         $calculatorEnabled = (bool) \App\Models\Setting::get('calculator_enabled', true);
         $stickyNoteEnabled = (bool) \App\Models\Setting::get('sticky_note_enabled', true);
+        $shopToggleEnabled = (bool) \App\Models\Setting::get('shop_toggle_enabled', false);
     @endphp
     @if ($favicon)
         <link rel="icon" href="{{ $favicon }}" sizes="any">
@@ -242,6 +243,10 @@
                 <x-admin-quick-menu />
 
                 <livewire:admin.locale-switcher />
+
+                @if ($shopToggleEnabled)
+                    <livewire:admin.shop-toggle />
+                @endif
 
                 @if ($calculatorEnabled)
                     <button type="button" x-data

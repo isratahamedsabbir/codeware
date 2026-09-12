@@ -17,6 +17,8 @@ class OrderController extends Controller
 {
     public function store(Request $request): JsonResponse
     {
+        abort_unless((bool) Setting::get('shop_enabled', true), 503, 'The shop is currently closed for new orders.');
+
         $validated = $request->validate([
             'customer_name' => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',

@@ -187,6 +187,18 @@ class SettingsSeeder extends Seeder
             // ── reCAPTCHA (login page) ── shown/verified only when this is on
             // AND the Site/Secret keys below are set — see Settings → Env.
             ['key' => 'recaptcha_enabled', 'value' => '0', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
+
+            // ── Shop status ── whether customers can currently place orders
+            // (see OrderController::store()). Public since the frontend needs
+            // it to show a "shop closed" state. Own group, excluded from the
+            // generic Settings-page render loop (see Settings\Index::render())
+            // since it's controlled only via the header toggle, not a form field.
+            ['key' => 'shop_enabled', 'value' => '1', 'type' => 'boolean', 'group' => 'shop', 'is_public' => true],
+
+            // ── Shop toggle (admin panel) ── shows/hides the Shop On/Off button
+            // in the admin header. Off by default so the header stays
+            // uncluttered until an admin opts in from Settings → Other.
+            ['key' => 'shop_toggle_enabled', 'value' => '0', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
         ];
 
         foreach ($settings as $setting) {
