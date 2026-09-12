@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\ProductExportController;
 use App\Http\Controllers\Admin\ReportExportController;
 use App\Http\Controllers\Admin\UserCardController;
 use App\Http\Controllers\InvoiceController;
+use App\Livewire\Admin\About;
 use App\Livewire\Admin\Advance\Backup;
 use App\Livewire\Admin\Advance\Database;
 use App\Livewire\Admin\Advance\PasswordGenerator;
@@ -21,6 +22,9 @@ Route::get('/', Dashboard::class)->name('dashboard');
 
 // Profile
 Route::get('/profile', Profile::class)->name('profile');
+
+// About — company info, always reachable regardless of role or feature flags
+Route::get('/about', About::class)->name('about');
 
 // Posts, Post Categories, Tags — the "blog" feature
 Route::middleware('feature:blog')->group(function () {

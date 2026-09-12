@@ -3,7 +3,7 @@
         Enter your payment gateway credentials. Credentials are stored privately and never exposed via the public API.
     </flux:text>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
 
     @if (isset($gateways['paypal']))
         {{-- PayPal --}}

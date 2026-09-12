@@ -15,23 +15,25 @@
         ];
     @endphp
 
-    <x-admin-section-card icon="share" title="Social Links" class="max-w-md"
+    <x-admin-section-card icon="share" title="Social Links"
         description="Where each platform icon should link to.">
-        @foreach ($links as $index => $link)
-            <flux:field>
-                <flux:label>
-                    <span class="inline-flex items-center gap-2">
-                        <span class="inline-flex size-5 items-center justify-center rounded-full text-[10px] font-bold text-white"
-                            style="background-color: {{ $colors[$link['platform']] ?? '#71717a' }}">
-                            {{ strtoupper(substr($link['label'], 0, 1)) }}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach ($links as $index => $link)
+                <flux:field>
+                    <flux:label>
+                        <span class="inline-flex items-center gap-2">
+                            <span class="inline-flex size-5 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                                style="background-color: {{ $colors[$link['platform']] ?? '#71717a' }}">
+                                {{ strtoupper(substr($link['label'], 0, 1)) }}
+                            </span>
+                            {{ $link['label'] }}
                         </span>
-                        {{ $link['label'] }}
-                    </span>
-                </flux:label>
-                <flux:input wire:model="links.{{ $index }}.url"
-                    placeholder="{{ $link['platform'] === 'whatsapp' ? '+8801XXXXXXXXX' : 'https://' }}" />
-            </flux:field>
-        @endforeach
+                    </flux:label>
+                    <flux:input wire:model="links.{{ $index }}.url"
+                        placeholder="{{ $link['platform'] === 'whatsapp' ? '+8801XXXXXXXXX' : 'https://' }}" />
+                </flux:field>
+            @endforeach
+        </div>
     </x-admin-section-card>
 
     <div>

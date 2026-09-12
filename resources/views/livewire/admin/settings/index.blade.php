@@ -205,12 +205,17 @@
                     </x-admin-section-card>
                 </div>
 
-                @php $socialGroups = ['Google Login', 'Facebook Login']; @endphp
+                {{-- Google Login, Facebook Login and reCAPTCHA each get their own
+                     hand-built section further down (own layout, guide card, and —
+                     for reCAPTCHA — an Enable toggle), so skip them here to avoid
+                     rendering the same group twice. --}}
+                @php $manuallyRenderedGroups = ['Google Login', 'Facebook Login', 'reCAPTCHA']; @endphp
 
                 @foreach ($this->envFields() as $groupLabel => $fields)
-                    @continue(in_array($groupLabel, $socialGroups, true))
-                    <x-admin-section-card header-border="border-zinc-100" icon="server" :title="__($groupLabel)">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    @continue(in_array($groupLabel, $manuallyRenderedGroups, true))
+                    <x-admin-section-card header-border="border-zinc-100" icon="rocket-launch" title="{{ __($groupLabel) }}"
+                        description="Core application identity and URLs. Changing the environment or URLs may require a full page reload to take effect everywhere.">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             @foreach ($fields as $key => $meta)
                                 @include('livewire.admin.settings.partials.env-field', ['key' => $key, 'meta' => $meta])
                             @endforeach

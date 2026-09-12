@@ -76,6 +76,8 @@ class AdminMenuSeeder extends Seeder
             ['Backup', 'archive-box', 'admin.advance.backup'],
             ['Password Generator', 'key', 'admin.advance.password-generator'],
         ]);
+
+        $this->standalone('About', 'building-office', 'admin.about', 13);
     }
 
     protected function standalone(string $label, string $icon, string $routeName, int $sortOrder): void
