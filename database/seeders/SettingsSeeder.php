@@ -179,6 +179,10 @@ class SettingsSeeder extends Seeder
             // ── Calculator widget (admin panel) ── floating draggable calculator
             // opened from the header icon or the Ctrl+Alt+C shortcut.
             ['key' => 'calculator_enabled', 'value' => '1', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
+
+            // ── Sticky note widget (admin panel) ── floating draggable note
+            // opened from the header icon or the Ctrl+Alt+N shortcut.
+            ['key' => 'sticky_note_enabled', 'value' => '1', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
         ];
 
         foreach ($settings as $setting) {

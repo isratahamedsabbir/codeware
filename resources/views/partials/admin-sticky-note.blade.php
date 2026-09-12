@@ -1,11 +1,11 @@
 {{-- Floating draggable sticky note, opened from the header's note icon.
      Wrapped in @persist('admin-sticky-note') by the caller so its position
-     and open/closed state survive wire:navigate page transitions. The text
-     and the size the admin drags it to are additionally mirrored to
-     localStorage, so they survive a real page reload or even logging out
-     and back in on the same browser. --}}
+     survives wire:navigate page transitions. The open/closed state, text and
+     the size the admin drags it to are additionally mirrored to localStorage,
+     so they survive a real page reload or even logging out and back in on
+     the same browser. --}}
 <div x-data="{
-        open: false,
+        open: localStorage.getItem('admin-sticky-note-open') === '1',
         x: Math.max(16, window.innerWidth - 300),
         y: 72,
         width: parseInt(localStorage.getItem('admin-sticky-note-width')) || 256,
@@ -16,11 +16,18 @@
         note: localStorage.getItem('admin-sticky-note-text') || '',
 
         init() {
+            this.$watch('open', (value) => localStorage.setItem('admin-sticky-note-open', value ? '1' : '0'));
             this.$watch('note', (value) => localStorage.setItem('admin-sticky-note-text', value));
 
             new ResizeObserver((entries) => {
                 const entry = entries[0];
                 if (! entry) return;
+                // ResizeObserver always fires once immediately on observe(), even
+                // while the panel is closed (display:none, so offsetWidth/Height
+                // read 0 there). Saving that would overwrite the real stored size
+                // with 0 every time the page loads with the note closed — skip
+                // anything that isn't a real, visible measurement.
+                if (! entry.target.offsetWidth || ! entry.target.offsetHeight) return;
                 // entry.contentRect excludes border/padding, but the width/height
                 // set via x-bind:style are full border-box sizes — using it here
                 // would read back a smaller number each tick and shrink the panel
@@ -49,6 +56,7 @@
         stopDrag() { this.dragging = false; },
     }"
     x-on:toggle-sticky-note.window="open = ! open"
+    x-on:keydown.ctrl.alt.n.window="open = ! open"
     x-on:pointermove.window="onDrag($event)"
     x-on:pointerup.window="stopDrag()">
 

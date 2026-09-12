@@ -23,6 +23,7 @@
         $adminPrimaryColor = \App\Models\Setting::get('primary_color', '#1e7bc4');
         $adminSecondaryColor = \App\Models\Setting::get('secondary_color', '#7cc242');
         $calculatorEnabled = (bool) \App\Models\Setting::get('calculator_enabled', true);
+        $stickyNoteEnabled = (bool) \App\Models\Setting::get('sticky_note_enabled', true);
     @endphp
     @if ($favicon)
         <link rel="icon" href="{{ $favicon }}" sizes="any">
@@ -251,12 +252,14 @@
                     </button>
                 @endif
 
-                <button type="button" x-data
-                    @click="$dispatch('toggle-sticky-note')"
-                    title="{{ __('Sticky Note') }}" aria-label="{{ __('Sticky Note') }}"
-                    class="inline-flex size-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100">
-                    <flux:icon.document-text class="size-5" />
-                </button>
+                @if ($stickyNoteEnabled)
+                    <button type="button" x-data
+                        @click="$dispatch('toggle-sticky-note')"
+                        title="{{ __('Sticky Note') }}" aria-label="{{ __('Sticky Note') }}"
+                        class="inline-flex size-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100">
+                        <flux:icon.document-text class="size-5" />
+                    </button>
+                @endif
 
                 <button type="button" x-data="{ dark: document.documentElement.classList.contains('dark') }"
                     @click="dark = !dark; document.documentElement.classList.toggle('dark', dark); localStorage.setItem('admin-theme', dark ? 'dark' : 'light')"
@@ -328,9 +331,11 @@
         @endpersist
     @endif
 
-    @persist('admin-sticky-note')
-        @include('partials.admin-sticky-note')
-    @endpersist
+    @if ($stickyNoteEnabled)
+        @persist('admin-sticky-note')
+            @include('partials.admin-sticky-note')
+        @endpersist
+    @endif
 
     @include('partials.admin-floating-button')
 

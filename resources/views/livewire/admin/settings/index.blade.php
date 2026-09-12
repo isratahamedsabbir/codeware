@@ -450,6 +450,24 @@
                         opens or closes it from anywhere.
                     </p>
                 </x-admin-section-card>
+
+                {{-- Sticky note widget --}}
+                <x-admin-section-card header-border="border-zinc-100" icon="document-text" title="Sticky Note" class="max-w-md"
+                    description="Adds a note icon to the admin header for quick reminders.">
+                    <x-slot:actions>
+                        <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
+                            <input type="checkbox" wire:model="settings.sticky_note_enabled" class="rounded border-zinc-300 text-primary" />
+                            Enable
+                        </label>
+                    </x-slot:actions>
+
+                    <p class="text-xs text-zinc-400">
+                        Shortcut: <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">Ctrl</span> +
+                        <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">Alt</span> +
+                        <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">N</span>
+                        opens or closes it from anywhere.
+                    </p>
+                </x-admin-section-card>
             </div>
         </div>
 
