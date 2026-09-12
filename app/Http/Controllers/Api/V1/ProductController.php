@@ -49,7 +49,7 @@ class ProductController extends Controller
         $locale = $this->resolveLocale($request);
 
         $product = Product::active()
-            ->with(['categories.page', 'gallery', 'page'])
+            ->with(['categories.page', 'gallery', 'page', 'faqs'])
             ->whereHas('page', fn ($q) => $q->where('slug', $slug))
             ->firstOrFail();
 
@@ -94,9 +94,9 @@ class ProductController extends Controller
 
         if ($withDetail) {
             $data['description'] = $product->getTranslation('description', $locale, useFallbackLocale: true);
-            $data['faq'] = collect($product->faq ?? [])->map(fn ($item) => [
-                'question' => $item['question'][$locale] ?? $item['question']['en'] ?? '',
-                'answer' => $item['answer'][$locale] ?? $item['answer']['en'] ?? '',
+            $data['faq'] = $product->faqs->map(fn ($item) => [
+                'question' => $item->getTranslation('question', $locale, useFallbackLocale: true),
+                'answer' => $item->getTranslation('answer', $locale, useFallbackLocale: true),
             ])->values();
             $data['gallery'] = $product->gallery->map(fn ($m) => [
                 'id' => $m->id,

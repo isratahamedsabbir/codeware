@@ -229,6 +229,58 @@
             </div>
         </x-admin-section-card>
 
+        {{-- FAQ --}}
+        <x-admin-section-card icon="question-mark-circle" title="FAQ" icon-color="bg-sky-500/10 text-sky-600"
+            description="Product-specific questions and answers, shown in a FAQ section on the product page.">
+
+            <div class="space-y-3">
+                @forelse ($faqs as $i => $row)
+                    <div wire:key="faq-{{ $i }}" class="rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+                        <div class="flex items-center justify-between gap-2 px-3.5 py-2.5 border-b border-zinc-100 bg-linear-to-r from-sky-50/70 to-transparent">
+                            <span class="text-xs font-semibold text-zinc-500">Question {{ $i + 1 }}</span>
+                            <button type="button" wire:click="removeFaq({{ $i }})"
+                                class="rounded-lg p-1 text-zinc-400 transition-colors hover:bg-rose-50 hover:text-rose-500 cursor-pointer" aria-label="Remove">
+                                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="p-3.5">
+                            <x-admin-locale-tabs>
+                                @foreach (\App\Support\Locale::active() as $language)
+                                    <x-admin-locale-panel :code="$language->code" class="space-y-3">
+                                        <flux:field>
+                                            <flux:label>
+                                                Question
+                                                @if ($language->code === $this->primaryLocale)<span class="text-red-500 ml-0.5">*</span>@endif
+                                            </flux:label>
+                                            <flux:input wire:model="faqs.{{ $i }}.question.{{ $language->code }}"
+                                                placeholder="{{ $language->code === $this->primaryLocale ? 'e.g. What is the warranty period?' : 'Question ('.($language->native_name ?: $language->name).')' }}" />
+                                            @if ($language->code === $this->primaryLocale)<flux:error name="faqs.{{ $i }}.question.{{ $language->code }}" />@endif
+                                        </flux:field>
+                                        <flux:field>
+                                            <flux:label>Answer</flux:label>
+                                            <flux:textarea wire:model="faqs.{{ $i }}.answer.{{ $language->code }}" rows="3"
+                                                placeholder="{{ $language->code === $this->primaryLocale ? 'Answer' : 'Answer ('.($language->native_name ?: $language->name).')' }}" />
+                                        </flux:field>
+                                    </x-admin-locale-panel>
+                                @endforeach
+                            </x-admin-locale-tabs>
+                        </div>
+                    </div>
+                @empty
+                    <div class="rounded-xl border-2 border-dashed border-zinc-200 py-8 px-6 text-center">
+                        <p class="text-sm font-medium text-zinc-600">No FAQs yet</p>
+                        <p class="mt-1 text-xs text-zinc-400">Add a question and answer to show a FAQ section on this product's page.</p>
+                    </div>
+                @endforelse
+            </div>
+
+            <flux:button variant="ghost" size="sm" icon="plus" wire:click="addFaq" class="mt-3">
+                Add Question
+            </flux:button>
+        </x-admin-section-card>
+
         @include('partials.admin-seo-fields')
 
         <div class="flex items-center gap-3 flex-wrap">

@@ -161,11 +161,11 @@ it('admin can save faq when updating a product', function () {
     $this->putJson("/api/v1/admin/products/{$product->id}", ['faq' => $faq])
         ->assertOk();
 
-    $saved = Product::find($product->id)->faq;
-    expect($saved[0]['question']['en'])->toBe('What is this?');
-    expect($saved[0]['question']['bn'])->toBe('এটি কি?');
-    expect($saved[0]['answer']['en'])->toBe('A product.');
-    expect($saved[0]['answer']['bn'])->toBe('একটি পণ্য।');
+    $saved = Product::find($product->id)->faqs->first();
+    expect($saved->getTranslation('question', 'en'))->toBe('What is this?');
+    expect($saved->getTranslation('question', 'bn'))->toBe('এটি কি?');
+    expect($saved->getTranslation('answer', 'en'))->toBe('A product.');
+    expect($saved->getTranslation('answer', 'bn'))->toBe('একটি পণ্য।');
 });
 
 it('admin can create a product with puck_data and faq, puck_data landing on the paired page', function () {
@@ -183,7 +183,8 @@ it('admin can create a product with puck_data and faq, puck_data landing on the 
 
     $page = Page::where(['type' => 'product', 'slug' => 'puck_product'])->sole();
     $product = Product::findOrFail($page->product_id);
+    $savedFaq = $product->faqs->first();
     expect($page->puck_data)->toBe($puckData);
-    expect($product->faq[0]['question']['en'])->toBe('Q?');
-    expect($product->faq[0]['answer']['en'])->toBe('A.');
+    expect($savedFaq->getTranslation('question', 'en'))->toBe('Q?');
+    expect($savedFaq->getTranslation('answer', 'en'))->toBe('A.');
 });

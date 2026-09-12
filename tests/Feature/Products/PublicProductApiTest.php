@@ -232,8 +232,8 @@ it('public product detail includes puck_data from the paired page', function () 
 });
 
 it('public product detail includes faq for locale', function () {
-    $faq = [['question' => ['en' => 'What is this?', 'bn' => 'এটি কি?'], 'answer' => ['en' => 'A product.', 'bn' => 'একটি পণ্য।']]];
-    $product = Product::factory()->published()->create(['faq' => $faq]);
+    $product = Product::factory()->published()->create();
+    $product->faqs()->create(['question' => ['en' => 'What is this?', 'bn' => 'এটি কি?'], 'answer' => ['en' => 'A product.', 'bn' => 'একটি পণ্য।']]);
     pairPageFor($product, 'product', 'faq-product', $this->admin->id);
 
     $this->getJson("/api/v1/products/{$product->slug}")
@@ -245,8 +245,8 @@ it('public product detail includes faq for locale', function () {
 it('public product detail returns faq in bn locale', function () {
     Language::create(['code' => 'bn', 'name' => 'Bengali', 'native_name' => 'বাংলা', 'is_active' => true]);
 
-    $faq = [['question' => ['en' => 'What is this?', 'bn' => 'এটি কি?'], 'answer' => ['en' => 'A product.', 'bn' => 'একটি পণ্য।']]];
-    $product = Product::factory()->published()->create(['faq' => $faq]);
+    $product = Product::factory()->published()->create();
+    $product->faqs()->create(['question' => ['en' => 'What is this?', 'bn' => 'এটি কি?'], 'answer' => ['en' => 'A product.', 'bn' => 'একটি পণ্য।']]);
     pairPageFor($product, 'product', 'faq-product-bn', $this->admin->id);
 
     $this->getJson("/api/v1/products/{$product->slug}?locale=bn")

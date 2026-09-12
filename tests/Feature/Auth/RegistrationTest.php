@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use Laravel\Fortify\Features;
 
 beforeEach(function () {
@@ -24,4 +25,15 @@ test('new users can register', function () {
         ->assertRedirect(route('dashboard', absolute: false));
 
     $this->assertAuthenticated();
+});
+
+test('registered email is stored lowercase regardless of input case', function () {
+    $this->post(route('register.store'), [
+        'name' => 'John Doe',
+        'email' => 'Test@Example.COM',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ])->assertSessionHasNoErrors();
+
+    expect(User::where('name', 'John Doe')->sole()->email)->toBe('test@example.com');
 });

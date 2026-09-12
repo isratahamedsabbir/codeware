@@ -19,7 +19,6 @@ return new class extends Migration
             $table->json('specifications')->nullable();
             $table->json('benefits')->nullable();
             $table->json('usage_instructions')->nullable();
-            $table->json('faq')->nullable();
             $table->json('variations')->nullable();
             $table->string('featured_image')->nullable();
             $table->string('datasheet_url')->nullable();

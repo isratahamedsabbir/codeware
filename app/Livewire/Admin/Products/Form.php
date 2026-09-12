@@ -111,6 +111,15 @@ class Form extends Component
      */
     public array $variationSelectedValues = [];
 
+    /**
+     * Backed by the shared `faqs` table (App\Concerns\HasFaqs), not a column
+     * on the product itself — see persistProduct(), which replaces the whole
+     * list via Product::syncFaqs() on every save.
+     *
+     * @var array<int, array{question: array<string, string>, answer: array<string, string>}>
+     */
+    public array $faqs = [];
+
     public function mount(?int $id = null): void
     {
         $this->featuredImagePickerId = 'featured-image-'.Str::uuid()->toString();
@@ -151,6 +160,11 @@ class Form extends Component
                     }
                 }
             }
+
+            $this->faqs = $product->faqs->map(fn ($faq) => [
+                'question' => $faq->getTranslations('question'),
+                'answer' => $faq->getTranslations('answer'),
+            ])->all();
 
             $this->pageId = $product->page?->id;
             $this->hydrateSeoFieldsFromPage($product->page);
@@ -278,6 +292,35 @@ class Form extends Component
     {
         unset($this->variations[$index]);
         $this->variations = array_values($this->variations);
+    }
+
+    public function addFaq(): void
+    {
+        $this->faqs[] = ['question' => [], 'answer' => []];
+    }
+
+    public function removeFaq(int $index): void
+    {
+        unset($this->faqs[$index]);
+        $this->faqs = array_values($this->faqs);
+    }
+
+    /**
+     * Drops any row left with no primary-locale question — e.g. a blank card
+     * added via addFaq() and never filled in.
+     *
+     * @return array<int, array{question: array<string, string>, answer: array<string, string>}>
+     */
+    private function cleanedFaqs(): array
+    {
+        return collect($this->faqs)
+            ->filter(fn ($row) => filled($row['question'][$this->primaryLocale] ?? null))
+            ->map(fn ($row) => [
+                'question' => array_filter($row['question'] ?? []),
+                'answer' => array_filter($row['answer'] ?? []),
+            ])
+            ->values()
+            ->all();
     }
 
     /**
@@ -489,6 +532,8 @@ class Form extends Component
         );
 
         $product->categories()->sync($this->category_ids);
+
+        $product->syncFaqs($this->cleanedFaqs());
 
         $page = Page::updateOrCreate(
             ['type' => 'product', 'product_id' => $product->id],

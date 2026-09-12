@@ -77,6 +77,9 @@ class ProductController extends Controller
         $categoryIds = $validated['category_ids'] ?? [];
         unset($validated['category_ids']);
 
+        $faq = $validated['faq'] ?? null;
+        unset($validated['faq']);
+
         // SEO fields, OG image, and the puck-builder content all live on the paired
         // Page, not on the product itself.
         $pageFields = collect($validated)->only(['og_image', 'seo_title', 'seo_description', 'puck_data'])->all();
@@ -87,6 +90,10 @@ class ProductController extends Controller
         unset($validated['slug']);
 
         $product = Product::create($validated)->refresh();
+
+        if ($faq !== null) {
+            $product->syncFaqs($faq);
+        }
 
         $product->categories()->sync($categoryIds);
 
@@ -149,6 +156,9 @@ class ProductController extends Controller
         $categoryIds = array_key_exists('category_ids', $validated) ? $validated['category_ids'] : false;
         unset($validated['category_ids']);
 
+        $faq = array_key_exists('faq', $validated) ? $validated['faq'] : false;
+        unset($validated['faq']);
+
         // SEO fields, OG image, and the puck-builder content all live on the paired
         // Page, not on the product itself.
         $pageFields = collect($validated)->only(['og_image', 'seo_title', 'seo_description', 'puck_data'])->all();
@@ -159,6 +169,10 @@ class ProductController extends Controller
         unset($validated['slug']);
 
         $product->update($validated);
+
+        if ($faq !== false) {
+            $product->syncFaqs((array) $faq);
+        }
 
         if ($categoryIds !== false) {
             $product->categories()->sync((array) $categoryIds);

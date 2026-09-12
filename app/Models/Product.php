@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\HasFaqs;
 use App\Services\EmailTemplateService;
 use App\Support\Locale;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,7 +16,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Product extends Model
 {
-    use HasFactory, HasTranslations, SoftDeletes;
+    use HasFactory, HasFaqs, HasTranslations, SoftDeletes;
 
     protected static function booted(): void
     {
@@ -46,13 +47,12 @@ class Product extends Model
 
     protected $fillable = [
         'name', 'description',
-        'faq', 'variations',
+        'variations',
         'featured_image', 'status', 'price', 'discount_price', 'quantity', 'charge_shipping', 'is_featured',
         'sort_order',
     ];
 
     protected $casts = [
-        'faq' => 'array',
         'variations' => 'array',
         'price' => 'decimal:2',
         'discount_price' => 'decimal:2',
