@@ -4,8 +4,12 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Models\User;
+use App\Rules\Recaptcha;
+use App\Support\Recaptcha as RecaptchaSupport;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -36,6 +40,7 @@ class FortifyServiceProvider extends ServiceProvider
         $this->configureActions();
         $this->configureViews();
         $this->configureRateLimiting();
+        $this->configureAuthentication();
     }
 
     /**
@@ -45,6 +50,31 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
+    }
+
+    /**
+     * Replaces Fortify's default credential check with the same email+password
+     * lookup, plus a reCAPTCHA verification in front of it. Only enforced while
+     * reCAPTCHA is switched on and a secret key is set (Settings → Env →
+     * reCAPTCHA) — otherwise this behaves exactly like Fortify's default.
+     */
+    private function configureAuthentication(): void
+    {
+        Fortify::authenticateUsing(function (Request $request) {
+            if (RecaptchaSupport::verificationRequired()) {
+                $request->validate([
+                    'g-recaptcha-response' => ['required', new Recaptcha],
+                ]);
+            }
+
+            $user = User::where(Fortify::username(), $request->{Fortify::username()})->first();
+
+            if ($user && Hash::check($request->password, $user->password)) {
+                return $user;
+            }
+
+            return null;
+        });
     }
 
     /**

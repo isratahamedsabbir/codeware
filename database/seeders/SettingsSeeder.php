@@ -183,6 +183,10 @@ class SettingsSeeder extends Seeder
             // ── Sticky note widget (admin panel) ── floating draggable note
             // opened from the header icon or the Ctrl+Alt+N shortcut.
             ['key' => 'sticky_note_enabled', 'value' => '1', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
+
+            // ── reCAPTCHA (login page) ── shown/verified only when this is on
+            // AND the Site/Secret keys below are set — see Settings → Env.
+            ['key' => 'recaptcha_enabled', 'value' => '0', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
         ];
 
         foreach ($settings as $setting) {

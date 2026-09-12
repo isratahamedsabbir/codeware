@@ -89,7 +89,17 @@
                     class="text-sm font-normal text-white cursor-pointer select-none leading-tight">
                     {{ __('Remember me') }}
                 </label>
-            </div> 
+            </div>
+
+            {{-- reCAPTCHA (Settings → Env → reCAPTCHA) --}}
+            @if (\App\Support\Recaptcha::enabled())
+                <div>
+                    <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
+                    @error('g-recaptcha-response')
+                        <p class="text-xs text-red-600 mt-0.5">{{ $message }}</p>
+                    @enderror
+                </div>
+            @endif
 
             {{-- Submit --}}
             <div class="pt-1"> 
@@ -128,6 +138,10 @@
             background-repeat: no-repeat;
         }
     </style>
+
+    @if (\App\Support\Recaptcha::enabled())
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    @endif
 
     <script>
         function togglePassword() {

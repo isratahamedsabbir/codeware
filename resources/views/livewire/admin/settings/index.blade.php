@@ -335,6 +335,35 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                     </x-admin-section-card>
                 </div>
 
+                {{-- reCAPTCHA --}}
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                    <x-admin-section-card header-border="border-zinc-100" icon="shield-check" title="reCAPTCHA"
+                        description="Shown on the admin login form only while enabled and both keys below are set.">
+                        <x-slot:actions>
+                            <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
+                                <input type="checkbox" wire:model="settings.recaptcha_enabled" class="rounded border-zinc-300 text-primary" />
+                                Enable
+                            </label>
+                        </x-slot:actions>
+
+                        @foreach ($this->envFields()['reCAPTCHA'] as $key => $meta)
+                            @include('livewire.admin.settings.partials.env-field', ['key' => $key, 'meta' => $meta])
+                        @endforeach
+                    </x-admin-section-card>
+
+                    <x-admin-section-card header-border="border-zinc-100" icon="book-open" title="Where to get these" body-class="px-6 py-5 space-y-3">
+                        <ol class="list-decimal list-inside space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
+                            <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">google.com/recaptcha/admin</span> → create a new site.</li>
+                            <li>reCAPTCHA type: <strong>reCAPTCHA v2</strong> → "I'm not a robot" Checkbox.</li>
+                            <li>Add this domain (and <span class="font-mono text-xs">localhost</span> for local testing).</li>
+                            <li>Copy the <strong>Site Key</strong> and <strong>Secret Key</strong> into the fields on the left, then save.</li>
+                        </ol>
+                        <flux:text class="text-xs text-zinc-500">
+                            The checkbox only appears on the login form once a Site Key is saved — clearing both fields removes it again.
+                        </flux:text>
+                    </x-admin-section-card>
+                </div>
+
                 <flux:button size="sm" variant="primary" wire:click="confirmSaveEnv" wire:loading.attr="disabled">
                     {{ __('Save Environment Settings') }}
                 </flux:button>

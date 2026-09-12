@@ -113,6 +113,10 @@ class Index extends Component
                 'FACEBOOK_CLIENT_SECRET' => ['label' => 'Facebook App Secret', 'type' => 'password'],
                 'FACEBOOK_REDIRECT_URI' => ['label' => 'Facebook Redirect URI', 'type' => 'text'],
             ],
+            'reCAPTCHA' => [
+                'RECAPTCHA_SITE_KEY' => ['label' => 'Site Key', 'type' => 'text'],
+                'RECAPTCHA_SECRET_KEY' => ['label' => 'Secret Key', 'type' => 'password'],
+            ],
         ];
     }
 
@@ -131,6 +135,8 @@ class Index extends Component
             'env.FACEBOOK_CLIENT_ID' => 'nullable|string',
             'env.FACEBOOK_CLIENT_SECRET' => 'nullable|string',
             'env.FACEBOOK_REDIRECT_URI' => 'nullable|string',
+            'env.RECAPTCHA_SITE_KEY' => 'nullable|string',
+            'env.RECAPTCHA_SECRET_KEY' => 'nullable|string',
         ];
 
         $this->validate($rules);
