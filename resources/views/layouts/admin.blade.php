@@ -251,6 +251,13 @@
                     </button>
                 @endif
 
+                <button type="button" x-data
+                    @click="$dispatch('toggle-sticky-note')"
+                    title="{{ __('Sticky Note') }}" aria-label="{{ __('Sticky Note') }}"
+                    class="inline-flex size-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 focus:outline-none focus:ring-2 focus:ring-primary/30 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100">
+                    <flux:icon.document-text class="size-5" />
+                </button>
+
                 <button type="button" x-data="{ dark: document.documentElement.classList.contains('dark') }"
                     @click="dark = !dark; document.documentElement.classList.toggle('dark', dark); localStorage.setItem('admin-theme', dark ? 'dark' : 'light')"
                     :title="dark ? '{{ __('Switch to light mode') }}' : '{{ __('Switch to dark mode') }}'"
@@ -320,6 +327,10 @@
             @include('partials.admin-calculator')
         @endpersist
     @endif
+
+    @persist('admin-sticky-note')
+        @include('partials.admin-sticky-note')
+    @endpersist
 
     @include('partials.admin-floating-button')
 
