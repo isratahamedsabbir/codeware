@@ -62,6 +62,23 @@ class Login extends Component
             ]);
         }
 
+        // A blocked account (Admin → Users) is locked out immediately, even
+        // with the correct password.
+        if (Auth::user()->is_blocked) {
+            $this->logout();
+            $this->rejectLogin('Your account has been blocked.');
+        }
+
+        // A deactivated role (Admin → Roles) locks the account out
+        // immediately, even with the correct password — see
+        // User::hasInactiveRole(). Checked ahead of the generic
+        // access-vendor-portal gate below so a deactivated vendor sees why,
+        // rather than the generic "not a vendor" message.
+        if (Auth::user()->hasInactiveRole()) {
+            $this->logout();
+            $this->rejectLogin('Your account access has been disabled.');
+        }
+
         if (! Gate::allows('access-vendor-portal')) {
             $this->logout();
 
@@ -83,6 +100,24 @@ class Login extends Component
 
         session()->invalidate();
         session()->regenerateToken();
+    }
+
+    /**
+     * Dispatches the same message as a toast (this action never triggers a
+     * full page reload, so — unlike the Fortify admin login — a flashed
+     * session message would never be read; see layouts/auth/split.blade.php's
+     * `notify` listener) in addition to the inline field error the thrown
+     * exception below produces.
+     *
+     * @throws ValidationException
+     */
+    private function rejectLogin(string $message): never
+    {
+        $this->dispatch('notify', message: $message, type: 'error');
+
+        throw ValidationException::withMessages([
+            'email' => $message,
+        ]);
     }
 
     /**

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\EnsureUserIsNotBlocked;
 use App\Http\Middleware\LogAdminActivity;
 use App\Http\Middleware\RequireFeature;
 use App\Http\Middleware\SetLocale;
@@ -43,6 +44,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // Applies the globally configured locale. Appended to `web` (not `api`) because
         // the public API resolves its locale from the ?locale= query parameter instead.
         $middleware->appendToGroup('web', SetLocale::class);
+
+        // Blocking a user (Admin → Users) must reach every host — admin, vendor
+        // portal, and the plain site — not just gated admin/vendor routes, so it
+        // lives on `web` rather than as a gate like the roles-status lockout.
+        $middleware->appendToGroup('web', EnsureUserIsNotBlocked::class);
 
         $middleware->alias([
             'admin' => AdminMiddleware::class,

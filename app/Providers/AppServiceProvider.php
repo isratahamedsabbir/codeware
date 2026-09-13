@@ -58,11 +58,17 @@ class AppServiceProvider extends ServiceProvider
         // restricts the system-level screens (Settings, Users, Roles/Permissions, Menu,
         // Activity History, Localization, Contacts) to Admin/Super Admin — Staff passes
         // the outer gate but not this one.
+        // hasInactiveRole() also cuts off an already-open session the moment
+        // its role is deactivated (Admin → Roles), not just fresh logins —
+        // the login-time checks in FortifyServiceProvider and
+        // Vendor\Auth\Login give a clearer message at the login form itself,
+        // but a session opened before the role was deactivated would
+        // otherwise keep working until it logged out on its own.
         Gate::define('access-admin', fn ($user) => (bool) $user->is_admin
-            || $user->hasRole('admin')
-            || $user->hasRole('staff'));
+            || (($user->hasRole('admin') || $user->hasRole('staff')) && ! $user->hasInactiveRole()));
 
-        Gate::define('access-admin-system', fn ($user) => (bool) $user->is_admin || $user->hasRole('admin'));
+        Gate::define('access-admin-system', fn ($user) => (bool) $user->is_admin
+            || ($user->hasRole('admin') && ! $user->hasInactiveRole()));
 
         // Vendor portal (App\Livewire\Vendor\*) — a separate, unrelated door from
         // access-admin above: a vendor-assigned user is never is_admin/admin/staff,
@@ -72,7 +78,9 @@ class AppServiceProvider extends ServiceProvider
         // no vendor assigned yet) or a vendor assignment left over without the role
         // (see Users\Form::save(), which clears vendor_ids when the role is removed)
         // should never be enough on its own.
-        Gate::define('access-vendor-portal', fn ($user) => $user->hasRole('vendor') && $user->vendors()->exists());
+        Gate::define('access-vendor-portal', fn ($user) => $user->hasRole('vendor')
+            && $user->vendors()->exists()
+            && ! $user->hasInactiveRole());
 
         // File Manager reads/writes anywhere under the project root (including .env),
         // so — unlike most admin screens — it gets its own granular gates rather than

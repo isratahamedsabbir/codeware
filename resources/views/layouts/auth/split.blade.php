@@ -11,6 +11,7 @@
     @endif
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <style>
         /* ── Auth Layout: Brand-themed premium design ── */
         /* Primary: #1e7bc4 (blue) | Secondary: #7cc242 (green) | Base: sidebar navy */
@@ -290,6 +291,24 @@
     </div>
 
     @include('partials.auth-loader-overlay')
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js" crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
+
+    {{-- Surfaces a rejected login (blocked account, deactivated role — see
+         FortifyServiceProvider and Vendor\Auth\Login) as a toast in addition
+         to the inline field error, since a flashed session message here
+         (full-page Fortify redirect) or a dispatch('notify', type: 'error')
+         (Livewire vendor login, no page reload) are the only two ways
+         either login flow can reach this shared layout. --}}
+    <div x-data x-on:notify.window="toastr[$event.detail.type || 'success']($event.detail.message)"></div>
+    <script>
+        @if (session('error'))
+            toastr.error("{{ session('error') }}");
+        @endif
+    </script>
 
     @fluxScripts
 </body>

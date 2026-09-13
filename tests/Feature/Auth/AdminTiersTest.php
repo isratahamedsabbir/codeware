@@ -117,6 +117,35 @@ it('hides system-only sidebar items from staff but shows them to admin', functio
     expect($adminLabels)->toContain('Users', 'Settings');
 });
 
+it('cuts off an already-open session the moment its role is deactivated, not just fresh logins', function () {
+    $this->actingAs($this->staffUser);
+    expect(Gate::allows('access-admin'))->toBeTrue();
+
+    Role::findByName('staff', 'web')->update(['status' => 'inactive']);
+
+    expect(Gate::allows('access-admin'))->toBeFalse();
+    $this->get(route('admin.dashboard'))->assertForbidden();
+});
+
+it('cuts off an already-open session the moment the user is blocked (Admin → Users), even for an is_admin super admin', function () {
+    $this->actingAs($this->superAdmin);
+    $this->get(route('admin.dashboard'))->assertOk();
+
+    $this->superAdmin->is_blocked = true;
+    $this->superAdmin->save();
+
+    $this->get(route('admin.dashboard'))->assertForbidden();
+    expect(auth()->check())->toBeFalse();
+});
+
+it('never locks out an is_admin super admin, even if every role is deactivated', function () {
+    Role::query()->update(['status' => 'inactive']);
+
+    $this->actingAs($this->superAdmin);
+
+    expect(Gate::allows('access-admin'))->toBeTrue();
+});
+
 it('hides the Users link from the rendered sidebar for a staff user', function () {
     $this->seed(AdminMenuSeeder::class);
     $this->actingAs($this->staffUser);

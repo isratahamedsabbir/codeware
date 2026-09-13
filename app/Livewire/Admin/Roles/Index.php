@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Roles;
 
 use App\Concerns\HasPerPage;
 use App\Support\AdminActivity;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\Permission\Models\Role;
@@ -56,6 +57,55 @@ class Index extends Component
         }
 
         $this->dispatch('close-modal', name: 'role-delete');
+    }
+
+    /**
+     * Deactivating a role immediately locks out anyone currently holding it —
+     * see the login-time check in FortifyServiceProvider and
+     * Vendor\Auth\Login, and the access-admin/access-vendor-portal gates —
+     * and also drops their sessions below, so an already-open tab is kicked
+     * out rather than merely blocked on its next gated request. The 'admin'
+     * role can never be deactivated, same as it can never be deleted — doing
+     * so would lock out every plain admin-role account, including whoever
+     * just clicked it (is_admin super-admins are the only ones who'd stay
+     * unaffected).
+     */
+    public function toggleStatus(int $id): void
+    {
+        $role = Role::findOrFail($id);
+
+        if ($role->name === 'admin') {
+            $this->dispatch('notify', message: 'The admin role cannot be deactivated');
+
+            return;
+        }
+
+        $newStatus = $role->status === 'active' ? 'inactive' : 'active';
+        $role->update(['status' => $newStatus]);
+
+        if ($newStatus === 'inactive') {
+            $this->endSessionsForRole($role);
+        }
+
+        AdminActivity::log('updated', "Role: {$role->name} — status set to {$newStatus}");
+        $this->dispatch('notify', message: 'Role status updated');
+    }
+
+    /**
+     * Force-logs-out every non-super-admin holder of a just-deactivated role
+     * by deleting their session rows outright (SESSION_DRIVER=database) —
+     * the sessions table is shared across both hosts, so this reaches a
+     * vendor-host session the same way it reaches an admin-host one. Skips
+     * is_admin users since they bypass hasInactiveRole() and stay logged in
+     * regardless of role status.
+     */
+    private function endSessionsForRole(Role $role): void
+    {
+        $userIds = $role->users()->where('is_admin', false)->pluck('users.id');
+
+        if ($userIds->isNotEmpty()) {
+            DB::table('sessions')->whereIn('user_id', $userIds)->delete();
+        }
     }
 
     public function render()

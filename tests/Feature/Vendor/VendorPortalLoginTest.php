@@ -43,6 +43,38 @@ it('rejects a correct password for a user who is not a valid vendor, and does no
     expect(auth()->check())->toBeFalse();
 });
 
+it('rejects a vendor whose role has been deactivated, with a message distinct from "not a vendor"', function () {
+    $user = User::factory()->create(['is_admin' => false, 'password' => 'correct-password']);
+    $user->assignRole('vendor');
+    ProductVendor::factory()->create()->users()->attach($user);
+
+    $user->roles()->first()->update(['status' => 'inactive']);
+
+    Livewire::test(Login::class)
+        ->set('email', $user->email)
+        ->set('password', 'correct-password')
+        ->call('authenticate')
+        ->assertHasErrors('email')
+        ->assertDispatched('notify', message: 'Your account access has been disabled.', type: 'error');
+
+    expect(auth()->check())->toBeFalse();
+});
+
+it('rejects a blocked vendor, even with the correct password', function () {
+    $user = User::factory()->create(['is_admin' => false, 'password' => 'correct-password', 'is_blocked' => true]);
+    $user->assignRole('vendor');
+    ProductVendor::factory()->create()->users()->attach($user);
+
+    Livewire::test(Login::class)
+        ->set('email', $user->email)
+        ->set('password', 'correct-password')
+        ->call('authenticate')
+        ->assertHasErrors('email')
+        ->assertDispatched('notify', message: 'Your account has been blocked.', type: 'error');
+
+    expect(auth()->check())->toBeFalse();
+});
+
 it('rejects a wrong password', function () {
     $user = User::factory()->create(['is_admin' => false, 'password' => 'correct-password']);
     $user->assignRole('vendor');

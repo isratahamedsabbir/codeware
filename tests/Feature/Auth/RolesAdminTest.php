@@ -4,6 +4,7 @@ use App\Livewire\Admin\Permissions\Index as PermissionsIndex;
 use App\Livewire\Admin\Roles\Form as RolesForm;
 use App\Livewire\Admin\Roles\Index as RolesIndex;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -77,6 +78,64 @@ it('can delete a non-protected role', function () {
         ->call('delete');
 
     expect(Role::where('name', 'manager')->exists())->toBeFalse();
+});
+
+it('can deactivate and reactivate a non-protected role', function () {
+    Livewire::test(RolesIndex::class)->call('toggleStatus', $this->role->id);
+
+    expect($this->role->fresh()->status)->toBe('inactive');
+
+    Livewire::test(RolesIndex::class)->call('toggleStatus', $this->role->id);
+
+    expect($this->role->fresh()->status)->toBe('active');
+});
+
+it('cannot deactivate the admin role', function () {
+    $adminRole = Role::findOrCreate('admin', 'web');
+
+    Livewire::test(RolesIndex::class)->call('toggleStatus', $adminRole->id);
+
+    expect($adminRole->fresh()->status)->toBe('active');
+});
+
+it('ends the sessions of every non-super-admin holder when a role is deactivated', function () {
+    $holder = User::factory()->create(['is_admin' => false]);
+    $holder->assignRole($this->role);
+    DB::table('sessions')->insert([
+        'id' => 'session-holder', 'user_id' => $holder->id,
+        'ip_address' => '127.0.0.1', 'user_agent' => 'test',
+        'payload' => 'x', 'last_activity' => time(),
+    ]);
+
+    $superAdminHolder = User::factory()->create(['is_admin' => true]);
+    $superAdminHolder->assignRole($this->role);
+    DB::table('sessions')->insert([
+        'id' => 'session-super-admin', 'user_id' => $superAdminHolder->id,
+        'ip_address' => '127.0.0.1', 'user_agent' => 'test',
+        'payload' => 'x', 'last_activity' => time(),
+    ]);
+
+    Livewire::test(RolesIndex::class)->call('toggleStatus', $this->role->id);
+
+    expect(DB::table('sessions')->where('id', 'session-holder')->exists())->toBeFalse();
+    expect(DB::table('sessions')->where('id', 'session-super-admin')->exists())->toBeTrue();
+});
+
+it('does not touch sessions when a role is reactivated', function () {
+    $this->role->update(['status' => 'inactive']);
+
+    $holder = User::factory()->create(['is_admin' => false]);
+    $holder->assignRole($this->role);
+    DB::table('sessions')->insert([
+        'id' => 'session-reactivate', 'user_id' => $holder->id,
+        'ip_address' => '127.0.0.1', 'user_agent' => 'test',
+        'payload' => 'x', 'last_activity' => time(),
+    ]);
+
+    Livewire::test(RolesIndex::class)->call('toggleStatus', $this->role->id);
+
+    expect($this->role->fresh()->status)->toBe('active');
+    expect(DB::table('sessions')->where('id', 'session-reactivate')->exists())->toBeTrue();
 });
 
 it('renders permissions index', function () {

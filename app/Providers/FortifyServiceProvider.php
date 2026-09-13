@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Fortify;
 
 class FortifyServiceProvider extends ServiceProvider
@@ -69,12 +70,44 @@ class FortifyServiceProvider extends ServiceProvider
 
             $user = User::where(Fortify::username(), $request->{Fortify::username()})->first();
 
-            if ($user && Hash::check($request->password, $user->password)) {
-                return $user;
+            if (! $user || ! Hash::check($request->password, $user->password)) {
+                return null;
             }
 
-            return null;
+            // A blocked account (Admin → Users) is locked out immediately,
+            // even with the correct password.
+            if ($user->is_blocked) {
+                $this->rejectLogin('Your account has been blocked.');
+            }
+
+            // A deactivated role (Admin → Roles) locks the account out
+            // immediately, even with the correct password — see
+            // User::hasInactiveRole().
+            if ($user->hasInactiveRole()) {
+                $this->rejectLogin('Your account access has been disabled.');
+            }
+
+            return $user;
         });
+    }
+
+    /**
+     * Flashes the same message to session('error') — read by
+     * layouts/auth/split.blade.php's toastr script on the page this
+     * ValidationException redirects back to — in addition to the inline
+     * field error Blade already renders from the errors bag, so a
+     * blocked/deactivated account gets a toast, not just fine print under
+     * the email field.
+     *
+     * @throws ValidationException
+     */
+    private function rejectLogin(string $message): never
+    {
+        session()->flash('error', $message);
+
+        throw ValidationException::withMessages([
+            Fortify::username() => $message,
+        ]);
     }
 
     /**

@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Users;
 use App\Concerns\HasPerPage;
 use App\Models\User;
 use App\Support\AdminActivity;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\Permission\Models\Role;
@@ -64,6 +65,34 @@ class Index extends Component
         }
 
         $this->dispatch('close-modal', name: 'user-delete');
+    }
+
+    /**
+     * Blocking a user immediately locks the account out everywhere (see
+     * EnsureUserIsNotBlocked, and the login-time checks in
+     * FortifyServiceProvider and Vendor\Auth\Login) and drops their
+     * sessions below, so an already-open tab is kicked out rather than
+     * merely blocked on its next request. Blocking yourself is disallowed —
+     * doing so would lock out the very account performing the action.
+     */
+    public function toggleBlock(int $id): void
+    {
+        if ($id === auth()->id()) {
+            $this->dispatch('notify', message: 'You cannot block your own account');
+
+            return;
+        }
+
+        $user = User::findOrFail($id);
+        $user->is_blocked = ! $user->is_blocked;
+        $user->save();
+
+        if ($user->is_blocked) {
+            DB::table('sessions')->where('user_id', $user->id)->delete();
+        }
+
+        AdminActivity::log('updated', ($user->is_blocked ? 'Blocked' : 'Unblocked')." user: {$user->email}");
+        $this->dispatch('notify', message: $user->is_blocked ? 'User blocked' : 'User unblocked');
     }
 
     public function render()

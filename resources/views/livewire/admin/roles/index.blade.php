@@ -28,10 +28,11 @@
                 <colgroup>
                     <col style="width:5%">
                     <col class="hidden lg:table-column" style="width:5%">
-                    <col style="width:35%">
-                    <col class="hidden lg:table-column" style="width:18%">
-                    <col style="width:18%">
-                    <col style="width:19%">
+                    <col style="width:29%">
+                    <col class="hidden lg:table-column" style="width:14%">
+                    <col style="width:16%">
+                    <col style="width:14%">
+                    <col style="width:17%">
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
@@ -40,6 +41,7 @@
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Role</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Users</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Permissions</th>
+                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
                         <th class="sticky right-0 z-10 bg-zinc-50 border-l border-zinc-100 px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
@@ -88,6 +90,30 @@
                                 </span>
                             </td>
 
+                            {{-- Status --}}
+                            <td class="px-4 py-2">
+                                @if ($role->name === 'admin')
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-600 border border-green-200">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                        Active
+                                    </span>
+                                @elseif ($role->status === 'active')
+                                    <button type="button" wire:click="toggleStatus({{ $role->id }})"
+                                        aria-label="Deactivate"
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-600 border border-green-200 cursor-pointer hover:bg-green-100">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                        Active
+                                    </button>
+                                @else
+                                    <button type="button" wire:click="toggleStatus({{ $role->id }})"
+                                        aria-label="Activate"
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-600 border border-red-200 cursor-pointer hover:bg-red-100">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                        Inactive
+                                    </button>
+                                @endif
+                            </td>
+
                             {{-- Actions --}}
                             <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-50/30 border-l border-zinc-100 px-4 py-2">
                                 <x-admin-row-actions :actions="[
@@ -98,14 +124,15 @@
 
                         </tr>
                         @if ($viewingId === $role->id)
-                            <x-admin-row-details colspan="6">
+                            <x-admin-row-details colspan="7">
                                 <x-admin-row-details.item label="ID">#{{ $role->id }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Users">{{ $role->users_count }}</x-admin-row-details.item>
+                                <x-admin-row-details.item label="Status">{{ $role->name === 'admin' ? 'Active' : ucfirst($role->status) }}</x-admin-row-details.item>
                             </x-admin-row-details>
                         @endif
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-16 text-center">
+                            <td colspan="7" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />

@@ -6,6 +6,7 @@ use App\Models\ProductVendor;
 use App\Models\User;
 use App\Models\UserDocument;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
@@ -214,4 +215,47 @@ it('can delete another user', function () {
         ->call('delete');
 
     expect(User::find($user->id))->toBeNull();
+});
+
+it('can block and unblock another user', function () {
+    $user = User::factory()->create(['is_blocked' => false]);
+
+    Livewire::test(UsersIndex::class)->call('toggleBlock', $user->id);
+    expect($user->fresh()->is_blocked)->toBeTrue();
+
+    Livewire::test(UsersIndex::class)->call('toggleBlock', $user->id);
+    expect($user->fresh()->is_blocked)->toBeFalse();
+});
+
+it('cannot block own account', function () {
+    Livewire::test(UsersIndex::class)->call('toggleBlock', $this->admin->id);
+
+    expect($this->admin->fresh()->is_blocked)->toBeFalse();
+});
+
+it('ends the sessions of a user when they are blocked', function () {
+    $user = User::factory()->create();
+    DB::table('sessions')->insert([
+        'id' => 'session-blocked-user', 'user_id' => $user->id,
+        'ip_address' => '127.0.0.1', 'user_agent' => 'test',
+        'payload' => 'x', 'last_activity' => time(),
+    ]);
+
+    Livewire::test(UsersIndex::class)->call('toggleBlock', $user->id);
+
+    expect(DB::table('sessions')->where('id', 'session-blocked-user')->exists())->toBeFalse();
+});
+
+it('does not touch sessions when a user is unblocked', function () {
+    $user = User::factory()->create(['is_blocked' => true]);
+    DB::table('sessions')->insert([
+        'id' => 'session-unblocked-user', 'user_id' => $user->id,
+        'ip_address' => '127.0.0.1', 'user_agent' => 'test',
+        'payload' => 'x', 'last_activity' => time(),
+    ]);
+
+    Livewire::test(UsersIndex::class)->call('toggleBlock', $user->id);
+
+    expect($user->fresh()->is_blocked)->toBeFalse();
+    expect(DB::table('sessions')->where('id', 'session-unblocked-user')->exists())->toBeTrue();
 });
