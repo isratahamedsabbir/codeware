@@ -29,7 +29,7 @@
                 ['label' => __('Profile'), 'icon' => 'user-circle', 'route' => 'vendor.profile', 'current' => request()->routeIs('vendor.profile')],
             ]);
         @endphp
-        <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900"
+        <flux:sidebar sticky collapsible="mobile" class="admin-sidebar"
             x-data="{
                 search: '',
                 matches(label) {
@@ -37,44 +37,61 @@
                     return !q || label.toLowerCase().includes(q);
                 },
             }">
-            <flux:sidebar.header>
-                <x-app-logo :sidebar="true" href="{{ route('vendor.dashboard') }}" wire:navigate />
-                <flux:sidebar.collapse class="lg:hidden" />
-            </flux:sidebar.header>
+            {{-- Logo + search, combined into one bordered row — matches the admin panel's sidebar header. --}}
+            <div class="px-0 border-b border-gray-100 shrink-0 flex items-center gap-3 pt-1 pb-2">
+                <a href="{{ route('vendor.dashboard') }}" wire:navigate.hover title="{{ config('app.name') }}" class="shrink-0">
+                    <img src="{{ \App\Models\Setting::get('site_icon') ?: '/default/logo.png' }}" alt="{{ config('app.name') }}" class="w-10">
+                </a>
 
-            {{-- Nav search — filters the items below, same idea as the admin panel's sidebar search. --}}
-            <div class="px-3 pt-1 pb-2">
-                <div class="relative">
-                    <flux:icon.magnifying-glass class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400 pointer-events-none" />
+                <div class="relative flex-1 min-w-0">
+                    <flux:icon.magnifying-glass class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
                     <input type="text" x-model="search" placeholder="{{ __('Search menu...') }}" autocomplete="off"
-                        class="w-full bg-white border border-zinc-200 rounded-lg pl-9 pr-8 py-1.5 text-sm text-zinc-800 placeholder:text-zinc-400 outline-none focus:border-primary transition dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100">
+                        class="admin-sidebar-search-input w-full pl-9 pr-8 py-1.5 text-sm outline-none transition">
                     <button type="button" x-show="search" x-cloak x-on:click="search = ''"
-                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors">
+                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
                         <flux:icon.x-mark class="size-4" />
                     </button>
                 </div>
+
+                <flux:sidebar.collapse class="lg:hidden shrink-0" />
             </div>
 
-            <flux:sidebar.nav>
-                <flux:sidebar.group :heading="__('Vendor Portal')" class="grid">
-                    @foreach ($vendorNavItems as $item)
-                        <div x-show="matches({{ \Illuminate\Support\Js::from($item['label']) }})">
-                            <flux:sidebar.item :icon="$item['icon']" :href="route($item['route'])" :current="$item['current']" wire:navigate>
-                                {{ $item['label'] }}
-                            </flux:sidebar.item>
-                        </div>
-                    @endforeach
-                </flux:sidebar.group>
+            {{-- Nav — same .admin-nav-item classes and active/hover treatment as the
+                 admin panel's sidebar (resources/css/app.css), just without the
+                 collapsible groups since the vendor portal's nav is flat. --}}
+            <nav class="flex-1 overflow-y-auto px-2 py-2">
+                <div class="px-3 py-2 text-sm text-zinc-400 font-medium leading-none">{{ __('Vendor Portal') }}</div>
+
+                @foreach ($vendorNavItems as $item)
+                    <div x-show="matches({{ \Illuminate\Support\Js::from($item['label']) }})">
+                        <a href="{{ route($item['route']) }}" wire:navigate title="{{ $item['label'] }}"
+                            class="admin-nav-item admin-nav-item--top-level {{ $item['current'] ? 'admin-nav-active' : '' }}">
+                            <span class="admin-nav-item-icon">
+                                <x-dynamic-component :component="'flux::icon.'.$item['icon']" class="size-4.5" />
+                            </span>
+                            <span>{{ $item['label'] }}</span>
+                        </a>
+                    </div>
+                @endforeach
 
                 <div x-show="search && {{ \Illuminate\Support\Js::from($vendorNavItems->pluck('label')->values()) }}.every(l => !matches(l))"
                     x-cloak class="px-3 py-6 text-center text-xs text-zinc-500">
                     {{ __('No menu items found for') }} "<span x-text="search" class="text-zinc-400 font-medium"></span>"
                 </div>
-            </flux:sidebar.nav>
+            </nav>
 
             <flux:spacer />
 
-            <x-vendor-user-menu class="hidden lg:block" />
+            {{-- Desktop-only — mobile keeps its logout in the header dropdown below,
+                 since the sidebar itself collapses on mobile. --}}
+            <form method="POST" action="{{ route('vendor.logout') }}" class="hidden lg:block px-2 pb-2 shrink-0">
+                @csrf
+                <button type="submit"
+                    class="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 transition-colors cursor-pointer">
+                    <flux:icon.arrow-right-start-on-rectangle class="size-4.5 shrink-0" />
+                    {{ __('Log out') }}
+                </button>
+            </form>
         </flux:sidebar>
 
         <!-- Mobile User Menu -->
