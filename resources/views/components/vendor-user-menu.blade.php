@@ -1,0 +1,34 @@
+<flux:dropdown position="bottom" align="end">
+    <flux:button size="sm" variant="subtle" square class="!p-1.5">
+        <div class="flex items-center">
+            @if (auth()->user()->photo_url)
+                <img src="{{ auth()->user()->photo_url }}" alt="{{ auth()->user()->name }}"
+                    class="size-8 rounded-xl object-cover shrink-0 shadow-sm">
+            @else
+                <div
+                    class="size-8 rounded-xl bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+                    {{ auth()->user()->initials() }}
+                </div>
+            @endif
+        </div>
+    </flux:button>
+
+    <flux:menu>
+        <flux:menu.item :href="route('vendor.profile')" icon="user-circle" wire:navigate>
+            My Profile
+        </flux:menu.item>
+        <flux:menu.separator />
+        <form method="POST" action="{{ route('vendor.logout') }}" class="w-full">
+            @csrf
+            <flux:menu.item
+                as="button"
+                type="submit"
+                icon="arrow-right-start-on-rectangle"
+                variant="danger"
+                class="w-full cursor-pointer text-red-600! dark:text-red-400! **:data-flux-menu-item-icon:text-red-600! dark:**:data-flux-menu-item-icon:text-red-400!"
+            >
+                Log out
+            </flux:menu.item>
+        </form>
+    </flux:menu>
+</flux:dropdown>

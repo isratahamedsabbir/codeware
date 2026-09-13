@@ -21,6 +21,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Vendor Portal Host
+    |--------------------------------------------------------------------------
+    |
+    | The hostname the vendor portal (App\Livewire\Vendor\*) is served on —
+    | its own subdomain rather than a path prefix, so it stays a fully
+    | separate panel from /admin. Read here and in bootstrap/app.php (for the
+    | vendor route group's ->domain() binding) and AdminMiddleware (to keep
+    | /admin unreachable on this host), rather than duplicating the parsing.
+    |
+    */
+
+    'vendor_host' => env(
+        'VENDOR_HOST',
+        parse_url((string) env('VENDOR_URL', ''), PHP_URL_HOST)
+            ?: env('VENDOR_SUBDOMAIN', 'vendor').'.'.(parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST) ?: 'localhost'),
+    ),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |

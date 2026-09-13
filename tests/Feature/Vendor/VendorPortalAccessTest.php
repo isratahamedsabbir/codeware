@@ -46,19 +46,21 @@ test('an admin user is not automatically granted vendor portal access', function
     $this->actingAs($admin)->get(route('vendor.dashboard'))->assertForbidden();
 });
 
-test('the dashboard route sends a vendor-only user to the vendor portal', function () {
-    $user = User::factory()->create(['is_admin' => false]);
-    $user->assignRole('vendor');
-    $vendor = ProductVendor::factory()->create();
-    $vendor->users()->attach($user);
-
-    $this->actingAs($user)->get(route('dashboard'))->assertRedirect(route('vendor.dashboard'));
-});
-
-test('the dashboard route still sends everyone else to the admin panel', function () {
+test('the dashboard route always sends to the admin panel, never bounces to the vendor host', function () {
+    // The vendor portal has its own separate login/session on its own host
+    // (host-only cookies — see .env's SESSION_DOMAIN), so a session here can
+    // never carry over there. Redirecting a vendor-only account to the
+    // vendor host would just drop them logged-out on its login page with no
+    // explanation — the normal 403 from AdminMiddleware below is clearer.
     $admin = User::factory()->create(['is_admin' => true]);
     $regular = User::factory()->create(['is_admin' => false]);
+    $vendorOnly = User::factory()->create(['is_admin' => false]);
+    $vendorOnly->assignRole('vendor');
+    ProductVendor::factory()->create()->users()->attach($vendorOnly);
 
     $this->actingAs($admin)->get(route('dashboard'))->assertRedirect('/admin');
     $this->actingAs($regular)->get(route('dashboard'))->assertRedirect('/admin');
+
+    $this->actingAs($vendorOnly)->get(route('dashboard'))->assertRedirect('/admin');
+    $this->actingAs($vendorOnly)->get('/admin')->assertForbidden();
 });

@@ -1,8 +1,19 @@
 <div class="max-w-4xl space-y-4">
 
-    <flux:button variant="ghost" size="sm" icon="arrow-left" href="{{ route('vendor.orders') }}" wire:navigate>
-        Back
-    </flux:button>
+    <div class="flex items-center justify-between gap-3 flex-wrap">
+        <flux:button variant="ghost" size="sm" icon="arrow-left" href="{{ route('vendor.orders') }}" wire:navigate>
+            Back
+        </flux:button>
+
+        <div class="flex items-center gap-2">
+            <flux:button variant="ghost" size="sm" icon="document-text" href="{{ route('vendor.orders.invoice', $order->id) }}" target="_blank">
+                View Invoice
+            </flux:button>
+            <flux:button variant="outline" size="sm" icon="arrow-down-tray" href="{{ route('vendor.orders.invoice.download', $order->id) }}">
+                Download PDF
+            </flux:button>
+        </div>
+    </div>
 
     <div class="rounded-[5px] border border-zinc-200 bg-white p-5 shadow-sm">
         <div class="flex items-start justify-between gap-4 flex-wrap">

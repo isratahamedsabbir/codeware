@@ -1,0 +1,157 @@
+<?php
+
+namespace App\Livewire\Vendor;
+
+use App\Events\MessageSent;
+use App\Models\Conversation;
+use App\Models\User;
+use Illuminate\Support\Collection;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Url;
+use Livewire\Component;
+
+class Chat extends Component
+{
+    #[Url]
+    public ?int $conversationId = null;
+
+    public string $userSearch = '';
+
+    public string $messageBody = '';
+
+    public function mount(): void
+    {
+        if ($this->conversationId) {
+            $this->markConversationRead($this->conversationId);
+        }
+    }
+
+    #[Computed]
+    public function conversations(): Collection
+    {
+        return Conversation::forUser(auth()->user())
+            ->with(['userOne', 'userTwo', 'latestMessage'])
+            ->withCount(['messages as unread_count' => fn ($q) => $q->where('sender_id', '!=', auth()->id())->whereNull('read_at')])
+            ->orderByRaw('COALESCE(last_message_at, created_at) DESC')
+            ->get();
+    }
+
+    #[Computed]
+    public function activeConversation(): ?Conversation
+    {
+        if (! $this->conversationId) {
+            return null;
+        }
+
+        $conversation = Conversation::find($this->conversationId);
+
+        if (! $conversation || ! $conversation->isParticipant(auth()->user())) {
+            return null;
+        }
+
+        return $conversation;
+    }
+
+    /**
+     * Only the last 50 messages — same cap as Admin\Chat\Index, keeps the
+     * thread panel scrolling within a fixed height rather than growing forever.
+     */
+    #[Computed]
+    public function threadMessages(): Collection
+    {
+        return $this->activeConversation
+            ? $this->activeConversation->messages()->with('sender')->latest()->limit(50)->get()->sortBy('id')->values()
+            : collect();
+    }
+
+    /**
+     * A vendor can only start a conversation with admin/staff support — never
+     * with another vendor or a storefront customer, unlike the admin inbox
+     * (Admin\Chat\Index), which can search and message anyone.
+     */
+    #[Computed]
+    public function searchResults(): Collection
+    {
+        $term = trim($this->userSearch);
+
+        if ($term === '') {
+            return collect();
+        }
+
+        return User::query()
+            ->where('id', '!=', auth()->id())
+            ->where(fn ($q) => $q->where('is_admin', true)->orWhereHas('roles', fn ($q2) => $q2->whereIn('name', ['admin', 'staff'])))
+            ->where(fn ($q) => $q->where('name', 'like', "%{$term}%")->orWhere('email', 'like', "%{$term}%"))
+            ->orderBy('name')
+            ->limit(10)
+            ->get();
+    }
+
+    public function openConversation(int $conversationId): void
+    {
+        $conversation = Conversation::findOrFail($conversationId);
+
+        abort_unless($conversation->isParticipant(auth()->user()), 403);
+
+        $this->conversationId = $conversationId;
+        $this->userSearch = '';
+
+        $this->markConversationRead($conversationId);
+    }
+
+    public function startConversationWith(int $userId): void
+    {
+        $recipient = User::findOrFail($userId);
+
+        abort_if($recipient->id === auth()->id(), 403);
+
+        $this->openConversation(Conversation::between(auth()->user(), $recipient)->id);
+    }
+
+    public function closeConversation(): void
+    {
+        $this->conversationId = null;
+    }
+
+    public function sendMessage(): void
+    {
+        $this->validate([
+            'messageBody' => ['required', 'string', 'max:5000'],
+        ]);
+
+        $conversation = $this->activeConversation;
+
+        abort_unless($conversation, 404);
+
+        $message = $conversation->messages()->create([
+            'sender_id' => auth()->id(),
+            'body' => trim($this->messageBody),
+        ]);
+
+        $conversation->update(['last_message_at' => $message->created_at]);
+
+        $this->messageBody = '';
+
+        broadcast(new MessageSent($message));
+    }
+
+    public function markConversationRead(int $conversationId): void
+    {
+        $conversation = Conversation::find($conversationId);
+
+        if (! $conversation || ! $conversation->isParticipant(auth()->user())) {
+            return;
+        }
+
+        $conversation->messages()
+            ->where('sender_id', '!=', auth()->id())
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
+    }
+
+    public function render()
+    {
+        return view('livewire.vendor.chat')
+            ->layout('layouts.vendor', ['title' => 'Chat', 'hideHeading' => true]);
+    }
+}

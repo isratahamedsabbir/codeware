@@ -3,7 +3,7 @@
     {{-- Header --}}
     <div class="flex items-center gap-3 p-4 flex-wrap">
         <x-per-page-select :options="$this->perPageOptions()" />
-        <div class="relative max-w-xs ml-auto">
+        <div class="relative max-w-xs">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" viewBox="0 0 24 24"
                 fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="11" cy="11" r="8" />
@@ -12,6 +12,9 @@
             <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search products…"
                 class="w-full pl-9 pr-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all" />
         </div>
+        <flux:button variant="primary" size="sm" icon="plus" href="{{ route('vendor.products.create') }}" wire:navigate class="ml-auto">
+            New Product
+        </flux:button>
     </div>
 
     {{-- Table --}}
@@ -25,6 +28,7 @@
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Price</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Stock</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
+                        <th class="px-4 py-2.5 text-right text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
@@ -64,10 +68,17 @@
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-600 border border-red-200">Inactive</span>
                                 @endif
                             </td>
+                            <td class="px-4 py-2.5 text-right">
+                                @unless ($product->trashed())
+                                    <flux:button variant="ghost" size="sm" icon="pencil" href="{{ route('vendor.products.edit', $product->id) }}" wire:navigate>
+                                        Edit
+                                    </flux:button>
+                                @endunless
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-16 text-center">
+                            <td colspan="6" class="px-6 py-16 text-center">
                                 <flux:icon.cube class="w-10 h-10 text-zinc-200 mx-auto mb-3" />
                                 <p class="text-sm text-zinc-600">No products yet.</p>
                             </td>

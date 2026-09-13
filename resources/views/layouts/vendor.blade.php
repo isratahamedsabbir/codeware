@@ -22,12 +22,18 @@
                     <flux:sidebar.item icon="shopping-bag" :href="route('vendor.orders')" :current="request()->routeIs('vendor.orders*')" wire:navigate>
                         {{ __('Orders') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="chat-bubble-left-right" :href="route('vendor.chat')" :current="request()->routeIs('vendor.chat')" wire:navigate>
+                        {{ __('Chat') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="user-circle" :href="route('vendor.profile')" :current="request()->routeIs('vendor.profile')" wire:navigate>
+                        {{ __('Profile') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
             <flux:spacer />
 
-            <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
+            <x-vendor-user-menu class="hidden lg:block" />
         </flux:sidebar>
 
         <!-- Mobile User Menu -->
@@ -61,7 +67,11 @@
 
                     <flux:menu.separator />
 
-                    <form method="POST" action="{{ route('logout') }}" class="w-full">
+                    <flux:menu.item :href="route('vendor.profile')" icon="user-circle" wire:navigate>
+                        {{ __('My Profile') }}
+                    </flux:menu.item>
+
+                    <form method="POST" action="{{ route('vendor.logout') }}" class="w-full">
                         @csrf
                         <flux:menu.item
                             as="button"

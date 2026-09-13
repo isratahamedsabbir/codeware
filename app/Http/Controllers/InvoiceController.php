@@ -51,6 +51,35 @@ class InvoiceController extends Controller
         return $this->buildPdf($order)->download("invoice-{$order->order_number}.pdf");
     }
 
+    public function vendorShow(Request $request, Order $order): View
+    {
+        $this->authorizeVendorOrder($order);
+
+        return $this->render($order, route('vendor.orders.invoice.download', $order));
+    }
+
+    public function vendorDownload(Request $request, Order $order): Response
+    {
+        $this->authorizeVendorOrder($order);
+
+        return $this->buildPdf($order)->download("invoice-{$order->order_number}.pdf");
+    }
+
+    /**
+     * 404s (not 403) when none of this order's items belong to the current
+     * user's vendors — same ownership check as Vendor\Orders\Show::mount(),
+     * so a vendor can't even confirm another vendor's order exists.
+     */
+    private function authorizeVendorOrder(Order $order): void
+    {
+        $vendorIds = auth()->user()->vendors()->pluck('product_vendors.id');
+
+        abort_unless(
+            $order->items()->whereHas('product', fn ($q) => $q->whereIn('vendor_id', $vendorIds))->exists(),
+            404,
+        );
+    }
+
     private function render(Order $order, string $downloadUrl): View
     {
         $order->load(['items.product', 'transactions']);

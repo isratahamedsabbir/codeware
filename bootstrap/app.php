@@ -19,14 +19,17 @@ return Application::configure(basePath: dirname(__DIR__))
         channels: __DIR__.'/../routes/channels.php',
         health: '/up',
         then: function () {
-            // Vendor portal — its own subdomain rather than a path prefix.
-            // Production: vendor.codeware.com. Local: vendor.codeware.test.
-            $vendorSubdomain = env('VENDOR_SUBDOMAIN', 'vendor');
-            $appHost = parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST) ?: 'localhost';
-            $vendorHost = parse_url((string) env('VENDOR_URL', ''), PHP_URL_HOST) ?: $vendorSubdomain.'.'.$appHost;
-
-            Route::middleware(['web', 'auth', 'can:access-vendor-portal'])
-                ->domain($vendorHost)
+            // Vendor portal — its own subdomain rather than a path prefix, with
+            // its own login (App\Livewire\Vendor\Auth\Login) rather than
+            // sharing Fortify's — so it's a fully separate panel from /admin,
+            // not just a gated area behind the same login. Only 'web' here:
+            // routes/vendor.php applies 'auth' + 'can:access-vendor-portal'
+            // itself to everything except its own /login route.
+            // See config('app.vendor_host') for how the host is derived —
+            // AdminMiddleware reads the same value to keep /admin unreachable
+            // on this host, so the two panels stay fully separate both ways.
+            Route::middleware('web')
+                ->domain(config('app.vendor_host'))
                 ->name('vendor.')
                 ->group(base_path('routes/vendor.php'));
 

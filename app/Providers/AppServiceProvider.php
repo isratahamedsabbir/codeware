@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
-use Laravel\Fortify\Fortify;
 use Spatie\Permission\Exceptions\PermissionDoesNotExist;
 
 class AppServiceProvider extends ServiceProvider
@@ -111,7 +110,12 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::policy(MediaLibrary::class, MediaLibraryPolicy::class);
 
-        Fortify::redirects('login', fn () => route('admin.dashboard'));
+        // Fortify::redirects('login') is a getter (config('fortify.home') is the
+        // actual default, currently '/dashboard' — see config/fortify.php), not a
+        // registrable hook, so post-login routing lives in routes/web.php's
+        // /dashboard route instead of here. The vendor portal has its own
+        // separate login on its own host (App\Livewire\Vendor\Auth\Login) and
+        // was never reachable through this one anyway.
 
         $this->configureCustomerAuthNotificationUrls();
     }

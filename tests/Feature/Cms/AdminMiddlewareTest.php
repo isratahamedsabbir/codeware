@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Middleware\AdminMiddleware;
 use App\Models\User;
+use Illuminate\Routing\Router;
 
 it('blocks guests from admin routes', function () {
     $this->get('/admin/posts')->assertRedirect('/login');
@@ -12,7 +14,15 @@ it('blocks non-admin authenticated users from admin routes', function () {
 });
 
 it('admin middleware is registered as alias', function () {
-    $middleware = app(\Illuminate\Routing\Router::class)->getMiddleware();
+    $middleware = app(Router::class)->getMiddleware();
     expect($middleware)->toHaveKey('admin');
-    expect($middleware['admin'])->toBe(\App\Http\Middleware\AdminMiddleware::class);
+    expect($middleware['admin'])->toBe(AdminMiddleware::class);
+});
+
+it('is unreachable on the vendor portal host even for an admin, keeping the two panels separate', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+
+    $this->actingAs($admin)
+        ->get('http://'.config('app.vendor_host').'/admin/dashboard')
+        ->assertNotFound();
 });
