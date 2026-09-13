@@ -1,13 +1,13 @@
 <div class="max-w-3xl mx-auto space-y-4">
 
-    <div class="flex items-center justify-between">
-        <flux:button variant="ghost" size="sm" icon="arrow-left" href="{{ route('vendor.products') }}" wire:navigate>
-            Back
+    @push('page-header-actions')
+        <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('vendor.products') }}" wire:navigate>
+            Back to Products
         </flux:button>
-    </div>
+    @endpush
 
     <form wire:submit="save" class="space-y-4">
-        <div class="bg-white rounded-[5px] border border-zinc-100 shadow-sm overflow-hidden">
+        <div class="admin-card overflow-hidden">
             <div class="px-5 py-3 border-b border-zinc-100">
                 <flux:heading size="sm">Product Details</flux:heading>
             </div>

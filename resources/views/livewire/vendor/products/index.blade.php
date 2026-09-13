@@ -1,9 +1,15 @@
-<div class="bg-white rounded-[5px] shadow-sm overflow-hidden">
+@push('page-header-actions')
+    <flux:button variant="primary" size="sm" icon="plus" href="{{ route('vendor.products.create') }}" wire:navigate>
+        New Product
+    </flux:button>
+@endpush
+
+<div class="admin-card overflow-hidden">
 
     {{-- Header --}}
     <div class="flex items-center gap-3 p-4 flex-wrap">
         <x-per-page-select :options="$this->perPageOptions()" />
-        <div class="relative max-w-xs">
+        <div class="relative max-w-xs ml-auto">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" viewBox="0 0 24 24"
                 fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="11" cy="11" r="8" />
@@ -12,9 +18,6 @@
             <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search products…"
                 class="w-full pl-9 pr-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all" />
         </div>
-        <flux:button variant="primary" size="sm" icon="plus" href="{{ route('vendor.products.create') }}" wire:navigate class="ml-auto">
-            New Product
-        </flux:button>
     </div>
 
     {{-- Table --}}
@@ -50,22 +53,22 @@
                             </td>
                             <td class="px-4 py-2.5">
                                 @if ($product->inStock())
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-200">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/10">
                                         {{ (int) $product->quantity }} in stock
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-600 border border-rose-200">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 ring-1 ring-rose-600/10">
                                         Out of stock
                                     </span>
                                 @endif
                             </td>
                             <td class="px-4 py-2.5">
                                 @if ($product->trashed())
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500">Deleted</span>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-50 text-zinc-500 ring-1 ring-zinc-600/10">Deleted</span>
                                 @elseif ($product->status === 'active')
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-600 border border-green-200">Active</span>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/10">Active</span>
                                 @else
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-600 border border-red-200">Inactive</span>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-50 text-zinc-500 ring-1 ring-zinc-600/10">Inactive</span>
                                 @endif
                             </td>
                             <td class="px-4 py-2.5 text-right">

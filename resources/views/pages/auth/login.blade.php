@@ -3,6 +3,15 @@
 @endphp
 <x-layouts::auth :title="$loginPage?->seo_title ?: __('Log in')" :description="$loginPage?->seo_description">
     <div class="flex flex-col gap-5 w-full">
+        {{-- Which login this is — the vendor portal has its own separate login
+             page at the same visual style, so this small badge is the only
+             thing telling the two apart at a glance. --}}
+        <div class="flex justify-center">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide bg-white/10 text-white/90 border border-white/20">
+                {{ __('Admin Panel') }}
+            </span>
+        </div>
+
         {{-- Session Status --}}
         <x-auth-session-status class="text-center" :status="session('status')" />
 

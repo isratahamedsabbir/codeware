@@ -1,21 +1,20 @@
-<div class="max-w-4xl space-y-4">
+<div class="max-w-4xl w-full mx-auto space-y-4">
 
-    <div class="flex items-center justify-between gap-3 flex-wrap">
-        <flux:button variant="ghost" size="sm" icon="arrow-left" href="{{ route('vendor.orders') }}" wire:navigate>
-            Back
+    @push('page-header-actions')
+        <flux:button variant="primary" size="sm" icon="document-text" href="{{ route('vendor.orders.invoice', $order->id) }}" target="_blank">
+            View Invoice
         </flux:button>
 
-        <div class="flex items-center gap-2">
-            <flux:button variant="ghost" size="sm" icon="document-text" href="{{ route('vendor.orders.invoice', $order->id) }}" target="_blank">
-                View Invoice
-            </flux:button>
-            <flux:button variant="outline" size="sm" icon="arrow-down-tray" href="{{ route('vendor.orders.invoice.download', $order->id) }}">
-                Download PDF
-            </flux:button>
-        </div>
-    </div>
+        <flux:button variant="outline" size="sm" icon="arrow-down-tray" href="{{ route('vendor.orders.invoice.download', $order->id) }}">
+            Download PDF
+        </flux:button>
 
-    <div class="rounded-[5px] border border-zinc-200 bg-white p-5 shadow-sm">
+        <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('vendor.orders') }}" wire:navigate>
+            Back to Orders
+        </flux:button>
+    @endpush
+
+    <div class="admin-card p-5">
         <div class="flex items-start justify-between gap-4 flex-wrap">
             <div>
                 <p class="text-xs text-zinc-500">Order</p>
@@ -42,7 +41,7 @@
         </div>
     </div>
 
-    <div class="rounded-[5px] border border-zinc-200 bg-white shadow-sm overflow-hidden">
+    <div class="admin-card overflow-hidden">
         <div class="px-5 py-3 border-b border-zinc-100">
             <flux:heading size="sm">Your Items</flux:heading>
             <flux:text class="text-xs text-zinc-500">Only the line items from your vendor(s) in this order are shown here.</flux:text>
@@ -58,7 +57,7 @@
             </thead>
             <tbody class="divide-y divide-gray-200">
                 @foreach ($items as $item)
-                    <tr>
+                    <tr class="hover:bg-indigo-50/30 transition-colors">
                         <td class="px-4 py-2.5 text-sm text-zinc-800">{{ $item->product_name }}</td>
                         <td class="px-4 py-2.5 text-sm text-zinc-600">{{ $order->currency }} {{ number_format((float) $item->unit_price, 2) }}</td>
                         <td class="px-4 py-2.5 text-sm text-zinc-600">{{ $item->quantity }}</td>

@@ -187,7 +187,17 @@ textarea:focus {
     box-shadow: 1px 0 0 var(--color-sidebar-border), 4px 0 20px rgba(0, 0, 0, 0.04);
 }
 
-.admin-main { 
+.admin-main {
+    padding: 0 !important;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: radial-gradient(at 0% 0%, var(--color-main-from) 0%, var(--color-main-to) 100%) !important;
+}
+
+/* Vendor Portal — same flex/background treatment as .admin-main, so the
+   footer sits at the bottom and the page reads like the same app. */
+.vendor-main {
     padding: 0 !important;
     display: flex;
     flex-direction: column;

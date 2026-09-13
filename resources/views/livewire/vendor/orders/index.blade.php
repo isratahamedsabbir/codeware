@@ -1,4 +1,4 @@
-<div class="bg-white rounded-[5px] shadow-sm overflow-hidden">
+<div class="admin-card overflow-hidden">
 
     {{-- Header --}}
     <div class="flex items-center gap-3 p-4 flex-wrap">

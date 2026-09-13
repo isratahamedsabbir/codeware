@@ -15,10 +15,16 @@
                 </form>
             </div>
         @else
-            <a href="{{ route('login') }}"
-                class="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-secondary transition-colors">
-                {{ __('Login') }}
-            </a>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('login') }}"
+                    class="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-secondary transition-colors">
+                    {{ __('Admin Login') }}
+                </a>
+                <a href="{{ route('vendor.login') }}"
+                    class="rounded-md border border-white/20 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10 transition-colors">
+                    {{ __('Vendor Login') }}
+                </a>
+            </div>
         @endauth
     </div>
 </x-layouts::auth>
