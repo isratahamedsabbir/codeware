@@ -66,7 +66,7 @@ class Index extends Component
     public function render()
     {
         $all = ProductCategory::query()
-            ->with('page')
+            ->with(['page', 'creator'])
             ->withCount('products')
             ->orderBy('sort_order')
             ->orderBy('id')

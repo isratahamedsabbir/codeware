@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\HasCreator;
 use App\Support\Locale;
 use App\Support\Slug;
 use Illuminate\Database\Eloquent\Builder;
@@ -14,7 +15,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Page extends Model
 {
-    use HasFactory, HasTranslations, SoftDeletes;
+    use HasCreator, HasFactory, HasTranslations, SoftDeletes;
 
     public array $translatable = ['title', 'content', 'description'];
 

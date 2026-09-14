@@ -73,6 +73,7 @@ class Index extends Component
     {
         return view('livewire.admin.coupons.index', [
             'coupons' => Coupon::query()
+                ->with('creator')
                 ->withCount('products')
                 ->when($this->search, fn ($q) => $q->where('code', 'like', '%'.strtoupper($this->search).'%'))
                 ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))

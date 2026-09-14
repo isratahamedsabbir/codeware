@@ -29,7 +29,7 @@ class Show extends Component
     public function render()
     {
         $product = Product::withTrashed()
-            ->with(['categories.page', 'brand', 'vendor', 'page'])
+            ->with(['categories.page', 'brand', 'vendor', 'page', 'creator'])
             ->findOrFail($this->productId);
 
         // Each order is loaded with only *this* product's own line item (not

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\HasCreator;
 use App\Concerns\HasFaqs;
 use App\Services\EmailTemplateService;
 use App\Support\Locale;
@@ -17,7 +18,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Product extends Model
 {
-    use HasFactory, HasFaqs, HasTranslations, SoftDeletes;
+    use HasCreator, HasFactory, HasFaqs, HasTranslations, SoftDeletes;
 
     protected static function booted(): void
     {
@@ -48,7 +49,7 @@ class Product extends Model
 
     protected $fillable = [
         'name', 'description',
-        'brand_id', 'vendor_id', 'sku', 'variations',
+        'brand_id', 'vendor_id', 'created_by', 'sku', 'variations',
         'featured_image', 'status', 'product_type', 'price', 'discount_price', 'quantity', 'charge_shipping', 'is_featured',
         'is_upcoming', 'sort_order',
     ];

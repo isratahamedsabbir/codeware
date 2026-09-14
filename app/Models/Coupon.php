@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\HasCreator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Coupon extends Model
 {
-    use HasFactory;
+    use HasCreator, HasFactory;
 
     public const TYPES = ['percentage', 'fixed'];
 

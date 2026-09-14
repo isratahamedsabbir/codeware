@@ -76,6 +76,10 @@
                 <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Shipping</h3>
                 <p class="text-sm text-zinc-800">{{ $product->charge_shipping ? 'Charged' : 'Free' }}</p>
             </div>
+            <div>
+                <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Created by</h3>
+                <p class="text-sm text-zinc-800">{{ $product->creator?->name ?? '—' }}</p>
+            </div>
         </div>
     </div>
 

@@ -5,6 +5,7 @@ namespace App\Livewire\Vendor\Products;
 use App\Concerns\HasTranslatableFields;
 use App\Models\Page;
 use App\Models\Product;
+use App\Models\ProductAttribute;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use App\Models\ProductVendor;
@@ -20,9 +21,11 @@ use Livewire\WithFileUploads;
 
 /**
  * A trimmed-down version of Admin\Products\Form scoped to a vendor's own
- * catalog — no variations/attributes, FAQs, SEO fields, or Puck page builder
- * access (admin-only concerns), and vendor_id is never a free-choice field:
- * it's locked to the current user's assigned vendor(s), never the full list.
+ * catalog — no FAQs, SEO fields, or Puck page builder access (admin-only
+ * concerns), and vendor_id is never a free-choice field: it's locked to the
+ * current user's assigned vendor(s), never the full list. Variations share
+ * the system-wide attribute list (App\Models\ProductAttribute) the same way
+ * the admin form does — there's no per-vendor attribute set.
  */
 class Form extends Component
 {
@@ -62,6 +65,9 @@ class Form extends Component
     #[Validate('required|integer')]
     public string $vendor_id = '';
 
+    #[Validate('required|in:physical,digital')]
+    public string $product_type = 'physical';
+
     #[Validate('required|numeric|min:0')]
     public string $price = '0';
 
@@ -75,6 +81,22 @@ class Form extends Component
     public $featuredImage = null;
 
     public string $existingFeaturedImage = '';
+
+    /**
+     * Flat list of variant combinations (e.g. "Color: Red, Size: Small"), each
+     * optionally overriding the product's price/stock — same shape and
+     * generation logic as Admin\Products\Form; see its docblock for the
+     * combination-matching details.
+     *
+     * @var array<int, array{attributes: array<string, string>, price: string, discount_price: string, quantity: string, visible: bool}>
+     */
+    public array $variations = [];
+
+    /** @var array<int, string> */
+    public array $variationActiveAttributes = [];
+
+    /** @var array<string, array<int, string>> */
+    public array $variationSelectedValues = [];
 
     public function mount(?int $id = null): void
     {
@@ -96,11 +118,32 @@ class Form extends Component
             $this->brand_id = $product->brand_id !== null ? (string) $product->brand_id : '';
             $this->vendor_id = (string) $product->vendor_id;
             $this->sku = $product->sku ?? '';
+            $this->product_type = $product->product_type;
             $this->price = (string) $product->price;
             $this->discount_price = $product->discount_price !== null ? (string) $product->discount_price : '';
             $this->quantity = $product->quantity !== null ? (string) $product->quantity : '';
             $this->existingFeaturedImage = $product->featured_image ?? '';
             $this->pageId = $product->page?->id;
+
+            $this->variations = collect($product->variations ?? [])->map(fn ($row) => [
+                'attributes' => $row['attributes'] ?? (filled($row['attribute'] ?? null) ? [$row['attribute'] => $row['value']] : []),
+                'price' => $row['price'] ?? '',
+                'discount_price' => $row['discount_price'] ?? '',
+                'quantity' => $row['quantity'] ?? '',
+                'visible' => $row['visible'] ?? true,
+            ])->all();
+
+            foreach ($this->variations as $row) {
+                foreach ($row['attributes'] as $attributeName => $value) {
+                    if (! in_array($attributeName, $this->variationActiveAttributes, true)) {
+                        $this->variationActiveAttributes[] = $attributeName;
+                    }
+
+                    if (! in_array($value, $this->variationSelectedValues[$attributeName] ?? [], true)) {
+                        $this->variationSelectedValues[$attributeName][] = $value;
+                    }
+                }
+            }
 
             $this->checkSlugAvailability();
         }
@@ -142,9 +185,117 @@ class Form extends Component
         return ProductBrand::orderBy('sort_order')->orderBy('name')->get();
     }
 
+    #[Computed]
+    public function productAttributes()
+    {
+        return ProductAttribute::orderBy('name')->get();
+    }
+
     public function updatedFeaturedImage(): void
     {
         $this->validate(['featuredImage' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048']);
+    }
+
+    public function setProductType(string $type): void
+    {
+        if (in_array($type, ['physical', 'digital'], true)) {
+            $this->product_type = $type;
+        }
+    }
+
+    /**
+     * Builds every combination across the attributes that currently have at
+     * least one checked value — see Admin\Products\Form::generateVariations()
+     * for the full explanation, this is the same logic unchanged.
+     */
+    public function generateVariations(): void
+    {
+        $axes = [];
+
+        foreach ($this->productAttributes as $attribute) {
+            if (! in_array($attribute->name, $this->variationActiveAttributes, true)) {
+                continue;
+            }
+
+            $values = array_values(array_filter($this->variationSelectedValues[$attribute->name] ?? []));
+
+            if ($values !== []) {
+                $axes[$attribute->name] = $values;
+            }
+        }
+
+        if ($axes === []) {
+            return;
+        }
+
+        $combinations = [[]];
+
+        foreach ($axes as $attributeName => $values) {
+            $next = [];
+
+            foreach ($combinations as $combo) {
+                foreach ($values as $value) {
+                    $next[] = $combo + [$attributeName => $value];
+                }
+            }
+
+            $combinations = $next;
+        }
+
+        $existing = collect($this->variations)->keyBy(
+            fn ($row) => $this->variationComboKey($row['attributes'] ?? [])
+        );
+
+        $this->variations = collect($combinations)
+            ->map(fn ($attributes) => $existing->get($this->variationComboKey($attributes)) ?? [
+                'attributes' => $attributes,
+                'price' => '',
+                'discount_price' => '',
+                'quantity' => '',
+                'visible' => true,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * A stable identity for a combination regardless of the order its
+     * attributes happen to be in, used to match old rows against newly
+     * generated ones so their price/discount/quantity survive a regenerate.
+     */
+    private function variationComboKey(array $attributes): string
+    {
+        ksort($attributes);
+
+        return json_encode($attributes);
+    }
+
+    public function removeVariation(int $index): void
+    {
+        unset($this->variations[$index]);
+        $this->variations = array_values($this->variations);
+    }
+
+    /**
+     * Drops any row left with no attributes — shouldn't normally happen since
+     * generateVariations() already guards against it, but keeps save() safe
+     * regardless.
+     *
+     * @return array<int, array{attributes: array<string, string>, price: ?string, discount_price: ?string, quantity: ?string, visible: bool}>
+     */
+    private function cleanedVariations(): array
+    {
+        return collect($this->variations)
+            ->filter(fn ($row) => filled($row['attributes'] ?? null))
+            ->map(fn ($row) => [
+                'attributes' => $row['attributes'],
+                'price' => filled($row['price'] ?? null) ? $row['price'] : null,
+                'discount_price' => filled($row['discount_price'] ?? null) ? $row['discount_price'] : null,
+                'quantity' => filled($row['quantity'] ?? null) ? $row['quantity'] : null,
+                'visible' => (bool) ($row['visible'] ?? true),
+            ])
+            ->values()
+            ->all();
     }
 
     /**
@@ -153,6 +304,12 @@ class Form extends Component
      */
     public function updated(string $name, mixed $value): void
     {
+        if ($name === 'variationActiveAttributes' || str_starts_with($name, 'variationSelectedValues.')) {
+            $this->generateVariations();
+
+            return;
+        }
+
         if (! $this->isPrimaryLocaleUpdate($name, 'name')) {
             return;
         }
@@ -200,11 +357,15 @@ class Form extends Component
         ];
         $rules['brand_id'] = 'nullable|integer|exists:product_brands,id';
         $rules['vendor_id'] = ['required', 'integer', 'in:'.implode(',', $vendorIds)];
+        $rules['product_type'] = 'required|in:physical,digital';
         $rules['price'] = 'required|numeric|min:0';
         $rules['discount_price'] = 'nullable|numeric|min:0|lt:price';
         $rules['quantity'] = 'nullable|integer|min:0';
         $rules['category_ids'] = 'array';
         $rules['category_ids.*'] = 'integer|exists:categories,id,type,product';
+        $rules['variations.*.price'] = 'nullable|numeric|min:0';
+        $rules['variations.*.discount_price'] = 'nullable|numeric|min:0|lt:variations.*.price';
+        $rules['variations.*.quantity'] = 'nullable|integer|min:0|lte:quantity';
 
         $this->validate($rules);
 
@@ -225,10 +386,12 @@ class Form extends Component
             'brand_id' => $this->brand_id !== '' ? (int) $this->brand_id : null,
             'vendor_id' => (int) $this->vendor_id,
             'sku' => $this->sku !== '' ? $this->sku : null,
+            'product_type' => $this->product_type,
             'price' => $this->price,
             'discount_price' => $this->discount_price !== '' ? $this->discount_price : null,
             'quantity' => $this->quantity !== '' ? $this->quantity : 0,
             'description' => $this->translatablePayload('description') ?: null,
+            'variations' => $this->cleanedVariations(),
         ];
 
         if (! empty($this->featuredImage)) {

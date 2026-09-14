@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\MediaLibrary;
+use App\Models\User;
 use App\Policies\MediaLibraryPolicy;
 use App\Support\DatabaseTranslationLoader;
 use Carbon\Carbon;
@@ -17,6 +18,8 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Spatie\Permission\Exceptions\PermissionDoesNotExist;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -126,6 +129,28 @@ class AppServiceProvider extends ServiceProvider
         // was never reachable through this one anyway.
 
         $this->configureCustomerAuthNotificationUrls();
+        $this->configureCreatorTracking();
+    }
+
+    /**
+     * Role and Permission (spatie/laravel-permission) are third-party models
+     * this app doesn't own the class of, so App\Concerns\HasCreator (used by
+     * Product, ProductCategory, etc.) can't be applied to them directly —
+     * this reproduces the same behavior externally: a `creating` listener
+     * sets created_by once, and resolveRelationUsing() adds a real, eager-
+     * loadable `creator` relation without subclassing either model.
+     */
+    private function configureCreatorTracking(): void
+    {
+        foreach ([Role::class, Permission::class] as $model) {
+            $model::creating(function ($record) {
+                if (! $record->created_by && auth()->check()) {
+                    $record->created_by = auth()->id();
+                }
+            });
+
+            $model::resolveRelationUsing('creator', fn ($record) => $record->belongsTo(User::class, 'created_by'));
+        }
     }
 
     /**

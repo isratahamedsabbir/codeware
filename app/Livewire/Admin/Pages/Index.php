@@ -163,6 +163,7 @@ class Index extends Component
     {
         return view('livewire.admin.pages.index', [
             'pages' => Page::query()
+                ->with('creator')
                 ->when($this->typeFilter !== 'all', fn ($q) => $q->where('type', $this->typeFilter))
                 ->when($this->search, fn ($q) => $q->where(function ($q) {
                     $q->where('title->en', 'like', "%{$this->search}%")

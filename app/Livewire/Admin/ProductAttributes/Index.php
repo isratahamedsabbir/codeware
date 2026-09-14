@@ -43,6 +43,7 @@ class Index extends Component
     {
         return view('livewire.admin.product-attributes.index', [
             'productAttributes' => ProductAttribute::query()
+                ->with('creator')
                 ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
                 ->orderBy('name')
                 ->paginate($this->perPage),

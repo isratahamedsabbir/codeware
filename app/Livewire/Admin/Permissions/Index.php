@@ -55,6 +55,7 @@ class Index extends Component
     {
         return view('livewire.admin.permissions.index', [
             'permissions' => Permission::query()
+                ->with('creator')
                 ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
                 ->withCount('roles')
                 ->orderBy('name')

@@ -28,11 +28,12 @@
                 <colgroup>
                     <col style="width:5%">
                     <col class="hidden lg:table-column" style="width:5%">
-                    <col style="width:29%">
+                    <col style="width:20%">
+                    <col class="hidden lg:table-column" style="width:18%">
+                    <col style="width:12%">
+                    <col style="width:11%">
                     <col class="hidden lg:table-column" style="width:14%">
-                    <col style="width:16%">
-                    <col style="width:14%">
-                    <col style="width:17%">
+                    <col style="width:15%">
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
@@ -42,6 +43,7 @@
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Users</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Permissions</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Created by</th>
                         <th class="sticky right-0 z-10 bg-zinc-50 border-l border-zinc-100 px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
@@ -80,7 +82,18 @@
 
                             {{-- Users --}}
                             <td class="hidden lg:table-cell px-4 py-2">
-                                <span class="text-sm text-zinc-700">{{ $role->users_count }}</span>
+                                @forelse ($role->users->take(3) as $user)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-zinc-100 text-zinc-600 mb-1">
+                                        <x-truncate :text="$user->name" />
+                                    </span>
+                                @empty
+                                    <span class="text-zinc-300 text-sm">—</span>
+                                @endforelse
+                                @if ($role->users_count > 3)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-zinc-100 text-zinc-500">
+                                        +{{ $role->users_count - 3 }}
+                                    </span>
+                                @endif
                             </td>
 
                             {{-- Permissions --}}
@@ -114,6 +127,11 @@
                                 @endif
                             </td>
 
+                            {{-- Created by --}}
+                            <td class="hidden lg:table-cell px-4 py-2 text-sm text-zinc-500">
+                                {{ $role->creator?->name ?? '—' }}
+                            </td>
+
                             {{-- Actions --}}
                             <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-50/30 border-l border-zinc-100 px-4 py-2">
                                 <x-admin-row-actions :actions="[
@@ -124,15 +142,16 @@
 
                         </tr>
                         @if ($viewingId === $role->id)
-                            <x-admin-row-details colspan="7">
+                            <x-admin-row-details colspan="8">
                                 <x-admin-row-details.item label="ID">#{{ $role->id }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Users">{{ $role->users_count }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Status">{{ $role->name === 'admin' ? 'Active' : ucfirst($role->status) }}</x-admin-row-details.item>
+                                <x-admin-row-details.item label="Created by">{{ $role->creator?->name ?? '—' }}</x-admin-row-details.item>
                             </x-admin-row-details>
                         @endif
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-16 text-center">
+                            <td colspan="8" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />

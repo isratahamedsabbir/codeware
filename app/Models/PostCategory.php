@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\HasCreator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,7 +13,7 @@ use Spatie\Translatable\HasTranslations;
 
 class PostCategory extends Model
 {
-    use HasFactory, HasTranslations;
+    use HasCreator, HasFactory, HasTranslations;
 
     protected $table = 'categories';
 

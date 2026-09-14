@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\HasCreator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductBrand extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasCreator, HasFactory, SoftDeletes;
 
     protected $fillable = ['name', 'logo', 'status', 'sort_order'];
 

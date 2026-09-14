@@ -1,6 +1,7 @@
-<div class="max-w-3xl mx-auto">
-    {{-- Profile photo & name --}}
-    <div class="admin-card overflow-hidden mb-5">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+    {{-- Profile photo, name & signature --}}
+    <div class="lg:col-span-2 admin-card overflow-hidden self-start">
         <div class="px-5 py-3 border-b border-zinc-100 flex items-center justify-between">
             <h2 class="text-sm font-semibold text-zinc-900">Profile Information</h2>
             <span class="text-xs text-zinc-400">Account photo and display name</span>
@@ -67,9 +68,12 @@
                             @endif
                         },
                         point(e) {
-                            const rect = this.$refs.canvas.getBoundingClientRect();
+                            const canvas = this.$refs.canvas;
+                            const rect = canvas.getBoundingClientRect();
                             const t = e.touches ? e.touches[0] : e;
-                            return { x: t.clientX - rect.left, y: t.clientY - rect.top };
+                            const scaleX = canvas.width / rect.width;
+                            const scaleY = canvas.height / rect.height;
+                            return { x: (t.clientX - rect.left) * scaleX, y: (t.clientY - rect.top) * scaleY };
                         },
                         start(e) {
                             e.preventDefault();
@@ -143,78 +147,85 @@
         </form>
     </div>
 
-    {{-- Documents --}}
-    <div class="admin-card overflow-hidden mb-5">
-        <div class="px-5 py-3 border-b border-zinc-100 flex items-center justify-between">
-            <h2 class="text-sm font-semibold text-zinc-900">Documents</h2>
-            <span class="text-xs text-zinc-400">ID, contract, certificate — PDF, DOC, or image files</span>
-        </div>
+    {{-- Documents & password — stacked in their own column alongside the
+         profile card, instead of one long centered column. --}}
+    <div class="lg:col-span-1 space-y-5">
 
-        <div class="p-5 space-y-3">
-            <div>
-                <input type="file" wire:model="newDocuments" multiple
-                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
-                    class="block w-full text-xs text-zinc-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-zinc-100 file:text-zinc-700 hover:file:bg-zinc-200 cursor-pointer">
-                <flux:error name="newDocuments.*" />
-                @if ($newDocuments)
-                    <button type="button" wire:click="uploadDocuments"
-                        wire:loading.attr="disabled" wire:target="uploadDocuments"
-                        class="mt-2 text-xs font-medium text-primary hover:opacity-80 cursor-pointer">
-                        <span wire:loading.remove wire:target="uploadDocuments">Upload selected</span>
-                        <span wire:loading wire:target="uploadDocuments">Uploading…</span>
-                    </button>
-                @endif
+        {{-- Documents --}}
+        <div class="admin-card overflow-hidden">
+            <div class="px-5 py-3 border-b border-zinc-100">
+                <h2 class="text-sm font-semibold text-zinc-900">Documents</h2>
+                <p class="text-xs text-zinc-400 mt-0.5">ID, contract, certificate — PDF, DOC, or image files</p>
             </div>
 
-            <ul class="space-y-1.5">
-                @forelse ($documents as $document)
-                    <li class="flex items-center justify-between gap-2 text-xs bg-zinc-50 border border-zinc-100 rounded-md px-2.5 py-1.5">
-                        <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($document->file) }}" target="_blank"
-                            class="min-w-0 truncate text-zinc-700 hover:text-primary font-medium" title="{{ $document->name }}">
-                            {{ $document->name }}
-                        </a>
-                        <button type="button" wire:click="deleteDocument({{ $document->id }})"
-                            wire:confirm="Delete this document?"
-                            class="shrink-0 text-zinc-400 hover:text-red-600 cursor-pointer">
-                            <flux:icon.trash class="size-3.5" />
+            <div class="p-5 space-y-3">
+                <div>
+                    <input type="file" wire:model="newDocuments" multiple
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
+                        class="block w-full text-xs text-zinc-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-zinc-100 file:text-zinc-700 hover:file:bg-zinc-200 cursor-pointer">
+                    <flux:error name="newDocuments.*" />
+                    @if ($newDocuments)
+                        <button type="button" wire:click="uploadDocuments"
+                            wire:loading.attr="disabled" wire:target="uploadDocuments"
+                            class="mt-2 text-xs font-medium text-primary hover:opacity-80 cursor-pointer">
+                            <span wire:loading.remove wire:target="uploadDocuments">Upload selected</span>
+                            <span wire:loading wire:target="uploadDocuments">Uploading…</span>
                         </button>
-                    </li>
-                @empty
-                    <p class="text-xs text-zinc-400 px-1">No documents uploaded yet.</p>
-                @endforelse
-            </ul>
-        </div>
-    </div>
+                    @endif
+                </div>
 
-    {{-- Password --}}
-    <div class="admin-card overflow-hidden">
-        <div class="px-5 py-3 border-b border-zinc-100 flex items-center justify-between">
-            <h2 class="text-sm font-semibold text-zinc-900">Change Password</h2>
-            <span class="text-xs text-zinc-400">Keep your account secure</span>
-        </div>
-
-        <form wire:submit="updatePassword" class="p-5 space-y-5">
-            <flux:field>
-                <flux:label>Current Password</flux:label>
-                <flux:input wire:model="current_password" type="password" autocomplete="current-password" viewable />
-                <flux:error name="current_password" />
-            </flux:field>
-
-            <flux:field>
-                <flux:label>New Password</flux:label>
-                <flux:input wire:model="password" type="password" autocomplete="new-password" viewable />
-                <flux:error name="password" />
-            </flux:field>
-
-            <flux:field>
-                <flux:label>Confirm New Password</flux:label>
-                <flux:input wire:model="password_confirmation" type="password" autocomplete="new-password" viewable />
-                <flux:error name="password_confirmation" />
-            </flux:field>
-
-            <div class="flex items-center gap-3 pt-1">
-                <flux:button size="sm" variant="primary" type="submit">Update Password</flux:button>
+                <ul class="space-y-1.5">
+                    @forelse ($documents as $document)
+                        <li class="flex items-center justify-between gap-2 text-xs bg-zinc-50 border border-zinc-100 rounded-md px-2.5 py-1.5">
+                            <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($document->file) }}" target="_blank"
+                                class="min-w-0 truncate text-zinc-700 hover:text-primary font-medium" title="{{ $document->name }}">
+                                {{ $document->name }}
+                            </a>
+                            <button type="button" wire:click="deleteDocument({{ $document->id }})"
+                                wire:confirm="Delete this document?"
+                                class="shrink-0 text-zinc-400 hover:text-red-600 cursor-pointer">
+                                <flux:icon.trash class="size-3.5" />
+                            </button>
+                        </li>
+                    @empty
+                        <p class="text-xs text-zinc-400 px-1">No documents uploaded yet.</p>
+                    @endforelse
+                </ul>
             </div>
-        </form>
+        </div>
+
+        {{-- Password --}}
+        <div class="admin-card overflow-hidden">
+            <div class="px-5 py-3 border-b border-zinc-100 flex items-center justify-between">
+                <h2 class="text-sm font-semibold text-zinc-900">Change Password</h2>
+                <span class="text-xs text-zinc-400">Keep your account secure</span>
+            </div>
+
+            <form wire:submit="updatePassword" class="p-5 space-y-5">
+                <flux:field>
+                    <flux:label>Current Password</flux:label>
+                    <flux:input wire:model="current_password" type="password" autocomplete="current-password" viewable />
+                    <flux:error name="current_password" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>New Password</flux:label>
+                    <flux:input wire:model="password" type="password" autocomplete="new-password" viewable />
+                    <flux:error name="password" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>Confirm New Password</flux:label>
+                    <flux:input wire:model="password_confirmation" type="password" autocomplete="new-password" viewable />
+                    <flux:error name="password_confirmation" />
+                </flux:field>
+
+                <div class="flex items-center gap-3 pt-1">
+                    <flux:button size="sm" variant="primary" type="submit">Update Password</flux:button>
+                </div>
+            </form>
+        </div>
+
     </div>
+
 </div>

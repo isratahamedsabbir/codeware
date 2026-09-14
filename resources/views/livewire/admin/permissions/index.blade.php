@@ -30,7 +30,8 @@
             <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
                 <colgroup>
                     <col style="width:5%">
-                    <col style="width:55%">
+                    <col style="width:40%">
+                    <col style="width:15%">
                     <col style="width:20%">
                     <col style="width:20%">
                 </colgroup>
@@ -40,6 +41,7 @@
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Permission</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Guard</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Used by roles</th>
+                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Created by</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
@@ -65,10 +67,13 @@
                             <td class="px-4 py-2">
                                 <span class="text-xs text-zinc-600">{{ $permission->roles_count }}</span>
                             </td>
+                            <td class="px-4 py-2">
+                                <span class="text-xs text-zinc-600">{{ $permission->creator?->name ?? '—' }}</span>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="px-6 py-16 text-center">
+                            <td colspan="5" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />

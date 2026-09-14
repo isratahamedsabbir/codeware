@@ -136,7 +136,7 @@ class Index extends Component
     {
         return view('livewire.admin.products.index', [
             'products' => Product::query()
-                ->with(['categories', 'page'])
+                ->with(['categories', 'page', 'creator'])
                 ->when($this->search, fn ($q) => $q
                     ->where('name->en', 'like', "%{$this->search}%")
                     ->orWhere('name->bn', 'like', "%{$this->search}%")
