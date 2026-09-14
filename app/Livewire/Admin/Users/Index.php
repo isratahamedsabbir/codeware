@@ -48,6 +48,11 @@ class Index extends Component
         $this->dispatch('open-modal', name: 'user-delete');
     }
 
+    /**
+     * Deletes the user and drops their sessions (same as toggleBlock below),
+     * so an already-open tab is kicked out immediately rather than merely
+     * failing on its next request.
+     */
     public function delete(): void
     {
         if ($this->deletingId) {
@@ -56,6 +61,7 @@ class Index extends Component
             if ($user->id === auth()->id()) {
                 $this->dispatch('notify', message: 'You cannot delete your own account');
             } else {
+                DB::table('sessions')->where('user_id', $user->id)->delete();
                 $user->delete();
                 AdminActivity::log('deleted', "User: {$user->email}");
                 $this->dispatch('notify', message: 'User deleted successfully');

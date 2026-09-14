@@ -58,9 +58,11 @@
                     <a href="{{ route('login') }}" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90">
                         {{ __('Admin Login') }}
                     </a>
-                    <a href="{{ route('vendor.login') }}" class="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50">
-                        {{ __('Vendor Login') }}
-                    </a>
+                    @if ($showVendorLogin ?? false)
+                        <a href="{{ route('vendor.login') }}" class="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50">
+                            {{ __('Vendor Login') }}
+                        </a>
+                    @endif
                 @endauth
             </div>
         </div>

@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\CmsSection;
 use App\Models\MenuItem;
 use App\Models\Page;
+use App\Models\ProductVendor;
 use App\Models\Setting;
 use App\Support\Themes;
+use Spatie\Permission\Models\Role;
 
 class FrontendController extends Controller
 {
@@ -30,6 +32,7 @@ class FrontendController extends Controller
             'navPages' => $this->navPages(),
             'menuItems' => $this->frontendMenuItems(),
             'currentSlug' => 'home',
+            'showVendorLogin' => $this->showVendorLogin(),
         ]);
     }
 
@@ -53,6 +56,7 @@ class FrontendController extends Controller
             'navPages' => $this->navPages(),
             'menuItems' => $this->frontendMenuItems(),
             'currentSlug' => $slug,
+            'showVendorLogin' => $this->showVendorLogin(),
         ]);
     }
 
@@ -77,5 +81,18 @@ class FrontendController extends Controller
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->get();
+    }
+
+    /**
+     * Whether the Vendor Login link should appear — hidden whenever nobody
+     * could actually sign into the vendor portal: the 'vendor' role itself
+     * deactivated (see Roles\Index::toggleStatus, access-vendor-portal gate)
+     * or no active vendor exists for a user to be assigned to.
+     */
+    private function showVendorLogin(): bool
+    {
+        $vendorRoleActive = Role::where('name', 'vendor')->where('status', 'active')->exists();
+
+        return $vendorRoleActive && ProductVendor::active()->exists();
     }
 }

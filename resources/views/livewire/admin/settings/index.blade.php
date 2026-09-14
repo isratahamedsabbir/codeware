@@ -435,7 +435,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 </x-admin-section-card>
 
                 {{-- Watermark --}}
-                <x-admin-section-card header-border="border-zinc-100" icon="photo" title="Watermark" class="lg:col-span-2"
+                <x-admin-section-card header-border="border-zinc-100" icon="photo" title="Watermark"
                     description="Stamps this image onto every file uploaded to the Media Library.">
                     <x-slot:actions>
                         <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
@@ -444,12 +444,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                         </label>
                     </x-slot:actions>
 
-                    <div class="max-w-md">
-                        <x-media-picker model="settings.watermark_image" label="Watermark Image" hint="PNG with transparency works best"
-                            placeholder="Select watermark image from library" mimes="png,jpg,jpeg,webp" only-images dropzone />
-                    </div>
+                    <x-media-picker model="settings.watermark_image" label="Watermark Image" hint="PNG with transparency works best"
+                        placeholder="Select watermark image from library" mimes="png,jpg,jpeg,webp" only-images dropzone />
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md">
+                    <div class="grid grid-cols-1 gap-4">
                         <flux:field>
                             <flux:label>Position</flux:label>
                             <select wire:model="settings.watermark_position"
