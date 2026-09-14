@@ -2,7 +2,7 @@
      Login cards (split out of the generic group loop in index.blade.php so each can sit
      next to its own "Where to get these" guide) render identically to the rest. --}}
 <flux:field id="env-field-{{ $key }}">
-    <flux:label>{{ __($meta['label']) }}</flux:label>
+    <flux:label>{{ __($meta['label']) }}<x-field-hint :text="! empty($meta['hint']) ? __($meta['hint']) : null" /></flux:label>
     @if ($meta['type'] === 'boolean')
         <select wire:model="env.{{ $key }}"
             class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
@@ -20,9 +20,6 @@
         <flux:input type="password" wire:model="env.{{ $key }}" />
     @else
         <flux:input wire:model="env.{{ $key }}" />
-    @endif
-    @if (! empty($meta['hint']))
-        <flux:text class="text-xs text-zinc-500">{{ __($meta['hint']) }}</flux:text>
     @endif
     <flux:error name="env.{{ $key }}" />
 </flux:field>

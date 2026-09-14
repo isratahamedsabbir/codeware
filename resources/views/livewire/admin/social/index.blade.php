@@ -16,17 +16,18 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             @foreach ($links as $index => $link)
                 <flux:field>
-                    <flux:label>
-                        <span class="inline-flex items-center gap-2">
-                            <span class="inline-flex size-5 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                    <div class="flex rounded-lg border border-zinc-300 overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+                        <span class="flex items-center gap-2 px-3 bg-zinc-50 border-r border-zinc-300 text-sm text-zinc-500">
+                            <span class="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
                                 style="background-color: {{ $colors[$link['platform']] ?? '#71717a' }}">
                                 {{ strtoupper(substr($link['label'], 0, 1)) }}
                             </span>
                             {{ $link['label'] }}
                         </span>
-                    </flux:label>
-                    <flux:input wire:model="links.{{ $index }}.url"
-                        placeholder="{{ $link['platform'] === 'whatsapp' ? '+8801XXXXXXXXX' : 'https://' }}" />
+                        <input type="text" wire:model="links.{{ $index }}.url"
+                            placeholder="{{ $link['platform'] === 'whatsapp' ? '+8801XXXXXXXXX' : 'https://' }}"
+                            class="flex-1 min-w-0 border-0 px-3 py-2 text-sm text-zinc-700 placeholder:text-zinc-400 focus:outline-none focus:ring-0" />
+                    </div>
                 </flux:field>
             @endforeach
         </div>

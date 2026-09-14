@@ -1,13 +1,16 @@
 {{-- One "group" card in the Settings General tab (General, Localization,
-     Pagination, Newsletter, Images, ...). Pulled into its own partial so the
-     General tab's layout can place cards explicitly (left column, right
-     stack, full-width row) without duplicating this per-field rendering.
-     Included with ['group' => ..., 'items' => ...]; inherits $settings from
-     the parent view for the color-swatch preview. --}}
+     Pagination, Newsletter, ...). Pulled into its own partial so the General
+     tab's layout can place cards explicitly (left column, right stack,
+     full-width row) without duplicating this per-field rendering. Included
+     with ['group' => ..., 'items' => ...]; inherits $settings from the
+     parent view for the color-swatch preview.
+
+     Note: the 'images' group (Site Icon, White Icon, Favicon, Loader) is NOT
+     rendered through this partial — each image gets its own section card,
+     handled directly in index.blade.php. --}}
 @php
     $groupIcon = match ($group) {
         'general' => 'information-circle',
-        'images' => 'photo',
         'pagination' => 'document-duplicate',
         'localization' => 'language',
         'newsletter' => 'megaphone',
@@ -16,15 +19,23 @@
 @endphp
 
 <x-admin-section-card header-border="border-zinc-100" :icon="$groupIcon" :title="ucfirst($group ?? 'General')">
-    <div class="{{ $group === 'images' ? 'grid grid-cols-2 sm:grid-cols-4 gap-4' : 'space-y-4' }}">
+    <div class="space-y-4">
     @foreach ($items as $setting)
         <flux:field>
-            @php
-                $isMediaPicker = in_array($setting->key, ['site_icon', 'site_icon_white', 'favicon', 'loader'], true);
-            @endphp
-            @unless ($isMediaPicker)
-                <flux:label>{{ $setting->key === 'app_locale' ? 'Language' : ucwords(str_replace('_', ' ', $setting->key)) }}</flux:label>
-            @endunless
+            <flux:label>
+                {{ $setting->key === 'app_locale' ? 'Language' : ucwords(str_replace('_', ' ', $setting->key)) }}
+                @if ($setting->key === 'notify_subscribers_on_new_product')
+                    <x-field-hint text="{{ __('When enabled, everyone on the Subscribers list gets an email as soon as a new product is created.') }}" />
+                @elseif ($setting->key === 'pagination_per_page')
+                    <x-field-hint text="{{ __('Default number of items per page on the public site (products, posts, etc.). A request can still override this with its own ?per_page= value.') }}" />
+                @elseif ($setting->key === 'app_locale')
+                    <x-field-hint text="{{ __('The admin panel language — same as the header language switcher, applies to every admin user.') }}" />
+                @elseif ($setting->key === 'timezone')
+                    <x-field-hint text="{{ __('Dates are stored in UTC and shown to users in this timezone.') }}" />
+                @elseif ($setting->key === 'date_format')
+                    <x-field-hint text="{{ __('How dates are shown across the admin panel and in API responses (the "_display" fields alongside each date).') }}" />
+                @endif
+            </flux:label>
             @if ($setting->type === 'boolean')
                 <div class="flex items-center gap-2">
                     <input type="checkbox"
@@ -32,11 +43,6 @@
                         class="rounded border-zinc-300 text-primary" />
                     <span class="text-sm text-zinc-600">Enable</span>
                 </div>
-                @if ($setting->key === 'notify_subscribers_on_new_product')
-                    <flux:text class="text-xs text-zinc-500">
-                        {{ __('When enabled, everyone on the Subscribers list gets an email as soon as a new product is created.') }}
-                    </flux:text>
-                @endif
             @elseif ($setting->type === 'color')
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-lg border border-zinc-300 shrink-0"
@@ -47,9 +53,6 @@
                 </div>
             @elseif ($setting->key === 'pagination_per_page')
                 <flux:input type="number" min="1" max="100" wire:model="settings.{{ $setting->key }}" />
-                <flux:text class="text-xs text-zinc-500">
-                    {{ __('Default number of items per page on the public site (products, posts, etc.). A request can still override this with its own ?per_page= value.') }}
-                </flux:text>
             @elseif ($setting->key === 'app_locale')
                 <select wire:model="settings.{{ $setting->key }}"
                     class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
@@ -59,9 +62,6 @@
                         </option>
                     @endforeach
                 </select>
-                <flux:text class="text-xs text-zinc-500">
-                    {{ __('The admin panel language — same as the header language switcher, applies to every admin user.') }}
-                </flux:text>
             @elseif ($setting->key === 'timezone')
                 <select wire:model="settings.{{ $setting->key }}"
                     class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
@@ -73,9 +73,6 @@
                         </optgroup>
                     @endforeach
                 </select>
-                <flux:text class="text-xs text-zinc-500">
-                    {{ __('Dates are stored in UTC and shown to users in this timezone.') }}
-                </flux:text>
             @elseif ($setting->key === 'date_format')
                 @php
                     $dateFormatOptions = [
@@ -92,17 +89,6 @@
                         <option value="{{ $format }}">{{ $example }}</option>
                     @endforeach
                 </select>
-                <flux:text class="text-xs text-zinc-500">
-                    {{ __('How dates are shown across the admin panel and in API responses (the "_display" fields alongside each date).') }}
-                </flux:text>
-            @elseif ($setting->key === 'site_icon' || $setting->key === 'site_icon_white' || $setting->key === 'favicon' || $setting->key === 'loader')
-                <x-media-picker model="settings.{{ $setting->key }}"
-                    label="{{ match ($setting->key) { 'favicon' => 'Favicon', 'loader' => 'Loader', 'site_icon_white' => 'White Icon', default => 'Site Icon' } }}"
-                    hint="{{ match ($setting->key) { 'favicon' => '32×32px, square', 'loader' => '200×200px, square', 'site_icon_white' => '512×512px, transparent', default => '512×512px, transparent' } }}"
-                    placeholder="{{ match ($setting->key) { 'loader' => 'Choose a loading animation from the library', 'favicon' => 'Choose a favicon from the library', 'site_icon_white' => 'Choose a white icon from the library', default => 'Choose a site icon from the library' } }}"
-                    mimes="{{ match ($setting->key) { 'favicon' => 'ico,png', 'loader' => 'gif,png,jpg', default => 'png,webp' } }}"
-                    :max-size-mb="$setting->key === 'favicon' ? 1 : 2"
-                    only-images dropzone />
             @elseif ($setting->type === 'textarea')
                 <flux:textarea wire:model="settings.{{ $setting->key }}" class="h-24" />
             @else

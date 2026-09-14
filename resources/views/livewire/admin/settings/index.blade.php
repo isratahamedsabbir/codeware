@@ -71,9 +71,33 @@
 
                     @foreach ($groupedSettings as $group => $items)
                         @continue (in_array($group, ['general', 'localization', 'pagination', 'newsletter'], true))
-                        <div class="lg:col-span-2">
-                            @include('partials.admin-settings-group-card', ['group' => $group, 'items' => $items])
-                        </div>
+                        @if ($group === 'images')
+                            {{-- Each image gets its own section card rather than sharing one
+                                 "Images" card, so every upload slot reads as its own settings
+                                 block (title, hint and file picker together). --}}
+                            <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-start">
+                                @foreach ($items as $setting)
+                                    @continue (! in_array($setting->key, ['site_icon', 'site_icon_white', 'favicon', 'loader'], true))
+                                    @php
+                                        $imageMeta = match ($setting->key) {
+                                            'favicon' => ['title' => 'Favicon', 'hint' => '32×32px, square', 'placeholder' => 'Choose a favicon from the library', 'mimes' => 'ico,png', 'maxSize' => 1],
+                                            'loader' => ['title' => 'Loader', 'hint' => '200×200px, square', 'placeholder' => 'Choose a loading animation from the library', 'mimes' => 'gif,png,jpg', 'maxSize' => 2],
+                                            'site_icon_white' => ['title' => 'White Icon', 'hint' => '512×512px, transparent', 'placeholder' => 'Choose a white icon from the library', 'mimes' => 'png,webp', 'maxSize' => 2],
+                                            default => ['title' => 'Site Icon', 'hint' => '512×512px, transparent', 'placeholder' => 'Choose a site icon from the library', 'mimes' => 'png,webp', 'maxSize' => 2],
+                                        };
+                                    @endphp
+                                    <x-admin-section-card header-border="border-zinc-100" icon="photo" :title="$imageMeta['title']">
+                                        <x-media-picker model="settings.{{ $setting->key }}" :label="$imageMeta['title']" :hint="$imageMeta['hint']"
+                                            :placeholder="$imageMeta['placeholder']" :mimes="$imageMeta['mimes']" :max-size-mb="$imageMeta['maxSize']"
+                                            only-images dropzone />
+                                    </x-admin-section-card>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="lg:col-span-2">
+                                @include('partials.admin-settings-group-card', ['group' => $group, 'items' => $items])
+                            </div>
+                        @endif
                     @endforeach
                 </div>
             </div>
@@ -145,16 +169,13 @@
                     <x-admin-section-card header-border="border-zinc-100" icon="globe-alt" title="Frontend"
                         description="Choose the design shown to visitors on the public site.">
                         <flux:field class="max-w-sm">
-                            <flux:label>Site Design</flux:label>
+                            <flux:label>Site Design<x-field-hint text="{{ __('The design shown at your site\'s homepage (:url).', ['url' => url('/')]) }}" /></flux:label>
                             <select wire:model="settings.site_theme"
                                 class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
                                 @foreach (\App\Support\Themes::all() as $slug => $label)
                                     <option value="{{ $slug }}">{{ $label }}</option>
                                 @endforeach
                             </select>
-                            <flux:text class="text-xs text-zinc-500">
-                                {{ __('The design shown at your site\'s homepage (:url).', ['url' => url('/')]) }}
-                            </flux:text>
                         </flux:field>
                     </x-admin-section-card>
                 </div>
