@@ -69,7 +69,7 @@ class Index extends Component
     {
         return view('livewire.admin.districts.index', [
             'districts' => District::query()
-                ->with('division.state.country')
+                ->with(['division', 'country'])
                 ->when($this->search, fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'))
                 ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
                 ->when($this->divisionFilter, fn ($q) => $q->where('division_id', $this->divisionFilter))

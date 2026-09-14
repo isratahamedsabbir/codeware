@@ -12,7 +12,21 @@ class District extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['division_id', 'name', 'status'];
+    protected $fillable = ['country_id', 'division_id', 'name', 'status'];
+
+    protected static function booted(): void
+    {
+        static::saving(function (District $district) {
+            if ($district->isDirty('division_id') || ! $district->country_id) {
+                $district->country_id = Division::find($district->division_id)?->country_id;
+            }
+        });
+    }
+
+    public function country(): BelongsTo
+    {
+        return $this->belongsTo(Country::class);
+    }
 
     public function division(): BelongsTo
     {

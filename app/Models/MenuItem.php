@@ -53,7 +53,6 @@ class MenuItem extends Model
         'admin.shipping-methods',
         'admin.advance',
         'admin.countries',
-        'admin.states',
         'admin.divisions',
         'admin.districts',
         'admin.upazilas',

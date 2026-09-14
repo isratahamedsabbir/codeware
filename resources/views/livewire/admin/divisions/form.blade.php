@@ -9,14 +9,14 @@
     <div class="w-full max-w-2xl bg-white rounded-[5px] shadow-sm p-6 space-y-4">
 
         <flux:field>
-            <flux:label>State <span class="text-red-500 ml-0.5">*</span></flux:label>
-            <flux:select wire:model="stateId">
-                <flux:select.option value="">— Select state —</flux:select.option>
-                @foreach ($states as $state)
-                    <flux:select.option value="{{ $state->id }}">{{ $state->name }} — {{ $state->country->name }}</flux:select.option>
+            <flux:label>Country <span class="text-red-500 ml-0.5">*</span></flux:label>
+            <flux:select wire:model="countryId">
+                <flux:select.option value="">— Select country —</flux:select.option>
+                @foreach ($countries as $country)
+                    <flux:select.option value="{{ $country->id }}">{{ $country->name }}</flux:select.option>
                 @endforeach
             </flux:select>
-            <flux:error name="stateId" />
+            <flux:error name="countryId" />
         </flux:field>
 
         <flux:field>

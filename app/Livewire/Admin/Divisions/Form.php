@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Admin\Divisions;
 
+use App\Models\Country;
 use App\Models\Division;
-use App\Models\State;
 use App\Support\AdminActivity;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -12,8 +12,8 @@ class Form extends Component
 {
     public ?int $divisionId = null;
 
-    #[Validate('required|integer|exists:states,id')]
-    public ?int $stateId = null;
+    #[Validate('required|integer|exists:countries,id')]
+    public ?int $countryId = null;
 
     #[Validate('required|string|max:255')]
     public string $name = '';
@@ -23,7 +23,7 @@ class Form extends Component
         if ($id) {
             $division = Division::findOrFail($id);
             $this->divisionId = $id;
-            $this->stateId = $division->state_id;
+            $this->countryId = $division->country_id;
             $this->name = $division->name;
         }
     }
@@ -32,12 +32,12 @@ class Form extends Component
     {
         $rules = $this->getRules();
         $rules['name'] = $this->divisionId
-            ? 'required|string|max:255|unique:divisions,name,'.$this->divisionId.',id,state_id,'.$this->stateId
-            : 'required|string|max:255|unique:divisions,name,NULL,id,state_id,'.$this->stateId;
+            ? 'required|string|max:255|unique:divisions,name,'.$this->divisionId.',id,country_id,'.$this->countryId
+            : 'required|string|max:255|unique:divisions,name,NULL,id,country_id,'.$this->countryId;
 
         $this->validate($rules);
 
-        $data = ['state_id' => $this->stateId, 'name' => $this->name];
+        $data = ['country_id' => $this->countryId, 'name' => $this->name];
 
         $creating = $this->divisionId === null;
 
@@ -60,7 +60,7 @@ class Form extends Component
     public function render()
     {
         return view('livewire.admin.divisions.form', [
-            'states' => State::with('country')->orderBy('name')->get(),
+            'countries' => Country::orderBy('name')->get(['id', 'name']),
         ])->layout('layouts.admin', ['title' => $this->divisionId ? 'Edit Division' : 'New Division']);
     }
 }

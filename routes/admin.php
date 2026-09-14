@@ -152,10 +152,6 @@ Route::middleware('can:access-admin-system')->group(function () {
     Route::get('/countries/create', App\Livewire\Admin\Countries\Form::class)->name('countries.create');
     Route::get('/countries/{id}/edit', App\Livewire\Admin\Countries\Form::class)->name('countries.edit');
 
-    Route::get('/states', App\Livewire\Admin\States\Index::class)->name('states');
-    Route::get('/states/create', App\Livewire\Admin\States\Form::class)->name('states.create');
-    Route::get('/states/{id}/edit', App\Livewire\Admin\States\Form::class)->name('states.edit');
-
     Route::get('/divisions', App\Livewire\Admin\Divisions\Index::class)->name('divisions');
     Route::get('/divisions/create', App\Livewire\Admin\Divisions\Form::class)->name('divisions.create');
     Route::get('/divisions/{id}/edit', App\Livewire\Admin\Divisions\Form::class)->name('divisions.edit');

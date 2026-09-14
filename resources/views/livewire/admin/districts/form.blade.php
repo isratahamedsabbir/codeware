@@ -13,7 +13,7 @@
             <flux:select wire:model="divisionId">
                 <flux:select.option value="">— Select division —</flux:select.option>
                 @foreach ($divisions as $division)
-                    <flux:select.option value="{{ $division->id }}">{{ $division->name }} — {{ $division->state->name }}, {{ $division->state->country->name }}</flux:select.option>
+                    <flux:select.option value="{{ $division->id }}">{{ $division->name }} — {{ $division->country->name }}</flux:select.option>
                 @endforeach
             </flux:select>
             <flux:error name="divisionId" />

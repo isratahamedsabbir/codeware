@@ -9,13 +9,13 @@
     {{-- Header --}}
     <div class="flex items-center gap-3 p-4 flex-wrap">
         <x-per-page-select :options="$this->perPageOptions()" />
-        {{-- State filter --}}
-        <select wire:model.live="stateFilter"
+        {{-- Country filter --}}
+        <select wire:model.live="countryFilter"
             class="px-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 bg-white appearance-none pr-8 min-w-[160px] transition-all"
             style="background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 10px center">
-            <option value="">All states</option>
-            @foreach ($states as $state)
-                <option value="{{ $state->id }}">{{ $state->name }}</option>
+            <option value="">All countries</option>
+            @foreach ($countries as $country)
+                <option value="{{ $country->id }}">{{ $country->name }}</option>
             @endforeach
         </select>
         {{-- Status filter --}}
@@ -54,7 +54,7 @@
                     <tr class="bg-zinc-50">
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Name</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">State</th>
+                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Country</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Districts</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
                         <th class="sticky right-0 z-10 bg-zinc-50 border-l border-zinc-100 px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
@@ -76,10 +76,9 @@
                                 </div>
                             </td>
 
-                            {{-- State --}}
-                            <td class="px-4 py-2">
-                                <div class="text-sm text-zinc-700">{{ $division->state->name }}</div>
-                                <div class="text-xs text-zinc-500 mt-0.5">{{ $division->state->country->name }}</div>
+                            {{-- Country --}}
+                            <td class="px-4 py-2 text-sm text-zinc-700">
+                                {{ $division->country->name }}
                             </td>
 
                             {{-- Districts --}}

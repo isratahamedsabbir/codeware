@@ -60,7 +60,7 @@ class Form extends Component
     public function render()
     {
         return view('livewire.admin.districts.form', [
-            'divisions' => Division::with('state.country')->orderBy('name')->get(),
+            'divisions' => Division::with('country')->orderBy('name')->get(),
         ])->layout('layouts.admin', ['title' => $this->districtId ? 'Edit District' : 'New District']);
     }
 }

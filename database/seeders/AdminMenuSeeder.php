@@ -73,7 +73,6 @@ class AdminMenuSeeder extends Seeder
 
         $this->group('Location', 12, [
             ['Countries', 'flag', 'admin.countries'],
-            ['States', 'globe-americas', 'admin.states'],
             ['Divisions', 'map', 'admin.divisions'],
             ['Districts (Zilla)', 'building-library', 'admin.districts'],
             ['Upazilas', 'map-pin', 'admin.upazilas'],

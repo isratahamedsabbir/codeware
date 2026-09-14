@@ -44,7 +44,7 @@
                     <tr class="bg-zinc-50">
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Name</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">States</th>
+                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Divisions</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
                         <th class="sticky right-0 z-10 bg-zinc-50 border-l border-zinc-100 px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -65,9 +65,9 @@
                                 </div>
                             </td>
 
-                            {{-- States --}}
+                            {{-- Divisions --}}
                             <td class="px-4 py-2 text-sm text-zinc-700">
-                                {{ $country->states_count }}
+                                {{ $country->divisions_count }}
                             </td>
 
                             {{-- Status --}}
@@ -135,8 +135,8 @@
                 </div>
                 <flux:heading>Delete country?</flux:heading>
             </div>
-            <flux:text class="text-sm text-zinc-500">This will also permanently delete all states, divisions, districts
-                and upazilas under this country.
+            <flux:text class="text-sm text-zinc-500">This will also permanently delete all divisions, districts and
+                upazilas under this country.
             </flux:text>
             <div class="flex gap-2 pt-1">
                 <button wire:click="delete"

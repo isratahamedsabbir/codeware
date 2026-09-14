@@ -12,11 +12,11 @@ class Division extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['state_id', 'name', 'status'];
+    protected $fillable = ['country_id', 'name', 'status'];
 
-    public function state(): BelongsTo
+    public function country(): BelongsTo
     {
-        return $this->belongsTo(State::class);
+        return $this->belongsTo(Country::class);
     }
 
     public function districts(): HasMany

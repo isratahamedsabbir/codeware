@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('divisions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('state_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('country_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->string('status', 20)->default('active');
             $table->timestamps();
 
-            $table->unique(['state_id', 'name']);
+            $table->unique(['country_id', 'name']);
         });
     }
 

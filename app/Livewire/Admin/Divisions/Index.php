@@ -3,8 +3,8 @@
 namespace App\Livewire\Admin\Divisions;
 
 use App\Concerns\HasPerPage;
+use App\Models\Country;
 use App\Models\Division;
-use App\Models\State;
 use App\Support\AdminActivity;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -17,7 +17,7 @@ class Index extends Component
 
     public string $statusFilter = '';
 
-    public string $stateFilter = '';
+    public string $countryFilter = '';
 
     public ?int $deletingId = null;
 
@@ -31,7 +31,7 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function updatedStateFilter(): void
+    public function updatedCountryFilter(): void
     {
         $this->resetPage();
     }
@@ -69,14 +69,14 @@ class Index extends Component
     {
         return view('livewire.admin.divisions.index', [
             'divisions' => Division::query()
-                ->with('state.country')
+                ->with('country')
                 ->when($this->search, fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'))
                 ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
-                ->when($this->stateFilter, fn ($q) => $q->where('state_id', $this->stateFilter))
+                ->when($this->countryFilter, fn ($q) => $q->where('country_id', $this->countryFilter))
                 ->withCount('districts')
                 ->orderBy('name')
                 ->paginate($this->perPage),
-            'states' => State::orderBy('name')->get(['id', 'name']),
+            'countries' => Country::orderBy('name')->get(['id', 'name']),
         ])->layout('layouts.admin', ['title' => 'Divisions']);
     }
 }

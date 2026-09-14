@@ -79,7 +79,7 @@
                             {{-- Division --}}
                             <td class="px-4 py-2">
                                 <div class="text-sm text-zinc-700">{{ $district->division->name }}</div>
-                                <div class="text-xs text-zinc-500 mt-0.5">{{ $district->division->state->name }}, {{ $district->division->state->country->name }}</div>
+                                <div class="text-xs text-zinc-500 mt-0.5">{{ $district->country->name }}</div>
                             </td>
 
                             {{-- Upazilas --}}

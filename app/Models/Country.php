@@ -13,9 +13,9 @@ class Country extends Model
 
     protected $fillable = ['name', 'status'];
 
-    public function states(): HasMany
+    public function divisions(): HasMany
     {
-        return $this->hasMany(State::class);
+        return $this->hasMany(Division::class);
     }
 
     public function scopeActive(Builder $query): Builder

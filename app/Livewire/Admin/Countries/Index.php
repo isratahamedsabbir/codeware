@@ -63,7 +63,7 @@ class Index extends Component
             'countries' => Country::query()
                 ->when($this->search, fn ($q) => $q->where('name', 'like', '%'.$this->search.'%'))
                 ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
-                ->withCount('states')
+                ->withCount('divisions')
                 ->orderBy('name')
                 ->paginate($this->perPage),
         ])->layout('layouts.admin', ['title' => 'Countries']);
