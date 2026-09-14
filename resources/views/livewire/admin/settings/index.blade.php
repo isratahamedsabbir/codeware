@@ -397,7 +397,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <div class="max-w-[1600px]">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
                 {{-- Floating action button --}}
-                <x-admin-section-card header-border="border-zinc-100" x-data icon="cursor-arrow-rays" title="Floating Button" class="max-w-md"
+                <x-admin-section-card header-border="border-zinc-100" x-data icon="cursor-arrow-rays" title="Floating Button"
                     description="Shows a floating button in the corner of every admin page.">
                     <x-slot:actions>
                         <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
@@ -422,7 +422,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 </x-admin-section-card>
 
                 {{-- Table actions display --}}
-                <x-admin-section-card header-border="border-zinc-100" icon="ellipsis-horizontal" title="Table Actions" class="max-w-md"
+                <x-admin-section-card header-border="border-zinc-100" icon="ellipsis-horizontal" title="Table Actions"
                     description="How action buttons (Edit, Delete, ...) appear on admin list tables.">
                     <flux:field>
                         <flux:label>Display style</flux:label>
@@ -435,7 +435,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 </x-admin-section-card>
 
                 {{-- Watermark --}}
-                <x-admin-section-card header-border="border-zinc-100" icon="photo" title="Watermark" class="max-w-md"
+                <x-admin-section-card header-border="border-zinc-100" icon="photo" title="Watermark" class="lg:col-span-2"
                     description="Stamps this image onto every file uploaded to the Media Library.">
                     <x-slot:actions>
                         <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
@@ -444,28 +444,32 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                         </label>
                     </x-slot:actions>
 
-                    <x-media-picker model="settings.watermark_image" label="Watermark Image" hint="PNG with transparency works best"
-                        placeholder="Select watermark image from library" mimes="png,jpg,jpeg,webp" only-images dropzone />
+                    <div class="max-w-md">
+                        <x-media-picker model="settings.watermark_image" label="Watermark Image" hint="PNG with transparency works best"
+                            placeholder="Select watermark image from library" mimes="png,jpg,jpeg,webp" only-images dropzone />
+                    </div>
 
-                    <flux:field>
-                        <flux:label>Position</flux:label>
-                        <select wire:model="settings.watermark_position"
-                            class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                            <option value="top-left">Top left</option>
-                            <option value="top-right">Top right</option>
-                            <option value="bottom-left">Bottom left</option>
-                            <option value="bottom-right">Bottom right</option>
-                            <option value="center">Center</option>
-                        </select>
-                    </flux:field>
-                    <flux:field>
-                        <flux:label>Opacity ({{ $settings['watermark_opacity'] ?? 50 }}%)</flux:label>
-                        <input type="range" min="0" max="100" wire:model="settings.watermark_opacity" class="w-full" />
-                    </flux:field>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md">
+                        <flux:field>
+                            <flux:label>Position</flux:label>
+                            <select wire:model="settings.watermark_position"
+                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                                <option value="top-left">Top left</option>
+                                <option value="top-right">Top right</option>
+                                <option value="bottom-left">Bottom left</option>
+                                <option value="bottom-right">Bottom right</option>
+                                <option value="center">Center</option>
+                            </select>
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>Opacity ({{ $settings['watermark_opacity'] ?? 50 }}%)</flux:label>
+                            <input type="range" min="0" max="100" wire:model="settings.watermark_opacity" class="w-full" />
+                        </flux:field>
+                    </div>
                 </x-admin-section-card>
 
                 {{-- Calculator widget --}}
-                <x-admin-section-card header-border="border-zinc-100" icon="calculator" title="Calculator" class="max-w-md"
+                <x-admin-section-card header-border="border-zinc-100" icon="calculator" title="Calculator"
                     description="Adds a calculator icon to the admin header for quick math.">
                     <x-slot:actions>
                         <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
@@ -483,7 +487,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 </x-admin-section-card>
 
                 {{-- Sticky note widget --}}
-                <x-admin-section-card header-border="border-zinc-100" icon="document-text" title="Sticky Note" class="max-w-md"
+                <x-admin-section-card header-border="border-zinc-100" icon="document-text" title="Sticky Note"
                     description="Adds a note icon to the admin header for quick reminders.">
                     <x-slot:actions>
                         <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
@@ -501,7 +505,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 </x-admin-section-card>
 
                 {{-- Shop toggle --}}
-                <x-admin-section-card header-border="border-zinc-100" icon="building-storefront" title="Shop Toggle" class="max-w-md"
+                <x-admin-section-card header-border="border-zinc-100" icon="building-storefront" title="Shop Toggle"
                     description="Adds a Shop On/Off button to the admin header for quickly closing the storefront to new orders.">
                     <x-slot:actions>
                         <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">

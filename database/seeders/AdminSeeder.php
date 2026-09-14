@@ -13,8 +13,8 @@ class AdminSeeder extends Seeder
      * 'admin' Spatie role, which has every permission), and Staff (the
      * 'staff' role, content-only — see RolePermissionSeeder). Also seeds a
      * demo Vendor Portal account — the 'vendor' role alone doesn't grant
-     * portal access yet, an admin still has to assign it an actual vendor
-     * from Users → edit → Vendor Access (see access-vendor-portal gate).
+     * portal access, it also needs an assigned vendor, which VendorSeeder
+     * handles (see access-vendor-portal gate).
      */
     public function run(): void
     {
