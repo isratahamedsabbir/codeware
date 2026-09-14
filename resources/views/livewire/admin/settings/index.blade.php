@@ -231,7 +231,7 @@
                 @foreach ($this->envFields() as $groupLabel => $fields)
                     @continue(in_array($groupLabel, $manuallyRenderedGroups, true))
                     <x-admin-section-card header-border="border-zinc-100" icon="rocket-launch" title="{{ __($groupLabel) }}"
-                        description="Core application identity and URLs. Changing the environment or URLs may require a full page reload to take effect everywhere.">
+                        description="Core application identity, URLs and cache store. Changing the environment, URLs or cache store may require a full page reload to take effect everywhere.">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             @foreach ($fields as $key => $meta)
                                 @include('livewire.admin.settings.partials.env-field', ['key' => $key, 'meta' => $meta])

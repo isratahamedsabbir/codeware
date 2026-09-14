@@ -6,6 +6,7 @@ use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\EnvFile;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Redis;
 use Livewire\Component;
 
 class Index extends Component
@@ -117,11 +118,14 @@ class Index extends Component
     /**
      * Editable .env keys, grouped for the Env tab. Deliberately excludes APP_KEY and
      * anything else whose value would be unsafe to expose or that shouldn't be edited
-     * through a web form (encryption key, session/cache drivers, etc.). Mail credentials
-     * live on the Email Templates page instead (see EmailTemplates\Index), next to the
-     * "send a test email" action that actually exercises them.
+     * through a web form (encryption key, session driver, etc.). CACHE_STORE is the one
+     * exception — it's exposed further down so a server without Redis can be switched
+     * to 'database'/'file' without touching the file by hand (see saveEnv()'s Redis
+     * reachability check). Mail credentials live on the Email Templates page instead
+     * (see EmailTemplates\Index), next to the "send a test email" action that actually
+     * exercises them.
      *
-     * @return array<string, array<string, array{label: string, type: string, options?: array<int, string>}>>
+     * @return array<string, array<string, array{label: string, type: string, options?: array<int, string>, hint?: string}>>
      */
     public function envFields(): array
     {
@@ -137,6 +141,11 @@ class Index extends Component
                 // already exist; this only changes which host Laravel routes to
                 // App\Livewire\Vendor\* and where vendor.* URLs point.
                 'VENDOR_URL' => ['label' => 'Vendor Portal URL', 'type' => 'text'],
+                // 'database'/'file' work on any server with no extra setup; 'redis' is
+                // faster but only picked when the server actually has one — saveEnv()
+                // refuses to save 'redis' here unless it can reach it first.
+                'CACHE_STORE' => ['label' => 'Cache Store', 'type' => 'select', 'options' => ['database', 'file', 'redis'],
+                    'hint' => "Pick database or file if this server doesn't have Redis installed — redis is only saved once it's confirmed reachable."],
             ],
             'Google Login' => [
                 'GOOGLE_CLIENT_ID' => ['label' => 'Google Client ID', 'type' => 'text'],
@@ -163,6 +172,7 @@ class Index extends Component
             'env.APP_URL' => 'required|url',
             'env.FRONTEND_URL' => 'nullable|url',
             'env.VENDOR_URL' => 'nullable|url',
+            'env.CACHE_STORE' => 'required|in:database,file,redis',
             'env.GOOGLE_CLIENT_ID' => 'nullable|string',
             'env.GOOGLE_CLIENT_SECRET' => 'nullable|string',
             // Not `url` — this intentionally holds a ${APP_URL}/... interpolation
@@ -180,8 +190,33 @@ class Index extends Component
         $this->dispatch('open-modal', name: 'env-save-confirm');
     }
 
+    /**
+     * Refuses to switch the cache store to Redis unless it can actually be
+     * reached first — the whole point of exposing CACHE_STORE here is to let
+     * a server without Redis fall back to 'database'/'file', so silently
+     * saving 'redis' anyway would take every cache read/write down site-wide
+     * the moment config:clear picks it up.
+     */
+    private function redisReachable(): bool
+    {
+        try {
+            Redis::connection('cache')->ping();
+
+            return true;
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
     public function saveEnv(): void
     {
+        if (($this->env['CACHE_STORE'] ?? null) === 'redis' && ! $this->redisReachable()) {
+            $this->dispatch('close-modal', name: 'env-save-confirm');
+            $this->dispatch('notify', message: 'Could not save: Redis is not reachable from this server. Choose "database" or "file" instead, or fix the Redis connection first.');
+
+            return;
+        }
+
         try {
             EnvFile::set($this->env);
         } catch (\RuntimeException $e) {

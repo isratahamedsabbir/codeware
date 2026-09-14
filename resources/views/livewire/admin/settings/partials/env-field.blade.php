@@ -21,5 +21,8 @@
     @else
         <flux:input wire:model="env.{{ $key }}" />
     @endif
+    @if (! empty($meta['hint']))
+        <flux:text class="text-xs text-zinc-500">{{ __($meta['hint']) }}</flux:text>
+    @endif
     <flux:error name="env.{{ $key }}" />
 </flux:field>
