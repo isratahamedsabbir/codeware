@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
         $this->call(PaymentGatewaySeeder::class);
         $this->call(FeatureSeeder::class);
         $this->call(LanguageSeeder::class);
+        $this->call(BangladeshLocationSeeder::class);
         $this->call(AdminMenuSeeder::class);
         $this->call(ProductCategorySeeder::class);
         $this->call(PageSeeder::class);

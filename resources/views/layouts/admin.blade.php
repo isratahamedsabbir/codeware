@@ -185,6 +185,8 @@
                             'Content' => 'document-text',
                             'Localization' => 'language',
                             'Access Control' => 'shield-check',
+                            'Location' => 'map',
+                            'Advance' => 'adjustments-horizontal',
                         ][$item->label] ?? 'squares-2x2';
                     @endphp
                     <div class="nav-group" x-show="groupMatches({{ $item->id }})">
