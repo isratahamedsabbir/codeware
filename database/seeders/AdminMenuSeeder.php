@@ -71,7 +71,15 @@ class AdminMenuSeeder extends Seeder
             ['Users', 'users', 'admin.users'],
         ]);
 
-        $this->group('Advance', 12, [
+        $this->group('Location', 12, [
+            ['Countries', 'flag', 'admin.countries'],
+            ['States', 'globe-americas', 'admin.states'],
+            ['Divisions', 'map', 'admin.divisions'],
+            ['Districts (Zilla)', 'building-library', 'admin.districts'],
+            ['Upazilas', 'map-pin', 'admin.upazilas'],
+        ]);
+
+        $this->group('Advance', 13, [
             ['Sitemap', 'map', 'admin.advance.sitemap'],
             ['Robots.txt', 'globe-alt', 'admin.advance.robots'],
             ['Database', 'circle-stack', 'admin.advance.database'],
@@ -79,7 +87,7 @@ class AdminMenuSeeder extends Seeder
             ['Password Generator', 'key', 'admin.advance.password-generator'],
         ]);
 
-        $this->standalone('About', 'building-office', 'admin.about', 13);
+        $this->standalone('About', 'building-office', 'admin.about', 14);
     }
 
     protected function standalone(string $label, string $icon, string $routeName, int $sortOrder): void
