@@ -22,7 +22,9 @@
 		{ "key": "order_number", "value": "", "type": "string" },
 		{ "key": "order_email", "value": "", "type": "string" },
 		{ "key": "reset_token", "value": "", "type": "string" },
-		{ "key": "user_id", "value": "", "type": "string" }
+		{ "key": "user_id", "value": "", "type": "string" },
+		{ "key": "chat_token", "value": "", "type": "string" },
+		{ "key": "subscriber_id", "value": "", "type": "string" }
 	],
 	"item": [
 		{
@@ -266,6 +268,26 @@
 					]
 				},
 				{
+					"name": "CMS",
+					"item": [
+						{
+							"name": "Get CMS Sections for Page",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/cms?page=home&name=",
+									"host": ["{{base_url}}"],
+									"path": ["cms"],
+									"query": [
+										{ "key": "page", "value": "home" },
+										{ "key": "name", "value": "hero", "disabled": true }
+									]
+								}
+							}
+						}
+					]
+				},
+				{
 					"name": "Contacts",
 					"item": [
 						{
@@ -279,6 +301,124 @@
 									"options": { "raw": { "language": "json" } }
 								},
 								"url": "{{base_url}}/contacts"
+							}
+						},
+						{
+							"name": "Request Demo",
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"full_name\": \"John Doe\",\n    \"phone_number\": \"+8801700000000\",\n    \"email\": \"john@example.com\",\n    \"company\": \"Acme Corp\",\n    \"message\": \"I'd like a demo of your platform.\"\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/request-demo"
+							}
+						},
+						{
+							"name": "Book Demo",
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"full_name\": \"John Doe\",\n    \"phone_number\": \"+8801700000000\",\n    \"email\": \"john@example.com\",\n    \"company\": \"Acme Corp\",\n    \"preferred_date\": \"2026-10-01\",\n    \"preferred_time\": \"3:00 PM\",\n    \"message\": \"Looking forward to seeing a live walkthrough.\"\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/book-demo"
+							}
+						}
+					]
+				},
+				{
+					"name": "Subscribers",
+					"item": [
+						{
+							"name": "Subscribe",
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"subscriber@example.com\"\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/subscribers"
+							}
+						}
+					]
+				},
+				{
+					"name": "Chat",
+					"description": "Guest chat widget REST equivalent — gated by the `chat` feature flag. Verify OTP returns an encrypted token; paste it into `chat_token` (done automatically) and use it as the Bearer token on Get/Send Messages.",
+					"item": [
+						{
+							"name": "Request OTP",
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Guest Visitor\",\n    \"email\": \"guest@example.com\"\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/chat/otp/request"
+							}
+						},
+						{
+							"name": "Verify OTP",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 200) {",
+											"    const body = pm.response.json();",
+											"    pm.collectionVariables.set('chat_token', body.data.token);",
+											"}"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Guest Visitor\",\n    \"email\": \"guest@example.com\",\n    \"otp\": \"123456\"\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/chat/otp/verify"
+							}
+						},
+						{
+							"name": "Get Messages",
+							"request": {
+								"method": "GET",
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{chat_token}}", "type": "string" }] },
+								"url": {
+									"raw": "{{base_url}}/chat/messages?since_id=",
+									"host": ["{{base_url}}"],
+									"path": ["chat", "messages"],
+									"query": [
+										{ "key": "since_id", "value": "", "disabled": true }
+									]
+								}
+							}
+						},
+						{
+							"name": "Send Message",
+							"request": {
+								"method": "POST",
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{chat_token}}", "type": "string" }] },
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"body\": \"Hi, I have a question about my order.\"\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/chat/messages"
 							}
 						}
 					]
@@ -725,6 +865,35 @@
 						{
 							"name": "Delete Contact",
 							"request": { "method": "DELETE", "url": "{{base_url}}/admin/contacts/{{contact_id}}" }
+						}
+					]
+				},
+				{
+					"name": "Subscribers",
+					"item": [
+						{
+							"name": "List Subscribers",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/admin/subscribers?per_page=15&status=subscribed&search=",
+									"host": ["{{base_url}}"],
+									"path": ["admin", "subscribers"],
+									"query": [
+										{ "key": "per_page", "value": "15" },
+										{ "key": "status", "value": "subscribed", "disabled": true },
+										{ "key": "search", "value": "", "disabled": true }
+									]
+								}
+							}
+						},
+						{
+							"name": "Get Subscriber by ID",
+							"request": { "method": "GET", "url": "{{base_url}}/admin/subscribers/{{subscriber_id}}" }
+						},
+						{
+							"name": "Delete Subscriber",
+							"request": { "method": "DELETE", "url": "{{base_url}}/admin/subscribers/{{subscriber_id}}" }
 						}
 					]
 				},

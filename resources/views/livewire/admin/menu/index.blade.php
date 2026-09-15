@@ -1,24 +1,20 @@
 <div class="bg-white rounded-[5px] border border-zinc-100 shadow-sm overflow-hidden">
 
     {{-- Menu selector --}}
-    <div class="flex items-center gap-2 px-6 pt-5 pb-1 flex-wrap">
-        @foreach ($menus as $menu)
-            <button type="button" wire:click="selectMenu('{{ $menu->slug }}')"
-                class="px-3 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer {{ $activeGroup === $menu->slug ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200' }}">
-                {{ $menu->name }}
+    <div class="flex items-center justify-between gap-3 px-6 pt-5 pb-5 border-b border-zinc-100 flex-wrap">
+        <div class="inline-flex items-center gap-1 p-1 rounded-xl bg-zinc-100">
+            @foreach ($menus as $menu)
+                <button type="button" wire:click="selectMenu('{{ $menu->slug }}')"
+                    class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer {{ $activeGroup === $menu->slug ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-800' }}">
+                    {{ $menu->name }}
+                </button>
+            @endforeach
+            <button type="button" wire:click="openNewMenu"
+                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium text-zinc-500 hover:text-zinc-800 hover:bg-white/70 transition-all duration-150 cursor-pointer">
+                <flux:icon.plus class="size-3.5" />
+                {{ __('New menu') }}
             </button>
-        @endforeach
-        <button type="button" wire:click="openNewMenu"
-            class="px-3 py-1.5 rounded-full text-sm font-medium border border-dashed border-zinc-300 text-zinc-500 hover:border-zinc-400 hover:text-zinc-700 transition-colors cursor-pointer">
-            + {{ __('New menu') }}
-        </button>
-    </div>
-
-    {{-- Header --}}
-    <div class="flex items-center justify-between gap-3 px-6 py-5 border-b border-zinc-100 flex-wrap">
-        <p class="text-sm text-zinc-500">
-            {{ __('Drag to reorder, toggle items on or off, or add a new group or link. Changes to :menu apply immediately.', ['menu' => optional($menus->firstWhere('slug', $activeGroup))->name ?? $activeGroup]) }}
-        </p>
+        </div>
         <flux:button size="sm" variant="primary" class="admin-btn-success" icon="plus" wire:click="openCreate()">
             {{ __('New menu item') }}
         </flux:button>
