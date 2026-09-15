@@ -33,7 +33,7 @@ class PageController extends Controller
     {
         $locale = $this->resolveLocale($request);
 
-        $page = Page::where('slug', $slug)
+        $page = Page::where(ctype_digit($slug) ? 'id' : 'slug', $slug)
             ->firstOrFail();
 
         return response()->json([

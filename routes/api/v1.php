@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\V1\CmsController;
 use App\Http\Controllers\Api\V1\ContactController;
 use App\Http\Controllers\Api\V1\FirebaseTokenController;
 use App\Http\Controllers\Api\V1\LayoutController;
+use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\PageController;
 use App\Http\Controllers\Api\V1\PostController;
@@ -61,6 +62,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // FCM device tokens — see App\Support\Firebase::sendToUser().
     Route::post('/firebase/tokens', [FirebaseTokenController::class, 'store'])->name('firebase.tokens.store');
     Route::delete('/firebase/tokens/{deviceId}', [FirebaseTokenController::class, 'destroy'])->name('firebase.tokens.destroy');
+
+    // Database notifications — API equivalent of the admin bell (Livewire\Admin\Notifications\Bell).
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'read'])->name('notifications.read');
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 });
 
 // Public read endpoints — no auth required

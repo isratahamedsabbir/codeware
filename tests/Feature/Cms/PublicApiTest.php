@@ -92,6 +92,15 @@ it('returns a single published page by slug', function () {
         ]]]);
 });
 
+it('returns a single published page by numeric id as well as by slug', function () {
+    $page = Page::factory()->published()->create(['title' => ['en' => 'Contact', 'bn' => '']]);
+
+    $this->getJson("/api/v1/pages/{$page->id}")
+        ->assertOk()
+        ->assertJsonPath('data.id', $page->id)
+        ->assertJsonPath('data.slug', $page->slug);
+});
+
 it('includes puck_data in both the pages listing and a single page', function () {
     $puckData = ['root' => ['props' => []], 'content' => [['type' => 'Hero']]];
     $page = Page::factory()->published()->create(['puck_data' => $puckData]);

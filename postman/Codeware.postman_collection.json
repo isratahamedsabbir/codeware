@@ -196,6 +196,40 @@
 			]
 		},
 		{
+			"name": "Notifications",
+			"description": "The authenticated user's own database notifications — API equivalent of the admin bell (Livewire\\Admin\\Notifications\\Bell).",
+			"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{customer_token}}", "type": "string" }] },
+			"item": [
+				{
+					"name": "List Notifications",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/notifications?per_page=15&status=",
+							"host": ["{{base_url}}"],
+							"path": ["notifications"],
+							"query": [
+								{ "key": "per_page", "value": "15" },
+								{ "key": "status", "value": "unread", "disabled": true }
+							]
+						}
+					}
+				},
+				{
+					"name": "Mark Notification As Read",
+					"request": { "method": "POST", "url": "{{base_url}}/notifications/{{notification_id}}/read" }
+				},
+				{
+					"name": "Mark All Notifications As Read",
+					"request": { "method": "POST", "url": "{{base_url}}/notifications/read-all" }
+				},
+				{
+					"name": "Delete Notification",
+					"request": { "method": "DELETE", "url": "{{base_url}}/notifications/{{notification_id}}" }
+				}
+			]
+		},
+		{
 			"name": "Public",
 			"description": "No authentication required. Every product/post/category endpoint accepts `?locale=en|bn`.",
 			"item": [
