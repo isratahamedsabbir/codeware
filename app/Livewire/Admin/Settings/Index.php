@@ -7,6 +7,7 @@ use App\Support\AdminActivity;
 use App\Support\EnvFile;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 
 class Index extends Component
@@ -172,6 +173,10 @@ class Index extends Component
                 'AWS_USE_PATH_STYLE_ENDPOINT' => ['label' => 'Use Path-Style Endpoint', 'type' => 'boolean',
                     'hint' => 'Turn on only for S3-compatible services (e.g. MinIO, DigitalOcean Spaces) that need it — leave off for real AWS S3.'],
             ],
+            'Firebase' => [
+                'FIREBASE_CREDENTIALS_PATH' => ['label' => 'Service Account JSON Path', 'type' => 'text',
+                    'hint' => 'Path relative to storage/app/private — upload the file there via File Manager first, then paste its path here.'],
+            ],
         ];
     }
 
@@ -200,6 +205,7 @@ class Index extends Component
             'env.AWS_DEFAULT_REGION' => 'nullable|string',
             'env.AWS_BUCKET' => 'nullable|string',
             'env.AWS_USE_PATH_STYLE_ENDPOINT' => 'nullable|in:true,false',
+            'env.FIREBASE_CREDENTIALS_PATH' => 'nullable|string',
         ];
 
         $this->validate($rules);
@@ -223,6 +229,19 @@ class Index extends Component
         } catch (\Throwable) {
             return false;
         }
+    }
+
+    /**
+     * Whether the currently-typed Firebase credentials path actually exists
+     * on the private storage disk — checked live (see the field's
+     * wire:model.live) so the warning in the UI reflects what's typed, not
+     * just what was last saved.
+     */
+    public function firebaseCredentialsExist(): bool
+    {
+        $path = trim($this->env['FIREBASE_CREDENTIALS_PATH'] ?? '');
+
+        return $path !== '' && Storage::disk('local')->exists($path);
     }
 
     public function saveEnv(): void

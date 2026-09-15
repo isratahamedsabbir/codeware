@@ -243,16 +243,17 @@
                     </x-admin-section-card>
                 </div>
 
-                {{-- Google Login, Facebook Login and reCAPTCHA each get their own
-                     hand-built section further down (own layout, guide card, and —
-                     for reCAPTCHA — an Enable toggle), so skip them here to avoid
-                     rendering the same group twice. --}}
-                @php $manuallyRenderedGroups = ['Google Login', 'Facebook Login', 'reCAPTCHA', 'Google Maps', 'AWS S3']; @endphp
+                {{-- App, Google Login, Facebook Login, reCAPTCHA, Google Maps and AWS S3
+                     each get their own hand-built section further down (own layout,
+                     guide card, and — for reCAPTCHA — an Enable toggle), so skip them
+                     here to avoid rendering the same group twice. Any future env group
+                     added to envFields() without a custom card still falls back to the
+                     generic card below. --}}
+                @php $manuallyRenderedGroups = ['App', 'Google Login', 'Facebook Login', 'reCAPTCHA', 'Google Maps', 'AWS S3', 'Firebase']; @endphp
 
                 @foreach ($this->envFields() as $groupLabel => $fields)
                     @continue(in_array($groupLabel, $manuallyRenderedGroups, true))
-                    <x-admin-section-card header-border="border-zinc-100" icon="rocket-launch" title="{{ __($groupLabel) }}"
-                        description="Core application identity, URLs and cache store. Changing the environment, URLs or cache store may require a full page reload to take effect everywhere.">
+                    <x-admin-section-card header-border="border-zinc-100" icon="rocket-launch" title="{{ __($groupLabel) }}">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             @foreach ($fields as $key => $meta)
                                 @include('livewire.admin.settings.partials.env-field', ['key' => $key, 'meta' => $meta])
@@ -260,6 +261,27 @@
                         </div>
                     </x-admin-section-card>
                 @endforeach
+
+                {{-- App --}}
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                    <x-admin-section-card header-border="border-zinc-100" icon="rocket-launch" title="App"
+                        description="Core application identity, URLs and cache store.">
+                        @foreach ($this->envFields()['App'] as $key => $meta)
+                            @include('livewire.admin.settings.partials.env-field', ['key' => $key, 'meta' => $meta])
+                        @endforeach
+                    </x-admin-section-card>
+
+                    <x-admin-section-card header-border="border-zinc-100" icon="information-circle" title="About this section" body-class="px-6 py-5 space-y-3">
+                        <ul class="list-disc list-inside space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
+                            <li><strong>App Name</strong> / <strong>Environment</strong> — shown in emails, error pages and some admin screens.</li>
+                            <li><strong>App URL</strong> / <strong>Frontend URL</strong> / <strong>Vendor Portal URL</strong> — must match the real domains this install is served on, or links, redirects and CORS will break.</li>
+                            <li><strong>Cache Store</strong> — pick <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">database</span> or <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">file</span> unless this server has Redis installed and reachable.</li>
+                        </ul>
+                        <flux:text class="text-xs text-zinc-500">
+                            Changing the environment, URLs or cache store may require a full page reload to take effect everywhere.
+                        </flux:text>
+                    </x-admin-section-card>
+                </div>
 
                 {{-- Google Login --}}
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
@@ -414,6 +436,38 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                         @foreach ($this->envFields()['Google Maps'] as $key => $meta)
                             @include('livewire.admin.settings.partials.env-field', ['key' => $key, 'meta' => $meta])
                         @endforeach
+
+                        @if (config('services.google_maps.api_key'))
+                            <div wire:ignore
+                                x-data
+                                x-init="
+                                    const render = () => {
+                                        const center = { lat: 23.8103, lng: 90.4125 };
+                                        const map = new google.maps.Map($el, { center, zoom: 12 });
+                                        new google.maps.Marker({ position: center, map });
+                                    };
+                                    if (window.google?.maps) { render(); return; }
+                                    window.__gmapsPreviewCallbacks = window.__gmapsPreviewCallbacks || [];
+                                    window.__gmapsPreviewCallbacks.push(render);
+                                    if (window.__gmapsPreviewLoading) return;
+                                    window.__gmapsPreviewLoading = true;
+                                    window.__gmapsPreviewReady = () => { window.__gmapsPreviewCallbacks.forEach(cb => cb()); window.__gmapsPreviewCallbacks = []; };
+                                    const script = document.createElement('script');
+                                    script.src = 'https://maps.googleapis.com/maps/api/js?key={{ config('services.google_maps.api_key') }}&callback=__gmapsPreviewReady';
+                                    script.async = true;
+                                    document.head.appendChild(script);
+                                "
+                                class="mt-4 h-56 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700"
+                            ></div>
+                            <flux:text class="text-xs text-zinc-500 mt-2">
+                                {{ __('Live preview using the saved key, just to confirm it works — centered on a placeholder location. The maps used elsewhere in the app can point anywhere.') }}
+                            </flux:text>
+                        @else
+                            <div class="mt-4 flex flex-col items-center justify-center gap-2 h-56 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 text-zinc-400 text-sm">
+                                <flux:icon.map class="size-6" />
+                                <span>{{ __('Save an API key above to preview the map here.') }}</span>
+                            </div>
+                        @endif
                     </x-admin-section-card>
 
                     <x-admin-section-card header-border="border-zinc-100" icon="book-open" title="Where to get this" body-class="px-6 py-5 space-y-3">
@@ -448,6 +502,44 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                         </ol>
                         <flux:text class="text-xs text-zinc-500">
                             Leave <strong>Use Path-Style Endpoint</strong> off for real AWS S3 — it's only for S3-compatible services (MinIO, DigitalOcean Spaces, etc.) that require it.
+                        </flux:text>
+                    </x-admin-section-card>
+                </div>
+
+                {{-- Firebase --}}
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                    <x-admin-section-card header-border="border-zinc-100" icon="fire" title="Firebase"
+                        description="Service-account credentials for the Firebase Admin SDK (e.g. push notifications).">
+                        <flux:field>
+                            <flux:label>{{ __('Service Account JSON Path') }}<x-field-hint :text="__($this->envFields()['Firebase']['FIREBASE_CREDENTIALS_PATH']['hint'])" /></flux:label>
+                            <div class="flex items-center gap-2">
+                                @if ($env['FIREBASE_CREDENTIALS_PATH'] ?? null)
+                                    @if (! $this->firebaseCredentialsExist())
+                                        <span title="{{ __('File not found on the private storage disk.') }}">
+                                            <flux:icon.exclamation-triangle class="size-5 text-red-500 shrink-0" />
+                                        </span>
+                                    @else
+                                        <span title="{{ __('File found.') }}">
+                                            <flux:icon.check-circle class="size-5 text-emerald-500 shrink-0" />
+                                        </span>
+                                    @endif
+                                @endif
+                                <flux:input wire:model.live="env.FIREBASE_CREDENTIALS_PATH" placeholder="firebase-service-account.json" class="font-mono" />
+                            </div>
+                            <flux:error name="env.FIREBASE_CREDENTIALS_PATH" />
+                        </flux:field>
+                    </x-admin-section-card>
+
+                    <x-admin-section-card header-border="border-zinc-100" icon="book-open" title="Where to get this" body-class="px-6 py-5 space-y-3">
+                        <ol class="list-decimal list-inside space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
+                            <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">console.firebase.google.com</span> → your project → gear icon → <strong>Project settings</strong>.</li>
+                            <li><strong>Service accounts</strong> tab → <strong>Generate new private key</strong> — downloads a JSON file.</li>
+                            <li>In <strong>File Manager</strong>, navigate to <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">storage/app/private</span> and upload the JSON file there.</li>
+                            <li>Paste its path <em>relative to that folder</em> into the field on the left (e.g. just <span class="font-mono text-xs">firebase-service-account.json</span>, or <span class="font-mono text-xs">firebase/service-account.json</span> if you put it in a subfolder), then save.</li>
+                            <li>The icon next to the field turns green once the file is found there.</li>
+                        </ol>
+                        <flux:text class="text-xs text-zinc-500">
+                            This file grants full admin access to the Firebase project — keep it out of the public disk and out of version control.
                         </flux:text>
                     </x-admin-section-card>
                 </div>
