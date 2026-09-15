@@ -191,7 +191,7 @@
                                 <x-admin-row-actions :actions="[
                                     ['href' => route('admin.pages.edit', $page->id), 'icon' => 'pencil', 'label' => 'Constant', 'color' => 'primary'],
                                     ['wireClick' => 'openPuckEditor(' . $page->id . ')', 'icon' => 'squares', 'label' => 'Layout', 'color' => 'secondary'],
-                                    ['href' => route('admin.cms', ['pageId' => $page->id]), 'icon' => 'grid-cross', 'label' => 'CMS', 'color' => 'emerald-500'],
+                                    ['href' => route('admin.cms', ['pageId' => $page->id]), 'icon' => 'grid-cross', 'label' => 'CMS', 'color' => 'emerald-500', 'visible' => \App\Support\Features::enabled('cms')],
                                     ['wireClick' => 'confirmDelete(' . $page->id . ')', 'icon' => 'trash', 'label' => 'Delete', 'color' => 'rose-500'],
                                 ]" />
                             </td>

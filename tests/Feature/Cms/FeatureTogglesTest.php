@@ -4,6 +4,7 @@ use App\Livewire\Admin\Features\Index as FeaturesIndex;
 use App\Livewire\Admin\Menu\Index;
 use App\Models\Feature;
 use App\Models\MenuItem;
+use App\Models\Page;
 use App\Models\User;
 use App\Support\Features;
 use Database\Seeders\AdminMenuSeeder;
@@ -122,6 +123,18 @@ it('hides a disabled feature\'s group from the menu management screen', function
         ->assertDontSee('Attributes')
         ->assertDontSee('Brands')
         ->assertDontSee('Vendors');
+});
+
+it('hides the CMS row action on the Pages list once the cms feature is off', function () {
+    $page = Page::factory()->create();
+
+    Livewire::test(App\Livewire\Admin\Pages\Index::class)
+        ->assertSeeHtml(route('admin.cms', ['pageId' => $page->id]));
+
+    disableFeature('cms');
+
+    Livewire::test(App\Livewire\Admin\Pages\Index::class)
+        ->assertDontSeeHtml(route('admin.cms', ['pageId' => $page->id]));
 });
 
 it('renders the features screen, only in the developer environment', function () {
