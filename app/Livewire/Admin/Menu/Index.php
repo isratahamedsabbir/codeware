@@ -231,6 +231,15 @@ class Index extends Component
     {
         $items = MenuItem::query()->where('group', $this->activeGroup)->ordered()->get();
 
+        // The admin sidebar is the only menu governed by Settings → Features — a
+        // disabled feature (e.g. Products) should disappear from this management
+        // screen too, the same way it already disappears from the live sidebar
+        // (see MenuItem::menuForCurrentUser()), rather than leaving a dead-end
+        // link the admin can still edit/reorder.
+        if ($this->activeGroup === MenuItem::GROUP_ADMIN_SIDEBAR) {
+            $items = $items->reject(fn (MenuItem $item) => ! $item->is_group && ! $item->isVisibleToCurrentUser());
+        }
+
         $topLevel = $items->where('parent_id', null)->values();
         $byParent = $items->where('parent_id', '!=', null)->groupBy('parent_id');
 
@@ -238,6 +247,10 @@ class Index extends Component
             'children',
             $byParent->get($item->id, collect())->values(),
         ));
+
+        if ($this->activeGroup === MenuItem::GROUP_ADMIN_SIDEBAR) {
+            $topLevel = $topLevel->reject(fn (MenuItem $item) => $item->is_group && $item->children->isEmpty())->values();
+        }
 
         $groups = $topLevel->where('is_group', true)->values();
 

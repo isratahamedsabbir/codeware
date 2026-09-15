@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Admin\Features\Index as FeaturesIndex;
+use App\Livewire\Admin\Menu\Index;
 use App\Models\Feature;
 use App\Models\MenuItem;
 use App\Models\User;
@@ -94,6 +95,33 @@ it('excludes a disabled feature\'s items from MenuItem::menuForCurrentUser', fun
 
     expect($labels)->not->toContain('Chat')
         ->and($labels)->toContain('Products', 'Posts');
+});
+
+it('excludes every products-feature menu item, not just the ones sharing its route prefix', function () {
+    $this->seed(AdminMenuSeeder::class);
+
+    disableFeature('products');
+
+    $labels = MenuItem::menuForCurrentUser()
+        ->flatMap(fn ($item) => $item->is_group ? $item->children->pluck('label') : collect([$item->label]))
+        ->all();
+
+    expect($labels)->not->toContain('Attributes', 'Brands', 'Vendors', 'Product Categories', 'Products');
+});
+
+it('hides a disabled feature\'s group from the menu management screen', function () {
+    $this->seed(AdminMenuSeeder::class);
+
+    Livewire::test(Index::class)
+        ->assertSee('Products')
+        ->assertSee('Attributes');
+
+    disableFeature('products');
+
+    Livewire::test(Index::class)
+        ->assertDontSee('Attributes')
+        ->assertDontSee('Brands')
+        ->assertDontSee('Vendors');
 });
 
 it('renders the features screen, only in the developer environment', function () {
