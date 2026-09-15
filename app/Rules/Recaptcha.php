@@ -23,14 +23,19 @@ class Recaptcha implements ValidationRule
                 'response' => $value,
                 'remoteip' => request()->ip(),
             ]);
-
-            // v3 has no checkbox — Google instead scores the request 0.0 (bot) to
-            // 1.0 (human). 0.5 is Google's own recommended cutoff for "likely human".
-            if ($response->json('success') === true && $response->json('score', 0) >= 0.5) {
-                return;
-            }
         } catch (\Throwable $e) {
+            // Google was unreachable (e.g. the server's outbound network is
+            // restricted) — we have no verdict either way, so don't let a
+            // connectivity blip lock every admin out of login.
             Log::warning('reCAPTCHA verification request failed: '.$e->getMessage());
+
+            return;
+        }
+
+        // v3 has no checkbox — Google instead scores the request 0.0 (bot) to
+        // 1.0 (human). 0.5 is Google's own recommended cutoff for "likely human".
+        if ($response->json('success') === true && $response->json('score', 0) >= 0.5) {
+            return;
         }
 
         $fail('Please confirm you are not a robot.');
