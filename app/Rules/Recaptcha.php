@@ -24,7 +24,9 @@ class Recaptcha implements ValidationRule
                 'remoteip' => request()->ip(),
             ]);
 
-            if ($response->json('success') === true) {
+            // v3 has no checkbox — Google instead scores the request 0.0 (bot) to
+            // 1.0 (human). 0.5 is Google's own recommended cutoff for "likely human".
+            if ($response->json('success') === true && $response->json('score', 0) >= 0.5) {
                 return;
             }
         } catch (\Throwable $e) {

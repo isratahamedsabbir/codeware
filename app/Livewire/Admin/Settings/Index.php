@@ -161,6 +161,17 @@ class Index extends Component
                 'RECAPTCHA_SITE_KEY' => ['label' => 'Site Key', 'type' => 'text'],
                 'RECAPTCHA_SECRET_KEY' => ['label' => 'Secret Key', 'type' => 'password'],
             ],
+            'Google Maps' => [
+                'GOOGLE_MAPS_API_KEY' => ['label' => 'API Key', 'type' => 'text'],
+            ],
+            'AWS S3' => [
+                'AWS_ACCESS_KEY_ID' => ['label' => 'Access Key ID', 'type' => 'text'],
+                'AWS_SECRET_ACCESS_KEY' => ['label' => 'Secret Access Key', 'type' => 'password'],
+                'AWS_DEFAULT_REGION' => ['label' => 'Region', 'type' => 'text', 'hint' => 'e.g. us-east-1, ap-southeast-1.'],
+                'AWS_BUCKET' => ['label' => 'Bucket', 'type' => 'text'],
+                'AWS_USE_PATH_STYLE_ENDPOINT' => ['label' => 'Use Path-Style Endpoint', 'type' => 'boolean',
+                    'hint' => 'Turn on only for S3-compatible services (e.g. MinIO, DigitalOcean Spaces) that need it — leave off for real AWS S3.'],
+            ],
         ];
     }
 
@@ -183,6 +194,12 @@ class Index extends Component
             'env.FACEBOOK_REDIRECT_URI' => 'nullable|string',
             'env.RECAPTCHA_SITE_KEY' => 'nullable|string',
             'env.RECAPTCHA_SECRET_KEY' => 'nullable|string',
+            'env.GOOGLE_MAPS_API_KEY' => 'nullable|string',
+            'env.AWS_ACCESS_KEY_ID' => 'nullable|string',
+            'env.AWS_SECRET_ACCESS_KEY' => 'nullable|string',
+            'env.AWS_DEFAULT_REGION' => 'nullable|string',
+            'env.AWS_BUCKET' => 'nullable|string',
+            'env.AWS_USE_PATH_STYLE_ENDPOINT' => 'nullable|in:true,false',
         ];
 
         $this->validate($rules);

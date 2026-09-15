@@ -100,10 +100,12 @@
                 </label>
             </div>
 
-            {{-- reCAPTCHA (Settings → Env → reCAPTCHA) --}}
+            {{-- reCAPTCHA v3 (Settings → Env → reCAPTCHA) — invisible, no checkbox;
+                 the token is fetched and injected into this hidden field right
+                 before submit (see script below). --}}
             @if (\App\Support\Recaptcha::enabled())
                 <div>
-                    <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
+                    <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
                     @error('g-recaptcha-response')
                         <p class="text-xs text-red-600 mt-0.5">{{ $message }}</p>
                     @enderror
@@ -149,7 +151,19 @@
     </style>
 
     @if (\App\Support\Recaptcha::enabled())
-        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
+        <script>
+            document.querySelector('form[action="{{ route('login.store') }}"]').addEventListener('submit', function (e) {
+                e.preventDefault();
+                const form = e.target;
+                grecaptcha.ready(function () {
+                    grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', { action: 'login' }).then(function (token) {
+                        document.getElementById('g-recaptcha-response').value = token;
+                        form.submit();
+                    });
+                });
+            });
+        </script>
     @endif
 
     <script>

@@ -247,7 +247,7 @@
                      hand-built section further down (own layout, guide card, and —
                      for reCAPTCHA — an Enable toggle), so skip them here to avoid
                      rendering the same group twice. --}}
-                @php $manuallyRenderedGroups = ['Google Login', 'Facebook Login', 'reCAPTCHA']; @endphp
+                @php $manuallyRenderedGroups = ['Google Login', 'Facebook Login', 'reCAPTCHA', 'Google Maps', 'AWS S3']; @endphp
 
                 @foreach ($this->envFields() as $groupLabel => $fields)
                     @continue(in_array($groupLabel, $manuallyRenderedGroups, true))
@@ -397,12 +397,57 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                     <x-admin-section-card header-border="border-zinc-100" icon="book-open" title="Where to get these" body-class="px-6 py-5 space-y-3">
                         <ol class="list-decimal list-inside space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
                             <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">google.com/recaptcha/admin</span> → create a new site.</li>
-                            <li>reCAPTCHA type: <strong>reCAPTCHA v2</strong> → "I'm not a robot" Checkbox.</li>
+                            <li>reCAPTCHA type: <strong>reCAPTCHA v3</strong>.</li>
                             <li>Add this domain (and <span class="font-mono text-xs">localhost</span> for local testing).</li>
                             <li>Copy the <strong>Site Key</strong> and <strong>Secret Key</strong> into the fields on the left, then save.</li>
                         </ol>
                         <flux:text class="text-xs text-zinc-500">
-                            The checkbox only appears on the login form once a Site Key is saved — clearing both fields removes it again.
+                            v3 is invisible — no checkbox. It runs in the background and scores each login attempt once a Site Key is saved; clearing both fields turns it off again.
+                        </flux:text>
+                    </x-admin-section-card>
+                </div>
+
+                {{-- Google Maps --}}
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                    <x-admin-section-card header-border="border-zinc-100" icon="map" title="Google Maps"
+                        description="Used wherever the app needs to render a Google Map (e.g. store/branch locations).">
+                        @foreach ($this->envFields()['Google Maps'] as $key => $meta)
+                            @include('livewire.admin.settings.partials.env-field', ['key' => $key, 'meta' => $meta])
+                        @endforeach
+                    </x-admin-section-card>
+
+                    <x-admin-section-card header-border="border-zinc-100" icon="book-open" title="Where to get this" body-class="px-6 py-5 space-y-3">
+                        <ol class="list-decimal list-inside space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
+                            <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">console.cloud.google.com</span> → create (or pick) a project.</li>
+                            <li>APIs &amp; Services → Library → enable <strong>Maps JavaScript API</strong> (and <strong>Places API</strong> if needed).</li>
+                            <li>APIs &amp; Services → Credentials → Create Credentials → <strong>API Key</strong>.</li>
+                            <li>Restrict the key to <strong>HTTP referrers</strong> (your domain, and <span class="font-mono text-xs">localhost</span> for local testing) so it can't be reused elsewhere if it leaks.</li>
+                            <li>Copy the key into the field on the left, then save.</li>
+                        </ol>
+                        <flux:text class="text-xs text-zinc-500">
+                            This key is meant to run client-side, so referrer restriction (not secrecy) is what keeps it safe to expose.
+                        </flux:text>
+                    </x-admin-section-card>
+                </div>
+
+                {{-- AWS S3 --}}
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                    <x-admin-section-card header-border="border-zinc-100" icon="cloud" title="AWS S3"
+                        description="Only needed if FILESYSTEM_DISK is set to s3 — otherwise uploads stay on local disk and these are unused.">
+                        @foreach ($this->envFields()['AWS S3'] as $key => $meta)
+                            @include('livewire.admin.settings.partials.env-field', ['key' => $key, 'meta' => $meta])
+                        @endforeach
+                    </x-admin-section-card>
+
+                    <x-admin-section-card header-border="border-zinc-100" icon="book-open" title="Where to get these" body-class="px-6 py-5 space-y-3">
+                        <ol class="list-decimal list-inside space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
+                            <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">console.aws.amazon.com/s3</span> → create (or pick) a bucket, note its name and region.</li>
+                            <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">console.aws.amazon.com/iam</span> → Users → Create user with programmatic access, grant it S3 access to that bucket.</li>
+                            <li>Copy the generated <strong>Access Key ID</strong> and <strong>Secret Access Key</strong> into the fields on the left — AWS only shows the secret once.</li>
+                            <li>Fill in the <strong>Region</strong> and <strong>Bucket</strong> to match the bucket you created, then save.</li>
+                        </ol>
+                        <flux:text class="text-xs text-zinc-500">
+                            Leave <strong>Use Path-Style Endpoint</strong> off for real AWS S3 — it's only for S3-compatible services (MinIO, DigitalOcean Spaces, etc.) that require it.
                         </flux:text>
                     </x-admin-section-card>
                 </div>
