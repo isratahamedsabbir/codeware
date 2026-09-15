@@ -3,7 +3,6 @@
 use App\Models\MediaLibrary;
 use App\Models\Page;
 use App\Models\Post;
-use App\Models\Setting;
 use App\Models\Tag;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
@@ -101,6 +100,21 @@ it('admin can update page content via api', function () {
     ]);
 
     $response->assertOk()->assertJsonPath('data.id', $page->id);
+});
+
+it('admin can save and reload puck_data on a page via api, exactly as the puck editor would', function () {
+    Sanctum::actingAs($this->admin);
+    $page = Page::factory()->create();
+
+    $puckData = ['root' => ['props' => ['title' => 'Home']], 'content' => [['type' => 'Hero', 'props' => ['id' => 'hero-1']]]];
+
+    $this->putJson("/api/v1/admin/pages/{$page->id}", ['puck_data' => $puckData])
+        ->assertOk()
+        ->assertJsonPath('data.id', $page->id);
+
+    $response = $this->getJson("/api/v1/admin/pages/{$page->id}")->assertOk();
+
+    expect($response->json('data.puck_data'))->toBe($puckData);
 });
 
 it('admin can list media via api', function () {

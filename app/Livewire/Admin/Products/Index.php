@@ -5,9 +5,9 @@ namespace App\Livewire\Admin\Products;
 use App\Concerns\HasPerPage;
 use App\Models\Page;
 use App\Models\Product;
-use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\PageCascade;
+use App\Support\PuckEditor;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -52,13 +52,7 @@ class Index extends Component
             'status' => $product->status,
         ]);
 
-        auth()->user()->tokens()->where('name', 'puck-builder')->delete();
-
-        $token = auth()->user()->createToken(
-            'puck-builder',
-            ['*'],
-            now()->addMinutes(Setting::puckSessionMinutes())
-        )->plainTextToken;
+        $token = PuckEditor::token(auth()->user(), "puck-builder-{$page->id}");
 
         $url = config('cms.editor_base_url')."/puck/edit/product/{$page->id}#token={$token}";
         $this->js('window.open('.json_encode($url).', \'_blank\')');

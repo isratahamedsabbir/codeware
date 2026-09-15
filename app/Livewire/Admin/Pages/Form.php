@@ -5,8 +5,8 @@ namespace App\Livewire\Admin\Pages;
 use App\Concerns\HasSeoFields;
 use App\Concerns\HasTranslatableFields;
 use App\Models\Page;
-use App\Models\Setting;
 use App\Support\AdminActivity;
+use App\Support\PuckEditor;
 use App\Support\Slug;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -183,13 +183,7 @@ class Form extends Component
             return;
         }
 
-        auth()->user()->tokens()->where('name', 'puck-builder')->delete();
-
-        $token = auth()->user()->createToken(
-            'puck-builder',
-            ['*'],
-            now()->addMinutes(Setting::puckSessionMinutes())
-        )->plainTextToken;
+        $token = PuckEditor::token(auth()->user(), "puck-builder-{$this->pageId}");
 
         $url = config('cms.editor_base_url')."/puck/edit/{$this->type}/{$this->pageId}#token={$token}";
         $this->js('window.open('.json_encode($url).', \'_blank\')');
@@ -199,13 +193,7 @@ class Form extends Component
     {
         $this->persistPage();
 
-        auth()->user()->tokens()->where('name', 'puck-builder')->delete();
-
-        $token = auth()->user()->createToken(
-            'puck-builder',
-            ['*'],
-            now()->addMinutes(Setting::puckSessionMinutes())
-        )->plainTextToken;
+        $token = PuckEditor::token(auth()->user(), "puck-builder-{$this->pageId}");
 
         $url = config('cms.editor_base_url')."/puck/edit/{$this->type}/{$this->pageId}#token={$token}";
         $this->js('window.open('.json_encode($url).', \'_blank\')');

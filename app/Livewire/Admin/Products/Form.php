@@ -11,8 +11,8 @@ use App\Models\ProductAttribute;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use App\Models\ProductVendor;
-use App\Models\Setting;
 use App\Support\AdminActivity;
+use App\Support\PuckEditor;
 use App\Support\Slug;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
@@ -460,13 +460,7 @@ class Form extends Component
             return;
         }
 
-        auth()->user()->tokens()->where('name', 'puck-builder')->delete();
-
-        $token = auth()->user()->createToken(
-            'puck-builder',
-            ['*'],
-            now()->addMinutes(Setting::puckSessionMinutes())
-        )->plainTextToken;
+        $token = PuckEditor::token(auth()->user(), "puck-builder-{$this->pageId}");
 
         $url = config('cms.editor_base_url')."/puck/edit/product/{$this->pageId}#token={$token}";
         $this->js('window.open('.json_encode($url).', \'_blank\')');
@@ -503,13 +497,7 @@ class Form extends Component
 
         $this->dispatch('notify', message: $this->productId ? 'Product updated successfully' : 'Product created successfully');
 
-        auth()->user()->tokens()->where('name', 'puck-builder')->delete();
-
-        $token = auth()->user()->createToken(
-            'puck-builder',
-            ['*'],
-            now()->addMinutes(Setting::puckSessionMinutes())
-        )->plainTextToken;
+        $token = PuckEditor::token(auth()->user(), "puck-builder-{$this->pageId}");
 
         $url = config('cms.editor_base_url')."/puck/edit/product/{$this->pageId}#token={$token}";
         $this->js('window.open('.json_encode($url).', \'_blank\')');

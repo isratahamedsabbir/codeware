@@ -65,6 +65,19 @@ it('opens the puck editor for an existing page', function () {
     expect($xjs[0]['expression'] ?? null)->toContain('\/puck\/edit\/page\/'.$page->id);
 });
 
+it('keeps one page\'s puck editor token valid after opening the editor for a different page', function () {
+    $pageA = Page::factory()->create();
+    $pageB = Page::factory()->create();
+
+    Livewire::test(PagesIndex::class)->call('openPuckEditor', $pageA->id);
+    expect($this->admin->tokens()->where('name', "puck-builder-{$pageA->id}")->exists())->toBeTrue();
+
+    Livewire::test(PagesIndex::class)->call('openPuckEditor', $pageB->id);
+
+    expect($this->admin->tokens()->where('name', "puck-builder-{$pageA->id}")->exists())->toBeTrue()
+        ->and($this->admin->tokens()->where('name', "puck-builder-{$pageB->id}")->exists())->toBeTrue();
+});
+
 it('saves and opens the puck editor for a new page', function () {
     $component = Livewire::test(PagesForm::class)
         ->set('title.en', 'Brand New Page')

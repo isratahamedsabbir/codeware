@@ -11,6 +11,7 @@ use App\Models\ProductCategory;
 use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\PageCascade;
+use App\Support\PuckEditor;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -71,9 +72,7 @@ class Index extends Component
     {
         $page = Page::findOrFail($pageId);
 
-        auth()->user()->tokens()->where('name', 'puck-builder')->delete();
-
-        $token = auth()->user()->createToken('puck-builder', ['*'], now()->addMinutes(Setting::puckSessionMinutes()))->plainTextToken;
+        $token = PuckEditor::token(auth()->user(), "puck-builder-{$pageId}");
 
         $url = config('cms.editor_base_url')."/puck/edit/{$page->type}/{$pageId}#token={$token}";
         $this->js('window.open('.json_encode($url).', \'_blank\')');

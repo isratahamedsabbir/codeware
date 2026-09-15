@@ -40,3 +40,18 @@ it('reuses the existing companion page when opening the puck editor for a produc
     expect(Page::where(['type' => 'product', 'product_id' => $product->id])->count())->toBe(1);
     expect(Page::where(['type' => 'product', 'product_id' => $product->id])->sole()->id)->toBe($page->id);
 });
+
+it('keeps one product\'s puck editor token valid after opening the editor for a different product', function () {
+    $productA = Product::factory()->create();
+    $productB = Product::factory()->create();
+
+    Livewire::test(ProductsIndex::class)->call('openPuckEditor', $productA->id);
+    $pageA = Page::where(['type' => 'product', 'product_id' => $productA->id])->sole();
+    expect($this->admin->tokens()->where('name', "puck-builder-{$pageA->id}")->exists())->toBeTrue();
+
+    Livewire::test(ProductsIndex::class)->call('openPuckEditor', $productB->id);
+    $pageB = Page::where(['type' => 'product', 'product_id' => $productB->id])->sole();
+
+    expect($this->admin->tokens()->where('name', "puck-builder-{$pageA->id}")->exists())->toBeTrue()
+        ->and($this->admin->tokens()->where('name', "puck-builder-{$pageB->id}")->exists())->toBeTrue();
+});

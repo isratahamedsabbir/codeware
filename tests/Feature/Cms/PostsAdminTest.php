@@ -2,6 +2,7 @@
 
 use App\Livewire\Admin\Posts\Form as PostsForm;
 use App\Livewire\Admin\Posts\Index as PostsIndex;
+use App\Models\Page;
 use App\Models\Post;
 use App\Models\User;
 use Livewire\Livewire;
@@ -73,6 +74,21 @@ it('opens the puck editor for an existing post', function () {
 
     $xjs = $component->effects['xjs'] ?? [];
     expect($xjs[0]['expression'] ?? null)->toContain('\/puck\/edit\/post\/');
+});
+
+it('keeps one post\'s puck editor token valid after opening the editor for a different post', function () {
+    $postA = Post::factory()->create();
+    $postB = Post::factory()->create();
+
+    Livewire::test(PostsIndex::class)->call('openPuckEditor', $postA->id);
+    $pageA = Page::where(['type' => 'post', 'post_id' => $postA->id])->sole();
+    expect($this->admin->tokens()->where('name', "puck-builder-{$pageA->id}")->exists())->toBeTrue();
+
+    Livewire::test(PostsIndex::class)->call('openPuckEditor', $postB->id);
+    $pageB = Page::where(['type' => 'post', 'post_id' => $postB->id])->sole();
+
+    expect($this->admin->tokens()->where('name', "puck-builder-{$pageA->id}")->exists())->toBeTrue()
+        ->and($this->admin->tokens()->where('name', "puck-builder-{$pageB->id}")->exists())->toBeTrue();
 });
 
 it('saves and opens the puck editor for a new post', function () {
