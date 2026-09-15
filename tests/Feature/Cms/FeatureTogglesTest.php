@@ -264,3 +264,24 @@ it('blocks staff from the features screen even in the developer environment', fu
 
     $this->actingAs($staff)->get(route('admin.features'))->assertForbidden();
 });
+
+it('blocks an admin-role (non-super-admin) user from the features screen even in the developer environment', function () {
+    app()->instance('env', 'developer');
+    $this->seed(RolePermissionSeeder::class);
+
+    $adminRoleUser = User::factory()->create(['is_admin' => false]);
+    $adminRoleUser->assignRole('admin');
+
+    $this->actingAs($adminRoleUser)->get(route('admin.features'))->assertNotFound();
+});
+
+it('hides the features link from the sidebar for an admin-role (non-super-admin) user', function () {
+    $this->seed(AdminMenuSeeder::class);
+    $this->seed(RolePermissionSeeder::class);
+    app()->instance('env', 'developer');
+
+    $adminRoleUser = User::factory()->create(['is_admin' => false]);
+    $adminRoleUser->assignRole('admin');
+
+    $this->actingAs($adminRoleUser)->get(route('admin.dashboard'))->assertOk()->assertDontSee('Features');
+});

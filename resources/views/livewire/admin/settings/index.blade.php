@@ -449,6 +449,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                                     if (window.google?.maps) { render(); return; }
                                     window.__gmapsPreviewCallbacks = window.__gmapsPreviewCallbacks || [];
                                     window.__gmapsPreviewCallbacks.push(render);
+                                    // Google calls this global itself (not our callback param) when the
+                                    // key is rejected outright — wrong key, billing disabled, or (most
+                                    // commonly, since this often differs per environment) this domain
+                                    // isn't in the key's allowed HTTP referrers — so surface that here
+                                    // instead of leaving the box permanently blank with only a console
+                                    // warning to explain why.
+                                    window.gm_authFailure = () => {
+                                        $el.innerHTML = '<div class=\'flex items-center justify-center h-full text-center text-xs text-rose-500 px-4\'>{{ __('Google rejected this key — check that this domain is in the key\'s allowed HTTP referrers (Google Cloud Console → Credentials), and that billing / the Maps JavaScript API are enabled.') }}</div>';
+                                    };
                                     if (window.__gmapsPreviewLoading) return;
                                     window.__gmapsPreviewLoading = true;
                                     window.__gmapsPreviewReady = () => { window.__gmapsPreviewCallbacks.forEach(cb => cb()); window.__gmapsPreviewCallbacks = []; };
