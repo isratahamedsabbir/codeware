@@ -78,6 +78,16 @@ class User extends Authenticatable
     }
 
     /**
+     * FCM device tokens this user has registered (see FirebaseTokenController
+     * — POST/DELETE /api/v1/firebase/tokens) — App\Support\Firebase::sendToUser()
+     * pushes to every one of them.
+     */
+    public function firebaseTokens(): HasMany
+    {
+        return $this->hasMany(FirebaseToken::class);
+    }
+
+    /**
      * True when this user holds at least one role (Admin → Roles) that's
      * been switched to inactive — used to lock the account out of both
      * logins (FortifyServiceProvider, Vendor\Auth\Login) and the

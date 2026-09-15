@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\V1\Auth\SocialAuthController;
 use App\Http\Controllers\Api\V1\ChatController;
 use App\Http\Controllers\Api\V1\CmsController;
 use App\Http\Controllers\Api\V1\ContactController;
+use App\Http\Controllers\Api\V1\FirebaseTokenController;
 use App\Http\Controllers\Api\V1\LayoutController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\PageController;
@@ -56,6 +57,10 @@ Route::prefix('auth')->name('auth.')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    // FCM device tokens — see App\Support\Firebase::sendToUser().
+    Route::post('/firebase/tokens', [FirebaseTokenController::class, 'store'])->name('firebase.tokens.store');
+    Route::delete('/firebase/tokens/{deviceId}', [FirebaseTokenController::class, 'destroy'])->name('firebase.tokens.destroy');
 });
 
 // Public read endpoints — no auth required

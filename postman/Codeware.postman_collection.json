@@ -24,7 +24,8 @@
 		{ "key": "reset_token", "value": "", "type": "string" },
 		{ "key": "user_id", "value": "", "type": "string" },
 		{ "key": "chat_token", "value": "", "type": "string" },
-		{ "key": "subscriber_id", "value": "", "type": "string" }
+		{ "key": "subscriber_id", "value": "", "type": "string" },
+		{ "key": "device_id", "value": "test-device-1", "type": "string" }
 	],
 	"item": [
 		{
@@ -167,6 +168,30 @@
 						},
 						"url": "{{base_url}}/profile"
 					}
+				}
+			]
+		},
+		{
+			"name": "Firebase",
+			"description": "FCM device token registration — App\\Support\\Firebase::sendToUser() pushes to every token a user has registered here.",
+			"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{customer_token}}", "type": "string" }] },
+			"item": [
+				{
+					"name": "Register Device Token",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"REPLACE_WITH_FCM_DEVICE_TOKEN\",\n    \"device_id\": \"{{device_id}}\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": "{{base_url}}/firebase/tokens"
+					}
+				},
+				{
+					"name": "Remove Device Token",
+					"request": { "method": "DELETE", "url": "{{base_url}}/firebase/tokens/{{device_id}}" }
 				}
 			]
 		},
