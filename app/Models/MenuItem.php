@@ -64,6 +64,9 @@ class MenuItem extends Model
      * disabled feature hides its sidebar link the same way an unmet gate does.
      */
     private const FEATURE_ROUTE_PREFIXES = [
+        'admin.roles' => 'access-control',
+        'admin.permissions' => 'access-control',
+        'admin.users' => 'access-control',
         'admin.posts' => 'blog',
         'admin.post-categories' => 'blog',
         'admin.tags' => 'blog',
@@ -88,6 +91,11 @@ class MenuItem extends Model
         'admin.coupons' => 'orders',
         'admin.shipping-methods' => 'orders',
         'admin.advance' => 'advance',
+        'admin.history' => 'audit-log',
+        'admin.countries' => 'location',
+        'admin.divisions' => 'location',
+        'admin.districts' => 'location',
+        'admin.upazilas' => 'location',
     ];
 
     protected $fillable = [

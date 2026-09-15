@@ -118,21 +118,24 @@ Route::middleware('can:access-admin-system')->group(function () {
         Route::get('/subscribers', App\Livewire\Admin\Subscribers\Index::class)->name('subscribers');
     });
 
-    // Roles & Permissions
-    Route::get('/roles', App\Livewire\Admin\Roles\Index::class)->name('roles');
-    Route::get('/roles/create', App\Livewire\Admin\Roles\Form::class)->name('roles.create');
-    Route::get('/roles/{id}/edit', App\Livewire\Admin\Roles\Form::class)->name('roles.edit');
-    Route::get('/permissions', App\Livewire\Admin\Permissions\Index::class)->name('permissions');
+    // Roles, Permissions & Users — the "access-control" feature
+    Route::middleware('feature:access-control')->group(function () {
+        Route::get('/roles', App\Livewire\Admin\Roles\Index::class)->name('roles');
+        Route::get('/roles/create', App\Livewire\Admin\Roles\Form::class)->name('roles.create');
+        Route::get('/roles/{id}/edit', App\Livewire\Admin\Roles\Form::class)->name('roles.edit');
+        Route::get('/permissions', App\Livewire\Admin\Permissions\Index::class)->name('permissions');
 
-    // Users
-    Route::get('/users', App\Livewire\Admin\Users\Index::class)->name('users');
-    Route::get('/users/create', App\Livewire\Admin\Users\Form::class)->name('users.create');
-    Route::get('/users/{id}/edit', App\Livewire\Admin\Users\Form::class)->name('users.edit');
-    Route::get('/users/{user}/card', [UserCardController::class, 'show'])->name('users.card');
-    Route::get('/users/{user}/card/download', [UserCardController::class, 'download'])->name('users.card.download');
+        Route::get('/users', App\Livewire\Admin\Users\Index::class)->name('users');
+        Route::get('/users/create', App\Livewire\Admin\Users\Form::class)->name('users.create');
+        Route::get('/users/{id}/edit', App\Livewire\Admin\Users\Form::class)->name('users.edit');
+        Route::get('/users/{user}/card', [UserCardController::class, 'show'])->name('users.card');
+        Route::get('/users/{user}/card/download', [UserCardController::class, 'download'])->name('users.card.download');
+    });
 
-    // Admin Activity History
-    Route::get('/history', App\Livewire\Admin\ActivityLogs\Index::class)->name('history');
+    // Admin Activity History — the "audit-log" feature
+    Route::middleware('feature:audit-log')->group(function () {
+        Route::get('/history', App\Livewire\Admin\ActivityLogs\Index::class)->name('history');
+    });
 
     // Localization
     Route::middleware('feature:localization')->group(function () {
@@ -147,22 +150,25 @@ Route::middleware('can:access-admin-system')->group(function () {
         Route::get('/menu', App\Livewire\Admin\Menu\Index::class)->name('menu');
     });
 
-    // Location — Country, State, Division, District (Zilla) & Upazila hierarchy
-    Route::get('/countries', App\Livewire\Admin\Countries\Index::class)->name('countries');
-    Route::get('/countries/create', App\Livewire\Admin\Countries\Form::class)->name('countries.create');
-    Route::get('/countries/{id}/edit', App\Livewire\Admin\Countries\Form::class)->name('countries.edit');
+    // Location — Country, State, Division, District (Zilla) & Upazila hierarchy —
+    // the "location" feature
+    Route::middleware('feature:location')->group(function () {
+        Route::get('/countries', App\Livewire\Admin\Countries\Index::class)->name('countries');
+        Route::get('/countries/create', App\Livewire\Admin\Countries\Form::class)->name('countries.create');
+        Route::get('/countries/{id}/edit', App\Livewire\Admin\Countries\Form::class)->name('countries.edit');
 
-    Route::get('/divisions', App\Livewire\Admin\Divisions\Index::class)->name('divisions');
-    Route::get('/divisions/create', App\Livewire\Admin\Divisions\Form::class)->name('divisions.create');
-    Route::get('/divisions/{id}/edit', App\Livewire\Admin\Divisions\Form::class)->name('divisions.edit');
+        Route::get('/divisions', App\Livewire\Admin\Divisions\Index::class)->name('divisions');
+        Route::get('/divisions/create', App\Livewire\Admin\Divisions\Form::class)->name('divisions.create');
+        Route::get('/divisions/{id}/edit', App\Livewire\Admin\Divisions\Form::class)->name('divisions.edit');
 
-    Route::get('/districts', App\Livewire\Admin\Districts\Index::class)->name('districts');
-    Route::get('/districts/create', App\Livewire\Admin\Districts\Form::class)->name('districts.create');
-    Route::get('/districts/{id}/edit', App\Livewire\Admin\Districts\Form::class)->name('districts.edit');
+        Route::get('/districts', App\Livewire\Admin\Districts\Index::class)->name('districts');
+        Route::get('/districts/create', App\Livewire\Admin\Districts\Form::class)->name('districts.create');
+        Route::get('/districts/{id}/edit', App\Livewire\Admin\Districts\Form::class)->name('districts.edit');
 
-    Route::get('/upazilas', App\Livewire\Admin\Upazilas\Index::class)->name('upazilas');
-    Route::get('/upazilas/create', App\Livewire\Admin\Upazilas\Form::class)->name('upazilas.create');
-    Route::get('/upazilas/{id}/edit', App\Livewire\Admin\Upazilas\Form::class)->name('upazilas.edit');
+        Route::get('/upazilas', App\Livewire\Admin\Upazilas\Index::class)->name('upazilas');
+        Route::get('/upazilas/create', App\Livewire\Admin\Upazilas\Form::class)->name('upazilas.create');
+        Route::get('/upazilas/{id}/edit', App\Livewire\Admin\Upazilas\Form::class)->name('upazilas.edit');
+    });
 
     // Advance — Sitemap & Robots.txt generation, and future advanced/technical tools
     Route::middleware('feature:advance')->group(function () {

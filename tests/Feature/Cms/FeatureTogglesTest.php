@@ -125,6 +125,65 @@ it('hides a disabled feature\'s group from the menu management screen', function
         ->assertDontSee('Vendors');
 });
 
+it('blocks roles, permissions, and users routes when access-control is off, leaving settings reachable', function () {
+    disableFeature('access-control');
+
+    $this->get(route('admin.roles'))->assertNotFound();
+    $this->get(route('admin.permissions'))->assertNotFound();
+    $this->get(route('admin.users'))->assertNotFound();
+
+    $this->get(route('admin.settings'))->assertOk();
+});
+
+it('hides the Access Control group from the live sidebar once its feature is off', function () {
+    $this->seed(AdminMenuSeeder::class);
+
+    $this->get(route('admin.dashboard'))->assertOk()->assertSee('Access Control');
+
+    disableFeature('access-control');
+
+    $this->get(route('admin.dashboard'))->assertOk()->assertDontSee('Access Control');
+});
+
+it('blocks the audit log route when its feature is off, leaving settings reachable', function () {
+    disableFeature('audit-log');
+
+    $this->get(route('admin.history'))->assertNotFound();
+
+    $this->get(route('admin.settings'))->assertOk();
+});
+
+it('hides the Audit Log link from the live sidebar once its feature is off', function () {
+    $this->seed(AdminMenuSeeder::class);
+
+    $this->get(route('admin.dashboard'))->assertOk()->assertSee('Audit Log');
+
+    disableFeature('audit-log');
+
+    $this->get(route('admin.dashboard'))->assertOk()->assertDontSee('Audit Log');
+});
+
+it('blocks location routes when their feature is off, leaving settings reachable', function () {
+    disableFeature('location');
+
+    $this->get(route('admin.countries'))->assertNotFound();
+    $this->get(route('admin.divisions'))->assertNotFound();
+    $this->get(route('admin.districts'))->assertNotFound();
+    $this->get(route('admin.upazilas'))->assertNotFound();
+
+    $this->get(route('admin.settings'))->assertOk();
+});
+
+it('hides the Location group from the live sidebar once its feature is off', function () {
+    $this->seed(AdminMenuSeeder::class);
+
+    $this->get(route('admin.dashboard'))->assertOk()->assertSee('Countries');
+
+    disableFeature('location');
+
+    $this->get(route('admin.dashboard'))->assertOk()->assertDontSee('Countries');
+});
+
 it('hides the CMS row action on the Pages list once the cms feature is off', function () {
     $page = Page::factory()->create();
 

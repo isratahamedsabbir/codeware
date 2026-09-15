@@ -9,13 +9,14 @@ use App\Models\Feature;
  * every project needs every module (Chat, Blog, File Manager, ...). Each feature
  * below can be turned off per-deployment from Settings → Features, which hides it
  * from the sidebar and blocks its routes — without touching code. Anything not
- * listed here (Dashboard, Users, Roles, Settings itself, Activity History) is core
- * and always on.
+ * listed here (Dashboard, Settings itself) is core and always on.
  */
 class Features
 {
     public const ALL = [
         'blog' => 'Blog (Posts, Categories, Tags)',
+        'access-control' => 'Access Control (Roles, Permissions, Users)',
+        'audit-log' => 'Audit Log',
         'products' => 'Products',
         'orders' => 'Orders & Reports',
         'pages' => 'Pages',
@@ -28,6 +29,7 @@ class Features
         'menu' => 'Menu Manager',
         'email-templates' => 'Email Templates',
         'localization' => 'Localization (Languages & Translations)',
+        'location' => 'Location (Countries, Divisions, Districts, Upazilas)',
         'advance' => 'Advance (Sitemap & Robots.txt)',
     ];
 
