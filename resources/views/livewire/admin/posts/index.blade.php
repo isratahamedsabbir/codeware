@@ -74,8 +74,9 @@
             <table class="w-full divide-y divide-gray-200">
                 <colgroup>
                     <col style="width:5%">
+                    <col style="width:5%">
                     <col class="hidden lg:table-column" style="width:5%">
-                    <col style="width:26%">
+                    <col style="width:21%">
                     <col class="hidden lg:table-column" style="width:22%">
                     <col class="hidden lg:table-column" style="width:16%">
                     <col style="width:11%">
@@ -83,6 +84,7 @@
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
+                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Title</th>
@@ -98,19 +100,24 @@
                             @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()"
                             @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $post->id }}) }">
 
-                            {{-- Select + expand toggle (the latter, small screens only, where columns are
-                                 hidden). The checkbox only appears once a bulk selection is already active
-                                 (started via Ctrl/Cmd+click on a row) — it stays hidden otherwise so the
-                                 row looks normal. --}}
+                            {{-- Expand toggle, small screens only, where columns are hidden. --}}
                             <td class="px-1 py-2 text-center">
                                 <div class="flex items-center justify-center gap-1" @click.stop>
+                                    <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $post->id"
+                                        wire:click="{{ $viewingId === $post->id ? 'closeDetails' : 'viewDetails('.$post->id.')' }}" />
+                                </div>
+                            </td>
+
+                            {{-- Bulk-select checkbox — its own dedicated column so it never
+                                 crowds into neighboring cells; stays hidden until a selection
+                                 is already in progress. --}}
+                            <td class="px-1 py-2 text-center">
+                                <div @click.stop>
                                     @if (count($selectedIds) > 0)
                                         <input type="checkbox" wire:click="toggleSelect({{ $post->id }})"
                                             @checked(in_array($post->id, $selectedIds, true))
                                             class="size-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
                                     @endif
-                                    <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $post->id"
-                                        wire:click="{{ $viewingId === $post->id ? 'closeDetails' : 'viewDetails('.$post->id.')' }}" />
                                 </div>
                             </td>
 
@@ -187,7 +194,7 @@
 
                         </tr>
                         @if ($viewingId === $post->id)
-                            <x-admin-row-details colspan="7">
+                            <x-admin-row-details colspan="8">
                                 <x-admin-row-details.item label="Slug">
                                     @if ($post->slug)
                                         <x-copy-text :text="$post->slug" class="font-mono">{{ $post->slug }}</x-copy-text>
@@ -200,7 +207,7 @@
                         @endif
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-16 text-center">
+                            <td colspan="8" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />

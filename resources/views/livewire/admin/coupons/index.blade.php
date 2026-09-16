@@ -72,8 +72,9 @@
             <table class="w-full divide-y divide-gray-200">
                 <colgroup>
                     <col style="width:5%">
+                    <col style="width:5%">
                     <col class="hidden lg:table-column" style="width:5%">
-                    <col style="width:13%">
+                    <col style="width:8%">
                     <col style="width:8%">
                     <col class="hidden lg:table-column" style="width:10%">
                     <col class="hidden lg:table-column" style="width:10%">
@@ -85,6 +86,7 @@
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
+                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
                         <th class="hidden lg:table-cell px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Code</th>
@@ -104,19 +106,20 @@
                             @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()"
                             @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $coupon->id }}) }">
 
-                            {{-- Expand toggle / bulk-select checkbox. The checkbox is merged
-                                 into this existing cell rather than given its own <td> — a
-                                 dedicated checkbox column made the browser over-allocate width
-                                 to it, throwing off the rest of the table's proportions. It
-                                 stays hidden until a selection is already in progress. --}}
+                            {{-- Expand toggle, small screens only, where columns are hidden. --}}
+                            <td class="px-1 py-2 text-center">
+                                <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $coupon->id"
+                                    wire:click="{{ $viewingId === $coupon->id ? 'closeDetails' : 'viewDetails('.$coupon->id.')' }}" />
+                            </td>
+
+                            {{-- Bulk-select checkbox — its own dedicated column so it never
+                                 crowds into neighboring cells; stays hidden until a selection
+                                 is already in progress. --}}
                             <td class="px-2 py-2 text-center">
                                 @if (count($selectedIds) > 0)
                                     <input type="checkbox" wire:click.stop="toggleSelect({{ $coupon->id }})"
                                         @checked(in_array($coupon->id, $selectedIds, true))
                                         class="w-4 h-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
-                                @else
-                                    <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $coupon->id"
-                                        wire:click="{{ $viewingId === $coupon->id ? 'closeDetails' : 'viewDetails('.$coupon->id.')' }}" />
                                 @endif
                             </td>
 
@@ -205,7 +208,7 @@
 
                         </tr>
                         @if ($viewingId === $coupon->id)
-                            <x-admin-row-details colspan="11">
+                            <x-admin-row-details colspan="12">
                                 <x-admin-row-details.item label="Applies to">
                                     @if ($coupon->products_count > 0)
                                         <div class="flex flex-wrap gap-1 justify-end">
@@ -227,7 +230,7 @@
                         @endif
                     @empty
                         <tr>
-                            <td colspan="11" class="px-6 py-16 text-center">
+                            <td colspan="12" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M9 5H7a2 2 0 0 0-2 2v3a2 2 0 0 1-2 2 2 2 0 0 1 2 2v3a2 2 0 0 0 2 2h2m6-14h2a2 2 0 0 1 2 2v3a2 2 0 0 0 2 2 2 2 0 0 0-2 2v3a2 2 0 0 1-2 2h-2" />

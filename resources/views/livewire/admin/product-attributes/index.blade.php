@@ -63,14 +63,16 @@
         <div class="border border-zinc-100 rounded-lg">
             <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
                 <colgroup>
+                    <col style="width:5%">
                     <col style="width:6%">
-                    <col style="width:22%">
+                    <col style="width:17%">
                     <col style="width:35%">
                     <col style="width:17%">
                     <col style="width:20%">
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
+                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Name</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Values</th>
@@ -84,18 +86,20 @@
                             @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()"
                             @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $attribute->id }}) }">
 
-                            {{-- Select + Id. The checkbox only appears once a bulk selection is
-                                 already active (started via Ctrl/Cmd+click on a row) — it stays
-                                 hidden otherwise so the row looks normal. --}}
+                            {{-- Bulk-select checkbox — its own dedicated column so it never
+                                 crowds into the ID column; stays hidden until a selection is
+                                 already in progress. --}}
+                            <td class="px-2 py-2 text-center" @click.stop>
+                                @if (count($selectedIds) > 0)
+                                    <input type="checkbox" wire:click="toggleSelect({{ $attribute->id }})"
+                                        @checked(in_array($attribute->id, $selectedIds, true))
+                                        class="size-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
+                                @endif
+                            </td>
+
+                            {{-- ID --}}
                             <td class="px-2 py-2 text-center text-xs text-zinc-500">
-                                <div class="flex items-center justify-center gap-1.5" @click.stop>
-                                    @if (count($selectedIds) > 0)
-                                        <input type="checkbox" wire:click="toggleSelect({{ $attribute->id }})"
-                                            @checked(in_array($attribute->id, $selectedIds, true))
-                                            class="size-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
-                                    @endif
-                                    <x-copy-text :text="$attribute->id" class="text-xs text-zinc-500">{{ $attribute->id }}</x-copy-text>
-                                </div>
+                                <x-copy-text :text="$attribute->id" class="text-xs text-zinc-500">{{ $attribute->id }}</x-copy-text>
                             </td>
 
                             {{-- Name --}}
@@ -143,7 +147,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-16 text-center">
+                            <td colspan="6" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
