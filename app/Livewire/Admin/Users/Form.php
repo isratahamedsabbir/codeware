@@ -72,7 +72,13 @@ class Form extends Component
             $this->vendor_ids = $user->vendors->pluck('id')->all();
             $this->signature = $user->signature;
             $this->existingPhotoPath = $user->photo;
+
+            return;
         }
+
+        // New users default to 'customer' — the same role a public
+        // registration gets (see CreateNewUser) — rather than no role at all.
+        $this->selectedRoles = ['customer'];
     }
 
     public function updatedPhoto(): void

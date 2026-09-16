@@ -41,7 +41,6 @@
                     <col class="hidden lg:table-column" style="width:5%">
                     <col style="width:28%">
                     <col style="width:16%">
-                    <col class="hidden lg:table-column" style="width:12%">
                     <col style="width:14%">
                     <col style="width:20%">
                 </colgroup>
@@ -51,7 +50,6 @@
                         <th class="hidden lg:table-cell px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">User</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Roles</th>
-                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Type</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
                         <th class="sticky right-0 z-10 bg-zinc-50 border-l border-zinc-100 px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -108,21 +106,6 @@
                                 </div>
                             </td>
 
-                            {{-- Type --}}
-                            <td class="hidden lg:table-cell px-4 py-2">
-                                @if ($user->is_admin)
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-600 border border-green-200">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                                        Admin
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-50 text-zinc-500 border border-zinc-200">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
-                                        Standard
-                                    </span>
-                                @endif
-                            </td>
-
                             {{-- Status --}}
                             <td class="px-4 py-2">
                                 @if ($user->id === auth()->id())
@@ -157,15 +140,14 @@
 
                         </tr>
                         @if ($viewingId === $user->id)
-                            <x-admin-row-details colspan="7">
+                            <x-admin-row-details colspan="6">
                                 <x-admin-row-details.item label="ID">#{{ $user->id }}</x-admin-row-details.item>
-                                <x-admin-row-details.item label="Type">{{ $user->is_admin ? 'Admin' : 'Standard' }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Status">{{ $user->is_blocked ? 'Blocked' : 'Active' }}</x-admin-row-details.item>
                             </x-admin-row-details>
                         @endif
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-16 text-center">
+                            <td colspan="6" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />

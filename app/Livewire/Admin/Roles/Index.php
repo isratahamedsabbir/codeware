@@ -112,7 +112,7 @@ class Index extends Component
     {
         return view('livewire.admin.roles.index', [
             'roles' => Role::query()
-                ->with(['creator', 'users:id,name'])
+                ->with('creator')
                 ->withCount(['users', 'permissions'])
                 ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
                 ->orderBy('name')

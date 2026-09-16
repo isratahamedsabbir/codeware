@@ -144,9 +144,19 @@ class AppServiceProvider extends ServiceProvider
     {
         foreach ([Role::class, Permission::class] as $model) {
             $model::creating(function ($record) {
-                if (! $record->created_by && auth()->check()) {
-                    $record->created_by = auth()->id();
+                if ($record->created_by) {
+                    return;
                 }
+
+                if (auth()->check()) {
+                    $record->created_by = auth()->id();
+
+                    return;
+                }
+
+                // Seeders/tinker run with no authenticated user — see
+                // App\Concerns\HasCreator, which this mirrors.
+                $record->created_by = User::where('is_admin', true)->value('id');
             });
 
             $model::resolveRelationUsing('creator', fn ($record) => $record->belongsTo(User::class, 'created_by'));

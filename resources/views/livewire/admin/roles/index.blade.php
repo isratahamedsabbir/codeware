@@ -82,18 +82,9 @@
 
                             {{-- Users --}}
                             <td class="hidden lg:table-cell px-4 py-2">
-                                @forelse ($role->users->take(3) as $user)
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-zinc-100 text-zinc-600 mb-1">
-                                        <x-truncate :text="$user->name" />
-                                    </span>
-                                @empty
-                                    <span class="text-zinc-300 text-sm">—</span>
-                                @endforelse
-                                @if ($role->users_count > 3)
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-zinc-100 text-zinc-500">
-                                        +{{ $role->users_count - 3 }}
-                                    </span>
-                                @endif
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">
+                                    {{ $role->users_count }} {{ Str::plural('user', $role->users_count) }}
+                                </span>
                             </td>
 
                             {{-- Permissions --}}

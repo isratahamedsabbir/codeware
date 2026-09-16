@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class AdminSeeder extends Seeder
 {
@@ -30,6 +32,14 @@ class AdminSeeder extends Seeder
         );
 
         $admin->assignRole('admin');
+
+        // RolePermissionSeeder runs before this one (assignRole('admin') above
+        // needs the role to already exist), so when those rows were created,
+        // no is_admin=true user existed yet for the created_by fallback in
+        // AppServiceProvider::configureCreatorTracking() to find. Backfill
+        // them now that the admin does.
+        Role::whereNull('created_by')->update(['created_by' => $admin->id]);
+        Permission::whereNull('created_by')->update(['created_by' => $admin->id]);
 
         $staff = User::updateOrCreate(
             ['email' => 'staff@admin.com'],
