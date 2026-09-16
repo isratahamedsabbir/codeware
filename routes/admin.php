@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CouponExportController;
 use App\Http\Controllers\Admin\DistrictExportController;
 use App\Http\Controllers\Admin\DivisionExportController;
 use App\Http\Controllers\Admin\FileManagerController;
+use App\Http\Controllers\Admin\PageExportController;
 use App\Http\Controllers\Admin\PostCategoryExportController;
 use App\Http\Controllers\Admin\PostExportController;
 use App\Http\Controllers\Admin\ProductAttributeExportController;
@@ -63,6 +64,7 @@ Route::middleware('feature:blog')->group(function () {
 // Pages
 Route::middleware('feature:pages')->group(function () {
     Route::get('/pages', App\Livewire\Admin\Pages\Index::class)->name('pages');
+    Route::get('/pages/export', [PageExportController::class, 'export'])->name('pages.export');
     Route::get('/pages/create', App\Livewire\Admin\Pages\Form::class)->name('pages.create');
     Route::get('/pages/{id}/edit', App\Livewire\Admin\Pages\Form::class)->name('pages.edit');
 });

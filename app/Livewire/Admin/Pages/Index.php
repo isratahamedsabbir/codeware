@@ -12,6 +12,7 @@ use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\PageCascade;
 use App\Support\PuckEditor;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -45,6 +46,9 @@ class Index extends Component
     public ?int $viewingId = null;
 
     public int $puckSessionMinutes = 30;
+
+    /** @var array<int, int> */
+    public array $selectedIds = [];
 
     public function mount(): void
     {
@@ -158,6 +162,47 @@ class Index extends Component
         $this->dispatch('close-modal', name: 'page-delete');
     }
 
+    /**
+     * Ctrl/Cmd+click row selection or the row's own checkbox (see the view) —
+     * toggles one page id in/out of the bulk-selection.
+     */
+    public function toggleSelect(int $id): void
+    {
+        if (in_array($id, $this->selectedIds, true)) {
+            $this->selectedIds = array_values(array_diff($this->selectedIds, [$id]));
+
+            return;
+        }
+
+        $this->selectedIds[] = $id;
+    }
+
+    public function confirmBulkDelete(): void
+    {
+        if ($this->selectedIds === []) {
+            return;
+        }
+
+        $this->dispatch('open-modal', name: 'page-bulk-delete');
+    }
+
+    public function bulkDelete(): void
+    {
+        $pages = Page::whereIn('id', $this->selectedIds)->get();
+
+        foreach ($pages as $page) {
+            PageCascade::deleteEntityFor($page);
+            AdminActivity::log('deleted', "Page #{$page->id}: {$page->title}");
+            $page->delete();
+        }
+
+        $count = $pages->count();
+        $this->selectedIds = [];
+
+        $this->dispatch('notify', message: "{$count} ".Str::plural('page', $count).' deleted successfully');
+        $this->dispatch('close-modal', name: 'page-bulk-delete');
+    }
+
     public function render()
     {
         return view('livewire.admin.pages.index', [
@@ -172,6 +217,6 @@ class Index extends Component
                 ->orderBy('sort_order')
                 ->orderBy('id')
                 ->paginate($this->perPage),
-        ])->layout('layouts.admin', ['title' => 'Pages']);
+        ])->layout('layouts.admin', ['title' => 'Pages', 'hidePageHeading' => true]);
     }
 }

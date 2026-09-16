@@ -27,6 +27,7 @@
         'email-templates'    => ['Library & System', 'admin.email-templates'],
         'file-manager'       => ['Library & System', 'admin.file-manager'],
         'menu'               => ['Library & System', 'admin.menu'],
+        'pages'              => ['Pages', 'admin.pages'],
         'cms'                => ['Pages', 'admin.pages'],
         'history'            => ['Library & System', 'admin.history'],
         'payment-gateways'   => ['Library & System', 'admin.payment-gateways'],
