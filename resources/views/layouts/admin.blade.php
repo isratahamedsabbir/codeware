@@ -65,6 +65,15 @@
             display: none !important;
         }
 
+        /* flux:header ships with z-10, same as the sticky right-hand "Actions"
+           column used by admin list tables — on equal z-index the later-DOM
+           element (the table, below the header) wins the paint order and
+           renders on top of the header bar while scrolling. Raise the header
+           above it. */
+        .admin-header {
+            z-index: 20;
+        }
+
         /* Admin brand colors — from Settings → Theme → Backend. Placed after the
            compiled app.css, so this wins over both the light and .dark token
            blocks there (equal specificity, later in source). Primary also drives

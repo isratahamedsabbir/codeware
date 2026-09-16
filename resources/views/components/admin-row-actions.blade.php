@@ -4,13 +4,13 @@
     // Full literal utility strings so Tailwind's scanner can see them (dynamic
     // "border-{$color}" concatenation would be invisible to the JIT compiler).
     $palettes = [
-        'primary' => ['border' => 'border-primary text-primary hover:bg-primary hover:text-white', 'glow' => 'rgba(99,102,241,.35)', 'tooltipBg' => 'bg-primary', 'arrow' => 'border-t-primary', 'menuText' => 'text-zinc-600 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-700'],
-        'secondary' => ['border' => 'border-secondary text-secondary hover:bg-secondary hover:text-white', 'glow' => 'rgba(139,92,246,.35)', 'tooltipBg' => 'bg-secondary', 'arrow' => 'border-t-secondary', 'menuText' => 'text-zinc-600 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-700'],
-        'rose-500' => ['border' => 'border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white', 'glow' => 'rgba(225,29,72,.35)', 'tooltipBg' => 'bg-rose-500', 'arrow' => 'border-t-rose-500', 'menuText' => 'text-rose-600 hover:bg-rose-50'],
-        'emerald-500' => ['border' => 'border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white', 'glow' => 'rgba(16,185,129,.35)', 'tooltipBg' => 'bg-emerald-500', 'arrow' => 'border-t-emerald-500', 'menuText' => 'text-zinc-600 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-700'],
-        'cyan-500' => ['border' => 'border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white', 'glow' => 'rgba(8,145,178,.35)', 'tooltipBg' => 'bg-cyan-500', 'arrow' => 'border-t-cyan-500', 'menuText' => 'text-zinc-600 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-700'],
-        'amber-500' => ['border' => 'border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-white', 'glow' => 'rgba(245,158,11,.35)', 'tooltipBg' => 'bg-amber-500', 'arrow' => 'border-t-amber-500', 'menuText' => 'text-zinc-600 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-700'],
-        'zinc-500' => ['border' => 'border-zinc-400 text-zinc-500 hover:bg-zinc-600 hover:text-white hover:border-zinc-600', 'glow' => 'rgba(82,82,91,.35)', 'tooltipBg' => 'bg-zinc-600', 'arrow' => 'border-t-zinc-600', 'menuText' => 'text-zinc-600 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-700'],
+        'primary' => ['border' => 'border-primary text-primary hover:bg-primary hover:text-white', 'glow' => 'rgba(99,102,241,.35)'],
+        'secondary' => ['border' => 'border-secondary text-secondary hover:bg-secondary hover:text-white', 'glow' => 'rgba(139,92,246,.35)'],
+        'rose-500' => ['border' => 'border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white', 'glow' => 'rgba(225,29,72,.35)'],
+        'emerald-500' => ['border' => 'border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white', 'glow' => 'rgba(16,185,129,.35)'],
+        'cyan-500' => ['border' => 'border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white', 'glow' => 'rgba(8,145,178,.35)'],
+        'amber-500' => ['border' => 'border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-white', 'glow' => 'rgba(245,158,11,.35)'],
+        'zinc-500' => ['border' => 'border-zinc-400 text-zinc-500 hover:bg-zinc-600 hover:text-white hover:border-zinc-600', 'glow' => 'rgba(82,82,91,.35)'],
     ];
 
     // Exact SVG markup reused from the previous per-page inline buttons, so
@@ -32,80 +32,79 @@
 @endphp
 
 @if ($mode === 'dropdown')
-    {{-- A shared Alpine store (not per-row local state) tracks which single row's
-    menu is open, so opening one always closes any other — see
-    resources/js/row-actions-store.js. The <tr> in each index.blade.php
-    right-clicks by dispatching a real click at [data-actions-trigger] below,
-    reusing this same toggle logic rather than duplicating it. --}}
-    <div class="relative flex justify-center" x-data="{ uid: Math.random() }"
-        @click.outside="if ($store.rowActions.openId === uid) $store.rowActions.openId = null">
+    {{-- flux:dropdown (native popover-backed), not a hand-rolled absolute
+         panel — same clipping problem as the tooltip below: this cell sits
+         inside a horizontally-scrolling, sticky-column table, where
+         `overflow-x-auto` implicitly clips vertical overflow too. A native
+         popover also auto-closes any other open one, so no shared Alpine
+         store is needed to keep only one row's menu open at a time. The
+         <tr> in each index.blade.php right-clicks by dispatching a real
+         click at [data-actions-trigger] below to open it. --}}
+    <flux:dropdown position="bottom" align="end">
         <button type="button" data-actions-trigger
-            @click="$store.rowActions.openId = ($store.rowActions.openId === uid ? null : uid)"
             aria-label="Actions"
             class="inline-flex items-center justify-center w-7 h-7 rounded border border-zinc-200 text-zinc-500 hover:bg-zinc-100 transition-colors cursor-pointer">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
             </svg>
         </button>
-        <div x-show="$store.rowActions.openId === uid" x-cloak x-transition.origin.top.right
-            class="absolute top-full right-0 mt-1 w-40 bg-white rounded-lg border border-zinc-200 shadow-lg py-1 z-30 dark:bg-zinc-800 dark:border-zinc-700">
+
+        <flux:menu>
             @foreach ($visible as $action)
-                @php $palette = $palettes[$action['color'] ?? 'primary'] ?? $palettes['primary']; @endphp
                 @if ($action['disabled'] ?? false)
-                    <span class="flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-300 cursor-not-allowed">
-                        <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
+                    <flux:menu.item disabled>
+                        <svg class="w-3.5 h-3.5 shrink-0 me-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
                         {{ $action['label'] }}
-                    </span>
+                    </flux:menu.item>
                 @elseif (isset($action['href']))
-                    <a href="{{ $action['href'] }}" wire:navigate @click="$store.rowActions.openId = null"
-                        class="flex items-center gap-2 px-3 py-1.5 text-xs {{ $palette['menuText'] }}">
-                        <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
+                    <flux:menu.item :href="$action['href']" wire:navigate :variant="($action['color'] ?? null) === 'rose-500' ? 'danger' : 'default'">
+                        <svg class="w-3.5 h-3.5 shrink-0 me-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
                         {{ $action['label'] }}
-                    </a>
+                    </flux:menu.item>
                 @else
-                    <button type="button" wire:click="{{ $action['wireClick'] }}" @click="$store.rowActions.openId = null"
-                        class="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-left cursor-pointer {{ $palette['menuText'] }}">
-                        <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
+                    <flux:menu.item wire:click="{{ $action['wireClick'] }}" :variant="($action['color'] ?? null) === 'rose-500' ? 'danger' : 'default'">
+                        <svg class="w-3.5 h-3.5 shrink-0 me-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
                         {{ $action['label'] }}
-                    </button>
+                    </flux:menu.item>
                 @endif
             @endforeach
-        </div>
-    </div>
+        </flux:menu>
+    </flux:dropdown>
 @else
     <div class="flex items-center justify-center gap-1.5">
         @foreach ($visible as $action)
             @php $palette = $palettes[$action['color'] ?? 'primary'] ?? $palettes['primary']; @endphp
-            <div class="relative group">
-                @if ($action['disabled'] ?? false)
-                    <span aria-label="{{ $action['label'] }}"
-                        class="inline-flex items-center justify-center w-7 h-7 rounded-lg border bg-zinc-50 text-zinc-300 cursor-not-allowed">
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
-                    </span>
-                @elseif (isset($action['href']))
-                    <a href="{{ $action['href'] }}" wire:navigate aria-label="{{ $action['label'] }}"
-                        class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 {{ $palette['border'] }} hover:-translate-y-px"
-                        style="box-shadow:none"
-                        onmouseover="this.style.boxShadow='0 3px 8px {{ $palette['glow'] }}'"
-                        onmouseout="this.style.boxShadow='none'">
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
-                    </a>
-                @else
-                    <button type="button" wire:click="{{ $action['wireClick'] }}" aria-label="{{ $action['label'] }}"
-                        class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 {{ $palette['border'] }} hover:-translate-y-px cursor-pointer"
-                        style="box-shadow:none"
-                        onmouseover="this.style.boxShadow='0 3px 8px {{ $palette['glow'] }}'"
-                        onmouseout="this.style.boxShadow='none'">
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
-                    </button>
-                @endif
-                @unless ($action['disabled'] ?? false)
-                    <span class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-[11px] font-medium {{ $palette['tooltipBg'] }} text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                        {{ $action['label'] }}
-                        <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent {{ $palette['arrow'] }}"></span>
-                    </span>
-                @endunless
-            </div>
+            @if ($action['disabled'] ?? false)
+                <span aria-label="{{ $action['label'] }}"
+                    class="inline-flex items-center justify-center w-7 h-7 rounded-lg border bg-zinc-50 text-zinc-300 cursor-not-allowed">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
+                </span>
+            @else
+                {{-- flux:tooltip (not a hand-rolled absolute span) — this cell sits
+                     inside a horizontally-scrolling, sticky-column table, where
+                     `overflow-x-auto` implicitly forces `overflow-y` to clip too,
+                     cutting off a plain absolute tooltip. Flux's tooltip renders
+                     past that, same reasoning as the envelope dropdown below. --}}
+                <flux:tooltip :content="$action['label']">
+                    @if (isset($action['href']))
+                        <a href="{{ $action['href'] }}" wire:navigate aria-label="{{ $action['label'] }}"
+                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 {{ $palette['border'] }} hover:-translate-y-px"
+                            style="box-shadow:none"
+                            onmouseover="this.style.boxShadow='0 3px 8px {{ $palette['glow'] }}'"
+                            onmouseout="this.style.boxShadow='none'">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
+                        </a>
+                    @else
+                        <button type="button" wire:click="{{ $action['wireClick'] }}" aria-label="{{ $action['label'] }}"
+                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 {{ $palette['border'] }} hover:-translate-y-px cursor-pointer"
+                            style="box-shadow:none"
+                            onmouseover="this.style.boxShadow='0 3px 8px {{ $palette['glow'] }}'"
+                            onmouseout="this.style.boxShadow='none'">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
+                        </button>
+                    @endif
+                </flux:tooltip>
+            @endif
         @endforeach
     </div>
 @endif

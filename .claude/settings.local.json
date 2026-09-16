@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan *)",
+      "Bash(php -i)",
+      "Bash(php -r \"echo ini_get\\('pcre.backtrack_limit'\\), PHP_EOL; echo ini_get\\('pcre.recursion_limit'\\), PHP_EOL;\")",
+      "Bash(cd /c/laragon/www/codeware *)"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
+    ]
+  }
+}
