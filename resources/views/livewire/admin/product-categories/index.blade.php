@@ -107,29 +107,32 @@
                             @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()"
                             @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $category->id }}) }">
 
-                            {{-- Select + expand toggle (the latter, small screens only, where columns are hidden).
-                                 The checkbox only appears once a bulk selection is already active (started via
-                                 Ctrl/Cmd+click on a row) — it stays hidden otherwise so the row looks normal. --}}
+                            {{-- Expand toggle, small screens only, where columns are hidden. --}}
                             <td class="px-1 py-2 text-center">
                                 <div class="flex items-center justify-center gap-1" @click.stop>
-                                    @if (count($selectedIds) > 0)
-                                        <input type="checkbox" wire:click="toggleSelect({{ $category->id }})"
-                                            @checked(in_array($category->id, $selectedIds, true))
-                                            class="size-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
-                                    @endif
                                     <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $category->id"
                                         wire:click="{{ $viewingId === $category->id ? 'closeDetails' : 'viewDetails('.$category->id.')' }}" />
                                 </div>
                             </td>
 
-                            {{-- Drag handle --}}
+                            {{-- Drag handle / select checkbox. Dragging is meaningless once a bulk
+                                 selection is active (rows are picked, not reordered), so the drag
+                                 handle hides and a checkbox takes its place instead. --}}
                             <td class="px-1 py-2 text-center">
-                                <div class="drag-handle cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-600 inline-flex">
-                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <line x1="3" y1="6" x2="21" y2="6" />
-                                        <line x1="3" y1="12" x2="21" y2="12" />
-                                        <line x1="3" y1="18" x2="21" y2="18" />
-                                    </svg>
+                                <div @click.stop>
+                                    @if (count($selectedIds) > 0)
+                                        <input type="checkbox" wire:click="toggleSelect({{ $category->id }})"
+                                            @checked(in_array($category->id, $selectedIds, true))
+                                            class="size-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
+                                    @else
+                                        <div class="drag-handle cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-600 inline-flex">
+                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <line x1="3" y1="6" x2="21" y2="6" />
+                                                <line x1="3" y1="12" x2="21" y2="12" />
+                                                <line x1="3" y1="18" x2="21" y2="18" />
+                                            </svg>
+                                        </div>
+                                    @endif
                                 </div>
                             </td>
 
