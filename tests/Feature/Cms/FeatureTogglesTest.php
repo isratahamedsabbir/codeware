@@ -145,6 +145,24 @@ it('hides the Access Control group from the live sidebar once its feature is off
     $this->get(route('admin.dashboard'))->assertOk()->assertDontSee('Access Control');
 });
 
+it('blocks the env route when its feature is off, leaving settings reachable', function () {
+    disableFeature('env');
+
+    $this->get(route('admin.env'))->assertNotFound();
+
+    $this->get(route('admin.settings'))->assertOk();
+});
+
+it('hides the Env link from the live sidebar once its feature is off', function () {
+    $this->seed(AdminMenuSeeder::class);
+
+    $this->get(route('admin.dashboard'))->assertOk()->assertSee('Env');
+
+    disableFeature('env');
+
+    $this->get(route('admin.dashboard'))->assertOk()->assertDontSee('Env');
+});
+
 it('blocks the audit log route when its feature is off, leaving settings reachable', function () {
     disableFeature('audit-log');
 

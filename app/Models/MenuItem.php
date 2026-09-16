@@ -65,6 +65,7 @@ class MenuItem extends Model
      * disabled feature hides its sidebar link the same way an unmet gate does.
      */
     private const FEATURE_ROUTE_PREFIXES = [
+        'admin.env' => 'env',
         'admin.roles' => 'access-control',
         'admin.permissions' => 'access-control',
         'admin.users' => 'access-control',

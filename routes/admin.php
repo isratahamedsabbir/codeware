@@ -70,11 +70,14 @@ Route::middleware('feature:chat')->group(function () {
 // Settings & Email Templates — Admin/Super Admin only, not Staff
 Route::middleware('can:access-admin-system')->group(function () {
     Route::get('/settings', App\Livewire\Admin\Settings\Index::class)->name('settings');
-    Route::get('/env', App\Livewire\Admin\Env\Index::class)->name('env');
     Route::get('/seo', App\Livewire\Admin\Seo\Index::class)->name('seo');
     Route::get('/social', App\Livewire\Admin\Social\Index::class)->name('social');
     Route::get('/payment-gateways', App\Livewire\Admin\PaymentGateways\Index::class)->name('payment-gateways');
     Route::get('/features', App\Livewire\Admin\Features\Index::class)->name('features');
+
+    Route::middleware('feature:env')->group(function () {
+        Route::get('/env', App\Livewire\Admin\Env\Index::class)->name('env');
+    });
 
     Route::middleware('feature:email-templates')->group(function () {
         Route::get('/email-templates', App\Livewire\Admin\EmailTemplates\Index::class)->name('email-templates');

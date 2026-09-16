@@ -14,6 +14,7 @@ use App\Models\Feature;
 class Features
 {
     public const ALL = [
+        'env' => 'Env (App, Maintenance & API Settings)',
         'blog' => 'Blog (Posts, Categories, Tags)',
         'access-control' => 'Access Control (Roles, Permissions, Users)',
         'audit-log' => 'Audit Log',
