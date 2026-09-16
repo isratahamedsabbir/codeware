@@ -4,17 +4,10 @@
   "values": [
     {
       "key": "base_url",
-      "value": "http://codeware.test",
+      "value": "http://codeware.test/api/v1",
       "type": "default",
       "enabled": true,
-      "description": "Base URL of the Laravel app (no trailing slash). Change to https://yourdomain.com for production."
-    },
-    {
-      "key": "api_url",
-      "value": "{{base_url}}/api/v1",
-      "type": "default",
-      "enabled": true,
-      "description": "Automatically derived from base_url. Do not edit this directly."
+      "description": "API root every request in the collection is built from (used directly as {{base_url}}/..., not /api/v1/... — the prefix must already be included here). Change the host to https://yourdomain.com/api/v1 for production."
     },
     {
       "key": "locale",
