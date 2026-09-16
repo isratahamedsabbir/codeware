@@ -1,5 +1,11 @@
 @php
-    $routeName = request()->route()?->getName() ?? 'admin.dashboard';
+    // $routeName can be passed explicitly by a component that @includes this
+    // partial from inside its own reactive template (rather than via the
+    // @push('page-header-actions') stack, which only ever renders once, on
+    // the initial full-page load) — request()->route() reflects Livewire's
+    // internal update endpoint, not the page's own route, on every
+    // subsequent wire:click round trip, breaking the breadcrumb otherwise.
+    $routeName ??= request()->route()?->getName() ?? 'admin.dashboard';
     $segments  = explode('.', $routeName);
     $resource  = $segments[1] ?? 'dashboard';
     $pageTitle = $title ?? ucwords(str_replace(['-', '_'], ' ', $resource));

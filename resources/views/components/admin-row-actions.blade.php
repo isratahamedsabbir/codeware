@@ -29,6 +29,10 @@
 
     $visible = collect($actions)->filter(fn ($action) => $action['visible'] ?? true)->values();
     $mode = \App\Models\Setting::get('admin_actions_display', 'inline');
+    // Every action disabled (e.g. a bulk selection is active elsewhere on the
+    // page) — disable the trigger itself too, not just the menu items inside
+    // it, so it can't even be opened.
+    $allDisabled = $visible->isNotEmpty() && $visible->every(fn ($action) => $action['disabled'] ?? false);
 @endphp
 
 @if ($mode === 'dropdown')
@@ -43,7 +47,8 @@
     <flux:dropdown position="bottom" align="end">
         <button type="button" data-actions-trigger
             aria-label="Actions"
-            class="inline-flex items-center justify-center w-7 h-7 rounded border border-zinc-200 text-zinc-500 hover:bg-zinc-100 transition-colors cursor-pointer">
+            @disabled($allDisabled)
+            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-colors {{ $allDisabled ? 'border-zinc-100 bg-zinc-50 text-zinc-300 cursor-not-allowed' : 'border-zinc-200 text-zinc-500 hover:bg-zinc-100 cursor-pointer' }}">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
             </svg>

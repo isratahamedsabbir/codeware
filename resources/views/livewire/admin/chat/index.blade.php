@@ -1,7 +1,7 @@
 <div class="flex flex-col h-full">
     <div class="mb-3 shrink-0 flex items-center justify-between gap-4 flex-wrap">
         <div>
-            @include('partials.admin-breadcrumbs')
+            @include('partials.admin-breadcrumbs', ['routeName' => 'admin.chat'])
         </div>
         @can('access-admin-system')
             <flux:button size="sm" variant="outline" icon="bolt" wire:click="openReverbSettings">

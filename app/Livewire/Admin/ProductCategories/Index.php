@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\ProductCategories;
 use App\Models\ProductCategory;
 use App\Support\AdminActivity;
 use App\Support\PageCascade;
+use Illuminate\Support\Str;
 use Livewire\Component;
 
 class Index extends Component
@@ -15,6 +16,9 @@ class Index extends Component
 
     public ?int $viewingId = null;
 
+    /** @var array<int, int> */
+    public array $selectedIds = [];
+
     public function viewDetails(int $id): void
     {
         $this->viewingId = $id;
@@ -23,6 +27,47 @@ class Index extends Component
     public function closeDetails(): void
     {
         $this->viewingId = null;
+    }
+
+    /**
+     * Ctrl/Cmd+click row selection (see the row's @click handler in the
+     * view) — toggles one category id in/out of the bulk-delete selection.
+     */
+    public function toggleSelect(int $id): void
+    {
+        if (in_array($id, $this->selectedIds, true)) {
+            $this->selectedIds = array_values(array_diff($this->selectedIds, [$id]));
+
+            return;
+        }
+
+        $this->selectedIds[] = $id;
+    }
+
+    public function confirmBulkDelete(): void
+    {
+        if ($this->selectedIds === []) {
+            return;
+        }
+
+        $this->dispatch('open-modal', name: 'product-category-bulk-delete');
+    }
+
+    public function bulkDelete(): void
+    {
+        $categories = ProductCategory::with('page')->whereIn('id', $this->selectedIds)->get();
+
+        foreach ($categories as $category) {
+            PageCascade::deletePageFor($category, forcePage: true);
+            AdminActivity::log('deleted', "Product Category: {$category->name}");
+            $category->delete();
+        }
+
+        $count = $categories->count();
+        $this->selectedIds = [];
+
+        $this->dispatch('notify', message: "{$count} ".Str::plural('category', $count).' deleted successfully');
+        $this->dispatch('close-modal', name: 'product-category-bulk-delete');
     }
 
     public function reorder(array $order): void
@@ -83,6 +128,6 @@ class Index extends Component
 
         return view('livewire.admin.product-categories.index', [
             'categories' => $tree,
-        ])->layout('layouts.admin', ['title' => 'Product Categories']);
+        ])->layout('layouts.admin', ['title' => 'Product Categories', 'hidePageHeading' => true]);
     }
 }

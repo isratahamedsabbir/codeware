@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Admin\FileManagerController;
+use App\Http\Controllers\Admin\ProductCategoryExportController;
 use App\Http\Controllers\Admin\ProductExportController;
+use App\Http\Controllers\Admin\ProductVendorExportController;
 use App\Http\Controllers\Admin\ReportExportController;
 use App\Http\Controllers\Admin\UserCardController;
 use App\Http\Controllers\InvoiceController;
@@ -94,6 +96,7 @@ Route::middleware('feature:products')->group(function () {
     Route::get('/products/{id}/label', [ProductLabelController::class, 'download'])->name('products.label');
 
     Route::get('/product-categories', App\Livewire\Admin\ProductCategories\Index::class)->name('product-categories');
+    Route::get('/product-categories/export', [ProductCategoryExportController::class, 'export'])->name('product-categories.export');
     Route::get('/product-categories/create', App\Livewire\Admin\ProductCategories\Form::class)->name('product-categories.create');
     Route::get('/product-categories/{id}/edit', App\Livewire\Admin\ProductCategories\Form::class)->name('product-categories.edit');
 
@@ -106,6 +109,7 @@ Route::middleware('feature:products')->group(function () {
     Route::get('/product-brands/{id}/edit', App\Livewire\Admin\ProductBrands\Form::class)->name('product-brands.edit');
 
     Route::get('/product-vendors', App\Livewire\Admin\ProductVendors\Index::class)->name('product-vendors');
+    Route::get('/product-vendors/export', [ProductVendorExportController::class, 'export'])->name('product-vendors.export');
     Route::get('/product-vendors/create', App\Livewire\Admin\ProductVendors\Form::class)->name('product-vendors.create');
     Route::get('/product-vendors/{id}/edit', App\Livewire\Admin\ProductVendors\Form::class)->name('product-vendors.edit');
 });

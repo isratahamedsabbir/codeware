@@ -56,3 +56,38 @@ it('renders a disabled action as a non-interactive element without a wire:click 
 it('defaults admin_actions_display to inline when the setting is missing', function () {
     expect(Setting::get('admin_actions_display', 'inline'))->toBe('inline');
 });
+
+function extractTriggerTag(string $html): string
+{
+    preg_match('/<button type="button" data-actions-trigger.*?>/s', $html, $matches);
+
+    return $matches[0] ?? '';
+}
+
+it('disables the dropdown trigger itself when every action is disabled', function () {
+    Setting::set('admin_actions_display', 'dropdown');
+
+    $html = renderRowActions([
+        ['href' => '/edit/1', 'icon' => 'pencil', 'label' => 'Edit', 'color' => 'primary', 'disabled' => true],
+        ['wireClick' => 'confirmDelete(1)', 'icon' => 'trash', 'label' => 'Delete', 'color' => 'rose-500', 'disabled' => true],
+    ]);
+
+    $trigger = extractTriggerTag($html);
+
+    expect($trigger)->toContain('disabled')
+        ->toContain('cursor-not-allowed');
+});
+
+it('keeps the dropdown trigger enabled when only some actions are disabled', function () {
+    Setting::set('admin_actions_display', 'dropdown');
+
+    $html = renderRowActions([
+        ['href' => '/edit/1', 'icon' => 'pencil', 'label' => 'Edit', 'color' => 'primary'],
+        ['wireClick' => 'confirmDelete(1)', 'icon' => 'trash', 'label' => 'Delete', 'color' => 'rose-500', 'disabled' => true],
+    ]);
+
+    $trigger = extractTriggerTag($html);
+
+    expect($trigger)->not->toContain('disabled')
+        ->not->toContain('cursor-not-allowed');
+});

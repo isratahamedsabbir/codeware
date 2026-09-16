@@ -8,6 +8,7 @@ use App\Support\AdminActivity;
 use App\Support\EnvFile;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
 use RuntimeException;
@@ -19,6 +20,9 @@ class Index extends Component
     public string $search = '';
 
     public ?int $deletingId = null;
+
+    /** @var array<int, int> */
+    public array $selectedIds = [];
 
     /** The VENDOR_URL .env value, edited from the Settings modal (see saveVendorUrl()). */
     public string $vendorUrl = '';
@@ -98,6 +102,46 @@ class Index extends Component
         $this->dispatch('close-modal', name: 'product-vendor-delete');
     }
 
+    /**
+     * Ctrl/Cmd+click row selection or the row's own checkbox (see the view) —
+     * toggles one vendor id in/out of the bulk-selection.
+     */
+    public function toggleSelect(int $id): void
+    {
+        if (in_array($id, $this->selectedIds, true)) {
+            $this->selectedIds = array_values(array_diff($this->selectedIds, [$id]));
+
+            return;
+        }
+
+        $this->selectedIds[] = $id;
+    }
+
+    public function confirmBulkDelete(): void
+    {
+        if ($this->selectedIds === []) {
+            return;
+        }
+
+        $this->dispatch('open-modal', name: 'product-vendor-bulk-delete');
+    }
+
+    public function bulkDelete(): void
+    {
+        $vendors = ProductVendor::whereIn('id', $this->selectedIds)->get();
+
+        foreach ($vendors as $vendor) {
+            AdminActivity::log('deleted', "Product Vendor: {$vendor->name}");
+            $vendor->delete();
+        }
+
+        $count = $vendors->count();
+        $this->selectedIds = [];
+
+        $this->dispatch('notify', message: "{$count} ".Str::plural('vendor', $count).' deleted successfully');
+        $this->dispatch('close-modal', name: 'product-vendor-bulk-delete');
+    }
+
     public function render()
     {
         return view('livewire.admin.product-vendors.index', [
@@ -106,6 +150,6 @@ class Index extends Component
                 ->orderBy('sort_order')
                 ->orderBy('name')
                 ->paginate($this->perPage),
-        ])->layout('layouts.admin', ['title' => 'Product Vendors']);
+        ])->layout('layouts.admin', ['title' => 'Product Vendors', 'hidePageHeading' => true]);
     }
 }
