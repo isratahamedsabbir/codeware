@@ -24,6 +24,14 @@ class DatabaseSeeder extends Seeder
         $this->call(AdminSeeder::class);
         $this->call(VendorSeeder::class);
 
+        // The random factory users (and the named Test User) above are created
+        // before the 'customer' role exists, so they get no role at all —
+        // assign it now, the same default a real registration gets (see
+        // CreateNewUser), so the admin's Users list doesn't show "None" for
+        // every seeded account. Admin/Staff/Vendor already have their own
+        // roles from AdminSeeder, so this only reaches the roleless ones.
+        User::whereDoesntHave('roles')->get()->each(fn (User $user) => $user->assignRole('customer'));
+
         $this->call(SettingsSeeder::class);
         $this->call(SocialLinkSeeder::class);
         $this->call(PaymentGatewaySeeder::class);
