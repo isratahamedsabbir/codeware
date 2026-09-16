@@ -26,7 +26,7 @@
             <option value="active">{{ __('Active') }}</option>
             <option value="inactive">{{ __('Inactive') }}</option>
         </select>
-        <div class="relative max-w-xs w-full ml-auto">
+        <div class="relative max-w-xs ml-auto">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" viewBox="0 0 24 24"
                 fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="11" cy="11" r="8" />
@@ -58,7 +58,7 @@
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">{{ __('Code') }}</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">{{ __('Translated') }}</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">{{ __('Status') }}</th>
-                        <th class="px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">{{ __('Actions') }}</th>
+                        <th class="sticky right-0 z-10 bg-zinc-50 border-l border-zinc-100 px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
@@ -67,7 +67,7 @@
                             $done    = (int) ($translated[$language->code] ?? 0);
                             $percent = $totalKeys > 0 ? (int) round(min($done, $totalKeys) / $totalKeys * 100) : 0;
                         @endphp
-                        <tr class="hover:bg-indigo-50/30 transition-colors" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
+                        <tr class="group/row hover:bg-indigo-50/30 transition-colors" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
 
                             {{-- Expand toggle (small screens only, where columns are hidden) --}}
                             <td class="px-2 py-2 text-center">
@@ -137,7 +137,7 @@
                             </td>
 
                             {{-- Actions --}}
-                            <td class="px-4 py-2">
+                            <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-50/30 border-l border-zinc-100 px-4 py-2">
                                 <x-admin-row-actions :actions="[
                                     ['wireClick' => 'makeDefault(' . $language->id . ')', 'icon' => 'star', 'label' => __('Set as default'), 'color' => 'amber-500', 'visible' => ! $language->is_default],
                                     ['wireClick' => 'toggleActive(' . $language->id . ')', 'icon' => $language->is_active ? 'eye-slash' : 'eye', 'label' => $language->is_active ? __('Deactivate') : __('Activate'), 'color' => 'zinc-500'],

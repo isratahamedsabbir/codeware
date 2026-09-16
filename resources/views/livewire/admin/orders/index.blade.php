@@ -26,7 +26,7 @@
                 @endforeach
             </flux:select>
 
-            <div class="relative flex-1">
+            <div class="relative max-w-xs ml-auto">
                 <flux:input wire:model.live.debounce.300ms="search" placeholder="Search order #, name, or email…" icon="magnifying-glass" />
             </div>
         </div>

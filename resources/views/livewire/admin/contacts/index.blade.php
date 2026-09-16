@@ -1,7 +1,7 @@
 <div class="bg-white rounded-[5px] shadow-sm overflow-hidden">
 
     {{-- Filters --}}
-    <div class="flex gap-3 px-6 py-3 flex-wrap items-center">
+    <div class="flex items-center gap-3 p-4 flex-wrap">
         <x-per-page-select :options="$this->perPageOptions()" />
         <select wire:model.live="statusFilter"
             class="px-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 bg-white appearance-none pr-8 min-w-[140px] transition-all"
@@ -10,7 +10,7 @@
             <option value="unread">Unread</option>
             <option value="read">Read</option>
         </select>
-        <div class="relative flex-1 min-w-[180px]">
+        <div class="relative max-w-xs ml-auto">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" viewBox="0 0 24 24"
                 fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="11" cy="11" r="8" />
