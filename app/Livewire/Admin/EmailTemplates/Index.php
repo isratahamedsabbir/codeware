@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Admin\EmailTemplates;
 
-use App\Mail\TemplateDrivenMail;
+use App\Concerns\SendsCustomEmail;
 use App\Models\EmailTemplate;
 use App\Models\Setting;
 use App\Services\EmailTemplateRenderer;
@@ -11,11 +11,12 @@ use App\Support\AdminActivity;
 use App\Support\EnvFile;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 
 class Index extends Component
 {
+    use SendsCustomEmail;
+
     /**
      * The template used by sendTestEmail() — seeded by EmailTemplatesSeeder, editable
      * like any other template in the inventory on the left.
@@ -48,12 +49,6 @@ class Index extends Component
     public array $mailSettings = [];
 
     public string $testEmailAddress = '';
-
-    public string $customEmailTo = '';
-
-    public string $customEmailSubject = '';
-
-    public string $customEmailDescription = '';
 
     public function mount(): void
     {
@@ -165,40 +160,6 @@ class Index extends Component
         AdminActivity::log('updated', 'Sent a test email to '.$this->testEmailAddress);
 
         $this->dispatch('notify', message: 'Test email sent to '.$this->testEmailAddress.'.');
-    }
-
-    /**
-     * Sends a one-off, freeform email — not tied to any EmailTemplate row — using
-     * whatever mail settings are currently live, same as sendTestEmail().
-     */
-    public function sendCustomEmail(): void
-    {
-        $validated = $this->validate([
-            'customEmailTo' => ['required', 'email'],
-            'customEmailSubject' => ['required', 'string', 'max:191'],
-            'customEmailDescription' => ['required', 'string'],
-        ], [], [
-            'customEmailTo' => 'email',
-            'customEmailSubject' => 'subject',
-            'customEmailDescription' => 'description',
-        ]);
-
-        try {
-            Mail::to($validated['customEmailTo'])->send(new TemplateDrivenMail(
-                $validated['customEmailSubject'],
-                nl2br(e($validated['customEmailDescription'])),
-            ));
-        } catch (\Throwable $e) {
-            $this->dispatch('notify', message: 'Email failed: '.$e->getMessage());
-
-            return;
-        }
-
-        AdminActivity::log('updated', 'Sent an email to '.$validated['customEmailTo']);
-
-        $this->dispatch('notify', message: 'Email sent to '.$validated['customEmailTo'].'.');
-
-        $this->reset(['customEmailTo', 'customEmailSubject', 'customEmailDescription']);
     }
 
     public function selectTemplate(int $templateId): void

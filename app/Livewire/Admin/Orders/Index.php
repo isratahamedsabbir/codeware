@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Orders;
 
 use App\Concerns\HasPerPage;
+use App\Concerns\SendsCustomEmail;
 use App\Models\Order;
 use App\Models\Product;
 use App\Services\OrderEmailService;
@@ -14,7 +15,7 @@ use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use HasPerPage, WithPagination;
+    use HasPerPage, SendsCustomEmail, WithPagination;
 
     public string $search = '';
 
@@ -54,6 +55,16 @@ class Index extends Component
 
         AdminActivity::log('updated', "Resent {$audience} email for Order: {$order->order_number}");
         $this->dispatch('notify', message: ucfirst($audience).' email sent.');
+    }
+
+    /**
+     * Opens the SendsCustomEmail modal pre-filled with this order's customer
+     * email — the "Send Email" option in the per-row resend-email dropdown.
+     */
+    public function openCustomEmailFor(int $orderId): void
+    {
+        $this->customEmailTo = Order::findOrFail($orderId)->customer_email;
+        $this->dispatch('open-modal', name: 'send-custom-email');
     }
 
     public string $statusFilter = '';

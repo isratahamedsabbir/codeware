@@ -185,3 +185,49 @@ it('rejects an unknown resend audience without sending anything', function () {
 
     Mail::assertNothingSent();
 });
+
+describe('send custom email', function () {
+    it('pre-fills the recipient with the order customer email from the row action', function () {
+        $order = Order::factory()->create(['customer_email' => 'jane@example.com']);
+
+        Livewire::test(OrdersIndex::class)
+            ->call('openCustomEmailFor', $order->id)
+            ->assertSet('customEmailTo', 'jane@example.com')
+            ->assertDispatched('open-modal', name: 'send-custom-email');
+    });
+
+    it('requires an email, subject, and description', function () {
+        Mail::fake();
+
+        Livewire::test(OrdersIndex::class)
+            ->set('customEmailTo', 'not-an-email')
+            ->set('customEmailSubject', '')
+            ->set('customEmailDescription', '')
+            ->call('sendCustomEmail')
+            ->assertHasErrors(['customEmailTo', 'customEmailSubject', 'customEmailDescription']);
+
+        Mail::assertNothingSent();
+    });
+
+    it('sends a freeform email with the given subject and description', function () {
+        Mail::fake();
+
+        Livewire::test(OrdersIndex::class)
+            ->set('customEmailTo', 'destination@example.test')
+            ->set('customEmailSubject', 'About your order')
+            ->set('customEmailDescription', "Line one\nLine two")
+            ->call('sendCustomEmail')
+            ->assertHasNoErrors()
+            ->assertDispatched('notify', message: 'Email sent to destination@example.test.')
+            ->assertSet('customEmailTo', '')
+            ->assertSet('customEmailSubject', '')
+            ->assertSet('customEmailDescription', '');
+
+        Mail::assertSent(TemplateDrivenMail::class, function (TemplateDrivenMail $mail) {
+            return $mail->hasTo('destination@example.test')
+                && $mail->subjectLine === 'About your order'
+                && str_contains($mail->bodyHtml, 'Line one<br />')
+                && str_contains($mail->bodyHtml, 'Line two');
+        });
+    });
+});
