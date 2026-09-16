@@ -18,9 +18,21 @@ trait HasCreator
     protected static function bootHasCreator(): void
     {
         static::creating(function ($model) {
-            if (! $model->created_by && auth()->check()) {
-                $model->created_by = auth()->id();
+            if ($model->created_by) {
+                return;
             }
+
+            if (auth()->check()) {
+                $model->created_by = auth()->id();
+
+                return;
+            }
+
+            // Seeders, tinker, and other console-created rows run with no
+            // authenticated user, which used to leave created_by null forever
+            // — showing "—" in every "Created by" column. Fall back to the
+            // Super Admin so seeded data has a real owner instead.
+            $model->created_by = User::where('is_admin', true)->value('id');
         });
     }
 
