@@ -55,7 +55,7 @@
 
                             {{-- Id --}}
                             <td class="px-2 py-2 text-center text-xs text-zinc-500">
-                                {{ $method->id }}
+                                <x-copy-text :text="$method->id" class="text-xs text-zinc-500">{{ $method->id }}</x-copy-text>
                             </td>
 
                             {{-- Name --}}

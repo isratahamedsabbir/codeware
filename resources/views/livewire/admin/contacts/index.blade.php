@@ -59,7 +59,7 @@
 
                             {{-- ID --}}
                             <td class="hidden lg:table-cell px-4 py-2">
-                                <span class="text-sm text-zinc-500 font-mono">{{ $contact->id }}</span>
+                                <x-copy-text :text="$contact->id" class="font-mono text-sm text-zinc-500">{{ $contact->id }}</x-copy-text>
                             </td>
 
                             {{-- Name --}}

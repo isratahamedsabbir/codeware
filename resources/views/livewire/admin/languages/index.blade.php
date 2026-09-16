@@ -77,7 +77,7 @@
 
                             {{-- Id --}}
                             <td class="hidden lg:table-cell px-2 py-2 text-center text-xs text-zinc-500">
-                                {{ $language->id }}
+                                <x-copy-text :text="$language->id" class="text-xs text-zinc-500">{{ $language->id }}</x-copy-text>
                             </td>
 
                             {{-- Name --}}

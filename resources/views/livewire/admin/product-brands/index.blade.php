@@ -49,7 +49,7 @@
 
                             {{-- Id --}}
                             <td class="px-2 py-2 text-center text-xs text-zinc-500">
-                                {{ $brand->id }}
+                                <x-copy-text :text="$brand->id" class="text-xs text-zinc-500">{{ $brand->id }}</x-copy-text>
                             </td>
 
                             {{-- Logo --}}

@@ -47,7 +47,7 @@
 
                             {{-- Id --}}
                             <td class="px-2 py-2 text-center text-xs text-zinc-500">
-                                {{ $attribute->id }}
+                                <x-copy-text :text="$attribute->id" class="text-xs text-zinc-500">{{ $attribute->id }}</x-copy-text>
                             </td>
 
                             {{-- Name --}}

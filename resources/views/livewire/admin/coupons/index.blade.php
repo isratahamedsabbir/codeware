@@ -73,7 +73,7 @@
 
                             {{-- Id --}}
                             <td class="hidden lg:table-cell px-2 py-2 text-center text-xs text-zinc-500">
-                                {{ $coupon->id }}
+                                <x-copy-text :text="$coupon->id" class="text-xs text-zinc-500">{{ $coupon->id }}</x-copy-text>
                             </td>
 
                             {{-- Code --}}
