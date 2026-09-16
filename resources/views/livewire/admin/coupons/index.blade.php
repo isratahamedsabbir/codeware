@@ -1,8 +1,45 @@
-@push('page-header-actions')
-    <flux:button variant="ghost" size="sm" icon="plus" href="{{ route('admin.coupons.create') }}" wire:navigate>
-        New coupon
-    </flux:button>
-@endpush
+{{-- A single root element wraps the whole file (Livewire requires exactly
+     one) — the page heading below and the card after it used to be two
+     top-level sibling divs, which meant only one of them was actually
+     inside Livewire's tracked root and the other silently stopped updating
+     after the first render. --}}
+<div>
+
+    {{-- Page heading is rendered here (layouts.admin's own is disabled via
+         hidePageHeading in Index::render()) rather than pushed into
+         @stack('page-header-actions') like every other admin index page: that
+         stack is flushed into the surrounding layout on the initial full-page
+         load only, so content in it that depends on reactive Livewire state
+         ($selectedIds) never updates again after a wire:click round trip. Being
+         part of the component's own re-rendered template, this does. --}}
+    <div class="mb-3 flex items-center justify-between gap-4 flex-wrap">
+        <div>
+            @include('partials.admin-breadcrumbs', ['routeName' => 'admin.coupons'])
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+            @if (count($selectedIds) > 0)
+                {{-- Not wrapped in .page-header-actions (see below) — that class
+                     forces every button inside it to the solid blue "primary
+                     action" look (resources/css/app.css), which would swallow
+                     Delete's red/danger and Export's outline styling. --}}
+                <flux:button variant="danger" size="sm" icon="trash" wire:click="confirmBulkDelete">
+                    Delete ({{ count($selectedIds) }})
+                </flux:button>
+                <flux:button variant="outline" size="sm" icon="arrow-down-tray"
+                    href="{{ route('admin.coupons.export', ['ids' => $selectedIds]) }}">
+                    Export ({{ count($selectedIds) }})
+                </flux:button>
+            @endif
+            {{-- .page-header-actions restores the solid blue "primary action"
+                 look this button had when it lived in @push('page-header-actions')
+                 (see resources/css/app.css). --}}
+            <div class="page-header-actions flex items-center gap-2 shrink-0">
+                <flux:button variant="ghost" size="sm" icon="plus" href="{{ route('admin.coupons.create') }}" wire:navigate>
+                    New coupon
+                </flux:button>
+            </div>
+        </div>
+    </div>
 
 <div class="bg-white rounded-[5px] shadow-sm overflow-hidden">
 
@@ -63,12 +100,24 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($coupons as $coupon)
-                        <tr class="group/row hover:bg-indigo-50/30 transition-colors" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
+                        <tr class="group/row hover:bg-indigo-50/30 transition-colors {{ in_array($coupon->id, $selectedIds, true) ? 'bg-indigo-50/50' : '' }}"
+                            @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()"
+                            @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $coupon->id }}) }">
 
-                            {{-- Expand toggle (small screens only, where columns are hidden) --}}
+                            {{-- Expand toggle / bulk-select checkbox. The checkbox is merged
+                                 into this existing cell rather than given its own <td> — a
+                                 dedicated checkbox column made the browser over-allocate width
+                                 to it, throwing off the rest of the table's proportions. It
+                                 stays hidden until a selection is already in progress. --}}
                             <td class="px-2 py-2 text-center">
-                                <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $coupon->id"
-                                    wire:click="{{ $viewingId === $coupon->id ? 'closeDetails' : 'viewDetails('.$coupon->id.')' }}" />
+                                @if (count($selectedIds) > 0)
+                                    <input type="checkbox" wire:click.stop="toggleSelect({{ $coupon->id }})"
+                                        @checked(in_array($coupon->id, $selectedIds, true))
+                                        class="w-4 h-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
+                                @else
+                                    <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $coupon->id"
+                                        wire:click="{{ $viewingId === $coupon->id ? 'closeDetails' : 'viewDetails('.$coupon->id.')' }}" />
+                                @endif
                             </td>
 
                             {{-- Id --}}
@@ -149,8 +198,8 @@
                             {{-- Actions --}}
                             <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-50/30 border-l border-zinc-100 px-4 py-2">
                                 <x-admin-row-actions :actions="[
-                                    ['href' => route('admin.coupons.edit', $coupon->id), 'icon' => 'pencil', 'label' => 'Edit', 'color' => 'primary'],
-                                    ['wireClick' => 'confirmDelete(' . $coupon->id . ')', 'icon' => 'trash', 'label' => 'Delete', 'color' => 'rose-500'],
+                                    ['href' => route('admin.coupons.edit', $coupon->id), 'icon' => 'pencil', 'label' => 'Edit', 'color' => 'primary', 'disabled' => count($selectedIds) > 0],
+                                    ['wireClick' => 'confirmDelete(' . $coupon->id . ')', 'icon' => 'trash', 'label' => 'Delete', 'color' => 'rose-500', 'disabled' => count($selectedIds) > 0],
                                 ]" />
                             </td>
 
@@ -224,5 +273,35 @@
             </div>
         </div>
     </flux:modal>
+
+    {{-- Bulk Delete Modal --}}
+    <flux:modal name="coupon-bulk-delete" class="md:w-80"
+        x-on:open-modal.window="if ($event.detail.name === 'coupon-bulk-delete') $flux.modal('coupon-bulk-delete').show()"
+        x-on:close-modal.window="if ($event.detail.name === 'coupon-bulk-delete') $flux.modal('coupon-bulk-delete').close()">
+        <div class="space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                    </svg>
+                </div>
+                <flux:heading>Delete {{ count($selectedIds) }} {{ Str::plural('coupon', count($selectedIds)) }}?</flux:heading>
+            </div>
+            <flux:text class="text-sm text-zinc-500">This action cannot be undone.</flux:text>
+            <div class="flex gap-2 pt-1">
+                <button wire:click="bulkDelete"
+                    class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">
+                    Delete
+                </button>
+                <flux:modal.close>
+                    <flux:button size="sm" variant="ghost">Cancel</flux:button>
+                </flux:modal.close>
+            </div>
+        </div>
+    </flux:modal>
+
+</div>
 
 </div>

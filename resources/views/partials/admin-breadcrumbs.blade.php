@@ -14,6 +14,7 @@
         'products'           => ['Products', 'admin.products'],
         'orders'             => ['Sales', 'admin.orders'],
         'coupons'            => ['Sales', 'admin.coupons'],
+        'shipping-methods'   => ['Sales', 'admin.shipping-methods'],
         'reports'            => ['Sales', 'admin.reports'],
         'post-categories'    => ['Blog', 'admin.post-categories'],
         'tags'               => ['Blog', 'admin.tags'],
@@ -35,6 +36,10 @@
         'languages'          => [__('Localization'), 'admin.languages'],
         'translations'       => [__('Localization'), 'admin.translations'],
         'advance'            => ['Advance', 'admin.advance.sitemap'],
+        'countries'          => ['Location', 'admin.countries'],
+        'divisions'          => ['Location', 'admin.countries'],
+        'districts'          => ['Location', 'admin.countries'],
+        'upazilas'           => ['Location', 'admin.countries'],
     ];
     $section = $sectionMap[$resource] ?? null;
 @endphp

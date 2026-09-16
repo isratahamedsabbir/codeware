@@ -8,6 +8,7 @@ use App\Models\Post;
 use App\Support\AdminActivity;
 use App\Support\PageCascade;
 use App\Support\PuckEditor;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -22,6 +23,9 @@ class Index extends Component
     public ?int $deletingId = null;
 
     public ?int $viewingId = null;
+
+    /** @var array<int, int> */
+    public array $selectedIds = [];
 
     public function updatedSearch(): void
     {
@@ -97,6 +101,47 @@ class Index extends Component
         $this->dispatch('close-modal', name: 'post-delete');
     }
 
+    /**
+     * Ctrl/Cmd+click row selection or the row's own checkbox (see the view) —
+     * toggles one post id in/out of the bulk-selection.
+     */
+    public function toggleSelect(int $id): void
+    {
+        if (in_array($id, $this->selectedIds, true)) {
+            $this->selectedIds = array_values(array_diff($this->selectedIds, [$id]));
+
+            return;
+        }
+
+        $this->selectedIds[] = $id;
+    }
+
+    public function confirmBulkDelete(): void
+    {
+        if ($this->selectedIds === []) {
+            return;
+        }
+
+        $this->dispatch('open-modal', name: 'post-bulk-delete');
+    }
+
+    public function bulkDelete(): void
+    {
+        $posts = Post::with('page')->whereIn('id', $this->selectedIds)->get();
+
+        foreach ($posts as $post) {
+            PageCascade::deletePageFor($post);
+            AdminActivity::log('deleted', "Post #{$post->id}: {$post->title}");
+            $post->delete();
+        }
+
+        $count = $posts->count();
+        $this->selectedIds = [];
+
+        $this->dispatch('notify', message: "{$count} ".Str::plural('post', $count).' deleted successfully');
+        $this->dispatch('close-modal', name: 'post-bulk-delete');
+    }
+
     public function render()
     {
         return view('livewire.admin.posts.index', [
@@ -109,6 +154,6 @@ class Index extends Component
                 ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
                 ->latest()
                 ->paginate($this->perPage),
-        ])->layout('layouts.admin', ['title' => 'Posts']);
+        ])->layout('layouts.admin', ['title' => 'Posts', 'hidePageHeading' => true]);
     }
 }

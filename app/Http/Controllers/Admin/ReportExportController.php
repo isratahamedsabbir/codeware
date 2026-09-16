@@ -10,11 +10,16 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class ReportExportController extends Controller
 {
     /**
-     * Streams the orders report as CSV, honoring whatever filters are currently
-     * active on the Reports screen.
+     * Streams the orders report as CSV. With an `ids[]` query param (the
+     * Orders screen's bulk-selection "Export" button — see
+     * Livewire\Admin\Orders\Index::$selectedIds), exports exactly that
+     * explicit selection. Otherwise honors whatever filters are currently
+     * active on the Orders/Reports screen (the standalone "Export Filtered"
+     * button), carried over as query params.
      */
     public function export(Request $request): StreamedResponse
     {
+        $ids = array_map('intval', (array) $request->query('ids', []));
         $search = (string) $request->query('search', '');
         $status = (string) $request->query('status', '');
         $paymentStatus = (string) $request->query('payment_status', '');
@@ -26,18 +31,20 @@ class ReportExportController extends Controller
         $priceMax = (string) $request->query('price_max', '');
 
         $orders = Order::query()
-            ->when($search, fn ($q) => $q
-                ->where('order_number', 'like', "%{$search}%")
-                ->orWhere('customer_name', 'like', "%{$search}%")
-                ->orWhere('customer_email', 'like', "%{$search}%"))
-            ->when($status, fn ($q) => $q->where('status', $status))
-            ->when($paymentStatus, fn ($q) => $q->where('payment_status', $paymentStatus))
-            ->when($paymentMethod, fn ($q) => $q->where('payment_method', $paymentMethod))
-            ->when($from, fn ($q) => $q->whereDate('created_at', '>=', $from))
-            ->when($to, fn ($q) => $q->whereDate('created_at', '<=', $to))
-            ->when($product, fn ($q) => $q->whereHas('items', fn ($q2) => $q2->where('product_id', $product)))
-            ->when($priceMin !== '', fn ($q) => $q->where('total', '>=', $priceMin))
-            ->when($priceMax !== '', fn ($q) => $q->where('total', '<=', $priceMax))
+            ->when($ids !== [], fn ($q) => $q->whereIn('id', $ids), function ($q) use ($search, $status, $paymentStatus, $paymentMethod, $from, $to, $product, $priceMin, $priceMax) {
+                $q->when($search, fn ($q) => $q
+                    ->where('order_number', 'like', "%{$search}%")
+                    ->orWhere('customer_name', 'like', "%{$search}%")
+                    ->orWhere('customer_email', 'like', "%{$search}%"))
+                    ->when($status, fn ($q) => $q->where('status', $status))
+                    ->when($paymentStatus, fn ($q) => $q->where('payment_status', $paymentStatus))
+                    ->when($paymentMethod, fn ($q) => $q->where('payment_method', $paymentMethod))
+                    ->when($from, fn ($q) => $q->whereDate('created_at', '>=', $from))
+                    ->when($to, fn ($q) => $q->whereDate('created_at', '<=', $to))
+                    ->when($product, fn ($q) => $q->whereHas('items', fn ($q2) => $q2->where('product_id', $product)))
+                    ->when($priceMin !== '', fn ($q) => $q->where('total', '>=', $priceMin))
+                    ->when($priceMax !== '', fn ($q) => $q->where('total', '<=', $priceMax));
+            })
             ->latest()
             ->get();
 

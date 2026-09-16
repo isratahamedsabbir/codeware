@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Coupons;
 use App\Concerns\HasPerPage;
 use App\Models\Coupon;
 use App\Support\AdminActivity;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -19,6 +20,9 @@ class Index extends Component
     public ?int $deletingId = null;
 
     public ?int $viewingId = null;
+
+    /** @var array<int, int> */
+    public array $selectedIds = [];
 
     public function viewDetails(int $id): void
     {
@@ -69,6 +73,46 @@ class Index extends Component
         $this->dispatch('close-modal', name: 'coupon-delete');
     }
 
+    /**
+     * Ctrl/Cmd+click row selection or the row's own checkbox (see the view) —
+     * toggles one coupon id in/out of the bulk-selection.
+     */
+    public function toggleSelect(int $id): void
+    {
+        if (in_array($id, $this->selectedIds, true)) {
+            $this->selectedIds = array_values(array_diff($this->selectedIds, [$id]));
+
+            return;
+        }
+
+        $this->selectedIds[] = $id;
+    }
+
+    public function confirmBulkDelete(): void
+    {
+        if ($this->selectedIds === []) {
+            return;
+        }
+
+        $this->dispatch('open-modal', name: 'coupon-bulk-delete');
+    }
+
+    public function bulkDelete(): void
+    {
+        $coupons = Coupon::whereIn('id', $this->selectedIds)->get();
+
+        foreach ($coupons as $coupon) {
+            AdminActivity::log('deleted', "Coupon: {$coupon->code}");
+            $coupon->delete();
+        }
+
+        $count = $coupons->count();
+        $this->selectedIds = [];
+
+        $this->dispatch('notify', message: "{$count} ".Str::plural('coupon', $count).' deleted successfully');
+        $this->dispatch('close-modal', name: 'coupon-bulk-delete');
+    }
+
     public function render()
     {
         return view('livewire.admin.coupons.index', [
@@ -79,6 +123,6 @@ class Index extends Component
                 ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
                 ->orderByDesc('id')
                 ->paginate($this->perPage),
-        ])->layout('layouts.admin', ['title' => 'Coupons']);
+        ])->layout('layouts.admin', ['title' => 'Coupons', 'hidePageHeading' => true]);
     }
 }

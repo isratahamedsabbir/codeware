@@ -56,6 +56,16 @@ it('includes the category name for products that have one', function () {
     expect($csv)->toContain('Electronics');
 });
 
+it('exports only the requested product ids, ignoring search and status', function () {
+    $included = Product::factory()->published()->create(['name' => ['en' => 'Selected Widget', 'bn' => '']]);
+    $excluded = Product::factory()->published()->create(['name' => ['en' => 'Other Widget', 'bn' => '']]);
+
+    $csv = $this->get(route('admin.products.export', ['ids' => [$included->id], 'search' => 'nonexistent']))->streamedContent();
+
+    expect($csv)->toContain('Selected Widget')
+        ->not->toContain('Other Widget');
+});
+
 it('is blocked when the products feature is disabled', function () {
     Feature::create(['key' => 'products', 'label' => 'Products', 'is_enabled' => false]);
 

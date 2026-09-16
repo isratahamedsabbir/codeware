@@ -10,22 +10,28 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class ProductExportController extends Controller
 {
     /**
-     * Streams the product list as CSV, honoring whatever search/status filter is
-     * currently active on the Products screen — an export button click carries
-     * those over as query params rather than always exporting everything.
+     * Streams the product list as CSV. With an `ids[]` query param (the
+     * Products screen's bulk-selection "Export" button — see
+     * Livewire\Admin\Products\Index::$selectedIds), exports exactly that
+     * explicit selection. Otherwise honors whatever search/status filter is
+     * currently active on the screen (the standalone "Export CSV" button),
+     * carried over as query params rather than always exporting everything.
      */
     public function export(Request $request): StreamedResponse
     {
+        $ids = array_map('intval', (array) $request->query('ids', []));
         $search = (string) $request->query('search', '');
         $status = (string) $request->query('status', '');
 
         $products = Product::query()
             ->with(['categories', 'page'])
-            ->when($search, fn ($q) => $q
-                ->where('name->en', 'like', "%{$search}%")
-                ->orWhere('name->bn', 'like', "%{$search}%")
-                ->orWhereHas('page', fn ($p) => $p->where('slug', 'like', "%{$search}%")))
-            ->when($status, fn ($q) => $q->where('status', $status))
+            ->when($ids !== [], fn ($q) => $q->whereIn('id', $ids), function ($q) use ($search, $status) {
+                $q->when($search, fn ($q) => $q
+                    ->where('name->en', 'like', "%{$search}%")
+                    ->orWhere('name->bn', 'like', "%{$search}%")
+                    ->orWhereHas('page', fn ($p) => $p->where('slug', 'like', "%{$search}%")))
+                    ->when($status, fn ($q) => $q->where('status', $status));
+            })
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get();

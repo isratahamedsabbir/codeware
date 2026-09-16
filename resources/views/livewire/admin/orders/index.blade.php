@@ -1,3 +1,32 @@
+{{-- A single root element wraps the whole file (Livewire requires exactly
+     one) — the card below and the "send-custom-email" modal at the end of
+     this file used to be two top-level sibling elements, which meant only
+     one of them was actually inside Livewire's tracked root and the other
+     silently stopped updating after the first render. --}}
+<div>
+
+    {{-- Page heading is rendered here (layouts.admin's own is disabled via
+         hidePageHeading in Index::render()) rather than pushed into
+         @stack('page-header-actions') like every other admin index page: that
+         stack is flushed into the surrounding layout on the initial full-page
+         load only, so content in it that depends on reactive Livewire state
+         ($selectedIds) never updates again after a wire:click round trip. Being
+         part of the component's own re-rendered template, this does. --}}
+    <div class="mb-3 flex items-center justify-between gap-4 flex-wrap">
+        <div>
+            @include('partials.admin-breadcrumbs', ['routeName' => 'admin.orders'])
+        </div>
+        @if (count($selectedIds) > 0)
+            <div class="flex items-center gap-2 shrink-0">
+                {{-- Orders is deliberately export-only — no bulk delete button. --}}
+                <flux:button variant="outline" size="sm" icon="arrow-down-tray"
+                    href="{{ route('admin.orders.export', ['ids' => $selectedIds]) }}">
+                    Export ({{ count($selectedIds) }})
+                </flux:button>
+            </div>
+        @endif
+    </div>
+
 <div class="bg-white rounded-[5px] shadow-sm overflow-hidden">
 
     {{-- Filters --}}
@@ -76,10 +105,22 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($orders as $order)
-                        <tr class="group/row hover:bg-indigo-50/30 transition-colors">
+                        <tr class="group/row hover:bg-indigo-50/30 transition-colors {{ in_array($order->id, $selectedIds, true) ? 'bg-indigo-50/50' : '' }}"
+                            @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $order->id }}) }">
+                            {{-- Expand toggle / bulk-select checkbox. The checkbox is merged
+                                 into this existing cell rather than given its own <td> — a
+                                 dedicated checkbox column made the browser over-allocate width
+                                 to it, throwing off the rest of the table's proportions. It
+                                 stays hidden until a selection is already in progress. --}}
                             <td class="px-2 py-2 text-center">
-                                <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $order->id"
-                                    wire:click="{{ $viewingId === $order->id ? 'closeDetails' : 'viewDetails('.$order->id.')' }}" />
+                                @if (count($selectedIds) > 0)
+                                    <input type="checkbox" wire:click.stop="toggleSelect({{ $order->id }})"
+                                        @checked(in_array($order->id, $selectedIds, true))
+                                        class="w-4 h-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
+                                @else
+                                    <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $order->id"
+                                        wire:click="{{ $viewingId === $order->id ? 'closeDetails' : 'viewDetails('.$order->id.')' }}" />
+                                @endif
                             </td>
                             <td class="px-4 py-2 font-mono text-xs text-zinc-700"><x-truncate :text="$order->order_number" /></td>
                             <td class="px-4 py-2">
@@ -116,7 +157,7 @@
                             <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-50/30 border-l border-zinc-100 px-4 py-2">
                                 <div class="flex items-center justify-center gap-1.5">
                                     <x-admin-row-actions :actions="[
-                                        ['href' => route('admin.orders.show', $order->id), 'icon' => 'eye', 'label' => 'View', 'color' => 'primary'],
+                                        ['href' => route('admin.orders.show', $order->id), 'icon' => 'eye', 'label' => 'View', 'color' => 'primary', 'disabled' => count($selectedIds) > 0],
                                     ]" />
 
                                     {{-- One trigger, Admin/Customer sub-choice — a nested menu the
@@ -128,7 +169,8 @@
                                          scroll container. Flux's dropdown positions itself past that. --}}
                                     <flux:dropdown position="bottom" align="end">
                                         <button type="button" aria-label="Resend email"
-                                            class="inline-flex items-center justify-center w-7 h-7 rounded border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white transition-all duration-150 cursor-pointer">
+                                            @disabled(count($selectedIds) > 0)
+                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 {{ count($selectedIds) > 0 ? 'border-zinc-100 text-zinc-300 cursor-not-allowed' : 'border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer' }}">
                                             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                 <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                                             </svg>
@@ -206,3 +248,5 @@
         </div>
     </div>
 </flux:modal>
+
+</div>

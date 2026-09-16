@@ -1,10 +1,23 @@
 <?php
 
+use App\Http\Controllers\Admin\ContactExportController;
+use App\Http\Controllers\Admin\CountryExportController;
+use App\Http\Controllers\Admin\CouponExportController;
+use App\Http\Controllers\Admin\DistrictExportController;
+use App\Http\Controllers\Admin\DivisionExportController;
 use App\Http\Controllers\Admin\FileManagerController;
+use App\Http\Controllers\Admin\PostCategoryExportController;
+use App\Http\Controllers\Admin\PostExportController;
+use App\Http\Controllers\Admin\ProductAttributeExportController;
+use App\Http\Controllers\Admin\ProductBrandExportController;
 use App\Http\Controllers\Admin\ProductCategoryExportController;
 use App\Http\Controllers\Admin\ProductExportController;
 use App\Http\Controllers\Admin\ProductVendorExportController;
 use App\Http\Controllers\Admin\ReportExportController;
+use App\Http\Controllers\Admin\ShippingMethodExportController;
+use App\Http\Controllers\Admin\SubscriberExportController;
+use App\Http\Controllers\Admin\TagExportController;
+use App\Http\Controllers\Admin\UpazilaExportController;
 use App\Http\Controllers\Admin\UserCardController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProductLabelController;
@@ -32,14 +45,17 @@ Route::get('/about', About::class)->name('about');
 // Posts, Post Categories, Tags — the "blog" feature
 Route::middleware('feature:blog')->group(function () {
     Route::get('/posts', Index::class)->name('posts');
+    Route::get('/posts/export', [PostExportController::class, 'export'])->name('posts.export');
     Route::get('/posts/create', Form::class)->name('posts.create');
     Route::get('/posts/{id}/edit', Form::class)->name('posts.edit');
 
     Route::get('/post-categories', App\Livewire\Admin\PostCategories\Index::class)->name('post-categories');
+    Route::get('/post-categories/export', [PostCategoryExportController::class, 'export'])->name('post-categories.export');
     Route::get('/post-categories/create', App\Livewire\Admin\PostCategories\Form::class)->name('post-categories.create');
     Route::get('/post-categories/{id}/edit', App\Livewire\Admin\PostCategories\Form::class)->name('post-categories.edit');
 
     Route::get('/tags', App\Livewire\Admin\Tags\Index::class)->name('tags');
+    Route::get('/tags/export', [TagExportController::class, 'export'])->name('tags.export');
     Route::get('/tags/create', App\Livewire\Admin\Tags\Form::class)->name('tags.create');
     Route::get('/tags/{id}/edit', App\Livewire\Admin\Tags\Form::class)->name('tags.edit');
 });
@@ -101,10 +117,12 @@ Route::middleware('feature:products')->group(function () {
     Route::get('/product-categories/{id}/edit', App\Livewire\Admin\ProductCategories\Form::class)->name('product-categories.edit');
 
     Route::get('/product-attributes', App\Livewire\Admin\ProductAttributes\Index::class)->name('product-attributes');
+    Route::get('/product-attributes/export', [ProductAttributeExportController::class, 'export'])->name('product-attributes.export');
     Route::get('/product-attributes/create', App\Livewire\Admin\ProductAttributes\Form::class)->name('product-attributes.create');
     Route::get('/product-attributes/{id}/edit', App\Livewire\Admin\ProductAttributes\Form::class)->name('product-attributes.edit');
 
     Route::get('/product-brands', App\Livewire\Admin\ProductBrands\Index::class)->name('product-brands');
+    Route::get('/product-brands/export', [ProductBrandExportController::class, 'export'])->name('product-brands.export');
     Route::get('/product-brands/create', App\Livewire\Admin\ProductBrands\Form::class)->name('product-brands.create');
     Route::get('/product-brands/{id}/edit', App\Livewire\Admin\ProductBrands\Form::class)->name('product-brands.edit');
 
@@ -119,11 +137,13 @@ Route::middleware('can:access-admin-system')->group(function () {
     // Contacts (read-only)
     Route::middleware('feature:contacts')->group(function () {
         Route::get('/contacts', App\Livewire\Admin\Contacts\Index::class)->name('contacts');
+        Route::get('/contacts/export', [ContactExportController::class, 'export'])->name('contacts.export');
     });
 
-    // Newsletter Subscribers (read-only)
+    // Newsletter Subscribers
     Route::middleware('feature:newsletter')->group(function () {
         Route::get('/subscribers', App\Livewire\Admin\Subscribers\Index::class)->name('subscribers');
+        Route::get('/subscribers/export', [SubscriberExportController::class, 'export'])->name('subscribers.export');
     });
 
     // Roles, Permissions & Users — the "access-control" feature
@@ -162,18 +182,22 @@ Route::middleware('can:access-admin-system')->group(function () {
     // the "location" feature
     Route::middleware('feature:location')->group(function () {
         Route::get('/countries', App\Livewire\Admin\Countries\Index::class)->name('countries');
+        Route::get('/countries/export', [CountryExportController::class, 'export'])->name('countries.export');
         Route::get('/countries/create', App\Livewire\Admin\Countries\Form::class)->name('countries.create');
         Route::get('/countries/{id}/edit', App\Livewire\Admin\Countries\Form::class)->name('countries.edit');
 
         Route::get('/divisions', App\Livewire\Admin\Divisions\Index::class)->name('divisions');
+        Route::get('/divisions/export', [DivisionExportController::class, 'export'])->name('divisions.export');
         Route::get('/divisions/create', App\Livewire\Admin\Divisions\Form::class)->name('divisions.create');
         Route::get('/divisions/{id}/edit', App\Livewire\Admin\Divisions\Form::class)->name('divisions.edit');
 
         Route::get('/districts', App\Livewire\Admin\Districts\Index::class)->name('districts');
+        Route::get('/districts/export', [DistrictExportController::class, 'export'])->name('districts.export');
         Route::get('/districts/create', App\Livewire\Admin\Districts\Form::class)->name('districts.create');
         Route::get('/districts/{id}/edit', App\Livewire\Admin\Districts\Form::class)->name('districts.edit');
 
         Route::get('/upazilas', App\Livewire\Admin\Upazilas\Index::class)->name('upazilas');
+        Route::get('/upazilas/export', [UpazilaExportController::class, 'export'])->name('upazilas.export');
         Route::get('/upazilas/create', App\Livewire\Admin\Upazilas\Form::class)->name('upazilas.create');
         Route::get('/upazilas/{id}/edit', App\Livewire\Admin\Upazilas\Form::class)->name('upazilas.edit');
     });
@@ -200,10 +224,12 @@ Route::middleware('can:access-admin-system')->group(function () {
         Route::get('/reports/export', [ReportExportController::class, 'export'])->name('reports.export');
 
         Route::get('/coupons', App\Livewire\Admin\Coupons\Index::class)->name('coupons');
+        Route::get('/coupons/export', [CouponExportController::class, 'export'])->name('coupons.export');
         Route::get('/coupons/create', App\Livewire\Admin\Coupons\Form::class)->name('coupons.create');
         Route::get('/coupons/{id}/edit', App\Livewire\Admin\Coupons\Form::class)->name('coupons.edit');
 
         Route::get('/shipping-methods', App\Livewire\Admin\ShippingMethods\Index::class)->name('shipping-methods');
+        Route::get('/shipping-methods/export', [ShippingMethodExportController::class, 'export'])->name('shipping-methods.export');
         Route::get('/shipping-methods/create', App\Livewire\Admin\ShippingMethods\Form::class)->name('shipping-methods.create');
         Route::get('/shipping-methods/{id}/edit', App\Livewire\Admin\ShippingMethods\Form::class)->name('shipping-methods.edit');
     });

@@ -1,3 +1,31 @@
+{{-- A single root element wraps the whole file (Livewire requires exactly
+     one) — the page heading below and the card after it used to be two
+     top-level sibling divs, which meant only one of them was actually
+     inside Livewire's tracked root and the other silently stopped updating
+     after the first render. --}}
+<div>
+
+    {{-- Page heading is rendered here (layouts.admin's own is disabled via
+         hidePageHeading in Index::render()) rather than the normal
+         @stack('page-header-actions') flow (this page never used that stack —
+         Contacts is read-only, there was never a "New contact" button) because
+         the Export button below depends on reactive Livewire state
+         ($selectedIds), which a @push('page-header-actions') block would
+         never update again after the first wire:click round trip. --}}
+    <div class="mb-3 flex items-center justify-between gap-4 flex-wrap">
+        <div>
+            @include('partials.admin-breadcrumbs', ['routeName' => 'admin.contacts'])
+        </div>
+        @if (count($selectedIds) > 0)
+            <div class="flex items-center gap-2 shrink-0">
+                <flux:button variant="outline" size="sm" icon="arrow-down-tray"
+                    href="{{ route('admin.contacts.export', ['ids' => $selectedIds]) }}">
+                    Export ({{ count($selectedIds) }})
+                </flux:button>
+            </div>
+        @endif
+    </div>
+
 <div class="bg-white rounded-[5px] shadow-sm overflow-hidden">
 
     {{-- Filters --}}
@@ -49,12 +77,23 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($contacts as $contact)
-                        <tr class="hover:bg-indigo-50/30 transition-colors">
+                        <tr class="hover:bg-indigo-50/30 transition-colors cursor-default {{ in_array($contact->id, $selectedIds, true) ? 'bg-indigo-50 ring-1 ring-inset ring-indigo-300' : '' }}"
+                            @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $contact->id }}) }">
 
-                            {{-- Expand toggle (small screens only, where columns are hidden) --}}
-                            <td class="px-2 py-2 text-center">
-                                <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingMessageId === $contact->id"
-                                    wire:click="{{ $viewingMessageId === $contact->id ? 'closeMessage' : 'viewMessage('.$contact->id.')' }}" />
+                            {{-- Select + expand toggle (the latter, small screens only, where columns are
+                                 hidden). The checkbox only appears once a bulk selection is already active
+                                 (started via Ctrl/Cmd+click on a row) — it stays hidden otherwise so the
+                                 row looks normal. --}}
+                            <td class="px-1 py-2 text-center">
+                                <div class="flex items-center justify-center gap-1" @click.stop>
+                                    @if (count($selectedIds) > 0)
+                                        <input type="checkbox" wire:click="toggleSelect({{ $contact->id }})"
+                                            @checked(in_array($contact->id, $selectedIds, true))
+                                            class="size-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
+                                    @endif
+                                    <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingMessageId === $contact->id"
+                                        wire:click="{{ $viewingMessageId === $contact->id ? 'closeMessage' : 'viewMessage('.$contact->id.')' }}" />
+                                </div>
                             </td>
 
                             {{-- ID --}}
@@ -130,5 +169,7 @@
     <div class="px-6 py-3">
         {{ $contacts->links() }}
     </div>
+
+</div>
 
 </div>

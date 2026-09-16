@@ -1,3 +1,34 @@
+{{-- A single root element wraps the whole file (Livewire requires exactly
+     one) — the page heading below and the card after it used to be two
+     top-level sibling divs, which meant only one of them was actually
+     inside Livewire's tracked root and the other silently stopped updating
+     after the first render. --}}
+<div>
+
+    {{-- Page heading is rendered here (layouts.admin's own is disabled via
+         hidePageHeading in Index::render()) rather than the normal
+         @stack('page-header-actions') flow (this page never used that stack —
+         subscribers are only ever added by public site signup, never from the
+         admin) because the bulk-action buttons below depend on reactive
+         Livewire state ($selectedIds), which a @push('page-header-actions')
+         block would never update again after the first wire:click round trip. --}}
+    <div class="mb-3 flex items-center justify-between gap-4 flex-wrap">
+        <div>
+            @include('partials.admin-breadcrumbs', ['routeName' => 'admin.subscribers'])
+        </div>
+        @if (count($selectedIds) > 0)
+            <div class="flex items-center gap-2 shrink-0">
+                <flux:button variant="danger" size="sm" icon="trash" wire:click="confirmBulkDelete">
+                    Delete ({{ count($selectedIds) }})
+                </flux:button>
+                <flux:button variant="outline" size="sm" icon="arrow-down-tray"
+                    href="{{ route('admin.subscribers.export', ['ids' => $selectedIds]) }}">
+                    Export ({{ count($selectedIds) }})
+                </flux:button>
+            </div>
+        @endif
+    </div>
+
 <div class="bg-white rounded-[5px] shadow-sm overflow-hidden">
 
     {{-- Filters --}}
@@ -45,12 +76,23 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($subscribers as $subscriber)
-                        <tr class="group/row hover:bg-indigo-50/30 transition-colors">
+                        <tr class="group/row hover:bg-indigo-50/30 transition-colors cursor-default {{ in_array($subscriber->id, $selectedIds, true) ? 'bg-indigo-50 ring-1 ring-inset ring-indigo-300' : '' }}"
+                            @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $subscriber->id }}) }">
 
-                            {{-- Expand toggle (small screens only, where columns are hidden) --}}
-                            <td class="px-2 py-2 text-center">
-                                <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $subscriber->id"
-                                    wire:click="{{ $viewingId === $subscriber->id ? 'closeDetails' : 'viewDetails('.$subscriber->id.')' }}" />
+                            {{-- Select + expand toggle (the latter, small screens only, where columns are
+                                 hidden). The checkbox only appears once a bulk selection is already active
+                                 (started via Ctrl/Cmd+click on a row) — it stays hidden otherwise so the
+                                 row looks normal. --}}
+                            <td class="px-1 py-2 text-center">
+                                <div class="flex items-center justify-center gap-1" @click.stop>
+                                    @if (count($selectedIds) > 0)
+                                        <input type="checkbox" wire:click="toggleSelect({{ $subscriber->id }})"
+                                            @checked(in_array($subscriber->id, $selectedIds, true))
+                                            class="size-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
+                                    @endif
+                                    <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $subscriber->id"
+                                        wire:click="{{ $viewingId === $subscriber->id ? 'closeDetails' : 'viewDetails('.$subscriber->id.')' }}" />
+                                </div>
                             </td>
 
                             {{-- Id --}}
@@ -83,10 +125,11 @@
                                 <span class="text-sm text-zinc-500 whitespace-nowrap">{{ $subscriber->created_at->toDisplay() }}</span>
                             </td>
 
-                            {{-- Actions --}}
+                            {{-- Actions — disabled while a bulk selection is active, so the
+                                 per-row actions can't conflict with the bulk toolbar above. --}}
                             <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-50/30 border-l border-zinc-100 px-4 py-2">
                                 <x-admin-row-actions :actions="[
-                                    ['wireClick' => 'confirmDelete(' . $subscriber->id . ')', 'icon' => 'trash', 'label' => 'Delete', 'color' => 'rose-500'],
+                                    ['wireClick' => 'confirmDelete(' . $subscriber->id . ')', 'icon' => 'trash', 'label' => 'Delete', 'color' => 'rose-500', 'disabled' => count($selectedIds) > 0],
                                 ]" />
                             </td>
 
@@ -145,5 +188,35 @@
             </div>
         </div>
     </flux:modal>
+
+    {{-- Bulk Delete Modal --}}
+    <flux:modal name="subscriber-bulk-delete" class="md:w-80"
+        x-on:open-modal.window="if ($event.detail.name === 'subscriber-bulk-delete') $flux.modal('subscriber-bulk-delete').show()"
+        x-on:close-modal.window="if ($event.detail.name === 'subscriber-bulk-delete') $flux.modal('subscriber-bulk-delete').close()">
+        <div class="space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                    </svg>
+                </div>
+                <flux:heading>Delete {{ count($selectedIds) }} {{ \Illuminate\Support\Str::plural('subscriber', count($selectedIds)) }}?</flux:heading>
+            </div>
+            <flux:text class="text-sm text-zinc-500">This action cannot be undone.</flux:text>
+            <div class="flex gap-2 pt-1">
+                <button wire:click="bulkDelete"
+                    class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">
+                    Delete
+                </button>
+                <flux:modal.close>
+                    <flux:button size="sm" variant="ghost">Cancel</flux:button>
+                </flux:modal.close>
+            </div>
+        </div>
+    </flux:modal>
+
+</div>
 
 </div>

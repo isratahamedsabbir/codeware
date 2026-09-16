@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\ProductBrands;
 use App\Concerns\HasPerPage;
 use App\Models\ProductBrand;
 use App\Support\AdminActivity;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -15,6 +16,9 @@ class Index extends Component
     public string $search = '';
 
     public ?int $deletingId = null;
+
+    /** @var array<int, int> */
+    public array $selectedIds = [];
 
     public function updatedSearch(): void
     {
@@ -50,6 +54,46 @@ class Index extends Component
         $this->dispatch('close-modal', name: 'product-brand-delete');
     }
 
+    /**
+     * Ctrl/Cmd+click row selection or the row's own checkbox (see the view) —
+     * toggles one brand id in/out of the bulk-selection.
+     */
+    public function toggleSelect(int $id): void
+    {
+        if (in_array($id, $this->selectedIds, true)) {
+            $this->selectedIds = array_values(array_diff($this->selectedIds, [$id]));
+
+            return;
+        }
+
+        $this->selectedIds[] = $id;
+    }
+
+    public function confirmBulkDelete(): void
+    {
+        if ($this->selectedIds === []) {
+            return;
+        }
+
+        $this->dispatch('open-modal', name: 'product-brand-bulk-delete');
+    }
+
+    public function bulkDelete(): void
+    {
+        $brands = ProductBrand::whereIn('id', $this->selectedIds)->get();
+
+        foreach ($brands as $brand) {
+            AdminActivity::log('deleted', "Product Brand: {$brand->name}");
+            $brand->delete();
+        }
+
+        $count = $brands->count();
+        $this->selectedIds = [];
+
+        $this->dispatch('notify', message: "{$count} ".Str::plural('brand', $count).' deleted successfully');
+        $this->dispatch('close-modal', name: 'product-brand-bulk-delete');
+    }
+
     public function render()
     {
         return view('livewire.admin.product-brands.index', [
@@ -59,6 +103,6 @@ class Index extends Component
                 ->orderBy('sort_order')
                 ->orderBy('name')
                 ->paginate($this->perPage),
-        ])->layout('layouts.admin', ['title' => 'Product Brands']);
+        ])->layout('layouts.admin', ['title' => 'Product Brands', 'hidePageHeading' => true]);
     }
 }

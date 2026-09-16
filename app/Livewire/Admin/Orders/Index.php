@@ -21,6 +21,26 @@ class Index extends Component
 
     public ?int $viewingId = null;
 
+    /** @var array<int, int> */
+    public array $selectedIds = [];
+
+    /**
+     * Ctrl/Cmd+click row selection or the row's own checkbox (see the view) —
+     * toggles one order id in/out of the bulk-selection. Orders is
+     * deliberately export-only (no bulk delete): selecting rows only ever
+     * feeds the "Export" button in the bulk toolbar.
+     */
+    public function toggleSelect(int $id): void
+    {
+        if (in_array($id, $this->selectedIds, true)) {
+            $this->selectedIds = array_values(array_diff($this->selectedIds, [$id]));
+
+            return;
+        }
+
+        $this->selectedIds[] = $id;
+    }
+
     public function viewDetails(int $id): void
     {
         $this->viewingId = $id;
@@ -211,6 +231,6 @@ class Index extends Component
                 ->withCount('items')
                 ->latest()
                 ->paginate($this->perPage),
-        ])->layout('layouts.admin', ['title' => 'Orders']);
+        ])->layout('layouts.admin', ['title' => 'Orders', 'hidePageHeading' => true]);
     }
 }
