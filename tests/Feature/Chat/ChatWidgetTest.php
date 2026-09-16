@@ -10,9 +10,11 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
+use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    Role::findOrCreate('admin', 'web');
+    $this->admin = User::factory()->admin()->create();
 });
 
 it('requires a name and a valid email before sending an otp', function () {
@@ -85,7 +87,7 @@ it('verifying the correct otp creates a real account and starts a conversation w
     $guest = User::where('email', 'jane@example.com')->sole();
 
     expect($guest->name)->toBe('Jane Doe')
-        ->and((bool) $guest->is_admin)->toBeFalse()
+        ->and($guest->hasRole('admin'))->toBeFalse()
         ->and($guest->email_verified_at)->not->toBeNull();
 
     $conversation = Conversation::between($guest, $this->admin);
@@ -94,7 +96,7 @@ it('verifying the correct otp creates a real account and starts a conversation w
 });
 
 it('does not let chat support start when no admin account exists', function () {
-    User::where('is_admin', true)->delete();
+    User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))->delete();
     Mail::fake();
 
     $component = Livewire::test(ChatWidget::class)
@@ -112,7 +114,7 @@ it('does not let chat support start when no admin account exists', function () {
 });
 
 it('resumes a verified conversation from an encrypted token without re-verifying', function () {
-    $guest = User::factory()->create(['is_admin' => false]);
+    $guest = User::factory()->create();
     $conversation = Conversation::between($guest, $this->admin);
 
     $token = encrypt(['conversation_id' => $conversation->id, 'user_id' => $guest->id]);
@@ -140,7 +142,7 @@ it('ignores a resume token that is invalid, tampered, or points at an admin acco
 it('sends a message as the guest and broadcasts it to the admin', function () {
     Event::fake([MessageSent::class]);
 
-    $guest = User::factory()->create(['is_admin' => false]);
+    $guest = User::factory()->create();
     $conversation = Conversation::between($guest, $this->admin);
     $token = encrypt(['conversation_id' => $conversation->id, 'user_id' => $guest->id]);
 

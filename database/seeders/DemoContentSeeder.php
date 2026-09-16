@@ -27,7 +27,7 @@ class DemoContentSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->authorId = User::where('is_admin', true)->first()?->id ?? User::first()->id;
+        $this->authorId = User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))->first()?->id ?? User::first()->id;
 
         $productCategories = ProductCategory::factory()->count(4)->create();
         $productCategories->each(fn (ProductCategory $category) => $this->createPage(

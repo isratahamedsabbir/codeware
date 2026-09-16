@@ -29,9 +29,6 @@ class Form extends Component
     #[Validate('nullable|string|min:8')]
     public string $password = '';
 
-    #[Validate('boolean')]
-    public bool $isAdmin = false;
-
     public array $selectedRoles = [];
 
     /**
@@ -67,7 +64,6 @@ class Form extends Component
             $this->userId = $id;
             $this->name = $user->name;
             $this->email = $user->email;
-            $this->isAdmin = (bool) $user->is_admin;
             $this->selectedRoles = $user->roles->pluck('name')->toArray();
             $this->vendor_ids = $user->vendors->pluck('id')->all();
             $this->signature = $user->signature;
@@ -131,7 +127,6 @@ class Form extends Component
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->userId)],
             'password' => ['nullable', 'string', 'min:8'],
-            'isAdmin' => ['boolean'],
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'vendor_ids' => ['array'],
             'vendor_ids.*' => ['integer', 'exists:product_vendors,id'],
@@ -145,7 +140,6 @@ class Form extends Component
 
         $user->name = $data['name'];
         $user->email = $data['email'];
-        $user->is_admin = $this->isAdmin;
         $user->signature = $this->persistSignature($user);
         $user->photo = $this->persistPhoto();
 

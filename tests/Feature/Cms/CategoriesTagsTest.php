@@ -4,10 +4,12 @@ use App\Livewire\Admin\PostCategories\Form as PostCategoriesForm;
 use App\Livewire\Admin\PostCategories\Index as PostCategoriesIndex;
 use App\Models\PostCategory;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $this->admin = User::factory()->admin()->create();
     $this->actingAs($this->admin);
 });
 

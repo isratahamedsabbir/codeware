@@ -22,11 +22,11 @@
             <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
                 {{ __('Settings') }}
             </flux:menu.item>
-            @if(auth()->user()?->is_admin)
+            @can('access-admin')
                 <flux:menu.item href="{{ route('admin.dashboard') }}" icon="layout-grid" target="_blank">
                     {{ __('Admin Panel') }}
                 </flux:menu.item>
-            @endif
+            @endcan
             <form method="POST" action="{{ route('logout') }}" class="w-full">
                 @csrf
                 <flux:menu.item

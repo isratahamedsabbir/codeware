@@ -4,9 +4,11 @@ use App\Models\Feature;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $this->admin = User::factory()->admin()->create();
     $this->actingAs($this->admin);
 });
 

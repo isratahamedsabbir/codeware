@@ -1,9 +1,10 @@
 <?php
 
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 
 test('non-admin authenticated users are redirected into the admin panel and denied access', function () {
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create();
 
     $response = $this->actingAs($user)->get(route('dashboard'));
     $response->assertRedirect('/admin');
@@ -12,7 +13,8 @@ test('non-admin authenticated users are redirected into the admin panel and deni
 });
 
 test('admin users are redirected from dashboard straight into the admin panel', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
 
     $response = $this->actingAs($admin)->get(route('dashboard'));
     $response->assertRedirect('/admin');
@@ -21,7 +23,8 @@ test('admin users are redirected from dashboard straight into the admin panel', 
 });
 
 test('admins see the back to site link in the admin layout', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
 
     $response = $this->actingAs($admin)->get('/admin/posts');
 

@@ -5,10 +5,12 @@ use App\Models\Menu;
 use App\Models\MenuItem;
 use App\Models\User;
 use Database\Seeders\AdminMenuSeeder;
+use Database\Seeders\RolePermissionSeeder;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $this->admin = User::factory()->admin()->create();
     $this->actingAs($this->admin);
 });
 
@@ -255,7 +257,7 @@ it('reflects a short menu toggle in the cache immediately', function () {
 });
 
 it('shows the short menu dropdown in the admin top bar only when items are flagged', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
     $this->actingAs($admin);
 
     $this->get(route('admin.dashboard'))->assertOk()->assertDontSee(__('Short Menu'));

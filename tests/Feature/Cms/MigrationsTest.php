@@ -33,7 +33,3 @@ it('pages table has required columns', function () {
 it('settings table has is_public column', function () {
     expect(Schema::hasColumn('settings', 'is_public'))->toBeTrue();
 });
-
-it('users table has is_admin column', function () {
-    expect(Schema::hasColumn('users', 'is_admin'))->toBeTrue();
-});

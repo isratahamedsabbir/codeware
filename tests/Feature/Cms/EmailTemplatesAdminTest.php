@@ -3,26 +3,32 @@
 use App\Livewire\Admin\EmailTemplates\Index;
 use App\Mail\TemplateDrivenMail;
 use App\Models\EmailTemplate;
+use App\Models\Setting;
 use App\Models\User;
 use App\Services\EmailTemplateRenderer;
 use App\Services\EmailTemplateService;
 use App\Support\EnvFile;
 use Database\Seeders\EmailTemplatesSeeder;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
+
+beforeEach(function () {
+    $this->seed(RolePermissionSeeder::class);
+});
 
 it('redirects guests away from email templates admin page', function () {
     $this->get('/admin/email-templates')->assertRedirect('/login');
 });
 
 it('forbids non-admin users from email templates admin page', function () {
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create();
     $this->actingAs($user)->get('/admin/email-templates')->assertForbidden();
 });
 
 it('allows admins to access email templates admin page', function () {
     EmailTemplate::factory()->create();
-    $user = User::factory()->create(['is_admin' => true]);
+    $user = User::factory()->admin()->create();
 
     $this->actingAs($user)
         ->get('/admin/email-templates')
@@ -31,7 +37,7 @@ it('allows admins to access email templates admin page', function () {
 });
 
 it('renders email templates index and auto-selects first template', function () {
-    $user = User::factory()->create(['is_admin' => true]);
+    $user = User::factory()->admin()->create();
     $template = EmailTemplate::factory()->create(['name' => 'Welcome Email']);
 
     Livewire::actingAs($user)
@@ -41,7 +47,7 @@ it('renders email templates index and auto-selects first template', function () 
 });
 
 it('loads template details when selecting a template', function () {
-    $user = User::factory()->create(['is_admin' => true]);
+    $user = User::factory()->admin()->create();
     $template = EmailTemplate::factory()->create([
         'name' => 'Order Confirmation',
         'subject_template' => 'Order #{{order_id}} confirmed',
@@ -60,7 +66,7 @@ it('loads template details when selecting a template', function () {
 });
 
 it('updates email template content through livewire form', function () {
-    $user = User::factory()->create(['is_admin' => true]);
+    $user = User::factory()->admin()->create();
     $template = EmailTemplate::factory()->create([
         'key' => 'order_customer_confirmation',
         'name' => 'Order Confirmation',
@@ -90,7 +96,7 @@ it('updates email template content through livewire form', function () {
 });
 
 it('generates a preview from template and variables', function () {
-    $user = User::factory()->create(['is_admin' => true]);
+    $user = User::factory()->admin()->create();
     EmailTemplate::factory()->create([
         'key' => 'test_preview',
         'subject_template' => 'Hi {{name}}',
@@ -201,7 +207,7 @@ describe('mail settings', function () {
 
         EnvFile::$pathOverride = $this->envPath;
 
-        $this->admin = User::factory()->create(['is_admin' => true]);
+        $this->admin = User::factory()->admin()->create();
     });
 
     afterEach(function () {
@@ -262,7 +268,7 @@ describe('mail settings', function () {
 
 describe('send test email', function () {
     beforeEach(function () {
-        $this->admin = User::factory()->create(['is_admin' => true]);
+        $this->admin = User::factory()->admin()->create();
         EmailTemplate::factory()->create([
             'key' => Index::TEST_EMAIL_TEMPLATE_KEY,
             'subject_template' => 'Test Email from {{site_name}}',
@@ -311,7 +317,7 @@ describe('send test email', function () {
 });
 
 it('renders the template-driven email view', function () {
-    \App\Models\Setting::set('contact_email', 'support@example.com');
+    Setting::set('contact_email', 'support@example.com');
 
     $html = view('emails.template-driven', [
         'subjectLine' => 'Order #10 confirmed',

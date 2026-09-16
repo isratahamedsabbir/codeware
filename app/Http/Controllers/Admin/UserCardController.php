@@ -54,10 +54,6 @@ class UserCardController extends Controller
 
     private function tierLabel(User $user): string
     {
-        if ($user->is_admin) {
-            return 'Super Admin';
-        }
-
         $role = $user->roles->pluck('name')->first();
 
         return $role ? ucfirst($role) : 'User';

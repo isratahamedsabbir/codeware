@@ -18,7 +18,7 @@ use Throwable;
 /**
  * Public-facing chat bubble (bottom-right, all frontend themes). A visitor gives
  * their name + email, gets a 6-digit code by email, and once verified a real
- * `users` account is created for them (is_admin stays false) so the conversation
+ * `users` account is created for them (no admin role) so the conversation
  * rides on the exact same Conversation/ChatMessage/MessageSent machinery the
  * internal admin Chat module already uses — the admin sees replies instantly in
  * their own Chat inbox, no separate guest-chat system needed.
@@ -108,7 +108,7 @@ class ChatWidget extends Component
             return;
         }
 
-        $admin = User::where('is_admin', true)->oldest()->first();
+        $admin = User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))->oldest()->first();
 
         if (! $admin) {
             $this->addError('otp', __('Chat support is not available right now.'));
@@ -151,7 +151,7 @@ class ChatWidget extends Component
         $conversation = Conversation::find($data['conversation_id'] ?? null);
         $guest = User::find($data['user_id'] ?? null);
 
-        if (! $conversation || ! $guest || $guest->is_admin || ! $conversation->isParticipant($guest)) {
+        if (! $conversation || ! $guest || $guest->hasRole('admin') || ! $conversation->isParticipant($guest)) {
             return;
         }
 

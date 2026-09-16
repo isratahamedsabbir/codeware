@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\URL;
 
 // Customer accounts are API-only — register/login/logout/password-reset/email
 // verification all live under /api/v1/auth, backed by the same `users` table
-// the admin/Fortify web login uses (is_admin stays false for these accounts).
+// the admin/Fortify web login uses (no admin/staff role for these accounts).
 
 it('registers a new customer, issues a token, and sends a verification email', function () {
     Notification::fake();
@@ -24,7 +24,6 @@ it('registers a new customer, issues a token, and sends a verification email', f
         ->assertJsonStructure(['data' => ['token', 'user' => ['id', 'name', 'email']]]);
 
     $user = User::where('email', 'jane@example.com')->sole();
-    expect((bool) $user->is_admin)->toBeFalse();
     expect($user->hasRole('customer'))->toBeTrue();
 
     Notification::assertSentTo($user, VerifyEmail::class);
@@ -172,22 +171,10 @@ it('resends the verification email for an authenticated but unverified customer'
 
 // --- Admin can't be bypassed through this API ---
 
-it('ignores an is_admin field sent to registration and never grants admin', function () {
-    $this->postJson('/api/v1/auth/register', [
-        'name' => 'Sneaky Customer',
-        'email' => 'sneaky@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
-        'is_admin' => true,
-    ])->assertCreated();
-
-    $user = User::where('email', 'sneaky@example.com')->sole();
-    expect((bool) $user->is_admin)->toBeFalse();
-});
-
 it('rejects a customer account from every admin API endpoint', function () {
     $user = User::factory()->create(['password' => 'secret123']);
-    expect((bool) $user->is_admin)->toBeFalse();
+    expect($user->hasRole('admin'))->toBeFalse();
+    expect($user->hasRole('staff'))->toBeFalse();
 
     $token = $this->postJson('/api/v1/auth/login', [
         'email' => $user->email,

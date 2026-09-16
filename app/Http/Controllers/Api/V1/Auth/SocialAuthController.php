@@ -13,7 +13,7 @@ use Throwable;
 
 /**
  * Google/Facebook login for customer accounts (same `users` table as
- * Login/RegisterController — is_admin stays false here). Stateless because the
+ * Login/RegisterController — no admin role here). Stateless because the
  * Next.js frontend and this API sit on separate origins, so there's no shared
  * session to round-trip the OAuth state through; the provider's own `state`
  * param (which Socialite's stateless mode still generates and verifies via a

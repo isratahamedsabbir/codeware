@@ -82,7 +82,8 @@ it('gives the barcode explicit width/height attributes, not just CSS', function 
 });
 
 it('lets an admin download a product label as a pdf', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
     $product = Product::factory()->create(['sku' => 'MOUSE-1']);
 
     $response = $this->actingAs($admin)->get(route('admin.products.label', $product->id));
@@ -92,7 +93,8 @@ it('lets an admin download a product label as a pdf', function () {
 });
 
 it('falls back to a generated code when the product has no sku', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
     $product = Product::factory()->create(['sku' => null]);
 
     $response = $this->actingAs($admin)->get(route('admin.products.label', $product->id));
@@ -102,7 +104,8 @@ it('falls back to a generated code when the product has no sku', function () {
 });
 
 it('can print a label for a soft-deleted product', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
     $product = Product::factory()->create();
     $product->delete();
 
@@ -113,7 +116,7 @@ it('can print a label for a soft-deleted product', function () {
 
 it('lets staff (who already manage products) print a label too', function () {
     $this->seed(RolePermissionSeeder::class);
-    $staff = User::factory()->create(['is_admin' => false]);
+    $staff = User::factory()->create();
     $staff->assignRole('staff');
     $product = Product::factory()->create();
 
@@ -123,7 +126,7 @@ it('lets staff (who already manage products) print a label too', function () {
 });
 
 it('rejects a user with no admin access at all', function () {
-    $customer = User::factory()->create(['is_admin' => false]);
+    $customer = User::factory()->create();
     $product = Product::factory()->create();
 
     $this->actingAs($customer)

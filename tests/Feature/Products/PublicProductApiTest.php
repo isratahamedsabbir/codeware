@@ -8,9 +8,11 @@ use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use App\Models\ProductVendor;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $this->admin = User::factory()->admin()->create();
 });
 
 it('returns product categories ordered by sort_order', function () {

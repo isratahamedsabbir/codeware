@@ -6,6 +6,7 @@ use App\Models\Page;
 use App\Models\Post;
 use App\Models\Product;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\Sanctum;
 use Livewire\Livewire;
@@ -29,7 +30,8 @@ it('no longer has seo columns on products or posts', function () {
 // --- Livewire admin forms load and save SEO on the paired page ---
 
 it('loads seo fields from the paired page on the product admin form', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
     $this->actingAs($admin);
 
     $product = Product::factory()->create();
@@ -49,7 +51,8 @@ it('loads seo fields from the paired page on the product admin form', function (
 });
 
 it('saves edited seo fields from the product admin form onto the paired page', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
     $this->actingAs($admin);
 
     $product = Product::factory()->create();
@@ -68,7 +71,8 @@ it('saves edited seo fields from the product admin form onto the paired page', f
 });
 
 it('saving a product leaves its page\'s seo fields untouched when the admin didn\'t edit them', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
     $this->actingAs($admin);
 
     $product = Product::factory()->create();
@@ -87,7 +91,8 @@ it('saving a product leaves its page\'s seo fields untouched when the admin didn
 });
 
 it('loads seo fields from the paired page on the post admin form', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
     $this->actingAs($admin);
 
     $post = Post::factory()->create();
@@ -107,7 +112,8 @@ it('loads seo fields from the paired page on the post admin form', function () {
 });
 
 it('saves edited seo fields from the post admin form onto the paired page', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
     $this->actingAs($admin);
 
     $post = Post::factory()->create();
@@ -126,7 +132,8 @@ it('saves edited seo fields from the post admin form onto the paired page', func
 });
 
 it('saving a post leaves its page\'s seo fields untouched when the admin didn\'t edit them', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
     $this->actingAs($admin);
 
     $post = Post::factory()->create();
@@ -185,7 +192,8 @@ it('public post API reads SEO fields from the page', function () {
 // --- Admin REST API ---
 
 it('admin product API syncs seo_title/seo_description/og_image to a page on create', function () {
-    Sanctum::actingAs(User::factory()->create(['is_admin' => true]));
+    $this->seed(RolePermissionSeeder::class);
+    Sanctum::actingAs(User::factory()->admin()->create());
 
     $response = $this->postJson('/api/v1/admin/products', [
         'name' => ['en' => 'API SEO Product', 'bn' => ''],
@@ -202,7 +210,8 @@ it('admin product API syncs seo_title/seo_description/og_image to a page on crea
 });
 
 it('admin product API syncs seo fields to the existing page on update, keeping the page title in sync with the product', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
     Sanctum::actingAs($admin);
 
     $product = Product::factory()->create();
@@ -224,7 +233,8 @@ it('admin product API syncs seo fields to the existing page on update, keeping t
 });
 
 it('admin post API syncs seo fields to a page on update', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
     Sanctum::actingAs($admin);
 
     $post = Post::factory()->create();
@@ -240,7 +250,8 @@ it('admin post API syncs seo fields to a page on update', function () {
 });
 
 it('admin post API show returns SEO fields from the page', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
     Sanctum::actingAs($admin);
 
     $post = Post::factory()->create();

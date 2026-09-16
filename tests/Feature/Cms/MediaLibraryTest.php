@@ -4,12 +4,14 @@ use App\Livewire\Admin\MediaLibrary\Index as MediaIndex;
 use App\Livewire\Admin\MediaLibrary\PickerModal;
 use App\Models\MediaLibrary;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 beforeEach(function () {
     Storage::fake('public');
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $this->admin = User::factory()->admin()->create();
     $this->actingAs($this->admin);
 });
 

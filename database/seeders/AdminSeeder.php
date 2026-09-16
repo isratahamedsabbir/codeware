@@ -10,13 +10,12 @@ use Spatie\Permission\Models\Role;
 class AdminSeeder extends Seeder
 {
     /**
-     * Seed a demo user for each of the three admin tiers: Super Admin
-     * (is_admin=true, an unconditional bypass everywhere), Admin (the
-     * 'admin' Spatie role, which has every permission), and Staff (the
-     * 'staff' role, content-only — see RolePermissionSeeder). Also seeds a
-     * demo Vendor Portal account — the 'vendor' role alone doesn't grant
-     * portal access, it also needs an assigned vendor, which VendorSeeder
-     * handles (see access-vendor-portal gate).
+     * Seed a demo user for each of the two admin tiers: Admin (the 'admin'
+     * Spatie role, which has every permission) and Staff (the 'staff' role,
+     * content-only — see RolePermissionSeeder). Also seeds a demo Vendor
+     * Portal account — the 'vendor' role alone doesn't grant portal access,
+     * it also needs an assigned vendor, which VendorSeeder handles (see
+     * access-vendor-portal gate).
      */
     public function run(): void
     {
@@ -27,7 +26,6 @@ class AdminSeeder extends Seeder
                 'email' => 'admin@admin.com',
                 'password' => '12345678',
                 'email_verified_at' => now(),
-                'is_admin' => true,
             ]
         );
 
@@ -35,7 +33,7 @@ class AdminSeeder extends Seeder
 
         // RolePermissionSeeder runs before this one (assignRole('admin') above
         // needs the role to already exist), so when those rows were created,
-        // no is_admin=true user existed yet for the created_by fallback in
+        // no admin-role user existed yet for the created_by fallback in
         // AppServiceProvider::configureCreatorTracking() to find. Backfill
         // them now that the admin does.
         Role::whereNull('created_by')->update(['created_by' => $admin->id]);
@@ -48,7 +46,6 @@ class AdminSeeder extends Seeder
                 'email' => 'staff@admin.com',
                 'password' => '12345678',
                 'email_verified_at' => now(),
-                'is_admin' => false,
             ]
         );
 
@@ -61,7 +58,6 @@ class AdminSeeder extends Seeder
                 'email' => 'vendor@admin.com',
                 'password' => '12345678',
                 'email_verified_at' => now(),
-                'is_admin' => false,
             ]
         );
 

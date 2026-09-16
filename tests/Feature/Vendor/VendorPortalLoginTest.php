@@ -17,7 +17,7 @@ it('serves its own login page on the vendor host instead of the shared admin one
 });
 
 it('logs a valid vendor in and lands them on the vendor dashboard', function () {
-    $user = User::factory()->create(['is_admin' => false, 'password' => 'correct-password']);
+    $user = User::factory()->create(['password' => 'correct-password']);
     $user->assignRole('vendor');
     ProductVendor::factory()->create()->users()->attach($user);
 
@@ -32,7 +32,7 @@ it('logs a valid vendor in and lands them on the vendor dashboard', function () 
 });
 
 it('rejects a correct password for a user who is not a valid vendor, and does not log them in', function () {
-    $admin = User::factory()->create(['is_admin' => true, 'password' => 'correct-password']);
+    $admin = User::factory()->admin()->create(['password' => 'correct-password']);
 
     Livewire::test(Login::class)
         ->set('email', $admin->email)
@@ -44,7 +44,7 @@ it('rejects a correct password for a user who is not a valid vendor, and does no
 });
 
 it('rejects a vendor whose role has been deactivated, with a message distinct from "not a vendor"', function () {
-    $user = User::factory()->create(['is_admin' => false, 'password' => 'correct-password']);
+    $user = User::factory()->create(['password' => 'correct-password']);
     $user->assignRole('vendor');
     ProductVendor::factory()->create()->users()->attach($user);
 
@@ -61,7 +61,7 @@ it('rejects a vendor whose role has been deactivated, with a message distinct fr
 });
 
 it('rejects a blocked vendor, even with the correct password', function () {
-    $user = User::factory()->create(['is_admin' => false, 'password' => 'correct-password', 'is_blocked' => true]);
+    $user = User::factory()->create(['password' => 'correct-password', 'is_blocked' => true]);
     $user->assignRole('vendor');
     ProductVendor::factory()->create()->users()->attach($user);
 
@@ -76,7 +76,7 @@ it('rejects a blocked vendor, even with the correct password', function () {
 });
 
 it('rejects a wrong password', function () {
-    $user = User::factory()->create(['is_admin' => false, 'password' => 'correct-password']);
+    $user = User::factory()->create(['password' => 'correct-password']);
     $user->assignRole('vendor');
     ProductVendor::factory()->create()->users()->attach($user);
 
@@ -90,7 +90,7 @@ it('rejects a wrong password', function () {
 });
 
 it('sends an already-authenticated valid vendor straight to the dashboard on mount', function () {
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create();
     $user->assignRole('vendor');
     ProductVendor::factory()->create()->users()->attach($user);
 
@@ -100,7 +100,7 @@ it('sends an already-authenticated valid vendor straight to the dashboard on mou
 });
 
 it('logs out a stale non-vendor session on mount instead of leaving it stuck on the login form', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
 
     Livewire::actingAs($admin)->test(Login::class);
 
@@ -108,7 +108,7 @@ it('logs out a stale non-vendor session on mount instead of leaving it stuck on 
 });
 
 it('logs a vendor out via its own logout route back to the vendor login', function () {
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create();
     $user->assignRole('vendor');
     ProductVendor::factory()->create()->users()->attach($user);
 

@@ -959,7 +959,7 @@
 				},
 				{
 					"name": "Users",
-					"description": "Stricter than the rest of the Admin folder: gated by `access-admin-system`, not just `access-admin` — a Staff-role account gets 403 here even though it can reach Products/Posts/etc. `{{admin_token}}` must belong to a Super Admin (is_admin=true) or an `admin`-role account.",
+					"description": "Stricter than the rest of the Admin folder: gated by `access-admin-system`, not just `access-admin` — a Staff-role account gets 403 here even though it can reach Products/Posts/etc. `{{admin_token}}` must belong to an `admin`-role account.",
 					"item": [
 						{
 							"name": "List Users",
@@ -1001,7 +1001,7 @@
 								"header": [{ "key": "Content-Type", "value": "application/json" }],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"New Staffer\",\n    \"email\": \"staffer@example.com\",\n    \"password\": \"password\",\n    \"password_confirmation\": \"password\",\n    \"is_admin\": false,\n    \"roles\": [\"staff\"]\n}",
+									"raw": "{\n    \"name\": \"New Staffer\",\n    \"email\": \"staffer@example.com\",\n    \"password\": \"password\",\n    \"password_confirmation\": \"password\",\n    \"roles\": [\"staff\"]\n}",
 									"options": { "raw": { "language": "json" } }
 								},
 								"url": "{{base_url}}/admin/users"
@@ -1014,7 +1014,7 @@
 								"header": [{ "key": "Content-Type", "value": "application/json" }],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"Renamed Staffer\",\n    \"email\": \"staffer@example.com\",\n    \"is_admin\": false,\n    \"roles\": [\"staff\"]\n}",
+									"raw": "{\n    \"name\": \"Renamed Staffer\",\n    \"email\": \"staffer@example.com\",\n    \"roles\": [\"staff\"]\n}",
 									"options": { "raw": { "language": "json" } }
 								},
 								"url": "{{base_url}}/admin/users/{{user_id}}"

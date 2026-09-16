@@ -74,7 +74,7 @@ class ChatController extends Controller
             ]);
         }
 
-        $admin = User::where('is_admin', true)->oldest()->first();
+        $admin = User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))->oldest()->first();
 
         if (! $admin) {
             return response()->json([
@@ -161,7 +161,7 @@ class ChatController extends Controller
         $conversation = Conversation::find($data['conversation_id'] ?? null);
         $guest = User::find($data['user_id'] ?? null);
 
-        if (! $token || ! $data || ! $conversation || ! $guest || $guest->is_admin || ! $conversation->isParticipant($guest)) {
+        if (! $token || ! $data || ! $conversation || ! $guest || $guest->hasRole('admin') || ! $conversation->isParticipant($guest)) {
             abort(response()->json(['message' => 'Unauthenticated.'], 401));
         }
 

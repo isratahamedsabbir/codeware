@@ -6,7 +6,8 @@ use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
-    $this->superAdmin = User::factory()->create(['is_admin' => true]);
+    Role::findOrCreate('admin', 'web');
+    $this->superAdmin = User::factory()->admin()->create();
 });
 
 it('rejects unauthenticated requests to the admin settings api', function () {
@@ -14,13 +15,13 @@ it('rejects unauthenticated requests to the admin settings api', function () {
 });
 
 it('rejects a plain customer account from the admin settings api', function () {
-    Sanctum::actingAs(User::factory()->create(['is_admin' => false]));
+    Sanctum::actingAs(User::factory()->create());
 
     $this->getJson('/api/v1/admin/settings')->assertForbidden();
 });
 
 it('rejects a staff-role user from the admin settings api, same as the admin users api', function () {
-    $staff = User::factory()->create(['is_admin' => false]);
+    $staff = User::factory()->create();
     $staff->assignRole(Role::findOrCreate('staff', 'web'));
     Sanctum::actingAs($staff);
 
@@ -30,7 +31,7 @@ it('rejects a staff-role user from the admin settings api, same as the admin use
 });
 
 it('allows an admin-role (non-super-admin) user into the admin settings api', function () {
-    $admin = User::factory()->create(['is_admin' => false]);
+    $admin = User::factory()->create();
     $admin->assignRole(Role::findOrCreate('admin', 'web'));
     Sanctum::actingAs($admin);
 

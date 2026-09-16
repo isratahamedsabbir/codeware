@@ -35,7 +35,7 @@ class UnauthorizedAccessNotifier
         }
 
         Notification::send(
-            User::where('is_admin', true)->get(),
+            User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))->get(),
             new AdminAlert(
                 'Forbidden access attempt',
                 sprintf(

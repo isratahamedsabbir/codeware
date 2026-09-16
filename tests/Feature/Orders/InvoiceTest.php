@@ -5,9 +5,14 @@ use App\Models\OrderItem;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\URL;
+use Spatie\Permission\Models\Role;
+
+beforeEach(function () {
+    Role::findOrCreate('admin', 'web');
+});
 
 it('lets an admin view the invoice page', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
     $order = Order::factory()->has(OrderItem::factory()->count(2), 'items')->create();
 
     $this->actingAs($admin)
@@ -18,7 +23,7 @@ it('lets an admin view the invoice page', function () {
 });
 
 it('lets an admin download the invoice as a pdf', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
     $order = Order::factory()->has(OrderItem::factory()->count(2), 'items')->create();
 
     $response = $this->actingAs($admin)->get(route('admin.orders.invoice.download', $order));
@@ -29,7 +34,7 @@ it('lets an admin download the invoice as a pdf', function () {
 
 it('blocks staff from admin invoice routes', function () {
     $this->seed(RolePermissionSeeder::class);
-    $staff = User::factory()->create(['is_admin' => false]);
+    $staff = User::factory()->create();
     $staff->assignRole('staff');
     $order = Order::factory()->create();
 
@@ -39,7 +44,7 @@ it('blocks staff from admin invoice routes', function () {
 });
 
 it('lets an admin view the print-only shipping address page', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
     $order = Order::factory()->create([
         'customer_name' => 'Jane Doe',
         'customer_phone' => '01712345678',
@@ -57,7 +62,7 @@ it('lets an admin view the print-only shipping address page', function () {
 });
 
 it('does not show order items or totals on the address page', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
     $order = Order::factory()->has(OrderItem::factory()->count(2)->state(['product_name' => 'Secret Widget']), 'items')->create();
 
     $this->actingAs($admin)
@@ -68,7 +73,7 @@ it('does not show order items or totals on the address page', function () {
 
 it('blocks staff from the admin address route', function () {
     $this->seed(RolePermissionSeeder::class);
-    $staff = User::factory()->create(['is_admin' => false]);
+    $staff = User::factory()->create();
     $staff->assignRole('staff');
     $order = Order::factory()->create();
 

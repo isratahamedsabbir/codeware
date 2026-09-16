@@ -57,4 +57,23 @@ class UserFactory extends Factory
             'two_factor_confirmed_at' => now(),
         ]);
     }
+
+    /**
+     * Assigns the 'admin' Spatie role (every permission — see
+     * RolePermissionSeeder) once the user is actually persisted, since
+     * assignRole() needs a real id for the role pivot.
+     */
+    public function admin(): static
+    {
+        return $this->afterCreating(fn (User $user) => $user->assignRole('admin'));
+    }
+
+    /**
+     * Assigns the 'staff' Spatie role (content-only permissions — see
+     * RolePermissionSeeder).
+     */
+    public function staff(): static
+    {
+        return $this->afterCreating(fn (User $user) => $user->assignRole('staff'));
+    }
 }

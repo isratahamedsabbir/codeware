@@ -11,10 +11,11 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['is_admin' => true]);
-    $this->actingAs($this->admin);
-
     app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+    Role::findOrCreate('admin', 'web');
+    $this->admin = User::factory()->admin()->create();
+    $this->actingAs($this->admin);
 
     $this->permission = Permission::findOrCreate('view reports', 'web');
     $this->role = Role::findOrCreate('manager', 'web');
@@ -98,8 +99,8 @@ it('cannot deactivate the admin role', function () {
     expect($adminRole->fresh()->status)->toBe('active');
 });
 
-it('ends the sessions of every non-super-admin holder when a role is deactivated', function () {
-    $holder = User::factory()->create(['is_admin' => false]);
+it('ends the sessions of every holder when a role is deactivated', function () {
+    $holder = User::factory()->create();
     $holder->assignRole($this->role);
     DB::table('sessions')->insert([
         'id' => 'session-holder', 'user_id' => $holder->id,
@@ -107,24 +108,15 @@ it('ends the sessions of every non-super-admin holder when a role is deactivated
         'payload' => 'x', 'last_activity' => time(),
     ]);
 
-    $superAdminHolder = User::factory()->create(['is_admin' => true]);
-    $superAdminHolder->assignRole($this->role);
-    DB::table('sessions')->insert([
-        'id' => 'session-super-admin', 'user_id' => $superAdminHolder->id,
-        'ip_address' => '127.0.0.1', 'user_agent' => 'test',
-        'payload' => 'x', 'last_activity' => time(),
-    ]);
-
     Livewire::test(RolesIndex::class)->call('toggleStatus', $this->role->id);
 
     expect(DB::table('sessions')->where('id', 'session-holder')->exists())->toBeFalse();
-    expect(DB::table('sessions')->where('id', 'session-super-admin')->exists())->toBeTrue();
 });
 
 it('does not touch sessions when a role is reactivated', function () {
     $this->role->update(['status' => 'inactive']);
 
-    $holder = User::factory()->create(['is_admin' => false]);
+    $holder = User::factory()->create();
     $holder->assignRole($this->role);
     DB::table('sessions')->insert([
         'id' => 'session-reactivate', 'user_id' => $holder->id,

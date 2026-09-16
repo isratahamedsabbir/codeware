@@ -6,7 +6,8 @@ use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
-    $this->superAdmin = User::factory()->create(['is_admin' => true]);
+    Role::findOrCreate('admin', 'web');
+    $this->admin = User::factory()->admin()->create();
 });
 
 it('rejects unauthenticated requests to admin users api', function () {
@@ -14,13 +15,13 @@ it('rejects unauthenticated requests to admin users api', function () {
 });
 
 it('rejects a plain customer account from the admin users api', function () {
-    Sanctum::actingAs(User::factory()->create(['is_admin' => false]));
+    Sanctum::actingAs(User::factory()->create());
 
     $this->getJson('/api/v1/admin/users')->assertForbidden();
 });
 
 it('rejects a staff-role user from the admin users api, unlike the general admin endpoints', function () {
-    $staff = User::factory()->create(['is_admin' => false]);
+    $staff = User::factory()->create();
     $staff->assignRole(Role::findOrCreate('staff', 'web'));
     Sanctum::actingAs($staff);
 
@@ -34,27 +35,19 @@ it('rejects a staff-role user from the admin users api, unlike the general admin
         ->assertForbidden();
 });
 
-it('allows an admin-role (non-super-admin) user into the admin users api', function () {
-    $admin = User::factory()->create(['is_admin' => false]);
-    $admin->assignRole(Role::findOrCreate('admin', 'web'));
-    Sanctum::actingAs($admin);
-
-    $this->getJson('/api/v1/admin/users')->assertOk();
-});
-
 it('lists users with pagination and role info', function () {
-    Sanctum::actingAs($this->superAdmin);
+    Sanctum::actingAs($this->admin);
     User::factory()->count(3)->create();
 
     $this->getJson('/api/v1/admin/users?per_page=2')
         ->assertOk()
-        ->assertJsonStructure(['data' => [['id', 'name', 'email', 'is_admin', 'roles']], 'meta'])
+        ->assertJsonStructure(['data' => [['id', 'name', 'email', 'roles']], 'meta'])
         ->assertJsonPath('meta.total', 4)
         ->assertJsonPath('meta.per_page', 2);
 });
 
 it('creates a user with roles', function () {
-    Sanctum::actingAs($this->superAdmin);
+    Sanctum::actingAs($this->admin);
     Role::findOrCreate('staff', 'web');
 
     $this->postJson('/api/v1/admin/users', [
@@ -65,15 +58,14 @@ it('creates a user with roles', function () {
         'roles' => ['staff'],
     ])->assertCreated()
         ->assertJsonPath('data.email', 'staffer@example.com')
-        ->assertJsonPath('data.roles.0', 'staff')
-        ->assertJsonPath('data.is_admin', false);
+        ->assertJsonPath('data.roles.0', 'staff');
 
     $user = User::where('email', 'staffer@example.com')->sole();
     expect(Hash::check('password', $user->password))->toBeTrue();
 });
 
 it('rejects creating a user with a role that does not exist', function () {
-    Sanctum::actingAs($this->superAdmin);
+    Sanctum::actingAs($this->admin);
 
     $this->postJson('/api/v1/admin/users', [
         'name' => 'Bad Role',
@@ -84,28 +76,26 @@ it('rejects creating a user with a role that does not exist', function () {
     ])->assertUnprocessable()->assertJsonValidationErrors(['roles.0']);
 });
 
-it('updates a user\'s name, email, is_admin, and roles', function () {
-    Sanctum::actingAs($this->superAdmin);
+it('updates a user\'s name, email, and roles', function () {
+    Sanctum::actingAs($this->admin);
     Role::findOrCreate('staff', 'web');
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create();
 
     $this->putJson("/api/v1/admin/users/{$user->id}", [
         'name' => 'Renamed',
         'email' => 'renamed@example.com',
-        'is_admin' => true,
         'roles' => ['staff'],
     ])->assertOk()
         ->assertJsonPath('data.name', 'Renamed')
-        ->assertJsonPath('data.is_admin', true)
         ->assertJsonPath('data.roles.0', 'staff');
 
     $fresh = $user->fresh();
     expect($fresh->email)->toBe('renamed@example.com')
-        ->and((bool) $fresh->is_admin)->toBeTrue();
+        ->and($fresh->hasRole('staff'))->toBeTrue();
 });
 
 it('does not touch the password when updating other user fields', function () {
-    Sanctum::actingAs($this->superAdmin);
+    Sanctum::actingAs($this->admin);
     $user = User::factory()->create(['password' => 'original-password']);
     $originalHash = $user->password;
 
@@ -116,7 +106,7 @@ it('does not touch the password when updating other user fields', function () {
 });
 
 it('changes a user\'s password via the dedicated endpoint', function () {
-    Sanctum::actingAs($this->superAdmin);
+    Sanctum::actingAs($this->admin);
     $user = User::factory()->create(['password' => 'old-password']);
 
     $this->putJson("/api/v1/admin/users/{$user->id}/password", [
@@ -128,7 +118,7 @@ it('changes a user\'s password via the dedicated endpoint', function () {
 });
 
 it('rejects a password change without confirmation', function () {
-    Sanctum::actingAs($this->superAdmin);
+    Sanctum::actingAs($this->admin);
     $user = User::factory()->create();
 
     $this->putJson("/api/v1/admin/users/{$user->id}/password", ['password' => 'brand-new-password'])
@@ -136,7 +126,7 @@ it('rejects a password change without confirmation', function () {
 });
 
 it('deletes a user', function () {
-    Sanctum::actingAs($this->superAdmin);
+    Sanctum::actingAs($this->admin);
     $user = User::factory()->create();
 
     $this->deleteJson("/api/v1/admin/users/{$user->id}")->assertNoContent();
@@ -145,10 +135,10 @@ it('deletes a user', function () {
 });
 
 it('prevents an admin from deleting their own account', function () {
-    Sanctum::actingAs($this->superAdmin);
+    Sanctum::actingAs($this->admin);
 
-    $this->deleteJson("/api/v1/admin/users/{$this->superAdmin->id}")
+    $this->deleteJson("/api/v1/admin/users/{$this->admin->id}")
         ->assertUnprocessable();
 
-    expect(User::find($this->superAdmin->id))->not->toBeNull();
+    expect(User::find($this->admin->id))->not->toBeNull();
 });

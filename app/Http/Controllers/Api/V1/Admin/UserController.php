@@ -53,7 +53,6 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')],
             'password' => $this->passwordRules(),
-            'is_admin' => 'sometimes|boolean',
             'roles' => 'sometimes|array',
             'roles.*' => 'string|exists:roles,name',
         ]);
@@ -63,12 +62,6 @@ class UserController extends Controller
             'email' => $validated['email'],
             'password' => $validated['password'],
         ]);
-
-        // is_admin isn't in User's mass-assignable Fillable list (deliberately, so
-        // register/profile endpoints can never grant it) — set it directly here,
-        // the one place an already-access-admin-system-gated caller is meant to.
-        $user->is_admin = $validated['is_admin'] ?? false;
-        $user->save();
 
         $user->syncRoles($validated['roles'] ?? []);
 
@@ -84,19 +77,11 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'email' => ['sometimes', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'is_admin' => 'sometimes|boolean',
             'roles' => 'sometimes|array',
             'roles.*' => 'string|exists:roles,name',
         ]);
 
         $user->update(collect($validated)->only(['name', 'email'])->all());
-
-        // See store(): is_admin is deliberately excluded from Fillable, so it has
-        // to be set directly rather than through the mass-assignment above.
-        if (array_key_exists('is_admin', $validated)) {
-            $user->is_admin = $validated['is_admin'];
-            $user->save();
-        }
 
         if (array_key_exists('roles', $validated)) {
             $user->syncRoles($validated['roles']);
@@ -144,7 +129,6 @@ class UserController extends Controller
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
-            'is_admin' => (bool) $user->is_admin,
             'roles' => $user->roles->pluck('name')->values(),
             'email_verified_at' => $user->email_verified_at?->toIso8601String(),
             'email_verified_at_display' => $user->email_verified_at?->toDisplay(),

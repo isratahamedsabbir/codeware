@@ -14,11 +14,10 @@ class Index extends Component
 
     public function mount(): void
     {
-        // Developer environment AND Super Admin (is_admin) — an 'admin'-role user
-        // also passes the route's access-admin-system gate, but feature toggles
-        // are a deploy-level tool, not a day-to-day admin one, so they're kept out
-        // even here.
-        abort_unless(app()->environment('developer') && auth()->user()->is_admin, 404);
+        // Developer environment AND the 'admin' role — feature toggles are a
+        // deploy-level tool, not a day-to-day admin one, but this repo has no
+        // tier above 'admin' left to restrict it to any further.
+        abort_unless(app()->environment('developer') && auth()->user()->hasRole('admin'), 404);
 
         $this->loadFeatures();
     }

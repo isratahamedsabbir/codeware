@@ -35,14 +35,12 @@ class MediaLibraryPolicy
     }
 
     /**
-     * Media Library is a content screen, so all three admin tiers (Super Admin, Admin,
-     * Staff) can use it — Staff via the granular permission, Admin/Super Admin
-     * unconditionally. Previously this only ever checked is_admin, which meant a
-     * Spatie 'admin'-role user (not is_admin=true) was wrongly locked out.
+     * Media Library is a content screen, so both admin tiers (Admin, Staff) can use
+     * it — Staff via the granular permission, Admin unconditionally.
      */
     private function hasAccess(User $user, string $permission): bool
     {
-        if ((bool) $user->is_admin || Gate::forUser($user)->allows('access-admin-system')) {
+        if (Gate::forUser($user)->allows('access-admin-system')) {
             return true;
         }
 

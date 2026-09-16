@@ -13,10 +13,11 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['is_admin' => true]);
-    $this->actingAs($this->admin);
-
     app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+    Role::findOrCreate('admin', 'web');
+    $this->admin = User::factory()->admin()->create();
+    $this->actingAs($this->admin);
 
     $this->role = Role::findOrCreate('manager', 'web');
 });
@@ -63,19 +64,7 @@ it('can create a user with a role', function () {
 
     expect($user)->not->toBeNull();
     expect($user->hasRole('manager'))->toBeTrue();
-    expect($user->is_admin)->toBeFalsy();
-});
-
-it('can create an admin user', function () {
-    Livewire::test(UsersForm::class)
-        ->set('name', 'Super Admin')
-        ->set('email', 'super@example.com')
-        ->set('password', 'password123')
-        ->set('isAdmin', true)
-        ->set('selectedRoles', ['manager'])
-        ->call('save');
-
-    expect(User::where('email', 'super@example.com')->first()->is_admin)->toBeTruthy();
+    expect($user->hasRole('admin'))->toBeFalsy();
 });
 
 it('can update a user and sync roles', function () {

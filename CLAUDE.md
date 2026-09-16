@@ -43,7 +43,7 @@ npm run lint    # ESLint
 ### Authentication & Authorization
 
 - Auth is handled by **Laravel Fortify** (login/register/2FA)
-- Admin access is gated by `is_admin` (boolean) on the `User` model
+- Admin access is gated by Spatie roles (`admin`, `staff`) on the `User` model — there is no separate super-admin flag
 - Gate `access-admin` is defined in `AppServiceProvider` — used by both `AdminMiddleware` (web) and `can:access-admin` (API)
 - After login, admins redirect to `admin.dashboard`; regular users go to `dashboard`
 - API admin endpoints require `auth:sanctum` + `can:access-admin`

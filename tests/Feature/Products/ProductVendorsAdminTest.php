@@ -16,7 +16,8 @@ beforeEach(function () {
     file_put_contents($this->envPath, "APP_NAME=Test\nVENDOR_URL=\n");
     EnvFile::$pathOverride = $this->envPath;
 
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $this->admin = User::factory()->admin()->create();
     $this->actingAs($this->admin);
 });
 
@@ -29,7 +30,7 @@ test('guests and non-admins are blocked from the product vendors screen', functi
     auth()->logout();
     $this->get(route('admin.product-vendors'))->assertRedirect('/login');
 
-    $this->actingAs(User::factory()->create(['is_admin' => false]));
+    $this->actingAs(User::factory()->create());
     $this->get(route('admin.product-vendors'))->assertForbidden();
 });
 
@@ -47,7 +48,7 @@ it('shows a Settings modal to edit the vendor portal url for an admin, but not f
         ->assertSee('vendor-url-settings', false);
 
     $this->seed(RolePermissionSeeder::class);
-    $staff = User::factory()->create(['is_admin' => false]);
+    $staff = User::factory()->create();
     $staff->assignRole('staff');
 
     $this->actingAs($staff)
@@ -58,7 +59,7 @@ it('shows a Settings modal to edit the vendor portal url for an admin, but not f
 
 it('blocks staff from saving the vendor portal url even by calling the component method directly', function () {
     $this->seed(RolePermissionSeeder::class);
-    $staff = User::factory()->create(['is_admin' => false]);
+    $staff = User::factory()->create();
     $staff->assignRole('staff');
 
     Livewire::actingAs($staff)

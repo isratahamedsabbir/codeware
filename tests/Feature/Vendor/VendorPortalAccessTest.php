@@ -13,7 +13,7 @@ test('guests are redirected to login from the vendor portal', function () {
 });
 
 test('a user with no vendors assigned is forbidden from the vendor portal', function () {
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create();
     $user->assignRole('vendor');
 
     $this->actingAs($user)->get(route('vendor.dashboard'))->assertForbidden();
@@ -22,7 +22,7 @@ test('a user with no vendors assigned is forbidden from the vendor portal', func
 });
 
 test('a user assigned to a vendor but without the vendor role is forbidden from the vendor portal', function () {
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create();
     $vendor = ProductVendor::factory()->create();
     $vendor->users()->attach($user);
 
@@ -30,7 +30,7 @@ test('a user assigned to a vendor but without the vendor role is forbidden from 
 });
 
 test('a user with the vendor role and an assigned vendor can access the vendor portal', function () {
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create();
     $user->assignRole('vendor');
     $vendor = ProductVendor::factory()->create();
     $vendor->users()->attach($user);
@@ -41,7 +41,7 @@ test('a user with the vendor role and an assigned vendor can access the vendor p
 });
 
 test('an admin user is not automatically granted vendor portal access', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
 
     $this->actingAs($admin)->get(route('vendor.dashboard'))->assertForbidden();
 });
@@ -52,9 +52,9 @@ test('the dashboard route always sends to the admin panel, never bounces to the 
     // never carry over there. Redirecting a vendor-only account to the
     // vendor host would just drop them logged-out on its login page with no
     // explanation — the normal 403 from AdminMiddleware below is clearer.
-    $admin = User::factory()->create(['is_admin' => true]);
-    $regular = User::factory()->create(['is_admin' => false]);
-    $vendorOnly = User::factory()->create(['is_admin' => false]);
+    $admin = User::factory()->admin()->create();
+    $regular = User::factory()->create();
+    $vendorOnly = User::factory()->create();
     $vendorOnly->assignRole('vendor');
     ProductVendor::factory()->create()->users()->attach($vendorOnly);
 

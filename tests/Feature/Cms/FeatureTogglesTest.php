@@ -12,7 +12,8 @@ use Database\Seeders\RolePermissionSeeder;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $this->admin = User::factory()->admin()->create();
     $this->actingAs($this->admin);
 });
 
@@ -267,7 +268,7 @@ it('reflects a disabled feature as an unchecked checkbox on reload', function ()
 it('still enforces access-admin-system for a feature-gated route even when the feature is on', function () {
     $this->seed(RolePermissionSeeder::class);
 
-    $staff = User::factory()->create(['is_admin' => false]);
+    $staff = User::factory()->create();
     $staff->assignRole('staff');
 
     $this->actingAs($staff)->get(route('admin.menu'))->assertForbidden();
@@ -277,29 +278,29 @@ it('blocks staff from the features screen even in the developer environment', fu
     app()->instance('env', 'developer');
     $this->seed(RolePermissionSeeder::class);
 
-    $staff = User::factory()->create(['is_admin' => false]);
+    $staff = User::factory()->create();
     $staff->assignRole('staff');
 
     $this->actingAs($staff)->get(route('admin.features'))->assertForbidden();
 });
 
-it('blocks an admin-role (non-super-admin) user from the features screen even in the developer environment', function () {
+it('allows an admin-role user to reach the features screen in the developer environment', function () {
     app()->instance('env', 'developer');
     $this->seed(RolePermissionSeeder::class);
 
-    $adminRoleUser = User::factory()->create(['is_admin' => false]);
+    $adminRoleUser = User::factory()->create();
     $adminRoleUser->assignRole('admin');
 
-    $this->actingAs($adminRoleUser)->get(route('admin.features'))->assertNotFound();
+    $this->actingAs($adminRoleUser)->get(route('admin.features'))->assertOk();
 });
 
-it('hides the features link from the sidebar for an admin-role (non-super-admin) user', function () {
+it('shows the features link in the sidebar for an admin-role user', function () {
     $this->seed(AdminMenuSeeder::class);
     $this->seed(RolePermissionSeeder::class);
     app()->instance('env', 'developer');
 
-    $adminRoleUser = User::factory()->create(['is_admin' => false]);
+    $adminRoleUser = User::factory()->create();
     $adminRoleUser->assignRole('admin');
 
-    $this->actingAs($adminRoleUser)->get(route('admin.dashboard'))->assertOk()->assertDontSee('Features');
+    $this->actingAs($adminRoleUser)->get(route('admin.dashboard'))->assertOk()->assertSee('Features');
 });

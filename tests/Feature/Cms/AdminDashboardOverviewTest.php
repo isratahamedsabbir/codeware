@@ -1,20 +1,22 @@
 <?php
 
-use App\Models\User;
+use App\Livewire\Admin\Dashboard as AdminDashboard;
 use App\Models\Post;
 use App\Models\Product;
-use App\Livewire\Admin\Dashboard as AdminDashboard;
+use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Livewire\Livewire;
 
 test('guests and non-admins are blocked from accessing the admin dashboard', function () {
     $this->get('/admin')->assertRedirect('/login');
 
-    $regularUser = User::factory()->create(['is_admin' => false]);
+    $regularUser = User::factory()->create();
     $this->actingAs($regularUser)->get('/admin')->assertForbidden();
 });
 
 test('admin can access the admin dashboard overview page', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
     $this->actingAs($admin);
 
     // Create some sample data to check counts and rendering
@@ -25,7 +27,7 @@ test('admin can access the admin dashboard overview page', function () {
     $response = $this->get('/admin');
     $response->assertOk();
     $response->assertSee('System Overview');
-    
+
     // Check Livewire rendering and state
     Livewire::test(AdminDashboard::class)
         ->assertSet('totalProducts', 3)

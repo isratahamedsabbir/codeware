@@ -24,7 +24,7 @@ class PageSeeder extends Seeder
 
     public function run(): void
     {
-        $admin = User::where('is_admin', true)->first();
+        $admin = User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))->first();
         $dataDir = base_path('data/pages');
 
         // Remove standalone pages left over from a previous version of this list

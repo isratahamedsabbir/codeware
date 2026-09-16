@@ -2,9 +2,11 @@
 
 use App\Models\Subscriber;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    Role::findOrCreate('admin', 'web');
+    $this->admin = User::factory()->admin()->create();
 });
 
 it('lists subscribers with pagination', function () {

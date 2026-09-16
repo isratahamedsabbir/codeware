@@ -3,10 +3,12 @@
 use App\Livewire\Admin\Pages\Form;
 use App\Models\Page;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Livewire\Livewire;
 
 it('switches constant value field to file picker when File is clicked', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
     $page = Page::factory()->create();
 
     $this->actingAs($admin);
@@ -21,7 +23,8 @@ it('switches constant value field to file picker when File is clicked', function
 });
 
 it('folds legacy single-line "text" constant into textarea on load', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
     $page = Page::factory()->create([
         'constant' => [['key' => 'title', 'type' => 'text', 'value' => 'Legacy value']],
     ]);
@@ -34,7 +37,8 @@ it('folds legacy single-line "text" constant into textarea on load', function ()
 });
 
 it('writes constant back to the Page\'s constant column on save', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
     $page = Page::factory()->create();
 
     $this->actingAs($admin);

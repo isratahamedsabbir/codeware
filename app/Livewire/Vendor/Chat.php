@@ -80,7 +80,7 @@ class Chat extends Component
 
         return User::query()
             ->where('id', '!=', auth()->id())
-            ->where(fn ($q) => $q->where('is_admin', true)->orWhereHas('roles', fn ($q2) => $q2->whereIn('name', ['admin', 'staff'])))
+            ->whereHas('roles', fn ($q) => $q->whereIn('name', ['admin', 'staff']))
             ->where(fn ($q) => $q->where('name', 'like', "%{$term}%")->orWhere('email', 'like', "%{$term}%"))
             ->orderBy('name')
             ->limit(10)

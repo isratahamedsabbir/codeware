@@ -5,10 +5,12 @@ use App\Models\Page;
 use App\Models\Post;
 use App\Models\Tag;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Laravel\Sanctum\Sanctum;
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $this->admin = User::factory()->admin()->create();
 });
 
 it('rejects unauthenticated requests to admin api', function () {
@@ -16,7 +18,7 @@ it('rejects unauthenticated requests to admin api', function () {
 });
 
 it('rejects non-admin authenticated users from admin api', function () {
-    $regularUser = User::factory()->create(['is_admin' => false]);
+    $regularUser = User::factory()->create();
     Sanctum::actingAs($regularUser);
 
     $this->getJson('/api/v1/admin/posts')->assertForbidden();

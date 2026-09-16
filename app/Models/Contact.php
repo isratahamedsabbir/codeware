@@ -17,7 +17,7 @@ class Contact extends Model
     {
         static::created(function (Contact $contact) {
             Notification::send(
-                User::where('is_admin', true)->get(),
+                User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))->get(),
                 new AdminAlert(
                     'New contact message',
                     "{$contact->full_name}: {$contact->subject}",

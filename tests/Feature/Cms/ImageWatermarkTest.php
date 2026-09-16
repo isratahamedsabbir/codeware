@@ -3,12 +3,14 @@
 use App\Models\MediaLibrary;
 use App\Models\Setting;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     Storage::fake('public');
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $this->admin = User::factory()->admin()->create();
 
     $watermarkImage = imagecreatetruecolor(20, 20);
     imagefill($watermarkImage, 0, 0, imagecolorallocate($watermarkImage, 0, 0, 255));

@@ -2,6 +2,7 @@
 
 use App\Livewire\Admin\Env\Index as EnvIndex;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\Artisan;
 use Livewire\Livewire;
 
@@ -13,7 +14,8 @@ afterEach(function () {
 });
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $this->admin = User::factory()->admin()->create();
     $this->actingAs($this->admin);
 });
 

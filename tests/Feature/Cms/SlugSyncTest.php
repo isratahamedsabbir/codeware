@@ -12,11 +12,13 @@ use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\User;
 use App\Support\Slug;
+use Database\Seeders\RolePermissionSeeder;
 use Laravel\Sanctum\Sanctum;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $this->admin = User::factory()->admin()->create();
     $this->actingAs($this->admin);
 });
 

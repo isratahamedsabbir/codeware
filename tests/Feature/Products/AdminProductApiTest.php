@@ -7,10 +7,12 @@ use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use App\Models\ProductVendor;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Laravel\Sanctum\Sanctum;
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $this->admin = User::factory()->admin()->create();
 });
 
 // Auth guards
@@ -19,7 +21,7 @@ it('rejects unauthenticated requests to admin product-categories api', function 
 });
 
 it('rejects non-admin users from admin product api', function () {
-    Sanctum::actingAs(User::factory()->create(['is_admin' => false]));
+    Sanctum::actingAs(User::factory()->create());
     $this->getJson('/api/v1/admin/products')->assertForbidden();
 });
 

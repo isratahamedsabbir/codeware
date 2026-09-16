@@ -30,9 +30,12 @@ trait HasCreator
 
             // Seeders, tinker, and other console-created rows run with no
             // authenticated user, which used to leave created_by null forever
-            // — showing "—" in every "Created by" column. Fall back to the
-            // Super Admin so seeded data has a real owner instead.
-            $model->created_by = User::where('is_admin', true)->value('id');
+            // — showing "—" in every "Created by" column. Fall back to an
+            // admin so seeded data has a real owner instead. whereHas()
+            // rather than the role() scope, which throws RoleDoesNotExist if
+            // the 'admin' role row doesn't exist yet rather than finding
+            // nothing — see AppServiceProvider::configureCreatorTracking().
+            $model->created_by = User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))->value('id');
         });
     }
 

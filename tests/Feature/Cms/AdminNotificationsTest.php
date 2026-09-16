@@ -4,12 +4,17 @@ use App\Livewire\Admin\Notifications\Bell;
 use App\Models\Contact;
 use App\Models\User;
 use App\Notifications\AdminAlert;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
+beforeEach(function () {
+    $this->seed(RolePermissionSeeder::class);
+});
+
 it('shows unread notification count on the bell', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
     $admin->notify(new AdminAlert('One'));
     $admin->notify(new AdminAlert('Two'));
     $read = $admin->notifications()->latest()->first();
@@ -23,7 +28,7 @@ it('shows unread notification count on the bell', function () {
 });
 
 it('shows the notification title and message in the dropdown', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
     $admin->notify(new AdminAlert('New contact message', 'John: Please call me'));
 
     Livewire::actingAs($admin)
@@ -33,7 +38,7 @@ it('shows the notification title and message in the dropdown', function () {
 });
 
 it('shows an empty state when there are no notifications', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
 
     Livewire::actingAs($admin)
         ->test(Bell::class)
@@ -41,7 +46,7 @@ it('shows an empty state when there are no notifications', function () {
 });
 
 it('marks a single notification as read', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
     $admin->notify(new AdminAlert('Test'));
     $notification = $admin->notifications()->sole();
 
@@ -53,7 +58,7 @@ it('marks a single notification as read', function () {
 });
 
 it('marks all notifications as read', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
     $admin->notify(new AdminAlert('One'));
     $admin->notify(new AdminAlert('Two'));
     $admin->notify(new AdminAlert('Three'));
@@ -67,8 +72,8 @@ it('marks all notifications as read', function () {
 });
 
 it('only lists notifications belonging to the current user', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
-    $other = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
+    $other = User::factory()->admin()->create();
     $admin->notify(new AdminAlert('Mine'));
     $other->notify(new AdminAlert('Theirs'));
 
@@ -81,7 +86,7 @@ it('only lists notifications belonging to the current user', function () {
 it('creates notifications for all admins when a contact is submitted', function () {
     Notification::fake();
 
-    $admins = User::factory()->count(2)->create(['is_admin' => true]);
+    $admins = User::factory()->admin()->count(2)->create();
 
     $this->postJson('/api/v1/contacts', [
         'full_name' => 'John Doe',
@@ -101,7 +106,7 @@ it('creates notifications for all admins when a contact is submitted', function 
 it('does not create notifications when no admins exist', function () {
     Notification::fake();
 
-    User::factory()->create(['is_admin' => false]);
+    User::factory()->create();
 
     $this->postJson('/api/v1/contacts', [
         'full_name' => 'John Doe',
@@ -115,7 +120,7 @@ it('does not create notifications when no admins exist', function () {
 });
 
 it('renders the bell component in the admin layout header', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
 
     $this->actingAs($admin)
         ->get('/admin/posts')
@@ -130,7 +135,7 @@ it('leaves notifications in place when the user is deleted, since the native tab
     // notifiable_type/notifiable_id pair with no FK constraint by design — it
     // supports notifying any model, so it can't cascade on a specific model's
     // delete. Orphaned rows for a deleted user are expected, not a bug.
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
     $admin->notify(new AdminAlert('Test'));
 
     $admin->delete();
@@ -139,7 +144,7 @@ it('leaves notifications in place when the user is deleted, since the native tab
 });
 
 it('renders the bell dropdown with relative time for notifications', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
     $admin->notify(new AdminAlert('System update'));
     $admin->notifications()->update(['created_at' => now()->subMinutes(5)]);
 
@@ -150,7 +155,7 @@ it('renders the bell dropdown with relative time for notifications', function ()
 });
 
 it('keeps contact notification link pointing to the contacts page', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
 
     Contact::create([
         'full_name' => 'Jane Doe',

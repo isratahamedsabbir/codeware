@@ -20,8 +20,8 @@ beforeEach(function () {
 
     $this->seed(RolePermissionSeeder::class);
 
-    $this->admin = User::factory()->create(['is_admin' => true]);
-    $this->staff = User::factory()->create(['is_admin' => false]);
+    $this->admin = User::factory()->admin()->create();
+    $this->staff = User::factory()->create();
     $this->staff->assignRole('staff');
 });
 

@@ -93,14 +93,9 @@ class User extends Authenticatable
      * logins (FortifyServiceProvider, Vendor\Auth\Login) and the
      * access-admin/access-vendor-portal gates the moment a role is
      * deactivated, without waiting for them to log out on their own.
-     * is_admin super-admins bypass this entirely, same as every other gate.
      */
     public function hasInactiveRole(): bool
     {
-        if ($this->is_admin) {
-            return false;
-        }
-
         return $this->roles()->where('status', 'inactive')->exists();
     }
 

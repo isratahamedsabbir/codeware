@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 
 test('guests are redirected to the login page', function () {
     $response = $this->get(route('dashboard'));
@@ -8,7 +9,8 @@ test('guests are redirected to the login page', function () {
 });
 
 test('authenticated admins are redirected from dashboard into the admin panel', function () {
-    $user = User::factory()->create(['is_admin' => true]);
+    Role::findOrCreate('admin', 'web');
+    $user = User::factory()->admin()->create();
     $this->actingAs($user);
 
     $response = $this->get(route('dashboard'));

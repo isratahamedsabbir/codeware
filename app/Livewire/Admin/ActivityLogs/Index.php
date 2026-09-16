@@ -68,8 +68,7 @@ class Index extends Component
         return view('livewire.admin.activity-logs.index', [
             'logs' => $query->paginate($this->perPage),
             'admins' => User::query()
-                ->where('is_admin', true)
-                ->orWhereHas('roles')
+                ->whereHas('roles')
                 ->orderBy('name')
                 ->get(),
             'actions' => ['login', 'logout', 'visit', 'created', 'updated', 'deleted'],

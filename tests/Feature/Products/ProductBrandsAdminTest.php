@@ -5,10 +5,12 @@ use App\Livewire\Admin\ProductBrands\Index as ProductBrandIndex;
 use App\Models\Product;
 use App\Models\ProductBrand;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $this->admin = User::factory()->admin()->create();
     $this->actingAs($this->admin);
 });
 
@@ -16,7 +18,7 @@ test('guests and non-admins are blocked from the product brands screen', functio
     auth()->logout();
     $this->get(route('admin.product-brands'))->assertRedirect('/login');
 
-    $this->actingAs(User::factory()->create(['is_admin' => false]));
+    $this->actingAs(User::factory()->create());
     $this->get(route('admin.product-brands'))->assertForbidden();
 });
 

@@ -11,6 +11,7 @@ use App\Models\PostCategory;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Laravel\Sanctum\Sanctum;
 use Livewire\Livewire;
 
@@ -19,7 +20,8 @@ use Livewire\Livewire;
 // orphaned Page or an orphaned entity is never useful (see App\Support\PageCascade).
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $this->admin = User::factory()->admin()->create();
     $this->actingAs($this->admin);
 });
 

@@ -39,6 +39,6 @@ class AdminActivity
             return false;
         }
 
-        return (bool) $user->is_admin || (method_exists($user, 'hasRole') && $user->hasRole('admin'));
+        return method_exists($user, 'hasRole') && $user->hasRole('admin');
     }
 }

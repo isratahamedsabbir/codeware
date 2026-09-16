@@ -7,7 +7,8 @@ use Database\Seeders\RolePermissionSeeder;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $this->admin = User::factory()->admin()->create();
     $this->actingAs($this->admin);
 });
 
@@ -55,7 +56,7 @@ it('adds and removes canonical base links', function () {
 
 it('blocks staff from the seo screen', function () {
     $this->seed(RolePermissionSeeder::class);
-    $staff = User::factory()->create(['is_admin' => false]);
+    $staff = User::factory()->create();
     $staff->assignRole('staff');
 
     $this->actingAs($staff)->get(route('admin.seo'))->assertForbidden();

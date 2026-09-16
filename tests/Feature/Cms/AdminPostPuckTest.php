@@ -3,9 +3,14 @@
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
+
+beforeEach(function () {
+    $this->seed(RolePermissionSeeder::class);
+});
 
 it('admin post show includes puck_data from the paired page', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
     $token = $admin->createToken('test')->plainTextToken;
 
     $post = Post::factory()->create();
@@ -22,7 +27,7 @@ it('admin post show includes puck_data from the paired page', function () {
 });
 
 it('admin post update accepts puck_data, saving it onto the paired page', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
     $token = $admin->createToken('test')->plainTextToken;
     $post = Post::factory()->create();
 
@@ -38,7 +43,7 @@ it('admin post update accepts puck_data, saving it onto the paired page', functi
 });
 
 it('admin can create a post via store', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
     $token = $admin->createToken('test')->plainTextToken;
 
     $this->withToken($token)
@@ -52,7 +57,7 @@ it('admin can create a post via store', function () {
 });
 
 it('admin post store requires en title', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
     $token = $admin->createToken('test')->plainTextToken;
 
     $this->withToken($token)

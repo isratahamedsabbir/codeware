@@ -65,7 +65,7 @@ test('users with a deactivated role cannot authenticate even with the correct pa
     $role = Role::findOrCreate('staff', 'web');
     $role->update(['status' => 'inactive']);
 
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create();
     $user->assignRole($role);
 
     $response = $this->post(route('login.store'), [

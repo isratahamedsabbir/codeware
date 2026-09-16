@@ -1,9 +1,15 @@
 <?php
 
+use App\Models\Page;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
+
+beforeEach(function () {
+    $this->seed(RolePermissionSeeder::class);
+});
 
 it('admin can create a page via store', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
     $token = $admin->createToken('test')->plainTextToken;
 
     $this->withToken($token)
@@ -13,11 +19,11 @@ it('admin can create a page via store', function () {
         ->assertCreated()
         ->assertJsonStructure(['data' => ['id', 'slug']]);
 
-    expect(\App\Models\Page::where('template', 'puck')->where('status', 'inactive')->exists())->toBeTrue();
+    expect(Page::where('template', 'puck')->where('status', 'inactive')->exists())->toBeTrue();
 });
 
 it('admin page store requires en title', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = User::factory()->admin()->create();
     $token = $admin->createToken('test')->plainTextToken;
 
     $this->withToken($token)

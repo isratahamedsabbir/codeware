@@ -3,10 +3,12 @@
 use App\Livewire\Admin\Cms\Form;
 use App\Models\Page;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Livewire\Livewire;
 
 it('switches constant value field to file picker when File is clicked', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
     $page = Page::factory()->create();
 
     $this->actingAs($admin);

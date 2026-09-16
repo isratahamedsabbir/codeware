@@ -12,7 +12,7 @@ use App\Models\User;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    $this->user = User::factory()->create(['is_admin' => false]);
+    $this->user = User::factory()->create();
     $this->vendorA = ProductVendor::factory()->create(['name' => 'Vendor A']);
     $this->vendorB = ProductVendor::factory()->create(['name' => 'Vendor B']);
     $this->vendorA->users()->attach($this->user);

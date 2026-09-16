@@ -257,7 +257,7 @@ class MenuItem extends Model
         // 404s for anyone else (see Livewire\Admin\Features\Index::mount()), so
         // hide its sidebar link there too rather than linking to a dead end.
         if ($this->route_name === 'admin.features'
-            && ! (app()->environment('developer') && (auth()->user()?->is_admin ?? false))) {
+            && ! (app()->environment('developer') && (auth()->user()?->hasRole('admin') ?? false))) {
             return false;
         }
 

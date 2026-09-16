@@ -3,10 +3,12 @@
 use App\Livewire\Admin\ShopToggle;
 use App\Models\Setting;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $this->admin = User::factory()->admin()->create();
 });
 
 it('hides the shop toggle from the admin header by default', function () {

@@ -5,9 +5,11 @@ use App\Models\Order;
 use App\Models\Setting;
 use App\Models\User;
 use Livewire\Livewire;
+use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    Role::findOrCreate('admin', 'web');
+    $this->admin = User::factory()->admin()->create();
     $this->actingAs($this->admin);
 });
 

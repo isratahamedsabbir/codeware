@@ -35,15 +35,35 @@ afterEach(function () {
     File::deleteDirectory(storage_path('app/file-manager-backups'));
 });
 
+/**
+ * An 'admin'-role user whose role holds the file-manager permissions —
+ * the replacement for the old is_admin=true shortcut, scoped to just the
+ * permissions these tests need rather than the full RolePermissionSeeder
+ * (which would interfere with the "not seeded yet" test below).
+ */
+function createFileManagerAdmin(): User
+{
+    app()[PermissionRegistrar::class]->forgetCachedPermissions();
+    Permission::findOrCreate('view file manager', 'web');
+    Permission::findOrCreate('manage file manager', 'web');
+    $role = Role::findOrCreate('admin', 'web');
+    $role->givePermissionTo(['view file manager', 'manage file manager']);
+
+    $user = User::factory()->create();
+    $user->assignRole('admin');
+
+    return $user;
+}
+
 it('blocks non-admin users from the file manager', function () {
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create();
     $this->actingAs($user);
 
     $this->get(route('admin.file-manager'))->assertForbidden();
 });
 
 it('lets an admin browse the project root', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     $this->get(route('admin.file-manager'))
@@ -52,7 +72,7 @@ it('lets an admin browse the project root', function () {
 });
 
 it('navigates into a subfolder and shows its contents', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class)
@@ -64,7 +84,7 @@ it('navigates into a subfolder and shows its contents', function () {
 });
 
 it('loads a text file\'s content for editing', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -76,7 +96,7 @@ it('loads a text file\'s content for editing', function () {
 });
 
 it('saves edited text file content back to disk', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -89,7 +109,7 @@ it('saves edited text file content back to disk', function () {
 });
 
 it('backs up the previous content before overwriting', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -102,7 +122,7 @@ it('backs up the previous content before overwriting', function () {
 });
 
 it('treats an image extension as an image preview, not editable', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     File::put($this->fixtureDir.'/photo.png', 'not-real-image-bytes');
@@ -119,7 +139,7 @@ it('blocks path traversal outside the project root', function () {
 });
 
 it('blocks path traversal on the raw file route', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     $this->get(route('admin.file-manager.raw', ['path' => '../../../../etc/passwd']))
@@ -127,7 +147,7 @@ it('blocks path traversal on the raw file route', function () {
 });
 
 it('serves a real file\'s raw bytes for preview', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     $this->get(route('admin.file-manager.raw', ['path' => $this->relativeFixture]))
@@ -136,7 +156,7 @@ it('serves a real file\'s raw bytes for preview', function () {
 });
 
 it('creates a new folder', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -149,7 +169,7 @@ it('creates a new folder', function () {
 });
 
 it('creates a new empty file', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -163,7 +183,7 @@ it('creates a new empty file', function () {
 });
 
 it('rejects a new name containing a slash', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -176,7 +196,7 @@ it('rejects a new name containing a slash', function () {
 });
 
 it('rejects creating a name that already exists', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -189,7 +209,7 @@ it('rejects creating a name that already exists', function () {
 });
 
 it('uploads a file into the currently browsed folder', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -199,7 +219,7 @@ it('uploads a file into the currently browsed folder', function () {
 });
 
 it('skips an upload whose name already exists in the folder', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -209,7 +229,7 @@ it('skips an upload whose name already exists in the folder', function () {
 });
 
 it('zips selected entries into a new archive in the current folder', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -226,7 +246,7 @@ it('zips selected entries into a new archive in the current folder', function ()
 });
 
 it('extracts an uploaded zip into a new folder named after it', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     $zip = new ZipArchive;
@@ -242,7 +262,7 @@ it('extracts an uploaded zip into a new folder named after it', function () {
 });
 
 it('refuses to extract a zip whose entries escape the target folder', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     $zip = new ZipArchive;
@@ -258,7 +278,7 @@ it('refuses to extract a zip whose entries escape the target folder', function (
 });
 
 it('forces a download disposition when the download flag is set', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     $response = $this->get(route('admin.file-manager.raw', [
@@ -271,7 +291,7 @@ it('forces a download disposition when the download flag is set', function () {
 });
 
 it('renames a file', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -286,7 +306,7 @@ it('renames a file', function () {
 });
 
 it('rejects renaming to a name that already exists', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     File::put($this->fixtureDir.'/other.txt', 'other');
@@ -301,7 +321,7 @@ it('rejects renaming to a name that already exists', function () {
 });
 
 it('deletes a file after confirmation', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -312,7 +332,7 @@ it('deletes a file after confirmation', function () {
 });
 
 it('deletes a folder and everything inside it', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     File::ensureDirectoryExists($this->fixtureDir.'/sub');
@@ -326,7 +346,7 @@ it('deletes a folder and everything inside it', function () {
 });
 
 it('moves a file into another folder', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -341,7 +361,7 @@ it('moves a file into another folder', function () {
 });
 
 it('copies a file into another folder, leaving the original in place', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -355,7 +375,7 @@ it('copies a file into another folder, leaving the original in place', function 
 });
 
 it('copies a folder recursively into another folder', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     File::ensureDirectoryExists($this->fixtureDir.'/sub');
@@ -372,7 +392,7 @@ it('copies a folder recursively into another folder', function () {
 });
 
 it('refuses to move a folder into itself', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     File::ensureDirectoryExists($this->fixtureDir.'/sub');
@@ -387,7 +407,7 @@ it('refuses to move a folder into itself', function () {
 });
 
 it('rejects moving onto a name that already exists at the destination', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     File::put($this->destDir.'/sample.txt', 'already here');
@@ -403,7 +423,7 @@ it('rejects moving onto a name that already exists at the destination', function
 });
 
 it('composes a new file with content in the current folder', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -417,7 +437,7 @@ it('composes a new file with content in the current folder', function () {
 });
 
 it('composes a new file directly inside a folder without navigating into it', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     File::ensureDirectoryExists($this->fixtureDir.'/sub');
@@ -434,7 +454,7 @@ it('composes a new file directly inside a folder without navigating into it', fu
 });
 
 it('rejects composing a file with a name that already exists', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -448,7 +468,7 @@ it('rejects composing a file with a name that already exists', function () {
 });
 
 it('rejects composing a file with an invalid name', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -462,7 +482,7 @@ it('rejects composing a file with an invalid name', function () {
 });
 
 it('always shows the checkbox markup for a manager', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -470,7 +490,7 @@ it('always shows the checkbox markup for a manager', function () {
 });
 
 it('clears the current selection via clearChecked', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -481,7 +501,7 @@ it('clears the current selection via clearChecked', function () {
 });
 
 it('deletes multiple selected files and folders at once', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     File::put($this->fixtureDir.'/second.txt', 'second');
@@ -502,7 +522,7 @@ it('deletes multiple selected files and folders at once', function () {
 });
 
 it('closes the open preview if the previewed file is bulk-deleted', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -514,7 +534,7 @@ it('closes the open preview if the previewed file is bulk-deleted', function () 
 });
 
 it('does nothing when confirming bulk delete with nothing selected', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -525,7 +545,7 @@ it('does nothing when confirming bulk delete with nothing selected', function ()
 });
 
 it('picks up filesystem changes made outside the component on refresh', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     $component = Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager']);
@@ -537,7 +557,7 @@ it('picks up filesystem changes made outside the component on refresh', function
 });
 
 it('shows a friendly notice instead of crashing when opening an item that no longer exists', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -547,7 +567,7 @@ it('shows a friendly notice instead of crashing when opening an item that no lon
 });
 
 it('recovers to the project root instead of crashing when the current folder disappears mid-session', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     File::ensureDirectoryExists($this->fixtureDir.'/vanishing');
@@ -571,7 +591,7 @@ it('resolves a path via realpath fallback when the folder exists but realpath ca
 });
 
 it('opens a large file (up to 10 MB) in the editor', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     $content = str_repeat('a', 9 * 1024 * 1024);
@@ -585,7 +605,7 @@ it('opens a large file (up to 10 MB) in the editor', function () {
 });
 
 it('refuses to open an oversized file in the editor instead of risking a Livewire payload overflow', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     File::put($this->fixtureDir.'/huge.txt', str_repeat('a', 11 * 1024 * 1024));
@@ -610,7 +630,7 @@ it('keeps the editable file size cap safely under the configured Livewire payloa
 });
 
 it('reports a save failure instead of falsely claiming success when the write is blocked', function () {
-    $admin = User::factory()->create(['is_admin' => true]);
+    $admin = createFileManagerAdmin();
     $this->actingAs($admin);
 
     $component = Livewire::test(FileManager::class, ['path' => 'storage/app/testing-file-manager'])
@@ -631,30 +651,22 @@ it('reports a save failure instead of falsely claiming success when the write is
 });
 
 // Note: the shared AdminMiddleware (admin.php's route group) already blocks anyone who
-// isn't is_admin=true or doesn't hold the Spatie 'admin' role from *any* /admin/* route —
+// doesn't hold the Spatie 'admin' or 'staff' role from *any* /admin/* route —
 // that's a pre-existing, codebase-wide boundary this feature doesn't change. So a bare
 // Spatie permission alone can never reach these routes; the file-manager gates only ever
 // come into play for users who already cleared that outer check. These tests exercise the
 // gates directly (the actual logic this task adds) rather than fighting that outer wall.
 
 it('blocks a non-admin, non-permissioned user from the file manager route', function () {
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create();
     $this->actingAs($user);
 
     $this->get(route('admin.file-manager'))->assertForbidden();
     $this->get(route('admin.file-manager.raw', ['path' => $this->relativeFixture]))->assertForbidden();
 });
 
-it('grants both file manager gates unconditionally to is_admin users', function () {
-    $user = User::factory()->create(['is_admin' => true]);
-    $this->actingAs($user);
-
-    expect(Gate::allows('view-file-manager'))->toBeTrue()
-        ->and(Gate::allows('manage-file-manager'))->toBeTrue();
-});
-
 it('denies both file manager gates to a user with no permission and no admin role', function () {
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create();
     $this->actingAs($user);
 
     expect(Gate::allows('view-file-manager'))->toBeFalse()
@@ -664,7 +676,7 @@ it('denies both file manager gates to a user with no permission and no admin rol
 it('does not crash when the file manager permissions have not been seeded yet', function () {
     // No Permission::findOrCreate(...) here on purpose — simulates a fresh
     // install where RolePermissionSeeder hasn't run yet.
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create();
     $this->actingAs($user);
 
     expect(Gate::allows('view-file-manager'))->toBeFalse()
@@ -675,7 +687,7 @@ it('grants view-file-manager but not manage-file-manager to a "view file manager
     app()[PermissionRegistrar::class]->forgetCachedPermissions();
     Permission::findOrCreate('view file manager', 'web');
 
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create();
     $user->givePermissionTo('view file manager');
     $this->actingAs($user);
 
@@ -687,7 +699,7 @@ it('grants both gates to a "manage file manager" permission holder, since manage
     app()[PermissionRegistrar::class]->forgetCachedPermissions();
     Permission::findOrCreate('manage file manager', 'web');
 
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create();
     $user->givePermissionTo('manage file manager');
     $this->actingAs($user);
 
@@ -701,7 +713,7 @@ it('lets an admin-role user with the admin role\'s default permissions manage fi
     $adminRole = Role::findOrCreate('admin', 'web');
     $adminRole->givePermissionTo('manage file manager');
 
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create();
     $user->assignRole('admin');
     $this->actingAs($user);
 
@@ -723,7 +735,7 @@ it('lets an operator restrict an admin-role user\'s file manager access by revok
     // The admin role does NOT get 'manage file manager' — simulates an operator
     // having unchecked it for this role in the Roles/Permissions admin screen.
 
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create();
     $user->assignRole('admin');
     $this->actingAs($user);
 
@@ -736,7 +748,7 @@ it('lets an operator restrict an admin-role user\'s file manager access by revok
 });
 
 it('blocks a mutating component action for a user without manage-file-manager, without deleting anything', function () {
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create();
     $this->actingAs($user);
 
     // abort_unless() inside a Livewire action doesn't surface as a catchable PHP

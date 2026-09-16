@@ -14,9 +14,11 @@ use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
+use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    Role::findOrCreate('admin', 'web');
+    $this->admin = User::factory()->admin()->create();
     $this->actingAs($this->admin);
 });
 
@@ -124,7 +126,7 @@ it('updates order status and payment status, and marks the transaction paid', fu
 
 it('blocks staff from the orders and reports screens', function () {
     $this->seed(RolePermissionSeeder::class);
-    $staff = User::factory()->create(['is_admin' => false]);
+    $staff = User::factory()->create();
     $staff->assignRole('staff');
 
     $this->actingAs($staff)->get(route('admin.orders'))->assertForbidden();

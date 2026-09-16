@@ -16,11 +16,11 @@
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
-                    @if(auth()->user()?->is_admin)
+                    @can('access-admin')
                         <flux:sidebar.item icon="layout-grid" href="{{ route('admin.dashboard') }}" target="_blank">
                             {{ __('Admin Panel') }}
                         </flux:sidebar.item>
-                    @endif
+                    @endcan
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
@@ -76,14 +76,14 @@
                         </flux:menu.item>
                     </flux:menu.radio.group>
 
-                    @if(auth()->user()?->is_admin)
+                    @can('access-admin')
                         <flux:menu.separator />
                         <flux:menu.radio.group>
                             <flux:menu.item href="{{ route('admin.dashboard') }}" icon="layout-grid" target="_blank">
                                 {{ __('Admin Panel') }}
                             </flux:menu.item>
                         </flux:menu.radio.group>
-                    @endif
+                    @endcan
 
                     <flux:menu.separator />
 

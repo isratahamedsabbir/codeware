@@ -14,7 +14,7 @@ class NotificationsSeeder extends Seeder
      */
     public function run(): void
     {
-        $admins = User::where('is_admin', true)->get();
+        $admins = User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))->get();
 
         if ($admins->isEmpty()) {
             return;

@@ -12,10 +12,11 @@ use Livewire\Livewire;
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
 
-    $this->userA = User::factory()->create(['is_admin' => true]);
-    $this->userB = User::factory()->create(['is_admin' => false]);
+    $this->userA = User::factory()->create();
+    $this->userA->assignRole('admin');
+    $this->userB = User::factory()->create();
     $this->userB->assignRole('admin');
-    $this->userC = User::factory()->create(['is_admin' => false]);
+    $this->userC = User::factory()->create();
     $this->userC->assignRole('staff');
 });
 

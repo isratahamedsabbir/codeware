@@ -54,12 +54,12 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
 
-        // Three admin tiers: Super Admin (is_admin=true, unconditional bypass everywhere),
-        // Admin ('admin' role, every permission), and Staff ('staff' role, content-only —
-        // see RolePermissionSeeder). access-admin is the outer gate: it only decides who
-        // gets into /admin/* at all. access-admin-system is the inner gate that further
-        // restricts the system-level screens (Settings, Users, Roles/Permissions, Menu,
-        // Activity History, Localization, Contacts) to Admin/Super Admin — Staff passes
+        // Two admin tiers: Admin ('admin' role, every permission) and Staff
+        // ('staff' role, content-only — see RolePermissionSeeder). access-admin
+        // is the outer gate: it only decides who gets into /admin/* at all.
+        // access-admin-system is the inner gate that further restricts the
+        // system-level screens (Settings, Users, Roles/Permissions, Menu,
+        // Activity History, Localization, Contacts) to Admin — Staff passes
         // the outer gate but not this one.
         // hasInactiveRole() also cuts off an already-open session the moment
         // its role is deactivated (Admin → Roles), not just fresh logins —
@@ -67,14 +67,13 @@ class AppServiceProvider extends ServiceProvider
         // Vendor\Auth\Login give a clearer message at the login form itself,
         // but a session opened before the role was deactivated would
         // otherwise keep working until it logged out on its own.
-        Gate::define('access-admin', fn ($user) => (bool) $user->is_admin
-            || (($user->hasRole('admin') || $user->hasRole('staff')) && ! $user->hasInactiveRole()));
+        Gate::define('access-admin', fn ($user) => ($user->hasRole('admin') || $user->hasRole('staff'))
+            && ! $user->hasInactiveRole());
 
-        Gate::define('access-admin-system', fn ($user) => (bool) $user->is_admin
-            || ($user->hasRole('admin') && ! $user->hasInactiveRole()));
+        Gate::define('access-admin-system', fn ($user) => $user->hasRole('admin') && ! $user->hasInactiveRole());
 
         // Vendor portal (App\Livewire\Vendor\*) — a separate, unrelated door from
-        // access-admin above: a vendor-assigned user is never is_admin/admin/staff,
+        // access-admin above: a vendor-assigned user is never admin/staff,
         // and the portal deliberately doesn't reuse any admin route/gate, so it
         // can't accidentally inherit access to the rest of /admin/*. Requires both
         // the 'vendor' role AND at least one assigned vendor — the role alone (with
@@ -92,12 +91,9 @@ class AppServiceProvider extends ServiceProvider
         // someone allowed to change files can always see them too. Deliberately does NOT
         // fall back to hasRole('admin') the way access-admin does — that would make the
         // permission unrevokable for admin-role users, defeating the point of having it.
-        // is_admin still bypasses unconditionally, matching every other gate in the app.
+        // The admin role holds every permission (RolePermissionSeeder), including these
+        // two, so it still reaches File Manager by default — just revocably.
         Gate::define('manage-file-manager', function ($user) {
-            if ((bool) $user->is_admin) {
-                return true;
-            }
-
             try {
                 return $user->hasPermissionTo('manage file manager');
             } catch (PermissionDoesNotExist) {
@@ -108,7 +104,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Gate::define('view-file-manager', function ($user) {
-            if ((bool) $user->is_admin || Gate::forUser($user)->allows('manage-file-manager')) {
+            if (Gate::forUser($user)->allows('manage-file-manager')) {
                 return true;
             }
 
@@ -155,8 +151,13 @@ class AppServiceProvider extends ServiceProvider
                 }
 
                 // Seeders/tinker run with no authenticated user — see
-                // App\Concerns\HasCreator, which this mirrors.
-                $record->created_by = User::where('is_admin', true)->value('id');
+                // App\Concerns\HasCreator, which this mirrors. whereHas()
+                // rather than the role() scope: this fires from a `creating`
+                // hook on Role/Permission themselves, so the 'admin' role row
+                // may not exist yet (RolePermissionSeeder creates permissions
+                // before the role) — role() throws RoleDoesNotExist in that
+                // case, whereHas() just finds nothing.
+                $record->created_by = User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))->value('id');
             });
 
             $model::resolveRelationUsing('creator', fn ($record) => $record->belongsTo(User::class, 'created_by'));

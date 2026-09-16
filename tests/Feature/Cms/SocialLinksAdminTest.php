@@ -8,7 +8,8 @@ use Database\Seeders\SocialLinkSeeder;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $this->admin = User::factory()->admin()->create();
     $this->actingAs($this->admin);
 });
 
@@ -60,7 +61,7 @@ it('exposes saved urls through SocialLink::url()', function () {
 
 it('blocks staff from the social links screen', function () {
     $this->seed(RolePermissionSeeder::class);
-    $staff = User::factory()->create(['is_admin' => false]);
+    $staff = User::factory()->create();
     $staff->assignRole('staff');
 
     $this->actingAs($staff)->get(route('admin.social'))->assertForbidden();

@@ -9,9 +9,11 @@ use App\Models\Setting;
 use App\Models\SocialLink;
 use App\Models\Tag;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['is_admin' => true]);
+    $this->seed(RolePermissionSeeder::class);
+    $this->admin = User::factory()->admin()->create();
 });
 
 it('returns published posts only', function () {

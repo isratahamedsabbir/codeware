@@ -102,20 +102,6 @@
         {{-- ── SIDEBAR ── --}}
         <div class="w-[320px] shrink-0 space-y-4">
 
-            <x-admin-section-card icon="shield-check" title="Settings" body-class="px-4 py-3"
-                description="Access level for this account.">
-                <label class="flex items-center justify-between gap-3 cursor-pointer select-none">
-                    <div>
-                        <div class="text-sm font-medium text-zinc-800">Super Admin</div>
-                        <div class="text-xs text-zinc-500 mt-0.5">Sets <span class="font-mono">is_admin</span> — full,
-                            unconditional access to everything, regardless of assigned roles. The other two tiers
-                            (Admin, Staff) are set via roles below.</div>
-                    </div>
-                    <input type="checkbox" wire:model="isAdmin"
-                        class="size-4.5 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 focus:ring-2 cursor-pointer">
-                </label>
-            </x-admin-section-card>
-
             {{-- Vendor Access — only meaningful once the Vendor role (below) is
                  selected; see Form::save(), which clears any assignment made here
                  if that role isn't checked when saved. --}}

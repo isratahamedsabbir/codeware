@@ -67,8 +67,7 @@ class Index extends Component
      * out rather than merely blocked on its next gated request. The 'admin'
      * role can never be deactivated, same as it can never be deleted — doing
      * so would lock out every plain admin-role account, including whoever
-     * just clicked it (is_admin super-admins are the only ones who'd stay
-     * unaffected).
+     * just clicked it.
      */
     public function toggleStatus(int $id): void
     {
@@ -92,16 +91,14 @@ class Index extends Component
     }
 
     /**
-     * Force-logs-out every non-super-admin holder of a just-deactivated role
-     * by deleting their session rows outright (SESSION_DRIVER=database) —
-     * the sessions table is shared across both hosts, so this reaches a
-     * vendor-host session the same way it reaches an admin-host one. Skips
-     * is_admin users since they bypass hasInactiveRole() and stay logged in
-     * regardless of role status.
+     * Force-logs-out every holder of a just-deactivated role by deleting
+     * their session rows outright (SESSION_DRIVER=database) — the sessions
+     * table is shared across both hosts, so this reaches a vendor-host
+     * session the same way it reaches an admin-host one.
      */
     private function endSessionsForRole(Role $role): void
     {
-        $userIds = $role->users()->where('is_admin', false)->pluck('users.id');
+        $userIds = $role->users()->pluck('users.id');
 
         if ($userIds->isNotEmpty()) {
             DB::table('sessions')->whereIn('user_id', $userIds)->delete();

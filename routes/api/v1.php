@@ -32,7 +32,7 @@ use App\Http\Controllers\Api\V1\SubscriberController;
 use Illuminate\Support\Facades\Route;
 
 // Customer account auth — API-only (no admin panel UI), backed by the same `users`
-// table as the admin/Fortify web login (is_admin stays false for these accounts).
+// table as the admin/Fortify web login (no admin/staff role for these accounts).
 Route::prefix('auth')->name('auth.')->group(function () {
     Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:6,1')->name('register');
     Route::post('/login', [LoginController::class, 'store'])->name('login')->middleware('throttle:login');

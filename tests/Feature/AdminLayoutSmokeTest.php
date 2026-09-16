@@ -2,9 +2,11 @@
 
 use App\Models\User;
 use Database\Seeders\PaymentGatewaySeeder;
+use Spatie\Permission\Models\Role;
 
 test('admin layout renders header and footer', function () {
-    $user = User::factory()->create(['is_admin' => true]);
+    Role::findOrCreate('admin', 'web');
+    $user = User::factory()->admin()->create();
     $this->actingAs($user);
 
     $response = $this->get(route('admin.dashboard'));
@@ -17,7 +19,8 @@ test('admin layout renders header and footer', function () {
 });
 
 test('admin subpage renders breadcrumb section', function () {
-    $user = User::factory()->create(['is_admin' => true]);
+    Role::findOrCreate('admin', 'web');
+    $user = User::factory()->admin()->create();
     $this->actingAs($user);
 
     $response = $this->get(route('admin.users'));
@@ -27,7 +30,8 @@ test('admin subpage renders breadcrumb section', function () {
 });
 
 test('payment gateways page renders gateway credentials', function () {
-    $user = User::factory()->create(['is_admin' => true]);
+    Role::findOrCreate('admin', 'web');
+    $user = User::factory()->admin()->create();
     $this->actingAs($user);
     $this->seed(PaymentGatewaySeeder::class);
 

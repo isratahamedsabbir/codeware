@@ -38,7 +38,7 @@ class NotifyAdminOnRepeatedFailedLogin
         }
 
         Notification::send(
-            User::where('is_admin', true)->get(),
+            User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))->get(),
             new AdminAlert(
                 'Repeated failed login attempts',
                 sprintf(

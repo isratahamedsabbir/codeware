@@ -9,22 +9,20 @@ use Illuminate\Support\Facades\Gate;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
-// Three admin tiers: Super Admin (is_admin=true), Admin (the 'admin' role — every
-// permission), and Staff (the 'staff' role — content only). access-admin decides who
-// gets into /admin/* at all; access-admin-system further restricts the system-level
-// screens (Settings, Users, Roles/Permissions, Menu, Activity History, Localization,
-// Contacts, Email Templates) to Admin/Super Admin — Staff is content-only.
+// Two admin tiers: Admin (the 'admin' role — every permission) and Staff (the
+// 'staff' role — content only). access-admin decides who gets into /admin/*
+// at all; access-admin-system further restricts the system-level screens
+// (Settings, Users, Roles/Permissions, Menu, Activity History, Localization,
+// Contacts, Email Templates) to Admin — Staff is content-only.
 
 beforeEach(function () {
     app()[PermissionRegistrar::class]->forgetCachedPermissions();
     $this->seed(RolePermissionSeeder::class);
 
-    $this->superAdmin = User::factory()->create(['is_admin' => true]);
-
-    $this->adminRoleUser = User::factory()->create(['is_admin' => false]);
+    $this->adminRoleUser = User::factory()->create();
     $this->adminRoleUser->assignRole('admin');
 
-    $this->staffUser = User::factory()->create(['is_admin' => false]);
+    $this->staffUser = User::factory()->create();
     $this->staffUser->assignRole('staff');
 
     $this->systemRoutes = [
@@ -47,16 +45,14 @@ it('seeds the demo admin and staff users with the correct tier', function () {
     $this->seed(AdminSeeder::class);
 
     $admin = User::where('email', 'admin@admin.com')->firstOrFail();
-    expect($admin->is_admin)->toBeTruthy()
-        ->and($admin->hasRole('admin'))->toBeTrue();
+    expect($admin->hasRole('admin'))->toBeTrue();
 
     $staff = User::where('email', 'staff@admin.com')->firstOrFail();
-    expect($staff->is_admin)->toBeFalsy()
-        ->and($staff->hasRole('staff'))->toBeTrue();
+    expect($staff->hasRole('staff'))->toBeTrue();
 });
 
-it('lets all three tiers reach content routes', function () {
-    foreach ([$this->superAdmin, $this->adminRoleUser, $this->staffUser] as $user) {
+it('lets both tiers reach content routes', function () {
+    foreach ([$this->adminRoleUser, $this->staffUser] as $user) {
         $this->actingAs($user);
         $this->get(route('admin.dashboard'))->assertOk();
         $this->get(route('admin.posts'))->assertOk();
@@ -74,13 +70,11 @@ it('blocks staff from every system-only route', function () {
     }
 });
 
-it('lets admin and super admin reach every system-only route', function () {
-    foreach ([$this->superAdmin, $this->adminRoleUser] as $user) {
-        $this->actingAs($user);
+it('lets admin reach every system-only route', function () {
+    $this->actingAs($this->adminRoleUser);
 
-        foreach ($this->systemRoutes as $routeName) {
-            $this->get(route($routeName))->assertOk();
-        }
+    foreach ($this->systemRoutes as $routeName) {
+        $this->get(route($routeName))->assertOk();
     }
 });
 
@@ -95,9 +89,6 @@ it('evaluates the access-admin-system gate correctly for each tier', function ()
     expect(Gate::allows('access-admin-system'))->toBeFalse();
 
     $this->actingAs($this->adminRoleUser);
-    expect(Gate::allows('access-admin-system'))->toBeTrue();
-
-    $this->actingAs($this->superAdmin);
     expect(Gate::allows('access-admin-system'))->toBeTrue();
 });
 
@@ -127,23 +118,15 @@ it('cuts off an already-open session the moment its role is deactivated, not jus
     $this->get(route('admin.dashboard'))->assertForbidden();
 });
 
-it('cuts off an already-open session the moment the user is blocked (Admin → Users), even for an is_admin super admin', function () {
-    $this->actingAs($this->superAdmin);
+it('cuts off an already-open session the moment the user is blocked (Admin → Users)', function () {
+    $this->actingAs($this->adminRoleUser);
     $this->get(route('admin.dashboard'))->assertOk();
 
-    $this->superAdmin->is_blocked = true;
-    $this->superAdmin->save();
+    $this->adminRoleUser->is_blocked = true;
+    $this->adminRoleUser->save();
 
     $this->get(route('admin.dashboard'))->assertForbidden();
     expect(auth()->check())->toBeFalse();
-});
-
-it('never locks out an is_admin super admin, even if every role is deactivated', function () {
-    Role::query()->update(['status' => 'inactive']);
-
-    $this->actingAs($this->superAdmin);
-
-    expect(Gate::allows('access-admin'))->toBeTrue();
 });
 
 it('hides the Users link from the rendered sidebar for a staff user', function () {

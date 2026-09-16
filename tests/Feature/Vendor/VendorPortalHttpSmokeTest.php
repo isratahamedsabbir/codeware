@@ -9,7 +9,7 @@ use Database\Seeders\RolePermissionSeeder;
 
 it('renders the vendor order show page over real HTTP', function () {
     $this->seed(RolePermissionSeeder::class);
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create();
     $user->assignRole('vendor');
     $vendor = ProductVendor::factory()->create();
     $vendor->users()->attach($user);
