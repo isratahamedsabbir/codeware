@@ -1,4 +1,9 @@
 @push('page-header-actions')
+    <flux:modal.trigger name="send-custom-email">
+        <flux:button variant="outline" size="sm" icon="paper-airplane">
+            Send Email
+        </flux:button>
+    </flux:modal.trigger>
     <flux:modal.trigger name="mail-settings">
         <flux:button variant="outline" size="sm" icon="envelope">
             Mail Settings
@@ -182,6 +187,42 @@
             @endif
         </main>
     </div>
+
+    {{-- Send a one-off custom email --}}
+    <flux:modal name="send-custom-email" class="md:w-[480px]">
+        <div class="space-y-5">
+            <flux:heading>{{ __('Send Email') }}</flux:heading>
+            <flux:text class="text-sm text-zinc-500">
+                {{ __('Sends a one-off email using whatever mail settings are currently saved — not tied to any template.') }}
+            </flux:text>
+
+            <div class="space-y-4">
+                <flux:field>
+                    <flux:label>{{ __('Email') }}</flux:label>
+                    <flux:input type="email" wire:model="customEmailTo" placeholder="you@example.com" />
+                    <flux:error name="customEmailTo" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>{{ __('Subject') }}</flux:label>
+                    <flux:input type="text" wire:model="customEmailSubject" placeholder="Subject" />
+                    <flux:error name="customEmailSubject" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>{{ __('Description') }}</flux:label>
+                    <flux:textarea wire:model="customEmailDescription" rows="6" placeholder="Message" />
+                    <flux:error name="customEmailDescription" />
+                </flux:field>
+            </div>
+
+            <div class="flex gap-2 pt-1">
+                <flux:button size="sm" variant="primary" wire:click="sendCustomEmail" wire:loading.attr="disabled" wire:target="sendCustomEmail">
+                    {{ __('Send Email') }}
+                </flux:button>
+            </div>
+        </div>
+    </flux:modal>
 
     {{-- Mail settings --}}
     <flux:modal name="mail-settings" class="md:w-[560px]">

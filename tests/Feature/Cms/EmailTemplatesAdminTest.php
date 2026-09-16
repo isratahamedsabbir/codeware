@@ -316,6 +316,63 @@ describe('send test email', function () {
     });
 });
 
+describe('send custom email', function () {
+    beforeEach(function () {
+        $this->admin = User::factory()->admin()->create();
+    });
+
+    it('requires an email, subject, and description', function () {
+        Mail::fake();
+
+        Livewire::actingAs($this->admin)
+            ->test(Index::class)
+            ->set('customEmailTo', 'not-an-email')
+            ->set('customEmailSubject', '')
+            ->set('customEmailDescription', '')
+            ->call('sendCustomEmail')
+            ->assertHasErrors(['customEmailTo', 'customEmailSubject', 'customEmailDescription']);
+
+        Mail::assertNothingSent();
+    });
+
+    it('sends a freeform email with the given subject and description', function () {
+        Mail::fake();
+
+        Livewire::actingAs($this->admin)
+            ->test(Index::class)
+            ->set('customEmailTo', 'destination@example.test')
+            ->set('customEmailSubject', 'Hello there')
+            ->set('customEmailDescription', "Line one\nLine two")
+            ->call('sendCustomEmail')
+            ->assertHasNoErrors()
+            ->assertDispatched('notify', message: 'Email sent to destination@example.test.')
+            ->assertSet('customEmailTo', '')
+            ->assertSet('customEmailSubject', '')
+            ->assertSet('customEmailDescription', '');
+
+        Mail::assertSent(TemplateDrivenMail::class, function (TemplateDrivenMail $mail) {
+            return $mail->hasTo('destination@example.test')
+                && $mail->subjectLine === 'Hello there'
+                && str_contains($mail->bodyHtml, 'Line one<br />')
+                && str_contains($mail->bodyHtml, 'Line two');
+        });
+    });
+
+    it('escapes html in the description before sending', function () {
+        Mail::fake();
+
+        Livewire::actingAs($this->admin)
+            ->test(Index::class)
+            ->set('customEmailTo', 'destination@example.test')
+            ->set('customEmailSubject', 'Hello')
+            ->set('customEmailDescription', '<script>alert(1)</script>')
+            ->call('sendCustomEmail')
+            ->assertHasNoErrors();
+
+        Mail::assertSent(TemplateDrivenMail::class, fn (TemplateDrivenMail $mail) => str_contains($mail->bodyHtml, '&lt;script&gt;'));
+    });
+});
+
 it('renders the template-driven email view', function () {
     Setting::set('contact_email', 'support@example.com');
 
