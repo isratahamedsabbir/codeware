@@ -7,6 +7,7 @@ use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\Service;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -55,6 +56,10 @@ class DemoContentSeeder extends Seeder
             sortOrder: $product->sort_order,
             description: $product->description,
         ));
+
+        // Services have their own slug column (see Service::booted()) — unlike
+        // Product/Post/PostCategory above, no paired Page is needed.
+        Service::factory()->count(6)->published()->create();
 
         $postCategories = PostCategory::factory()->count(4)->published()->create();
         $postCategories->each(fn (PostCategory $category) => $this->createPage(

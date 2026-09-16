@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Service;
 use App\Models\Transaction;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -20,27 +21,37 @@ class OrderSeeder extends Seeder
             $products = Product::factory()->published()->count(10)->create();
         }
 
+        $services = Service::query()->active()->get();
+
+        if ($services->isEmpty()) {
+            $services = Service::factory()->published()->count(6)->create();
+        }
+
         Order::query()->delete();
 
-        collect(range(1, 100))->each(function () use ($products) {
+        collect(range(1, 100))->each(function () use ($products, $services) {
             $status = fake()->randomElement(Order::STATUSES);
             $paymentStatus = $this->paymentStatusFor($status);
             $paymentMethod = fake()->randomElement(self::PAYMENT_METHODS);
 
-            $lines = $products->random(min(4, $products->count()))
-                ->take(fake()->numberBetween(1, 3))
-                ->map(function (Product $product) {
-                    $unitPrice = (float) $product->price ?: fake()->randomFloat(2, 100, 3000);
-                    $quantity = fake()->numberBetween(1, 4);
+            // Weighted so most demo orders are product-only (the common case),
+            // with a mix of service-only and mixed carts to exercise the
+            // Product/Service/Mixed badge on the admin Orders list.
+            $cartType = fake()->randomElement(['product', 'product', 'product', 'service', 'mixed']);
 
-                    return [
-                        'product_id' => $product->id,
-                        'product_name' => $product->getTranslation('name', 'en', false),
-                        'unit_price' => $unitPrice,
-                        'quantity' => $quantity,
-                        'line_total' => round($unitPrice * $quantity, 2),
-                    ];
-                });
+            $productLines = $cartType === 'service'
+                ? collect()
+                : $products->random(min(4, $products->count()))
+                    ->take(fake()->numberBetween(1, 3))
+                    ->map(fn (Product $product) => $this->productLine($product));
+
+            $serviceLines = $cartType === 'product' || $services->isEmpty()
+                ? collect()
+                : $services->random(min(3, $services->count()))
+                    ->take(fake()->numberBetween(1, 2))
+                    ->map(fn (Service $service) => $this->serviceLine($service));
+
+            $lines = $productLines->concat($serviceLines);
 
             $subtotal = round($lines->sum('line_total'), 2);
 
@@ -48,7 +59,9 @@ class OrderSeeder extends Seeder
                 'customer_name' => fake()->name(),
                 'customer_email' => fake()->safeEmail(),
                 'customer_phone' => fake()->numerify('01#########'),
-                'shipping_address' => fake()->address(),
+                // A service-only cart has nothing to deliver (see
+                // OrderController::store()'s same conditional rule).
+                'shipping_address' => $productLines->isNotEmpty() ? fake()->address() : null,
                 'status' => $status,
                 'payment_method' => $paymentMethod,
                 'payment_status' => $paymentStatus,
@@ -86,5 +99,43 @@ class OrderSeeder extends Seeder
             'shipped', 'processing' => fake()->randomElement(['paid', 'paid', 'pending']),
             default => 'pending',
         };
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function productLine(Product $product): array
+    {
+        $unitPrice = (float) $product->price ?: fake()->randomFloat(2, 100, 3000);
+        $quantity = fake()->numberBetween(1, 4);
+
+        return [
+            'product_id' => $product->id,
+            'service_id' => null,
+            'type' => 'product',
+            'item_name' => $product->getTranslation('name', 'en', false),
+            'unit_price' => $unitPrice,
+            'quantity' => $quantity,
+            'line_total' => round($unitPrice * $quantity, 2),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function serviceLine(Service $service): array
+    {
+        $unitPrice = (float) $service->price ?: fake()->randomFloat(2, 100, 3000);
+        $quantity = fake()->numberBetween(1, 2);
+
+        return [
+            'product_id' => null,
+            'service_id' => $service->id,
+            'type' => 'service',
+            'item_name' => $service->getTranslation('name', 'en', false),
+            'unit_price' => $unitPrice,
+            'quantity' => $quantity,
+            'line_total' => round($unitPrice * $quantity, 2),
+        ];
     }
 }

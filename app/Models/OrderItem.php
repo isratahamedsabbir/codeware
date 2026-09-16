@@ -10,8 +10,10 @@ class OrderItem extends Model
 {
     use HasFactory;
 
+    public const TYPES = ['product', 'service'];
+
     protected $fillable = [
-        'order_id', 'product_id', 'product_name', 'unit_price', 'quantity', 'line_total',
+        'order_id', 'product_id', 'service_id', 'type', 'item_name', 'unit_price', 'quantity', 'line_total',
     ];
 
     protected function casts(): array
@@ -31,5 +33,10 @@ class OrderItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function service(): BelongsTo
+    {
+        return $this->belongsTo(Service::class);
     }
 }

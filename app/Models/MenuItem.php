@@ -77,6 +77,7 @@ class MenuItem extends Model
         'admin.product-attributes' => 'products',
         'admin.product-brands' => 'products',
         'admin.product-vendors' => 'products',
+        'admin.services' => 'services',
         'admin.pages' => 'pages',
         'admin.cms' => 'cms',
         'admin.media-library' => 'media-library',

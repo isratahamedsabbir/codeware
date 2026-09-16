@@ -76,6 +76,24 @@ it('blocks localization, menu, contacts, and email templates routes when their f
     $this->get(route('admin.settings'))->assertOk();
 });
 
+it('blocks the services route when its feature is off, leaving products reachable', function () {
+    disableFeature('services');
+
+    $this->get(route('admin.services'))->assertNotFound();
+
+    $this->get(route('admin.products'))->assertOk();
+});
+
+it('hides the Services link from the live sidebar once its feature is off', function () {
+    $this->seed(AdminMenuSeeder::class);
+
+    $this->get(route('admin.dashboard'))->assertOk()->assertSee('Services');
+
+    disableFeature('services');
+
+    $this->get(route('admin.dashboard'))->assertOk()->assertDontSee('Services');
+});
+
 it('hides a disabled feature\'s items from the live sidebar but shows them when enabled', function () {
     $this->seed(AdminMenuSeeder::class);
 

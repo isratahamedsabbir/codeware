@@ -4,6 +4,7 @@ use App\Models\Feature;
 use App\Models\Order;
 use App\Models\PaymentGateway;
 use App\Models\Product;
+use App\Models\Service;
 use App\Models\Setting;
 use App\Models\Transaction;
 
@@ -169,4 +170,118 @@ it('is blocked when the orders feature is disabled', function () {
     Feature::create(['key' => 'orders', 'label' => 'Orders & Reports', 'is_enabled' => false]);
 
     $this->postJson('/api/v1/orders', [])->assertNotFound();
+});
+
+it('places a service-only order without a shipping address', function () {
+    $service = Service::factory()->published()->create(['price' => 800]);
+
+    $response = $this->postJson('/api/v1/orders', [
+        'customer_name' => 'Jane Doe',
+        'customer_email' => 'jane@example.com',
+        'customer_phone' => '01712345678',
+        'payment_method' => 'cod',
+        'items' => [
+            ['service_id' => $service->id, 'quantity' => 1],
+        ],
+    ]);
+
+    $response->assertCreated();
+    $response->assertJsonPath('data.total', 800);
+    $response->assertJsonPath('data.items.0.type', 'service');
+
+    $order = Order::sole();
+    expect($order->shipping_address)->toBeNull();
+
+    $item = $order->items->sole();
+    expect($item->type)->toBe('service')
+        ->and($item->service_id)->toBe($service->id)
+        ->and($item->product_id)->toBeNull();
+});
+
+it('still requires a shipping address once a product is in the cart, even mixed with a service', function () {
+    $product = Product::factory()->published()->create(['price' => 500]);
+    $service = Service::factory()->published()->create(['price' => 800]);
+
+    $this->postJson('/api/v1/orders', [
+        'customer_name' => 'Jane Doe',
+        'customer_email' => 'jane@example.com',
+        'customer_phone' => '01712345678',
+        'payment_method' => 'cod',
+        'items' => [
+            ['product_id' => $product->id, 'quantity' => 1],
+            ['service_id' => $service->id, 'quantity' => 1],
+        ],
+    ])->assertJsonValidationErrors(['shipping_address']);
+
+    expect(Order::count())->toBe(0);
+});
+
+it('places a mixed product and service order once a shipping address is given', function () {
+    $product = Product::factory()->published()->create(['price' => 500]);
+    $service = Service::factory()->published()->create(['price' => 800]);
+
+    $response = $this->postJson('/api/v1/orders', [
+        'customer_name' => 'Jane Doe',
+        'customer_email' => 'jane@example.com',
+        'customer_phone' => '01712345678',
+        'shipping_address' => '123 Main St, Dhaka',
+        'payment_method' => 'cod',
+        'items' => [
+            ['product_id' => $product->id, 'quantity' => 1],
+            ['service_id' => $service->id, 'quantity' => 1],
+        ],
+    ]);
+
+    $response->assertCreated();
+    $response->assertJsonPath('data.total', 1300);
+    expect(Order::sole()->items)->toHaveCount(2);
+});
+
+it('rejects an item that has neither a product_id nor a service_id', function () {
+    $this->postJson('/api/v1/orders', [
+        'customer_name' => 'Jane Doe',
+        'customer_email' => 'jane@example.com',
+        'customer_phone' => '01712345678',
+        'shipping_address' => '123 Main St, Dhaka',
+        'payment_method' => 'cod',
+        'items' => [
+            ['quantity' => 1],
+        ],
+    ])->assertJsonValidationErrors(['items.0']);
+
+    expect(Order::count())->toBe(0);
+});
+
+it('rejects an item that has both a product_id and a service_id', function () {
+    $product = Product::factory()->published()->create();
+    $service = Service::factory()->published()->create();
+
+    $this->postJson('/api/v1/orders', [
+        'customer_name' => 'Jane Doe',
+        'customer_email' => 'jane@example.com',
+        'customer_phone' => '01712345678',
+        'shipping_address' => '123 Main St, Dhaka',
+        'payment_method' => 'cod',
+        'items' => [
+            ['product_id' => $product->id, 'service_id' => $service->id, 'quantity' => 1],
+        ],
+    ])->assertJsonValidationErrors(['items.0']);
+
+    expect(Order::count())->toBe(0);
+});
+
+it('rejects an order for an inactive service', function () {
+    $service = Service::factory()->draft()->create();
+
+    $this->postJson('/api/v1/orders', [
+        'customer_name' => 'Jane Doe',
+        'customer_email' => 'jane@example.com',
+        'customer_phone' => '01712345678',
+        'payment_method' => 'cod',
+        'items' => [
+            ['service_id' => $service->id, 'quantity' => 1],
+        ],
+    ])->assertJsonValidationErrors(['items.0.service_id']);
+
+    expect(Order::count())->toBe(0);
 });

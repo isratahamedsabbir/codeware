@@ -19,6 +19,7 @@ class Features
         'access-control' => 'Access Control (Roles, Permissions, Users)',
         'audit-log' => 'Audit Log',
         'products' => 'Products',
+        'services' => 'Services',
         'orders' => 'Orders & Reports',
         'pages' => 'Pages',
         'cms' => 'CMS',

@@ -50,7 +50,7 @@
                 <table class="w-full divide-y divide-gray-200">
                     <thead>
                         <tr class="bg-zinc-50">
-                            <th class="px-6 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Product</th>
+                            <th class="px-6 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Item</th>
                             <th class="px-6 py-2.5 text-right text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Unit Price</th>
                             <th class="px-6 py-2.5 text-right text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Qty</th>
                             <th class="px-6 py-2.5 text-right text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Line Total</th>
@@ -60,10 +60,15 @@
                         @foreach ($order->items as $item)
                             <tr>
                                 <td class="px-6 py-3 text-sm text-zinc-800">
-                                    {{ $item->product_name }}
-                                    @unless ($item->product)
+                                    {{ $item->item_name }}
+                                    @if ($item->type === 'service')
+                                        <span class="text-xs text-zinc-400">(service)</span>
+                                    @endif
+                                    @if ($item->type === 'product' && ! $item->product)
                                         <span class="text-xs text-zinc-400">(product removed)</span>
-                                    @endunless
+                                    @elseif ($item->type === 'service' && ! $item->service)
+                                        <span class="text-xs text-zinc-400">(service removed)</span>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-3 text-sm text-zinc-600 text-right">{{ number_format((float) $item->unit_price, 2) }}</td>
                                 <td class="px-6 py-3 text-sm text-zinc-600 text-right">{{ $item->quantity }}</td>

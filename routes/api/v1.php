@@ -27,6 +27,7 @@ use App\Http\Controllers\Api\V1\PostController;
 use App\Http\Controllers\Api\V1\ProductCategoryController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProfileController;
+use App\Http\Controllers\Api\V1\ServiceController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\SubscriberController;
 use Illuminate\Support\Facades\Route;
@@ -84,6 +85,9 @@ Route::get('/product-categories', [ProductCategoryController::class, 'index'])->
 Route::get('/product-categories/{slug}', [ProductCategoryController::class, 'show'])->name('product-categories.show');
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
+
+Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
+Route::get('/services/{slug}', [ServiceController::class, 'show'])->name('services.show');
 
 Route::get('/cms', [CmsController::class, 'index'])->name('cms.index');
 

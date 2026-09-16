@@ -8,6 +8,7 @@ use App\Models\Feature;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\Service;
 use App\Models\Setting;
 use App\Models\Transaction;
 use App\Models\User;
@@ -98,6 +99,25 @@ it('searches orders by order number or customer', function () {
         ->set('search', $order->order_number)
         ->assertSee('Findable Customer')
         ->assertDontSee('Someone Else');
+});
+
+it('labels an order as Product, Service, or Mixed based on its line items', function () {
+    $productOrder = Order::factory()->has(OrderItem::factory(), 'items')->create(['customer_name' => 'Product Buyer']);
+    $serviceOrder = Order::factory()->has(OrderItem::factory()->forService(), 'items')->create(['customer_name' => 'Service Buyer']);
+    $mixedOrder = Order::factory()
+        ->has(OrderItem::factory(), 'items')
+        ->has(OrderItem::factory()->forService(), 'items')
+        ->create(['customer_name' => 'Mixed Buyer']);
+
+    $component = Livewire::test(OrdersIndex::class);
+
+    $component->assertSeeInOrder(['Product Buyer', 'Product'])
+        ->assertSeeInOrder(['Service Buyer', 'Service'])
+        ->assertSeeInOrder(['Mixed Buyer', 'Mixed']);
+
+    expect($productOrder->items->sole()->type)->toBe('product')
+        ->and($serviceOrder->items->sole()->type)->toBe('service')
+        ->and($mixedOrder->items()->pluck('type')->sort()->values()->all())->toBe(['product', 'service']);
 });
 
 it('shows order details with items and transactions', function () {

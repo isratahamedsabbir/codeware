@@ -60,8 +60,8 @@ it('shows only the assigned vendor\'s line items within a shared order, not the 
     $theirProduct = Product::factory()->create(['vendor_id' => $this->vendorB->id]);
 
     $order = Order::factory()->create();
-    OrderItem::factory()->create(['order_id' => $order->id, 'product_id' => $myProduct->id, 'product_name' => 'My Line Item']);
-    OrderItem::factory()->create(['order_id' => $order->id, 'product_id' => $theirProduct->id, 'product_name' => 'Their Line Item']);
+    OrderItem::factory()->create(['order_id' => $order->id, 'product_id' => $myProduct->id, 'item_name' => 'My Line Item']);
+    OrderItem::factory()->create(['order_id' => $order->id, 'product_id' => $theirProduct->id, 'item_name' => 'Their Line Item']);
 
     Livewire::test(OrdersShow::class, ['orderId' => $order->id])
         ->assertSee('My Line Item')

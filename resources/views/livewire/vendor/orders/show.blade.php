@@ -58,7 +58,7 @@
             <tbody class="divide-y divide-gray-200">
                 @foreach ($items as $item)
                     <tr class="hover:bg-indigo-50/30 transition-colors">
-                        <td class="px-4 py-2.5 text-sm text-zinc-800">{{ $item->product_name }}</td>
+                        <td class="px-4 py-2.5 text-sm text-zinc-800">{{ $item->item_name }}</td>
                         <td class="px-4 py-2.5 text-sm text-zinc-600">{{ $order->currency }} {{ number_format((float) $item->unit_price, 2) }}</td>
                         <td class="px-4 py-2.5 text-sm text-zinc-600">{{ $item->quantity }}</td>
                         <td class="px-4 py-2.5 text-sm font-medium text-zinc-900">{{ $order->currency }} {{ number_format((float) $item->line_total, 2) }}</td>

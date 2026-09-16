@@ -118,7 +118,7 @@
     <table class="items-table" style="margin-top: 24px;">
         <thead>
             <tr>
-                <th>Product</th>
+                <th>Item</th>
                 <th class="text-right">Unit Price</th>
                 <th class="text-right">Qty</th>
                 <th class="text-right">Line Total</th>
@@ -127,7 +127,7 @@
         <tbody>
             @foreach ($order->items as $item)
                 <tr>
-                    <td>{{ $item->product_name }}</td>
+                    <td>{{ $item->item_name }}</td>
                     <td class="text-right">{{ number_format((float) $item->unit_price, 2) }}</td>
                     <td class="text-right">{{ $item->quantity }}</td>
                     <td class="text-right">{{ number_format((float) $item->line_total, 2) }}</td>

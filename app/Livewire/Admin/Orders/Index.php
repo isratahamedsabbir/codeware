@@ -228,7 +228,11 @@ class Index extends Component
     {
         return view('livewire.admin.orders.index', [
             'orders' => $this->filteredQuery()
-                ->withCount('items')
+                ->withCount([
+                    'items',
+                    'items as product_items_count' => fn ($q) => $q->where('type', 'product'),
+                    'items as service_items_count' => fn ($q) => $q->where('type', 'service'),
+                ])
                 ->latest()
                 ->paginate($this->perPage),
         ])->layout('layouts.admin', ['title' => 'Orders', 'hidePageHeading' => true]);

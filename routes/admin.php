@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\ProductCategoryExportController;
 use App\Http\Controllers\Admin\ProductExportController;
 use App\Http\Controllers\Admin\ProductVendorExportController;
 use App\Http\Controllers\Admin\ReportExportController;
+use App\Http\Controllers\Admin\ServiceExportController;
 use App\Http\Controllers\Admin\ShippingMethodExportController;
 use App\Http\Controllers\Admin\SubscriberExportController;
 use App\Http\Controllers\Admin\TagExportController;
@@ -132,6 +133,14 @@ Route::middleware('feature:products')->group(function () {
     Route::get('/product-vendors/export', [ProductVendorExportController::class, 'export'])->name('product-vendors.export');
     Route::get('/product-vendors/create', App\Livewire\Admin\ProductVendors\Form::class)->name('product-vendors.create');
     Route::get('/product-vendors/{id}/edit', App\Livewire\Admin\ProductVendors\Form::class)->name('product-vendors.edit');
+});
+
+// Services — its own feature toggle, separate from Products.
+Route::middleware('feature:services')->group(function () {
+    Route::get('/services', App\Livewire\Admin\Services\Index::class)->name('services');
+    Route::get('/services/export', [ServiceExportController::class, 'export'])->name('services.export');
+    Route::get('/services/create', App\Livewire\Admin\Services\Form::class)->name('services.create');
+    Route::get('/services/{id}/edit', App\Livewire\Admin\Services\Form::class)->name('services.edit');
 });
 
 // System-only screens — Admin/Super Admin only, not Staff (see access-admin-system gate)

@@ -14,7 +14,10 @@ return new class extends Migration
             $table->string('customer_name');
             $table->string('customer_email');
             $table->string('customer_phone');
-            $table->text('shipping_address');
+            // Nullable — a service-only order (nothing to deliver) can omit it;
+            // still required whenever the cart contains a physical product
+            // (see OrderController::store()'s conditional validation rule).
+            $table->text('shipping_address')->nullable();
             // Fulfillment progress — separate from payment_status below, since an
             // order can be e.g. "processing" while payment is still "pending" (COD).
             $table->string('status', 20)->default('pending');

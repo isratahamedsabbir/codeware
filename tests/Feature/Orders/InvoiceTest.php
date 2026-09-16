@@ -63,7 +63,7 @@ it('lets an admin view the print-only shipping address page', function () {
 
 it('does not show order items or totals on the address page', function () {
     $admin = User::factory()->admin()->create();
-    $order = Order::factory()->has(OrderItem::factory()->count(2)->state(['product_name' => 'Secret Widget']), 'items')->create();
+    $order = Order::factory()->has(OrderItem::factory()->count(2)->state(['item_name' => 'Secret Widget']), 'items')->create();
 
     $this->actingAs($admin)
         ->get(route('admin.orders.address', $order))

@@ -96,6 +96,7 @@
                         <th class="px-1 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Order #</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Customer</th>
+                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Type</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Items</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Total</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Payment</th>
@@ -128,6 +129,18 @@
                             <td class="px-4 py-2">
                                 <div class="text-sm font-medium text-zinc-900"><x-truncate :text="$order->customer_name" /></div>
                                 <div class="text-xs text-zinc-500"><x-truncate :text="$order->customer_email" /></div>
+                            </td>
+                            {{-- Type — whether this order is for products, services, or a mix
+                                 of both, derived from its line items' type discriminator. --}}
+                            <td class="px-4 py-2">
+                                @php $isProduct = $order->product_items_count > 0; $isService = $order->service_items_count > 0; @endphp
+                                @if ($isProduct && $isService)
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-violet-50 text-violet-700">Mixed</span>
+                                @elseif ($isService)
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-cyan-50 text-cyan-700">Service</span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-zinc-100 text-zinc-600">Product</span>
+                                @endif
                             </td>
                             <td class="hidden lg:table-cell px-4 py-2 text-sm text-zinc-600">{{ $order->items_count }}</td>
                             <td class="px-4 py-2 text-sm font-medium text-zinc-900">{{ number_format((float) $order->total, 2) }} {{ $order->currency }}</td>
@@ -188,7 +201,7 @@
                             </td>
                         </tr>
                         @if ($viewingId === $order->id)
-                            <x-admin-row-details colspan="10">
+                            <x-admin-row-details colspan="11">
                                 <x-admin-row-details.item label="Items">{{ $order->items_count }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Payment method">{{ \App\Support\PaymentMethods::label($order->payment_method) }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Payment status">{{ ucfirst($order->payment_status) }}</x-admin-row-details.item>
@@ -197,7 +210,7 @@
                         @endif
                     @empty
                         <tr>
-                            <td colspan="10" class="px-6 py-16 text-center">
+                            <td colspan="11" class="px-6 py-16 text-center">
                                 <flux:icon.shopping-bag class="w-10 h-10 text-zinc-200 mx-auto mb-3" />
                                 <p class="text-sm text-zinc-600">No orders found.</p>
                             </td>
