@@ -33,6 +33,7 @@ class MenuItem extends Model
      */
     private const SYSTEM_ROUTE_PREFIXES = [
         'admin.settings',
+        'admin.env',
         'admin.seo',
         'admin.social',
         'admin.payment-gateways',

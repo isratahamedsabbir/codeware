@@ -43,6 +43,7 @@ class AdminMenuSeeder extends Seeder
 
         $this->group('Library & System', 6, [
             ['Settings', 'cog-6-tooth', 'admin.settings'],
+            ['Env', 'command-line', 'admin.env'],
             ['Global SEO', 'magnifying-glass', 'admin.seo'],
             ['Social Links', 'share', 'admin.social'],
             ['Payment Gateways', 'credit-card', 'admin.payment-gateways'],

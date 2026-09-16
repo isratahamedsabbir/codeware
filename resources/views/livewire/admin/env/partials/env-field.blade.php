@@ -1,4 +1,4 @@
-{{-- One .env-backed field, shared by every card on the Env tab so the Google/Facebook
+{{-- One .env-backed field, shared by every card on this page so the Google/Facebook
      Login cards (split out of the generic group loop in index.blade.php so each can sit
      next to its own "Where to get these" guide) render identically to the rest. --}}
 <flux:field id="env-field-{{ $key }}">

@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\Admin\Settings\Index as SettingsIndex;
+use App\Livewire\Admin\Env\Index as EnvIndex;
 use App\Models\User;
 use App\Support\EnvFile;
 use Livewire\Livewire;
@@ -32,17 +32,17 @@ afterEach(function () {
 it('reflects config("app.debug") on mount', function () {
     config(['app.debug' => false]);
 
-    Livewire::test(SettingsIndex::class)
+    Livewire::test(EnvIndex::class)
         ->assertSet('debugMode', false);
 
     config(['app.debug' => true]);
 
-    Livewire::test(SettingsIndex::class)
+    Livewire::test(EnvIndex::class)
         ->assertSet('debugMode', true);
 });
 
 it('opens a confirmation modal before enabling debug mode, without writing anything yet', function () {
-    Livewire::test(SettingsIndex::class)
+    Livewire::test(EnvIndex::class)
         ->call('confirmEnableDebugMode')
         ->assertDispatched('open-modal', name: 'debug-mode-confirm');
 
@@ -50,7 +50,7 @@ it('opens a confirmation modal before enabling debug mode, without writing anyth
 });
 
 it('enables debug mode, writes APP_DEBUG=true to .env, and reflects that back on the component', function () {
-    Livewire::test(SettingsIndex::class)
+    Livewire::test(EnvIndex::class)
         ->call('enableDebugMode')
         ->assertSet('debugMode', true)
         ->assertDispatched('close-modal', name: 'debug-mode-confirm');
@@ -62,7 +62,7 @@ it('disables debug mode immediately, with no confirmation step', function () {
     EnvFile::set(['APP_DEBUG' => 'true']);
     config(['app.debug' => true]);
 
-    Livewire::test(SettingsIndex::class)
+    Livewire::test(EnvIndex::class)
         ->assertSet('debugMode', true)
         ->call('disableDebugMode')
         ->assertSet('debugMode', false);
@@ -71,7 +71,7 @@ it('disables debug mode immediately, with no confirmation step', function () {
 });
 
 it('surfaces a clear error instead of a false success when the write fails', function () {
-    $component = Livewire::test(SettingsIndex::class);
+    $component = Livewire::test(EnvIndex::class);
 
     // Break the path only now, after mount() already succeeded, so the write itself
     // is what fails — not component setup.
