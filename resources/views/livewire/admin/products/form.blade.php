@@ -368,9 +368,20 @@
                 <flux:error name="category_ids" />
             </x-admin-section-card>
 
-            {{-- Tags — shares the same tag pool as Blog Posts (App\Models\Tag) --}}
+            {{-- Tags — product-typed pool plus legacy tags (App\Models\Tag) --}}
             <x-admin-section-card icon="hashtag" title="Tags" icon-color="bg-rose-500/10 text-rose-600"
                 body-class="px-4 py-3" description="Label this product for filtering and search.">
+                <form wire:submit="createTag" class="mb-3">
+                    <div class="flex items-center gap-2">
+                        <input wire:model="newTagName" type="text" placeholder="New tag…"
+                            class="flex-1 min-w-0 h-8 rounded-lg border border-zinc-200 px-2.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all" />
+                        <flux:button type="submit" size="sm" variant="primary" wire:loading.attr="disabled"
+                            wire:target="createTag">
+                            Add
+                        </flux:button>
+                    </div>
+                    <flux:error name="newTagName" />
+                </form>
                 @forelse ($this->tags as $tag)
                     <label class="flex items-center gap-2.5 py-1.5 cursor-pointer group">
                         <input type="checkbox" wire:model="tag_ids" value="{{ $tag->id }}"
@@ -380,11 +391,7 @@
                         </span>
                     </label>
                 @empty
-                    <p class="text-xs text-zinc-400">No tags yet.
-                        <a href="{{ route('admin.tags.create') }}" wire:navigate class="text-indigo-500 hover:underline">
-                            Create one
-                        </a>.
-                    </p>
+                    <p class="text-xs text-zinc-400">No tags yet — type a name above to create one.</p>
                 @endforelse
                 <flux:error name="tag_ids" />
             </x-admin-section-card>

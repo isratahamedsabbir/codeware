@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\CategoryExportController;
 use App\Http\Controllers\Admin\ContactExportController;
 use App\Http\Controllers\Admin\CountryExportController;
 use App\Http\Controllers\Admin\CouponExportController;
@@ -7,11 +8,9 @@ use App\Http\Controllers\Admin\DistrictExportController;
 use App\Http\Controllers\Admin\DivisionExportController;
 use App\Http\Controllers\Admin\FileManagerController;
 use App\Http\Controllers\Admin\PageExportController;
-use App\Http\Controllers\Admin\PostCategoryExportController;
 use App\Http\Controllers\Admin\PostExportController;
 use App\Http\Controllers\Admin\ProductAttributeExportController;
 use App\Http\Controllers\Admin\ProductBrandExportController;
-use App\Http\Controllers\Admin\ProductCategoryExportController;
 use App\Http\Controllers\Admin\ProductExportController;
 use App\Http\Controllers\Admin\ProductVendorExportController;
 use App\Http\Controllers\Admin\ReportExportController;
@@ -44,17 +43,24 @@ Route::get('/profile', Profile::class)->name('profile');
 // About — company info, always reachable regardless of role or feature flags
 Route::get('/about', About::class)->name('about');
 
-// Posts, Post Categories, Tags — the "blog" feature
+// Posts — the "blog" feature. Post Categories and Tags moved out to the
+// shared Categories/Tags screens (feature:taxonomy below) since both are now
+// used by Products too, not just Blog.
 Route::middleware('feature:blog')->group(function () {
     Route::get('/posts', Index::class)->name('posts');
     Route::get('/posts/export', [PostExportController::class, 'export'])->name('posts.export');
     Route::get('/posts/create', Form::class)->name('posts.create');
     Route::get('/posts/{id}/edit', Form::class)->name('posts.edit');
+});
 
-    Route::get('/post-categories', App\Livewire\Admin\PostCategories\Index::class)->name('post-categories');
-    Route::get('/post-categories/export', [PostCategoryExportController::class, 'export'])->name('post-categories.export');
-    Route::get('/post-categories/create', App\Livewire\Admin\PostCategories\Form::class)->name('post-categories.create');
-    Route::get('/post-categories/{id}/edit', App\Livewire\Admin\PostCategories\Form::class)->name('post-categories.edit');
+// Categories (Product + Post, one shared screen — pick a type when creating)
+// and Tags (already shared the same way) — reachable regardless of whether
+// Blog or Products is the one currently in use.
+Route::middleware('feature:taxonomy')->group(function () {
+    Route::get('/categories', App\Livewire\Admin\Categories\Index::class)->name('categories');
+    Route::get('/categories/export', [CategoryExportController::class, 'export'])->name('categories.export');
+    Route::get('/categories/create', App\Livewire\Admin\Categories\Form::class)->name('categories.create');
+    Route::get('/categories/{id}/edit', App\Livewire\Admin\Categories\Form::class)->name('categories.edit');
 
     Route::get('/tags', App\Livewire\Admin\Tags\Index::class)->name('tags');
     Route::get('/tags/export', [TagExportController::class, 'export'])->name('tags.export');
@@ -105,7 +111,8 @@ Route::middleware('can:access-admin-system')->group(function () {
     });
 });
 
-// Products, Product Categories
+// Products — Product Categories moved out to the shared Categories screen
+// (feature:taxonomy above).
 Route::middleware('feature:products')->group(function () {
     Route::get('/products', App\Livewire\Admin\Products\Index::class)->name('products');
     Route::get('/products/export', [ProductExportController::class, 'export'])->name('products.export');
@@ -114,25 +121,24 @@ Route::middleware('feature:products')->group(function () {
     Route::get('/products/{id}/edit', App\Livewire\Admin\Products\Form::class)->name('products.edit');
     Route::get('/products/{id}/label', [ProductLabelController::class, 'download'])->name('products.label');
 
-    Route::get('/product-categories', App\Livewire\Admin\ProductCategories\Index::class)->name('product-categories');
-    Route::get('/product-categories/export', [ProductCategoryExportController::class, 'export'])->name('product-categories.export');
-    Route::get('/product-categories/create', App\Livewire\Admin\ProductCategories\Form::class)->name('product-categories.create');
-    Route::get('/product-categories/{id}/edit', App\Livewire\Admin\ProductCategories\Form::class)->name('product-categories.edit');
-
     Route::get('/product-attributes', App\Livewire\Admin\ProductAttributes\Index::class)->name('product-attributes');
     Route::get('/product-attributes/export', [ProductAttributeExportController::class, 'export'])->name('product-attributes.export');
     Route::get('/product-attributes/create', App\Livewire\Admin\ProductAttributes\Form::class)->name('product-attributes.create');
     Route::get('/product-attributes/{id}/edit', App\Livewire\Admin\ProductAttributes\Form::class)->name('product-attributes.edit');
 
-    Route::get('/product-brands', App\Livewire\Admin\ProductBrands\Index::class)->name('product-brands');
-    Route::get('/product-brands/export', [ProductBrandExportController::class, 'export'])->name('product-brands.export');
-    Route::get('/product-brands/create', App\Livewire\Admin\ProductBrands\Form::class)->name('product-brands.create');
-    Route::get('/product-brands/{id}/edit', App\Livewire\Admin\ProductBrands\Form::class)->name('product-brands.edit');
-
     Route::get('/product-vendors', App\Livewire\Admin\ProductVendors\Index::class)->name('product-vendors');
     Route::get('/product-vendors/export', [ProductVendorExportController::class, 'export'])->name('product-vendors.export');
     Route::get('/product-vendors/create', App\Livewire\Admin\ProductVendors\Form::class)->name('product-vendors.create');
     Route::get('/product-vendors/{id}/edit', App\Livewire\Admin\ProductVendors\Form::class)->name('product-vendors.edit');
+});
+
+// Brands — still "products" feature-gated, just its own top-level sidebar
+// item now rather than nested under Products (see AdminMenuSeeder).
+Route::middleware('feature:products')->group(function () {
+    Route::get('/product-brands', App\Livewire\Admin\ProductBrands\Index::class)->name('product-brands');
+    Route::get('/product-brands/export', [ProductBrandExportController::class, 'export'])->name('product-brands.export');
+    Route::get('/product-brands/create', App\Livewire\Admin\ProductBrands\Form::class)->name('product-brands.create');
+    Route::get('/product-brands/{id}/edit', App\Livewire\Admin\ProductBrands\Form::class)->name('product-brands.edit');
 });
 
 // Services — its own feature toggle, separate from Products.
@@ -154,6 +160,11 @@ Route::middleware('can:access-admin-system')->group(function () {
     // Comments — moderation only, no create form (comments are customer-authored).
     Route::middleware('feature:comments')->group(function () {
         Route::get('/comments', App\Livewire\Admin\Comments\Index::class)->name('comments');
+    });
+
+    // Reviews — moderation only, no create form (reviews are customer-authored).
+    Route::middleware('feature:reviews')->group(function () {
+        Route::get('/reviews', App\Livewire\Admin\Reviews\Index::class)->name('reviews');
     });
 
     // Newsletter Subscribers

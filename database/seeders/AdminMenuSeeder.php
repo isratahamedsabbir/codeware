@@ -21,29 +21,32 @@ class AdminMenuSeeder extends Seeder
         $this->standalone('Chat', 'chat-bubble-left-right', 'admin.chat', 2);
 
         $this->group('Products', 3, [
-            ['Product Categories', 'squares-2x2', 'admin.product-categories'],
             ['Products', 'cube', 'admin.products'],
             ['Attributes', 'adjustments-horizontal', 'admin.product-attributes'],
-            ['Brands', 'star', 'admin.product-brands'],
             ['Vendors', 'briefcase', 'admin.product-vendors'],
         ]);
 
-        $this->standalone('Services', 'wrench-screwdriver', 'admin.services', 4);
+        // Categories and Tags are shared by Products and Blog (pick a type
+        // when creating), so they live on their own rather than nested
+        // under either — see routes/admin.php's feature:taxonomy group.
+        $this->standalone('Categories', 'squares-2x2', 'admin.categories', 4);
 
-        $this->group('Sales', 5, [
+        $this->standalone('Tags', 'tag', 'admin.tags', 5);
+
+        $this->standalone('Brands', 'star', 'admin.product-brands', 6);
+
+        $this->standalone('Services', 'wrench-screwdriver', 'admin.services', 7);
+
+        $this->group('Sales', 8, [
             ['Orders', 'shopping-bag', 'admin.orders'],
             ['Coupons', 'ticket', 'admin.coupons'],
             ['Shipping', 'truck', 'admin.shipping-methods'],
             ['Reports', 'chart-bar', 'admin.reports'],
         ]);
 
-        $this->group('Blog', 6, [
-            ['Post Categories', 'squares-2x2', 'admin.post-categories'],
-            ['Tags', 'tag', 'admin.tags'],
-            ['Posts', 'document-text', 'admin.posts'],
-        ]);
+        $this->standalone('Posts', 'document-text', 'admin.posts', 9);
 
-        $this->group('Library & System', 7, [
+        $this->group('Library & System', 10, [
             ['Settings', 'cog-6-tooth', 'admin.settings'],
             ['Env', 'command-line', 'admin.env'],
             ['Global SEO', 'magnifying-glass', 'admin.seo'],
@@ -57,33 +60,35 @@ class AdminMenuSeeder extends Seeder
             ['Menu', 'bars-3', 'admin.menu'],
         ]);
 
-        $this->standalone('Contacts', 'inbox', 'admin.contacts', 8);
+        $this->standalone('Contacts', 'inbox', 'admin.contacts', 11);
 
-        $this->standalone('Comments', 'chat-bubble-left-right', 'admin.comments', 9);
+        $this->standalone('Comments', 'chat-bubble-left-right', 'admin.comments', 12);
 
-        $this->standalone('Subscribers', 'envelope-open', 'admin.subscribers', 10);
+        $this->standalone('Reviews', 'star', 'admin.reviews', 13);
 
-        $this->standalone('Pages', 'document', 'admin.pages', 11);
+        $this->standalone('Subscribers', 'envelope-open', 'admin.subscribers', 14);
 
-        $this->group('Localization', 12, [
+        $this->standalone('Pages', 'document', 'admin.pages', 15);
+
+        $this->group('Localization', 16, [
             ['Languages', 'language', 'admin.languages'],
             ['Translations', 'chat-bubble-left-right', 'admin.translations'],
         ]);
 
-        $this->group('Access Control', 13, [
+        $this->group('Access Control', 17, [
             ['Roles', 'shield-check', 'admin.roles'],
             ['Permissions', 'lock-closed', 'admin.permissions'],
             ['Users', 'users', 'admin.users'],
         ]);
 
-        $this->group('Location', 14, [
+        $this->group('Location', 18, [
             ['Countries', 'flag', 'admin.countries'],
             ['Divisions', 'map', 'admin.divisions'],
             ['Districts (Zilla)', 'building-library', 'admin.districts'],
             ['Upazilas', 'map-pin', 'admin.upazilas'],
         ]);
 
-        $this->group('Advance', 15, [
+        $this->group('Advance', 19, [
             ['Sitemap', 'map', 'admin.advance.sitemap'],
             ['Robots.txt', 'globe-alt', 'admin.advance.robots'],
             ['Database', 'circle-stack', 'admin.advance.database'],
@@ -91,7 +96,7 @@ class AdminMenuSeeder extends Seeder
             ['Password Generator', 'key', 'admin.advance.password-generator'],
         ]);
 
-        $this->standalone('About', 'building-office', 'admin.about', 16);
+        $this->standalone('About', 'building-office', 'admin.about', 20);
     }
 
     protected function standalone(string $label, string $icon, string $routeName, int $sortOrder): void

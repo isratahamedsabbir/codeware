@@ -1,10 +1,9 @@
 <?php
 
+use App\Livewire\Admin\Categories\Index as CategoriesIndex;
 use App\Livewire\Admin\Cms\Index as CmsIndex;
 use App\Livewire\Admin\Pages\Index as PagesIndex;
-use App\Livewire\Admin\PostCategories\Index as PostCategoriesIndex;
 use App\Livewire\Admin\Posts\Index as PostsIndex;
-use App\Livewire\Admin\ProductCategories\Index as ProductCategoriesIndex;
 use App\Livewire\Admin\Products\Form;
 use App\Livewire\Admin\Products\Index as ProductsIndex;
 use App\Livewire\Admin\Tags\Index as TagsIndex;
@@ -44,7 +43,7 @@ it('toggles a product category status and its paired page from the list', functi
     $category = ProductCategory::factory()->create(['status' => 'inactive']);
     $page = Page::create(['user_id' => $this->admin->id, 'category_id' => $category->id, 'type' => 'product_category', 'title' => $category->name, 'status' => 'inactive']);
 
-    Livewire::test(ProductCategoriesIndex::class)->call('toggleStatus', $category->id);
+    Livewire::test(CategoriesIndex::class)->call('toggleStatus', $category->id);
 
     expect($category->fresh()->status)->toBe('active')
         ->and($page->fresh()->status)->toBe('active');
@@ -54,7 +53,7 @@ it('toggles a post category status and its paired page from the list', function 
     $category = PostCategory::factory()->create(['status' => 'inactive']);
     $page = Page::create(['user_id' => $this->admin->id, 'category_id' => $category->id, 'type' => 'post_category', 'title' => $category->name, 'status' => 'inactive']);
 
-    Livewire::test(PostCategoriesIndex::class)->call('toggleStatus', $category->id);
+    Livewire::test(CategoriesIndex::class)->set('typeFilter', 'post_category')->call('toggleStatus', $category->id);
 
     expect($category->fresh()->status)->toBe('active')
         ->and($page->fresh()->status)->toBe('active');

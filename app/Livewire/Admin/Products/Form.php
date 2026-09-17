@@ -13,6 +13,7 @@ use App\Models\ProductCategory;
 use App\Models\ProductVendor;
 use App\Models\Tag;
 use App\Support\AdminActivity;
+use App\Support\Locale;
 use App\Support\PuckEditor;
 use App\Support\Slug;
 use Illuminate\Support\Str;
@@ -61,6 +62,9 @@ class Form extends Component
      */
     #[Validate('nullable|array')]
     public array $tag_ids = [];
+
+    #[Validate('nullable|string|max:255')]
+    public string $newTagName = '';
 
     #[Validate('nullable|integer|exists:categories,id,type,brand')]
     public string $brand_id = '';
@@ -452,6 +456,40 @@ class Form extends Component
     public function tags()
     {
         return Tag::whereIn('type', [Tag::TYPE_PRODUCT, Tag::TYPE_LEGACY])->orderBy('id')->get();
+    }
+
+    /**
+     * Creates a tag right from the form (type = product) and selects it — the
+     * admin doesn't need to leave the product to build up its tag list.
+     */
+    public function createTag(): void
+    {
+        $this->validate(['newTagName' => 'required|string|max:255']);
+
+        $name = trim($this->newTagName);
+
+        if ($name === '') {
+            return;
+        }
+
+        $this->newTagName = '';
+
+        // Reuse by slug across the whole tag pool: the categories.slug column is
+        // globally unique, so a product tag can't share a slug with a post tag.
+        $tag = Tag::where('slug', Str::slug($name))->first();
+
+        if (! $tag) {
+            $tag = Tag::create([
+                'name' => [Locale::primary() => $name],
+                'type' => Tag::TYPE_PRODUCT,
+                'status' => 'active',
+            ]);
+            $this->dispatch('notify', message: 'Tag created successfully');
+        }
+
+        if (! in_array($tag->id, $this->tag_ids, true)) {
+            $this->tag_ids[] = $tag->id;
+        }
     }
 
     #[Computed]

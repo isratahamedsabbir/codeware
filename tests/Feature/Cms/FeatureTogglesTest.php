@@ -41,9 +41,17 @@ it('blocks the routes of a disabled feature with a 404, leaving other features r
     disableFeature('blog');
 
     $this->get(route('admin.posts'))->assertNotFound();
-    $this->get(route('admin.post-categories'))->assertNotFound();
+
+    $this->get(route('admin.products'))->assertOk();
+});
+
+it('blocks categories and tags when the shared taxonomy feature is off, leaving blog and products reachable', function () {
+    disableFeature('taxonomy');
+
+    $this->get(route('admin.categories'))->assertNotFound();
     $this->get(route('admin.tags'))->assertNotFound();
 
+    $this->get(route('admin.posts'))->assertOk();
     $this->get(route('admin.products'))->assertOk();
 });
 
@@ -119,7 +127,7 @@ it('hides a disabled feature\'s items from the live sidebar but shows them when 
 
     disableFeature('products');
 
-    $this->get(route('admin.dashboard'))->assertOk()->assertDontSee('Product Categories');
+    $this->get(route('admin.dashboard'))->assertOk()->assertDontSee('Attributes');
 });
 
 it('excludes a disabled feature\'s items from MenuItem::menuForCurrentUser', function () {
@@ -144,7 +152,9 @@ it('excludes every products-feature menu item, not just the ones sharing its rou
         ->flatMap(fn ($item) => $item->is_group ? $item->children->pluck('label') : collect([$item->label]))
         ->all();
 
-    expect($labels)->not->toContain('Attributes', 'Brands', 'Vendors', 'Product Categories', 'Products');
+    // Brands is a standalone top-level item now (not nested under Products),
+    // but still shares the "products" feature gate — see MenuItem.php.
+    expect($labels)->not->toContain('Attributes', 'Vendors', 'Products', 'Brands');
 });
 
 it('hides a disabled feature\'s group from the menu management screen', function () {
@@ -255,7 +265,8 @@ it('renders the features screen, only in the developer environment', function ()
     app()->instance('env', 'developer');
 
     Livewire::test(FeaturesIndex::class)
-        ->assertSee('Blog (Posts, Categories, Tags)')
+        ->assertSee('Blog (Posts)')
+        ->assertSee('Categories & Tags (shared by Blog and Products)')
         ->assertSee('Chat')
         ->assertSee('File Manager');
 });

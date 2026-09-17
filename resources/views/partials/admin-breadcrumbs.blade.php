@@ -10,15 +10,11 @@
     $resource  = $segments[1] ?? 'dashboard';
     $pageTitle = $title ?? ucwords(str_replace(['-', '_'], ' ', $resource));
     $sectionMap = [
-        'product-categories' => ['Products', 'admin.product-categories'],
         'products'           => ['Products', 'admin.products'],
         'orders'             => ['Sales', 'admin.orders'],
         'coupons'            => ['Sales', 'admin.coupons'],
         'shipping-methods'   => ['Sales', 'admin.shipping-methods'],
         'reports'            => ['Sales', 'admin.reports'],
-        'post-categories'    => ['Blog', 'admin.post-categories'],
-        'tags'               => ['Blog', 'admin.tags'],
-        'posts'              => ['Blog', 'admin.posts'],
         'media-library'      => ['Library & System', 'admin.media-library'],
         'settings'           => ['Library & System', 'admin.settings'],
         'seo'                => ['Library & System', 'admin.seo'],

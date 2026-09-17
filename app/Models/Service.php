@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Concerns\HasComments;
 use App\Concerns\HasCreator;
+use App\Concerns\HasReviews;
 use App\Support\Locale;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +15,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Service extends Model
 {
-    use HasComments, HasCreator, HasFactory, HasTranslations, SoftDeletes;
+    use HasComments, HasCreator, HasFactory, HasReviews, HasTranslations, SoftDeletes;
 
     public array $translatable = ['name', 'description'];
 

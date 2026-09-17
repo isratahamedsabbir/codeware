@@ -5,46 +5,55 @@
      after the first render. --}}
 <div>
 
-    {{-- Page heading is rendered here (layouts.admin's own is disabled via
-         hidePageHeading in Index::render()) rather than pushed into
-         @stack('page-header-actions') like every other admin index page: that
-         stack is flushed into the surrounding layout on the initial full-page
-         load only, so content in it that depends on reactive Livewire state
-         ($selectedIds) never updates again after a wire:click round trip. Being
-         part of the component's own re-rendered template, this does. --}}
     <div class="mb-3 flex items-center justify-between gap-4 flex-wrap">
-    <div>
-        @include('partials.admin-breadcrumbs', ['routeName' => 'admin.product-categories'])
-    </div>
-    <div class="flex items-center gap-2 shrink-0">
-        @if (count($selectedIds) > 0)
-            {{-- Not wrapped in .page-header-actions (see below) — that class
-                 forces every button inside it to the solid blue "primary
-                 action" look (resources/css/app.css), which would swallow
-                 Delete's red/danger and Export's outline styling. --}}
-            <flux:button variant="danger" size="sm" icon="trash" wire:click="confirmBulkDelete">
-                Delete ({{ count($selectedIds) }})
-            </flux:button>
-            <flux:button variant="outline" size="sm" icon="arrow-down-tray"
-                href="{{ route('admin.product-categories.export', ['ids' => $selectedIds]) }}">
-                Export ({{ count($selectedIds) }})
-            </flux:button>
-        @endif
-        {{-- .page-header-actions restores the solid blue "primary action"
-             look this button had when it lived in @push('page-header-actions')
-             (see resources/css/app.css). --}}
-        <div class="page-header-actions flex items-center gap-2 shrink-0">
-            <flux:button variant="ghost" size="sm" icon="plus" href="{{ route('admin.product-categories.create') }}" wire:navigate>
-                New category
-            </flux:button>
+        <div>
+            @include('partials.admin-breadcrumbs', ['routeName' => 'admin.categories'])
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+            @if (count($selectedIds) > 0)
+                <flux:button variant="danger" size="sm" icon="trash" wire:click="confirmBulkDelete">
+                    Delete ({{ count($selectedIds) }})
+                </flux:button>
+                <flux:button variant="outline" size="sm" icon="arrow-down-tray"
+                    href="{{ route('admin.categories.export', ['ids' => $selectedIds]) }}">
+                    Export ({{ count($selectedIds) }})
+                </flux:button>
+            @endif
+            <div class="page-header-actions flex items-center gap-2 shrink-0">
+                <flux:button variant="ghost" size="sm" icon="plus" href="{{ route('admin.categories.create', ['type' => $typeFilter]) }}" wire:navigate>
+                    New category
+                </flux:button>
+            </div>
         </div>
     </div>
-</div>
 
 <div class="bg-white rounded-[5px] shadow-sm overflow-hidden">
 
     {{-- Header --}}
     <div class="flex items-center gap-3 p-4 flex-wrap">
+        {{-- Product / Post switcher — the two pools have unrelated parent_id
+             trees, so they're shown one at a time rather than mixed. --}}
+        <div class="grid grid-cols-2 gap-1.5 rounded-lg bg-zinc-100 p-1 max-w-xs">
+            <button type="button" wire:click="$set('typeFilter', '{{ \App\Models\Category::TYPE_PRODUCT }}')"
+                class="flex items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-medium transition-colors cursor-pointer {{ $typeFilter === \App\Models\Category::TYPE_PRODUCT ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700' }}">
+                <flux:icon.cube class="h-3.5 w-3.5 shrink-0" />
+                Product
+            </button>
+            <button type="button" wire:click="$set('typeFilter', '{{ \App\Models\Category::TYPE_POST }}')"
+                class="flex items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-medium transition-colors cursor-pointer {{ $typeFilter === \App\Models\Category::TYPE_POST ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700' }}">
+                <flux:icon.pencil-square class="h-3.5 w-3.5 shrink-0" />
+                Post
+            </button>
+        </div>
+
+        <select wire:model.live="statusFilter"
+            class="px-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 bg-white appearance-none pr-8 min-w-[140px] transition-all"
+            style="background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 10px center">
+            <option value="">All statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+        </select>
+
         {{-- Search --}}
         <div class="relative max-w-xs ml-auto">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" viewBox="0 0 24 24"
@@ -94,7 +103,9 @@
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Name</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Slug</th>
-                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Icon</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">
+                            {{ $typeFilter === \App\Models\Category::TYPE_PRODUCT ? 'Icon' : 'Posts' }}
+                        </th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Created by</th>
                         <th class="sticky right-0 z-10 bg-zinc-50 border-l border-zinc-100 px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
@@ -163,14 +174,18 @@
                                 </x-copy-text>
                             </td>
 
-                            {{-- Icon --}}
+                            {{-- Icon (product) / Post count (post) --}}
                             <td class="hidden lg:table-cell px-4 py-2">
-                                @if ($category->icon)
-                                    <img src="{{ $category->icon }}" alt="Icon"
-                                        class="w-8 h-8 rounded-lg object-cover border border-zinc-100" />
+                                @if ($typeFilter === \App\Models\Category::TYPE_PRODUCT)
+                                    @if ($category->icon)
+                                        <img src="{{ $category->icon }}" alt="Icon"
+                                            class="w-8 h-8 rounded-lg object-cover border border-zinc-100" />
+                                    @else
+                                        <img src="{{ asset('images/placeholder.svg') }}" alt="No icon"
+                                            class="w-8 h-8 rounded-lg object-cover border border-zinc-100 opacity-60" />
+                                    @endif
                                 @else
-                                    <img src="{{ asset('images/placeholder.svg') }}" alt="No icon"
-                                        class="w-8 h-8 rounded-lg object-cover border border-zinc-100 opacity-60" />
+                                    <span class="text-sm text-zinc-500">{{ $category->posts_count }}</span>
                                 @endif
                             </td>
 
@@ -203,7 +218,7 @@
                             <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-100 border-l border-zinc-100 px-4 py-2">
                                 @php $bulkActive = count($selectedIds) > 0; @endphp
                                 <x-admin-row-actions :actions="[
-                                    ['href' => route('admin.product-categories.edit', $category->id), 'icon' => 'pencil', 'label' => 'Edit', 'color' => 'primary', 'disabled' => $bulkActive],
+                                    ['href' => route('admin.categories.edit', $category->id), 'icon' => 'pencil', 'label' => 'Edit', 'color' => 'primary', 'disabled' => $bulkActive],
                                     $category->page && ! $bulkActive
                                         ? ['href' => route('admin.pages.edit', $category->page->id), 'icon' => 'document', 'label' => 'Page', 'color' => 'secondary']
                                         : ['icon' => 'document', 'label' => 'Page', 'color' => 'secondary', 'disabled' => true],
@@ -213,7 +228,7 @@
 
                         </tr>
                         @if ($viewingId === $category->id)
-                            <x-admin-row-details colspan="8">
+                            <x-admin-row-details colspan="9">
                                 <x-admin-row-details.item label="Slug">
                                     @if ($category->slug)
                                         <x-copy-text :text="$category->slug" class="font-mono">{{ $category->slug }}</x-copy-text>
@@ -221,36 +236,38 @@
                                         —
                                     @endif
                                 </x-admin-row-details.item>
-                                <x-admin-row-details.item label="Icon">
-                                    @if ($category->icon)
-                                        <img src="{{ $category->icon }}" alt="Icon" class="w-8 h-8 rounded-lg object-cover border border-zinc-100 ml-auto">
-                                    @else
-                                        —
-                                    @endif
-                                </x-admin-row-details.item>
+                                @if ($typeFilter === \App\Models\Category::TYPE_PRODUCT)
+                                    <x-admin-row-details.item label="Icon">
+                                        @if ($category->icon)
+                                            <img src="{{ $category->icon }}" alt="Icon" class="w-8 h-8 rounded-lg object-cover border border-zinc-100 ml-auto">
+                                        @else
+                                            —
+                                        @endif
+                                    </x-admin-row-details.item>
+                                @endif
                                 <x-admin-row-details.item label="Created by">{{ $category->creator?->name ?? '—' }}</x-admin-row-details.item>
                             </x-admin-row-details>
                         @endif
                     @empty
                         <tr>
-                            <td colspan="8" class="px-6 py-16 text-center">
+                            <td colspan="9" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                 </svg>
-                                <p class="text-sm text-zinc-600">No product categories found.</p>
+                                <p class="text-sm text-zinc-600">No categories found.</p>
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
-        </div> 
+        </div>
     </div>
 
     {{-- Delete Modal --}}
-    <flux:modal name="product-category-delete" class="md:w-80"
-        x-on:open-modal.window="if ($event.detail.name === 'product-category-delete') $flux.modal('product-category-delete').show()"
-        x-on:close-modal.window="if ($event.detail.name === 'product-category-delete') $flux.modal('product-category-delete').close()">
+    <flux:modal name="category-delete" class="md:w-80"
+        x-on:open-modal.window="if ($event.detail.name === 'category-delete') $flux.modal('category-delete').show()"
+        x-on:close-modal.window="if ($event.detail.name === 'category-delete') $flux.modal('category-delete').close()">
         <div class="space-y-4">
             <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center shrink-0">
@@ -260,10 +277,9 @@
                         <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
                     </svg>
                 </div>
-                <flux:heading>Delete product category?</flux:heading>
+                <flux:heading>Delete category?</flux:heading>
             </div>
-            <flux:text class="text-sm text-zinc-500">This action cannot be undone. The category will be soft-deleted.
-            </flux:text>
+            <flux:text class="text-sm text-zinc-500">This action cannot be undone.</flux:text>
             <div class="flex gap-2 pt-1">
                 <button wire:click="delete"
                     class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">
@@ -277,9 +293,9 @@
     </flux:modal>
 
     {{-- Bulk Delete Modal --}}
-    <flux:modal name="product-category-bulk-delete" class="md:w-80"
-        x-on:open-modal.window="if ($event.detail.name === 'product-category-bulk-delete') $flux.modal('product-category-bulk-delete').show()"
-        x-on:close-modal.window="if ($event.detail.name === 'product-category-bulk-delete') $flux.modal('product-category-bulk-delete').close()">
+    <flux:modal name="category-bulk-delete" class="md:w-80"
+        x-on:open-modal.window="if ($event.detail.name === 'category-bulk-delete') $flux.modal('category-bulk-delete').show()"
+        x-on:close-modal.window="if ($event.detail.name === 'category-bulk-delete') $flux.modal('category-bulk-delete').close()">
         <div class="space-y-4">
             <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center shrink-0">
@@ -291,8 +307,7 @@
                 </div>
                 <flux:heading>Delete {{ count($selectedIds) }} {{ \Illuminate\Support\Str::plural('category', count($selectedIds)) }}?</flux:heading>
             </div>
-            <flux:text class="text-sm text-zinc-500">This action cannot be undone. The selected categories will be soft-deleted.
-            </flux:text>
+            <flux:text class="text-sm text-zinc-500">This action cannot be undone.</flux:text>
             <div class="flex gap-2 pt-1">
                 <button wire:click="bulkDelete"
                     class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">

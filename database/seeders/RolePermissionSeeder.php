@@ -27,6 +27,7 @@ class RolePermissionSeeder extends Seeder
             'view media', 'upload media', 'delete media',
             'view settings', 'update settings',
             'view contacts', 'delete contacts',
+            'view reviews', 'update reviews', 'delete reviews',
             'view roles', 'manage roles',
             'view users', 'create users', 'update users', 'delete users',
             'view file manager', 'manage file manager',

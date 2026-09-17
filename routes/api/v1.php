@@ -28,6 +28,7 @@ use App\Http\Controllers\Api\V1\PostController;
 use App\Http\Controllers\Api\V1\ProductCategoryController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProfileController;
+use App\Http\Controllers\Api\V1\ReviewController;
 use App\Http\Controllers\Api\V1\ServiceController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\SubscriberController;
@@ -111,6 +112,17 @@ Route::middleware('feature:comments')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
         Route::delete('/comments/{id}', [CommentController::class, 'destroy'])->name('comments.destroy');
+    });
+});
+
+// Reviews — on Posts, Products, and Services, with a star rating. Reading is
+// public; writing or deleting your own requires a logged-in customer account.
+Route::middleware('feature:reviews')->group(function () {
+    Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews.index');
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+        Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
     });
 });
 

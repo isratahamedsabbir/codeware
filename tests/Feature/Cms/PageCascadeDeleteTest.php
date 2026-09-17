@@ -1,9 +1,8 @@
 <?php
 
+use App\Livewire\Admin\Categories\Index as CategoriesIndex;
 use App\Livewire\Admin\Pages\Index as PagesIndex;
-use App\Livewire\Admin\PostCategories\Index as PostCategoriesIndex;
 use App\Livewire\Admin\Posts\Index as PostsIndex;
-use App\Livewire\Admin\ProductCategories\Index as ProductCategoriesIndex;
 use App\Livewire\Admin\Products\Index as ProductsIndex;
 use App\Models\Page;
 use App\Models\Post;
@@ -74,7 +73,7 @@ it('deleting a post via Livewire soft-deletes its paired page', function () {
 it('deleting a product category via Livewire force-deletes its paired page (no SoftDeletes on categories)', function () {
     [$category, $page] = createPageCascadeTestPair('product_category');
 
-    Livewire::test(ProductCategoriesIndex::class)->call('confirmDelete', $category->id)->call('delete');
+    Livewire::test(CategoriesIndex::class)->call('confirmDelete', $category->id)->call('delete');
 
     expect(ProductCategory::find($category->id))->toBeNull()
         ->and(Page::withTrashed()->find($page->id))->toBeNull();
@@ -83,7 +82,9 @@ it('deleting a product category via Livewire force-deletes its paired page (no S
 it('deleting a post category via Livewire force-deletes its paired page', function () {
     [$category, $page] = createPageCascadeTestPair('post_category');
 
-    Livewire::test(PostCategoriesIndex::class)->call('confirmDelete', $category->id)->call('delete');
+    Livewire::test(CategoriesIndex::class)
+        ->set('typeFilter', 'post_category')
+        ->call('confirmDelete', $category->id)->call('delete');
 
     expect(PostCategory::find($category->id))->toBeNull()
         ->and(Page::withTrashed()->find($page->id))->toBeNull();

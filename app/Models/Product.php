@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Concerns\HasComments;
 use App\Concerns\HasCreator;
 use App\Concerns\HasFaqs;
+use App\Concerns\HasReviews;
 use App\Services\EmailTemplateService;
 use App\Support\Locale;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,7 +21,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Product extends Model
 {
-    use HasComments, HasCreator, HasFactory, HasFaqs, HasTranslations, SoftDeletes;
+    use HasComments, HasCreator, HasFactory, HasFaqs, HasReviews, HasTranslations, SoftDeletes;
 
     protected static function booted(): void
     {

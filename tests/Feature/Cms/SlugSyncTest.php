@@ -1,9 +1,8 @@
 <?php
 
+use App\Livewire\Admin\Categories\Form as CategoryForm;
 use App\Livewire\Admin\Pages\Form as PageForm;
-use App\Livewire\Admin\PostCategories\Form as PostCategoryForm;
 use App\Livewire\Admin\Posts\Form as PostForm;
-use App\Livewire\Admin\ProductCategories\Form as ProductCategoryForm;
 use App\Livewire\Admin\Products\Form as ProductForm;
 use App\Models\Page;
 use App\Models\Post;
@@ -53,11 +52,12 @@ it('live-types slugs for posts, product categories, and post categories the same
         ->set('title.en', 'My First Blog Post')
         ->assertSet('slug', 'my_first_blog_post');
 
-    Livewire::test(ProductCategoryForm::class)
+    Livewire::test(CategoryForm::class)
         ->set('name.en', 'Home Appliances')
         ->assertSet('slug', 'home_appliances');
 
-    Livewire::test(PostCategoryForm::class)
+    Livewire::test(CategoryForm::class)
+        ->set('type', 'post_category')
         ->set('name.en', 'Company News')
         ->assertSet('slug', 'company_news');
 
@@ -89,11 +89,12 @@ it('rejects a product slug that collides with an existing page slug from a diffe
 });
 
 it('rejects a product category slug that collides with a post category, since categories are now globally unique', function () {
-    Livewire::test(PostCategoryForm::class)
+    Livewire::test(CategoryForm::class)
+        ->set('type', 'post_category')
         ->set('name.en', 'Shared Category')
         ->call('save');
 
-    Livewire::test(ProductCategoryForm::class)
+    Livewire::test(CategoryForm::class)
         ->set('name.en', 'Something Else')
         ->set('slug', 'shared_category')
         ->call('save')
@@ -118,7 +119,8 @@ it('locks the slug field for a linked page and ignores any edit attempt on save,
 });
 
 it('locks the slug field for a linked page and ignores any edit attempt on save, keeping the post category authoritative', function () {
-    Livewire::test(PostCategoryForm::class)
+    Livewire::test(CategoryForm::class)
+        ->set('type', 'post_category')
         ->set('name.en', 'Original Category')
         ->call('save');
 
@@ -206,11 +208,12 @@ it('checks slug availability the same way for posts, categories, and pages', fun
         ->set('slug', 'blog_slug_taken')
         ->assertSet('slugAvailable', false);
 
-    Livewire::test(ProductCategoryForm::class)
+    Livewire::test(CategoryForm::class)
         ->set('name.en', 'Brand New Category')
         ->assertSet('slugAvailable', true);
 
-    Livewire::test(PostCategoryForm::class)
+    Livewire::test(CategoryForm::class)
+        ->set('type', 'post_category')
         ->set('name.en', 'Another Fresh Category')
         ->assertSet('slugAvailable', true);
 

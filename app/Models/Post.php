@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\HasComments;
+use App\Concerns\HasReviews;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +16,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Post extends Model
 {
-    use HasComments, HasFactory, HasTranslations, SoftDeletes;
+    use HasComments, HasFactory, HasReviews, HasTranslations, SoftDeletes;
 
     public array $translatable = ['title', 'description', 'content'];
 

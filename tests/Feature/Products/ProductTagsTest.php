@@ -69,3 +69,14 @@ it('does not list post-typed tags in the product form', function () {
         ->assertSee('Product Only')
         ->assertDontSee('Post Only');
 });
+
+it('creates a product-typed tag inline from the form and selects it', function () {
+    Livewire::test(ProductForm::class)
+        ->set('newTagName', 'Handmade')
+        ->call('createTag')
+        ->assertSet('newTagName', '');
+
+    $tag = Tag::whereJsonContains('name->en', 'Handmade')->firstOrFail();
+
+    expect($tag->type)->toBe(Tag::TYPE_PRODUCT);
+});
