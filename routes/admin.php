@@ -151,6 +151,11 @@ Route::middleware('can:access-admin-system')->group(function () {
         Route::get('/contacts/export', [ContactExportController::class, 'export'])->name('contacts.export');
     });
 
+    // Comments — moderation only, no create form (comments are customer-authored).
+    Route::middleware('feature:comments')->group(function () {
+        Route::get('/comments', App\Livewire\Admin\Comments\Index::class)->name('comments');
+    });
+
     // Newsletter Subscribers
     Route::middleware('feature:newsletter')->group(function () {
         Route::get('/subscribers', App\Livewire\Admin\Subscribers\Index::class)->name('subscribers');

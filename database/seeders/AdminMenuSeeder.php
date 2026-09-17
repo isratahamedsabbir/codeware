@@ -59,29 +59,31 @@ class AdminMenuSeeder extends Seeder
 
         $this->standalone('Contacts', 'inbox', 'admin.contacts', 8);
 
-        $this->standalone('Subscribers', 'envelope-open', 'admin.subscribers', 9);
+        $this->standalone('Comments', 'chat-bubble-left-right', 'admin.comments', 9);
 
-        $this->standalone('Pages', 'document', 'admin.pages', 10);
+        $this->standalone('Subscribers', 'envelope-open', 'admin.subscribers', 10);
 
-        $this->group('Localization', 11, [
+        $this->standalone('Pages', 'document', 'admin.pages', 11);
+
+        $this->group('Localization', 12, [
             ['Languages', 'language', 'admin.languages'],
             ['Translations', 'chat-bubble-left-right', 'admin.translations'],
         ]);
 
-        $this->group('Access Control', 12, [
+        $this->group('Access Control', 13, [
             ['Roles', 'shield-check', 'admin.roles'],
             ['Permissions', 'lock-closed', 'admin.permissions'],
             ['Users', 'users', 'admin.users'],
         ]);
 
-        $this->group('Location', 13, [
+        $this->group('Location', 14, [
             ['Countries', 'flag', 'admin.countries'],
             ['Divisions', 'map', 'admin.divisions'],
             ['Districts (Zilla)', 'building-library', 'admin.districts'],
             ['Upazilas', 'map-pin', 'admin.upazilas'],
         ]);
 
-        $this->group('Advance', 14, [
+        $this->group('Advance', 15, [
             ['Sitemap', 'map', 'admin.advance.sitemap'],
             ['Robots.txt', 'globe-alt', 'admin.advance.robots'],
             ['Database', 'circle-stack', 'admin.advance.database'],
@@ -89,7 +91,7 @@ class AdminMenuSeeder extends Seeder
             ['Password Generator', 'key', 'admin.advance.password-generator'],
         ]);
 
-        $this->standalone('About', 'building-office', 'admin.about', 15);
+        $this->standalone('About', 'building-office', 'admin.about', 16);
     }
 
     protected function standalone(string $label, string $icon, string $routeName, int $sortOrder): void

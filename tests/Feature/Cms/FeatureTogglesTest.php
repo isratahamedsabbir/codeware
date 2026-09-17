@@ -94,6 +94,24 @@ it('hides the Services link from the live sidebar once its feature is off', func
     $this->get(route('admin.dashboard'))->assertOk()->assertDontSee('Services');
 });
 
+it('blocks the comments route when its feature is off, leaving contacts reachable', function () {
+    disableFeature('comments');
+
+    $this->get(route('admin.comments'))->assertNotFound();
+
+    $this->get(route('admin.contacts'))->assertOk();
+});
+
+it('hides the Comments link from the live sidebar once its feature is off', function () {
+    $this->seed(AdminMenuSeeder::class);
+
+    $this->get(route('admin.dashboard'))->assertOk()->assertSee('Comments');
+
+    disableFeature('comments');
+
+    $this->get(route('admin.dashboard'))->assertOk()->assertDontSee('Comments');
+});
+
 it('hides a disabled feature\'s items from the live sidebar but shows them when enabled', function () {
     $this->seed(AdminMenuSeeder::class);
 

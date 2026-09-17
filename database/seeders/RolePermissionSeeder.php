@@ -40,8 +40,9 @@ class RolePermissionSeeder extends Seeder
         $admin->syncPermissions(Permission::all());
 
         // Staff: content-only. No access to Settings, Users, Roles/Permissions, Menu,
-        // Activity History, Localization, Contacts, or the File Manager — those stay
-        // Admin/Super Admin only (see access-admin-system gate in AppServiceProvider).
+        // Activity History, Localization, Contacts, Comments, or the File Manager —
+        // those stay Admin/Super Admin only (see access-admin-system gate in
+        // AppServiceProvider).
         $staff = Role::findOrCreate('staff', 'web');
         $staff->syncPermissions([
             'view dashboard',

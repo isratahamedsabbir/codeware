@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\HasComments;
 use App\Concerns\HasCreator;
 use App\Concerns\HasFaqs;
 use App\Services\EmailTemplateService;
@@ -18,7 +19,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Product extends Model
 {
-    use HasCreator, HasFactory, HasFaqs, HasTranslations, SoftDeletes;
+    use HasComments, HasCreator, HasFactory, HasFaqs, HasTranslations, SoftDeletes;
 
     protected static function booted(): void
     {

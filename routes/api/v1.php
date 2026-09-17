@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\V1\Auth\RegisterController;
 use App\Http\Controllers\Api\V1\Auth\SocialAuthController;
 use App\Http\Controllers\Api\V1\ChatController;
 use App\Http\Controllers\Api\V1\CmsController;
+use App\Http\Controllers\Api\V1\CommentController;
 use App\Http\Controllers\Api\V1\ContactController;
 use App\Http\Controllers\Api\V1\FirebaseTokenController;
 use App\Http\Controllers\Api\V1\LayoutController;
@@ -100,6 +101,17 @@ Route::post('/subscribers', [SubscriberController::class, 'store'])->name('subsc
 Route::middleware('feature:orders')->group(function () {
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('/orders/{orderNumber}', [OrderController::class, 'show'])->name('orders.show');
+});
+
+// Comments — on Posts, Products, and Services. Reading is public; posting a
+// comment/reply or deleting your own requires a logged-in customer account.
+Route::middleware('feature:comments')->group(function () {
+    Route::get('/comments', [CommentController::class, 'index'])->name('comments.index');
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
+        Route::delete('/comments/{id}', [CommentController::class, 'destroy'])->name('comments.destroy');
+    });
 });
 
 // Public guest chat — REST equivalent of the Frontend\ChatWidget Livewire component,

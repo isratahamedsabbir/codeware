@@ -27,6 +27,7 @@ class Features
         'file-manager' => 'File Manager',
         'chat' => 'Chat',
         'contacts' => 'Contacts',
+        'comments' => 'Comments (Posts, Products & Services)',
         'newsletter' => 'Newsletter (Subscribers)',
         'menu' => 'Menu Manager',
         'email-templates' => 'Email Templates',
