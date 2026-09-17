@@ -33,18 +33,12 @@
     <div class="flex items-center gap-3 p-4 flex-wrap">
         {{-- Product / Post switcher — the two pools have unrelated parent_id
              trees, so they're shown one at a time rather than mixed. --}}
-        <div class="grid grid-cols-2 gap-1.5 rounded-lg bg-zinc-100 p-1 max-w-xs">
-            <button type="button" wire:click="$set('typeFilter', '{{ \App\Models\Category::TYPE_PRODUCT }}')"
-                class="flex items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-medium transition-colors cursor-pointer {{ $typeFilter === \App\Models\Category::TYPE_PRODUCT ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700' }}">
-                <flux:icon.cube class="h-3.5 w-3.5 shrink-0" />
-                Product
-            </button>
-            <button type="button" wire:click="$set('typeFilter', '{{ \App\Models\Category::TYPE_POST }}')"
-                class="flex items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-medium transition-colors cursor-pointer {{ $typeFilter === \App\Models\Category::TYPE_POST ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700' }}">
-                <flux:icon.pencil-square class="h-3.5 w-3.5 shrink-0" />
-                Post
-            </button>
-        </div>
+        <select wire:model.live="typeFilter"
+            class="px-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 bg-white appearance-none pr-8 min-w-[140px] transition-all"
+            style="background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 10px center">
+            <option value="{{ \App\Models\Category::TYPE_PRODUCT }}">Product</option>
+            <option value="{{ \App\Models\Category::TYPE_POST }}">Post</option>
+        </select>
 
         <select wire:model.live="statusFilter"
             class="px-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 bg-white appearance-none pr-8 min-w-[140px] transition-all"
@@ -89,11 +83,11 @@
                     <col style="width:3%">
                     <col style="width:3%">
                     <col class="hidden lg:table-column" style="width:5%">
-                    <col style="width:20%">
-                    <col class="hidden lg:table-column" style="width:16%">
-                    <col class="hidden lg:table-column" style="width:8%">
-                    <col style="width:13%">
-                    <col class="hidden lg:table-column" style="width:14%">
+                    <col style="width:22%">
+                    <col style="width:12%">
+                    <col class="hidden lg:table-column" style="width:7%">
+                    <col style="width:12%">
+                    <col class="hidden lg:table-column" style="width:13%">
                     <col style="width:15%">
                 </colgroup>
                 <thead>
@@ -102,7 +96,7 @@
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Name</th>
-                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Slug</th>
+                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Type</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">
                             {{ $typeFilter === \App\Models\Category::TYPE_PRODUCT ? 'Icon' : 'Posts' }}
                         </th>
@@ -152,26 +146,31 @@
                                 <x-copy-text :text="$category->id" class="font-mono text-sm text-zinc-500">{{ $category->id }}</x-copy-text>
                             </td>
 
-                            {{-- Name --}}
+                            {{-- Name + slug (slug below, click to copy) --}}
                             <td class="px-4 py-2" style="padding-left: {{ 16 + ($category->depth * 24) }}px">
-                                <div class="font-medium text-zinc-900 text-sm leading-snug flex items-center gap-1.5">
+                                <div class="font-medium text-zinc-900 text-sm leading-snug flex items-center gap-1.5"
+                                    @if ($category->getTranslation('name', 'bn', false))
+                                        title="{{ $category->getTranslation('name', 'en', false) }} — {{ $category->getTranslation('name', 'bn', false) }}"
+                                    @endif>
                                     @if ($category->depth > 0)
                                         <span class="text-zinc-300">↳</span>
                                     @endif
                                     <x-truncate :text="$category->getTranslation('name', 'en', false)" />
                                 </div>
-                                @if ($category->getTranslation('name', 'bn', false))
-                                    <div class="text-xs text-zinc-600 mt-0.5">
-                                        <x-truncate :text="$category->getTranslation('name', 'bn', false)" />
-                                    </div>
-                                @endif
+                                <div class="mt-0.5">
+                                    <x-copy-text :text="$category->slug" class="font-mono text-[11px] text-zinc-500 block">
+                                        <x-truncate :text="$category->slug" />
+                                    </x-copy-text>
+                                </div>
                             </td>
 
-                            {{-- Slug --}}
-                            <td class="hidden lg:table-cell px-4 py-2">
-                                <x-copy-text :text="$category->slug" class="font-mono text-xs text-zinc-600 block">
-                                    <x-truncate :text="$category->slug" />
-                                </x-copy-text>
+                            {{-- Type --}}
+                            <td class="px-4 py-2">
+                                @if ($category->type === \App\Models\Category::TYPE_POST)
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600 border border-indigo-200">Post</span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-600 border border-amber-200">Product</span>
+                                @endif
                             </td>
 
                             {{-- Icon (product) / Post count (post) --}}
@@ -229,13 +228,6 @@
                         </tr>
                         @if ($viewingId === $category->id)
                             <x-admin-row-details colspan="9">
-                                <x-admin-row-details.item label="Slug">
-                                    @if ($category->slug)
-                                        <x-copy-text :text="$category->slug" class="font-mono">{{ $category->slug }}</x-copy-text>
-                                    @else
-                                        —
-                                    @endif
-                                </x-admin-row-details.item>
                                 @if ($typeFilter === \App\Models\Category::TYPE_PRODUCT)
                                     <x-admin-row-details.item label="Icon">
                                         @if ($category->icon)

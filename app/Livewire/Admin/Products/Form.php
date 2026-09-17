@@ -66,7 +66,7 @@ class Form extends Component
     #[Validate('nullable|string|max:255')]
     public string $newTagName = '';
 
-    #[Validate('nullable|integer|exists:categories,id,type,brand')]
+    #[Validate('nullable|integer|exists:categories,id,type,product_brand')]
     public string $brand_id = '';
 
     #[Validate('nullable|integer|exists:product_vendors,id')]
@@ -501,7 +501,7 @@ class Form extends Component
     #[Computed]
     public function productBrands()
     {
-        return ProductBrand::orderBy('sort_order')->orderBy('name->en')->get();
+        return ProductBrand::where('type', ProductBrand::TYPE_PRODUCT)->orderBy('sort_order')->orderBy('name->en')->get();
     }
 
     #[Computed]

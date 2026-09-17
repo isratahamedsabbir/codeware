@@ -15,12 +15,26 @@ class Index extends Component
 
     public string $search = '';
 
+    public string $statusFilter = '';
+
+    public string $typeFilter = '';
+
     public ?int $deletingId = null;
 
     /** @var array<int, int> */
     public array $selectedIds = [];
 
     public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedTypeFilter(): void
     {
         $this->resetPage();
     }
@@ -101,6 +115,8 @@ class Index extends Component
                 ->with('creator')
                 ->when($this->search, fn ($q) => $q->where('name->en', 'like', "%{$this->search}%")
                     ->orWhere('name->bn', 'like', "%{$this->search}%"))
+                ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
+                ->when($this->typeFilter, fn ($q) => $q->where('type', $this->typeFilter))
                 ->orderBy('sort_order')
                 ->orderBy('name->en')
                 ->paginate($this->perPage),

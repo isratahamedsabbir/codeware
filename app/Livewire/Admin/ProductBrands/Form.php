@@ -6,6 +6,7 @@ use App\Concerns\HasTranslatableFields;
 use App\Models\ProductBrand;
 use App\Support\AdminActivity;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 class Form extends Component
@@ -18,6 +19,14 @@ class Form extends Component
 
     public string $logo = '';
 
+    /**
+     * Which pool the brand belongs to — same post/product split as Tag. Only
+     * product brands appear in the Product form's brand dropdown today; post
+     * brands are tracked for parity and show up in the Brand list/filter.
+     */
+    #[Validate('required|in:post_brand,product_brand')]
+    public string $type = ProductBrand::TYPE_PRODUCT;
+
     public function mount(?int $id = null): void
     {
         if ($id) {
@@ -25,6 +34,7 @@ class Form extends Component
             $this->brandId = $id;
             $this->hydrateTranslatable($brand, ['name']);
             $this->logo = $brand->logo ?? '';
+            $this->type = $brand->type;
         }
     }
 
@@ -34,11 +44,11 @@ class Form extends Component
             'name' => 'required|string|max:255',
         ]));
 
-        // Uniqueness is enforced against the same kind's rows only (type = 'brand);
+        // Uniqueness is enforced against brand rows only (post_brand/product_brand);
         // the column is the JSON path, so the primary locale's value is what's
         // compared — a tag or category sharing the string is fine.
         $rules['name.'.$this->primaryLocale][] = Rule::unique('categories', 'name->'.$this->primaryLocale)
-            ->where('type', 'brand')
+            ->whereIn('type', ProductBrand::TYPES)
             ->ignore($this->brandId);
 
         $this->validate($rules);
@@ -46,6 +56,7 @@ class Form extends Component
         $data = [
             'name' => $this->translatablePayload('name'),
             'logo' => $this->logo ?: null,
+            'type' => $this->type,
         ];
 
         $creating = $this->brandId === null;

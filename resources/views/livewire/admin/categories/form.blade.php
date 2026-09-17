@@ -12,27 +12,6 @@
         <div class="flex-1 min-w-0 space-y-4">
         <div class="bg-white rounded-[5px] shadow-sm p-6">
 
-            {{-- Type — locked to whichever pool this category opened from; only
-                 meaningful to change while creating (see Form::updatedType()). --}}
-            <div class="mb-4" wire:key="category-type-panel">
-                <flux:field>
-                    <flux:label>Type</flux:label>
-                    <div class="grid grid-cols-2 gap-1.5 rounded-lg bg-zinc-100 p-1 max-w-xs">
-                        <button type="button" wire:click="$set('type', '{{ \App\Models\Category::TYPE_PRODUCT }}')"
-                            class="flex items-center justify-center gap-1.5 rounded-md py-2 text-xs font-medium transition-colors cursor-pointer {{ $type === \App\Models\Category::TYPE_PRODUCT ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700' }}">
-                            <flux:icon.cube class="h-3.5 w-3.5 shrink-0" />
-                            Product
-                        </button>
-                        <button type="button" wire:click="$set('type', '{{ \App\Models\Category::TYPE_POST }}')"
-                            class="flex items-center justify-center gap-1.5 rounded-md py-2 text-xs font-medium transition-colors cursor-pointer {{ $type === \App\Models\Category::TYPE_POST ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700' }}">
-                            <flux:icon.pencil-square class="h-3.5 w-3.5 shrink-0" />
-                            Post
-                        </button>
-                    </div>
-                    <flux:error name="type" />
-                </flux:field>
-            </div>
-
             <x-admin-locale-tabs>
                 @foreach (\App\Support\Locale::active() as $language)
                     <x-admin-locale-panel :code="$language->code">
@@ -69,6 +48,19 @@
                         <flux:error name="slug" />
                     </flux:field>
                 </x-admin-locale-tabs>
+
+            {{-- Type — locked to whichever pool this category opened from; only
+                 meaningful to change while creating (see Form::updatedType()). --}}
+            <div class="mt-4" wire:key="category-type-panel">
+                <flux:field>
+                    <flux:label>Type<x-field-hint text="Product categories show on the Product form, post categories on the Post form" /></flux:label>
+                    <flux:select wire:model="type">
+                        <flux:select.option value="{{ \App\Models\Category::TYPE_PRODUCT }}">Product</flux:select.option>
+                        <flux:select.option value="{{ \App\Models\Category::TYPE_POST }}">Post</flux:select.option>
+                    </flux:select>
+                    <flux:error name="type" />
+                </flux:field>
+            </div>
         </div>
 
         @include('partials.admin-seo-fields')

@@ -75,14 +75,15 @@
                     <col style="width:5%">
                     <col class="hidden lg:table-column" style="width:5%">
                     <col style="width:8%">
+                    <col style="width:7%">
                     <col style="width:8%">
-                    <col class="hidden lg:table-column" style="width:10%">
-                    <col class="hidden lg:table-column" style="width:10%">
-                    <col class="hidden lg:table-column" style="width:10%">
-                    <col class="hidden lg:table-column" style="width:10%">
+                    <col class="hidden lg:table-column" style="width:9%">
+                    <col class="hidden lg:table-column" style="width:9%">
+                    <col class="hidden lg:table-column" style="width:9%">
+                    <col class="hidden lg:table-column" style="width:9%">
                     <col style="width:8%">
-                    <col class="hidden lg:table-column" style="width:12%">
-                    <col style="width:9%">
+                    <col class="hidden lg:table-column" style="width:11%">
+                    <col style="width:7%">
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
@@ -90,6 +91,7 @@
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
                         <th class="hidden lg:table-cell px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Code</th>
+                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Type</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Discount</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Applies to</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Min order</th>
@@ -131,6 +133,15 @@
                             {{-- Code --}}
                             <td class="px-4 py-2">
                                 <span class="font-mono text-sm font-semibold text-zinc-900"><x-truncate :text="$coupon->code" /></span>
+                            </td>
+
+                            {{-- Type --}}
+                            <td class="px-4 py-2">
+                                @if ($coupon->type === 'percentage')
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600 border border-indigo-200">Percentage</span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-600 border border-amber-200">Fixed</span>
+                                @endif
                             </td>
 
                             {{-- Discount --}}
@@ -208,7 +219,7 @@
 
                         </tr>
                         @if ($viewingId === $coupon->id)
-                            <x-admin-row-details colspan="12">
+                            <x-admin-row-details colspan="13">
                                 <x-admin-row-details.item label="Applies to">
                                     @if ($coupon->products_count > 0)
                                         <div class="flex flex-wrap gap-1 justify-end">
@@ -230,7 +241,7 @@
                         @endif
                     @empty
                         <tr>
-                            <td colspan="12" class="px-6 py-16 text-center">
+                            <td colspan="13" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M9 5H7a2 2 0 0 0-2 2v3a2 2 0 0 1-2 2 2 2 0 0 1 2 2v3a2 2 0 0 0 2 2h2m6-14h2a2 2 0 0 1 2 2v3a2 2 0 0 0 2 2 2 2 0 0 0-2 2v3a2 2 0 0 1-2 2h-2" />

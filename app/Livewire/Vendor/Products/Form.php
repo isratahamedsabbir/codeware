@@ -59,7 +59,7 @@ class Form extends Component
     /** @var array<int, int> */
     public array $category_ids = [];
 
-    #[Validate('nullable|integer|exists:categories,id,type,brand')]
+    #[Validate('nullable|integer|exists:categories,id,type,product_brand')]
     public string $brand_id = '';
 
     #[Validate('required|integer')]
@@ -182,7 +182,7 @@ class Form extends Component
     #[Computed]
     public function productBrands()
     {
-        return ProductBrand::orderBy('sort_order')->orderBy('name->en')->get();
+        return ProductBrand::where('type', ProductBrand::TYPE_PRODUCT)->orderBy('sort_order')->orderBy('name->en')->get();
     }
 
     #[Computed]
@@ -355,7 +355,7 @@ class Form extends Component
             'nullable', 'string', 'max:100',
             $this->productId ? 'unique:products,sku,'.$this->productId : 'unique:products,sku',
         ];
-        $rules['brand_id'] = 'nullable|integer|exists:categories,id,type,brand';
+        $rules['brand_id'] = 'nullable|integer|exists:categories,id,type,product_brand';
         $rules['vendor_id'] = ['required', 'integer', 'in:'.implode(',', $vendorIds)];
         $rules['product_type'] = 'required|in:physical,digital';
         $rules['price'] = 'required|numeric|min:0';

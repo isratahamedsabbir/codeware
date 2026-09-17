@@ -82,8 +82,7 @@
                 <colgroup>
                     <col style="width:5%">
                     <col style="width:7%">
-                    <col style="width:23%">
-                    <col style="width:20%">
+                    <col style="width:28%">
                     <col style="width:10%">
                     <col style="width:15%">
                     <col style="width:20%">
@@ -93,7 +92,6 @@
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Name</th>
-                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Slug</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Type</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
                         <th class="sticky right-0 z-10 bg-zinc-50 border-l border-zinc-100 px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
@@ -121,23 +119,19 @@
                                 <x-copy-text :text="$tag->id" class="text-xs text-zinc-500">{{ $tag->id }}</x-copy-text>
                             </td>
 
-                            {{-- Name --}}
+                            {{-- Name + slug (slug below, click to copy) --}}
                             <td class="px-4 py-2">
-                                <div class="font-medium text-zinc-900 text-sm leading-snug">
+                                <div class="font-medium text-zinc-900 text-sm leading-snug"
+                                    @if ($tag->getTranslation('name', 'bn', false))
+                                        title="{{ $tag->getTranslation('name', 'en', false) }} — {{ $tag->getTranslation('name', 'bn', false) }}"
+                                    @endif>
                                     <x-truncate :text="$tag->getTranslation('name', 'en', false)" />
                                 </div>
-                                @if ($tag->getTranslation('name', 'bn', false))
-                                    <div class="text-xs text-zinc-600 mt-0.5">
-                                        <x-truncate :text="$tag->getTranslation('name', 'bn', false)" />
-                                    </div>
-                                @endif
-                            </td>
-
-                            {{-- Slug --}}
-                            <td class="px-4 py-2">
-                                <x-copy-text :text="$tag->slug" class="font-mono text-xs text-zinc-600 block">
-                                    <x-truncate :text="$tag->slug" />
-                                </x-copy-text>
+                                <div class="mt-0.5">
+                                    <x-copy-text :text="$tag->slug" class="font-mono text-[11px] text-zinc-500 block">
+                                        <x-truncate :text="$tag->slug" />
+                                    </x-copy-text>
+                                </div>
                             </td>
 
                             {{-- Type --}}
@@ -183,7 +177,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-16 text-center">
+                            <td colspan="6" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />

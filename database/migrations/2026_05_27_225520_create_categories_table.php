@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -33,6 +34,13 @@ return new class extends Migration
 
             $table->index(['type', 'parent_id', 'sort_order']);
         });
+
+        // Previously brands used a single 'brand' discriminator; they now
+        // live in post/product pools (post_brand / product_brand) like tags,
+        // so legacy brand rows are moved into the product pool from which
+        // they were always created. No-op on fresh databases where no brand
+        // rows exist yet.
+        DB::table('categories')->where('type', 'brand')->update(['type' => 'product_brand']);
     }
 
     /**

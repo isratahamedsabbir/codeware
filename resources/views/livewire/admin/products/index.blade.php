@@ -91,8 +91,7 @@
                     <col style="width:4%">
                     <col style="width:4%">
                     <col class="hidden lg:table-column" style="width:4%">
-                    <col style="width:12%">
-                    <col class="hidden lg:table-column" style="width:9%">
+                    <col style="width:14%">
                     <col class="hidden lg:table-column" style="width:9%">
                     <col style="width:9%">
                     <col style="width:8%">
@@ -109,7 +108,6 @@
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Name</th>
-                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Slug</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Category</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Price</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Stock</th>
@@ -162,23 +160,19 @@
                                 <x-copy-text :text="$product->id" class="font-mono text-sm text-zinc-500">{{ $product->id }}</x-copy-text>
                             </td>
 
-                            {{-- Name --}}
+                            {{-- Name + slug (slug below, click to copy) --}}
                             <td class="px-4 py-2">
-                                <div class="font-medium text-zinc-900 text-sm leading-snug">
+                                <div class="font-medium text-zinc-900 text-sm leading-snug"
+                                    @if ($product->getTranslation('name', 'bn', false))
+                                        title="{{ $product->getTranslation('name', 'en', false) }} — {{ $product->getTranslation('name', 'bn', false) }}"
+                                    @endif>
                                     <x-truncate :text="$product->getTranslation('name', 'en', false)" />
                                 </div>
-                                @if ($product->getTranslation('name', 'bn', false))
-                                    <div class="text-xs text-zinc-600 mt-0.5">
-                                        <x-truncate :text="$product->getTranslation('name', 'bn', false)" />
-                                    </div>
-                                @endif
-                            </td>
-
-                            {{-- Slug --}}
-                            <td class="hidden lg:table-cell px-4 py-2">
-                                <x-copy-text :text="$product->slug" class="font-mono text-xs text-zinc-600 block">
-                                    <x-truncate :text="$product->slug" />
-                                </x-copy-text>
+                                <div class="mt-0.5">
+                                    <x-copy-text :text="$product->slug" class="font-mono text-[11px] text-zinc-500 block">
+                                        <x-truncate :text="$product->slug" />
+                                    </x-copy-text>
+                                </div>
                             </td>
 
                             {{-- Category --}}
@@ -325,14 +319,7 @@
 
                         </tr>
                         @if ($viewingId === $product->id)
-                            <x-admin-row-details colspan="14">
-                                <x-admin-row-details.item label="Slug">
-                                    @if ($product->slug)
-                                        <x-copy-text :text="$product->slug" class="font-mono">{{ $product->slug }}</x-copy-text>
-                                    @else
-                                        —
-                                    @endif
-                                </x-admin-row-details.item>
+                            <x-admin-row-details colspan="13">
                                 <x-admin-row-details.item label="Category">{{ $product->categories->isNotEmpty() ? $product->categories->map(fn ($c) => $c->getTranslation('name', 'en', false))->implode(', ') : '—' }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Type">{{ $product->product_type === 'digital' ? 'Digital' : 'Physical' }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Featured">{{ $product->is_featured ? 'Yes' : 'No' }}</x-admin-row-details.item>
@@ -343,7 +330,7 @@
                         @endif
                     @empty
                         <tr>
-                            <td colspan="14" class="px-6 py-16 text-center">
+                            <td colspan="13" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />

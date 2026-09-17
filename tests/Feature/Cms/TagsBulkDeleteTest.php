@@ -17,7 +17,7 @@ it('keeps the correct breadcrumb after a wire:click round trip', function () {
 
     Livewire::test(TagsIndex::class)
         ->call('toggleSelect', $tag->id)
-        ->assertSee('Blog')
+        ->assertSee('Tags')
         ->assertDontSee('Update');
 });
 

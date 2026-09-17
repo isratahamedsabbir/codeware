@@ -123,16 +123,19 @@
                                 @endif
                             </td>
 
-                            {{-- Name --}}
+                            {{-- Name + slug (slug below, click to copy) --}}
                             <td class="px-4 py-2">
-                                <div class="font-medium text-zinc-900 text-sm leading-snug">
+                                <div class="font-medium text-zinc-900 text-sm leading-snug"
+                                    @if ($service->getTranslation('name', 'bn', false))
+                                        title="{{ $service->getTranslation('name', 'en', false) }} — {{ $service->getTranslation('name', 'bn', false) }}"
+                                    @endif>
                                     <x-truncate :text="$service->getTranslation('name', 'en', false)" />
                                 </div>
-                                @if ($service->getTranslation('name', 'bn', false))
-                                    <div class="text-xs text-zinc-600 mt-0.5">
-                                        <x-truncate :text="$service->getTranslation('name', 'bn', false)" />
-                                    </div>
-                                @endif
+                                <div class="mt-0.5">
+                                    <x-copy-text :text="$service->slug" class="font-mono text-[11px] text-zinc-500 block">
+                                        <x-truncate :text="$service->slug" />
+                                    </x-copy-text>
+                                </div>
                             </td>
 
                             {{-- Price --}}
