@@ -355,9 +355,9 @@
             {{-- Categories --}}
             <x-admin-section-card icon="tag" title="Categories" icon-color="bg-amber-500/10 text-amber-600"
                 body-class="px-4 py-3" description="A product can belong to more than one category.">
-                <flux:checkbox.group wire:model="category_ids" class="flex-col items-stretch gap-0 max-h-72 overflow-y-auto border border-zinc-200 rounded-lg p-2">
+                <flux:checkbox.group wire:model="category_ids" class="flex flex-col items-stretch gap-1 max-h-72 overflow-y-auto border border-zinc-200 rounded-lg p-2 **:data-flux-field:mb-0!">
                     @forelse ($this->categoryTree as $cat)
-                        <div class="rounded-md py-0 hover:bg-zinc-50 transition-colors [&_ui-label]:text-xs [&_ui-label]:leading-4 [&_ui-checkbox]:size-4" style="padding-left: {{ 8 + $cat->depth * 8 }}px">
+                        <div class="rounded-md py-px hover:bg-zinc-50 transition-colors **:data-flux-field:gap-x-1.5 **:data-flux-field:gap-y-0 [&_ui-label]:text-xs [&_ui-label]:leading-none [&_ui-checkbox]:size-3.5" style="padding-left: {{ 8 + $cat->depth * 8 }}px">
                             <flux:checkbox value="{{ $cat->id }}"
                                 label="{{ $cat->getTranslation('name', \App\Support\Locale::primary(), false) }}" />
                         </div>

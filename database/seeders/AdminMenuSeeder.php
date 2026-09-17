@@ -22,25 +22,25 @@ class AdminMenuSeeder extends Seeder
 
         $this->standalone('Chat', 'chat-bubble-left-right', 'admin.chat', 3);
 
-        $this->group('Products', 4, [
+        // Categories and Tags are shared by Products and Blog (pick a type
+        // when creating), so they live on their own rather than nested
+        // under either — see routes/admin.php's feature:taxonomy group.
+        $this->standalone('Categories', 'squares-2x2', 'admin.categories', 4);
+
+        $this->standalone('Tags', 'tag', 'admin.tags', 5);
+
+        $this->standalone('Brands', 'building-storefront', 'admin.product-brands', 6);
+
+        // Posts, Products and Services are listed one after another, right after Brands.
+        $this->standalone('Posts', 'document-text', 'admin.posts', 7);
+
+        $this->group('Products', 8, [
             ['Products', 'cube', 'admin.products'],
             ['Attributes', 'adjustments-horizontal', 'admin.product-attributes'],
             ['Vendors', 'briefcase', 'admin.product-vendors'],
         ]);
 
-        // Products, Posts and Services are listed one after another.
-        $this->standalone('Posts', 'document-text', 'admin.posts', 5);
-
-        $this->standalone('Services', 'wrench-screwdriver', 'admin.services', 6);
-
-        // Categories and Tags are shared by Products and Blog (pick a type
-        // when creating), so they live on their own rather than nested
-        // under either — see routes/admin.php's feature:taxonomy group.
-        $this->standalone('Categories', 'squares-2x2', 'admin.categories', 7);
-
-        $this->standalone('Tags', 'tag', 'admin.tags', 8);
-
-        $this->standalone('Brands', 'building-storefront', 'admin.product-brands', 9);
+        $this->standalone('Services', 'wrench-screwdriver', 'admin.services', 9);
 
         $this->group('Sales', 10, [
             ['Orders', 'shopping-bag', 'admin.orders'],
