@@ -40,7 +40,7 @@ class AdminMenuSeeder extends Seeder
 
         $this->standalone('Tags', 'tag', 'admin.tags', 8);
 
-        $this->standalone('Brands', 'star', 'admin.product-brands', 9);
+        $this->standalone('Brands', 'building-storefront', 'admin.product-brands', 9);
 
         $this->group('Sales', 10, [
             ['Orders', 'shopping-bag', 'admin.orders'],
