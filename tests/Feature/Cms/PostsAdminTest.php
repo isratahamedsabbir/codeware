@@ -50,13 +50,15 @@ it('creates a post-typed tag inline from the form and selects it', function () {
     expect($tag->type)->toBe(Tag::TYPE_POST);
 });
 
-it('does not list product-typed tags in the post form', function () {
-    Tag::factory()->post()->create(['name' => ['en' => 'Post Only', 'bn' => '']]);
-    Tag::factory()->product()->create(['name' => ['en' => 'Product Only', 'bn' => '']]);
+it('lists both post-typed and product-typed tags in the post form, but not legacy tags', function () {
+    Tag::factory()->post()->create(['name' => ['en' => 'Post Tag', 'bn' => '']]);
+    Tag::factory()->product()->create(['name' => ['en' => 'Product Tag', 'bn' => '']]);
+    Tag::factory()->create(['name' => ['en' => 'Legacy Only', 'bn' => '']]);
 
     Livewire::test(PostsForm::class)
-        ->assertSee('Post Only')
-        ->assertDontSee('Product Only');
+        ->assertSee('Post Tag')
+        ->assertSee('Product Tag')
+        ->assertDontSee('Legacy Only');
 });
 
 it('can filter posts by status', function () {

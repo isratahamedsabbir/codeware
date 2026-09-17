@@ -128,7 +128,7 @@ class Form extends Component
     #[Computed]
     public function tags()
     {
-        return Tag::whereIn('type', [Tag::TYPE_POST, Tag::TYPE_LEGACY])->orderBy('id')->get();
+        return Tag::whereIn('type', [Tag::TYPE_PRODUCT, Tag::TYPE_POST])->orderBy('id')->get();
     }
 
     /**

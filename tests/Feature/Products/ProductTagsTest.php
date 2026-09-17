@@ -61,13 +61,15 @@ it('shares a legacy tag between a post and a product', function () {
         ->and($tag->products()->pluck('products.id')->all())->toBe([$product->id]);
 });
 
-it('does not list post-typed tags in the product form', function () {
-    Tag::factory()->post()->create(['name' => ['en' => 'Post Only', 'bn' => '']]);
-    Tag::factory()->product()->create(['name' => ['en' => 'Product Only', 'bn' => '']]);
+it('lists both post-typed and product-typed tags in the product form, but not legacy tags', function () {
+    Tag::factory()->post()->create(['name' => ['en' => 'Post Tag', 'bn' => '']]);
+    Tag::factory()->product()->create(['name' => ['en' => 'Product Tag', 'bn' => '']]);
+    Tag::factory()->create(['name' => ['en' => 'Legacy Only', 'bn' => '']]);
 
     Livewire::test(ProductForm::class)
-        ->assertSee('Product Only')
-        ->assertDontSee('Post Only');
+        ->assertSee('Post Tag')
+        ->assertSee('Product Tag')
+        ->assertDontSee('Legacy Only');
 });
 
 it('creates a product-typed tag inline from the form and selects it', function () {

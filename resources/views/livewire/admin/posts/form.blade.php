@@ -88,31 +88,97 @@
         {{-- ── SIDEBAR ── --}}
         <div class="w-[320px] shrink-0 space-y-4">
 
-            {{-- Tags --}}
+            {{-- Tags — product-typed and post-typed pools, no legacy (App\Models\Tag) --}}
             <x-admin-section-card icon="tag" title="Tags" body-class="px-4 py-3"
                 description="Label this post for filtering and search.">
-                <form wire:submit="createTag" class="mb-3">
-                    <div class="flex items-center gap-2">
-                        <input wire:model="newTagName" type="text" placeholder="New tag…"
-                            class="flex-1 min-w-0 h-8 rounded-lg border border-zinc-200 px-2.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all" />
-                        <flux:button type="submit" size="sm" variant="primary" wire:loading.attr="disabled"
-                            wire:target="createTag">
-                            Add
-                        </flux:button>
+                <div
+                    x-data="{
+                        tagIds: @entangle('tag_ids'),
+                        allTags: @js($this->tags->map(fn ($tag) => ['id' => $tag->id, 'name' => $tag->getTranslation('name', \App\Support\Locale::primary(), false)])),
+                        query: '',
+                        open: false,
+                        panelStyle: '',
+                        get filtered() {
+                            const q = this.query.trim().toLowerCase();
+                            return this.allTags.filter(t => !this.tagIds.includes(t.id) && (!q || t.name.toLowerCase().includes(q)));
+                        },
+                        get selected() {
+                            return this.tagIds.map(id => this.allTags.find(t => t.id === id)).filter(Boolean);
+                        },
+                        updatePosition() {
+                            this.$nextTick(() => {
+                                const trigger = this.$refs.tagBox;
+                                if (!trigger) return;
+                                const rect = trigger.getBoundingClientRect();
+                                this.panelStyle = `top:${rect.bottom + 4}px; left:${rect.left}px; width:${rect.width}px;`;
+                            });
+                        },
+                        openDropdown() {
+                            this.open = true;
+                            this.updatePosition();
+                        },
+                        addTag(id) {
+                            if (!this.tagIds.includes(id)) this.tagIds.push(id);
+                            this.query = '';
+                            this.$refs.tagSearch.focus();
+                        },
+                        removeTag(id) {
+                            this.tagIds = this.tagIds.filter(existing => existing !== id);
+                        },
+                        init() {
+                            const handler = (e) => {
+                                if (!this.$refs.tagSearch || !document.body.contains(this.$refs.tagSearch)) {
+                                    document.removeEventListener('click', handler);
+                                    return;
+                                }
+                                if (!this.open) return;
+                                if (this.$refs.tagBox && this.$refs.tagBox.contains(e.target)) return;
+                                if (e.target.closest('[data-tag-panel]')) return;
+                                this.open = false;
+                            };
+                            document.addEventListener('click', handler);
+                            window.addEventListener('resize', () => this.open && this.updatePosition());
+                            window.addEventListener('scroll', () => this.open && this.updatePosition(), true);
+                        },
+                    }"
+                    class="relative"
+                >
+                    <div x-ref="tagBox" @click="$refs.tagSearch.focus()"
+                        class="flex flex-wrap items-center gap-1.5 min-h-9 w-full rounded-lg border border-zinc-200 px-2 py-1.5 cursor-text focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 transition-all">
+                        <template x-for="tag in selected" :key="tag.id">
+                            <span class="inline-flex items-center gap-1 rounded-full bg-indigo-50 pl-2.5 pr-1.5 py-1 text-xs font-medium text-indigo-700">
+                                <span x-text="tag.name"></span>
+                                <button type="button" @click.stop="removeTag(tag.id)"
+                                    class="rounded-full p-0.5 hover:bg-indigo-100 transition-colors">
+                                    <flux:icon name="x-mark" variant="micro" class="size-3" />
+                                </button>
+                            </span>
+                        </template>
+
+                        <input type="text" x-ref="tagSearch" x-model="query" @focus="openDropdown()" @input="open = true; updatePosition()"
+                            placeholder="Search tags…"
+                            class="flex-1 min-w-25 border-0 p-0.5 text-sm outline-none focus:ring-0" />
                     </div>
-                    <flux:error name="newTagName" />
-                </form>
-                @forelse ($this->tags as $tag)
-                    <label class="flex items-center gap-2.5 py-1.5 cursor-pointer group">
-                        <input type="checkbox" wire:model="tag_ids" value="{{ $tag->id }}"
-                            class="w-4 h-4 rounded border-zinc-300 text-indigo-500 focus:ring-indigo-400 cursor-pointer" />
-                        <span class="text-sm text-zinc-700 group-hover:text-zinc-900 transition-colors">
-                            {{ $tag->getTranslation('name', \App\Support\Locale::primary(), false) }}
-                        </span>
-                    </label>
-                @empty
-                    <p class="text-xs text-zinc-400">No tags yet — type a name above to create one.</p>
-                @endforelse
+
+                    <template x-teleport="body">
+                        <div data-tag-panel x-show="open && filtered.length" x-cloak x-transition :style="panelStyle"
+                            class="fixed z-50 max-h-56 overflow-y-auto rounded-lg border border-zinc-200 bg-white shadow-lg py-1">
+                            <template x-for="tag in filtered" :key="tag.id">
+                                <button type="button" @click="addTag(tag.id)"
+                                    class="block w-full px-3 py-1.5 text-left text-sm text-zinc-700 hover:bg-zinc-50 transition-colors"
+                                    x-text="tag.name"></button>
+                            </template>
+                        </div>
+                    </template>
+
+                    <p x-show="open && query && !filtered.length" x-cloak class="mt-1 text-xs text-zinc-400">
+                        No matching tags.
+                    </p>
+
+                    @if ($this->tags->isEmpty())
+                        <p class="mt-1 text-xs text-zinc-400">No tags yet — create one from Tags first.</p>
+                    @endif
+                </div>
                 <flux:error name="tag_ids" />
             </x-admin-section-card>
 
