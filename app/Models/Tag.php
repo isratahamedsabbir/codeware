@@ -5,7 +5,7 @@ namespace App\Models;
 use App\Support\Locale;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Str;
 use Spatie\Translatable\HasTranslations;
 
@@ -29,8 +29,18 @@ class Tag extends Model
         });
     }
 
-    public function posts(): BelongsToMany
+    /**
+     * Both relations share the single polymorphic `taggables` pivot table
+     * (tag_id/taggable_type/taggable_id) rather than a dedicated post_tag /
+     * product_tag table each — see the taggables migration.
+     */
+    public function posts(): MorphToMany
     {
-        return $this->belongsToMany(Post::class);
+        return $this->morphedByMany(Post::class, 'taggable');
+    }
+
+    public function products(): MorphToMany
+    {
+        return $this->morphedByMany(Product::class, 'taggable');
     }
 }

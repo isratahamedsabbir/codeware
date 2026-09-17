@@ -367,6 +367,27 @@
                 <flux:error name="category_ids" />
             </x-admin-section-card>
 
+            {{-- Tags — shares the same tag pool as Blog Posts (App\Models\Tag) --}}
+            <x-admin-section-card icon="hashtag" title="Tags" icon-color="bg-rose-500/10 text-rose-600"
+                body-class="px-4 py-3" description="Label this product for filtering and search.">
+                @forelse ($this->tags as $tag)
+                    <label class="flex items-center gap-2.5 py-1.5 cursor-pointer group">
+                        <input type="checkbox" wire:model="tag_ids" value="{{ $tag->id }}"
+                            class="w-4 h-4 rounded border-zinc-300 text-indigo-500 focus:ring-indigo-400 cursor-pointer" />
+                        <span class="text-sm text-zinc-700 group-hover:text-zinc-900 transition-colors">
+                            {{ $tag->getTranslation('name', \App\Support\Locale::primary(), false) }}
+                        </span>
+                    </label>
+                @empty
+                    <p class="text-xs text-zinc-400">No tags yet.
+                        <a href="{{ route('admin.tags.create') }}" wire:navigate class="text-indigo-500 hover:underline">
+                            Create one
+                        </a>.
+                    </p>
+                @endforelse
+                <flux:error name="tag_ids" />
+            </x-admin-section-card>
+
             {{-- Featured Image --}}
             <x-admin-section-card icon="photo" title="Thumbnail Image" icon-color="bg-blue-500/10 text-blue-600"
                 body-class="px-4 py-3" description="Shown in the product catalog. Recommended 800×800px.">

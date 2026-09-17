@@ -26,7 +26,7 @@ class ProductController extends Controller
         $perPage = max(1, min((int) $request->query('per_page', Setting::perPage()), 100));
 
         $products = Product::active()
-            ->with(['categories.page', 'brand', 'page'])
+            ->with(['categories.page', 'brand', 'tags', 'page'])
             ->orderBy('sort_order')
             ->when($request->query('category'), fn ($q, $slug) => $q->whereHas('categories.page', fn ($c) => $c->where('slug', $slug)))
             ->when($request->query('search'), fn ($q, $search) => $q->where("name->{$locale}", 'like', "%{$search}%"))
@@ -51,7 +51,7 @@ class ProductController extends Controller
         $locale = $this->resolveLocale($request);
 
         $product = Product::active()
-            ->with(['categories.page', 'brand', 'gallery', 'page', 'faqs'])
+            ->with(['categories.page', 'brand', 'tags', 'gallery', 'page', 'faqs'])
             ->whereHas('page', fn ($q) => $q->where('slug', $slug))
             ->firstOrFail();
 
@@ -59,7 +59,7 @@ class ProductController extends Controller
 
         $related = $categoryIds->isNotEmpty()
             ? Product::active()
-                ->with(['categories', 'page'])
+                ->with(['categories', 'tags', 'page'])
                 ->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $categoryIds))
                 ->where('id', '!=', $product->id)
                 ->orderBy('sort_order')
@@ -98,6 +98,11 @@ class ProductController extends Controller
                 'id' => $category->id,
                 'slug' => $category->slug,
                 'name' => $category->getTranslation('name', $locale, useFallbackLocale: true),
+            ])->values(),
+            'tags' => $product->tags->map(fn ($tag) => [
+                'id' => $tag->id,
+                'slug' => $tag->slug,
+                'name' => $tag->getTranslation('name', $locale, useFallbackLocale: true),
             ])->values(),
             'page' => $this->formatPage($product->page),
         ];

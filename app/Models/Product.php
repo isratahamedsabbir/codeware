@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
 
@@ -82,6 +83,15 @@ class Product extends Model
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(ProductCategory::class, 'category_product', 'product_id', 'category_id');
+    }
+
+    /**
+     * Shares the single polymorphic `taggables` pivot table with Post's own
+     * tags() — see Tag::posts()/Tag::products().
+     */
+    public function tags(): MorphToMany
+    {
+        return $this->morphToMany(Tag::class, 'taggable');
     }
 
     public function brand(): BelongsTo

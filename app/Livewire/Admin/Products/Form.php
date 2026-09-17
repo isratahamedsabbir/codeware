@@ -11,6 +11,7 @@ use App\Models\ProductAttribute;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use App\Models\ProductVendor;
+use App\Models\Tag;
 use App\Support\AdminActivity;
 use App\Support\PuckEditor;
 use App\Support\Slug;
@@ -50,6 +51,15 @@ class Form extends Component
      * @var array<int, int>
      */
     public array $category_ids = [];
+
+    /**
+     * Shares the same tag pool as Blog Posts (App\Models\Tag) rather than a
+     * product-specific list — see Tag::products().
+     *
+     * @var array<int, int>
+     */
+    #[Validate('nullable|array')]
+    public array $tag_ids = [];
 
     #[Validate('nullable|integer|exists:product_brands,id')]
     public string $brand_id = '';
@@ -146,6 +156,7 @@ class Form extends Component
             $this->hydrateTranslatable($product, ['name', 'description']);
             $this->slug = $product->slug ?? '';
             $this->category_ids = $product->categories->pluck('id')->all();
+            $this->tag_ids = $product->tags->pluck('id')->all();
             $this->brand_id = $product->brand_id !== null ? (string) $product->brand_id : '';
             $this->vendor_id = $product->vendor_id !== null ? (string) $product->vendor_id : '';
             $this->sku = $product->sku ?? '';
@@ -437,6 +448,12 @@ class Form extends Component
     }
 
     #[Computed]
+    public function tags()
+    {
+        return Tag::orderBy('id')->get();
+    }
+
+    #[Computed]
     public function productAttributes()
     {
         return ProductAttribute::orderBy('name')->get();
@@ -490,6 +507,7 @@ class Form extends Component
         $rules['faqs.*.question'] = 'nullable|string|max:255';
         $rules['category_ids'] = 'array';
         $rules['category_ids.*'] = 'integer|exists:categories,id,type,product';
+        $rules['tag_ids.*'] = 'exists:tags,id';
 
         $this->validate($rules);
 
@@ -529,6 +547,7 @@ class Form extends Component
         $rules['faqs.*.question'] = 'nullable|string|max:255';
         $rules['category_ids'] = 'array';
         $rules['category_ids.*'] = 'integer|exists:categories,id,type,product';
+        $rules['tag_ids.*'] = 'exists:tags,id';
 
         $this->validate($rules);
 
@@ -574,6 +593,8 @@ class Form extends Component
         );
 
         $product->categories()->sync($this->category_ids);
+
+        $product->tags()->sync($this->tag_ids);
 
         $product->syncFaqs($this->cleanedFaqs());
 

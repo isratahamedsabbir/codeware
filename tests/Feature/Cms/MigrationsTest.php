@@ -6,7 +6,7 @@ it('creates all cms tables', function () {
     expect(Schema::hasTable('categories'))->toBeTrue();
     expect(Schema::hasTable('tags'))->toBeTrue();
     expect(Schema::hasTable('posts'))->toBeTrue();
-    expect(Schema::hasTable('post_tag'))->toBeTrue();
+    expect(Schema::hasTable('taggables'))->toBeTrue();
     expect(Schema::hasTable('pages'))->toBeTrue();
     expect(Schema::hasTable('page_revisions'))->toBeTrue();
     expect(Schema::hasTable('media_library'))->toBeTrue();
