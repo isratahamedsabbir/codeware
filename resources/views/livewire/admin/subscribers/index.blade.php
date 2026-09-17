@@ -134,7 +134,7 @@
 
                             {{-- Actions — disabled while a bulk selection is active, so the
                                  per-row actions can't conflict with the bulk toolbar above. --}}
-                            <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-50/30 border-l border-zinc-100 px-4 py-2">
+                            <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-100 border-l border-zinc-100 px-4 py-2">
                                 <x-admin-row-actions :actions="[
                                     ['wireClick' => 'confirmDelete(' . $subscriber->id . ')', 'icon' => 'trash', 'label' => 'Delete', 'color' => 'rose-500', 'disabled' => count($selectedIds) > 0],
                                 ]" />

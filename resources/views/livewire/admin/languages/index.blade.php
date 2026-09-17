@@ -137,7 +137,7 @@
                             </td>
 
                             {{-- Actions --}}
-                            <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-50/30 border-l border-zinc-100 px-4 py-2">
+                            <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-100 border-l border-zinc-100 px-4 py-2">
                                 <x-admin-row-actions :actions="[
                                     ['wireClick' => 'makeDefault(' . $language->id . ')', 'icon' => 'star', 'label' => __('Set as default'), 'color' => 'amber-500', 'visible' => ! $language->is_default],
                                     ['wireClick' => 'toggleActive(' . $language->id . ')', 'icon' => $language->is_active ? 'eye-slash' : 'eye', 'label' => $language->is_active ? __('Deactivate') : __('Activate'), 'color' => 'zinc-500'],

@@ -199,7 +199,7 @@
                             </td>
 
                             {{-- Actions --}}
-                            <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-50/30 border-l border-zinc-100 px-4 py-2">
+                            <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-100 border-l border-zinc-100 px-4 py-2">
                                 <x-admin-row-actions :actions="[
                                     ['href' => route('admin.coupons.edit', $coupon->id), 'icon' => 'pencil', 'label' => 'Edit', 'color' => 'primary', 'disabled' => count($selectedIds) > 0],
                                     ['wireClick' => 'confirmDelete(' . $coupon->id . ')', 'icon' => 'trash', 'label' => 'Delete', 'color' => 'rose-500', 'disabled' => count($selectedIds) > 0],

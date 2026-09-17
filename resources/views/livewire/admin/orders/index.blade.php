@@ -169,7 +169,7 @@
                                 </span>
                             </td>
                             <td class="hidden lg:table-cell px-4 py-2 text-xs text-zinc-500">{{ $order->created_at->toDisplay() }}</td>
-                            <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-50/30 border-l border-zinc-100 px-4 py-2">
+                            <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-100 border-l border-zinc-100 px-4 py-2">
                                 <div class="flex items-center justify-center gap-1.5">
                                     <x-admin-row-actions :actions="[
                                         ['href' => route('admin.orders.show', $order->id), 'icon' => 'eye', 'label' => 'View', 'color' => 'primary', 'disabled' => count($selectedIds) > 0],
