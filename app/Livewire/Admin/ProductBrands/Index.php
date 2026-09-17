@@ -99,9 +99,10 @@ class Index extends Component
         return view('livewire.admin.product-brands.index', [
             'productBrands' => ProductBrand::query()
                 ->with('creator')
-                ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
+                ->when($this->search, fn ($q) => $q->where('name->en', 'like', "%{$this->search}%")
+                    ->orWhere('name->bn', 'like', "%{$this->search}%"))
                 ->orderBy('sort_order')
-                ->orderBy('name')
+                ->orderBy('name->en')
                 ->paginate($this->perPage),
         ])->layout('layouts.admin', ['title' => 'Product Brands', 'hidePageHeading' => true]);
     }

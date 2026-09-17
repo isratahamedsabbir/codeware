@@ -4,13 +4,24 @@ use Illuminate\Support\Facades\Schema;
 
 it('creates all cms tables', function () {
     expect(Schema::hasTable('categories'))->toBeTrue();
-    expect(Schema::hasTable('tags'))->toBeTrue();
     expect(Schema::hasTable('posts'))->toBeTrue();
     expect(Schema::hasTable('taggables'))->toBeTrue();
     expect(Schema::hasTable('pages'))->toBeTrue();
     expect(Schema::hasTable('page_revisions'))->toBeTrue();
     expect(Schema::hasTable('media_library'))->toBeTrue();
     expect(Schema::hasTable('settings'))->toBeTrue();
+});
+
+it('categories is the unified taxonomy table for categories, brands and tags', function () {
+    // One table discriminates post_category / product_category / brand / tag
+    // rows via `type`; slug/logo/deleted_at only every apply to specific kinds.
+    expect(Schema::hasTable('product_brands'))->toBeFalse();
+    expect(Schema::hasTable('tags'))->toBeFalse();
+    expect(Schema::hasColumns('categories', [
+        'id', 'type', 'parent_id', 'name', 'slug', 'description',
+        'icon', 'logo', 'status', 'sort_order', 'deleted_at',
+        'created_at', 'updated_at',
+    ]))->toBeTrue();
 });
 
 it('posts table has required columns', function () {

@@ -23,7 +23,7 @@ test('guests and non-admins are blocked from the product brands screen', functio
 });
 
 it('renders the product brands index with existing brands', function () {
-    ProductBrand::factory()->create(['name' => 'Acme']);
+    ProductBrand::factory()->create(['name' => ['en' => 'Acme', 'bn' => '']]);
 
     Livewire::test(ProductBrandIndex::class)
         ->assertOk()
@@ -31,8 +31,8 @@ it('renders the product brands index with existing brands', function () {
 });
 
 it('filters brands by search', function () {
-    ProductBrand::factory()->create(['name' => 'Acme']);
-    ProductBrand::factory()->create(['name' => 'Globex']);
+    ProductBrand::factory()->create(['name' => ['en' => 'Acme', 'bn' => '']]);
+    ProductBrand::factory()->create(['name' => ['en' => 'Globex', 'bn' => '']]);
 
     Livewire::test(ProductBrandIndex::class)
         ->set('search', 'Acme')
@@ -42,7 +42,7 @@ it('filters brands by search', function () {
 
 it('creates a brand, active by default', function () {
     Livewire::test(ProductBrandForm::class)
-        ->set('name', 'Acme')
+        ->set('name.en', 'Acme')
         ->set('logo', '/storage/media/acme.png')
         ->call('save');
 
@@ -53,30 +53,30 @@ it('creates a brand, active by default', function () {
 });
 
 it('rejects a duplicate brand name', function () {
-    ProductBrand::factory()->create(['name' => 'Acme']);
+    ProductBrand::factory()->create(['name' => ['en' => 'Acme', 'bn' => '']]);
 
     Livewire::test(ProductBrandForm::class)
-        ->set('name', 'Acme')
+        ->set('name.en', 'Acme')
         ->call('save')
-        ->assertHasErrors(['name']);
+        ->assertHasErrors(['name.en']);
 });
 
 it('updates an existing brand, allowing it to keep its own name', function () {
-    $brand = ProductBrand::factory()->create(['name' => 'Acme', 'status' => 'active']);
+    $brand = ProductBrand::factory()->create(['name' => ['en' => 'Acme', 'bn' => ''], 'status' => 'active']);
 
     Livewire::test(ProductBrandForm::class, ['id' => $brand->id])
-        ->assertSet('name', 'Acme')
-        ->set('name', 'Acme Corp')
+        ->assertSet('name.en', 'Acme')
+        ->set('name.en', 'Acme Corp')
         ->call('save');
 
     expect($brand->fresh()->name)->toBe('Acme Corp');
 });
 
 it('does not reset an inactive brand back to active when saved from the form', function () {
-    $brand = ProductBrand::factory()->inactive()->create(['name' => 'Acme']);
+    $brand = ProductBrand::factory()->inactive()->create(['name' => ['en' => 'Acme', 'bn' => '']]);
 
     Livewire::test(ProductBrandForm::class, ['id' => $brand->id])
-        ->set('name', 'Acme Corp')
+        ->set('name.en', 'Acme Corp')
         ->call('save');
 
     expect($brand->fresh()->status)->toBe('inactive');

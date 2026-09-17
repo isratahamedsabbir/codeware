@@ -43,7 +43,7 @@ class Form extends Component
      */
     public ?bool $slugAvailable = null;
 
-    #[Validate('nullable|integer|exists:categories,id,type,post')]
+    #[Validate('nullable|integer|exists:categories,id,type,post_category')]
     public ?int $category_id = null;
 
     #[Validate('nullable|array')]
@@ -153,7 +153,7 @@ class Form extends Component
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
         ];
-        $rules['tag_ids.*'] = 'exists:tags,id';
+        $rules['tag_ids.*'] = 'exists:categories,id,type,tag';
 
         $this->validate($rules);
 
@@ -183,7 +183,7 @@ class Form extends Component
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
         ];
-        $rules['tag_ids.*'] = 'exists:tags,id';
+        $rules['tag_ids.*'] = 'exists:categories,id,type,tag';
 
         $this->validate($rules);
 

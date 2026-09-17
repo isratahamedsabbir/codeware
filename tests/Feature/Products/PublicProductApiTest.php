@@ -209,7 +209,7 @@ it('returns full product detail by slug with gallery and related', function () {
 });
 
 it('includes the assigned brand on a product, and null when unassigned', function () {
-    $brand = ProductBrand::factory()->create(['name' => 'Acme', 'logo' => '/storage/media/acme.png']);
+    $brand = ProductBrand::factory()->create(['name' => ['en' => 'Acme', 'bn' => 'Acme'], 'logo' => '/storage/media/acme.png']);
     $product = Product::factory()->published()->create(['brand_id' => $brand->id]);
     pairPageFor($product, 'product', 'branded-product', $this->admin->id);
 

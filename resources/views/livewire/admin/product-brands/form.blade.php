@@ -8,11 +8,21 @@
 
     <div class="w-full max-w-2xl bg-white rounded-[5px] shadow-sm p-6 space-y-4">
 
-        <flux:field>
-            <flux:label>Name <span class="text-red-500 ml-0.5">*</span></flux:label>
-            <flux:input wire:model="name" placeholder="e.g. Nestle, Unilever, Samsung" />
-            <flux:error name="name" />
-        </flux:field>
+        <x-admin-locale-tabs>
+            @foreach (\App\Support\Locale::active() as $language)
+                <x-admin-locale-panel :code="$language->code">
+                    <flux:field>
+                        <flux:label>
+                            Name
+                            @if ($language->code === $this->primaryLocale)<span class="text-red-500 ml-0.5">*</span>@endif
+                        </flux:label>
+                        <flux:input wire:model.live.debounce.400ms="name.{{ $language->code }}"
+                            placeholder="{{ $language->code === $this->primaryLocale ? 'e.g. Nestle, Unilever, Samsung' : 'e.g. Nestle, Unilever, Samsung ('.($language->native_name ?: $language->name).')' }}" />
+                        @if ($language->code === $this->primaryLocale)<flux:error name="name.{{ $language->code }}" />@endif
+                    </flux:field>
+                </x-admin-locale-panel>
+            @endforeach
+        </x-admin-locale-tabs>
 
         <x-media-picker model="logo" label="Logo" hint="Square image works best" placeholder="Select brand logo from library" mimes="jpg,jpeg,png,webp,svg" only-images dropzone />
 

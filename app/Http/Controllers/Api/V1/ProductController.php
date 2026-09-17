@@ -91,7 +91,7 @@ class ProductController extends Controller
             // 'sort_order'      => $product->sort_order,
             'brand' => $product->brand ? [
                 'id' => $product->brand->id,
-                'name' => $product->brand->name,
+                'name' => $product->brand->getTranslation('name', $locale, useFallbackLocale: true),
                 'logo' => $product->brand->logo,
             ] : null,
             'categories' => $product->categories->map(fn ($category) => [

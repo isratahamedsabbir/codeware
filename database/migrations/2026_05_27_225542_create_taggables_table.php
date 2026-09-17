@@ -15,7 +15,7 @@ return new class extends Migration
         // Product, ...) rather than a dedicated post_tag/product_tag table
         // each, mirroring the faqs/comments polymorphic pattern.
         Schema::create('taggables', function (Blueprint $table) {
-            $table->foreignId('tag_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('tag_id')->constrained('categories')->cascadeOnDelete();
             $table->morphs('taggable');
             $table->primary(['tag_id', 'taggable_id', 'taggable_type']);
         });

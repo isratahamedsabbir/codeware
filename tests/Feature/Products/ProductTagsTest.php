@@ -24,7 +24,7 @@ it('attaches tags to a product created from the admin form', function () {
         ->call('save');
 
     $product = Product::whereJsonContains('name->en', 'Tagged Product')->firstOrFail();
-    expect($product->tags()->pluck('tags.id')->all())->toEqualCanonicalizing($tags->pluck('id')->all());
+    expect($product->tags()->pluck('categories.id')->all())->toEqualCanonicalizing($tags->pluck('id')->all());
 });
 
 it('hydrates the tag checkboxes when editing an existing product', function () {
@@ -46,7 +46,7 @@ it('updates a product\'s tags on save, replacing the previous set', function () 
         ->set('tag_ids', [$newTag->id])
         ->call('save');
 
-    expect($product->tags()->pluck('tags.id')->all())->toBe([$newTag->id]);
+    expect($product->tags()->pluck('categories.id')->all())->toBe([$newTag->id]);
 });
 
 it('shares the same tag between a post and a product — one tag pool for both', function () {

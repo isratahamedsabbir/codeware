@@ -163,7 +163,7 @@ class Form extends Component
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
         ];
-        $rules['parentId'] = 'nullable|integer|exists:categories,id,type,product';
+        $rules['parentId'] = 'nullable|integer|exists:categories,id,type,product_category';
 
         $this->validate($rules);
 

@@ -40,11 +40,11 @@ class ProductCategory extends Model
     protected static function booted(): void
     {
         static::addGlobalScope('type', function (Builder $builder) {
-            $builder->where('type', 'product');
+            $builder->where('type', 'product_category');
         });
 
         static::creating(function (ProductCategory $category) {
-            $category->type = 'product';
+            $category->type = 'product_category';
         });
     }
 

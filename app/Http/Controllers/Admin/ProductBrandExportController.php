@@ -22,7 +22,7 @@ class ProductBrandExportController extends Controller
         $brands = ProductBrand::query()
             ->whereIn('id', $ids)
             ->orderBy('sort_order')
-            ->orderBy('name')
+            ->orderBy('name->en')
             ->get();
 
         $filename = 'product-brands-'.now()->format('Y-m-d-His').'.csv';
@@ -33,12 +33,13 @@ class ProductBrandExportController extends Controller
             // A UTF-8 BOM so Excel doesn't mangle non-Latin (e.g. Bengali) text.
             fwrite($handle, "\xEF\xBB\xBF");
 
-            fputcsv($handle, ['ID', 'Name', 'Status', 'Created At']);
+            fputcsv($handle, ['ID', 'Name (EN)', 'Name (BN)', 'Status', 'Created At']);
 
             foreach ($brands as $brand) {
                 fputcsv($handle, [
                     $brand->id,
-                    $brand->name,
+                    $brand->getTranslation('name', 'en', false),
+                    $brand->getTranslation('name', 'bn', false),
                     $brand->status,
                     $brand->created_at?->toDateTimeString(),
                 ]);

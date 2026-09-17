@@ -6,6 +6,7 @@ use App\Concerns\HasTranslatableFields;
 use App\Models\Tag;
 use App\Support\AdminActivity;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
@@ -39,9 +40,10 @@ class Form extends Component
         $rules = array_merge($this->getRules(), $this->translatableRules([
             'name' => 'required|string|max:255',
         ]));
-        $rules['slug'] = $this->tagId
-            ? 'required|string|max:255|unique:tags,slug,'.$this->tagId
-            : 'required|string|max:255|unique:tags,slug';
+        $rules['slug'] = [
+            'required', 'string', 'max:255',
+            Rule::unique('categories', 'slug')->where('type', 'tag')->ignore($this->tagId),
+        ];
 
         $this->validate($rules);
 

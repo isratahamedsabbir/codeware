@@ -37,11 +37,11 @@ class PostCategory extends Model
     protected static function booted(): void
     {
         static::addGlobalScope('type', function (Builder $builder) {
-            $builder->where('type', 'post');
+            $builder->where('type', 'post_category');
         });
 
         static::creating(function (PostCategory $category) {
-            $category->type = 'post';
+            $category->type = 'post_category';
         });
     }
 

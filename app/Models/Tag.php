@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Support\Locale;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
@@ -13,12 +14,24 @@ class Tag extends Model
 {
     use HasFactory, HasTranslations;
 
+    // Lives in the unified taxonomy table alongside PostCategory /
+    // ProductCategory / ProductBrand — this type distinguishes tag rows.
+    protected $table = 'categories';
+
     public array $translatable = ['name'];
 
     protected $fillable = ['name', 'slug', 'status'];
 
     protected static function booted(): void
     {
+        static::addGlobalScope('type', function (Builder $builder) {
+            $builder->where('type', 'tag');
+        });
+
+        static::creating(function (Tag $tag) {
+            $tag->type = 'tag';
+        });
+
         static::saving(function (Tag $tag) {
             if (empty($tag->slug)) {
                 $name = is_array($tag->name)

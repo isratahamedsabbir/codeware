@@ -9,7 +9,7 @@ class ProductBrandFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => ucfirst(fake()->unique()->word()),
+            'name' => ['en' => ucfirst(fake()->unique()->word()), 'bn' => ''],
             'logo' => null,
             'status' => 'active',
             'sort_order' => 0,

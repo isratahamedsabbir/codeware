@@ -11,8 +11,8 @@ beforeEach(function () {
 });
 
 it('exports only the requested brand ids as a downloadable csv', function () {
-    $included = ProductBrand::factory()->create(['name' => 'Included Brand']);
-    $excluded = ProductBrand::factory()->create(['name' => 'Excluded Brand']);
+    $included = ProductBrand::factory()->create(['name' => ['en' => 'Included Brand', 'bn' => '']]);
+    $excluded = ProductBrand::factory()->create(['name' => ['en' => 'Excluded Brand', 'bn' => '']]);
 
     $response = $this->get(route('admin.product-brands.export', ['ids' => [$included->id]]));
 
@@ -26,7 +26,7 @@ it('exports only the requested brand ids as a downloadable csv', function () {
 });
 
 it('exports nothing but the header row when no ids are given', function () {
-    ProductBrand::factory()->create(['name' => 'Included Brand']);
+    ProductBrand::factory()->create(['name' => ['en' => 'Included Brand', 'bn' => '']]);
 
     $csv = $this->get(route('admin.product-brands.export'))->streamedContent();
 

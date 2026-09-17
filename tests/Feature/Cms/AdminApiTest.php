@@ -70,7 +70,7 @@ it('admin can attach tags to a post when creating via api', function () {
     $response->assertCreated();
 
     $post = Post::whereJsonContains('title->en', 'Tagged Post')->firstOrFail();
-    expect($post->tags()->pluck('tags.id')->all())->toEqualCanonicalizing($tags->pluck('id')->all());
+    expect($post->tags()->pluck('categories.id')->all())->toEqualCanonicalizing($tags->pluck('id')->all());
 });
 
 it('admin post detail includes tags', function () {

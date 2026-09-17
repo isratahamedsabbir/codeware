@@ -2,17 +2,19 @@
 
 namespace App\Livewire\Admin\ProductBrands;
 
+use App\Concerns\HasTranslatableFields;
 use App\Models\ProductBrand;
 use App\Support\AdminActivity;
-use Livewire\Attributes\Validate;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class Form extends Component
 {
+    use HasTranslatableFields;
+
     public ?int $brandId = null;
 
-    #[Validate('required|string|max:255')]
-    public string $name = '';
+    public array $name = [];
 
     public string $logo = '';
 
@@ -21,22 +23,28 @@ class Form extends Component
         if ($id) {
             $brand = ProductBrand::findOrFail($id);
             $this->brandId = $id;
-            $this->name = $brand->name;
+            $this->hydrateTranslatable($brand, ['name']);
             $this->logo = $brand->logo ?? '';
         }
     }
 
     public function save(): void
     {
-        $rules = $this->getRules();
-        $rules['name'] = $this->brandId
-            ? 'required|string|max:255|unique:product_brands,name,'.$this->brandId
-            : 'required|string|max:255|unique:product_brands,name';
+        $rules = array_merge($this->getRules(), $this->translatableRules([
+            'name' => 'required|string|max:255',
+        ]));
+
+        // Uniqueness is enforced against the same kind's rows only (type = 'brand);
+        // the column is the JSON path, so the primary locale's value is what's
+        // compared — a tag or category sharing the string is fine.
+        $rules['name.'.$this->primaryLocale][] = Rule::unique('categories', 'name->'.$this->primaryLocale)
+            ->where('type', 'brand')
+            ->ignore($this->brandId);
 
         $this->validate($rules);
 
         $data = [
-            'name' => $this->name,
+            'name' => $this->translatablePayload('name'),
             'logo' => $this->logo ?: null,
         ];
 
@@ -56,7 +64,7 @@ class Form extends Component
 
         AdminActivity::log(
             $creating ? 'created' : 'updated',
-            "Product Brand: {$this->name}",
+            "Product Brand: {$this->primaryValue('name')}",
         );
 
         $this->redirect(route('admin.product-brands'), navigate: true);

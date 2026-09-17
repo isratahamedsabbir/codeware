@@ -61,7 +61,7 @@ class Form extends Component
     #[Validate('nullable|array')]
     public array $tag_ids = [];
 
-    #[Validate('nullable|integer|exists:product_brands,id')]
+    #[Validate('nullable|integer|exists:categories,id,type,brand')]
     public string $brand_id = '';
 
     #[Validate('nullable|integer|exists:product_vendors,id')]
@@ -462,7 +462,7 @@ class Form extends Component
     #[Computed]
     public function productBrands()
     {
-        return ProductBrand::orderBy('sort_order')->orderBy('name')->get();
+        return ProductBrand::orderBy('sort_order')->orderBy('name->en')->get();
     }
 
     #[Computed]
@@ -506,8 +506,8 @@ class Form extends Component
         $rules['variations.*.quantity'] = 'nullable|integer|min:0|lte:quantity';
         $rules['faqs.*.question'] = 'nullable|string|max:255';
         $rules['category_ids'] = 'array';
-        $rules['category_ids.*'] = 'integer|exists:categories,id,type,product';
-        $rules['tag_ids.*'] = 'exists:tags,id';
+        $rules['category_ids.*'] = 'integer|exists:categories,id,type,product_category';
+        $rules['tag_ids.*'] = 'exists:categories,id,type,tag';
 
         $this->validate($rules);
 
@@ -546,8 +546,8 @@ class Form extends Component
         $rules['variations.*.quantity'] = 'nullable|integer|min:0|lte:quantity';
         $rules['faqs.*.question'] = 'nullable|string|max:255';
         $rules['category_ids'] = 'array';
-        $rules['category_ids.*'] = 'integer|exists:categories,id,type,product';
-        $rules['tag_ids.*'] = 'exists:tags,id';
+        $rules['category_ids.*'] = 'integer|exists:categories,id,type,product_category';
+        $rules['tag_ids.*'] = 'exists:categories,id,type,tag';
 
         $this->validate($rules);
 
