@@ -22,6 +22,7 @@ class Features
         'products' => 'Products',
         'services' => 'Services',
         'orders' => 'Orders & Reports',
+        'discounts' => 'Discounts (Products)',
         'pages' => 'Pages',
         'cms' => 'CMS',
         'media-library' => 'Media Library',

@@ -8,7 +8,6 @@ use App\Models\Feature;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
-use App\Models\Service;
 use App\Models\Setting;
 use App\Models\Transaction;
 use App\Models\User;
@@ -152,6 +151,7 @@ it('blocks staff from the orders and reports screens', function () {
     $this->actingAs($staff)->get(route('admin.orders'))->assertForbidden();
     $this->actingAs($staff)->get(route('admin.reports'))->assertForbidden();
     $this->actingAs($staff)->get(route('admin.coupons'))->assertForbidden();
+    $this->actingAs($staff)->get(route('admin.discounts'))->assertForbidden();
 });
 
 it('is blocked when the orders feature is disabled', function () {
@@ -159,6 +159,12 @@ it('is blocked when the orders feature is disabled', function () {
 
     $this->get(route('admin.orders'))->assertNotFound();
     $this->get(route('admin.coupons'))->assertNotFound();
+});
+
+it('is blocked when the discounts feature is disabled', function () {
+    Feature::create(['key' => 'discounts', 'label' => 'Discounts (Products)', 'is_enabled' => false]);
+
+    $this->get(route('admin.discounts'))->assertNotFound();
 });
 
 it('resends the customer confirmation email from the orders list', function () {

@@ -67,6 +67,25 @@ it('blocks chat, pages, media library, and file manager routes when their featur
     $this->get(route('admin.file-manager'))->assertNotFound();
 });
 
+it('blocks the discounts routes when their feature is off', function () {
+    disableFeature('discounts');
+
+    $this->get(route('admin.discounts'))->assertNotFound();
+    $this->get(route('admin.discounts.create'))->assertNotFound();
+
+    $this->get(route('admin.products'))->assertOk();
+});
+
+it('hides the Discounts link from the live sidebar once its feature is off', function () {
+    $this->seed(AdminMenuSeeder::class);
+
+    $this->get(route('admin.dashboard'))->assertOk()->assertSee('Discounts');
+
+    disableFeature('discounts');
+
+    $this->get(route('admin.dashboard'))->assertOk()->assertDontSee('Discounts');
+});
+
 it('blocks localization, menu, contacts, and email templates routes when their feature is off', function () {
     disableFeature('localization');
     disableFeature('menu');

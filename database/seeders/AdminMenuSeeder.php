@@ -50,7 +50,10 @@ class AdminMenuSeeder extends Seeder
         // Coupons sit outside the Sales group as their own top-level item.
         $this->standalone('Coupons', 'ticket', 'admin.coupons', 11);
 
-        $this->group('Library & System', 12, [
+        // Discounts similarly sit outside the Sales group, next to Coupons.
+        $this->standalone('Discounts', 'receipt-percent', 'admin.discounts', 12);
+
+        $this->group('Library & System', 13, [
             ['Settings', 'cog-6-tooth', 'admin.settings'],
             ['Env', 'command-line', 'admin.env'],
             ['Global SEO', 'magnifying-glass', 'admin.seo'],
@@ -64,35 +67,35 @@ class AdminMenuSeeder extends Seeder
             ['Menu', 'bars-3', 'admin.menu'],
         ]);
 
-        $this->standalone('Contacts', 'inbox', 'admin.contacts', 13);
+        $this->standalone('Contacts', 'inbox', 'admin.contacts', 14);
 
-        $this->standalone('Comments', 'chat-bubble-left-right', 'admin.comments', 14);
+        $this->standalone('Comments', 'chat-bubble-left-right', 'admin.comments', 15);
 
-        $this->standalone('Reviews', 'star', 'admin.reviews', 15);
+        $this->standalone('Reviews', 'star', 'admin.reviews', 16);
 
-        $this->standalone('Subscribers', 'envelope-open', 'admin.subscribers', 16);
+        $this->standalone('Subscribers', 'envelope-open', 'admin.subscribers', 17);
 
-        $this->standalone('Pages', 'document', 'admin.pages', 17);
+        $this->standalone('Pages', 'document', 'admin.pages', 18);
 
-        $this->group('Localization', 18, [
+        $this->group('Localization', 19, [
             ['Languages', 'language', 'admin.languages'],
             ['Translations', 'chat-bubble-left-right', 'admin.translations'],
         ]);
 
-        $this->group('Access Control', 19, [
+        $this->group('Access Control', 20, [
             ['Roles', 'shield-check', 'admin.roles'],
             ['Permissions', 'lock-closed', 'admin.permissions'],
             ['Users', 'users', 'admin.users'],
         ]);
 
-        $this->group('Location', 20, [
+        $this->group('Location', 21, [
             ['Countries', 'flag', 'admin.countries'],
             ['Divisions', 'map', 'admin.divisions'],
             ['Districts (Zilla)', 'building-library', 'admin.districts'],
             ['Upazilas', 'map-pin', 'admin.upazilas'],
         ]);
 
-        $this->group('Advance', 21, [
+        $this->group('Advance', 22, [
             ['Sitemap', 'map', 'admin.advance.sitemap'],
             ['Robots.txt', 'globe-alt', 'admin.advance.robots'],
             ['Database', 'circle-stack', 'admin.advance.database'],
@@ -100,7 +103,7 @@ class AdminMenuSeeder extends Seeder
             ['Password Generator', 'key', 'admin.advance.password-generator'],
         ]);
 
-        $this->standalone('About', 'building-office', 'admin.about', 22);
+        $this->standalone('About', 'building-office', 'admin.about', 23);
     }
 
     protected function standalone(string $label, string $icon, string $routeName, int $sortOrder): void

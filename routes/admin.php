@@ -260,6 +260,13 @@ Route::middleware('can:access-admin-system')->group(function () {
         Route::get('/shipping-methods/create', App\Livewire\Admin\ShippingMethods\Form::class)->name('shipping-methods.create');
         Route::get('/shipping-methods/{id}/edit', App\Livewire\Admin\ShippingMethods\Form::class)->name('shipping-methods.edit');
     });
+
+    // Discounts
+    Route::middleware('feature:discounts')->group(function () {
+        Route::get('/discounts', App\Livewire\Admin\Discounts\Index::class)->name('discounts');
+        Route::get('/discounts/create', App\Livewire\Admin\Discounts\Form::class)->name('discounts.create');
+        Route::get('/discounts/{id}/edit', App\Livewire\Admin\Discounts\Form::class)->name('discounts.edit');
+    });
 });
 
 // File Manager

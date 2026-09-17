@@ -1,0 +1,86 @@
+<div class="max-w-[1600px] w-full mx-auto flex-1">
+
+    @push('page-header-actions')
+        <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.discounts') }}" wire:navigate>
+            Back
+        </flux:button>
+    @endpush
+
+    <div class="w-full bg-white rounded-[5px] shadow-sm p-6 space-y-4">
+
+        <flux:field>
+            <flux:label>Name <span class="text-red-500 ml-0.5">*</span><x-field-hint text="Internal label, e.g. 'Winter Sale 20%'." /></flux:label>
+            <flux:input wire:model="name" placeholder="e.g. Winter Sale 20% Off" />
+            <flux:error name="name" />
+        </flux:field>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <flux:field>
+                <flux:label>Discount Type <span class="text-red-500 ml-0.5">*</span></flux:label>
+                <select wire:model="type"
+                    class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                    <option value="percentage">Percentage (%)</option>
+                    <option value="fixed">Fixed Amount</option>
+                </select>
+                <flux:error name="type" />
+            </flux:field>
+            <flux:field>
+                <flux:label>Value <span class="text-red-500 ml-0.5">*</span></flux:label>
+                <flux:input type="number" step="0.01" min="0" wire:model="value"
+                    placeholder="{{ $type === 'percentage' ? 'e.g. 20' : 'e.g. 500' }}" />
+                <flux:error name="value" />
+            </flux:field>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <flux:field>
+                <flux:label>Valid From<x-field-hint text="Leave blank to always be valid." /></flux:label>
+                <flux:input type="date" wire:model="starts_at" />
+                <flux:error name="starts_at" />
+            </flux:field>
+            <flux:field>
+                <flux:label>Valid Until<x-field-hint text="Leave blank for a discount that never expires." /></flux:label>
+                <flux:input type="date" wire:model="ends_at" />
+                <flux:error name="ends_at" />
+            </flux:field>
+        </div>
+
+        <flux:field>
+            <flux:label>Applies To<x-field-hint text="Leave every product unchecked for this discount to apply to all products. Check one or more to restrict it to just those products." /></flux:label>
+
+            <div class="max-h-64 overflow-y-auto chat-scroll rounded-lg border border-zinc-200 divide-y divide-zinc-100">
+                @forelse ($this->products as $product)
+                    <label wire:key="discount-product-{{ $product->id }}" class="flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-zinc-50 group">
+                        <input type="checkbox" wire:model="product_ids" value="{{ $product->id }}"
+                            class="w-4 h-4 rounded border-zinc-300 text-indigo-500 focus:ring-indigo-400 cursor-pointer" />
+                        <span class="text-sm text-zinc-700 group-hover:text-zinc-900 transition-colors">
+                            {{ is_array($product->name) ? ($product->name[\App\Support\Locale::primary()] ?? reset($product->name)) : $product->name }}
+                        </span>
+                    </label>
+                @empty
+                    <p class="text-xs text-zinc-400 px-3 py-4">No products yet.</p>
+                @endforelse
+            </div>
+            <flux:error name="product_ids" />
+        </flux:field>
+
+        {{-- Footer --}}
+        <div class="-mx-6 -mb-6 mt-6 flex items-center gap-3 flex-wrap rounded-b-lg border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+            <button wire:click="save" wire:loading.attr="disabled" wire:target="save"
+                class="admin-btn-save inline-flex items-center gap-2 px-5 h-8 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
+                <svg wire:loading.remove wire:target="save" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                    <polyline points="17 21 17 13 7 13 7 21" />
+                    <polyline points="7 3 7 8 15 8" />
+                </svg>
+                <svg wire:loading wire:target="save" class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="9" stroke-opacity="0.25" />
+                    <path d="M21 12a9 9 0 0 0-9-9" stroke-opacity="1" />
+                </svg>
+                <span wire:loading.remove wire:target="save">{{ $discountId ? 'Update Discount' : 'Create Discount' }}</span>
+                <span wire:loading wire:target="save">Saving...</span>
+            </button>
+        </div>
+
+    </div>
+</div>
