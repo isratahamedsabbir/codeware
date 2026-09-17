@@ -54,6 +54,15 @@
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
         </select>
+        {{-- Type filter --}}
+        <select wire:model.live="typeFilter"
+            class="px-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 bg-white appearance-none pr-8 min-w-[140px] transition-all"
+            style="background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 10px center">
+            <option value="">All types</option>
+            <option value="post">Post</option>
+            <option value="product">Product</option>
+            <option value="tag">Legacy</option>
+        </select>
         {{-- Search --}}
         <div class="relative max-w-xs ml-auto">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" viewBox="0 0 24 24"
@@ -72,9 +81,10 @@
             <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
                 <colgroup>
                     <col style="width:5%">
-                    <col style="width:8%">
-                    <col style="width:27%">
-                    <col style="width:25%">
+                    <col style="width:7%">
+                    <col style="width:23%">
+                    <col style="width:20%">
+                    <col style="width:10%">
                     <col style="width:15%">
                     <col style="width:20%">
                 </colgroup>
@@ -84,6 +94,7 @@
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Name</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Slug</th>
+                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Type</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
                         <th class="sticky right-0 z-10 bg-zinc-50 border-l border-zinc-100 px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -129,6 +140,17 @@
                                 </x-copy-text>
                             </td>
 
+                            {{-- Type --}}
+                            <td class="px-4 py-2">
+                                @if ($tag->type === \App\Models\Tag::TYPE_POST)
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600 border border-indigo-200">Post</span>
+                                @elseif ($tag->type === \App\Models\Tag::TYPE_PRODUCT)
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-600 border border-amber-200">Product</span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500 border border-zinc-200">Legacy</span>
+                                @endif
+                            </td>
+
                             {{-- Status --}}
                             <td class="px-4 py-2">
                                 @if ($tag->status === 'active')
@@ -161,7 +183,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-16 text-center">
+                            <td colspan="7" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />

@@ -32,6 +32,15 @@ it('can create a tag', function () {
     expect(Tag::whereJsonContains('name->en', 'News')->exists())->toBeTrue();
 });
 
+it('can create a product-type tag from the tags form', function () {
+    Livewire::test(TagsForm::class)
+        ->set('name.en', 'Gadget')
+        ->set('type', Tag::TYPE_PRODUCT)
+        ->call('save');
+
+    expect(Tag::whereJsonContains('name->en', 'Gadget')->firstOrFail()->type)->toBe(Tag::TYPE_PRODUCT);
+});
+
 it('validates tag name is required', function () {
     Livewire::test(TagsForm::class)
         ->set('name.en', '')

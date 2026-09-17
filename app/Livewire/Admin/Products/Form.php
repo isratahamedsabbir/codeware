@@ -16,6 +16,7 @@ use App\Support\AdminActivity;
 use App\Support\PuckEditor;
 use App\Support\Slug;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -450,7 +451,7 @@ class Form extends Component
     #[Computed]
     public function tags()
     {
-        return Tag::orderBy('id')->get();
+        return Tag::whereIn('type', [Tag::TYPE_PRODUCT, Tag::TYPE_LEGACY])->orderBy('id')->get();
     }
 
     #[Computed]
@@ -507,7 +508,7 @@ class Form extends Component
         $rules['faqs.*.question'] = 'nullable|string|max:255';
         $rules['category_ids'] = 'array';
         $rules['category_ids.*'] = 'integer|exists:categories,id,type,product_category';
-        $rules['tag_ids.*'] = 'exists:categories,id,type,tag';
+        $rules['tag_ids.*'] = [Rule::exists('categories', 'id')->whereIn('type', Tag::TYPES)];
 
         $this->validate($rules);
 
@@ -547,7 +548,7 @@ class Form extends Component
         $rules['faqs.*.question'] = 'nullable|string|max:255';
         $rules['category_ids'] = 'array';
         $rules['category_ids.*'] = 'integer|exists:categories,id,type,product_category';
-        $rules['tag_ids.*'] = 'exists:categories,id,type,tag';
+        $rules['tag_ids.*'] = [Rule::exists('categories', 'id')->whereIn('type', Tag::TYPES)];
 
         $this->validate($rules);
 

@@ -286,7 +286,8 @@
                             </flux:field>
                             <flux:field>
                                 <flux:label>Answer</flux:label>
-                                <flux:textarea wire:model="faqs.{{ $i }}.answer" rows="3" placeholder="Answer" />
+                                <livewire:jodit-text-editor wire:model="faqs.{{ $i }}.answer" :height="200" wire:key="faq-answer-{{ $i }}" />
+                                <flux:error name="faqs.{{ $i }}.answer" />
                             </flux:field>
                         </div>
                     </div>

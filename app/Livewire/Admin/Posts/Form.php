@@ -13,6 +13,7 @@ use App\Support\Locale;
 use App\Support\PuckEditor;
 use App\Support\Slug;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -48,6 +49,9 @@ class Form extends Component
 
     #[Validate('nullable|array')]
     public array $tag_ids = [];
+
+    #[Validate('nullable|string|max:255')]
+    public string $newTagName = '';
 
     public ?string $featured_image = null;
 
@@ -124,7 +128,41 @@ class Form extends Component
     #[Computed]
     public function tags()
     {
-        return Tag::orderBy('id')->get();
+        return Tag::whereIn('type', [Tag::TYPE_POST, Tag::TYPE_LEGACY])->orderBy('id')->get();
+    }
+
+    /**
+     * Creates a tag right from the form (type = post) and selects it — the
+     * admin doesn't need to leave the post to build up its tag list.
+     */
+    public function createTag(): void
+    {
+        $this->validate(['newTagName' => 'required|string|max:255']);
+
+        $name = trim($this->newTagName);
+
+        if ($name === '') {
+            return;
+        }
+
+        $this->newTagName = '';
+
+        // Reuse by slug across the whole tag pool: the categories.slug column is
+        // globally unique, so a post tag can't share a slug with a product tag.
+        $tag = Tag::where('slug', Str::slug($name))->first();
+
+        if (! $tag) {
+            $tag = Tag::create([
+                'name' => [Locale::primary() => $name],
+                'type' => Tag::TYPE_POST,
+                'status' => 'active',
+            ]);
+            $this->dispatch('notify', message: 'Tag created successfully');
+        }
+
+        if (! in_array($tag->id, $this->tag_ids, true)) {
+            $this->tag_ids[] = $tag->id;
+        }
     }
 
     public function openPuckEditor(): void
@@ -153,7 +191,7 @@ class Form extends Component
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
         ];
-        $rules['tag_ids.*'] = 'exists:categories,id,type,tag';
+        $rules['tag_ids.*'] = [Rule::exists('categories', 'id')->whereIn('type', Tag::TYPES)];
 
         $this->validate($rules);
 
@@ -183,7 +221,7 @@ class Form extends Component
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
         ];
-        $rules['tag_ids.*'] = 'exists:categories,id,type,tag';
+        $rules['tag_ids.*'] = [Rule::exists('categories', 'id')->whereIn('type', Tag::TYPES)];
 
         $this->validate($rules);
 

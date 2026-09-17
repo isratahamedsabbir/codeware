@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\Post;
+use App\Models\Tag;
 use App\Support\PageCascade;
 use App\Support\Slug;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Validation\Rule;
 
 class PostController extends Controller
 {
@@ -94,7 +96,7 @@ class PostController extends Controller
             'status' => 'sometimes|in:active,inactive',
             'puck_data' => 'nullable|array',
             'tag_ids' => 'sometimes|array',
-            'tag_ids.*' => 'exists:categories,id,type,tag',
+            'tag_ids.*' => [Rule::exists('categories', 'id')->whereIn('type', Tag::TYPES)],
         ]);
 
         $validated['user_id'] = $request->user()->id;
@@ -147,7 +149,7 @@ class PostController extends Controller
             'category_id' => 'sometimes|nullable|exists:categories,id,type,post_category',
             'slug' => ['sometimes', 'string', ...Slug::uniqueRules($post->page?->id)],
             'tag_ids' => 'sometimes|array',
-            'tag_ids.*' => 'exists:categories,id,type,tag',
+            'tag_ids.*' => [Rule::exists('categories', 'id')->whereIn('type', Tag::TYPES)],
         ]);
 
         // SEO fields, OG image, and the puck-builder content all live on the paired

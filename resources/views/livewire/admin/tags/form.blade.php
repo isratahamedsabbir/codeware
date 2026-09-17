@@ -24,6 +24,18 @@
                 @endforeach
 
                 <flux:field>
+                    <flux:label>Type<x-field-hint text="Post tags show on the Post form, product tags on the Product form" /></flux:label>
+                    <flux:select wire:model="type">
+                        <flux:select.option value="post">Post</flux:select.option>
+                        <flux:select.option value="product">Product</flux:select.option>
+                        @if ($type === \App\Models\Tag::TYPE_LEGACY)
+                            <flux:select.option value="tag">Legacy (shared with both)</flux:select.option>
+                        @endif
+                    </flux:select>
+                    <flux:error name="type" />
+                </flux:field>
+
+                <flux:field>
                     <flux:label>Slug<x-field-hint text="Leave blank to auto-generate from the primary language's name" /></flux:label>
                     <flux:input wire:model="slug" placeholder="auto-generated-from-name" />
                     <flux:error name="slug" />

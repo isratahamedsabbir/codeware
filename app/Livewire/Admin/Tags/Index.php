@@ -17,6 +17,8 @@ class Index extends Component
 
     public string $statusFilter = '';
 
+    public string $typeFilter = '';
+
     public ?int $deletingId = null;
 
     /** @var array<int, int> */
@@ -28,6 +30,11 @@ class Index extends Component
     }
 
     public function updatedStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedTypeFilter(): void
     {
         $this->resetPage();
     }
@@ -108,9 +115,10 @@ class Index extends Component
                 ->when($this->search, fn ($q) => $q->where('name->en', 'like', "%{$this->search}%")
                     ->orWhere('name->bn', 'like', "%{$this->search}%"))
                 ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
+                ->when($this->typeFilter, fn ($q) => $q->where('type', $this->typeFilter))
                 ->withCount('posts')
                 ->orderBy('id')
                 ->paginate($this->perPage),
-        ])->layout('layouts.admin', ['title' => 'Post Tags', 'hidePageHeading' => true]);
+        ])->layout('layouts.admin', ['title' => 'Tags', 'hidePageHeading' => true]);
     }
 }

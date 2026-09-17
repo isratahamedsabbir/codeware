@@ -49,7 +49,7 @@ it('updates a product\'s tags on save, replacing the previous set', function () 
     expect($product->tags()->pluck('categories.id')->all())->toBe([$newTag->id]);
 });
 
-it('shares the same tag between a post and a product — one tag pool for both', function () {
+it('shares a legacy tag between a post and a product', function () {
     $tag = Tag::factory()->create(['name' => ['en' => 'Organic', 'bn' => '']]);
     $post = Post::factory()->create();
     $product = Product::factory()->create();
@@ -59,4 +59,13 @@ it('shares the same tag between a post and a product — one tag pool for both',
 
     expect($tag->posts()->pluck('posts.id')->all())->toBe([$post->id])
         ->and($tag->products()->pluck('products.id')->all())->toBe([$product->id]);
+});
+
+it('does not list post-typed tags in the product form', function () {
+    Tag::factory()->post()->create(['name' => ['en' => 'Post Only', 'bn' => '']]);
+    Tag::factory()->product()->create(['name' => ['en' => 'Product Only', 'bn' => '']]);
+
+    Livewire::test(ProductForm::class)
+        ->assertSee('Product Only')
+        ->assertDontSee('Post Only');
 });

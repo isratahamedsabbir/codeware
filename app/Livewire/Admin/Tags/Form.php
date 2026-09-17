@@ -21,6 +21,14 @@ class Form extends Component
     #[Validate('nullable|string|max:255')]
     public string $slug = '';
 
+    /**
+     * Which pool the tag belongs to — post tags show on the Post form, product
+     * tags on the Product form. Legacy tags (pre-split rows) stay selectable so
+     * they can be migrated into one of the two pools.
+     */
+    #[Validate('required|in:post,product,tag')]
+    public string $type = Tag::TYPE_POST;
+
     public function mount(?int $id = null): void
     {
         if ($id) {
@@ -28,6 +36,7 @@ class Form extends Component
             $this->tagId = $id;
             $this->hydrateTranslatable($tag, ['name']);
             $this->slug = $tag->slug;
+            $this->type = $tag->type;
         }
     }
 
@@ -42,7 +51,7 @@ class Form extends Component
         ]));
         $rules['slug'] = [
             'required', 'string', 'max:255',
-            Rule::unique('categories', 'slug')->where('type', 'tag')->ignore($this->tagId),
+            Rule::unique('categories', 'slug')->whereIn('type', Tag::TYPES)->ignore($this->tagId),
         ];
 
         $this->validate($rules);
@@ -52,6 +61,7 @@ class Form extends Component
         $data = [
             'name' => $this->translatablePayload('name'),
             'slug' => $this->slug,
+            'type' => $this->type,
         ];
 
         if ($this->tagId) {

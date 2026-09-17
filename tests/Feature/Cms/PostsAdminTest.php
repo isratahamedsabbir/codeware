@@ -4,6 +4,7 @@ use App\Livewire\Admin\Posts\Form as PostsForm;
 use App\Livewire\Admin\Posts\Index as PostsIndex;
 use App\Models\Page;
 use App\Models\Post;
+use App\Models\Tag;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Livewire\Livewire;
@@ -36,6 +37,26 @@ it('validates english title is required', function () {
         ->set('title.en', '')
         ->call('save')
         ->assertHasErrors(['title.en']);
+});
+
+it('creates a post-typed tag inline from the form and selects it', function () {
+    Livewire::test(PostsForm::class)
+        ->set('newTagName', 'Announcement')
+        ->call('createTag')
+        ->assertSet('newTagName', '');
+
+    $tag = Tag::whereJsonContains('name->en', 'Announcement')->firstOrFail();
+
+    expect($tag->type)->toBe(Tag::TYPE_POST);
+});
+
+it('does not list product-typed tags in the post form', function () {
+    Tag::factory()->post()->create(['name' => ['en' => 'Post Only', 'bn' => '']]);
+    Tag::factory()->product()->create(['name' => ['en' => 'Product Only', 'bn' => '']]);
+
+    Livewire::test(PostsForm::class)
+        ->assertSee('Post Only')
+        ->assertDontSee('Product Only');
 });
 
 it('can filter posts by status', function () {
