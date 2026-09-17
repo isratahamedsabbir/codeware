@@ -289,6 +289,21 @@
                         While the shop is off, customers cannot place new orders.
                     </p>
                 </x-admin-section-card>
+
+                {{-- Language switcher --}}
+                <x-admin-section-card header-border="border-zinc-100" icon="language" title="Language Switcher"
+                    description="Shows the language dropdown in the admin header.">
+                    <x-slot:actions>
+                        <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
+                            <input type="checkbox" wire:model="settings.language_switcher_enabled" class="rounded border-zinc-300 text-primary" />
+                            Enable
+                        </label>
+                    </x-slot:actions>
+
+                    <p class="text-xs text-zinc-400">
+                        Turning this off does not change the admin panel's language, only hides the switcher itself.
+                    </p>
+                </x-admin-section-card>
                 </div>
             </div>
         </div>

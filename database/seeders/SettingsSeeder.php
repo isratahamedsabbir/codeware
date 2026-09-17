@@ -206,6 +206,10 @@ class SettingsSeeder extends Seeder
             // in the admin header. Off by default so the header stays
             // uncluttered until an admin opts in from Settings → Other.
             ['key' => 'shop_toggle_enabled', 'value' => '0', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
+
+            // ── Language switcher (admin panel) ── shows/hides the header language
+            // dropdown (see layouts.admin.blade.php). Admin-panel-only, so not public.
+            ['key' => 'language_switcher_enabled', 'value' => '1', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
         ];
 
         foreach ($settings as $setting) {

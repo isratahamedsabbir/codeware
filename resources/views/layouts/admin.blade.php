@@ -25,6 +25,7 @@
         $calculatorEnabled = (bool) \App\Models\Setting::get('calculator_enabled', true);
         $stickyNoteEnabled = (bool) \App\Models\Setting::get('sticky_note_enabled', true);
         $shopToggleEnabled = (bool) \App\Models\Setting::get('shop_toggle_enabled', false);
+        $languageSwitcherEnabled = (bool) \App\Models\Setting::get('language_switcher_enabled', true);
     @endphp
     @if ($favicon)
         <link rel="icon" href="{{ $favicon }}" sizes="any">
@@ -253,7 +254,9 @@
 
                 <x-admin-quick-menu />
 
-                <livewire:admin.locale-switcher />
+                @if ($languageSwitcherEnabled)
+                    <livewire:admin.locale-switcher />
+                @endif
 
                 @if ($shopToggleEnabled)
                     <livewire:admin.shop-toggle />
