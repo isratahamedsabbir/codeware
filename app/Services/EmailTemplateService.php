@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Mail\TemplateDrivenMail;
 use App\Models\EmailTemplate;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Support\Facades\Mail;
 
 class EmailTemplateService
@@ -14,8 +15,9 @@ class EmailTemplateService
 
     /**
      * @param  array<string, mixed>  $variables
+     * @param  array<int, Attachment>  $attachments
      */
-    public function send(string $key, string $recipient, array $variables = []): bool
+    public function send(string $key, string $recipient, array $variables = [], array $attachments = []): bool
     {
         $template = EmailTemplate::query()
             ->where('key', $key)
@@ -29,7 +31,7 @@ class EmailTemplateService
         $subject = $this->renderer->renderSubject($template->subject_template, $variables);
         $body = $this->renderer->renderBody($template->body_template, $variables);
 
-        Mail::to($recipient)->send(new TemplateDrivenMail($subject, $body));
+        Mail::to($recipient)->send(new TemplateDrivenMail($subject, $body, attachments: $attachments));
 
         return true;
     }

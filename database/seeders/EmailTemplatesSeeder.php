@@ -75,6 +75,15 @@ class EmailTemplatesSeeder extends Seeder
                 'active' => true,
             ],
             [
+                'key' => 'voucher_purchase',
+                'name' => 'Gift Voucher (Customer)',
+                'description' => 'Sent to the buyer after a gift voucher is purchased — the designed PDF voucher is attached.',
+                'subject_template' => 'Your {{site_name}} Gift Voucher – {{voucher_code}}',
+                'body_template' => '<p>Dear {{customer_name}},</p><p>Thank you for your purchase! Your gift voucher is ready and attached to this email as a PDF.</p><p>🎁 Voucher: <strong>{{voucher_name}}</strong><br>🔖 Code: <strong>{{voucher_code}}</strong><br>💰 Value: {{voucher_value}}<br>💳 Paid: {{voucher_price}}<br>📅 Valid Until: {{expires_at}}</p><p>You can also view, print or download it anytime here:</p><p>👉 {{voucher_url}}</p><p>Present the code or the attached PDF to redeem it.</p><p>Best regards,<br>{{site_name}} Team</p>',
+                'variables' => ['customer_name', 'voucher_name', 'voucher_code', 'voucher_value', 'voucher_price', 'expires_at', 'voucher_url', 'site_name'],
+                'active' => true,
+            ],
+            [
                 'key' => 'mail_settings_test',
                 'name' => 'Test Email (Mail Settings)',
                 'description' => 'Sent by the "Send Test Email" action on the Email Templates page to verify mail settings.',

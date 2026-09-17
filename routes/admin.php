@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\UpazilaExportController;
 use App\Http\Controllers\Admin\UserCardController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProductLabelController;
+use App\Http\Controllers\VoucherController;
 use App\Livewire\Admin\About;
 use App\Livewire\Admin\Advance\Backup;
 use App\Livewire\Admin\Advance\Database;
@@ -266,6 +267,17 @@ Route::middleware('can:access-admin-system')->group(function () {
         Route::get('/discounts', App\Livewire\Admin\Discounts\Index::class)->name('discounts');
         Route::get('/discounts/create', App\Livewire\Admin\Discounts\Form::class)->name('discounts.create');
         Route::get('/discounts/{id}/edit', App\Livewire\Admin\Discounts\Form::class)->name('discounts.edit');
+    });
+
+    // Gift Vouchers — the voucher products and the record of vouchers actually
+    // sold. Its own feature toggle (see App\Support\Features).
+    Route::middleware('feature:vouchers')->group(function () {
+        Route::get('/vouchers', App\Livewire\Admin\Vouchers\Index::class)->name('vouchers');
+        Route::get('/vouchers/create', App\Livewire\Admin\Vouchers\Form::class)->name('vouchers.create');
+        Route::get('/vouchers/{id}/edit', App\Livewire\Admin\Vouchers\Form::class)->name('vouchers.edit');
+
+        Route::get('/voucher-purchases', App\Livewire\Admin\VoucherPurchases\Index::class)->name('voucher-purchases');
+        Route::get('/voucher-purchases/{purchase}/download', [VoucherController::class, 'adminDownload'])->name('voucher-purchases.download');
     });
 });
 

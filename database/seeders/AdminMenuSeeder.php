@@ -45,6 +45,8 @@ class AdminMenuSeeder extends Seeder
         $this->group('Sales', 10, [
             ['Orders', 'shopping-bag', 'admin.orders'],
             ['Shipping', 'truck', 'admin.shipping-methods'],
+            ['Gift Vouchers', 'gift', 'admin.vouchers'],
+            ['Voucher Sales', 'banknotes', 'admin.voucher-purchases'],
         ]);
 
         // Coupons sit outside the Sales group as their own top-level item.

@@ -20,13 +20,14 @@ class Order extends Model
     protected $fillable = [
         'order_number', 'customer_name', 'customer_email', 'customer_phone',
         'shipping_address', 'status', 'payment_method', 'payment_status',
-        'currency', 'subtotal', 'total', 'notes',
+        'currency', 'subtotal', 'coupon_code', 'discount', 'total', 'notes',
     ];
 
     protected function casts(): array
     {
         return [
             'subtotal' => 'decimal:2',
+            'discount' => 'decimal:2',
             'total' => 'decimal:2',
         ];
     }

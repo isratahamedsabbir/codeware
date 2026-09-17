@@ -3,6 +3,7 @@
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\TestController;
+use App\Http\Controllers\VoucherController;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +25,11 @@ Route::get('/{slug}', [FrontendController::class, 'page'])
 Route::middleware('signed')->group(function () {
     Route::get('/invoices/{order:order_number}', [InvoiceController::class, 'publicShow'])->name('invoices.public.show');
     Route::get('/invoices/{order:order_number}/download', [InvoiceController::class, 'publicDownload'])->name('invoices.public.download');
+
+    // Issued gift vouchers — the link emailed to the buyer and encoded in the
+    // QR code printed on the voucher itself, so redeeming never needs a login.
+    Route::get('/vouchers/{voucher:code}', [VoucherController::class, 'publicShow'])->name('vouchers.public.show');
+    Route::get('/vouchers/{voucher:code}/download', [VoucherController::class, 'publicDownload'])->name('vouchers.public.download');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

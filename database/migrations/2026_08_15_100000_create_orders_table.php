@@ -25,6 +25,10 @@ return new class extends Migration
             $table->string('payment_status', 20)->default('pending');
             $table->string('currency', 3)->default('BDT');
             $table->decimal('subtotal', 10, 2);
+            // Applied coupon code and its discount (0.00 when none). Params are
+            // server-computed server-side, never trusted from the client.
+            $table->string('coupon_code', 50)->nullable();
+            $table->decimal('discount', 10, 2)->default(0);
             $table->decimal('total', 10, 2);
             $table->text('notes')->nullable();
             $table->timestamps();

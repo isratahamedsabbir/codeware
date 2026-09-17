@@ -32,6 +32,7 @@ use App\Http\Controllers\Api\V1\ReviewController;
 use App\Http\Controllers\Api\V1\ServiceController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\SubscriberController;
+use App\Http\Controllers\Api\V1\VoucherController;
 use Illuminate\Support\Facades\Route;
 
 // Customer account auth — API-only (no admin panel UI), backed by the same `users`
@@ -98,6 +99,14 @@ Route::post('/request-demo', [ContactController::class, 'requestDemo'])->name('r
 Route::post('/book-demo', [ContactController::class, 'bookDemo'])->name('book-demo.store');
 
 Route::post('/subscribers', [SubscriberController::class, 'store'])->name('subscribers.store');
+
+// Gift vouchers — browse active voucher products and buy one. Purchasing
+// issues a unique voucher code and emails the buyer a designed PDF voucher.
+Route::middleware('feature:vouchers')->group(function () {
+    Route::get('/vouchers', [VoucherController::class, 'index'])->name('vouchers.index');
+    Route::get('/vouchers/{slug}', [VoucherController::class, 'show'])->name('vouchers.show');
+    Route::post('/vouchers', [VoucherController::class, 'store'])->name('vouchers.store');
+});
 
 Route::middleware('feature:orders')->group(function () {
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');

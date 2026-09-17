@@ -51,5 +51,6 @@ class DatabaseSeeder extends Seeder
         $this->call(OrderSeeder::class);
         $this->call(CouponSeeder::class);
         $this->call(DiscountSeeder::class);
+        $this->call(VoucherSeeder::class);
     }
 }

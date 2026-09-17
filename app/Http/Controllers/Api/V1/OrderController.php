@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Service;
@@ -13,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
 {
@@ -36,6 +38,7 @@ class OrderController extends Controller
             'shipping_address' => ($shippingRequired ? 'required' : 'nullable').'|string|max:2000',
             'payment_method' => ['required', 'string', Rule::in(array_keys(PaymentMethods::available()))],
             'notes' => 'nullable|string|max:1000',
+            'coupon_code' => 'nullable|string|max:50',
             'items' => 'required|array|min:1',
             'items.*' => [
                 function (string $attribute, mixed $value, \Closure $fail) {
@@ -103,7 +106,48 @@ class OrderController extends Controller
         $subtotal = round($lines->sum('line_total'), 2);
         $currency = (string) Setting::get('currency_code', 'BDT');
 
-        $order = DB::transaction(function () use ($validated, $lines, $subtotal, $currency) {
+        // Coupon handling — a coupon never stacks on top of a product sale. Any
+        // item already carrying a discount price disqualifies the whole coupon,
+        // and the buyer is told why (422 surfaces as an alert on the client).
+        $coupon = null;
+        $discount = 0.0;
+
+        $couponCode = trim(strtoupper((string) ($validated['coupon_code'] ?? '')));
+
+        if ($couponCode !== '') {
+            $coupon = Coupon::where('code', $couponCode)->first();
+
+            if (! $coupon || ! $coupon->isValidFor($subtotal)) {
+                throw ValidationException::withMessages([
+                    'coupon_code' => 'The coupon code is invalid or no longer available.',
+                ]);
+            }
+
+            $hasDiscountedItem = $lines->contains(fn (array $line) => $line['type'] === 'product'
+                && ($product = $products->get($line['product_id'])) !== null
+                && $product->hasDiscount());
+
+            if ($hasDiscountedItem) {
+                throw ValidationException::withMessages([
+                    'coupon_code' => 'This coupon cannot be used with discounted products.',
+                ]);
+            }
+
+            $hasUncoveredItem = $lines->contains(fn (array $line) => $line['type'] === 'product'
+                && ! $coupon->appliesToProduct($line['product_id']));
+
+            if ($hasUncoveredItem) {
+                throw ValidationException::withMessages([
+                    'coupon_code' => 'This coupon does not apply to one or more items in your cart.',
+                ]);
+            }
+
+            $discount = $coupon->discountFor($subtotal);
+        }
+
+        $total = round($subtotal - $discount, 2);
+
+        $order = DB::transaction(function () use ($validated, $lines, $subtotal, $couponCode, $discount, $total, $currency) {
             $order = Order::create([
                 'customer_name' => $validated['customer_name'],
                 'customer_email' => $validated['customer_email'],
@@ -112,16 +156,22 @@ class OrderController extends Controller
                 'payment_method' => $validated['payment_method'],
                 'currency' => $currency,
                 'subtotal' => $subtotal,
-                'total' => $subtotal,
+                'coupon_code' => $couponCode !== '' ? $couponCode : null,
+                'discount' => $discount,
+                'total' => $total,
                 'notes' => $validated['notes'] ?? null,
             ]);
 
             $order->items()->createMany($lines->all());
 
+            if ($couponCode !== '') {
+                Coupon::where('code', $couponCode)->increment('used_count');
+            }
+
             Transaction::create([
                 'order_id' => $order->id,
                 'payment_method' => $validated['payment_method'],
-                'amount' => $subtotal,
+                'amount' => $total,
                 'currency' => $currency,
             ]);
 
@@ -158,6 +208,8 @@ class OrderController extends Controller
             'payment_status' => $order->payment_status,
             'currency' => $order->currency,
             'subtotal' => (float) $order->subtotal,
+            'coupon_code' => $order->coupon_code,
+            'discount' => (float) $order->discount,
             'total' => (float) $order->total,
             'created_at' => $order->created_at?->toIso8601String(),
             'created_at_display' => $order->created_at?->toDisplay(),
