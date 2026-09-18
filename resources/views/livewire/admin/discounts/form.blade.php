@@ -46,20 +46,95 @@
         </div>
 
         <flux:field>
-            <flux:label>Applies To<x-field-hint text="Leave every product unchecked for this discount to apply to all products. Check one or more to restrict it to just those products." /></flux:label>
+            <flux:label>Applies To<x-field-hint text="Leave empty for this discount to apply to all products. Add one or more products to restrict it to just those." /></flux:label>
 
-            <div class="max-h-64 overflow-y-auto chat-scroll rounded-lg border border-zinc-200 divide-y divide-zinc-100">
-                @forelse ($this->products as $product)
-                    <label wire:key="discount-product-{{ $product->id }}" class="flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-zinc-50 group">
-                        <input type="checkbox" wire:model="product_ids" value="{{ $product->id }}"
-                            class="w-4 h-4 rounded border-zinc-300 text-indigo-500 focus:ring-indigo-400 cursor-pointer" />
-                        <span class="text-sm text-zinc-700 group-hover:text-zinc-900 transition-colors">
-                            {{ is_array($product->name) ? ($product->name[\App\Support\Locale::primary()] ?? reset($product->name)) : $product->name }}
+            <div
+                x-data="{
+                    productIds: @entangle('product_ids'),
+                    allProducts: @js($this->products->map(fn ($product) => ['id' => $product->id, 'name' => $product->getTranslation('name', \App\Support\Locale::primary(), false)])),
+                    query: '',
+                    open: false,
+                    panelStyle: '',
+                    get filtered() {
+                        const q = this.query.trim().toLowerCase();
+                        return this.allProducts.filter(p => !this.productIds.includes(p.id) && (!q || p.name.toLowerCase().includes(q)));
+                    },
+                    get selected() {
+                        return this.productIds.map(id => this.allProducts.find(p => p.id === id)).filter(Boolean);
+                    },
+                    updatePosition() {
+                        this.$nextTick(() => {
+                            const trigger = this.$refs.productBox;
+                            if (!trigger) return;
+                            const rect = trigger.getBoundingClientRect();
+                            this.panelStyle = `top:${rect.bottom + 4}px; left:${rect.left}px; width:${rect.width}px;`;
+                        });
+                    },
+                    openDropdown() {
+                        this.open = true;
+                        this.updatePosition();
+                    },
+                    addProduct(id) {
+                        if (!this.productIds.includes(id)) this.productIds.push(id);
+                        this.query = '';
+                        this.$refs.productSearch.focus();
+                    },
+                    removeProduct(id) {
+                        this.productIds = this.productIds.filter(existing => existing !== id);
+                    },
+                    init() {
+                        const handler = (e) => {
+                            if (!this.$refs.productSearch || !document.body.contains(this.$refs.productSearch)) {
+                                document.removeEventListener('click', handler);
+                                return;
+                            }
+                            if (!this.open) return;
+                            if (this.$refs.productBox && this.$refs.productBox.contains(e.target)) return;
+                            if (e.target.closest('[data-discount-product-panel]')) return;
+                            this.open = false;
+                        };
+                        document.addEventListener('click', handler);
+                        window.addEventListener('resize', () => this.open && this.updatePosition());
+                        window.addEventListener('scroll', () => this.open && this.updatePosition(), true);
+                    },
+                }"
+                class="relative"
+            >
+                <div x-ref="productBox" @click="$refs.productSearch.focus()"
+                    class="flex flex-wrap items-center gap-1.5 min-h-9 w-full rounded-lg border border-zinc-200 px-2 py-1.5 cursor-text focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 transition-all">
+                    <template x-for="product in selected" :key="product.id">
+                        <span class="inline-flex items-center gap-1 rounded-full bg-indigo-50 pl-2.5 pr-1.5 py-1 text-xs font-medium text-indigo-700">
+                            <span x-text="product.name"></span>
+                            <button type="button" @click.stop="removeProduct(product.id)"
+                                class="rounded-full p-0.5 hover:bg-indigo-100 transition-colors">
+                                <flux:icon name="x-mark" variant="micro" class="size-3" />
+                            </button>
                         </span>
-                    </label>
-                @empty
-                    <p class="text-xs text-zinc-400 px-3 py-4">No products yet.</p>
-                @endforelse
+                    </template>
+
+                    <input type="text" x-ref="productSearch" x-model="query" @focus="openDropdown()" @input="open = true; updatePosition()"
+                        placeholder="Search products…"
+                        class="flex-1 min-w-25 border-0 p-0.5 text-sm outline-none focus:ring-0" />
+                </div>
+
+                <template x-teleport="body">
+                    <div data-discount-product-panel x-show="open && filtered.length" x-cloak x-transition :style="panelStyle"
+                        class="fixed z-50 max-h-56 overflow-y-auto rounded-lg border border-zinc-200 bg-white shadow-lg py-1">
+                        <template x-for="product in filtered" :key="product.id">
+                            <button type="button" @click="addProduct(product.id)"
+                                class="block w-full px-3 py-1.5 text-left text-sm text-zinc-700 hover:bg-zinc-50 transition-colors"
+                                x-text="product.name"></button>
+                        </template>
+                    </div>
+                </template>
+
+                <p x-show="open && query && !filtered.length" x-cloak class="mt-1 text-xs text-zinc-400">
+                    No matching products.
+                </p>
+
+                @if ($this->products->isEmpty())
+                    <p class="mt-1 text-xs text-zinc-400">No products yet.</p>
+                @endif
             </div>
             <flux:error name="product_ids" />
         </flux:field>
