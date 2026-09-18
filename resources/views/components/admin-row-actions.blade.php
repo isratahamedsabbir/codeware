@@ -48,8 +48,8 @@
         <button type="button" data-actions-trigger
             aria-label="Actions"
             @disabled($allDisabled)
-            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-colors {{ $allDisabled ? 'border-zinc-100 bg-zinc-50 text-zinc-300 cursor-not-allowed' : 'border-zinc-200 text-zinc-500 hover:bg-zinc-100 cursor-pointer' }}">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+            class="inline-flex items-center justify-center w-6 h-6 rounded border transition-colors {{ $allDisabled ? 'border-zinc-100 bg-zinc-50 text-zinc-300 cursor-not-allowed' : 'border-zinc-200 text-zinc-500 hover:bg-zinc-100 cursor-pointer' }}">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
                 <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
             </svg>
         </button>
@@ -81,8 +81,8 @@
             @php $palette = $palettes[$action['color'] ?? 'primary'] ?? $palettes['primary']; @endphp
             @if ($action['disabled'] ?? false)
                 <span aria-label="{{ $action['label'] }}"
-                    class="inline-flex items-center justify-center w-7 h-7 rounded-lg border bg-zinc-50 text-zinc-300 cursor-not-allowed">
-                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
+                    class="inline-flex items-center justify-center w-6 h-6 rounded-lg border bg-zinc-50 text-zinc-300 cursor-not-allowed">
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
                 </span>
             @else
                 {{-- flux:tooltip (not a hand-rolled absolute span) — this cell sits
@@ -93,19 +93,19 @@
                 <flux:tooltip :content="$action['label']">
                     @if (isset($action['href']))
                         <a href="{{ $action['href'] }}" wire:navigate aria-label="{{ $action['label'] }}"
-                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 {{ $palette['border'] }} hover:-translate-y-px"
+                            class="inline-flex items-center justify-center w-6 h-6 rounded border transition-all duration-150 {{ $palette['border'] }} hover:-translate-y-px"
                             style="box-shadow:none"
                             onmouseover="this.style.boxShadow='0 3px 8px {{ $palette['glow'] }}'"
                             onmouseout="this.style.boxShadow='none'">
-                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
+                            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
                         </a>
                     @else
                         <button type="button" wire:click="{{ $action['wireClick'] }}" aria-label="{{ $action['label'] }}"
-                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 {{ $palette['border'] }} hover:-translate-y-px cursor-pointer"
+                            class="inline-flex items-center justify-center w-6 h-6 rounded border transition-all duration-150 {{ $palette['border'] }} hover:-translate-y-px cursor-pointer"
                             style="box-shadow:none"
                             onmouseover="this.style.boxShadow='0 3px 8px {{ $palette['glow'] }}'"
                             onmouseout="this.style.boxShadow='none'">
-                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
+                            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
                         </button>
                     @endif
                 </flux:tooltip>

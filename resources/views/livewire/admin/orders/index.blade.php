@@ -185,8 +185,8 @@
                                     <flux:dropdown position="bottom" align="end">
                                         <button type="button" aria-label="Resend email"
                                             @disabled(count($selectedIds) > 0)
-                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 {{ count($selectedIds) > 0 ? 'border-zinc-100 text-zinc-300 cursor-not-allowed' : 'border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer' }}">
-                                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            class="inline-flex items-center justify-center w-6 h-6 rounded border transition-all duration-150 {{ count($selectedIds) > 0 ? 'border-zinc-100 text-zinc-300 cursor-not-allowed' : 'border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white cursor-pointer' }}">
+                                            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                 <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                                             </svg>
                                         </button>

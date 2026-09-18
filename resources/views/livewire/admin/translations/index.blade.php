@@ -150,11 +150,11 @@
                                     <div class="relative group">
                                         <button wire:click="confirmDelete(@js($row->group), @js($row->key))"
                                             aria-label="{{ __('Delete key') }}"
-                                            class="inline-flex items-center justify-center w-7 h-7 rounded border transition-all duration-150 border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white hover:-translate-y-px"
+                                            class="inline-flex items-center justify-center w-6 h-6 rounded border transition-all duration-150 border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white hover:-translate-y-px"
                                             style="box-shadow:none"
                                             onmouseover="this.style.boxShadow='0 3px 8px rgba(225,29,72,.35)'"
                                             onmouseout="this.style.boxShadow='none'">
-                                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
+                                            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none"
                                                 stroke="currentColor" stroke-width="2">
                                                 <polyline points="3 6 5 6 21 6" />
                                                 <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
