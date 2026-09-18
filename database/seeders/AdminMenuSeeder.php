@@ -16,7 +16,7 @@ class AdminMenuSeeder extends Seeder
     {
         MenuItem::query()->where('group', MenuItem::GROUP_ADMIN_SIDEBAR)->delete();
 
-        $this->standalone('Overview', 'home', 'admin.dashboard', 1);
+        $this->standalone('Dashboard', 'home', 'admin.dashboard', 1);
 
         $this->standalone('Reports', 'chart-bar', 'admin.reports', 2);
 
