@@ -30,6 +30,12 @@
                     Export ({{ count($selectedIds) }})
                 </flux:button>
             @endif
+            @can('access-admin-system')
+                <flux:button variant="ghost" size="sm" icon="cog-6-tooth"
+                    x-on:click="$dispatch('open-modal', { name: 'frontend-url-settings' })">
+                    Frontend URL
+                </flux:button>
+            @endcan
             {{-- .page-header-actions restores the solid blue "primary action"
                  look this button had when it lived in @push('page-header-actions')
                  (see resources/css/app.css). --}}
@@ -308,6 +314,9 @@
                                 @php $bulkActive = count($selectedIds) > 0; @endphp
                                 <x-admin-row-actions :actions="[
                                     ['href' => route('admin.products.show', $product->id), 'icon' => 'eye', 'label' => 'View', 'color' => 'secondary', 'disabled' => $bulkActive],
+                                    $product->slug && ! $bulkActive
+                                        ? ['href' => rtrim(config('app.frontend_url'), '/').'/products/'.$product->slug, 'icon' => 'external-link', 'label' => 'Preview', 'color' => 'cyan-500', 'external' => true]
+                                        : ['icon' => 'external-link', 'label' => 'Preview', 'color' => 'cyan-500', 'disabled' => true],
                                     ['href' => route('admin.products.edit', $product->id), 'icon' => 'pencil', 'label' => 'Edit', 'color' => 'primary', 'disabled' => $bulkActive],
                                     $product->page && ! $bulkActive
                                         ? ['href' => route('admin.pages.edit', $product->page->id), 'icon' => 'document', 'label' => 'Page', 'color' => 'secondary']
@@ -408,6 +417,40 @@
             </div>
         </div>
     </flux:modal>
+
+    {{-- Settings Modal — Frontend URL. Whole block gated (not just the
+         trigger button above) so the markup never reaches a staff response
+         at all, regardless of whether it's shown. --}}
+    @can('access-admin-system')
+        <flux:modal name="frontend-url-settings" class="md:w-96"
+            x-on:open-modal.window="if ($event.detail.name === 'frontend-url-settings') $flux.modal('frontend-url-settings').show()"
+            x-on:close-modal.window="if ($event.detail.name === 'frontend-url-settings') $flux.modal('frontend-url-settings').close()">
+            <div class="space-y-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <flux:icon.cog-6-tooth class="w-5 h-5 text-primary" />
+                    </div>
+                    <flux:heading>Frontend URL Settings</flux:heading>
+                </div>
+                <flux:text class="text-sm text-zinc-500">
+                    The public site's base URL — used to build product links in emails and sitemaps, e.g. <span class="font-mono text-xs">https://codeware.com</span>. Changing this edits the live .env file.
+                </flux:text>
+                <flux:field>
+                    <flux:label>Frontend URL</flux:label>
+                    <flux:input wire:model="frontendUrl" placeholder="https://codeware.com" />
+                    <flux:error name="frontendUrl" />
+                </flux:field>
+                <div class="flex gap-2 pt-1">
+                    <flux:button size="sm" variant="primary" wire:click="saveFrontendUrl" wire:loading.attr="disabled">
+                        Save
+                    </flux:button>
+                    <flux:modal.close>
+                        <flux:button size="sm" variant="ghost">Cancel</flux:button>
+                    </flux:modal.close>
+                </div>
+            </div>
+        </flux:modal>
+    @endcan
 
 </div>
 

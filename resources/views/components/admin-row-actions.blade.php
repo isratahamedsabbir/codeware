@@ -25,6 +25,7 @@
         'eye' => '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />',
         'eye-slash' => '<path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" />',
         'envelope' => '<rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />',
+        'external-link' => '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />',
     ];
 
     $visible = collect($actions)->filter(fn ($action) => $action['visible'] ?? true)->values();
@@ -61,6 +62,11 @@
                         <svg class="w-3.5 h-3.5 shrink-0 me-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
                         {{ $action['label'] }}
                     </flux:menu.item>
+                @elseif (isset($action['href']) && ($action['external'] ?? false))
+                    <flux:menu.item :href="$action['href']" target="_blank" rel="noopener" :variant="($action['color'] ?? null) === 'rose-500' ? 'danger' : 'default'">
+                        <svg class="w-3.5 h-3.5 shrink-0 me-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
+                        {{ $action['label'] }}
+                    </flux:menu.item>
                 @elseif (isset($action['href']))
                     <flux:menu.item :href="$action['href']" wire:navigate :variant="($action['color'] ?? null) === 'rose-500' ? 'danger' : 'default'">
                         <svg class="w-3.5 h-3.5 shrink-0 me-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
@@ -76,7 +82,7 @@
         </flux:menu>
     </flux:dropdown>
 @else
-    <div class="flex items-center justify-center gap-1.5">
+    <div class="flex items-center justify-center gap-1">
         @foreach ($visible as $action)
             @php $palette = $palettes[$action['color'] ?? 'primary'] ?? $palettes['primary']; @endphp
             @if ($action['disabled'] ?? false)
@@ -91,7 +97,15 @@
                      cutting off a plain absolute tooltip. Flux's tooltip renders
                      past that, same reasoning as the envelope dropdown below. --}}
                 <flux:tooltip :content="$action['label']">
-                    @if (isset($action['href']))
+                    @if (isset($action['href']) && ($action['external'] ?? false))
+                        <a href="{{ $action['href'] }}" target="_blank" rel="noopener" aria-label="{{ $action['label'] }}"
+                            class="inline-flex items-center justify-center w-6 h-6 rounded border transition-all duration-150 {{ $palette['border'] }} hover:-translate-y-px"
+                            style="box-shadow:none"
+                            onmouseover="this.style.boxShadow='0 3px 8px {{ $palette['glow'] }}'"
+                            onmouseout="this.style.boxShadow='none'">
+                            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">{!! $icons[$action['icon']] !!}</svg>
+                        </a>
+                    @elseif (isset($action['href']))
                         <a href="{{ $action['href'] }}" wire:navigate aria-label="{{ $action['label'] }}"
                             class="inline-flex items-center justify-center w-6 h-6 rounded border transition-all duration-150 {{ $palette['border'] }} hover:-translate-y-px"
                             style="box-shadow:none"

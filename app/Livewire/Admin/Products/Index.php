@@ -6,11 +6,15 @@ use App\Concerns\HasPerPage;
 use App\Models\Page;
 use App\Models\Product;
 use App\Support\AdminActivity;
+use App\Support\EnvFile;
 use App\Support\PageCascade;
 use App\Support\PuckEditor;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
+use RuntimeException;
 
 class Index extends Component
 {
@@ -27,6 +31,14 @@ class Index extends Component
     /** @var array<int, int> */
     public array $selectedIds = [];
 
+    /** The FRONTEND_URL .env value, edited from the Settings modal (see saveFrontendUrl()). */
+    public string $frontendUrl = '';
+
+    public function mount(): void
+    {
+        $this->frontendUrl = EnvFile::get('FRONTEND_URL', '') ?? '';
+    }
+
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -35,6 +47,38 @@ class Index extends Component
     public function updatedStatusFilter(): void
     {
         $this->resetPage();
+    }
+
+    /**
+     * Persists the public site's base URL (used to build product links in
+     * emails/sitemaps — see Product::product_url) straight from this page's
+     * Settings modal, rather than sending the admin off to the full
+     * Settings → Env tab for a single field.
+     */
+    public function saveFrontendUrl(): void
+    {
+        // The trigger button/modal are hidden from staff in the Blade view (this
+        // page's route only requires access-admin, not access-admin-system), but
+        // a Livewire component's public methods are still directly callable —
+        // this is the actual enforcement, not the hidden UI.
+        Gate::authorize('access-admin-system');
+
+        $this->validate(['frontendUrl' => 'nullable|url'], [], ['frontendUrl' => 'frontend URL']);
+
+        try {
+            EnvFile::set(['FRONTEND_URL' => $this->frontendUrl]);
+        } catch (RuntimeException $e) {
+            $this->dispatch('notify', message: 'Could not save the frontend URL: '.$e->getMessage());
+
+            return;
+        }
+
+        Artisan::call('config:clear');
+
+        AdminActivity::log('updated', 'Frontend URL updated');
+
+        $this->dispatch('close-modal', name: 'frontend-url-settings');
+        $this->dispatch('notify', message: 'Frontend URL saved.');
     }
 
     public function reorder(array $order): void
