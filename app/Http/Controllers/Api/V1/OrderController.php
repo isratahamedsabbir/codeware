@@ -12,6 +12,7 @@ use App\Models\Transaction;
 use App\Support\PaymentMethods;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -106,48 +107,151 @@ class OrderController extends Controller
         $subtotal = round($lines->sum('line_total'), 2);
         $currency = (string) Setting::get('currency_code', 'BDT');
 
-        // Coupon handling — a coupon never stacks on top of a product sale. Any
-        // item already carrying a discount price disqualifies the whole coupon,
-        // and the buyer is told why (422 surfaces as an alert on the client).
-        $coupon = null;
-        $discount = 0.0;
-
-        $couponCode = trim(strtoupper((string) ($validated['coupon_code'] ?? '')));
-
-        if ($couponCode !== '') {
-            $coupon = Coupon::where('code', $couponCode)->first();
-
-            if (! $coupon || ! $coupon->isValidFor($subtotal)) {
-                throw ValidationException::withMessages([
-                    'coupon_code' => 'The coupon code is invalid or no longer available.',
-                ]);
-            }
-
-            $hasDiscountedItem = $lines->contains(fn (array $line) => $line['type'] === 'product'
-                && ($product = $products->get($line['product_id'])) !== null
-                && $product->hasDiscount());
-
-            if ($hasDiscountedItem) {
-                throw ValidationException::withMessages([
-                    'coupon_code' => 'This coupon cannot be used with discounted products.',
-                ]);
-            }
-
-            $hasUncoveredItem = $lines->contains(fn (array $line) => $line['type'] === 'product'
-                && ! $coupon->appliesToProduct($line['product_id']));
-
-            if ($hasUncoveredItem) {
-                throw ValidationException::withMessages([
-                    'coupon_code' => 'This coupon does not apply to one or more items in your cart.',
-                ]);
-            }
-
-            $discount = $coupon->discountFor($subtotal);
-        }
+        [$couponCode, $discount] = $this->applyCoupon($validated['coupon_code'] ?? null, $subtotal, $lines, $products);
 
         $total = round($subtotal - $discount, 2);
 
-        $order = DB::transaction(function () use ($validated, $lines, $subtotal, $couponCode, $discount, $total, $currency) {
+        $order = $this->persistOrder($validated, $lines, $subtotal, $couponCode, $discount, $total, $currency);
+
+        return response()->json([
+            'data' => $this->formatOrder($order->load('items')),
+        ], 201);
+    }
+
+    /**
+     * Product-only counterpart to store() — for a checkout flow that never
+     * deals in services, so each item is just a product_id + quantity (no
+     * per-item type discriminator to fill in). Same validation, coupon and
+     * persistence pipeline as the mixed endpoint, restricted to one type.
+     */
+    public function storeProducts(Request $request): JsonResponse
+    {
+        return $this->storeSingleType($request, 'product');
+    }
+
+    /**
+     * Service-only counterpart to store() — see storeProducts(). A service
+     * cart never needs a shipping address.
+     */
+    public function storeServices(Request $request): JsonResponse
+    {
+        return $this->storeSingleType($request, 'service');
+    }
+
+    private function storeSingleType(Request $request, string $type): JsonResponse
+    {
+        abort_unless((bool) Setting::get('shop_enabled', true), 503, 'The shop is currently closed for new orders.');
+
+        $isProduct = $type === 'product';
+        $idField = $isProduct ? 'product_id' : 'service_id';
+
+        $validated = $request->validate([
+            'customer_name' => 'required|string|max:255',
+            'customer_email' => 'required|email|max:255',
+            'customer_phone' => 'required|string|max:30',
+            'shipping_address' => ($isProduct ? 'required' : 'nullable').'|string|max:2000',
+            'payment_method' => ['required', 'string', Rule::in(array_keys(PaymentMethods::available()))],
+            'notes' => 'nullable|string|max:1000',
+            'coupon_code' => 'nullable|string|max:50',
+            'items' => 'required|array|min:1',
+            'items.*.'.$idField => [
+                'required',
+                'integer',
+                $isProduct
+                    ? Rule::exists('products', 'id')->where('status', 'active')->where('is_upcoming', false)
+                    : Rule::exists('services', 'id')->where('status', 'active'),
+            ],
+            'items.*.quantity' => 'required|integer|min:1|max:1000',
+        ]);
+
+        $ids = collect($validated['items'])->pluck($idField)->filter();
+        $catalog = $isProduct
+            ? Product::whereIn('id', $ids)->get()->keyBy('id')
+            : Service::whereIn('id', $ids)->get()->keyBy('id');
+
+        $lines = collect($validated['items'])->map(function (array $item) use ($catalog, $idField, $isProduct) {
+            $model = $catalog->get($item[$idField]);
+            $quantity = (int) $item['quantity'];
+            $unitPrice = (float) $model->price;
+
+            return [
+                'product_id' => $isProduct ? $model->id : null,
+                'service_id' => $isProduct ? null : $model->id,
+                'type' => $isProduct ? 'product' : 'service',
+                'item_name' => $model->getTranslation('name', 'en', false),
+                'unit_price' => $unitPrice,
+                'quantity' => $quantity,
+                'line_total' => round($unitPrice * $quantity, 2),
+            ];
+        });
+
+        $subtotal = round($lines->sum('line_total'), 2);
+        $currency = (string) Setting::get('currency_code', 'BDT');
+
+        [$couponCode, $discount] = $this->applyCoupon($validated['coupon_code'] ?? null, $subtotal, $lines, $isProduct ? $catalog : collect());
+
+        $total = round($subtotal - $discount, 2);
+
+        $order = $this->persistOrder($validated, $lines, $subtotal, $couponCode, $discount, $total, $currency);
+
+        return response()->json([
+            'data' => $this->formatOrder($order->load('items')),
+        ], 201);
+    }
+
+    /**
+     * Validates a coupon_code against the cart and returns [code, discount] —
+     * code is '' when none was given. Shared by store() and storeSingleType();
+     * $products only matters for the product-restriction checks, which are
+     * naturally no-ops when $lines has no product-type entries (a service
+     * cart), so passing an empty collection there is safe.
+     *
+     * @return array{0: string, 1: float}
+     */
+    private function applyCoupon(?string $couponCode, float $subtotal, Collection $lines, Collection $products): array
+    {
+        $couponCode = trim(strtoupper((string) $couponCode));
+
+        if ($couponCode === '') {
+            return ['', 0.0];
+        }
+
+        $coupon = Coupon::where('code', $couponCode)->first();
+
+        if (! $coupon || ! $coupon->isValidFor($subtotal)) {
+            throw ValidationException::withMessages([
+                'coupon_code' => 'The coupon code is invalid or no longer available.',
+            ]);
+        }
+
+        $hasDiscountedItem = $lines->contains(fn (array $line) => $line['type'] === 'product'
+            && ($product = $products->get($line['product_id'])) !== null
+            && $product->hasDiscount());
+
+        if ($hasDiscountedItem) {
+            throw ValidationException::withMessages([
+                'coupon_code' => 'This coupon cannot be used with discounted products.',
+            ]);
+        }
+
+        $hasUncoveredItem = $lines->contains(fn (array $line) => $line['type'] === 'product'
+            && ! $coupon->appliesToProduct($line['product_id']));
+
+        if ($hasUncoveredItem) {
+            throw ValidationException::withMessages([
+                'coupon_code' => 'This coupon does not apply to one or more items in your cart.',
+            ]);
+        }
+
+        return [$couponCode, $coupon->discountFor($subtotal)];
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    private function persistOrder(array $validated, Collection $lines, float $subtotal, string $couponCode, float $discount, float $total, string $currency): Order
+    {
+        return DB::transaction(function () use ($validated, $lines, $subtotal, $couponCode, $discount, $total, $currency) {
             $order = Order::create([
                 'customer_name' => $validated['customer_name'],
                 'customer_email' => $validated['customer_email'],
@@ -177,10 +281,6 @@ class OrderController extends Controller
 
             return $order;
         });
-
-        return response()->json([
-            'data' => $this->formatOrder($order->load('items')),
-        ], 201);
     }
 
     public function show(Request $request, string $orderNumber): JsonResponse

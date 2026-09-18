@@ -110,6 +110,12 @@ Route::middleware('feature:vouchers')->group(function () {
 
 Route::middleware('feature:orders')->group(function () {
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+    // Type-specific counterparts to the mixed /orders endpoint above — for a
+    // checkout flow that only ever deals in one type, so each item is just an
+    // id + quantity (no per-item product_id/service_id discriminator to fill
+    // in). /orders itself still accepts (and is required for) a mixed cart.
+    Route::post('/orders/products', [OrderController::class, 'storeProducts'])->name('orders.store.products');
+    Route::post('/orders/services', [OrderController::class, 'storeServices'])->name('orders.store.services');
     Route::get('/orders/{orderNumber}', [OrderController::class, 'show'])->name('orders.show');
 });
 
