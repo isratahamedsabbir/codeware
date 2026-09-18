@@ -364,7 +364,7 @@
                                                 <label
                                                     class="block text-[10px] font-bold uppercase tracking-widest text-slate-400">Title</label>
                                                 <input wire:model="editTitle" type="text"
-                                                    class="block h-8 w-full rounded-lg border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10" />
+                                                    class="block h-8 w-full rounded-lg border border-slate-200 bg-white px-2.5 text-xs text-slate-800 placeholder-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10" />
                                             </div>
                                             <div class="space-y-1">
                                                 <label
@@ -372,19 +372,19 @@
                                                     Text</label>
                                                 <input wire:model="editAltText" type="text"
                                                     placeholder="For accessibility"
-                                                    class="block h-8 w-full rounded-lg border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10" />
+                                                    class="block h-8 w-full rounded-lg border border-slate-200 bg-white px-2.5 text-xs text-slate-800 placeholder-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10" />
                                             </div>
                                             <div class="space-y-1">
                                                 <label
                                                     class="block text-[10px] font-bold uppercase tracking-widest text-slate-400">Caption</label>
                                                 <input wire:model="editCaption" type="text"
-                                                    class="block h-8 w-full rounded-lg border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10" />
+                                                    class="block h-8 w-full rounded-lg border border-slate-200 bg-white px-2.5 text-xs text-slate-800 placeholder-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10" />
                                             </div>
                                             <div class="space-y-1">
                                                 <label
                                                     class="block text-[10px] font-bold uppercase tracking-widest text-slate-400">Description</label>
                                                 <textarea wire:model="editDescription" rows="3"
-                                                    class="block w-full resize-none rounded-lg border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10"></textarea>
+                                                    class="block w-full resize-none rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10"></textarea>
                                             </div>
                                             @error('editTitle')
                                                 <p class="text-xs font-bold text-red-600">{{ $message }}</p>
