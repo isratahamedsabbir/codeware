@@ -1,4 +1,4 @@
-<div x-data @open-media-picker.window="$wire.openPicker($event.detail.pickerId, $event.detail.onlyImages, $event.detail.mimes, $event.detail.maxSizeKb, !!$event.detail.multiple)"
+<div x-data="mediaChunkUpload()" @open-media-picker.window="$wire.openPicker($event.detail.pickerId, $event.detail.onlyImages, $event.detail.mimes, $event.detail.maxSizeKb, !!$event.detail.multiple)"
     @keydown.escape.window="$wire.closePicker()">
     {{-- ============================================================
          MEDIA PICKER MODAL — WordPress-style two-panel layout
@@ -77,9 +77,16 @@
                                 $extToAccept = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'gif' => 'image/gif', 'webp' => 'image/webp', 'ico' => 'image/x-icon', 'svg' => 'image/svg+xml'];
                                 $extToLabel = ['jpg' => 'JPG', 'jpeg' => 'JPG', 'png' => 'PNG', 'gif' => 'GIF', 'webp' => 'WEBP', 'ico' => 'ICO', 'svg' => 'SVG'];
                                 $restrictExts = explode(',', $restrictMimes);
+                                $allowedExtForChunk = $onlyImages ? $restrictMimes : 'jpg,jpeg,png,gif,webp,pdf,mp4,mp3,doc,docx,xls,xlsx';
                             @endphp
                             <input type="file" wire:key="picker-upload-{{ $uploadIteration }}"
-                                wire:model="uploadFiles" multiple
+                                @change="
+                                    const { small, large } = splitFiles($event.target.files);
+                                    if (small.length) { $wire.uploadMultiple('uploadFiles', small) }
+                                    if (large.length) { startChunkUploads(large, '{{ $allowedExtForChunk }}') }
+                                    $event.target.value = '';
+                                "
+                                multiple
                                 accept="{{ $onlyImages ? implode(',', array_unique(array_map(fn ($e) => $extToAccept[$e] ?? '', $restrictExts))) : 'image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx' }}"
                                 class="hidden" id="picker-file-input" />
                             <label for="picker-file-input" class="cursor-pointer">
@@ -97,7 +104,7 @@
                                     </p>
                                 @else
                                     <p class="mt-2 text-sm text-slate-400">Supports: Images, Videos, Audio, PDFs
-                                        &mdash; Max 10 MB per file</p>
+                                        &mdash; files over 10 MB upload automatically in chunks</p>
                                 @endif
                             </label>
                         </div>
@@ -121,6 +128,29 @@
                                 @endforeach
                             </div>
                         @endif
+
+                        {{-- Large (>10MB) files — uploaded in chunks with their own progress,
+                        tracked purely in Alpine state (see resources/js/chunk-upload.js)
+                        since Livewire never sees these until finishChunkedUpload() fires. --}}
+                        <template x-for="upload in chunkUploads" :key="upload.id">
+                            <div class="mt-3 w-full max-w-2xl space-y-1.5 rounded-xl border border-slate-200 bg-white p-3">
+                                <div class="flex items-center gap-3">
+                                    <svg class="h-5 w-5 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                                    </svg>
+                                    <span class="flex-1 truncate text-sm font-medium text-slate-700" x-text="upload.name"></span>
+                                    <span class="shrink-0 text-xs text-slate-400" x-text="upload.error ? 'Failed' : (upload.done ? 'Done' : upload.progress + '%')"></span>
+                                </div>
+                                <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
+                                    <div class="h-full rounded-full transition-all"
+                                        :class="upload.error ? 'bg-red-500' : 'bg-primary'"
+                                        :style="`width: ${upload.progress}%`"></div>
+                                </div>
+                                <p x-show="upload.error" x-text="upload.error" class="text-xs text-red-500"></p>
+                            </div>
+                        </template>
 
                         @error('uploadFiles.*')
                             <p class="mt-4 text-sm font-bold text-red-600">{{ $message }}</p>
@@ -321,14 +351,55 @@
                                         <div>
                                             <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">
                                                 Attachment Details</p>
-                                            <p class="mt-1.5 break-all text-sm text-slate-900">
-                                                {{ $selectedMedia->title ?? $selectedMedia->original_filename }}
-                                            </p>
-                                            <p class="mt-0.5 text-xs text-slate-500">
+                                            <p class="mt-1.5 break-all text-xs text-slate-500">
                                                 {{ $selectedMedia->original_filename }}</p>
                                         </div>
 
-                                        <dl class="grid grid-cols-2 gap-x-4 gap-y-3">
+                                        {{-- Editable attributes — same fields as the standalone Media
+                                        Library's Edit Details modal, kept inline here so callers (category,
+                                        product, ... pickers) don't need a separate trip to /admin/media-library
+                                        just to set alt text before inserting an image. --}}
+                                        <div wire:key="edit-fields-{{ $selectedMedia->id }}" class="space-y-3">
+                                            <div class="space-y-1">
+                                                <label
+                                                    class="block text-[10px] font-bold uppercase tracking-widest text-slate-400">Title</label>
+                                                <input wire:model="editTitle" type="text"
+                                                    class="block h-8 w-full rounded-lg border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10" />
+                                            </div>
+                                            <div class="space-y-1">
+                                                <label
+                                                    class="block text-[10px] font-bold uppercase tracking-widest text-slate-400">Alt
+                                                    Text</label>
+                                                <input wire:model="editAltText" type="text"
+                                                    placeholder="For accessibility"
+                                                    class="block h-8 w-full rounded-lg border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10" />
+                                            </div>
+                                            <div class="space-y-1">
+                                                <label
+                                                    class="block text-[10px] font-bold uppercase tracking-widest text-slate-400">Caption</label>
+                                                <input wire:model="editCaption" type="text"
+                                                    class="block h-8 w-full rounded-lg border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10" />
+                                            </div>
+                                            <div class="space-y-1">
+                                                <label
+                                                    class="block text-[10px] font-bold uppercase tracking-widest text-slate-400">Description</label>
+                                                <textarea wire:model="editDescription" rows="3"
+                                                    class="block w-full resize-none rounded-lg border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10"></textarea>
+                                            </div>
+                                            @error('editTitle')
+                                                <p class="text-xs font-bold text-red-600">{{ $message }}</p>
+                                            @enderror
+                                            @error('editAltText')
+                                                <p class="text-xs font-bold text-red-600">{{ $message }}</p>
+                                            @enderror
+                                            <button type="button" wire:click="saveMediaDetails"
+                                                wire:loading.attr="disabled" wire:target="saveMediaDetails"
+                                                class="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">
+                                                Save Details
+                                            </button>
+                                        </div>
+
+                                        <dl class="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-slate-200 pt-4">
                                             <div>
                                                 <dt
                                                     class="text-[10px] font-bold uppercase tracking-widest text-slate-400">
@@ -363,16 +434,6 @@
                                                 </dd>
                                             </div>
                                         </dl>
-
-                                        @if ($selectedMedia->alt_text)
-                                            <div>
-                                                <dt
-                                                    class="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                                                    Alt Text</dt>
-                                                <dd class="mt-1 text-xs text-slate-600">{{ $selectedMedia->alt_text }}
-                                                </dd>
-                                            </div>
-                                        @endif
 
                                         <div class="pt-3">
                                             <p

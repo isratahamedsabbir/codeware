@@ -5,6 +5,7 @@ use App\Livewire\Admin\MediaLibrary\PickerModal;
 use App\Models\MediaLibrary;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
@@ -54,4 +55,51 @@ it('picker modal dispatches mediaPickerSelected event after selecting and confir
         ->call('selectMedia', $media->id)
         ->call('confirmSelection')
         ->assertDispatched('mediaPickerSelected');
+});
+
+it('assembles a chunked upload into a media library record once all chunks arrive', function () {
+    Storage::fake('local');
+    $uploadId = 'test-upload-1';
+
+    $this->postJson(route('admin.media-library.chunk-upload'), [
+        'chunk' => UploadedFile::fake()->createWithContent('chunk', 'Hello '),
+        'chunkIndex' => 0,
+        'totalChunks' => 2,
+        'uploadId' => $uploadId,
+        'filename' => 'bigfile.pdf',
+        'allowedExt' => 'pdf',
+    ])->assertOk()->assertJson(['done' => false]);
+
+    $response = $this->postJson(route('admin.media-library.chunk-upload'), [
+        'chunk' => UploadedFile::fake()->createWithContent('chunk', 'World!'),
+        'chunkIndex' => 1,
+        'totalChunks' => 2,
+        'uploadId' => $uploadId,
+        'filename' => 'bigfile.pdf',
+        'allowedExt' => 'pdf',
+    ]);
+
+    $response->assertOk()->assertJson(['done' => true]);
+
+    $media = MediaLibrary::find($response->json('media.id'));
+
+    expect($media)->not->toBeNull();
+    expect($media->original_filename)->toBe('bigfile.pdf');
+    expect($media->file_size)->toBe(strlen('Hello World!'));
+
+    Storage::disk('public')->assertExists($media->path);
+    expect(Storage::disk('public')->get($media->path))->toBe('Hello World!');
+});
+
+it('rejects a disallowed file extension for chunked upload', function () {
+    Storage::fake('local');
+
+    $this->postJson(route('admin.media-library.chunk-upload'), [
+        'chunk' => UploadedFile::fake()->createWithContent('chunk', 'bad'),
+        'chunkIndex' => 0,
+        'totalChunks' => 1,
+        'uploadId' => 'bad-upload',
+        'filename' => 'virus.exe',
+        'allowedExt' => 'jpg,png',
+    ])->assertStatus(422);
 });

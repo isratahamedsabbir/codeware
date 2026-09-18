@@ -3,9 +3,8 @@
 namespace App\Livewire\Admin\MediaLibrary;
 
 use App\Models\MediaLibrary;
-use App\Support\ImageWatermarker;
+use App\Support\MediaLibraryUploader;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -70,6 +69,16 @@ class PickerModal extends Component
 
     public int $maxSizeKb = 2048;
 
+    // Edit form — mirrors Index.php's attribute-edit fields, kept in sync with
+    // whichever item is currently selected (see loadEditFieldsForSelected()).
+    public string $editTitle = '';
+
+    public string $editAltText = '';
+
+    public string $editCaption = '';
+
+    public string $editDescription = '';
+
     public function openPicker(string $pickerId, bool $onlyImages = false, string $mimes = 'jpg,jpeg,png,gif,webp', int $maxSizeKb = 2048, bool $multiple = false): void
     {
         $this->pickerId = $pickerId;
@@ -86,6 +95,7 @@ class PickerModal extends Component
         $this->page = 1;
         $this->uploadFiles = [];
         $this->uploadIteration++;
+        $this->loadEditFieldsForSelected();
     }
 
     public function closePicker(): void
@@ -108,6 +118,7 @@ class PickerModal extends Component
     {
         if (! $this->multiple) {
             $this->selectedMediaId = $this->selectedMediaId === $id ? null : $id;
+            $this->loadEditFieldsForSelected();
 
             return;
         }
@@ -121,6 +132,8 @@ class PickerModal extends Component
         } else {
             $this->selectedMediaIds = [$id];
         }
+
+        $this->loadEditFieldsForSelected();
     }
 
     public function deselectMedia(int $id): void
@@ -130,6 +143,46 @@ class PickerModal extends Component
         if ($this->selectedMediaId === $id) {
             $this->selectedMediaId = null;
         }
+
+        $this->loadEditFieldsForSelected();
+    }
+
+    /**
+     * Keeps the details panel's edit inputs matched to whichever item is
+     * currently the "active" one ($selectedMediaId — the last one clicked,
+     * even in multi-select mode), the same way Index.php's viewDetails() does.
+     */
+    private function loadEditFieldsForSelected(): void
+    {
+        $media = $this->selectedMediaId ? MediaLibrary::find($this->selectedMediaId) : null;
+
+        $this->editTitle = $media?->title ?? '';
+        $this->editAltText = $media?->alt_text ?? '';
+        $this->editCaption = $media?->caption ?? '';
+        $this->editDescription = $media?->description ?? '';
+    }
+
+    public function saveMediaDetails(): void
+    {
+        $media = MediaLibrary::findOrFail($this->selectedMediaId);
+        $this->authorize('update', $media);
+
+        $this->validate([
+            'editTitle' => 'nullable|string|max:255',
+            'editAltText' => 'nullable|string|max:255',
+            'editCaption' => 'nullable|string|max:500',
+            'editDescription' => 'nullable|string|max:1000',
+        ]);
+
+        $media->update([
+            'title' => $this->editTitle ?: null,
+            'alt_text' => $this->editAltText ?: null,
+            'caption' => $this->editCaption ?: null,
+            'description' => $this->editDescription ?: null,
+        ]);
+
+        $this->dispatch('notify', message: 'Media details updated successfully');
+        $this->dispatch('media-library-updated');
     }
 
     public function confirmSelection(): void
@@ -232,60 +285,51 @@ class PickerModal extends Component
 
         if ($lastId !== null) {
             $this->selectedMediaId = $lastId;
+            if ($this->multiple) {
+                $this->selectedMediaIds = [$lastId];
+            }
         }
 
+        $this->loadEditFieldsForSelected();
+
         $this->dispatch('notify', message: 'Files uploaded successfully');
+        $this->dispatch('media-library-updated');
     }
 
     private function processUploadedFile(mixed $file): int
     {
         $path = $file->store('media', 'public');
-        $mimeType = $file->getMimeType();
-        $fileType = $this->getFileType($mimeType);
 
-        ImageWatermarker::applyIfEnabled('public', $path, $mimeType);
-
-        $metadata = [];
-
-        if ($fileType === 'image') {
-            $imageSize = getimagesize($file->getRealPath());
-            if ($imageSize) {
-                $metadata['width'] = $imageSize[0];
-                $metadata['height'] = $imageSize[1];
-            }
-        }
-
-        $media = MediaLibrary::create([
-            'filename' => basename($path),
-            'original_filename' => $file->getClientOriginalName(),
-            'mime_type' => $mimeType,
-            'file_type' => $fileType,
-            'file_size' => $file->getSize(),
-            'disk' => 'public',
-            'path' => $path,
-            'url' => Storage::disk('public')->url($path),
-            'uploaded_by' => auth()->id(),
-            'metadata' => $metadata,
-        ]);
+        $media = MediaLibraryUploader::store($path, $file->getClientOriginalName(), $file->getMimeType(), $file->getSize(), auth()->id());
 
         return $media->id;
     }
 
-    private function getFileType(string $mimeType): string
+    /**
+     * Called from the browser once a file over the 10MB threshold finishes
+     * uploading via the chunked endpoint (ChunkedUploadController) — its
+     * MediaLibrary row already exists by this point, so this just selects it
+     * and refreshes the grid, matching what saveUploads() does for the
+     * normal (<=10MB) path.
+     */
+    public function finishChunkedUpload(int $mediaId): void
     {
-        if (str_starts_with($mimeType, 'image/')) {
-            return 'image';
+        $this->selectedMediaId = $mediaId;
+
+        if ($this->multiple) {
+            $this->selectedMediaIds = in_array($mediaId, $this->selectedMediaIds, true)
+                ? $this->selectedMediaIds
+                : [...$this->selectedMediaIds, $mediaId];
         }
 
-        if (str_starts_with($mimeType, 'video/')) {
-            return 'video';
-        }
+        $this->activeTab = 'library';
+        $this->page = 1;
+        $this->filterType = $this->onlyImages ? 'image' : 'all';
+        $this->search = '';
+        $this->loadEditFieldsForSelected();
 
-        if (str_starts_with($mimeType, 'audio/')) {
-            return 'audio';
-        }
-
-        return 'document';
+        $this->dispatch('notify', message: 'File uploaded successfully');
+        $this->dispatch('media-library-updated');
     }
 
     public function render()

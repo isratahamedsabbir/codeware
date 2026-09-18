@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\CategoryExportController;
+use App\Http\Controllers\Admin\ChunkedUploadController;
 use App\Http\Controllers\Admin\ContactExportController;
 use App\Http\Controllers\Admin\CountryExportController;
 use App\Http\Controllers\Admin\CouponExportController;
@@ -90,6 +91,13 @@ Route::middleware('feature:cms')->group(function () {
 Route::middleware('feature:media-library')->group(function () {
     Route::get('/media-library', App\Livewire\Admin\MediaLibrary\Index::class)->name('media-library');
 });
+
+// Chunked upload — shared by the standalone Media Library page and the
+// picker modal (both reachable regardless of feature:media-library, since
+// the picker is used to pick images for products/categories/etc. even when
+// that feature is off), so it isn't nested under the group above.
+Route::post('/media-library/chunk-upload', [ChunkedUploadController::class, 'store'])
+    ->name('media-library.chunk-upload');
 
 // Chat — every registered user can 1-on-1 chat with any other registered user
 Route::middleware('feature:chat')->group(function () {

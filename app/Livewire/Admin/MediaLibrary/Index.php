@@ -3,19 +3,24 @@
 namespace App\Livewire\Admin\MediaLibrary;
 
 use App\Models\MediaLibrary;
-use App\Support\ImageWatermarker;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\On;
 use Livewire\Component;
-use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 class Index extends Component
 {
     use AuthorizesRequests;
-    use WithFileUploads;
     use WithPagination;
+
+    /**
+     * Identifies this page's own upload button to the shared PickerModal
+     * (see resources/views/livewire/admin/media-library/picker-modal.blade.php)
+     * so onMediaPickerSelected() below ignores selections from any other
+     * <x-media-picker> that might also be open elsewhere on the page.
+     */
+    private const string PICKER_ID = 'media-library-manage-picker';
 
     public string $search = '';
 
@@ -28,16 +33,9 @@ class Index extends Component
     /** @var array<int, int> */
     public array $selectedMediaIds = [];
 
-    public bool $showUploadModal = false;
-
     public bool $showDetailsModal = false;
 
     public ?int $editingMediaId = null;
-
-    // Upload form
-    public array $uploadFiles = [];
-
-    public int $uploadIteration = 0;
 
     // Edit form
     public string $editTitle = '';
@@ -59,85 +57,32 @@ class Index extends Component
     }
 
     /**
-     * Listens for a global JS event rather than relying on wire:click, since
-     * the trigger button lives in @push('page-header-actions') — rendered by
-     * the layout in the header, outside this component's own DOM root, where
-     * wire:click has no component to route to.
+     * The "Upload Files" header button (see @push('page-header-actions') in
+     * index.blade.php) opens the same shared picker/upload modal every other
+     * admin screen uses — see <x-media-picker>'s openPicker() for the
+     * matching JS side of this event. Selecting/uploading a file there just
+     * selects it here too, same as a grid click would.
      */
-    #[On('open-media-upload-modal')]
-    public function openUploadModal(): void
+    #[On('mediaPickerSelected')]
+    public function onMediaPickerSelected(string $pickerId, int $id): void
     {
-        $this->authorize('create', MediaLibrary::class);
-        $this->uploadFiles = [];
-        $this->uploadIteration++;
-        $this->showUploadModal = true;
-    }
-
-    public function closeUploadModal(): void
-    {
-        $this->uploadFiles = [];
-        $this->uploadIteration++;
-        $this->showUploadModal = false;
-    }
-
-    public function saveUploads(): void
-    {
-        $this->authorize('create', MediaLibrary::class);
-
-        $this->validate([
-            'uploadFiles.*' => 'file|max:10240|mimes:jpg,jpeg,png,gif,webp,pdf,mp4,mp3,doc,docx,xls,xlsx',
-        ]);
-
-        foreach ($this->uploadFiles as $file) {
-            $this->processUploadedFile($file);
+        if ($pickerId !== self::PICKER_ID) {
+            return;
         }
 
-        $this->closeUploadModal();
-        $this->dispatch('notify', message: 'Files uploaded successfully');
+        $this->selectedMediaId = $id;
     }
 
-    private function processUploadedFile($file): void
+    /**
+     * The picker modal dispatches this after every upload/edit — even when
+     * the user never clicks "Select this file" — so this grid stays in sync
+     * without needing a page reload. render() re-queries the database on
+     * every request, so this listener's body just needs to exist.
+     */
+    #[On('media-library-updated')]
+    public function refreshAfterPickerUpdate(): void
     {
-        $path = $file->store('media', 'public');
-        $mimeType = $file->getMimeType();
-        $fileType = $this->getFileType($mimeType);
-
-        ImageWatermarker::applyIfEnabled('public', $path, $mimeType);
-
-        $metadata = [];
-        if ($fileType === 'image') {
-            $imageSize = getimagesize($file->getRealPath());
-            if ($imageSize) {
-                $metadata['width'] = $imageSize[0];
-                $metadata['height'] = $imageSize[1];
-            }
-        }
-
-        MediaLibrary::create([
-            'filename' => basename($path),
-            'original_filename' => $file->getClientOriginalName(),
-            'mime_type' => $mimeType,
-            'file_type' => $fileType,
-            'file_size' => $file->getSize(),
-            'disk' => 'public',
-            'path' => $path,
-            'url' => Storage::disk('public')->url($path),
-            'uploaded_by' => auth()->id(),
-            'metadata' => $metadata,
-        ]);
-    }
-
-    private function getFileType(string $mimeType): string
-    {
-        if (str_starts_with($mimeType, 'image/')) {
-            return 'image';
-        } elseif (str_starts_with($mimeType, 'video/')) {
-            return 'video';
-        } elseif (str_starts_with($mimeType, 'audio/')) {
-            return 'audio';
-        }
-
-        return 'document';
+        //
     }
 
     /**
