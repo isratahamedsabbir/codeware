@@ -7,7 +7,7 @@
          this Livewire component's own DOM root via @push/@stack). Handled by
          onMediaPickerSelected() in Index.php. --}}
     <flux:button variant="ghost" size="sm" icon="arrow-up-tray"
-        onclick="window.dispatchEvent(new CustomEvent('open-media-picker', { detail: { pickerId: 'media-library-manage-picker', onlyImages: false } }))">
+        onclick="window.dispatchEvent(new CustomEvent('open-media-picker', { detail: { pickerId: 'media-library-manage-picker', onlyImages: false, mimes: 'jpg,jpeg,png,gif,webp,pdf,mp4,mp3,doc,docx,xls,xlsx', maxSizeKb: 10240 } }))">
         Upload Files
     </flux:button>
 @endpush
