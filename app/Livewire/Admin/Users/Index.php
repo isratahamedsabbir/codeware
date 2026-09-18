@@ -58,7 +58,9 @@ class Index extends Component
         if ($this->deletingId) {
             $user = User::findOrFail($this->deletingId);
 
-            if ($user->id === auth()->id()) {
+            if ($user->id === 1) {
+                $this->dispatch('notify', message: 'The primary admin account cannot be deleted');
+            } elseif ($user->id === auth()->id()) {
                 $this->dispatch('notify', message: 'You cannot delete your own account');
             } else {
                 DB::table('sessions')->where('user_id', $user->id)->delete();

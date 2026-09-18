@@ -66,6 +66,13 @@ class Form extends Component
     public function mount(?int $id = null): void
     {
         if ($id) {
+            if ($id === 1) {
+                $this->dispatch('notify', message: 'The primary admin account cannot be edited');
+                $this->redirect(route('admin.users'), navigate: true);
+
+                return;
+            }
+
             $user = User::findOrFail($id);
             $this->userId = $id;
             $this->name = $user->name;
@@ -147,6 +154,13 @@ class Form extends Component
 
     public function save(): void
     {
+        if ($this->userId === 1) {
+            $this->dispatch('notify', message: 'The primary admin account cannot be edited');
+            $this->redirect(route('admin.users'), navigate: true);
+
+            return;
+        }
+
         if ($this->is_delivery_boy && $this->hasDeliveryIneligibleRole()) {
             $this->addError('is_delivery_boy', 'An admin or vendor cannot be marked as a delivery boy.');
 

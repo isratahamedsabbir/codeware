@@ -112,6 +112,14 @@
                             <flux:error name="quantity" />
                         </flux:field>
                     </div>
+
+                    <div class="mt-4">
+                        <flux:field>
+                            <flux:label>Warranty (months)<x-field-hint text="Leave blank for no warranty. When set, a Warranty Card becomes downloadable from any order that includes this product." /></flux:label>
+                            <flux:input type="number" wire:model="warranty_months" min="0" step="1" placeholder="e.g. 12" />
+                            <flux:error name="warranty_months" />
+                        </flux:field>
+                    </div>
                 </div>
 
             </x-admin-locale-tabs>

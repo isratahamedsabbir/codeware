@@ -84,6 +84,10 @@ class Form extends Component
     #[Validate('nullable|integer|min:0')]
     public string $quantity = '';
 
+    /** Whole months of warranty coverage from purchase; blank = no warranty. */
+    #[Validate('nullable|integer|min:0|max:600')]
+    public string $warranty_months = '';
+
     public bool $is_featured = false;
 
     public array $description = [];
@@ -169,6 +173,7 @@ class Form extends Component
             $this->price = (string) $product->price;
             $this->discount_price = $product->discount_price !== null ? (string) $product->discount_price : '';
             $this->quantity = $product->quantity !== null ? (string) $product->quantity : '';
+            $this->warranty_months = $product->warranty_months !== null ? (string) $product->warranty_months : '';
             $this->is_featured = (bool) $product->is_featured;
 
             $this->featured_image = $product->featured_image ?? '';
@@ -603,6 +608,7 @@ class Form extends Component
             'price' => $this->price,
             'discount_price' => $this->discount_price !== '' ? $this->discount_price : null,
             'quantity' => $this->quantity !== '' ? $this->quantity : 0,
+            'warranty_months' => $this->warranty_months !== '' ? $this->warranty_months : null,
             'is_featured' => $this->is_featured,
             'description' => $this->translatablePayload('description') ?: null,
             'featured_image' => $this->featured_image ?: null,

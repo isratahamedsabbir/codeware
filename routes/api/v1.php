@@ -33,6 +33,7 @@ use App\Http\Controllers\Api\V1\ServiceController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\SubscriberController;
 use App\Http\Controllers\Api\V1\VoucherController;
+use App\Http\Controllers\WarrantyController;
 use Illuminate\Support\Facades\Route;
 
 // Customer account auth — API-only (no admin panel UI), backed by the same `users`
@@ -117,6 +118,10 @@ Route::middleware('feature:orders')->group(function () {
     Route::post('/orders/products', [OrderController::class, 'storeProducts'])->name('orders.store.products');
     Route::post('/orders/services', [OrderController::class, 'storeServices'])->name('orders.store.services');
     Route::get('/orders/{orderNumber}', [OrderController::class, 'show'])->name('orders.show');
+    // Same auth story as the show() route above — order number + the
+    // customer's own email, no login — downloads the PDF warranty card for
+    // whichever of this order's product items carry a warranty.
+    Route::get('/orders/{orderNumber}/warranty', [WarrantyController::class, 'publicDownload'])->name('orders.warranty');
 });
 
 // Comments — on Posts, Products, and Services. Reading is public; posting a

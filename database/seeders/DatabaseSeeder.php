@@ -13,6 +13,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Roles/AdminSeeder run first, before any other user is created, so
+        // admin@admin.com lands on id 1 — the admin panel's Users list treats
+        // user #1 as the permanent primary admin (never deletable, only
+        // editable via its own profile page).
+        $this->call(RolePermissionSeeder::class);
+        $this->call(AdminSeeder::class);
+        $this->call(VendorSeeder::class);
+
         User::factory(20)->create();
 
         User::factory()->create([
@@ -20,16 +28,12 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
-        $this->call(RolePermissionSeeder::class);
-        $this->call(AdminSeeder::class);
-        $this->call(VendorSeeder::class);
-
         // The random factory users (and the named Test User) above are created
-        // before the 'customer' role exists, so they get no role at all —
-        // assign it now, the same default a real registration gets (see
-        // CreateNewUser), so the admin's Users list doesn't show "None" for
-        // every seeded account. Admin/Staff/Vendor already have their own
-        // roles from AdminSeeder, so this only reaches the roleless ones.
+        // with no role at all — assign it now, the same default a real
+        // registration gets (see CreateNewUser), so the admin's Users list
+        // doesn't show "None" for every seeded account. Admin/Staff/Vendor
+        // already have their own roles from AdminSeeder, so this only reaches
+        // the roleless ones.
         User::whereDoesntHave('roles')->get()->each(fn (User $user) => $user->assignRole('customer'));
 
         $this->call(SettingsSeeder::class);

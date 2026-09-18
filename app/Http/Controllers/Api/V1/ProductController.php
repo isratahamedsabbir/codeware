@@ -82,6 +82,7 @@ class ProductController extends Controller
             'discount_price' => $product->hasDiscount() ? (float) $product->discount_price : null,
             'quantity' => $product->quantity,
             'in_stock' => $product->inStock(),
+            'warranty_months' => $product->warranty_months,
             'charge_shipping' => $product->charge_shipping,
             'featured_image' => $product->featured_image,
             'sku' => $product->sku,

@@ -9,6 +9,12 @@
             Print Address
         </flux:button>
 
+        @if ($order->items->contains(fn ($item) => $item->type === 'product' && $item->product?->hasWarranty()))
+            <flux:button variant="outline" size="sm" icon="shield-check" href="{{ route('admin.orders.warranty', $order) }}" target="_blank">
+                Warranty Card
+            </flux:button>
+        @endif
+
         <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.orders') }}" wire:navigate>
             Back to Orders
         </flux:button>

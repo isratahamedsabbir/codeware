@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\UserCardController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProductLabelController;
 use App\Http\Controllers\VoucherController;
+use App\Http\Controllers\WarrantyController;
 use App\Livewire\Admin\About;
 use App\Livewire\Admin\Advance\Backup;
 use App\Livewire\Admin\Advance\Database;
@@ -247,6 +248,7 @@ Route::middleware('can:access-admin-system')->group(function () {
         Route::get('/orders/{order}/invoice', [InvoiceController::class, 'show'])->name('orders.invoice');
         Route::get('/orders/{order}/invoice/download', [InvoiceController::class, 'download'])->name('orders.invoice.download');
         Route::get('/orders/{order}/address', [InvoiceController::class, 'address'])->name('orders.address');
+        Route::get('/orders/{order}/warranty', [WarrantyController::class, 'adminDownload'])->name('orders.warranty');
 
         Route::get('/reports', App\Livewire\Admin\Reports\Index::class)->name('reports');
         Route::get('/reports/export', [ReportExportController::class, 'export'])->name('reports.export');

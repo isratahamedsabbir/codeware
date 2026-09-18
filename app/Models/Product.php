@@ -54,7 +54,7 @@ class Product extends Model
         'name', 'description',
         'brand_id', 'vendor_id', 'created_by', 'sku', 'variations',
         'featured_image', 'status', 'product_type', 'price', 'discount_price', 'quantity', 'charge_shipping', 'is_featured',
-        'is_upcoming', 'sort_order',
+        'is_upcoming', 'sort_order', 'warranty_months',
     ];
 
     protected $casts = [
@@ -66,6 +66,7 @@ class Product extends Model
         'is_featured' => 'boolean',
         'is_upcoming' => 'boolean',
         'sort_order' => 'integer',
+        'warranty_months' => 'integer',
     ];
 
     /**
@@ -138,6 +139,11 @@ class Product extends Model
     public function isDigital(): bool
     {
         return $this->product_type === 'digital';
+    }
+
+    public function hasWarranty(): bool
+    {
+        return $this->warranty_months !== null && $this->warranty_months > 0;
     }
 
     public function scopeActive(Builder $query): Builder

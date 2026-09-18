@@ -133,8 +133,19 @@
                             {{-- Actions --}}
                             <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-100 border-l border-zinc-100 px-4 py-2">
                                 <x-admin-row-actions :actions="[
-                                    ['href' => route('admin.users.edit', $user->id), 'icon' => 'pencil', 'label' => 'Edit', 'color' => 'primary'],
-                                    ['wireClick' => 'confirmDelete(' . $user->id . ')', 'icon' => 'trash', 'label' => 'Delete', 'color' => 'rose-500'],
+                                    [
+                                        'href' => $user->id === 1 ? route('admin.profile') : route('admin.users.edit', $user->id),
+                                        'icon' => 'pencil',
+                                        'label' => $user->id === 1 ? 'Edit from profile' : 'Edit',
+                                        'color' => 'primary',
+                                    ],
+                                    [
+                                        'wireClick' => 'confirmDelete(' . $user->id . ')',
+                                        'icon' => 'trash',
+                                        'label' => 'Delete',
+                                        'color' => 'rose-500',
+                                        'disabled' => $user->id === 1 || $user->id === auth()->id(),
+                                    ],
                                 ]" />
                             </td>
 
