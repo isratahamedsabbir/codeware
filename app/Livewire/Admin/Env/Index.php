@@ -314,6 +314,6 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.admin.env.index')->layout('layouts.admin', ['title' => 'Env']);
+        return view('livewire.admin.env.index')->layout('layouts.admin', ['title' => 'Developer Tools']);
     }
 }

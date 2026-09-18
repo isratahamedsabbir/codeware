@@ -222,11 +222,11 @@ it('blocks the env route when its feature is off, leaving settings reachable', f
 it('hides the Env link from the live sidebar once its feature is off', function () {
     $this->seed(AdminMenuSeeder::class);
 
-    $this->get(route('admin.dashboard'))->assertOk()->assertSee('Env');
+    $this->get(route('admin.dashboard'))->assertOk()->assertSee('Developer Tools');
 
     disableFeature('env');
 
-    $this->get(route('admin.dashboard'))->assertOk()->assertDontSee('Env');
+    $this->get(route('admin.dashboard'))->assertOk()->assertDontSee('Developer Tools');
 });
 
 it('blocks the audit log route when its feature is off, leaving settings reachable', function () {
