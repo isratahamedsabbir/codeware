@@ -32,6 +32,12 @@ class Form extends Component
     public array $selectedRoles = [];
 
     /**
+     * Whether this user is a delivery rider — never true for an admin or
+     * vendor (see updatedSelectedRoles() and save()'s own guard).
+     */
+    public bool $is_delivery_boy = false;
+
+    /**
      * Vendor ids this user can log into the Vendor Portal for — a user can be
      * assigned to more than one vendor, see User::vendors().
      *
@@ -68,6 +74,7 @@ class Form extends Component
             $this->vendor_ids = $user->vendors->pluck('id')->all();
             $this->signature = $user->signature;
             $this->existingPhotoPath = $user->photo;
+            $this->is_delivery_boy = $user->is_delivery_boy;
 
             return;
         }
@@ -75,6 +82,23 @@ class Form extends Component
         // New users default to 'customer' — the same role a public
         // registration gets (see CreateNewUser) — rather than no role at all.
         $this->selectedRoles = ['customer'];
+    }
+
+    /**
+     * An admin or vendor can never be a delivery rider — flip the switch back
+     * off the moment either role gets checked, rather than only catching it
+     * as a validation error at save() time.
+     */
+    public function updatedSelectedRoles(): void
+    {
+        if ($this->hasDeliveryIneligibleRole()) {
+            $this->is_delivery_boy = false;
+        }
+    }
+
+    private function hasDeliveryIneligibleRole(): bool
+    {
+        return in_array('admin', $this->selectedRoles, true) || in_array('vendor', $this->selectedRoles, true);
     }
 
     public function updatedPhoto(): void
@@ -123,6 +147,12 @@ class Form extends Component
 
     public function save(): void
     {
+        if ($this->is_delivery_boy && $this->hasDeliveryIneligibleRole()) {
+            $this->addError('is_delivery_boy', 'An admin or vendor cannot be marked as a delivery boy.');
+
+            return;
+        }
+
         $data = $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->userId)],
@@ -142,6 +172,7 @@ class Form extends Component
         $user->email = $data['email'];
         $user->signature = $this->persistSignature($user);
         $user->photo = $this->persistPhoto();
+        $user->is_delivery_boy = $this->is_delivery_boy;
 
         if ($this->password) {
             $user->password = $this->password;

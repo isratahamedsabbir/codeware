@@ -235,6 +235,51 @@ it('ends the sessions of a user when they are blocked', function () {
     expect(DB::table('sessions')->where('id', 'session-blocked-user')->exists())->toBeFalse();
 });
 
+it('can mark a plain user as a delivery boy', function () {
+    $user = User::factory()->create()->assignRole('manager');
+
+    Livewire::test(UsersForm::class, ['id' => $user->id])
+        ->set('is_delivery_boy', true)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect($user->fresh()->is_delivery_boy)->toBeTrue();
+});
+
+it('rejects marking an admin as a delivery boy', function () {
+    $user = User::factory()->create()->assignRole('admin');
+
+    Livewire::test(UsersForm::class, ['id' => $user->id])
+        ->set('selectedRoles', ['admin'])
+        ->set('is_delivery_boy', true)
+        ->call('save')
+        ->assertHasErrors(['is_delivery_boy']);
+
+    expect($user->fresh()->is_delivery_boy)->toBeFalse();
+});
+
+it('rejects marking a vendor as a delivery boy', function () {
+    Role::findOrCreate('vendor', 'web');
+    $user = User::factory()->create()->assignRole('vendor');
+
+    Livewire::test(UsersForm::class, ['id' => $user->id])
+        ->set('selectedRoles', ['vendor'])
+        ->set('is_delivery_boy', true)
+        ->call('save')
+        ->assertHasErrors(['is_delivery_boy']);
+
+    expect($user->fresh()->is_delivery_boy)->toBeFalse();
+});
+
+it('turns off the delivery boy switch as soon as the admin role is checked', function () {
+    $user = User::factory()->create()->assignRole('manager');
+
+    Livewire::test(UsersForm::class, ['id' => $user->id])
+        ->set('is_delivery_boy', true)
+        ->set('selectedRoles', ['manager', 'admin'])
+        ->assertSet('is_delivery_boy', false);
+});
+
 it('does not touch sessions when a user is unblocked', function () {
     $user = User::factory()->create(['is_blocked' => true]);
     DB::table('sessions')->insert([

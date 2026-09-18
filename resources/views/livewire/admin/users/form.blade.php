@@ -92,6 +92,23 @@
                 </div>
             </div>
 
+            {{-- Delivery Boy --}}
+            <div class="mt-6">
+                @php $deliveryIneligible = in_array('admin', $selectedRoles) || in_array('vendor', $selectedRoles); @endphp
+                <flux:field variant="inline">
+                    <flux:switch wire:model.live="is_delivery_boy" :disabled="$deliveryIneligible" />
+                    <flux:label>Delivery Boy</flux:label>
+                </flux:field>
+                <p class="mt-1 text-xs text-zinc-400">
+                    @if ($deliveryIneligible)
+                        An admin or vendor cannot be marked as a delivery boy — remove that role first.
+                    @else
+                        Marks this user as a delivery rider.
+                    @endif
+                </p>
+                <flux:error name="is_delivery_boy" />
+            </div>
+
             {{-- Footer --}}
             <div class="-mx-6 -mb-6 mt-6 flex items-center gap-3 flex-wrap rounded-b-lg border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-700 dark:bg-zinc-800/40">
                 <x-admin-save-button :label="$userId ? 'Update User' : 'Create User'" />
