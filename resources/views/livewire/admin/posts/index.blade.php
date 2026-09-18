@@ -34,6 +34,12 @@
                  look this button had when it lived in @push('page-header-actions')
                  (see resources/css/app.css). --}}
             <div class="page-header-actions flex items-center gap-2 shrink-0">
+                @can('access-admin-system')
+                    <flux:button variant="ghost" size="sm" icon="cog-6-tooth"
+                        x-on:click="$dispatch('open-modal', { name: 'frontend-url-settings' })">
+                        Frontend URL
+                    </flux:button>
+                @endcan
                 <flux:button variant="ghost" size="sm" icon="plus" href="{{ route('admin.posts.create') }}" wire:navigate>
                     New post
                 </flux:button>
@@ -177,6 +183,9 @@
                             <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-100 border-l border-zinc-100 px-4 py-2">
                                 @php $bulkActive = count($selectedIds) > 0; @endphp
                                 <x-admin-row-actions :actions="[
+                                    $post->slug && ! $bulkActive
+                                        ? ['href' => rtrim(config('app.frontend_url'), '/').(config('app.frontend_post_path') ? '/'.trim(config('app.frontend_post_path'), '/') : '').'/'.$post->slug, 'icon' => 'external-link', 'label' => 'Preview', 'color' => 'cyan-500', 'external' => true]
+                                        : ['icon' => 'external-link', 'label' => 'Preview', 'color' => 'cyan-500', 'disabled' => true],
                                     ['href' => route('admin.posts.edit', $post->id), 'icon' => 'pencil', 'label' => 'Edit', 'color' => 'primary', 'disabled' => $bulkActive],
                                     $post->page && ! $bulkActive
                                         ? ['href' => route('admin.pages.edit', $post->page->id), 'icon' => 'document', 'label' => 'Page', 'color' => 'secondary']
@@ -214,6 +223,45 @@
     <div class="px-6 py-3">
         {{ $posts->links() }}
     </div>
+
+    {{-- Settings Modal — Frontend URL. Whole block gated (not just the
+         trigger button above) so the markup never reaches a staff response
+         at all, regardless of whether it's shown. --}}
+    @can('access-admin-system')
+        <flux:modal name="frontend-url-settings" class="md:w-96"
+            x-on:open-modal.window="if ($event.detail.name === 'frontend-url-settings') $flux.modal('frontend-url-settings').show()"
+            x-on:close-modal.window="if ($event.detail.name === 'frontend-url-settings') $flux.modal('frontend-url-settings').close()">
+            <div class="space-y-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <flux:icon.cog-6-tooth class="w-5 h-5 text-primary" />
+                    </div>
+                    <flux:heading>Frontend URL Settings</flux:heading>
+                </div>
+                <flux:text class="text-sm text-zinc-500">
+                    The public site's base URL — used to build product links in emails and sitemaps, e.g. <span class="font-mono text-xs">https://codeware.com</span>. Changing this edits the live .env file.
+                </flux:text>
+                <flux:field>
+                    <flux:label>Frontend URL</flux:label>
+                    <flux:input wire:model="frontendUrl" placeholder="https://codeware.com" />
+                    <flux:error name="frontendUrl" />
+                </flux:field>
+                <flux:field>
+                    <flux:label>Post preview path<x-field-hint text="Optional. Inserted between the frontend URL and a post's slug for the Preview button only — leave blank to link straight to {frontend url}/slug." /></flux:label>
+                    <flux:input wire:model="postPreviewPath" placeholder="e.g. blog" />
+                    <flux:error name="postPreviewPath" />
+                </flux:field>
+                <div class="flex gap-2 pt-1">
+                    <flux:button size="sm" variant="primary" wire:click="saveFrontendUrl" wire:loading.attr="disabled">
+                        Save
+                    </flux:button>
+                    <flux:modal.close>
+                        <flux:button size="sm" variant="ghost">Cancel</flux:button>
+                    </flux:modal.close>
+                </div>
+            </div>
+        </flux:modal>
+    @endcan
 
     {{-- Delete Modal --}}
     <flux:modal name="post-delete" class="md:w-80"

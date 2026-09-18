@@ -330,13 +330,6 @@ class Form extends Component
         $this->variations = array_values($this->variations);
     }
 
-    public function setProductType(string $type): void
-    {
-        if (in_array($type, ['physical', 'digital'], true)) {
-            $this->product_type = $type;
-        }
-    }
-
     public function addFaq(): void
     {
         $this->faqs[] = ['question' => '', 'answer' => '', 'is_active' => true];

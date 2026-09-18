@@ -19,6 +19,21 @@ return [
 
     'frontend_url' => env('FRONTEND_URL', env('APP_URL')),
 
+    // Optional path segment inserted between the frontend URL and a product's
+    // slug when building its admin Preview link — e.g. 'product' turns
+    // {frontend_url}/{slug} into {frontend_url}/product/{slug}. Blank by
+    // default, since the frontend's real route for a product isn't decided
+    // yet — see Products\Index::saveFrontendUrl().
+    'frontend_product_path' => env('FRONTEND_PRODUCT_PATH', ''),
+
+    // Same idea as frontend_product_path, but for a standalone Page's (type =
+    // 'page') admin Preview link — see Pages\Index::saveFrontendUrl().
+    'frontend_page_path' => env('FRONTEND_PAGE_PATH', ''),
+
+    // Same idea again, but for a blog Post's admin Preview link — see
+    // Posts\Index::saveFrontendUrl().
+    'frontend_post_path' => env('FRONTEND_POST_PATH', ''),
+
     /*
     |--------------------------------------------------------------------------
     | Vendor Portal Host

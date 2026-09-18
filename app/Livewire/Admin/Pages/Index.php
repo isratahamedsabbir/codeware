@@ -10,11 +10,15 @@ use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\Setting;
 use App\Support\AdminActivity;
+use App\Support\EnvFile;
 use App\Support\PageCascade;
 use App\Support\PuckEditor;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
+use RuntimeException;
 
 class Index extends Component
 {
@@ -50,9 +54,17 @@ class Index extends Component
     /** @var array<int, int> */
     public array $selectedIds = [];
 
+    /** The FRONTEND_URL .env value, edited from the Settings modal (see saveFrontendUrl()). */
+    public string $frontendUrl = '';
+
+    /** The FRONTEND_PAGE_PATH .env value — see saveFrontendUrl(). */
+    public string $pagePreviewPath = '';
+
     public function mount(): void
     {
         $this->puckSessionMinutes = Setting::puckSessionMinutes();
+        $this->frontendUrl = EnvFile::get('FRONTEND_URL', '') ?? '';
+        $this->pagePreviewPath = EnvFile::get('FRONTEND_PAGE_PATH', '') ?? '';
     }
 
     public function updatedSearch(): void
@@ -94,6 +106,45 @@ class Index extends Component
 
         $this->dispatch('close-modal', name: 'editor-settings');
         $this->dispatch('notify', message: 'Editor settings saved.');
+    }
+
+    /**
+     * Persists the public site's base URL and the optional path segment for
+     * a standalone page's Preview link, straight from this page's own
+     * Settings modal — same pattern as Products\Index::saveFrontendUrl().
+     */
+    public function saveFrontendUrl(): void
+    {
+        // The trigger button/modal are hidden from staff in the Blade view (this
+        // page's route only requires access-admin, not access-admin-system), but
+        // a Livewire component's public methods are still directly callable —
+        // this is the actual enforcement, not the hidden UI.
+        Gate::authorize('access-admin-system');
+
+        $this->validate([
+            'frontendUrl' => 'nullable|url',
+            'pagePreviewPath' => 'nullable|string|max:255|regex:/^[a-z0-9\-\/]*$/i',
+        ], [], ['frontendUrl' => 'frontend URL', 'pagePreviewPath' => 'page path']);
+
+        $this->pagePreviewPath = trim($this->pagePreviewPath, '/');
+
+        try {
+            EnvFile::set([
+                'FRONTEND_URL' => $this->frontendUrl,
+                'FRONTEND_PAGE_PATH' => $this->pagePreviewPath,
+            ]);
+        } catch (RuntimeException $e) {
+            $this->dispatch('notify', message: 'Could not save the frontend URL: '.$e->getMessage());
+
+            return;
+        }
+
+        Artisan::call('config:clear');
+
+        AdminActivity::log('updated', 'Frontend URL updated');
+
+        $this->dispatch('close-modal', name: 'frontend-url-settings');
+        $this->dispatch('notify', message: 'Frontend URL saved.');
     }
 
     /**

@@ -34,9 +34,13 @@ class Index extends Component
     /** The FRONTEND_URL .env value, edited from the Settings modal (see saveFrontendUrl()). */
     public string $frontendUrl = '';
 
+    /** The FRONTEND_PRODUCT_PATH .env value — see saveFrontendUrl(). */
+    public string $productPreviewPath = '';
+
     public function mount(): void
     {
         $this->frontendUrl = EnvFile::get('FRONTEND_URL', '') ?? '';
+        $this->productPreviewPath = EnvFile::get('FRONTEND_PRODUCT_PATH', '') ?? '';
     }
 
     public function updatedSearch(): void
@@ -51,9 +55,10 @@ class Index extends Component
 
     /**
      * Persists the public site's base URL (used to build product links in
-     * emails/sitemaps — see Product::product_url) straight from this page's
+     * emails/sitemaps — see Product::product_url) and the optional path
+     * segment for this page's own Preview links, straight from this page's
      * Settings modal, rather than sending the admin off to the full
-     * Settings → Env tab for a single field.
+     * Settings → Env tab for a couple of fields.
      */
     public function saveFrontendUrl(): void
     {
@@ -63,10 +68,18 @@ class Index extends Component
         // this is the actual enforcement, not the hidden UI.
         Gate::authorize('access-admin-system');
 
-        $this->validate(['frontendUrl' => 'nullable|url'], [], ['frontendUrl' => 'frontend URL']);
+        $this->validate([
+            'frontendUrl' => 'nullable|url',
+            'productPreviewPath' => 'nullable|string|max:255|regex:/^[a-z0-9\-\/]*$/i',
+        ], [], ['frontendUrl' => 'frontend URL', 'productPreviewPath' => 'product path']);
+
+        $this->productPreviewPath = trim($this->productPreviewPath, '/');
 
         try {
-            EnvFile::set(['FRONTEND_URL' => $this->frontendUrl]);
+            EnvFile::set([
+                'FRONTEND_URL' => $this->frontendUrl,
+                'FRONTEND_PRODUCT_PATH' => $this->productPreviewPath,
+            ]);
         } catch (RuntimeException $e) {
             $this->dispatch('notify', message: 'Could not save the frontend URL: '.$e->getMessage());
 

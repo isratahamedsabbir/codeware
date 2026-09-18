@@ -74,45 +74,21 @@
                 <div class="mt-4" wire:key="product-type-panel">
                     <flux:field>
                         <flux:label>Product Type</flux:label>
-                        <div class="grid grid-cols-2 gap-1.5 rounded-lg bg-zinc-100 p-1 max-w-xs">
-                            <button type="button" wire:click="setProductType('physical')"
-                                class="flex items-center justify-center gap-1.5 rounded-md py-2 text-xs font-medium transition-colors cursor-pointer {{ $product_type === 'physical' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700' }}">
-                                <flux:icon.cube class="h-3.5 w-3.5 shrink-0" />
-                                Physical
-                            </button>
-                            <button type="button" wire:click="setProductType('digital')"
-                                class="flex items-center justify-center gap-1.5 rounded-md py-2 text-xs font-medium transition-colors cursor-pointer {{ $product_type === 'digital' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700' }}">
-                                <flux:icon.arrow-down-tray class="h-3.5 w-3.5 shrink-0" />
-                                Digital
-                            </button>
-                        </div>
+                        <flux:select wire:model="product_type">
+                            <flux:select.option value="physical">Physical</flux:select.option>
+                            <flux:select.option value="digital">Digital</flux:select.option>
+                        </flux:select>
                         <flux:error name="product_type" />
                     </flux:field>
                 </div>
 
                 {{-- Pricing & Stock (not translatable — shown regardless of locale tab) --}}
                 <div class="mt-4" wire:key="pricing-stock-panel">
-                    <flux:heading size="sm" class="mb-3">Pricing & Stock</flux:heading>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <flux:field>
-                            <flux:label>Price</flux:label>
-                            <flux:input type="number" wire:model.live.debounce.400ms="price" min="0" step="0.01" />
-                            <flux:error name="price" />
-                        </flux:field>
-                        <flux:field>
-                            <flux:label>Discount Price</flux:label>
-                            <flux:input type="number" wire:model.live.debounce.400ms="discount_price" min="0" step="0.01" placeholder="No discount" />
-                            <flux:error name="discount_price" />
-                        </flux:field>
-                    </div>
-                    @if ($discount_price !== '' && is_numeric($price) && is_numeric($discount_price) && (float) $discount_price < (float) $price && (float) $price > 0)
-                        <p class="text-xs text-emerald-600 font-medium -mt-1">
-                            {{ round((1 - ((float) $discount_price / (float) $price)) * 100) }}% off — shown as a strikethrough sale price.
-                        </p>
-                    @else
-                        <p class="text-xs text-zinc-400 -mt-1">Leave Discount Price blank to sell at the regular price.</p>
-                    @endif
+                    <flux:field>
+                        <flux:label>Price</flux:label>
+                        <flux:input type="number" wire:model.live.debounce.400ms="price" min="0" step="0.01" />
+                        <flux:error name="price" />
+                    </flux:field>
 
                     <div class="mt-4">
                         <flux:field>

@@ -6,11 +6,15 @@ use App\Concerns\HasPerPage;
 use App\Models\Page;
 use App\Models\Post;
 use App\Support\AdminActivity;
+use App\Support\EnvFile;
 use App\Support\PageCascade;
 use App\Support\PuckEditor;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
+use RuntimeException;
 
 class Index extends Component
 {
@@ -26,6 +30,57 @@ class Index extends Component
 
     /** @var array<int, int> */
     public array $selectedIds = [];
+
+    /** The FRONTEND_URL .env value, edited from the Settings modal (see saveFrontendUrl()). */
+    public string $frontendUrl = '';
+
+    /** The FRONTEND_POST_PATH .env value — see saveFrontendUrl(). */
+    public string $postPreviewPath = '';
+
+    public function mount(): void
+    {
+        $this->frontendUrl = EnvFile::get('FRONTEND_URL', '') ?? '';
+        $this->postPreviewPath = EnvFile::get('FRONTEND_POST_PATH', '') ?? '';
+    }
+
+    /**
+     * Persists the public site's base URL and the optional path segment for
+     * this page's own Preview links, straight from this page's Settings
+     * modal — same pattern as Products\Index::saveFrontendUrl().
+     */
+    public function saveFrontendUrl(): void
+    {
+        // The trigger button/modal are hidden from staff in the Blade view (this
+        // page's route only requires access-admin, not access-admin-system), but
+        // a Livewire component's public methods are still directly callable —
+        // this is the actual enforcement, not the hidden UI.
+        Gate::authorize('access-admin-system');
+
+        $this->validate([
+            'frontendUrl' => 'nullable|url',
+            'postPreviewPath' => 'nullable|string|max:255|regex:/^[a-z0-9\-\/]*$/i',
+        ], [], ['frontendUrl' => 'frontend URL', 'postPreviewPath' => 'post path']);
+
+        $this->postPreviewPath = trim($this->postPreviewPath, '/');
+
+        try {
+            EnvFile::set([
+                'FRONTEND_URL' => $this->frontendUrl,
+                'FRONTEND_POST_PATH' => $this->postPreviewPath,
+            ]);
+        } catch (RuntimeException $e) {
+            $this->dispatch('notify', message: 'Could not save the frontend URL: '.$e->getMessage());
+
+            return;
+        }
+
+        Artisan::call('config:clear');
+
+        AdminActivity::log('updated', 'Frontend URL updated');
+
+        $this->dispatch('close-modal', name: 'frontend-url-settings');
+        $this->dispatch('notify', message: 'Frontend URL saved.');
+    }
 
     public function updatedSearch(): void
     {

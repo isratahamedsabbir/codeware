@@ -30,16 +30,16 @@
                     Export ({{ count($selectedIds) }})
                 </flux:button>
             @endif
-            @can('access-admin-system')
-                <flux:button variant="ghost" size="sm" icon="cog-6-tooth"
-                    x-on:click="$dispatch('open-modal', { name: 'frontend-url-settings' })">
-                    Frontend URL
-                </flux:button>
-            @endcan
             {{-- .page-header-actions restores the solid blue "primary action"
                  look this button had when it lived in @push('page-header-actions')
                  (see resources/css/app.css). --}}
             <div class="page-header-actions flex items-center gap-2 shrink-0">
+                @can('access-admin-system')
+                    <flux:button variant="ghost" size="sm" icon="cog-6-tooth"
+                        x-on:click="$dispatch('open-modal', { name: 'frontend-url-settings' })">
+                        Frontend URL
+                    </flux:button>
+                @endcan
                 <flux:button variant="ghost" size="sm" icon="plus" href="{{ route('admin.products.create') }}" wire:navigate>
                     New product
                 </flux:button>
@@ -315,7 +315,7 @@
                                 <x-admin-row-actions :actions="[
                                     ['href' => route('admin.products.show', $product->id), 'icon' => 'eye', 'label' => 'View', 'color' => 'secondary', 'disabled' => $bulkActive],
                                     $product->slug && ! $bulkActive
-                                        ? ['href' => rtrim(config('app.frontend_url'), '/').'/products/'.$product->slug, 'icon' => 'external-link', 'label' => 'Preview', 'color' => 'cyan-500', 'external' => true]
+                                        ? ['href' => rtrim(config('app.frontend_url'), '/').(config('app.frontend_product_path') ? '/'.trim(config('app.frontend_product_path'), '/') : '').'/'.$product->slug, 'icon' => 'external-link', 'label' => 'Preview', 'color' => 'cyan-500', 'external' => true]
                                         : ['icon' => 'external-link', 'label' => 'Preview', 'color' => 'cyan-500', 'disabled' => true],
                                     ['href' => route('admin.products.edit', $product->id), 'icon' => 'pencil', 'label' => 'Edit', 'color' => 'primary', 'disabled' => $bulkActive],
                                     $product->page && ! $bulkActive
@@ -439,6 +439,11 @@
                     <flux:label>Frontend URL</flux:label>
                     <flux:input wire:model="frontendUrl" placeholder="https://codeware.com" />
                     <flux:error name="frontendUrl" />
+                </flux:field>
+                <flux:field>
+                    <flux:label>Product preview path<x-field-hint text="Optional. Inserted between the frontend URL and a product's slug for the Preview button only — leave blank to link straight to {frontend url}/slug." /></flux:label>
+                    <flux:input wire:model="productPreviewPath" placeholder="e.g. product" />
+                    <flux:error name="productPreviewPath" />
                 </flux:field>
                 <div class="flex gap-2 pt-1">
                     <flux:button size="sm" variant="primary" wire:click="saveFrontendUrl" wire:loading.attr="disabled">
