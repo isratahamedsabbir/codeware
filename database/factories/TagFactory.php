@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Models\Tag;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
 class TagFactory extends Factory
 {
@@ -14,7 +13,6 @@ class TagFactory extends Factory
 
         return [
             'name' => ['en' => $name, 'bn' => $name],
-            'slug' => Str::slug($name),
             'status' => 'active',
         ];
     }

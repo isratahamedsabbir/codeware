@@ -81,7 +81,7 @@ it('admin post detail includes tags', function () {
 
     $this->getJson("/api/v1/admin/posts/{$post->id}")
         ->assertOk()
-        ->assertJsonPath('data.tags.0.slug', $tag->slug);
+        ->assertJsonPath('data.tags.0.name', $tag->name);
 });
 
 it('admin can list all pages via api', function () {

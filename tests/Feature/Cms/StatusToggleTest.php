@@ -115,5 +115,5 @@ it('creates new records inactive by default across resources', function () {
         ->set('name.en', 'Fresh Tag')
         ->call('save');
 
-    expect(Tag::where('slug', 'fresh-tag')->sole()->status)->toBe('inactive');
+    expect(Tag::whereJsonContains('name->en', 'Fresh Tag')->sole()->status)->toBe('inactive');
 });

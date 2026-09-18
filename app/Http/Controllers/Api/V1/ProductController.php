@@ -101,7 +101,6 @@ class ProductController extends Controller
             ])->values(),
             'tags' => $product->tags->map(fn ($tag) => [
                 'id' => $tag->id,
-                'slug' => $tag->slug,
                 'name' => $tag->getTranslation('name', $locale, useFallbackLocale: true),
             ])->values(),
             'page' => $this->formatPage($product->page),

@@ -19,9 +19,6 @@ return new class extends Migration
             $table->string('type', 20)->index();
             $table->foreignId('parent_id')->nullable()->constrained('categories')->nullOnDelete();
             $table->json('name');
-            // Only ever set for tag rows (type = 'tag'); NULL for every other
-            // kind, so the unique index never collides — see the Tag model.
-            $table->string('slug')->nullable()->unique();
             $table->json('description')->nullable();
             $table->string('icon')->nullable();
             // Brand logos only — see the ProductBrand model.

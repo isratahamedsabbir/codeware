@@ -119,19 +119,16 @@
                                 <x-copy-text :text="$tag->id" class="text-xs text-zinc-500">{{ $tag->id }}</x-copy-text>
                             </td>
 
-                            {{-- Name + slug (slug below, click to copy) --}}
+                            {{-- Name --}}
                             <td class="px-4 py-2">
-                                <div class="font-medium text-zinc-900 text-sm leading-snug"
-                                    @if ($tag->getTranslation('name', 'bn', false))
-                                        title="{{ $tag->getTranslation('name', 'en', false) }} — {{ $tag->getTranslation('name', 'bn', false) }}"
-                                    @endif>
+                                <div class="font-medium text-zinc-900 text-sm leading-snug">
                                     <x-truncate :text="$tag->getTranslation('name', 'en', false)" />
                                 </div>
-                                <div class="mt-0.5">
-                                    <x-copy-text :text="$tag->slug" class="font-mono text-[11px] text-zinc-500 block">
-                                        <x-truncate :text="$tag->slug" />
-                                    </x-copy-text>
-                                </div>
+                                @if ($tag->getTranslation('name', 'bn', false))
+                                    <div class="text-xs text-zinc-600 mt-0.5">
+                                        <x-truncate :text="$tag->getTranslation('name', 'bn', false)" />
+                                    </div>
+                                @endif
                             </td>
 
                             {{-- Type --}}

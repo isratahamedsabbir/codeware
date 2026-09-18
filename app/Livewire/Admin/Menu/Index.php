@@ -261,6 +261,6 @@ class Index extends Component
             'topLevel' => $topLevel,
             'menus' => $menus,
             'groups' => $groups,
-        ])->layout('layouts.admin', ['title' => __('Menu')]);
+        ])->layout('layouts.admin', ['title' => __('Menu'), 'hidePageHeading' => true]);
     }
 }

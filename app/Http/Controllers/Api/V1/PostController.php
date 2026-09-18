@@ -75,7 +75,6 @@ class PostController extends Controller
             ] : null,
             'tags' => $post->tags->map(fn ($tag) => [
                 'id' => $tag->id,
-                'slug' => $tag->slug,
                 'name' => $tag->getTranslation('name', $locale, useFallbackLocale: true),
             ])->values(),
             'page' => $this->formatPage($post->page),

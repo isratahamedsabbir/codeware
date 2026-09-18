@@ -474,9 +474,9 @@ class Form extends Component
 
         $this->newTagName = '';
 
-        // Reuse by slug across the whole tag pool: the categories.slug column is
-        // globally unique, so a product tag can't share a slug with a post tag.
-        $tag = Tag::where('slug', Str::slug($name))->first();
+        // Reuse by name across the whole tag pool: name is unique per locale
+        // (see Tags\Form), so a product tag can't share a name with a post tag.
+        $tag = Tag::where('name->'.Locale::primary(), $name)->first();
 
         if (! $tag) {
             $tag = Tag::create([

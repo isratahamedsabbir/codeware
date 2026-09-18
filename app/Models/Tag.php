@@ -2,12 +2,10 @@
 
 namespace App\Models;
 
-use App\Support\Locale;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Illuminate\Support\Str;
 use Spatie\Translatable\HasTranslations;
 
 class Tag extends Model
@@ -33,7 +31,7 @@ class Tag extends Model
 
     public array $translatable = ['name'];
 
-    protected $fillable = ['name', 'slug', 'status', 'type'];
+    protected $fillable = ['name', 'status', 'type'];
 
     protected static function booted(): void
     {
@@ -47,13 +45,6 @@ class Tag extends Model
             // legacy pool so factories/seeders written before the split work.
             if (empty($tag->type)) {
                 $tag->type = self::TYPE_LEGACY;
-            }
-
-            if (empty($tag->slug)) {
-                $name = is_array($tag->name)
-                    ? ($tag->name[Locale::primary()] ?? reset($tag->name))
-                    : $tag->name;
-                $tag->slug = Str::slug($name);
             }
         });
     }

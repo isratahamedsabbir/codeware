@@ -1,24 +1,30 @@
-<div class="bg-white rounded-[5px] border border-zinc-100 shadow-sm overflow-hidden">
+<div>
 
-    {{-- Menu selector --}}
-    <div class="flex items-center justify-between gap-3 px-6 pt-5 pb-5 border-b border-zinc-100 flex-wrap">
-        <div class="inline-flex items-center gap-1 p-1 rounded-xl bg-zinc-100">
-            @foreach ($menus as $menu)
-                <button type="button" wire:click="selectMenu('{{ $menu->slug }}')"
-                    class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer {{ $activeGroup === $menu->slug ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-800' }}">
-                    {{ $menu->name }}
-                </button>
-            @endforeach
-            <button type="button" wire:click="openNewMenu"
-                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium text-zinc-500 hover:text-zinc-800 hover:bg-white/70 transition-all duration-150 cursor-pointer">
-                <flux:icon.plus class="size-3.5" />
-                {{ __('New menu') }}
-            </button>
+    <div class="mb-3 flex items-center justify-between gap-4 flex-wrap">
+        <div>
+            @include('partials.admin-breadcrumbs', ['routeName' => 'admin.menu'])
         </div>
-        <flux:button size="sm" variant="primary" class="admin-btn-success" icon="plus" wire:click="openCreate()">
-            {{ __('New menu item') }}
-        </flux:button>
+        <div class="flex items-center gap-3 shrink-0 flex-wrap">
+            <div class="inline-flex items-center gap-1 p-1 rounded-xl bg-zinc-100">
+                @foreach ($menus as $menu)
+                    <button type="button" wire:click="selectMenu('{{ $menu->slug }}')"
+                        class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer {{ $activeGroup === $menu->slug ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-800' }}">
+                        {{ $menu->name }}
+                    </button>
+                @endforeach
+                <button type="button" wire:click="openNewMenu"
+                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium text-zinc-500 hover:text-zinc-800 hover:bg-white/70 transition-all duration-150 cursor-pointer">
+                    <flux:icon.plus class="size-3.5" />
+                    {{ __('New menu') }}
+                </button>
+            </div>
+            <flux:button size="sm" variant="primary" class="admin-btn-success" icon="plus" wire:click="openCreate()">
+                {{ __('New menu item') }}
+            </flux:button>
+        </div>
     </div>
+
+<div class="bg-white rounded-[5px] border border-zinc-100 shadow-sm overflow-hidden">
 
     {{-- Sortable tree --}}
     <div class=""
@@ -369,4 +375,5 @@
         </div>
     </flux:modal>
 
+</div>
 </div>

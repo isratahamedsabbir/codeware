@@ -41,7 +41,6 @@ class PostController extends Controller
                 'author' => $post->user ? ['id' => $post->user->id, 'name' => $post->user->name] : null,
                 'tags' => $post->tags->map(fn ($tag) => [
                     'id' => $tag->id,
-                    'slug' => $tag->slug,
                     'name' => $tag->name,
                 ])->values(),
             ]),
@@ -79,7 +78,6 @@ class PostController extends Controller
                 'author' => $post->user ? ['id' => $post->user->id, 'name' => $post->user->name] : null,
                 'tags' => $post->tags->map(fn ($tag) => [
                     'id' => $tag->id,
-                    'slug' => $tag->slug,
                     'name' => $tag->name,
                 ])->values(),
             ],

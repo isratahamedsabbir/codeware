@@ -41,6 +41,15 @@ it('can create a product-type tag from the tags form', function () {
     expect(Tag::whereJsonContains('name->en', 'Gadget')->firstOrFail()->type)->toBe(Tag::TYPE_PRODUCT);
 });
 
+it('rejects a duplicate tag name', function () {
+    Tag::factory()->create(['name' => ['en' => 'Laravel', 'bn' => '']]);
+
+    Livewire::test(TagsForm::class)
+        ->set('name.en', 'Laravel')
+        ->call('save')
+        ->assertHasErrors(['name.en']);
+});
+
 it('validates tag name is required', function () {
     Livewire::test(TagsForm::class)
         ->set('name.en', '')

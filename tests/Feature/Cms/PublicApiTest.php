@@ -224,6 +224,5 @@ it('returns tags on published posts', function () {
     $response = $this->getJson('/api/v1/posts?locale=bn');
 
     $response->assertOk()
-        ->assertJsonPath('data.0.tags.0.name', 'লারাভেল')
-        ->assertJsonPath('data.0.tags.0.slug', $tag->slug);
+        ->assertJsonPath('data.0.tags.0.name', 'লারাভেল');
 });

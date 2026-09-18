@@ -5,7 +5,6 @@ namespace App\Livewire\Admin\Tags;
 use App\Concerns\HasTranslatableFields;
 use App\Models\Tag;
 use App\Support\AdminActivity;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -17,9 +16,6 @@ class Form extends Component
     public ?int $tagId = null;
 
     public array $name = [];
-
-    #[Validate('nullable|string|max:255')]
-    public string $slug = '';
 
     /**
      * Which pool the tag belongs to — post tags show on the Post form, product
@@ -35,24 +31,22 @@ class Form extends Component
             $tag = Tag::findOrFail($id);
             $this->tagId = $id;
             $this->hydrateTranslatable($tag, ['name']);
-            $this->slug = $tag->slug;
             $this->type = $tag->type;
         }
     }
 
     public function save(): void
     {
-        if (empty($this->slug) && $this->primaryValue('name')) {
-            $this->slug = Str::slug($this->primaryValue('name'));
-        }
-
         $rules = array_merge($this->getRules(), $this->translatableRules([
             'name' => 'required|string|max:255',
         ]));
-        $rules['slug'] = [
-            'required', 'string', 'max:255',
-            Rule::unique('categories', 'slug')->whereIn('type', Tag::TYPES)->ignore($this->tagId),
-        ];
+
+        // Uniqueness is enforced against tag rows only (post/product/legacy);
+        // the column is the JSON path, so the primary locale's value is what's
+        // compared — a category or brand sharing the string is fine.
+        $rules['name.'.$this->primaryLocale][] = Rule::unique('categories', 'name->'.$this->primaryLocale)
+            ->whereIn('type', Tag::TYPES)
+            ->ignore($this->tagId);
 
         $this->validate($rules);
 
@@ -60,7 +54,6 @@ class Form extends Component
 
         $data = [
             'name' => $this->translatablePayload('name'),
-            'slug' => $this->slug,
             'type' => $this->type,
         ];
 

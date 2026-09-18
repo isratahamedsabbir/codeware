@@ -32,14 +32,13 @@ class TagExportController extends Controller
             // A UTF-8 BOM so Excel doesn't mangle non-Latin (e.g. Bengali) text.
             fwrite($handle, "\xEF\xBB\xBF");
 
-            fputcsv($handle, ['ID', 'Name (EN)', 'Name (BN)', 'Slug', 'Status', 'Created At']);
+            fputcsv($handle, ['ID', 'Name (EN)', 'Name (BN)', 'Status', 'Created At']);
 
             foreach ($tags as $tag) {
                 fputcsv($handle, [
                     $tag->id,
                     $tag->getTranslation('name', 'en', false),
                     $tag->getTranslation('name', 'bn', false),
-                    $tag->slug,
                     $tag->status,
                     $tag->created_at?->toDateTimeString(),
                 ]);
