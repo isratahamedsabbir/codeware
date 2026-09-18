@@ -17,6 +17,12 @@ class Order extends Model
 
     public const PAYMENT_STATUSES = ['pending', 'paid', 'failed', 'refunded'];
 
+    /**
+     * The normal fulfillment progression, 'cancelled' excluded — used only to
+     * compare positions for canBeCancelled() below, not as a display order.
+     */
+    public const FULFILLMENT_PROGRESSION = ['pending', 'processing', 'shipped', 'delivered'];
+
     protected $fillable = [
         'order_number', 'customer_name', 'customer_email', 'customer_phone',
         'shipping_address', 'status', 'payment_method', 'payment_status',
@@ -87,5 +93,27 @@ class Order extends Model
     public function scopePaymentMethod(Builder $query, string $method): Builder
     {
         return $query->where('payment_method', $method);
+    }
+
+    /**
+     * False once this order has reached (or passed) the admin-configured
+     * cutoff status — e.g. cutoff = 'shipped' blocks cancelling a shipped or
+     * delivered order, but still allows it while pending/processing. See the
+     * "Cancellation Rule" settings modal on the Orders admin screen.
+     */
+    public function canBeCancelled(): bool
+    {
+        if ($this->status === 'cancelled') {
+            return false;
+        }
+
+        $currentIndex = array_search($this->status, self::FULFILLMENT_PROGRESSION, true);
+        $cutoffIndex = array_search(Setting::orderCancellationCutoffStatus(), self::FULFILLMENT_PROGRESSION, true);
+
+        if ($currentIndex === false || $cutoffIndex === false) {
+            return true;
+        }
+
+        return $currentIndex < $cutoffIndex;
     }
 }

@@ -31,6 +31,13 @@ class Show extends Component
         $this->validate();
 
         $order = Order::findOrFail($this->orderId);
+
+        if ($this->status === 'cancelled' && $order->status !== 'cancelled' && ! $order->canBeCancelled()) {
+            $this->addError('status', "This order can no longer be cancelled — it has already reached \"{$order->status}\".");
+
+            return;
+        }
+
         $order->update([
             'status' => $this->status,
             'payment_status' => $this->paymentStatus,

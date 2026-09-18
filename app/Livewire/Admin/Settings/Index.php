@@ -159,7 +159,9 @@ class Index extends Component
             // 'other' is hand-rendered in its own tab (the Floating Button card) rather
             // than through this generic per-group loop. 'shop' (shop_enabled) is
             // controlled only via the header toggle (ShopToggle), never a form field here.
-            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'seo', 'colors', 'currency', 'frontend', 'other', 'editor', 'custom-code', 'tracking', 'shop'])
+            // 'orders' (order_cancellation_cutoff_status) has its own settings modal on
+            // the admin Orders screen, same as 'editor' (puck_session_minutes) does on Pages.
+            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'seo', 'colors', 'currency', 'frontend', 'other', 'editor', 'custom-code', 'tracking', 'shop', 'orders'])
                 ->get()
                 ->groupBy('group')
                 ->sortBy(fn ($items, $group) => $groupOrder[$group] ?? count($groupOrder)),

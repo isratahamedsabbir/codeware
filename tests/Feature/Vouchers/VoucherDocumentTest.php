@@ -49,6 +49,17 @@ it('lets an admin download an issued voucher pdf', function () {
     expect($response->headers->get('Content-Type'))->toBe('application/pdf');
 });
 
+it('lets an admin view an issued voucher pdf inline', function () {
+    $admin = User::factory()->admin()->create();
+    $purchase = VoucherPurchase::factory()->create();
+
+    $response = $this->actingAs($admin)->get(route('admin.voucher-purchases.view', $purchase));
+
+    $response->assertOk();
+    expect($response->headers->get('Content-Type'))->toBe('application/pdf')
+        ->and($response->headers->get('Content-Disposition'))->toContain('inline');
+});
+
 it('blocks staff from the admin voucher download route', function () {
     Role::findOrCreate('staff', 'web');
     $staff = User::factory()->create();

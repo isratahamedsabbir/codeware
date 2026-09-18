@@ -39,4 +39,9 @@ class VoucherController extends Controller
     {
         return $this->pdf->make($purchase)->download($this->pdf->fileName($purchase));
     }
+
+    public function adminView(Request $request, VoucherPurchase $purchase): Response
+    {
+        return $this->pdf->make($purchase)->stream($this->pdf->fileName($purchase));
+    }
 }

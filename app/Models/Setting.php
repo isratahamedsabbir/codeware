@@ -61,4 +61,14 @@ class Setting extends Model
     {
         return (int) static::get('puck_session_minutes', 30);
     }
+
+    /**
+     * The fulfillment status past which an order can no longer be cancelled —
+     * see Order::canBeCancelled(). Driven by the "Cancellation Rule" settings
+     * modal on the admin Orders screen.
+     */
+    public static function orderCancellationCutoffStatus(): string
+    {
+        return static::get('order_cancellation_cutoff_status', 'shipped');
+    }
 }

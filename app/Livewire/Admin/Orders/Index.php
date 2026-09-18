@@ -6,10 +6,13 @@ use App\Concerns\HasPerPage;
 use App\Concerns\SendsCustomEmail;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Services\OrderEmailService;
 use App\Support\AdminActivity;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -23,6 +26,10 @@ class Index extends Component
 
     /** @var array<int, int> */
     public array $selectedIds = [];
+
+    /** The order_cancellation_cutoff_status Setting, edited from the Cancellation Rule modal. */
+    #[Validate('required|in:pending,processing,shipped,delivered')]
+    public string $cancellationCutoffStatus = 'shipped';
 
     /**
      * Ctrl/Cmd+click row selection or the row's own checkbox (see the view) —
@@ -108,6 +115,26 @@ class Index extends Component
     public function mount(): void
     {
         $this->fromDate = $this->toDate = CarbonImmutable::now(display_timezone())->toDateString();
+        $this->cancellationCutoffStatus = Setting::orderCancellationCutoffStatus();
+    }
+
+    /**
+     * Persists the fulfillment status past which an order can no longer be
+     * cancelled (see Order::canBeCancelled()) — straight from this page's own
+     * Settings modal, same pattern as Products/Pages/Posts' Frontend URL one.
+     */
+    public function saveCancellationRule(): void
+    {
+        Gate::authorize('access-admin-system');
+
+        $this->validate();
+
+        Setting::set('order_cancellation_cutoff_status', $this->cancellationCutoffStatus);
+
+        AdminActivity::log('updated', 'Order cancellation rule updated');
+
+        $this->dispatch('close-modal', name: 'cancellation-rule-settings');
+        $this->dispatch('notify', message: 'Cancellation rule saved.');
     }
 
     public function updatedSearch(): void

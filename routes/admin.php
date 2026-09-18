@@ -277,6 +277,7 @@ Route::middleware('can:access-admin-system')->group(function () {
         Route::get('/vouchers/{id}/edit', App\Livewire\Admin\Vouchers\Form::class)->name('vouchers.edit');
 
         Route::get('/voucher-purchases', App\Livewire\Admin\VoucherPurchases\Index::class)->name('voucher-purchases');
+        Route::get('/voucher-purchases/{purchase}/view', [VoucherController::class, 'adminView'])->name('voucher-purchases.view');
         Route::get('/voucher-purchases/{purchase}/download', [VoucherController::class, 'adminDownload'])->name('voucher-purchases.download');
     });
 });

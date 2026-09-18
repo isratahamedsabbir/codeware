@@ -152,6 +152,10 @@ class SettingsSeeder extends Seeder
             // ── Editor ──
             ['key' => 'puck_session_minutes',    'value' => '30', 'type' => 'integer', 'group' => 'editor', 'is_public' => false],
 
+            // ── Orders ── the fulfillment status past which an order can no
+            // longer be cancelled — see Order::canBeCancelled().
+            ['key' => 'order_cancellation_cutoff_status', 'value' => 'shipped', 'type' => 'string', 'group' => 'orders', 'is_public' => false],
+
             // ── Newsletter ── whether a subscriber email blast fires when a new
             // product is created (Product::booted()).
             ['key' => 'notify_subscribers_on_new_product', 'value' => '1', 'type' => 'boolean', 'group' => 'newsletter', 'is_public' => false],

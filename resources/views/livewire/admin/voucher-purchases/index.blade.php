@@ -114,6 +114,7 @@
                             <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-100 border-l border-zinc-100 px-4 py-2">
                                 <x-admin-row-actions :actions="[
                                     ['href' => \Illuminate\Support\Facades\URL::signedRoute('vouchers.public.show', ['voucher' => $purchase->code]), 'icon' => 'eye', 'label' => 'View', 'color' => 'primary'],
+                                    ['href' => route('admin.voucher-purchases.view', $purchase), 'icon' => 'document', 'label' => 'View PDF', 'color' => 'cyan-500', 'external' => true],
                                     ['href' => route('admin.voucher-purchases.download', $purchase), 'icon' => 'arrow-down-tray', 'label' => 'PDF', 'color' => 'zinc-500'],
                                     ['wireClick' => 'resendEmail(' . $purchase->id . ')', 'icon' => 'envelope', 'label' => 'Resend', 'color' => 'zinc-500'],
                                 ]" />

@@ -16,15 +16,26 @@
         <div>
             @include('partials.admin-breadcrumbs', ['routeName' => 'admin.orders'])
         </div>
-        @if (count($selectedIds) > 0)
-            <div class="flex items-center gap-2 shrink-0">
+        <div class="flex items-center gap-2 shrink-0">
+            @if (count($selectedIds) > 0)
                 {{-- Orders is deliberately export-only — no bulk delete button. --}}
                 <flux:button variant="outline" size="sm" icon="arrow-down-tray"
                     href="{{ route('admin.orders.export', ['ids' => $selectedIds]) }}">
                     Export ({{ count($selectedIds) }})
                 </flux:button>
+            @endif
+            {{-- .page-header-actions gives this the same solid "primary action"
+                 look as every other admin index page's header buttons
+                 (see resources/css/app.css). --}}
+            <div class="page-header-actions flex items-center gap-2 shrink-0">
+                @can('access-admin-system')
+                    <flux:button variant="ghost" size="sm" icon="cog-6-tooth"
+                        x-on:click="$dispatch('open-modal', { name: 'cancellation-rule-settings' })">
+                        Cancellation Rule
+                    </flux:button>
+                @endcan
             </div>
-        @endif
+        </div>
     </div>
 
 <div class="bg-white rounded-[5px] shadow-sm overflow-hidden">
@@ -263,5 +274,43 @@
         </div>
     </div>
 </flux:modal>
+
+{{-- Settings Modal — Cancellation Rule. Whole block gated (not just the
+     trigger button above) so the markup never reaches a staff response
+     at all, regardless of whether it's shown. --}}
+@can('access-admin-system')
+    <flux:modal name="cancellation-rule-settings" class="md:w-96"
+        x-on:open-modal.window="if ($event.detail.name === 'cancellation-rule-settings') $flux.modal('cancellation-rule-settings').show()"
+        x-on:close-modal.window="if ($event.detail.name === 'cancellation-rule-settings') $flux.modal('cancellation-rule-settings').close()">
+        <div class="space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <flux:icon.cog-6-tooth class="w-5 h-5 text-primary" />
+                </div>
+                <flux:heading>Cancellation Rule</flux:heading>
+            </div>
+            <flux:text class="text-sm text-zinc-500">
+                Once an order reaches this fulfillment status, it can no longer be set to "Cancelled" from the order page.
+            </flux:text>
+            <flux:field>
+                <flux:label>Block cancellation once status reaches</flux:label>
+                <flux:select wire:model="cancellationCutoffStatus">
+                    @foreach (\App\Models\Order::FULFILLMENT_PROGRESSION as $s)
+                        <flux:select.option value="{{ $s }}">{{ ucfirst($s) }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+                <flux:error name="cancellationCutoffStatus" />
+            </flux:field>
+            <div class="flex gap-2 pt-1">
+                <flux:button size="sm" variant="primary" wire:click="saveCancellationRule" wire:loading.attr="disabled">
+                    Save
+                </flux:button>
+                <flux:modal.close>
+                    <flux:button size="sm" variant="ghost">Cancel</flux:button>
+                </flux:modal.close>
+            </div>
+        </div>
+    </flux:modal>
+@endcan
 
 </div>

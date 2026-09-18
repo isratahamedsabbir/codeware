@@ -127,9 +127,15 @@
                     <flux:label>Fulfillment Status</flux:label>
                     <flux:select wire:model="status">
                         @foreach (\App\Models\Order::STATUSES as $s)
-                            <flux:select.option value="{{ $s }}">{{ ucfirst($s) }}</flux:select.option>
+                            <flux:select.option value="{{ $s }}"
+                                :disabled="$s === 'cancelled' && $order->status !== 'cancelled' && ! $order->canBeCancelled()">
+                                {{ ucfirst($s) }}
+                            </flux:select.option>
                         @endforeach
                     </flux:select>
+                    @if ($order->status !== 'cancelled' && ! $order->canBeCancelled())
+                        <p class="text-xs text-zinc-400">This order can no longer be cancelled — it has already reached "{{ $order->status }}".</p>
+                    @endif
                     <flux:error name="status" />
                 </flux:field>
 
