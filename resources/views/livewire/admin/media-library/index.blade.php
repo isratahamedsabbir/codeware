@@ -14,19 +14,25 @@
 
 <div class="space-y-5">
 
-    {{-- ─── Filters ─────────────────────────────────────────────────────────── --}}
-    <div class="rounded-[5px] border border-slate-200 bg-white px-5 py-4">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    {{-- ─── Media Grid ──────────────────────────────────────────────────────── --}}
+    <div class="rounded-[5px] border border-slate-200 bg-white overflow-hidden">
 
-            {{-- Type filter tabs --}}
-            <div class="flex items-center gap-1.5">
-                @foreach (['all' => 'All', 'image' => 'Images', 'document' => 'Documents', 'video' => 'Videos'] as $value => $label)
-                    <button type="button" wire:click="$set('filterType', '{{ $value }}')"
-                        class="rounded-md px-3 py-1.5 text-xs font-medium tracking-wide transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1
-                        {{ $filterType === $value ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
-                        {{ $label }}
-                    </button>
-                @endforeach
+        {{-- Filters + hint — one header row instead of a separate filters card
+        above a separate grid-header row. --}}
+        <div
+            class="flex flex-col gap-4 border-b border-slate-100 bg-slate-50 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex flex-wrap items-center gap-3">
+                {{-- Type filter tabs --}}
+                <div class="flex items-center gap-1.5">
+                    @foreach (['all' => 'All', 'image' => 'Images', 'document' => 'Documents', 'video' => 'Videos'] as $value => $label)
+                        <button type="button" wire:click="$set('filterType', '{{ $value }}')"
+                            class="rounded-md px-3 py-1.5 text-xs font-medium tracking-wide transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1
+                            {{ $filterType === $value ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
+                            {{ $label }}
+                        </button>
+                    @endforeach
+                </div>
+                <span class="text-xs text-slate-400">Ctrl+click to select multiple</span>
             </div>
 
             {{-- Search --}}
@@ -39,17 +45,6 @@
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search media…"
                     class="block h-8 w-full rounded border border-slate-200 pl-9 pr-3 text-sm text-slate-800 placeholder-slate-400 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/10" />
             </div>
-        </div>
-    </div>
-
-    {{-- ─── Media Grid ──────────────────────────────────────────────────────── --}}
-    <div class="rounded-[5px] border border-slate-200 bg-white overflow-hidden">
-
-        {{-- Grid header --}}
-        <div class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-3.5">
-            <span class="text-[10px] font-medium uppercase tracking-widest text-slate-500">Library</span>
-            <span class="text-xs text-slate-400">Ctrl+click to select multiple</span>
-            <span class="text-xs font-medium text-slate-500">Total: {{ $media->total() }}</span>
         </div>
 
         @if ($media->count() > 0)
