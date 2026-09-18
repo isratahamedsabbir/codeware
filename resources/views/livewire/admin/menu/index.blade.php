@@ -24,6 +24,58 @@
         </div>
     </div>
 
+    {{-- Stat tiles — same admin-stat-card pattern used across the admin
+         panel's index pages, scoped to the currently selected menu. --}}
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+        <div class="admin-card admin-stat-card admin-showcase-stat relative border-0! border-t-4! border-primary! shadow-sm!">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-semibold text-zinc-500">{{ __('Total items') }}</p>
+                    <p class="admin-stat-value mt-2 font-extrabold text-zinc-900 leading-6">{{ $totalItems }}</p>
+                </div>
+                <div class="admin-stat-icon bg-blue-100">
+                    <flux:icon.bars-3 class="size-6 text-blue-600" />
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-card admin-stat-card admin-showcase-stat relative border-0! border-t-4! border-emerald-500! shadow-sm!">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-semibold text-zinc-500">{{ __('Active') }}</p>
+                    <p class="admin-stat-value mt-2 font-extrabold text-zinc-900 leading-6">{{ $activeItems }}</p>
+                </div>
+                <div class="admin-stat-icon bg-emerald-100">
+                    <flux:icon.check-circle class="size-6 text-emerald-600" />
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-card admin-stat-card admin-showcase-stat relative border-0! border-t-4! border-indigo-500! shadow-sm!">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-semibold text-zinc-500">{{ __('Groups') }}</p>
+                    <p class="admin-stat-value mt-2 font-extrabold text-zinc-900 leading-6">{{ $groupCount }}</p>
+                </div>
+                <div class="admin-stat-icon bg-indigo-100">
+                    <flux:icon.folder class="size-6 text-indigo-600" />
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-card admin-stat-card admin-showcase-stat relative border-0! border-t-4! border-amber-500! shadow-sm!">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-semibold text-zinc-500">{{ __('Short menu') }}</p>
+                    <p class="admin-stat-value mt-2 font-extrabold text-zinc-900 leading-6">{{ $shortMenuCount }}</p>
+                </div>
+                <div class="admin-stat-icon bg-amber-100">
+                    <flux:icon.bolt class="size-6 text-amber-600" />
+                </div>
+            </div>
+        </div>
+    </div>
+
 <div class="bg-white rounded-[5px] border border-zinc-100 shadow-sm overflow-hidden">
 
     {{-- Sortable tree --}}
@@ -60,7 +112,7 @@
                 <div data-item-id="{{ $item->id }}" wire:key="top-{{ $item->id }}">
 
                     {{-- Row --}}
-                    <div class="flex items-center gap-3 px-4 py-3 {{ $item->is_active ? '' : 'opacity-50' }}">
+                    <div class="flex items-center gap-3 px-4 py-3 hover:bg-indigo-50/30 transition-colors {{ $item->is_active ? '' : 'opacity-50' }}">
                         <div class="drag-handle cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-600 shrink-0">
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <line x1="3" y1="6" x2="21" y2="6" />
@@ -69,7 +121,7 @@
                             </svg>
                         </div>
 
-                        <div class="w-6 shrink-0 text-zinc-400">
+                        <div class="w-8 h-8 shrink-0 rounded-lg flex items-center justify-center {{ $item->is_group ? 'bg-indigo-50 text-indigo-600' : 'bg-zinc-100 text-zinc-500' }}">
                             @php $iconName = \App\Models\MenuItem::iconExists($item->icon) ? $item->icon : 'link'; @endphp
                             @if ($item->is_group)
                                 <flux:icon.folder class="size-4.5" />
@@ -182,7 +234,7 @@
                         <div class="pl-11 pr-4 pb-3 space-y-1" x-init="initGroup($el, {{ $item->id }})">
                             @forelse ($item->children as $child)
                                 <div data-item-id="{{ $child->id }}" wire:key="child-{{ $child->id }}"
-                                    class="flex items-center gap-3 px-3 py-2 rounded-lg bg-zinc-50/60 {{ $child->is_active ? '' : 'opacity-50' }}">
+                                    class="flex items-center gap-3 px-3 py-2 rounded-lg bg-zinc-50/60 hover:bg-indigo-50/40 transition-colors {{ $child->is_active ? '' : 'opacity-50' }}">
                                     <div class="drag-handle cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-600 shrink-0">
                                         <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <line x1="3" y1="6" x2="21" y2="6" />
@@ -191,7 +243,9 @@
                                         </svg>
                                     </div>
                                     @php $childIcon = \App\Models\MenuItem::iconExists($child->icon) ? $child->icon : 'link'; @endphp
-                                    <x-dynamic-component :component="'flux::icon.'.$childIcon" class="size-4 text-zinc-400 shrink-0" />
+                                    <div class="w-7 h-7 shrink-0 rounded-lg bg-white border border-zinc-100 flex items-center justify-center text-zinc-400">
+                                        <x-dynamic-component :component="'flux::icon.'.$childIcon" class="size-3.5" />
+                                    </div>
                                     <div class="flex-1 min-w-0">
                                         <span class="text-sm text-zinc-700">{{ __($child->label) }}</span>
                                         @if ($child->route_name)
