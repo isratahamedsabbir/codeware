@@ -241,11 +241,26 @@
 
                             {{-- Actions --}}
                             <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-100 border-l border-zinc-100 px-4 py-2">
-                                @php $bulkActive = count($selectedIds) > 0; @endphp
+                                @php
+                                    $bulkActive = count($selectedIds) > 0;
+
+                                    // Preview path prefix per page type — page/post/product read the
+                                    // same admin-configurable .env paths their own Index screens use
+                                    // (FRONTEND_PAGE_PATH/POST_PATH/PRODUCT_PATH); the two category
+                                    // types have no dedicated setting, so they link straight to
+                                    // {frontend url}/{slug} like an unconfigured path would.
+                                    $previewPath = match ($page->type) {
+                                        'page' => config('app.frontend_page_path'),
+                                        'post' => config('app.frontend_post_path'),
+                                        'product' => config('app.frontend_product_path'),
+                                        default => '',
+                                    };
+                                    $previewUrl = rtrim(config('app.frontend_url'), '/').($previewPath ? '/'.trim($previewPath, '/') : '').'/'.$page->slug;
+                                @endphp
                                 <x-admin-row-actions :actions="[
-                                    $page->type === 'page' && $page->slug && ! $bulkActive
-                                        ? ['href' => rtrim(config('app.frontend_url'), '/').(config('app.frontend_page_path') ? '/'.trim(config('app.frontend_page_path'), '/') : '').'/'.$page->slug, 'icon' => 'external-link', 'label' => 'Preview', 'color' => 'cyan-500', 'external' => true]
-                                        : ['icon' => 'external-link', 'label' => 'Preview', 'color' => 'cyan-500', 'disabled' => true, 'visible' => $page->type === 'page'],
+                                    $page->slug && ! $bulkActive
+                                        ? ['href' => $previewUrl, 'icon' => 'external-link', 'label' => 'Preview', 'color' => 'cyan-500', 'external' => true]
+                                        : ['icon' => 'external-link', 'label' => 'Preview', 'color' => 'cyan-500', 'disabled' => true],
                                     ['href' => route('admin.pages.edit', $page->id), 'icon' => 'pencil', 'label' => 'Constant', 'color' => 'primary', 'disabled' => $bulkActive],
                                     ['wireClick' => 'openPuckEditor(' . $page->id . ')', 'icon' => 'squares', 'label' => 'Layout', 'color' => 'secondary', 'disabled' => $bulkActive],
                                     ['href' => route('admin.cms', ['pageId' => $page->id]), 'icon' => 'grid-cross', 'label' => 'CMS', 'color' => 'emerald-500', 'visible' => \App\Support\Features::enabled('cms'), 'disabled' => $bulkActive],

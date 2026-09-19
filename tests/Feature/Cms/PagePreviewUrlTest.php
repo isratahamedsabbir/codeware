@@ -51,14 +51,24 @@ it('inserts the configured preview path between the frontend url and a page slug
     expect($html)->toContain('https://frontend.example.test/pages/about-us');
 });
 
-it('does not show a preview link for a non-standalone page row', function () {
-    config(['app.frontend_url' => 'https://frontend.example.test', 'app.frontend_page_path' => '']);
+it('shows a working preview link for a non-standalone page row, using that type\'s own frontend path', function () {
+    config(['app.frontend_url' => 'https://frontend.example.test', 'app.frontend_product_path' => '']);
     $product = Product::factory()->create();
     pairPageFor($product, 'product', 'wireless-mouse', $this->admin->id);
 
     $html = Livewire::test(PagesIndex::class)->set('typeFilter', 'product')->html();
 
-    expect($html)->not->toContain('https://frontend.example.test/wireless-mouse');
+    expect($html)->toContain('https://frontend.example.test/wireless-mouse');
+});
+
+it('inserts the configured product preview path for a product page row', function () {
+    config(['app.frontend_url' => 'https://frontend.example.test', 'app.frontend_product_path' => 'shop']);
+    $product = Product::factory()->create();
+    pairPageFor($product, 'product', 'wireless-mouse', $this->admin->id);
+
+    $html = Livewire::test(PagesIndex::class)->set('typeFilter', 'product')->html();
+
+    expect($html)->toContain('https://frontend.example.test/shop/wireless-mouse');
 });
 
 it('saves the page preview path from the settings modal', function () {
