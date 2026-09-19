@@ -27,8 +27,9 @@ class FrontendController extends Controller
             : collect();
 
         return view("frontend.themes.{$theme}.home", [
+            'page' => $homePage,
             'sections' => $sections,
-            'title' => Setting::get('seo_meta_title') ?: Setting::get('site_name'),
+            'title' => $homePage?->seo_title ?: (Setting::get('seo_meta_title') ?: Setting::get('site_name')),
             'navPages' => $this->navPages(),
             'menuItems' => $this->frontendMenuItems(),
             'currentSlug' => 'home',

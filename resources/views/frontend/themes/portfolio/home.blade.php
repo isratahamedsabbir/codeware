@@ -2,6 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     @include('partials.head')
+    @include('partials.seo-meta')
     <link rel="stylesheet" href="{{ asset('themes/portfolio/style.css') }}">
     <style>[x-cloak]{display:none!important}</style>
 </head>

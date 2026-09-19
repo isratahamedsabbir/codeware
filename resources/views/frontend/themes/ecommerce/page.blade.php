@@ -2,6 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     @include('partials.head')
+    @include('partials.seo-meta')
 </head>
 <body class="bg-white text-zinc-800 antialiased">
 
