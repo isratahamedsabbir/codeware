@@ -104,7 +104,8 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($coupons as $coupon)
-                        <tr class="group/row hover:bg-indigo-50/30 transition-colors {{ in_array($coupon->id, $selectedIds, true) ? 'bg-indigo-50/50' : '' }}"
+                        <tr wire:key="coupon-{{ $coupon->id }}"
+                            class="group/row hover:bg-indigo-50/30 transition-colors {{ in_array($coupon->id, $selectedIds, true) ? 'bg-indigo-50/50' : '' }}"
                             @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()"
                             @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $coupon->id }}) }">
 

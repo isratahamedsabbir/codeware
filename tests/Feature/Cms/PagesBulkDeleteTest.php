@@ -75,6 +75,7 @@ it('bulk deletes the selected pages and clears the selection', function () {
 
     Livewire::test(PagesIndex::class)
         ->set('selectedIds', $toDelete->pluck('id')->all())
+        ->set('deleteConfirmation', 'delete')
         ->call('bulkDelete')
         ->assertSet('selectedIds', [])
         ->assertDispatched('notify')
@@ -82,6 +83,17 @@ it('bulk deletes the selected pages and clears the selection', function () {
 
     expect(Page::whereIn('id', $toDelete->pluck('id'))->count())->toBe(0);
     expect(Page::find($keep->id))->not->toBeNull();
+});
+
+it('refuses to bulk delete pages unless "delete" is typed into the confirmation field', function () {
+    $toDelete = Page::factory()->count(2)->create(['type' => 'page']);
+
+    Livewire::test(PagesIndex::class)
+        ->set('selectedIds', $toDelete->pluck('id')->all())
+        ->set('deleteConfirmation', 'nope')
+        ->call('bulkDelete');
+
+    expect(Page::whereIn('id', $toDelete->pluck('id'))->count())->toBe(2);
 });
 
 it('cascades a bulk delete to the linked product, same as a single delete', function () {
@@ -96,9 +108,10 @@ it('cascades a bulk delete to the linked product, same as a single delete', func
 
     Livewire::test(PagesIndex::class)
         ->set('selectedIds', [$page->id])
+        ->set('deleteConfirmation', 'delete')
         ->call('bulkDelete');
 
-    expect(Page::withTrashed()->find($page->id)->trashed())->toBeTrue()
+    expect(Page::find($page->id))->toBeNull()
         ->and(Product::withTrashed()->find($product->id)->trashed())->toBeTrue();
 });
 

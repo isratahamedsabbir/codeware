@@ -114,7 +114,7 @@
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($orders as $order)
                         @php $item = $order->items->first(); @endphp
-                        <tr class="hover:bg-indigo-50/30 transition-colors">
+                        <tr wire:key="order-{{ $order->id }}" class="hover:bg-indigo-50/30 transition-colors">
                             <td class="px-4 py-2.5">
                                 <span class="text-sm font-mono text-zinc-700">{{ $order->order_number }}</span>
                             </td>

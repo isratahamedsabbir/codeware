@@ -68,7 +68,7 @@
                 </thead>
                 <tbody x-ref="sortableRows" class="divide-y divide-gray-200">
                     @forelse ($sections as $cms)
-                        <tr class="group/row hover:bg-indigo-50/30 transition-colors" data-cms-id="{{ $cms->id }}" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
+                        <tr wire:key="cms-{{ $cms->id }}" class="group/row hover:bg-indigo-50/30 transition-colors" data-cms-id="{{ $cms->id }}" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
 
                             {{-- Expand toggle (small screens only, where columns are hidden) --}}
                             <td class="px-2 py-2 text-center">

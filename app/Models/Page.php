@@ -10,12 +10,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
 
 class Page extends Model
 {
-    use HasCreator, HasFactory, HasTranslations, SoftDeletes;
+    use HasCreator, HasFactory, HasTranslations;
 
     public array $translatable = ['title', 'content', 'description'];
 

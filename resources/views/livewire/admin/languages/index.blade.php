@@ -67,7 +67,7 @@
                             $done    = (int) ($translated[$language->code] ?? 0);
                             $percent = $totalKeys > 0 ? (int) round(min($done, $totalKeys) / $totalKeys * 100) : 0;
                         @endphp
-                        <tr class="group/row hover:bg-indigo-50/30 transition-colors" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
+                        <tr wire:key="language-{{ $language->id }}" class="group/row hover:bg-indigo-50/30 transition-colors" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
 
                             {{-- Expand toggle (small screens only, where columns are hidden) --}}
                             <td class="px-2 py-2 text-center">

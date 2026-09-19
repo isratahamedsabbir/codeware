@@ -39,7 +39,6 @@ return new class extends Migration
             $table->string('canonical_base')->nullable();
             $table->string('canonical_slug')->nullable();
             $table->json('constant')->nullable();
-            $table->softDeletes();
             $table->timestamps();
         });
     }

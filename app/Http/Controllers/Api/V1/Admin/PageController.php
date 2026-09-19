@@ -13,8 +13,7 @@ class PageController extends Controller
 {
     public function index(): JsonResponse
     {
-        $pages = Page::withTrashed()
-            ->orderBy('sort_order')
+        $pages = Page::orderBy('sort_order')
             ->get()
             ->map(fn ($page) => [
                 'id' => $page->id,
@@ -24,8 +23,6 @@ class PageController extends Controller
                 'status' => $page->status,
                 'template' => $page->template,
                 'sort_order' => $page->sort_order,
-                'deleted_at' => $page->deleted_at?->toIso8601String(),
-                'deleted_at_display' => $page->deleted_at?->toDisplay(),
             ]);
 
         return response()->json(['data' => $pages]);
@@ -33,7 +30,7 @@ class PageController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $page = Page::withTrashed()->with('revisions')->findOrFail($id);
+        $page = Page::with('revisions')->findOrFail($id);
 
         return response()->json([
             'data' => [
@@ -60,8 +57,6 @@ class PageController extends Controller
                 'no_index' => $page->no_index,
                 'no_follow' => $page->no_follow,
                 'constant' => $page->constant,
-                'deleted_at' => $page->deleted_at?->toIso8601String(),
-                'deleted_at_display' => $page->deleted_at?->toDisplay(),
                 'revisions' => $page->revisions->map(fn ($r) => [
                     'id' => $r->id,
                     'created_at' => $r->created_at->toIso8601String(),
@@ -98,7 +93,7 @@ class PageController extends Controller
 
     public function update(Request $request, int $id): JsonResponse
     {
-        $page = Page::withTrashed()->findOrFail($id);
+        $page = Page::findOrFail($id);
 
         $validated = $request->validate([
             'title' => 'sometimes|array',

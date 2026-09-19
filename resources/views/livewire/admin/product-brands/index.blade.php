@@ -102,7 +102,8 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($productBrands as $brand)
-                        <tr class="group/row hover:bg-indigo-50/30 transition-colors cursor-default {{ in_array($brand->id, $selectedIds, true) ? 'bg-indigo-50 ring-1 ring-inset ring-indigo-300' : '' }}"
+                        <tr wire:key="brand-{{ $brand->id }}"
+                            class="group/row hover:bg-indigo-50/30 transition-colors cursor-default {{ in_array($brand->id, $selectedIds, true) ? 'bg-indigo-50 ring-1 ring-inset ring-indigo-300' : '' }}"
                             @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()"
                             @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $brand->id }}) }">
 

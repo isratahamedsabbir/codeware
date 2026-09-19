@@ -107,7 +107,8 @@
                 </thead>
                 <tbody x-ref="sortableRows" class="divide-y divide-gray-200">
                     @forelse ($categories as $category)
-                        <tr class="group/row hover:bg-indigo-50/30 transition-colors cursor-default {{ in_array($category->id, $selectedIds, true) ? 'bg-indigo-50 ring-1 ring-inset ring-indigo-300' : '' }}"
+                        <tr wire:key="category-{{ $category->id }}"
+                            class="group/row hover:bg-indigo-50/30 transition-colors cursor-default {{ in_array($category->id, $selectedIds, true) ? 'bg-indigo-50 ring-1 ring-inset ring-indigo-300' : '' }}"
                             data-category-id="{{ $category->id }}"
                             @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()"
                             @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $category->id }}) }">

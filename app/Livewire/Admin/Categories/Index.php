@@ -78,7 +78,7 @@ class Index extends Component
     {
         if ($this->deletingId) {
             $category = Category::with('page')->findOrFail($this->deletingId);
-            PageCascade::deletePageFor($category, forcePage: true);
+            PageCascade::deletePageFor($category);
             AdminActivity::log('deleted', "Category: {$category->name}");
             $category->delete();
             $this->dispatch('notify', message: 'Category deleted successfully');
@@ -116,7 +116,7 @@ class Index extends Component
         $categories = Category::with('page')->whereIn('id', $this->selectedIds)->get();
 
         foreach ($categories as $category) {
-            PageCascade::deletePageFor($category, forcePage: true);
+            PageCascade::deletePageFor($category);
             AdminActivity::log('deleted', "Category: {$category->name}");
             $category->delete();
         }

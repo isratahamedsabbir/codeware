@@ -37,7 +37,7 @@ it('pages table has required columns', function () {
     expect(Schema::hasColumns('pages', [
         'id', 'user_id', 'title', 'slug', 'content',
         'status', 'template', 'sort_order',
-        'seo_title', 'seo_description', 'deleted_at',
+        'seo_title', 'seo_description',
     ]))->toBeTrue();
 });
 

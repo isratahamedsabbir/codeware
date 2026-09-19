@@ -18,22 +18,14 @@ use Illuminate\Database\Eloquent\Model;
 class PageCascade
 {
     /**
-     * Call when deleting a Product/Post/ProductCategory/PostCategory. Product
-     * and Post soft-delete, so their Page is soft-deleted alongside (both
-     * still recoverable together later); ProductCategory/PostCategory have no
-     * SoftDeletes trait, so pass $forcePage to permanently remove their Page
-     * too — leaving it merely soft-deleted would outlive a category that can
-     * never come back.
+     * Call when deleting a Product/Post/ProductCategory/PostCategory. Page has
+     * no SoftDeletes trait, so $page->delete() is always a permanent delete —
+     * leaving it merely soft-deleted would outlive an entity that's gone for
+     * good, and its `cms`/`page_revisions` rows cascade with it at the DB level.
      */
-    public static function deletePageFor(Model $entity, bool $forcePage = false): void
+    public static function deletePageFor(Model $entity): void
     {
-        $page = $entity->page;
-
-        if (! $page) {
-            return;
-        }
-
-        $forcePage ? $page->forceDelete() : $page->delete();
+        $entity->page?->delete();
     }
 
     /**

@@ -78,7 +78,8 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($subscribers as $subscriber)
-                        <tr class="group/row hover:bg-indigo-50/30 transition-colors cursor-default {{ in_array($subscriber->id, $selectedIds, true) ? 'bg-indigo-50 ring-1 ring-inset ring-indigo-300' : '' }}"
+                        <tr wire:key="subscriber-{{ $subscriber->id }}"
+                            class="group/row hover:bg-indigo-50/30 transition-colors cursor-default {{ in_array($subscriber->id, $selectedIds, true) ? 'bg-indigo-50 ring-1 ring-inset ring-indigo-300' : '' }}"
                             @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $subscriber->id }}) }">
 
                             {{-- Expand toggle, small screens only, where columns are hidden. --}}

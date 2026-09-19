@@ -104,7 +104,7 @@ class ProductCategoryController extends Controller
     public function destroy(int $id): Response
     {
         $category = ProductCategory::with('page')->findOrFail($id);
-        PageCascade::deletePageFor($category, forcePage: true);
+        PageCascade::deletePageFor($category);
         $category->delete();
 
         return response()->noContent();

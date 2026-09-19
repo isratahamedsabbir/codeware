@@ -60,7 +60,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($purchases as $purchase)
-                        <tr class="group/row hover:bg-indigo-50/30 transition-colors">
+                        <tr wire:key="voucher-purchase-{{ $purchase->id }}" class="group/row hover:bg-indigo-50/30 transition-colors">
                             <td class="px-1 py-2 text-center">
                                 <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $purchase->id"
                                     wire:click="{{ $viewingId === $purchase->id ? 'closeDetails' : 'viewDetails('.$purchase->id.')' }}" />

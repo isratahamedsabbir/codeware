@@ -48,14 +48,25 @@ it('can reorder pages', function () {
     expect(Page::find($page1->id)->sort_order)->toBe(1);
 });
 
-it('can soft-delete a page', function () {
+it('permanently deletes a page', function () {
     $page = Page::factory()->create();
     Livewire::test(PagesIndex::class)
         ->call('confirmDelete', $page->id)
+        ->set('deleteConfirmation', 'delete')
         ->call('delete');
 
     expect(Page::find($page->id))->toBeNull();
-    expect(Page::withTrashed()->find($page->id))->not->toBeNull();
+});
+
+it('refuses to delete a page unless "delete" is typed into the confirmation field', function () {
+    $page = Page::factory()->create();
+
+    Livewire::test(PagesIndex::class)
+        ->call('confirmDelete', $page->id)
+        ->set('deleteConfirmation', 'not delete')
+        ->call('delete');
+
+    expect(Page::find($page->id))->not->toBeNull();
 });
 
 it('opens the puck editor for an existing page', function () {

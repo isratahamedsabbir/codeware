@@ -75,7 +75,8 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($vouchers as $voucher)
-                        <tr class="group/row hover:bg-indigo-50/30 transition-colors {{ in_array($voucher->id, $selectedIds, true) ? 'bg-indigo-50/50' : '' }}"
+                        <tr wire:key="voucher-{{ $voucher->id }}"
+                            class="group/row hover:bg-indigo-50/30 transition-colors {{ in_array($voucher->id, $selectedIds, true) ? 'bg-indigo-50/50' : '' }}"
                             @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()"
                             @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $voucher->id }}) }">
 

@@ -47,6 +47,9 @@ class Index extends Component
 
     public ?int $deletingId = null;
 
+    /** Typed into the delete/bulk-delete confirmation modal — must equal "delete" before the button unlocks. */
+    public string $deleteConfirmation = '';
+
     public ?int $viewingId = null;
 
     public int $puckSessionMinutes = 30;
@@ -197,11 +200,16 @@ class Index extends Component
     public function confirmDelete(int $id): void
     {
         $this->deletingId = $id;
+        $this->deleteConfirmation = '';
         $this->dispatch('open-modal', name: 'page-delete');
     }
 
     public function delete(): void
     {
+        if (strtolower(trim($this->deleteConfirmation)) !== 'delete') {
+            return;
+        }
+
         if ($this->deletingId) {
             $page = Page::findOrFail($this->deletingId);
             PageCascade::deleteEntityFor($page);
@@ -210,6 +218,7 @@ class Index extends Component
             $this->dispatch('notify', message: 'Page deleted successfully');
             $this->deletingId = null;
         }
+        $this->deleteConfirmation = '';
         $this->dispatch('close-modal', name: 'page-delete');
     }
 
@@ -234,11 +243,16 @@ class Index extends Component
             return;
         }
 
+        $this->deleteConfirmation = '';
         $this->dispatch('open-modal', name: 'page-bulk-delete');
     }
 
     public function bulkDelete(): void
     {
+        if (strtolower(trim($this->deleteConfirmation)) !== 'delete') {
+            return;
+        }
+
         $pages = Page::whereIn('id', $this->selectedIds)->get();
 
         foreach ($pages as $page) {
@@ -249,6 +263,7 @@ class Index extends Component
 
         $count = $pages->count();
         $this->selectedIds = [];
+        $this->deleteConfirmation = '';
 
         $this->dispatch('notify', message: "{$count} ".Str::plural('page', $count).' deleted successfully');
         $this->dispatch('close-modal', name: 'page-bulk-delete');

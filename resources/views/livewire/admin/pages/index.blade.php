@@ -139,7 +139,8 @@
                 </thead>
                 <tbody x-ref="sortableRows" class="divide-y divide-gray-200">
                     @forelse ($pages as $page)
-                        <tr class="group/row hover:bg-indigo-50/30 transition-colors {{ in_array($page->id, $selectedIds, true) ? 'bg-indigo-50/50' : '' }}"
+                        <tr wire:key="page-{{ $page->id }}"
+                            class="group/row hover:bg-indigo-50/30 transition-colors {{ in_array($page->id, $selectedIds, true) ? 'bg-indigo-50/50' : '' }}"
                             data-page-id="{{ $page->id }}"
                             @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()"
                             @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $page->id }}) }">
@@ -346,7 +347,7 @@
     @endcan
 
     {{-- Delete Modal --}}
-    <flux:modal name="page-delete" class="md:w-80"
+    <flux:modal name="page-delete" class="md:w-96"
         x-on:open-modal.window="if ($event.detail.name === 'page-delete') $flux.modal('page-delete').show()"
         x-on:close-modal.window="if ($event.detail.name === 'page-delete') $flux.modal('page-delete').close()">
         <div class="space-y-4">
@@ -360,11 +361,22 @@
                 </div>
                 <flux:heading>Delete page?</flux:heading>
             </div>
-            <flux:text class="text-sm text-zinc-500">This action cannot be undone. The page will be soft-deleted.
-            </flux:text>
+            <div class="rounded-lg border border-red-200 bg-red-50 p-3 space-y-1">
+                <p class="text-sm font-semibold text-red-700">This action cannot be undone.</p>
+                <p class="text-sm text-red-600">
+                    The page will be <strong>permanently deleted</strong> — including its SEO fields and
+                    puck-builder content. If this page is linked to a product, post, or category, that record
+                    will be deleted (or trashed) with it too. There is no way to recover it afterwards.
+                </p>
+            </div>
+            <flux:field>
+                <flux:label>Type "delete" to confirm</flux:label>
+                <flux:input wire:model="deleteConfirmation" placeholder="delete" autocomplete="off" />
+            </flux:field>
             <div class="flex gap-2 pt-1">
                 <button wire:click="delete"
-                    class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">
+                    x-bind:disabled="$wire.deleteConfirmation.trim().toLowerCase() !== 'delete'"
+                    class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-red-600 transition-colors border-none cursor-pointer">
                     Delete
                 </button>
                 <flux:modal.close>
@@ -375,7 +387,7 @@
     </flux:modal>
 
     {{-- Bulk Delete Modal --}}
-    <flux:modal name="page-bulk-delete" class="md:w-80"
+    <flux:modal name="page-bulk-delete" class="md:w-96"
         x-on:open-modal.window="if ($event.detail.name === 'page-bulk-delete') $flux.modal('page-bulk-delete').show()"
         x-on:close-modal.window="if ($event.detail.name === 'page-bulk-delete') $flux.modal('page-bulk-delete').close()">
         <div class="space-y-4">
@@ -389,10 +401,22 @@
                 </div>
                 <flux:heading>Delete {{ count($selectedIds) }} {{ Str::plural('page', count($selectedIds)) }}?</flux:heading>
             </div>
-            <flux:text class="text-sm text-zinc-500">This action cannot be undone. The selected pages will be soft-deleted.</flux:text>
+            <div class="rounded-lg border border-red-200 bg-red-50 p-3 space-y-1">
+                <p class="text-sm font-semibold text-red-700">This action cannot be undone.</p>
+                <p class="text-sm text-red-600">
+                    The selected pages will be <strong>permanently deleted</strong> — including their SEO fields
+                    and puck-builder content. Any linked product, post, or category will be deleted (or trashed)
+                    with them too. There is no way to recover them afterwards.
+                </p>
+            </div>
+            <flux:field>
+                <flux:label>Type "delete" to confirm</flux:label>
+                <flux:input wire:model="deleteConfirmation" placeholder="delete" autocomplete="off" />
+            </flux:field>
             <div class="flex gap-2 pt-1">
                 <button wire:click="bulkDelete"
-                    class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">
+                    x-bind:disabled="$wire.deleteConfirmation.trim().toLowerCase() !== 'delete'"
+                    class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-red-600 transition-colors border-none cursor-pointer">
                     Delete
                 </button>
                 <flux:modal.close>

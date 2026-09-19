@@ -118,7 +118,8 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($orders as $order)
-                        <tr class="group/row hover:bg-indigo-50/30 transition-colors {{ in_array($order->id, $selectedIds, true) ? 'bg-indigo-50/50' : '' }}"
+                        <tr wire:key="order-{{ $order->id }}"
+                            class="group/row hover:bg-indigo-50/30 transition-colors {{ in_array($order->id, $selectedIds, true) ? 'bg-indigo-50/50' : '' }}"
                             @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $order->id }}) }">
                             {{-- Expand toggle, small screens only, where columns are hidden. --}}
                             <td class="px-1 py-2 text-center">

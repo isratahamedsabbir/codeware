@@ -17,6 +17,7 @@ use Livewire\Livewire;
 // Product, Post, ProductCategory, and PostCategory are each 1:1 paired with a
 // Page. Deleting either side of that pair must take the other with it — an
 // orphaned Page or an orphaned entity is never useful (see App\Support\PageCascade).
+// Page has no SoftDeletes trait, so every Page delete below is permanent.
 
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
@@ -52,34 +53,34 @@ function createPageCascadeTestPair(string $type, array $entityAttributes = []): 
 
 // --- Forward direction: deleting the entity takes its Page with it ---
 
-it('deleting a product via Livewire soft-deletes its paired page', function () {
+it('deleting a product via Livewire soft-deletes the product and permanently deletes its paired page', function () {
     [$product, $page] = createPageCascadeTestPair('product');
 
     Livewire::test(ProductsIndex::class)->call('confirmDelete', $product->id)->call('delete');
 
     expect(Product::withTrashed()->find($product->id)->trashed())->toBeTrue()
-        ->and(Page::withTrashed()->find($page->id)->trashed())->toBeTrue();
+        ->and(Page::find($page->id))->toBeNull();
 });
 
-it('deleting a post via Livewire soft-deletes its paired page', function () {
+it('deleting a post via Livewire soft-deletes the post and permanently deletes its paired page', function () {
     [$post, $page] = createPageCascadeTestPair('post');
 
     Livewire::test(PostsIndex::class)->call('confirmDelete', $post->id)->call('delete');
 
     expect(Post::withTrashed()->find($post->id)->trashed())->toBeTrue()
-        ->and(Page::withTrashed()->find($page->id)->trashed())->toBeTrue();
+        ->and(Page::find($page->id))->toBeNull();
 });
 
-it('deleting a product category via Livewire force-deletes its paired page (no SoftDeletes on categories)', function () {
+it('deleting a product category via Livewire permanently deletes its paired page (no SoftDeletes on categories)', function () {
     [$category, $page] = createPageCascadeTestPair('product_category');
 
     Livewire::test(CategoriesIndex::class)->call('confirmDelete', $category->id)->call('delete');
 
     expect(ProductCategory::find($category->id))->toBeNull()
-        ->and(Page::withTrashed()->find($page->id))->toBeNull();
+        ->and(Page::find($page->id))->toBeNull();
 });
 
-it('deleting a post category via Livewire force-deletes its paired page', function () {
+it('deleting a post category via Livewire permanently deletes its paired page', function () {
     [$category, $page] = createPageCascadeTestPair('post_category');
 
     Livewire::test(CategoriesIndex::class)
@@ -87,102 +88,112 @@ it('deleting a post category via Livewire force-deletes its paired page', functi
         ->call('confirmDelete', $category->id)->call('delete');
 
     expect(PostCategory::find($category->id))->toBeNull()
-        ->and(Page::withTrashed()->find($page->id))->toBeNull();
+        ->and(Page::find($page->id))->toBeNull();
 });
 
-it('deleting a product via the admin REST API soft-deletes its paired page', function () {
+it('deleting a product via the admin REST API soft-deletes the product and permanently deletes its paired page', function () {
     Sanctum::actingAs($this->admin);
     [$product, $page] = createPageCascadeTestPair('product');
 
     $this->deleteJson("/api/v1/admin/products/{$product->id}")->assertNoContent();
 
     expect(Product::withTrashed()->find($product->id)->trashed())->toBeTrue()
-        ->and(Page::withTrashed()->find($page->id)->trashed())->toBeTrue();
+        ->and(Page::find($page->id))->toBeNull();
 });
 
-it('deleting a post via the admin REST API soft-deletes its paired page', function () {
+it('deleting a post via the admin REST API soft-deletes the post and permanently deletes its paired page', function () {
     Sanctum::actingAs($this->admin);
     [$post, $page] = createPageCascadeTestPair('post');
 
     $this->deleteJson("/api/v1/admin/posts/{$post->id}")->assertNoContent();
 
     expect(Post::withTrashed()->find($post->id)->trashed())->toBeTrue()
-        ->and(Page::withTrashed()->find($page->id)->trashed())->toBeTrue();
+        ->and(Page::find($page->id))->toBeNull();
 });
 
-it('deleting a product category via the admin REST API force-deletes its paired page', function () {
+it('deleting a product category via the admin REST API permanently deletes its paired page', function () {
     Sanctum::actingAs($this->admin);
     [$category, $page] = createPageCascadeTestPair('product_category');
 
     $this->deleteJson("/api/v1/admin/product-categories/{$category->id}")->assertNoContent();
 
     expect(ProductCategory::find($category->id))->toBeNull()
-        ->and(Page::withTrashed()->find($page->id))->toBeNull();
+        ->and(Page::find($page->id))->toBeNull();
 });
 
 // --- Reverse direction: deleting the Page takes its entity with it ---
 
-it('deleting a product-linked page via Livewire also deletes the product', function () {
+it('deleting a product-linked page via Livewire permanently deletes the page and soft-deletes the product', function () {
     [$product, $page] = createPageCascadeTestPair('product');
 
-    Livewire::test(PagesIndex::class)->call('confirmDelete', $page->id)->call('delete');
+    Livewire::test(PagesIndex::class)->call('confirmDelete', $page->id)
+        ->set('deleteConfirmation', 'delete')
+        ->call('delete');
 
-    expect(Page::withTrashed()->find($page->id)->trashed())->toBeTrue()
+    expect(Page::find($page->id))->toBeNull()
         ->and(Product::withTrashed()->find($product->id)->trashed())->toBeTrue();
 });
 
-it('deleting a post-linked page via Livewire also deletes the post', function () {
+it('deleting a post-linked page via Livewire permanently deletes the page and soft-deletes the post', function () {
     [$post, $page] = createPageCascadeTestPair('post');
 
-    Livewire::test(PagesIndex::class)->call('confirmDelete', $page->id)->call('delete');
+    Livewire::test(PagesIndex::class)->call('confirmDelete', $page->id)
+        ->set('deleteConfirmation', 'delete')
+        ->call('delete');
 
-    expect(Page::withTrashed()->find($page->id)->trashed())->toBeTrue()
+    expect(Page::find($page->id))->toBeNull()
         ->and(Post::withTrashed()->find($post->id)->trashed())->toBeTrue();
 });
 
-it('deleting a product-category-linked page via Livewire also deletes the category', function () {
+it('deleting a product-category-linked page via Livewire also permanently deletes the category', function () {
     [$category, $page] = createPageCascadeTestPair('product_category');
 
-    Livewire::test(PagesIndex::class)->call('confirmDelete', $page->id)->call('delete');
+    Livewire::test(PagesIndex::class)->call('confirmDelete', $page->id)
+        ->set('deleteConfirmation', 'delete')
+        ->call('delete');
 
-    expect(Page::withTrashed()->find($page->id)->trashed())->toBeTrue()
+    expect(Page::find($page->id))->toBeNull()
         ->and(ProductCategory::find($category->id))->toBeNull();
 });
 
-it('deleting a post-category-linked page via Livewire also deletes the category', function () {
+it('deleting a post-category-linked page via Livewire also permanently deletes the category', function () {
     [$category, $page] = createPageCascadeTestPair('post_category');
 
-    Livewire::test(PagesIndex::class)->call('confirmDelete', $page->id)->call('delete');
+    Livewire::test(PagesIndex::class)->call('confirmDelete', $page->id)
+        ->set('deleteConfirmation', 'delete')
+        ->call('delete');
 
-    expect(Page::withTrashed()->find($page->id)->trashed())->toBeTrue()
+    expect(Page::find($page->id))->toBeNull()
         ->and(PostCategory::find($category->id))->toBeNull();
 });
 
 it('deleting a plain standalone page via Livewire does not error and touches no entity', function () {
     $page = Page::factory()->create(['type' => 'page']);
 
-    Livewire::test(PagesIndex::class)->call('confirmDelete', $page->id)->call('delete');
+    Livewire::test(PagesIndex::class)->call('confirmDelete', $page->id)
+        ->set('deleteConfirmation', 'delete')
+        ->call('delete');
 
-    expect(Page::withTrashed()->find($page->id)->trashed())->toBeTrue();
+    expect(Page::find($page->id))->toBeNull();
 });
 
-it('deleting a page via the admin REST API also deletes its linked product', function () {
+it('deleting a page via the admin REST API also soft-deletes its linked product', function () {
     Sanctum::actingAs($this->admin);
     [$product, $page] = createPageCascadeTestPair('product');
 
     $this->deleteJson("/api/v1/admin/pages/{$page->id}")->assertNoContent();
 
-    expect(Page::withTrashed()->find($page->id)->trashed())->toBeTrue()
+    expect(Page::find($page->id))->toBeNull()
         ->and(Product::withTrashed()->find($product->id)->trashed())->toBeTrue();
 });
 
-it('deleting a page via the admin REST API also deletes its linked post', function () {
+it('deleting a page via the admin REST API also soft-deletes its linked post', function () {
     Sanctum::actingAs($this->admin);
     [$post, $page] = createPageCascadeTestPair('post');
 
     $this->deleteJson("/api/v1/admin/pages/{$page->id}")->assertNoContent();
 
-    expect(Page::withTrashed()->find($page->id)->trashed())->toBeTrue()
+    expect(Page::find($page->id))->toBeNull()
         ->and(Post::withTrashed()->find($post->id)->trashed())->toBeTrue();
 });
 
@@ -192,5 +203,5 @@ it('deleting a standalone page via the admin REST API works with no linked entit
 
     $this->deleteJson("/api/v1/admin/pages/{$page->id}")->assertNoContent();
 
-    expect(Page::withTrashed()->find($page->id)->trashed())->toBeTrue();
+    expect(Page::find($page->id))->toBeNull();
 });

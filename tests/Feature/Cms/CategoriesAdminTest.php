@@ -97,7 +97,7 @@ it('deletes a category and its paired page (hard delete, no SoftDeletes on categ
         ->call('delete');
 
     expect(Category::find($category->id))->toBeNull()
-        ->and(Page::withTrashed()->find($page->id))->toBeNull();
+        ->and(Page::find($page->id))->toBeNull();
 });
 
 it('toggles a category\'s status from the index', function () {
