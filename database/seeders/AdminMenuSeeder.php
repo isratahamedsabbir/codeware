@@ -37,7 +37,6 @@ class AdminMenuSeeder extends Seeder
         $this->group('Products', 8, [
             ['Products', 'cube', 'admin.products'],
             ['Attributes', 'adjustments-horizontal', 'admin.product-attributes'],
-            ['Vendors', 'briefcase', 'admin.product-vendors'],
         ]);
 
         $this->standalone('Services', 'wrench-screwdriver', 'admin.services', 9);
@@ -88,6 +87,7 @@ class AdminMenuSeeder extends Seeder
             ['Roles', 'shield-check', 'admin.roles'],
             ['Permissions', 'lock-closed', 'admin.permissions'],
             ['Users', 'users', 'admin.users'],
+            ['Vendors', 'briefcase', 'admin.product-vendors'],
         ]);
 
         $this->group('Location', 22, [

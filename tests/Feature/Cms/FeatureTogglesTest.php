@@ -206,7 +206,11 @@ it('hides the Access Control group from the live sidebar once its feature is off
 
     $this->get(route('admin.dashboard'))->assertOk()->assertSee('Access Control');
 
+    // Vendors lives in this group but is still gated by the "products" feature
+    // (see AdminMenuSeeder), not "access-control" — so the group only empties
+    // out, and hides, once both are off.
     disableFeature('access-control');
+    disableFeature('products');
 
     $this->get(route('admin.dashboard'))->assertOk()->assertDontSee('Access Control');
 });
