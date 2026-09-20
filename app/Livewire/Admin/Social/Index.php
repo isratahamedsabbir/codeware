@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Social;
 
 use App\Models\SocialLink;
 use App\Support\AdminActivity;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 
 class Index extends Component
@@ -26,8 +27,13 @@ class Index extends Component
     public function save(): void
     {
         foreach ($this->links as $link) {
+            // A mass update via the query builder (whereKey()->update()) never fires
+            // Eloquent's `saved` event, so SocialLink::booted()'s cache-bust hook
+            // wouldn't run — bust it explicitly below instead.
             SocialLink::whereKey($link['id'])->update(['url' => trim($link['url'])]);
         }
+
+        Cache::forget('social-links:all');
 
         AdminActivity::log('updated', 'Social links updated');
 

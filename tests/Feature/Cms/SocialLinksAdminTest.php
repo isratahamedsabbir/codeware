@@ -50,6 +50,21 @@ it('saves social link urls through the form', function () {
     expect(SocialLink::where('platform', 'facebook')->value('url'))->toBe('https://facebook.com/codeware');
 });
 
+it('busts the public urls cache after saving, even though the save is a mass query-builder update that skips Eloquent events', function () {
+    $this->artisan('db:seed', ['--class' => SocialLinkSeeder::class]);
+
+    // Warm the cache first, same as a visitor hitting the public settings API
+    // before the admin fills anything in — this is what exposed the bug: a
+    // stale empty result cached forever because save() never busted it.
+    expect(SocialLink::urlsCached()->get('facebook'))->toBeNull();
+
+    Livewire::test(SocialIndex::class)
+        ->set('links.0.url', 'https://facebook.com/codeware')
+        ->call('save');
+
+    expect(SocialLink::urlsCached()->get('facebook'))->toBe('https://facebook.com/codeware');
+});
+
 it('exposes saved urls through SocialLink::url()', function () {
     $this->artisan('db:seed', ['--class' => SocialLinkSeeder::class]);
 

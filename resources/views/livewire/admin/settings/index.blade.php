@@ -34,23 +34,26 @@
             <div class="max-w-[1600px] space-y-5">
                 {{-- Environment --}}
                 <x-admin-section-card header-border="border-zinc-100" icon="rocket-launch" title="Environment"
-                    description="Which environment this install runs as. A wrong value can take the site down until it is fixed — see Developer Tools for the rest of the app's .env-backed settings.">
-                    <div class="flex items-end gap-3">
-                        <flux:field class="max-w-xs">
-                            <flux:label>Environment</flux:label>
-                            <select wire:model="appEnv" class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                                <option value="local">local</option>
-                                <option value="staging">staging</option>
-                                <option value="production">production</option>
-                                <option value="testing">testing</option>
-                                <option value="developer">developer</option>
-                            </select>
-                            <flux:error name="appEnv" />
-                        </flux:field>
-                        <flux:button size="sm" variant="outline" wire:click="confirmSaveEnvironment" wire:loading.attr="disabled">
-                            Save Environment
-                        </flux:button>
-                    </div>
+                    description="Which environment this install runs as.">
+                    <flux:field class="max-w-xs">
+                        <flux:label>Runtime environment</flux:label>
+                        <select wire:model="appEnv" class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                            <option value="local">local</option>
+                            <option value="staging">staging</option>
+                            <option value="production">production</option>
+                            <option value="testing">testing</option>
+                            <option value="developer">developer</option>
+                        </select>
+                        <flux:error name="appEnv" />
+                    </flux:field>
+
+                    <flux:text class="text-xs text-amber-600 dark:text-amber-400">
+                        A wrong value can take the site down until it is fixed. The rest of the app's .env-backed settings live on Developer Tools.
+                    </flux:text>
+
+                    <flux:button size="sm" variant="outline" wire:click="confirmSaveEnvironment" wire:loading.attr="disabled">
+                        Save Environment
+                    </flux:button>
                 </x-admin-section-card>
 
                 {{-- General sits on the left; Localization, Pagination and Newsletter
