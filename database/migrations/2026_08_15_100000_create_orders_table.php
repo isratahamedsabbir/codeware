@@ -11,6 +11,11 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->string('order_number')->unique();
+            // Nullable — a guest checkout (the public order API requires no
+            // account) has no user to attach; only once the customer signs in
+            // do we know who this order belongs to. The account page falls back
+            // to matching customer_email for orders placed before sign-in.
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->string('customer_name');
             $table->string('customer_email');
             $table->string('customer_phone');
@@ -36,6 +41,7 @@ return new class extends Migration
             $table->index(['status', 'created_at']);
             $table->index(['payment_status', 'created_at']);
             $table->index(['payment_method', 'created_at']);
+            $table->index(['user_id', 'created_at']);
         });
     }
 

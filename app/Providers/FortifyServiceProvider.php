@@ -7,13 +7,18 @@ use App\Actions\Fortify\ResetUserPassword;
 use App\Models\User;
 use App\Rules\Recaptcha;
 use App\Support\Recaptcha as RecaptchaSupport;
+use App\Support\Themes;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
+use Laravel\Fortify\Contracts\RegisterResponse as RegisterResponseContract;
 use Laravel\Fortify\Fortify;
 
 class FortifyServiceProvider extends ServiceProvider
@@ -30,7 +35,55 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->registerThemeAwareRedirects();
+    }
+
+    /**
+     * Where a successful login or registration lands. On an ecommerce store
+     * that's the customer's own account page; everywhere else it's the
+     * existing behavior (config('fortify.home'), i.e. /dashboard → the admin
+     * panel). Applied with extend() rather than bind()/singleton(): Fortify's
+     * own provider posts its response bindings after ours, which would have
+     * clobbered a plain rebind — extenders run at resolution time instead, so
+     * the redirect follows whichever theme is active on each request.
+     */
+    private function registerThemeAwareRedirects(): void
+    {
+        $this->app->extend(LoginResponseContract::class, function () {
+            return new class implements LoginResponseContract
+            {
+                public function toResponse($request)
+                {
+                    return $request->wantsJson()
+                        ? response()->json(['two_factor' => false])
+                        : redirect()->intended(FortifyServiceProvider::accountPath());
+                }
+            };
+        });
+
+        $this->app->extend(RegisterResponseContract::class, function () {
+            return new class implements RegisterResponseContract
+            {
+                public function toResponse($request)
+                {
+                    return $request->wantsJson()
+                        ? new JsonResponse('', 201)
+                        : redirect()->intended(FortifyServiceProvider::accountPath());
+                }
+            };
+        });
+    }
+
+    /**
+     * The post-login/post-register landing path — the customer account when an
+     * ecommerce storefront is active, otherwise the app's normal home (the
+     * non-ecommerce themes keep their current /dashboard → admin behavior).
+     */
+    public static function accountPath(): string
+    {
+        return Themes::active() === 'ecommerce'
+            ? route('account.dashboard')
+            : config('fortify.home');
     }
 
     /**
@@ -111,17 +164,30 @@ class FortifyServiceProvider extends ServiceProvider
     }
 
     /**
-     * Configure Fortify views.
+     * Configure Fortify views. The shared auth pages (dark admin-style layout,
+     * used by the default/portfolio themes) stay untouched; an ecommerce
+     * storefront gets its own storefront-styled login/register/password pages
+     * that match the theme's header/footer.
      */
     private function configureViews(): void
     {
-        Fortify::loginView(fn () => view('pages::auth.login'));
+        Fortify::loginView(fn () => $this->themedView('frontend.themes.ecommerce.auth.login', 'pages::auth.login'));
         Fortify::verifyEmailView(fn () => view('pages::auth.verify-email'));
         Fortify::twoFactorChallengeView(fn () => view('pages::auth.two-factor-challenge'));
         Fortify::confirmPasswordView(fn () => view('pages::auth.confirm-password'));
-        Fortify::registerView(fn () => view('pages::auth.register'));
-        Fortify::resetPasswordView(fn () => view('pages::auth.reset-password'));
-        Fortify::requestPasswordResetLinkView(fn () => view('pages::auth.forgot-password'));
+        Fortify::registerView(fn () => $this->themedView('frontend.themes.ecommerce.auth.register', 'pages::auth.register'));
+        Fortify::resetPasswordView(fn () => $this->themedView('frontend.themes.ecommerce.auth.reset-password', 'pages::auth.reset-password'));
+        Fortify::requestPasswordResetLinkView(fn () => $this->themedView('frontend.themes.ecommerce.auth.forgot-password', 'pages::auth.forgot-password'));
+    }
+
+    /**
+     * Pick the ecommerce theme's view when the theme is active — otherwise fall
+     * back to the shared (non-storefront) page, so portfolio/default themes
+     * keep the exact pages they already render.
+     */
+    private function themedView(string $ecommerceView, string $sharedView): View
+    {
+        return Themes::active() === 'ecommerce' ? view($ecommerceView) : view($sharedView);
     }
 
     /**

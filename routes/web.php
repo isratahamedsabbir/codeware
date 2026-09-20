@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\TestController;
@@ -26,6 +27,21 @@ Route::get('/tag/{slug}', [FrontendController::class, 'tag'])->name('shop.tag');
 // Saved favorites — guests keep a session bag that merges into their account
 // the moment they sign in (see App\Support\Favorites). No auth required.
 Route::get('/favorites', [FrontendController::class, 'favorites'])->name('favorites');
+
+// Customer account — an ecommerce-store feature, so it only exists while the
+// ecommerce theme is active (CustomerController aborts 404 otherwise). Orders
+// are matched to the user by user_id first, then by their email, so history
+// placed before signing up (guest checkout) still shows up here.
+Route::middleware(['auth'])->group(function () {
+    Route::get('/account', [CustomerController::class, 'dashboard'])->name('account.dashboard');
+    Route::get('/account/orders', [CustomerController::class, 'orders'])->name('account.orders');
+    // Plain {orderNumber} param rather than implicit {order:order_number}
+    // binding: SubstituteBindings would resolve the Order before the 'auth'
+    // middleware runs, so a guest requesting an order URL would get a 404
+    // instead of the login redirect every other account page gives them.
+    Route::get('/account/orders/{orderNumber}', [CustomerController::class, 'orderShow'])->name('account.orders.show');
+    Route::get('/account/profile', [CustomerController::class, 'profile'])->name('account.profile');
+});
 
 // Standalone pages (About, Contact, FAQ, ...) — explicitly whitelisted rather
 // than a bare `/{slug}` wildcard so this can never shadow auth/system routes

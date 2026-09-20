@@ -253,6 +253,7 @@ class OrderController extends Controller
     {
         return DB::transaction(function () use ($validated, $lines, $subtotal, $couponCode, $discount, $total, $currency) {
             $order = Order::create([
+                'user_id' => auth('sanctum')->id(),
                 'customer_name' => $validated['customer_name'],
                 'customer_email' => $validated['customer_email'],
                 'customer_phone' => $validated['customer_phone'],

@@ -43,13 +43,41 @@
             <div class="flex shrink-0 items-center gap-1 sm:gap-2">
                 <livewire:frontend.wishlist-count :key="'wishlist-count'" />
 
-                <a href="{{ route('login') }}"
-                    class="hidden items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold text-brand transition hover:bg-white/90 sm:flex">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                    </svg>
-                    <span>{{ __('Sign in') }}</span>
-                </a>
+                @auth
+                    <details class="group relative">
+                        <summary
+                            class="flex cursor-pointer list-none items-center gap-2 rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-brand transition hover:bg-white/90 [&::-webkit-details-marker]:hidden"
+                            aria-label="{{ __('My account') }}">
+                            <span class="flex h-7 w-7 items-center justify-center rounded-full bg-brand text-xs font-bold uppercase text-white">
+                                {{ auth()->user()->initials() }}
+                            </span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-open:rotate-180 hidden sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" />
+                            </svg>
+                        </summary>
+                        <div class="absolute right-0 top-full z-50 mt-2 w-52 rounded-md border border-zinc-100 bg-white py-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
+                            <p class="border-b border-zinc-100 px-3.5 py-2">
+                                <span class="block truncate text-sm font-bold text-zinc-800">{{ auth()->user()->name }}</span>
+                                <span class="block truncate text-xs text-gray-500">{{ auth()->user()->email }}</span>
+                            </p>
+                            <a href="{{ route('account.dashboard') }}" class="block px-3.5 py-2 text-sm font-semibold text-zinc-700 transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My Account') }}</a>
+                            <a href="{{ route('account.orders') }}" class="block px-3.5 py-2 text-sm font-semibold text-zinc-700 transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My Orders') }}</a>
+                            <a href="{{ route('account.profile') }}" class="block px-3.5 py-2 text-sm font-semibold text-zinc-700 transition-colors hover:bg-gray-50 hover:text-brand">{{ __('Profile') }}</a>
+                            <form method="POST" action="{{ route('logout') }}" class="border-t border-zinc-100 pt-1">
+                                @csrf
+                                <button type="submit" class="block w-full px-3.5 py-2 text-left text-sm font-semibold text-red-600 transition-colors hover:bg-red-50">{{ __('Log out') }}</button>
+                            </form>
+                        </div>
+                    </details>
+                @else
+                    <a href="{{ route('login') }}"
+                        class="hidden items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold text-brand transition hover:bg-white/90 sm:flex">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                        </svg>
+                        <span>{{ __('Sign in') }}</span>
+                    </a>
+                @endauth
             </div>
         </div>
     </div>
@@ -131,7 +159,18 @@
                 <a href="{{ url($menuItem->url) }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-gray-50 hover:text-brand">{{ $menuItem->label }}</a>
             @endforeach
             <a href="{{ route('favorites') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My favorites') }}</a>
-            <a href="{{ route('login') }}" class="mt-2 rounded-full bg-brand px-5 py-2.5 text-center text-sm font-semibold text-white transition hover:opacity-90">{{ __('Sign in') }}</a>
+            @auth
+                <p class="px-3 pb-1 pt-3 text-xs font-bold uppercase tracking-wide text-zinc-400">{{ __('My account') }}</p>
+                <a href="{{ route('account.dashboard') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My Account') }}</a>
+                <a href="{{ route('account.orders') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My Orders') }}</a>
+                <a href="{{ route('account.profile') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-gray-50 hover:text-brand">{{ __('Profile') }}</a>
+                <form method="POST" action="{{ route('logout') }}" class="mt-2">
+                    @csrf
+                    <button type="submit" class="w-full rounded-full bg-red-50 px-5 py-2.5 text-center text-sm font-semibold text-red-600 transition hover:bg-red-100">{{ __('Log out') }}</button>
+                </form>
+            @else
+                <a href="{{ route('login') }}" class="mt-2 rounded-full bg-brand px-5 py-2.5 text-center text-sm font-semibold text-white transition hover:opacity-90">{{ __('Sign in') }}</a>
+            @endauth
         </nav>
     </div>
 </header>

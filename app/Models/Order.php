@@ -6,6 +6,7 @@ use App\Services\OrderEmailService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
@@ -24,7 +25,7 @@ class Order extends Model
     public const FULFILLMENT_PROGRESSION = ['pending', 'processing', 'shipped', 'delivered'];
 
     protected $fillable = [
-        'order_number', 'customer_name', 'customer_email', 'customer_phone',
+        'user_id', 'order_number', 'customer_name', 'customer_email', 'customer_phone',
         'shipping_address', 'status', 'payment_method', 'payment_status',
         'currency', 'subtotal', 'coupon_code', 'discount', 'total', 'notes',
     ];
@@ -75,6 +76,15 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    /**
+     * The customer account this order belongs to, when placed by a signed-in
+     * user — null for guest checkouts (see the public order API).
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
@@ -93,6 +103,30 @@ class Order extends Model
     public function scopePaymentMethod(Builder $query, string $method): Builder
     {
         return $query->where('payment_method', $method);
+    }
+
+    /**
+     * Every order this customer account can see — those explicitly attached to
+     * the account (user_id) plus any order their email placed before signing
+     * up (or through the guest API), so the account page never silently drops
+     * pre-account history.
+     */
+    public function scopeForCustomer(Builder $query, User $user): Builder
+    {
+        return $query->where(function (Builder $q) use ($user) {
+            $q->where('user_id', $user->id)
+                ->orWhere(fn (Builder $q2) => $q2->whereNull('user_id')->where('customer_email', $user->email));
+        });
+    }
+
+    /**
+     * True when this order belongs to the given customer account — either
+     * attached directly or placed with their email (see scopeForCustomer).
+     */
+    public function belongsToCustomer(User $user): bool
+    {
+        return $this->user_id === $user->id
+            || ($this->user_id === null && strcasecmp((string) $this->customer_email, (string) $user->email) === 0);
     }
 
     /**
