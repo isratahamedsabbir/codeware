@@ -192,7 +192,7 @@ it('refuses to delete a group that still has children', function () {
 it('renders the seeded menu structure in the live sidebar', function () {
     $this->seed(AdminMenuSeeder::class);
 
-    $response = $this->get('/admin/users');
+    $response = $this->get(config('app.admin_url').'/users');
 
     $response->assertOk();
     $response->assertSeeInOrder(['Access Control', 'Users']);
@@ -204,23 +204,25 @@ it('shows a route-name-backed seeded item as its resolved path when editing, and
 
     Livewire::test(MenuIndex::class)
         ->call('edit', $item->id)
-        ->assertSet('url', '/admin/users')
+        ->assertSet('url', '/users')
         ->call('save');
 
     $item->refresh();
     expect($item->route_name)->toBeNull()
-        ->and($item->url)->toBe('/admin/users');
+        ->and($item->url)->toBe('/users');
 
-    // The sidebar link still resolves correctly after the conversion — admin-nav-link.blade.php
-    // falls through to the raw `url` column once `route_name` is null.
-    $this->get('/admin')->assertOk()->assertSee('href="/admin/users"', false);
+    // The sidebar link still resolves correctly after the conversion —
+    // admin-nav-link.blade.php falls through to the raw `url` column once
+    // `route_name` is null. The route is now host-scoped (see
+    // bootstrap/app.php), so its relative path is /users, not /admin/users.
+    $this->get(config('app.admin_url'))->assertOk()->assertSee('href="/users"', false);
 });
 
 it('hides an inactive item from the live sidebar but keeps it in the management list', function () {
     $this->seed(AdminMenuSeeder::class);
     MenuItem::where('label', 'Contacts')->update(['is_active' => false]);
 
-    $dashboard = $this->get('/admin')->assertOk();
+    $dashboard = $this->get(config('app.admin_url'))->assertOk();
     $dashboard->assertDontSee('Contacts');
 
     Livewire::test(MenuIndex::class)->assertSee('Contacts');

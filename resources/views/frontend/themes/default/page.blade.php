@@ -40,7 +40,7 @@
             <div class="flex items-center gap-2">
                 @auth
                     @can('access-admin')
-                        <a href="{{ url('/admin') }}" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90">
+                        <a href="{{ config('app.admin_url') }}" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90">
                             {{ __('Admin Dashboard') }}
                         </a>
                     @endcan

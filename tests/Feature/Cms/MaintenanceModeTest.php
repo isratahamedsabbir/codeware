@@ -50,7 +50,11 @@ it('blocks the public site but keeps the admin panel and login reachable while e
     // Already authenticated in this test, so /login redirects away rather than
     // rendering — the point is just that it isn't blocked (503) like '/' is.
     $this->get('/login')->assertStatus(302);
-    $this->get('/admin/env')->assertOk();
+    // The admin panel lives on its own host — a host-aware maintenance
+    // middleware (App\Http\Middleware\PreventRequestsDuringMaintenance) lets
+    // that host through so the panel that turns maintenance back off is never
+    // cut off from doing so.
+    $this->get(config('app.admin_url').'/env')->assertOk();
 });
 
 it('does not block Livewire\'s own AJAX endpoint, so the toggle can turn itself back off', function () {

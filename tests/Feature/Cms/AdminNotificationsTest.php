@@ -123,7 +123,7 @@ it('renders the bell component in the admin layout header', function () {
     $admin = User::factory()->admin()->create();
 
     $this->actingAs($admin)
-        ->get('/admin/posts')
+        ->get(config('app.admin_url').'/posts')
         ->assertOk()
         ->assertSee('admin.notifications.bell')
         ->assertSee('aria-label="Notifications"', false);

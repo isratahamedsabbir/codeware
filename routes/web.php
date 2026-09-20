@@ -47,14 +47,23 @@ Route::middleware('signed')->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    // The vendor portal now has its own separate login/session on its own
-    // host (App\Livewire\Vendor\Auth\Login) rather than sharing this site's —
-    // a session here never carries over there (host-only cookies), so a
-    // vendor-only account bouncing through here would just land logged-out
-    // on the vendor login page with no explanation. AdminMiddleware's normal
-    // 403 for a non-admin account is a clearer outcome than that dead end.
-    Route::redirect('dashboard', '/admin')->name('dashboard');
+    // The admin panel moved onto its own host with its own login (see
+    // bootstrap/app.php), so the post-login redirect points at that host. The
+    // vendor portal likewise has its own separate login/session on its own
+    // host (App\Livewire\Vendor\Auth\Login), and a session here never carries
+    // over to either panel (host-only cookies, see .env's SESSION_DOMAIN).
+    Route::get('dashboard', fn () => redirect(config('app.admin_url')))->name('dashboard');
 });
+
+// The admin panel is now `admin.codeware.test` (see bootstrap/app.php) — this
+// catches old bookmarks and the frontend's "Admin" link, bouncing any
+// /admin... path straight over there with its path intact. Deliberately
+// outside auth: the admin host's own login decides access.
+Route::get('/admin/{path?}', fn (?string $path = null) => $path
+    ? redirect(rtrim(config('app.admin_url'), '/').'/'.ltrim($path, '/'))
+    : redirect(config('app.admin_url')))
+    ->where('path', '.*')
+    ->name('admin.legacy');
 
 Route::get('/token', function () {
     $token = auth()->user()->createToken('test-token', ['*'], now()->addMinutes(Setting::puckSessionMinutes()))->plainTextToken;

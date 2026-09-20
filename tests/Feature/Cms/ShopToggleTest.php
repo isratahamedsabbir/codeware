@@ -13,7 +13,7 @@ beforeEach(function () {
 
 it('hides the shop toggle from the admin header by default', function () {
     $this->actingAs($this->admin)
-        ->get('/admin')
+        ->get(config('app.admin_url'))
         ->assertOk()
         ->assertDontSee('Shop On')
         ->assertDontSee('Shop Off');
@@ -23,7 +23,7 @@ it('shows the shop toggle in the admin header once enabled in settings', functio
     Setting::set('shop_toggle_enabled', '1');
 
     $this->actingAs($this->admin)
-        ->get('/admin')
+        ->get(config('app.admin_url'))
         ->assertOk()
         ->assertSee('Shop On');
 });

@@ -16,7 +16,7 @@ beforeEach(function () {
 
 it('shows the language switcher in the admin header by default', function () {
     $this->actingAs($this->admin)
-        ->get('/admin')
+        ->get(config('app.admin_url'))
         ->assertOk()
         ->assertSee('Change language', false);
 });
@@ -25,7 +25,7 @@ it('hides the language switcher from the admin header once disabled in settings'
     Setting::set('language_switcher_enabled', '0');
 
     $this->actingAs($this->admin)
-        ->get('/admin')
+        ->get(config('app.admin_url'))
         ->assertOk()
         ->assertDontSee('Change language', false);
 });

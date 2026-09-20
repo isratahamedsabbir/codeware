@@ -7,9 +7,9 @@ test('non-admin authenticated users are redirected into the admin panel and deni
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->get(route('dashboard'));
-    $response->assertRedirect('/admin');
+    $response->assertRedirect(config('app.admin_url'));
 
-    $this->actingAs($user)->get('/admin')->assertForbidden();
+    $this->actingAs($user)->get(config('app.admin_url'))->assertForbidden();
 });
 
 test('admin users are redirected from dashboard straight into the admin panel', function () {
@@ -17,16 +17,16 @@ test('admin users are redirected from dashboard straight into the admin panel', 
     $admin = User::factory()->admin()->create();
 
     $response = $this->actingAs($admin)->get(route('dashboard'));
-    $response->assertRedirect('/admin');
+    $response->assertRedirect(config('app.admin_url'));
 
-    $this->actingAs($admin)->get('/admin')->assertOk();
+    $this->actingAs($admin)->get(config('app.admin_url'))->assertOk();
 });
 
 test('admins see the back to site link in the admin layout', function () {
     $this->seed(RolePermissionSeeder::class);
     $admin = User::factory()->admin()->create();
 
-    $response = $this->actingAs($admin)->get('/admin/posts');
+    $response = $this->actingAs($admin)->get(config('app.admin_url').'/posts');
 
     $response->assertOk();
     $response->assertSee('Open frontend');

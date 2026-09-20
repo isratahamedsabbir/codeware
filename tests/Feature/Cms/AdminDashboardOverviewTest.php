@@ -8,10 +8,10 @@ use Database\Seeders\RolePermissionSeeder;
 use Livewire\Livewire;
 
 test('guests and non-admins are blocked from accessing the admin dashboard', function () {
-    $this->get('/admin')->assertRedirect('/login');
+    $this->get(config('app.admin_url'))->assertRedirect('/login');
 
     $regularUser = User::factory()->create();
-    $this->actingAs($regularUser)->get('/admin')->assertForbidden();
+    $this->actingAs($regularUser)->get(config('app.admin_url'))->assertForbidden();
 });
 
 test('admin can access the admin dashboard overview page', function () {
@@ -24,7 +24,7 @@ test('admin can access the admin dashboard overview page', function () {
     Post::factory()->count(1)->draft()->create();
     Product::factory()->count(3)->create();
 
-    $response = $this->get('/admin');
+    $response = $this->get(config('app.admin_url'));
     $response->assertOk();
     $response->assertSee('System Overview');
 

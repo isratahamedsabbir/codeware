@@ -95,7 +95,7 @@ it('renders the favicon in the admin layout head', function () {
     Setting::set('favicon', '/storage/favicon.png');
 
     $this->actingAs($this->admin)
-        ->get('/admin/posts')
+        ->get(config('app.admin_url').'/posts')
         ->assertOk()
         ->assertSee('rel="icon" href="/storage/favicon.png"', false);
 });
@@ -104,7 +104,7 @@ it('renders the site icon in the admin layout favicon and sidebar logo', functio
     Setting::set('site_icon', '/storage/site-icon.png');
 
     $this->actingAs($this->admin)
-        ->get('/admin/posts')
+        ->get(config('app.admin_url').'/posts')
         ->assertOk()
         ->assertSee('href="/storage/site-icon.png"', false)
         ->assertSee('src="/storage/site-icon.png"', false);

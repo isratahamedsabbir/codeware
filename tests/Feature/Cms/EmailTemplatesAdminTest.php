@@ -18,12 +18,12 @@ beforeEach(function () {
 });
 
 it('redirects guests away from email templates admin page', function () {
-    $this->get('/admin/email-templates')->assertRedirect('/login');
+    $this->get(config('app.admin_url').'/email-templates')->assertRedirect('/login');
 });
 
 it('forbids non-admin users from email templates admin page', function () {
     $user = User::factory()->create();
-    $this->actingAs($user)->get('/admin/email-templates')->assertForbidden();
+    $this->actingAs($user)->get(config('app.admin_url').'/email-templates')->assertForbidden();
 });
 
 it('allows admins to access email templates admin page', function () {
@@ -31,7 +31,7 @@ it('allows admins to access email templates admin page', function () {
     $user = User::factory()->admin()->create();
 
     $this->actingAs($user)
-        ->get('/admin/email-templates')
+        ->get(config('app.admin_url').'/email-templates')
         ->assertSuccessful()
         ->assertSee('Email Templates');
 });

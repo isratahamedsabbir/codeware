@@ -14,7 +14,7 @@ test('authenticated admins are redirected from dashboard into the admin panel', 
     $this->actingAs($user);
 
     $response = $this->get(route('dashboard'));
-    $response->assertRedirect('/admin');
+    $response->assertRedirect(config('app.admin_url'));
 
-    $this->get('/admin')->assertOk();
+    $this->get(config('app.admin_url'))->assertOk();
 });

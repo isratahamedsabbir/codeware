@@ -53,6 +53,30 @@ return [
             ?: env('VENDOR_SUBDOMAIN', 'vendor').'.'.(parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST) ?: 'localhost'),
     ),
 
+    // The admin panel's base URL — where /dashboard and the old /admin path
+    // bounce users to. Kept separate from APP_URL because the panel now lives
+    // on its own host (see admin_host below).
+    'admin_url' => env('ADMIN_URL', env('APP_URL')),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Panel Host
+    |--------------------------------------------------------------------------
+    |
+    | The hostname the admin panel (App\Livewire\Admin\*) is served on — its
+    | own subdomain rather than a path prefix (deduplicated from the vendor
+    | portal), so it stays a fully separate panel. Read here and in
+    | bootstrap/app.php (for the admin route group's ->domain() binding)
+    | rather than duplicating the parsing.
+    |
+    */
+
+    'admin_host' => env(
+        'ADMIN_HOST',
+        parse_url((string) env('ADMIN_URL', ''), PHP_URL_HOST)
+            ?: env('ADMIN_SUBDOMAIN', 'admin').'.'.(parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST) ?: 'localhost'),
+    ),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

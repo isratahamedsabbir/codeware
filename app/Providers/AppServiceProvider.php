@@ -59,7 +59,8 @@ class AppServiceProvider extends ServiceProvider
 
         // Two admin tiers: Admin ('admin' role, every permission) and Staff
         // ('staff' role, content-only — see RolePermissionSeeder). access-admin
-        // is the outer gate: it only decides who gets into /admin/* at all.
+        // is the outer gate: it only decides who gets into the admin panel
+        // (App\Livewire\Admin\*, on its own host — see bootstrap/app.php) at all.
         // access-admin-system is the inner gate that further restricts the
         // system-level screens (Settings, Users, Roles/Permissions, Menu,
         // Activity History, Localization, Contacts) to Admin — Staff passes
@@ -78,7 +79,7 @@ class AppServiceProvider extends ServiceProvider
         // Vendor portal (App\Livewire\Vendor\*) — a separate, unrelated door from
         // access-admin above: a vendor-assigned user is never admin/staff,
         // and the portal deliberately doesn't reuse any admin route/gate, so it
-        // can't accidentally inherit access to the rest of /admin/*. Requires both
+        // can't accidentally inherit access to the rest of the admin panel. Requires both
         // the 'vendor' role AND at least one assigned vendor — the role alone (with
         // no vendor assigned yet) or a vendor assignment left over without the role
         // (see Users\Form::save(), which clears vendor_ids when the role is removed)

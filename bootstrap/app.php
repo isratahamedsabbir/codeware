@@ -3,6 +3,7 @@
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\EnsureUserIsNotBlocked;
 use App\Http\Middleware\LogAdminActivity;
+use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RequireFeature;
 use App\Http\Middleware\SetLocale;
 use App\Support\UnauthorizedAccessNotifier;
@@ -22,20 +23,28 @@ return Application::configure(basePath: dirname(__DIR__))
         then: function () {
             // Vendor portal — its own subdomain rather than a path prefix, with
             // its own login (App\Livewire\Vendor\Auth\Login) rather than
-            // sharing Fortify's — so it's a fully separate panel from /admin,
-            // not just a gated area behind the same login. Only 'web' here:
+            // sharing Fortify's — so it's a fully separate panel from the admin
+            // one, not just a gated area behind the same login. Only 'web' here:
             // routes/vendor.php applies 'auth' + 'can:access-vendor-portal'
             // itself to everything except its own /login route.
-            // See config('app.vendor_host') for how the host is derived —
-            // AdminMiddleware reads the same value to keep /admin unreachable
-            // on this host, so the two panels stay fully separate both ways.
+            // See config('app.vendor_host') for how the host is derived — the
+            // two panels stay fully separate because each is bound to its own
+            // host (unreachable on the other), not by any path-based guard.
             Route::middleware('web')
                 ->domain(config('app.vendor_host'))
                 ->name('vendor.')
                 ->group(base_path('routes/vendor.php'));
 
-            Route::middleware(['web', 'auth', 'admin', 'activity-log'])
-                ->prefix('admin')
+            // Admin panel — its own subdomain rather than a path prefix, with
+            // its own login (App\Livewire\Admin\Auth\Login) rather than
+            // sharing Fortify's — so it's a fully separate panel from the main
+            // site, the way the vendor portal already is. Only 'web' here:
+            // routes/admin.php applies 'auth' + 'admin' + 'activity-log' itself
+            // to everything except its own /login route. See
+            // config('app.admin_host') for how the host is derived;
+            // routes/web.php bounces /admin and /dashboard onto this host.
+            Route::middleware('web')
+                ->domain(config('app.admin_host'))
                 ->name('admin.')
                 ->group(base_path('routes/admin.php'));
         },
@@ -63,9 +72,19 @@ return Application::configure(basePath: dirname(__DIR__))
         // admin out of the one place that can turn it back off. `livewire*` must be
         // excepted too: every Livewire component action (including the button that
         // calls disableMaintenanceMode()) round-trips through Livewire's own AJAX
-        // endpoint (livewire-<hash>/update), not the admin/* prefix — without this,
-        // that endpoint itself gets blocked by this same middleware once maintenance
-        // mode is on, and the toggle can never turn itself back off from the UI.
+        // endpoint (livewire-<hash>/update), not the admin/* prefix on the main
+        // host — without this, that endpoint itself gets blocked by this same
+        // middleware once maintenance mode is on, and the toggle can never turn
+        // itself back off from the UI.
+        // The framework's path-based exception list can't cover the admin panel any
+        // more (it moved to its own host, see the routing block above), so the
+        // global PreventRequestsDuringMaintenance is replaced with a host-aware
+        // subclass that lets the admin host straight through.
+        $middleware->replace(
+            Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance::class,
+            PreventRequestsDuringMaintenance::class,
+        );
+
         $middleware->preventRequestsDuringMaintenance(except: [
             'admin/*',
             'livewire*',
