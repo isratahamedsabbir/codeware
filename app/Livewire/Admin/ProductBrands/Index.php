@@ -116,7 +116,8 @@ class Index extends Component
                 ->when($this->search, fn ($q) => $q->where('name->en', 'like', "%{$this->search}%")
                     ->orWhere('name->bn', 'like', "%{$this->search}%"))
                 ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
-                ->when($this->typeFilter, fn ($q) => $q->where('type', $this->typeFilter))
+                ->when($this->typeFilter === 'shared', fn ($q) => $q->whereNull('type'))
+                ->when($this->typeFilter !== '' && $this->typeFilter !== 'shared', fn ($q) => $q->where('type', $this->typeFilter))
                 ->orderBy('sort_order')
                 ->orderBy('name->en')
                 ->paginate($this->perPage),

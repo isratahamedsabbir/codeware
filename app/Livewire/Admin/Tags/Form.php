@@ -19,10 +19,12 @@ class Form extends Component
 
     /**
      * Which pool the tag belongs to — post tags show on the Post form, product
-     * tags on the Product form. Legacy tags (pre-split rows) stay selectable so
-     * they can be migrated into one of the two pools.
+     * tags on the Product form. Empty string is the "Shared (both)" option —
+     * persisted as a real null. TYPE_LEGACY ('tag') is no longer offered here;
+     * an existing legacy-typed row just loads as Shared (see mount() below) and
+     * migrates to a real null the next time it's saved.
      */
-    #[Validate('required|in:post,product,tag')]
+    #[Validate('nullable|in:post,product')]
     public string $type = Tag::TYPE_POST;
 
     public function mount(?int $id = null): void
@@ -31,7 +33,7 @@ class Form extends Component
             $tag = Tag::findOrFail($id);
             $this->tagId = $id;
             $this->hydrateTranslatable($tag, ['name']);
-            $this->type = $tag->type;
+            $this->type = in_array($tag->type, [null, Tag::TYPE_LEGACY], true) ? '' : $tag->type;
         }
     }
 
@@ -54,7 +56,7 @@ class Form extends Component
 
         $data = [
             'name' => $this->translatablePayload('name'),
-            'type' => $this->type,
+            'type' => $this->type !== '' ? $this->type : null,
         ];
 
         if ($this->tagId) {

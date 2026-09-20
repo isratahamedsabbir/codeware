@@ -24,13 +24,11 @@
                 @endforeach
 
                 <flux:field>
-                    <flux:label>Type<x-field-hint text="Post tags show on the Post form, product tags on the Product form" /></flux:label>
+                    <flux:label>Type<x-field-hint text="Post tags show on the Post form, product tags on the Product form, Shared shows on both" /></flux:label>
                     <flux:select wire:model="type">
                         <flux:select.option value="post">Post</flux:select.option>
                         <flux:select.option value="product">Product</flux:select.option>
-                        @if ($type === \App\Models\Tag::TYPE_LEGACY)
-                            <flux:select.option value="tag">Legacy (shared with both)</flux:select.option>
-                        @endif
+                        <flux:select.option value="">Shared (both)</flux:select.option>
                     </flux:select>
                     <flux:error name="type" />
                 </flux:field>

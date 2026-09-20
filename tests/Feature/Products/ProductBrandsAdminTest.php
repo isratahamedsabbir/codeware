@@ -30,6 +30,24 @@ it('renders the product brands index with existing brands', function () {
         ->assertSee('Acme');
 });
 
+it('shows a "Both" badge for a shared (null-type) brand on the index, never mislabeled as Product', function () {
+    ProductBrand::factory()->create(['name' => ['en' => 'Acme', 'bn' => ''], 'type' => null]);
+
+    $html = Livewire::test(ProductBrandIndex::class)->html();
+
+    expect($html)->toContain('Both');
+});
+
+it('filters the index to shared (null-type) brands only', function () {
+    ProductBrand::factory()->create(['name' => ['en' => 'Shared Co', 'bn' => ''], 'type' => null]);
+    ProductBrand::factory()->create(['name' => ['en' => 'Product Only', 'bn' => ''], 'type' => \App\Models\ProductBrand::TYPE_PRODUCT]);
+
+    Livewire::test(ProductBrandIndex::class)
+        ->set('typeFilter', 'shared')
+        ->assertSee('Shared Co')
+        ->assertDontSee('Product Only');
+});
+
 it('filters brands by search', function () {
     ProductBrand::factory()->create(['name' => ['en' => 'Acme', 'bn' => '']]);
     ProductBrand::factory()->create(['name' => ['en' => 'Globex', 'bn' => '']]);
@@ -50,6 +68,23 @@ it('creates a brand, active by default', function () {
     expect($brand->name)->toBe('Acme')
         ->and($brand->logo)->toBe('/storage/media/acme.png')
         ->and($brand->status)->toBe('active');
+});
+
+it('can create a shared (null-type) brand by picking the Shared option from the form', function () {
+    Livewire::test(ProductBrandForm::class)
+        ->set('name.en', 'Acme')
+        ->set('type', '')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(ProductBrand::sole()->type)->toBeNull();
+});
+
+it('loads an existing shared (null-type) brand with the Shared option selected', function () {
+    $brand = ProductBrand::factory()->create(['name' => ['en' => 'Acme', 'bn' => ''], 'type' => null]);
+
+    Livewire::test(ProductBrandForm::class, ['id' => $brand->id])
+        ->assertSet('type', '');
 });
 
 it('rejects a duplicate brand name', function () {

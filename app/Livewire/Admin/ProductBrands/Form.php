@@ -23,8 +23,10 @@ class Form extends Component
      * Which pool the brand belongs to — same post/product split as Tag. Only
      * product brands appear in the Product form's brand dropdown today; post
      * brands are tracked for parity and show up in the Brand list/filter.
+     * Empty string is the "Shared (both)" option — persisted as a real null,
+     * see save() below.
      */
-    #[Validate('required|in:post_brand,product_brand')]
+    #[Validate('nullable|in:post_brand,product_brand')]
     public string $type = ProductBrand::TYPE_PRODUCT;
 
     public function mount(?int $id = null): void
@@ -34,7 +36,7 @@ class Form extends Component
             $this->brandId = $id;
             $this->hydrateTranslatable($brand, ['name']);
             $this->logo = $brand->logo ?? '';
-            $this->type = $brand->type;
+            $this->type = $brand->type ?? '';
         }
     }
 
@@ -56,7 +58,7 @@ class Form extends Component
         $data = [
             'name' => $this->translatablePayload('name'),
             'logo' => $this->logo ?: null,
-            'type' => $this->type,
+            'type' => $this->type !== '' ? $this->type : null,
         ];
 
         $creating = $this->brandId === null;

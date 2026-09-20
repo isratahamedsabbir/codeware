@@ -61,6 +61,7 @@
             <option value="">All types</option>
             <option value="product_brand">Product</option>
             <option value="post_brand">Post</option>
+            <option value="shared">Both</option>
         </select>
         {{-- Search --}}
         <div class="relative max-w-xs ml-auto">
@@ -150,8 +151,10 @@
                             <td class="px-4 py-2">
                                 @if ($brand->type === \App\Models\ProductBrand::TYPE_POST)
                                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600 border border-indigo-200">Post</span>
-                                @else
+                                @elseif ($brand->type === \App\Models\ProductBrand::TYPE_PRODUCT)
                                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-600 border border-amber-200">Product</span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500 border border-zinc-200">Both</span>
                                 @endif
                             </td>
 

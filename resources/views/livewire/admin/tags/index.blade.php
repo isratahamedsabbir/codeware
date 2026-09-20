@@ -61,7 +61,7 @@
             <option value="">All types</option>
             <option value="post">Post</option>
             <option value="product">Product</option>
-            <option value="tag">Legacy</option>
+            <option value="shared">Both</option>
         </select>
         {{-- Search --}}
         <div class="relative max-w-xs ml-auto">
@@ -139,7 +139,7 @@
                                 @elseif ($tag->type === \App\Models\Tag::TYPE_PRODUCT)
                                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-600 border border-amber-200">Product</span>
                                 @else
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500 border border-zinc-200">Legacy</span>
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500 border border-zinc-200">Both</span>
                                 @endif
                             </td>
 
