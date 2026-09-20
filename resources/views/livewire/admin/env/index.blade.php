@@ -102,12 +102,12 @@
 
             <x-admin-section-card header-border="border-zinc-100" icon="information-circle" title="About this section" body-class="px-6 py-5 space-y-3">
                 <ul class="list-disc list-inside space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    <li><strong>App Name</strong> / <strong>Environment</strong> — shown in emails, error pages and some admin screens.</li>
+                    <li><strong>App Name</strong> — shown in emails, error pages and some admin screens.</li>
                     <li><strong>App URL</strong> / <strong>Frontend URL</strong> / <strong>Vendor Portal URL</strong> — must match the real domains this install is served on, or links, redirects and CORS will break.</li>
                     <li><strong>Cache Store</strong> — pick <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">database</span> or <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">file</span> unless this server has Redis installed and reachable.</li>
                 </ul>
                 <flux:text class="text-xs text-zinc-500">
-                    Changing the environment, URLs or cache store may require a full page reload to take effect everywhere.
+                    Changing the URLs or cache store may require a full page reload to take effect everywhere. The Environment setting moved to Settings > General.
                 </flux:text>
             </x-admin-section-card>
         </div>

@@ -182,7 +182,7 @@ class Form extends Component
     #[Computed]
     public function productBrands()
     {
-        return ProductBrand::where('type', ProductBrand::TYPE_PRODUCT)->orderBy('sort_order')->orderBy('name->en')->get();
+        return ProductBrand::where(fn ($q) => $q->where('type', ProductBrand::TYPE_PRODUCT)->orWhereNull('type'))->orderBy('sort_order')->orderBy('name->en')->get();
     }
 
     #[Computed]

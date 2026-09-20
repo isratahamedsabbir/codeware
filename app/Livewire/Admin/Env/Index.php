@@ -69,7 +69,8 @@ class Index extends Component
         return [
             'App' => [
                 'APP_NAME' => ['label' => 'App Name', 'type' => 'text'],
-                'APP_ENV' => ['label' => 'Environment', 'type' => 'select', 'options' => ['local', 'staging', 'production', 'testing', 'developer']],
+                // Environment lives on Settings > General now (App\Livewire\Admin\Settings\Index),
+                // not here — it gets its own save action and confirm modal there.
                 'APP_URL' => ['label' => 'App URL', 'type' => 'text'],
                 'FRONTEND_URL' => ['label' => 'Frontend URL', 'type' => 'text'],
                 // Vendor Portal subdomain (see bootstrap/app.php) — e.g.
@@ -120,7 +121,6 @@ class Index extends Component
     {
         $rules = [
             'env.APP_NAME' => 'required|string',
-            'env.APP_ENV' => 'required|in:local,staging,production,testing,developer',
             'env.APP_URL' => 'required|url',
             'env.FRONTEND_URL' => 'nullable|url',
             'env.VENDOR_URL' => 'nullable|url',

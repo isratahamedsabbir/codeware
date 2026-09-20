@@ -95,12 +95,11 @@ it('backs up the file before writing', function () {
     expect(glob($backupDir.'/env-*.env') ?: [])->toHaveCount(1);
 });
 
-it('renders the env page with app name, environment, debug mode, and urls, never exposing APP_KEY or MySQL', function () {
+it('renders the env page with app name, debug mode, and urls, never exposing APP_KEY or MySQL', function () {
     $response = $this->get(route('admin.env'));
 
     $response->assertOk();
     $response->assertSee('App Name');
-    $response->assertSee('Environment');
     $response->assertSee('Debug Mode');
     $response->assertSee('App URL');
     $response->assertSee('Frontend URL');
@@ -108,15 +107,19 @@ it('renders the env page with app name, environment, debug mode, and urls, never
     $response->assertDontSee('untouchedsecretkeyvalue');
 });
 
+it('no longer exposes an editable APP_ENV field on the env page — it lives on Settings > General now', function () {
+    $component = Livewire::test(EnvIndex::class);
+
+    expect($component->get('env'))->not->toHaveKey('APP_ENV');
+});
+
 it('can save environment settings and clears the config cache, leaving MySQL, APP_KEY, and APP_DEBUG untouched', function () {
     Livewire::test(EnvIndex::class)
         ->set('env.APP_NAME', 'Renamed App')
-        ->set('env.APP_ENV', 'staging')
         ->call('confirmSaveEnv')
         ->call('saveEnv');
 
     expect(EnvFile::get('APP_NAME'))->toBe('Renamed App')
-        ->and(EnvFile::get('APP_ENV'))->toBe('staging')
         // MySQL was removed from the editable fields entirely, so it must be untouched.
         ->and(EnvFile::get('DB_HOST'))->toBe('127.0.0.1')
         ->and(EnvFile::get('DB_DATABASE'))->toBe('testing')
@@ -125,23 +128,10 @@ it('can save environment settings and clears the config cache, leaving MySQL, AP
         // Debug mode has its own dedicated toggle (see DebugModeTest.php) — it must
         // never be touched by the generic env-save form, so it isn't at risk of
         // flipping accidentally alongside an unrelated env change.
-        ->and(EnvFile::get('APP_DEBUG'))->toBe('true');
-});
-
-it('accepts developer as a valid environment option', function () {
-    Livewire::test(EnvIndex::class)
-        ->set('env.APP_ENV', 'developer')
-        ->call('confirmSaveEnv')
-        ->assertHasNoErrors(['env.APP_ENV']);
-});
-
-it('rejects an unknown environment value', function () {
-    Livewire::test(EnvIndex::class)
-        ->set('env.APP_ENV', 'not-a-real-env')
-        ->call('confirmSaveEnv')
-        ->assertHasErrors(['env.APP_ENV']);
-
-    expect(EnvFile::get('APP_ENV'))->toBe('local');
+        ->and(EnvFile::get('APP_DEBUG'))->toBe('true')
+        // APP_ENV moved to Settings > General (see SettingsAdminTest.php) — must be
+        // untouched by this form too.
+        ->and(EnvFile::get('APP_ENV'))->toBe('local');
 });
 
 it('rejects an invalid app url before opening the confirm modal', function () {

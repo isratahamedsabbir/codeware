@@ -3,6 +3,9 @@
 namespace App\Livewire\Admin\Settings;
 
 use App\Models\Setting;
+use App\Support\AdminActivity;
+use App\Support\EnvFile;
+use Illuminate\Support\Facades\Artisan;
 use Livewire\Component;
 
 class Index extends Component
@@ -10,6 +13,14 @@ class Index extends Component
     public array $settings = [];
 
     public string $activeTab = 'general';
+
+    /**
+     * APP_ENV — lives in the .env file, not the Setting table, so it's saved
+     * through EnvFile::set() (see saveEnvironment()) rather than the generic
+     * save() below. Moved here from the Developer Tools page so it sits next
+     * to the rest of the app's identity settings.
+     */
+    public string $appEnv = '';
 
     /** @var array<int, array{key: string, type: string, value: string}> */
     public array $constants = [];
@@ -30,6 +41,7 @@ class Index extends Component
     {
         $this->loadSettings();
         $this->loadConstants();
+        $this->appEnv = EnvFile::get('APP_ENV', config('app.env')) ?? config('app.env');
     }
 
     protected function loadSettings(): void
@@ -127,6 +139,39 @@ class Index extends Component
         // request()->fullUrl() would resolve to the Livewire update endpoint
         // itself, not the page — hence a plain client-side reload instead.)
         session()->flash('success', 'Settings saved.');
+        $this->js('window.location.reload()');
+    }
+
+    public function confirmSaveEnvironment(): void
+    {
+        $this->validate([
+            'appEnv' => 'required|in:local,staging,production,testing,developer',
+        ]);
+
+        $this->dispatch('open-modal', name: 'settings-env-confirm');
+    }
+
+    /**
+     * Writes APP_ENV straight to the .env file, same mechanism (and risk) as
+     * the rest of the Developer Tools page — see App\Livewire\Admin\Env\Index.
+     */
+    public function saveEnvironment(): void
+    {
+        try {
+            EnvFile::set(['APP_ENV' => $this->appEnv]);
+        } catch (\RuntimeException $e) {
+            $this->dispatch('close-modal', name: 'settings-env-confirm');
+            $this->dispatch('notify', message: 'Could not update the environment: '.$e->getMessage());
+
+            return;
+        }
+
+        Artisan::call('config:clear');
+
+        AdminActivity::log('updated', 'Environment updated');
+
+        $this->dispatch('close-modal', name: 'settings-env-confirm');
+        session()->flash('success', 'Environment updated. Configuration cache cleared.');
         $this->js('window.location.reload()');
     }
 

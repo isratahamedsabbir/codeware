@@ -453,7 +453,7 @@ class Form extends Component
     #[Computed]
     public function tags()
     {
-        return Tag::whereIn('type', [Tag::TYPE_PRODUCT, Tag::TYPE_POST])->orderBy('id')->get();
+        return Tag::where(fn ($q) => $q->whereIn('type', [Tag::TYPE_PRODUCT, Tag::TYPE_POST])->orWhereNull('type'))->orderBy('id')->get();
     }
 
     /**
@@ -499,7 +499,7 @@ class Form extends Component
     #[Computed]
     public function productBrands()
     {
-        return ProductBrand::where('type', ProductBrand::TYPE_PRODUCT)->orderBy('sort_order')->orderBy('name->en')->get();
+        return ProductBrand::where(fn ($q) => $q->where('type', ProductBrand::TYPE_PRODUCT)->orWhereNull('type'))->orderBy('sort_order')->orderBy('name->en')->get();
     }
 
     #[Computed]
@@ -544,7 +544,7 @@ class Form extends Component
         $rules['faqs.*.question'] = 'nullable|string|max:255';
         $rules['category_ids'] = 'array';
         $rules['category_ids.*'] = 'integer|exists:categories,id,type,product_category';
-        $rules['tag_ids.*'] = [Rule::exists('categories', 'id')->whereIn('type', Tag::TYPES)];
+        $rules['tag_ids.*'] = [Rule::exists('categories', 'id')->where(fn ($q) => $q->whereIn('type', Tag::TYPES)->orWhereNull('type'))];
 
         $this->validate($rules);
 
@@ -584,7 +584,7 @@ class Form extends Component
         $rules['faqs.*.question'] = 'nullable|string|max:255';
         $rules['category_ids'] = 'array';
         $rules['category_ids.*'] = 'integer|exists:categories,id,type,product_category';
-        $rules['tag_ids.*'] = [Rule::exists('categories', 'id')->whereIn('type', Tag::TYPES)];
+        $rules['tag_ids.*'] = [Rule::exists('categories', 'id')->where(fn ($q) => $q->whereIn('type', Tag::TYPES)->orWhereNull('type'))];
 
         $this->validate($rules);
 

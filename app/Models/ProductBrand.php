@@ -32,6 +32,9 @@ class ProductBrand extends Model
 
     public const TYPES = [self::TYPE_POST, self::TYPE_PRODUCT];
 
+    // A null type means the brand is shared across both pools, same as a null
+    // Tag — for rows created without picking a pool (e.g. via the API).
+
     public array $translatable = ['name'];
 
     protected $fillable = ['type', 'name', 'logo', 'status', 'sort_order'];
@@ -63,11 +66,16 @@ class ProductBrand extends Model
     protected static function booted(): void
     {
         static::addGlobalScope('type', function (Builder $builder) {
-            $builder->whereIn('type', self::TYPES);
+            $builder->where(fn (Builder $q) => $q->whereIn('type', self::TYPES)->orWhereNull('type'));
         });
 
         static::creating(function (ProductBrand $brand) {
-            if (empty($brand->type)) {
+            // A type left out entirely defaults to the product pool, same as
+            // before. A type explicitly set to null is left alone — that's the
+            // shared-pool state, not an unset one.
+            if (! array_key_exists('type', $brand->getAttributes())) {
+                $brand->type = self::TYPE_PRODUCT;
+            } elseif ($brand->type === '') {
                 $brand->type = self::TYPE_PRODUCT;
             }
         });

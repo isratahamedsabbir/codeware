@@ -32,6 +32,9 @@ class Tag extends Model
 
     public const TYPES = [self::TYPE_LEGACY, self::TYPE_POST, self::TYPE_PRODUCT];
 
+    // A null type is the modern equivalent of TYPE_LEGACY — shared across both
+    // pools — for rows created without picking a pool (e.g. via the API).
+
     public array $translatable = ['name'];
 
     protected $fillable = ['name', 'status', 'type'];
@@ -59,14 +62,17 @@ class Tag extends Model
     protected static function booted(): void
     {
         static::addGlobalScope('type', function (Builder $builder) {
-            $builder->whereIn('type', self::TYPES);
+            $builder->where(fn (Builder $q) => $q->whereIn('type', self::TYPES)->orWhereNull('type'));
         });
 
         static::saving(function (Tag $tag) {
             // Types flow in from the caller (inline creation on the Post/Product
-            // forms, or the Tags admin form). Unset types still default to the
-            // legacy pool so factories/seeders written before the split work.
-            if (empty($tag->type)) {
+            // forms, or the Tags admin form). A type left out entirely (or
+            // blanked from a form select) still defaults to the legacy pool so
+            // factories/seeders written before the split work. A type explicitly
+            // set to null is left alone — that's the shared-pool state, not an
+            // unset one.
+            if (! array_key_exists('type', $tag->getAttributes()) || $tag->type === '') {
                 $tag->type = self::TYPE_LEGACY;
             }
         });

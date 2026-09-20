@@ -31,7 +31,28 @@
 
         {{-- General tab --}}
         <div x-show="tab === 'general'">
-            <div class="max-w-[1600px]">
+            <div class="max-w-[1600px] space-y-5">
+                {{-- Environment --}}
+                <x-admin-section-card header-border="border-zinc-100" icon="rocket-launch" title="Environment"
+                    description="Which environment this install runs as. A wrong value can take the site down until it is fixed — see Developer Tools for the rest of the app's .env-backed settings.">
+                    <div class="flex items-end gap-3">
+                        <flux:field class="max-w-xs">
+                            <flux:label>Environment</flux:label>
+                            <select wire:model="appEnv" class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                                <option value="local">local</option>
+                                <option value="staging">staging</option>
+                                <option value="production">production</option>
+                                <option value="testing">testing</option>
+                                <option value="developer">developer</option>
+                            </select>
+                            <flux:error name="appEnv" />
+                        </flux:field>
+                        <flux:button size="sm" variant="outline" wire:click="confirmSaveEnvironment" wire:loading.attr="disabled">
+                            Save Environment
+                        </flux:button>
+                    </div>
+                </x-admin-section-card>
+
                 {{-- General sits on the left; Localization, Pagination and Newsletter
                      stack tightly to its right in their own column (so their combined
                      height — not each card's own grid row — determines the gap between
@@ -434,6 +455,32 @@
         </div>
 
     </div>
+
+    {{-- Environment save confirmation --}}
+    <flux:modal name="settings-env-confirm" class="md:w-96"
+        x-on:open-modal.window="if ($event.detail.name === 'settings-env-confirm') $flux.modal('settings-env-confirm').show()"
+        x-on:close-modal.window="if ($event.detail.name === 'settings-env-confirm') $flux.modal('settings-env-confirm').close()">
+        <div class="space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+                    <flux:icon.exclamation-triangle class="w-5 h-5 text-amber-500" />
+                </div>
+                <flux:heading>{{ __('Save environment?') }}</flux:heading>
+            </div>
+            <flux:text class="text-sm text-zinc-500">
+                {{ __('This overwrites the live .env file and clears the configuration cache. If this is wrong, the site may stop working until it is corrected.') }}
+            </flux:text>
+            <div class="flex gap-2 pt-1">
+                <button wire:click="saveEnvironment" wire:loading.attr="disabled"
+                    class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-amber-600 hover:bg-amber-700 transition-colors border-none cursor-pointer">
+                    {{ __('Save anyway') }}
+                </button>
+                <flux:modal.close>
+                    <flux:button size="sm" variant="ghost">{{ __('Cancel') }}</flux:button>
+                </flux:modal.close>
+            </div>
+        </div>
+    </flux:modal>
 
     <livewire:admin.media-library.picker-modal key="settings-picker-modal" />
 </div>

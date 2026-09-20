@@ -128,7 +128,7 @@ class Form extends Component
     #[Computed]
     public function tags()
     {
-        return Tag::whereIn('type', [Tag::TYPE_PRODUCT, Tag::TYPE_POST])->orderBy('id')->get();
+        return Tag::where(fn ($q) => $q->whereIn('type', [Tag::TYPE_PRODUCT, Tag::TYPE_POST])->orWhereNull('type'))->orderBy('id')->get();
     }
 
     /**
@@ -191,7 +191,7 @@ class Form extends Component
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
         ];
-        $rules['tag_ids.*'] = [Rule::exists('categories', 'id')->whereIn('type', Tag::TYPES)];
+        $rules['tag_ids.*'] = [Rule::exists('categories', 'id')->where(fn ($q) => $q->whereIn('type', Tag::TYPES)->orWhereNull('type'))];
 
         $this->validate($rules);
 
@@ -221,7 +221,7 @@ class Form extends Component
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
         ];
-        $rules['tag_ids.*'] = [Rule::exists('categories', 'id')->whereIn('type', Tag::TYPES)];
+        $rules['tag_ids.*'] = [Rule::exists('categories', 'id')->where(fn ($q) => $q->whereIn('type', Tag::TYPES)->orWhereNull('type'))];
 
         $this->validate($rules);
 

@@ -16,7 +16,10 @@ return new class extends Migration
             $table->id();
             // Discriminator column — one unified taxonomy table serving
             // post_category, product_category, brand and tag rows alike.
-            $table->string('type', 20)->index();
+            // Nullable: a null type means the row is shared across both the
+            // post and product pools (tag/brand), same as the legacy 'tag'
+            // pool but without a placeholder string.
+            $table->string('type', 20)->nullable()->index();
             $table->foreignId('parent_id')->nullable()->constrained('categories')->nullOnDelete();
             $table->json('name');
             $table->json('description')->nullable();

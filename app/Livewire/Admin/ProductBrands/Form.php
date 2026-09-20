@@ -48,7 +48,7 @@ class Form extends Component
         // the column is the JSON path, so the primary locale's value is what's
         // compared — a tag or category sharing the string is fine.
         $rules['name.'.$this->primaryLocale][] = Rule::unique('categories', 'name->'.$this->primaryLocale)
-            ->whereIn('type', ProductBrand::TYPES)
+            ->where(fn ($q) => $q->whereIn('type', ProductBrand::TYPES)->orWhereNull('type'))
             ->ignore($this->brandId);
 
         $this->validate($rules);

@@ -94,7 +94,7 @@ class PostController extends Controller
             'status' => 'sometimes|in:active,inactive',
             'puck_data' => 'nullable|array',
             'tag_ids' => 'sometimes|array',
-            'tag_ids.*' => [Rule::exists('categories', 'id')->whereIn('type', Tag::TYPES)],
+            'tag_ids.*' => [Rule::exists('categories', 'id')->where(fn ($q) => $q->whereIn('type', Tag::TYPES)->orWhereNull('type'))],
         ]);
 
         $validated['user_id'] = $request->user()->id;
@@ -147,7 +147,7 @@ class PostController extends Controller
             'category_id' => 'sometimes|nullable|exists:categories,id,type,post_category',
             'slug' => ['sometimes', 'string', ...Slug::uniqueRules($post->page?->id)],
             'tag_ids' => 'sometimes|array',
-            'tag_ids.*' => [Rule::exists('categories', 'id')->whereIn('type', Tag::TYPES)],
+            'tag_ids.*' => [Rule::exists('categories', 'id')->where(fn ($q) => $q->whereIn('type', Tag::TYPES)->orWhereNull('type'))],
         ]);
 
         // SEO fields, OG image, and the puck-builder content all live on the paired

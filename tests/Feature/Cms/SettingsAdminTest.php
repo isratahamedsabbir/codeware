@@ -4,6 +4,7 @@ use App\Livewire\Admin\Settings\Index as SettingsIndex;
 use App\Models\Language;
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\EnvFile;
 use Database\Seeders\RolePermissionSeeder;
 use Livewire\Livewire;
 
@@ -11,6 +12,12 @@ beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
     $this->admin = User::factory()->admin()->create();
     $this->actingAs($this->admin);
+});
+
+afterEach(function () {
+    // Safety net for the environment tests below, which point EnvFile at a
+    // throwaway file — never leave the real project .env at risk.
+    EnvFile::$pathOverride = null;
 });
 
 it('renders settings index', function () {
@@ -380,4 +387,60 @@ it('rejects duplicate constant keys', function () {
         ->set('constants.1.value', 'b')
         ->call('save')
         ->assertHasErrors(['constants']);
+});
+
+// Environment (APP_ENV) — moved here from Developer Tools (App\Livewire\Admin\Env\Index),
+// same .env-backed save mechanism. EnvFile must never touch the real project .env during
+// tests — every test below points it at a throwaway file (see the file-level afterEach).
+it('loads the current APP_ENV into the settings form', function () {
+    $envPath = sys_get_temp_dir().'/settings-env-test-'.uniqid().'.env';
+    file_put_contents($envPath, "APP_ENV=staging\n");
+    EnvFile::$pathOverride = $envPath;
+
+    Livewire::test(SettingsIndex::class)->assertSet('appEnv', 'staging');
+
+    @unlink($envPath);
+});
+
+it('accepts developer as a valid environment option on the settings form', function () {
+    $envPath = sys_get_temp_dir().'/settings-env-test-'.uniqid().'.env';
+    file_put_contents($envPath, "APP_ENV=local\n");
+    EnvFile::$pathOverride = $envPath;
+
+    Livewire::test(SettingsIndex::class)
+        ->set('appEnv', 'developer')
+        ->call('confirmSaveEnvironment')
+        ->assertHasNoErrors(['appEnv']);
+
+    @unlink($envPath);
+});
+
+it('rejects an unknown environment value on the settings form', function () {
+    $envPath = sys_get_temp_dir().'/settings-env-test-'.uniqid().'.env';
+    file_put_contents($envPath, "APP_ENV=local\n");
+    EnvFile::$pathOverride = $envPath;
+
+    Livewire::test(SettingsIndex::class)
+        ->set('appEnv', 'not-a-real-env')
+        ->call('confirmSaveEnvironment')
+        ->assertHasErrors(['appEnv']);
+
+    expect(EnvFile::get('APP_ENV'))->toBe('local');
+
+    @unlink($envPath);
+});
+
+it('saves the environment from the settings form and clears the config cache', function () {
+    $envPath = sys_get_temp_dir().'/settings-env-test-'.uniqid().'.env';
+    file_put_contents($envPath, "APP_ENV=local\n");
+    EnvFile::$pathOverride = $envPath;
+
+    Livewire::test(SettingsIndex::class)
+        ->set('appEnv', 'staging')
+        ->call('confirmSaveEnvironment')
+        ->call('saveEnvironment');
+
+    expect(EnvFile::get('APP_ENV'))->toBe('staging');
+
+    @unlink($envPath);
 });
