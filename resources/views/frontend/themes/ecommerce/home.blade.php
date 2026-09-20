@@ -1,99 +1,207 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Support\Locale::direction() }}">
 <head>
     @include('partials.head')
     @include('partials.seo-meta')
 </head>
-<body class="bg-white text-zinc-800 antialiased">
+<body class="bg-page-bg font-storefront text-zinc-800 antialiased">
 
-    @php
-        $siteName = \App\Models\Setting::get('site_name', config('app.name'));
-        $siteIcon = \App\Models\Setting::get('site_icon');
-        $socials = collect([
-            'facebook' => 'Facebook',
-            'twitter' => 'Twitter / X',
-            'instagram' => 'Instagram',
-            'youtube' => 'YouTube',
-            'linkedin' => 'LinkedIn',
-        ])->map(fn ($label, $platform) => ['url' => \App\Models\SocialLink::url($platform), 'label' => $label])
-          ->filter(fn ($social) => filled($social['url']));
-    @endphp
+@php
+    $siteName = \App\Models\Setting::get('site_name', config('app.name'));
+    $siteTagline = \App\Models\Setting::get('site_tagline');
+    $heroImage = \App\Models\Setting::get('home_hero_image');
+    $promoImage1 = \App\Models\Setting::get('home_promo_banner_1');
+    $promoImage2 = \App\Models\Setting::get('home_promo_banner_2');
 
-    <header class="sticky top-0 z-20 border-b border-zinc-100 bg-white/95 backdrop-blur">
-        <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-            <a href="{{ url('/') }}" class="flex items-center gap-2">
-                @if ($siteIcon)
-                    <img src="{{ $siteIcon }}" alt="{{ $siteName }}" class="h-8 w-auto">
+    $featured = \App\Models\Product::active()
+        ->featured()
+        ->with(['categories.page', 'brand', 'tags', 'page'])
+        ->orderBy('sort_order')
+        ->limit(10)
+        ->get();
+
+    $homeCategories = \App\Models\ProductCategory::active()
+        ->with(['page', 'parent'])
+        ->withCount(['products' => fn ($q) => $q->active()])
+        ->orderBy('sort_order')
+        ->get()
+        ->filter(fn ($category) => $category->page !== null)
+        ->take(10);
+
+    $homeBrands = \App\Models\ProductBrand::active()
+        ->whereNotNull('logo')
+        ->orderBy('sort_order')
+        ->take(10)
+        ->get();
+
+    $newArrivals = \App\Models\Product::active()
+        ->with(['categories.page', 'brand', 'tags', 'page'])
+        ->latest()
+        ->limit(8)
+        ->get();
+@endphp
+
+@include('frontend.themes.ecommerce.partials.header')
+
+<main>
+    <div class="mx-auto w-full max-w-7xl px-4 sm:px-6">
+        <section class="mt-6 grid w-full grid-cols-1 gap-4 lg:h-[440px] lg:grid-cols-3">
+            <a href="{{ route('shop') }}" class="relative block h-[300px] overflow-hidden rounded-lg lg:col-span-2 lg:h-full">
+                @if ($heroImage)
+                    <img src="{{ $heroImage }}" alt="{{ $siteName }}"
+                        class="h-full w-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                @else
+                    <div class="flex h-full w-full items-center bg-gradient-to-br from-brand to-emerald-800 px-8 md:px-12">
+                    </div>
                 @endif
-                <span class="text-lg font-bold text-zinc-900">{{ $siteName }}</span>
+                <div class="absolute inset-x-0 bottom-0 p-6 md:p-8">
+                    <h1 class="max-w-xl text-2xl font-bold uppercase leading-tight text-white md:text-4xl">
+                        {{ filled($siteTagline) ? $siteTagline : __('Welcome to :site', ['site' => $siteName]) }}
+                    </h1>
+                    <p class="mt-2 max-w-lg text-sm text-white/85 md:text-base">
+                        {{ __('Browse our full collection across categories, brands and more.') }}
+                    </p>
+                    <span class="mt-4 inline-block rounded-md bg-white px-6 py-2.5 text-sm font-semibold text-brand transition hover:opacity-90">
+                        {{ __('Shop now') }}
+                    </span>
+                </div>
             </a>
 
-            <nav class="hidden items-center gap-6 md:flex">
-                @foreach ($menuItems ?? [] as $menuItem)
-                    <a href="{{ url($menuItem->url) }}"
-                        class="text-sm font-medium {{ url($menuItem->url) === url()->current() ? 'text-primary' : 'text-zinc-600 hover:text-zinc-900' }}">
-                        {{ $menuItem->label }}
+            <div class="hidden flex-col gap-4 lg:flex">
+                @foreach ([
+                    ['image' => $promoImage1, 'label' => __('New arrivals')],
+                    ['image' => $promoImage2, 'label' => __('Best deals')],
+                ] as $promo)
+                    <a href="{{ route('shop') }}" class="relative block h-1/2 overflow-hidden rounded-lg">
+                        @if ($promo['image'])
+                            <img src="{{ $promo['image'] }}" alt="{{ $promo['label'] }}" class="h-full w-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                        @else
+                            <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-secondary to-brand">
+                            </div>
+                        @endif
+                        <span class="absolute inset-x-0 bottom-0 p-4 text-lg font-bold uppercase text-white">{{ $promo['label'] }}</span>
                     </a>
                 @endforeach
-            </nav>
-
-            <a href="{{ route('login') }}"
-                class="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">
-                {{ __('Sign in') }}
-            </a>
-        </div>
-    </header>
-
-    <main>
-        <section class="mx-auto flex min-h-[24rem] max-w-2xl flex-col items-center justify-center px-6 text-center">
-            <h1 class="text-4xl font-extrabold text-zinc-900">{{ __('Welcome to :site', ['site' => $siteName]) }}</h1>
+            </div>
         </section>
+    </div>
 
-        @foreach ($sections as $section)
-            @continue(blank($section->localizedCards()))
+    @if ($homeCategories->isNotEmpty())
+        <section class="mt-8 bg-white py-8 lg:py-10">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold uppercase tracking-wide text-zinc-800 md:text-2xl">{{ __('Shop by category') }}</h2>
+                        <p class="mt-1 text-sm text-gray-600">{{ __('Explore our product categories') }}</p>
+                    </div>
+                    <a href="{{ route('shop') }}" class="shrink-0 text-sm font-semibold text-brand hover:underline">{{ __('View all') }} →</a>
+                </div>
 
-            <section id="{{ $section->name }}" class="mx-auto max-w-7xl border-t border-zinc-100 px-6 py-16">
-                <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                    @foreach ($section->localizedCards() as $card)
-                        <div class="group overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-                            @if ($card['image'])
-                                <div class="relative aspect-square overflow-hidden bg-zinc-100">
-                                    <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}"
-                                        class="h-full w-full object-cover transition duration-300 group-hover:scale-105">
-                                </div>
-                            @endif
-                            <div class="p-4">
-                                @if ($card['title'])
-                                    <h3 class="font-semibold text-zinc-900">{{ $card['title'] }}</h3>
+                <div class="mt-5 rounded-xl bg-gray-100 p-3 md:p-4">
+                    <div class="grid grid-cols-3 gap-2.5 sm:grid-cols-2 md:grid-cols-5 md:gap-4 lg:grid-cols-6">
+                        @foreach ($homeCategories as $category)
+                            <a href="{{ route('shop.category', $category->slug) }}"
+                                class="flex h-[104px] flex-col items-center justify-center gap-1.5 rounded-lg bg-white p-2.5 text-center shadow-sm transition hover:shadow-md md:h-[131px] md:p-3">
+                                @if ($category->icon)
+                                    <img src="{{ $category->icon }}" alt="" class="h-[50px] w-[50px] rounded-lg object-contain">
+                                @else
+                                    <span class="flex h-[50px] w-[50px] items-center justify-center rounded-lg bg-gray-50 text-zinc-400">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 7 12 3l9.75 4L12 11 2.25 7Zm0 0v10L12 21l9.75-4V7M12 11v10" />
+                                        </svg>
+                                    </span>
                                 @endif
-                                @if ($card['description'])
-                                    <p class="mt-1.5 text-sm text-zinc-500 line-clamp-2">{{ $card['description'] }}</p>
+                                <span class="w-full truncate text-xs font-semibold text-zinc-700 md:text-sm">{{ $category->name }}</span>
+                                @if ($category->products_count > 0)
+                                    <span class="text-[11px] text-gray-500">{{ $category->products_count }} {{ __('items') }}</span>
                                 @endif
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </section>
+    @endif
+
+    @if ($featured->isNotEmpty())
+        <section class="mx-auto max-w-7xl px-4 pt-8 sm:px-6">
+            @include('frontend.themes.ecommerce.partials.section-heading', [
+                'title' => __('Featured products'),
+                'subtitle' => __('Hand-picked products for you'),
+            ])
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4 xl:grid-cols-5">
+                @foreach ($featured as $product)
+                    @include('frontend.themes.ecommerce.partials.product-card', ['product' => $product])
+                @endforeach
+            </div>
+        </section>
+    @endif
+
+    @if ($homeBrands->isNotEmpty())
+        <section class="mx-auto max-w-7xl px-4 pt-10 sm:px-6">
+            @include('frontend.themes.ecommerce.partials.section-heading', [
+                'title' => __('Shop by brand'),
+            ])
+            <div class="grid grid-cols-2 gap-3 md:grid-cols-5 md:gap-4">
+                @foreach ($homeBrands as $brand)
+                    <a href="{{ route('shop.brand', $brand->slug) }}"
+                        class="flex items-center justify-center rounded-md bg-white p-4 shadow-sm grayscale transition hover:shadow-md hover:grayscale-0">
+                        <img src="{{ $brand->logo }}" alt="{{ $brand->name }}" class="max-h-12 w-auto object-contain">
+                    </a>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
+    @if ($newArrivals->isNotEmpty())
+        <section class="mx-auto max-w-7xl px-4 pt-10 sm:px-6">
+            @include('frontend.themes.ecommerce.partials.section-heading', [
+                'title' => __('New arrivals'),
+                'subtitle' => __('Just added to the store'),
+            ])
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4 xl:grid-cols-5">
+                @foreach ($newArrivals as $product)
+                    @include('frontend.themes.ecommerce.partials.product-card', ['product' => $product])
+                @endforeach
+            </div>
+        </section>
+    @endif
+
+    @foreach ($sections as $section)
+        @continue(blank($section->localizedCards()))
+
+        <section id="{{ $section->name }}" class="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+            @include('frontend.themes.ecommerce.partials.section-heading', ['title' => $section->name])
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4">
+                @foreach ($section->localizedCards() as $card)
+                    <div class="group overflow-hidden rounded-md bg-white shadow-sm transition hover:shadow-md">
+                        @if ($card['image'])
+                            <div class="relative aspect-[4/3] overflow-hidden bg-zinc-100">
+                                <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}"
+                                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105">
                             </div>
+                        @endif
+                        <div class="p-3">
+                            @if ($card['title'])
+                                <h3 class="font-semibold text-zinc-800">{{ $card['title'] }}</h3>
+                            @endif
+                            @if ($card['description'])
+                                <p class="mt-1.5 text-sm text-zinc-500 line-clamp-2">{{ $card['description'] }}</p>
+                            @endif
                         </div>
-                    @endforeach
-                </div>
-            </section>
-        @endforeach
-    </main>
+                    </div>
+                @endforeach
+            </div>
+        </section>
+    @endforeach
+</main>
 
-    <footer class="border-t border-zinc-100 bg-zinc-50 px-6 py-10">
-        <div class="mx-auto flex max-w-7xl flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
-            <p class="text-sm text-zinc-500">&copy; {{ now()->setTimezone(display_timezone())->year }} {{ $siteName }}. {{ __('All rights reserved.') }}</p>
-            @if ($socials->isNotEmpty())
-                <div class="flex gap-4">
-                    @foreach ($socials as $social)
-                        <a href="{{ $social['url'] }}" target="_blank" rel="noopener" class="text-sm text-zinc-500 hover:text-primary">
-                            {{ $social['label'] }}
-                        </a>
-                    @endforeach
-                </div>
-            @endif
-        </div>
-    </footer>
+@include('frontend.themes.ecommerce.partials.footer')
 
-    <livewire:frontend.chat-widget />
+<livewire:frontend.chat-widget />
 
-    @fluxScripts
+@fluxScripts
 </body>
 </html>

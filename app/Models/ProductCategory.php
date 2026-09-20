@@ -53,6 +53,11 @@ class ProductCategory extends Model
         return $this->belongsToMany(Product::class, 'category_product', 'category_id', 'product_id');
     }
 
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('status', 'active');
+    }
+
     public function page(): HasOne
     {
         return $this->hasOne(Page::class, 'category_id')->where('type', 'product_category');

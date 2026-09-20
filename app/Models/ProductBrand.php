@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\Concerns\HasCreator;
+use App\Support\Locale;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 use Spatie\Translatable\HasTranslations;
 
 class ProductBrand extends Model
@@ -36,6 +39,26 @@ class ProductBrand extends Model
     protected $casts = [
         'sort_order' => 'integer',
     ];
+
+    /**
+     * `slug` is a virtual accessor derived from the primary-locale name —
+     * brands (unlike Products/ProductCategories) have no paired Page to own a
+     * slug, so it's computed on the fly for the storefront's /brand/{slug}
+     * links. Uses the same separator as Slug::make so it round-trips with the
+     * FrontendController::resolveBrand() lookup.
+     */
+    protected $appends = ['slug'];
+
+    protected function slug(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => Str::slug(
+                (string) ($this->getTranslation('name', Locale::primary(), false)
+                    ?: $this->getTranslation('name', 'en', false)),
+                '_',
+            ),
+        );
+    }
 
     protected static function booted(): void
     {

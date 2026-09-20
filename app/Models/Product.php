@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -116,6 +117,14 @@ class Product extends Model
     public function page(): HasOne
     {
         return $this->hasOne(Page::class, 'product_id')->where('type', 'product');
+    }
+
+    /**
+     * Who has favorited this product (see App\Support\Favorites).
+     */
+    public function wishlists(): HasMany
+    {
+        return $this->hasMany(Wishlist::class);
     }
 
     /**

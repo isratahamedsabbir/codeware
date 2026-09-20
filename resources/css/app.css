@@ -33,6 +33,12 @@
     --color-accent-content: #1e7bc4;
     --color-accent-foreground: var(--color-white);
 
+    /* ── Storefront (ecommerce theme) brand palette ── */
+    --color-brand: #045b30;       /* agrony-style green: header, footer, accents */
+    --color-brand-ink: #1d2327;   /* near-black: footer bottom bar */
+    --color-page-bg: #f2f4f8;     /* site-wide storefront page background */
+    --color-sale: #c01616;        /* sale badges / errors */
+
     /* ── Elevation tint (shared shadow hue) ── */
     --color-shadow-tint: #0f172a;
 
@@ -98,6 +104,13 @@
     --color-chart-axis-text: #a1a1aa;
     --color-chart-grid: #e9edf3;
     --color-chart-category-text: #71717a;
+}
+
+/* The storefront's signature typeface (Trebuchet MS is a bundled system font,
+   so no webfont to load) — applied to storefront <body> via `font-storefront`.
+   Admin surfaces keep the --font-sans stack from the @theme block above. */
+@utility font-storefront {
+    font-family: 'Trebuchet MS', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer theme {

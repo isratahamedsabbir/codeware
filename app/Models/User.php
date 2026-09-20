@@ -79,6 +79,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Favorite products this user saved (see App\Support\Favorites).
+     */
+    public function wishlists(): HasMany
+    {
+        return $this->hasMany(Wishlist::class);
+    }
+
+    /**
      * FCM device tokens this user has registered (see FirebaseTokenController
      * — POST/DELETE /api/v1/firebase/tokens) — App\Support\Firebase::sendToUser()
      * pushes to every one of them.

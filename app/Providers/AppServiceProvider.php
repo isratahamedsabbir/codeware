@@ -6,13 +6,16 @@ use App\Models\MediaLibrary;
 use App\Models\User;
 use App\Policies\MediaLibraryPolicy;
 use App\Support\DatabaseTranslationLoader;
+use App\Support\Favorites;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Contracts\Translation\Loader;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -116,6 +119,10 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Gate::policy(MediaLibrary::class, MediaLibraryPolicy::class);
+
+        // Guests favorite products in session (App\Support\Favorites) — the
+        // moment they sign in, those favorites become real per-user rows.
+        Event::listen(Login::class, fn () => Favorites::mergeSessionIntoDatabase());
 
         // Fortify::redirects('login') is a getter (config('fortify.home') is the
         // actual default, currently '/dashboard' — see config/fortify.php), not a

@@ -45,4 +45,26 @@ class Themes
 
         return array_key_exists('default', $available) ? 'default' : (array_key_first($available) ?? 'default');
     }
+
+    /**
+     * The dotted view path that should render a given storefront view — the
+     * active theme's when it ships that view itself, otherwise the "ecommerce"
+     * theme's version (which every theme falls back to for the product/shop
+     * pages). Returns e.g. "ecommerce.shop" for callers to build
+     * "frontend.themes.ecommerce.shop" from.
+     *
+     * Used by the storefront routes only; home()/page() keep rendering the
+     * active theme's own templates directly, so a "portfolio" or "default"
+     * site's home/about/contact pages are untouched by this.
+     */
+    public static function view(string $name): string
+    {
+        $theme = self::active();
+
+        if (is_file(self::path().'/'.$theme.'/'.$name.'.blade.php')) {
+            return $theme.'.'.$name;
+        }
+
+        return is_file(self::path().'/ecommerce/'.$name.'.blade.php') ? 'ecommerce.'.$name : $theme.'.'.$name;
+    }
 }

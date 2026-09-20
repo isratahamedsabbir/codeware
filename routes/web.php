@@ -13,6 +13,20 @@ Route::get('/', [FrontendController::class, 'home'])->name('home');
 // keeps the homepage's own hero styling instead of the generic page layout.
 Route::get('/home', [FrontendController::class, 'home']);
 
+// E-commerce storefront — only reachable through the ecommerce theme's
+// templates (or any theme that provides its own shop/product templates via
+// Themes::view()). Category slugs live on each category's paired Page;
+// brand/tag slugs are derived from the primary-locale name.
+Route::get('/shop', [FrontendController::class, 'shop'])->name('shop');
+Route::get('/products/{slug}', [FrontendController::class, 'product'])->name('products.show');
+Route::get('/category/{slug}', [FrontendController::class, 'category'])->name('shop.category');
+Route::get('/brand/{slug}', [FrontendController::class, 'brand'])->name('shop.brand');
+Route::get('/tag/{slug}', [FrontendController::class, 'tag'])->name('shop.tag');
+
+// Saved favorites — guests keep a session bag that merges into their account
+// the moment they sign in (see App\Support\Favorites). No auth required.
+Route::get('/favorites', [FrontendController::class, 'favorites'])->name('favorites');
+
 // Standalone pages (About, Contact, FAQ, ...) — explicitly whitelisted rather
 // than a bare `/{slug}` wildcard so this can never shadow auth/system routes
 // (login, dashboard, token, ...) regardless of route registration order.

@@ -29,6 +29,26 @@ if (! function_exists('display_date_format')) {
     }
 }
 
+if (! function_exists('format_money')) {
+    /**
+     * Display amount in the site's configured currency — the symbol is the
+     * "currency_symbol" setting (settings group "currency"), falling back to
+     * ৳, matching the Admin Orders/Reports and ProductLabel views. Trailing
+     * ".00" is stripped so whole amounts read cleanly on the storefront.
+     */
+    function format_money(mixed $amount, int $decimals = 2): string
+    {
+        $symbol = Setting::get('currency_symbol', '৳');
+        $formatted = number_format((float) $amount, $decimals);
+
+        if ($decimals > 0) {
+            $formatted = rtrim(rtrim($formatted, '0'), '.');
+        }
+
+        return $symbol.' '.$formatted;
+    }
+}
+
 if (! function_exists('cms_cards')) {
     /**
      * A CMS section's Cards, looked up by page slug + section Name (the
