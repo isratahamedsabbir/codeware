@@ -24,7 +24,8 @@ class AdminMenuSeeder extends Seeder
 
         // Categories and Tags are shared by Products and Blog (pick a type
         // when creating), so they live on their own rather than nested
-        // under either — see routes/admin.php's feature:taxonomy group.
+        // under either — each has its own feature toggle, see routes/admin.php's
+        // feature:categories and feature:tags groups.
         $this->standalone('Categories', 'squares-2x2', 'admin.categories', 4);
 
         $this->standalone('Tags', 'tag', 'admin.tags', 5);

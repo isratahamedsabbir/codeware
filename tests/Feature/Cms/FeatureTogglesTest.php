@@ -45,14 +45,51 @@ it('blocks the routes of a disabled feature with a 404, leaving other features r
     $this->get(route('admin.products'))->assertOk();
 });
 
-it('blocks categories and tags when the shared taxonomy feature is off, leaving blog and products reachable', function () {
-    disableFeature('taxonomy');
+it('blocks categories when its own feature is off, leaving tags, blog, and products reachable', function () {
+    disableFeature('categories');
 
     $this->get(route('admin.categories'))->assertNotFound();
-    $this->get(route('admin.tags'))->assertNotFound();
 
+    $this->get(route('admin.tags'))->assertOk();
     $this->get(route('admin.posts'))->assertOk();
     $this->get(route('admin.products'))->assertOk();
+});
+
+it('blocks tags when its own feature is off, leaving categories, blog, and products reachable', function () {
+    disableFeature('tags');
+
+    $this->get(route('admin.tags'))->assertNotFound();
+
+    $this->get(route('admin.categories'))->assertOk();
+    $this->get(route('admin.posts'))->assertOk();
+    $this->get(route('admin.products'))->assertOk();
+});
+
+it('hides only the Categories link from the live sidebar once its feature is off, leaving Tags reachable', function () {
+    $this->seed(AdminMenuSeeder::class);
+
+    // Asserting the link's href rather than the "Categories" label — the dashboard's
+    // own stats widget embeds a `totalCategories` key in its Livewire snapshot JSON,
+    // which would make a plain assertSee('Categories') a false positive either way.
+    $this->get(route('admin.dashboard'))->assertOk()
+        ->assertSeeHtml(route('admin.categories'))
+        ->assertSee('Tags');
+
+    disableFeature('categories');
+
+    $this->get(route('admin.dashboard'))->assertOk()
+        ->assertDontSeeHtml(route('admin.categories'))
+        ->assertSee('Tags');
+});
+
+it('hides only the Tags link from the live sidebar once its feature is off, leaving Categories reachable', function () {
+    $this->seed(AdminMenuSeeder::class);
+
+    $this->get(route('admin.dashboard'))->assertOk()->assertSee('Categories')->assertSee('Tags');
+
+    disableFeature('tags');
+
+    $this->get(route('admin.dashboard'))->assertOk()->assertDontSee('Tags')->assertSee('Categories');
 });
 
 it('blocks chat, pages, media library, and file manager routes when their feature is off', function () {
@@ -162,7 +199,7 @@ it('excludes a disabled feature\'s items from MenuItem::menuForCurrentUser', fun
         ->and($labels)->toContain('Products', 'Posts');
 });
 
-it('excludes every products-feature menu item, not just the ones sharing its route prefix', function () {
+it('excludes every products-feature menu item, not just the ones sharing its route prefix, leaving Brands (its own feature) reachable', function () {
     $this->seed(AdminMenuSeeder::class);
 
     disableFeature('products');
@@ -171,12 +208,11 @@ it('excludes every products-feature menu item, not just the ones sharing its rou
         ->flatMap(fn ($item) => $item->is_group ? $item->children->pluck('label') : collect([$item->label]))
         ->all();
 
-    // Brands is a standalone top-level item now (not nested under Products),
-    // but still shares the "products" feature gate — see MenuItem.php.
-    expect($labels)->not->toContain('Attributes', 'Vendors', 'Products', 'Brands');
+    expect($labels)->not->toContain('Attributes', 'Vendors', 'Products')
+        ->and($labels)->toContain('Brands');
 });
 
-it('hides a disabled feature\'s group from the menu management screen', function () {
+it('hides a disabled feature\'s group from the menu management screen, leaving Brands (its own feature) reachable', function () {
     $this->seed(AdminMenuSeeder::class);
 
     Livewire::test(Index::class)
@@ -187,8 +223,27 @@ it('hides a disabled feature\'s group from the menu management screen', function
 
     Livewire::test(Index::class)
         ->assertDontSee('Attributes')
-        ->assertDontSee('Brands')
-        ->assertDontSee('Vendors');
+        ->assertDontSee('Vendors')
+        ->assertSee('Brands');
+});
+
+it('blocks the brands routes when their feature is off, leaving products reachable', function () {
+    disableFeature('brands');
+
+    $this->get(route('admin.product-brands'))->assertNotFound();
+    $this->get(route('admin.product-brands.create'))->assertNotFound();
+
+    $this->get(route('admin.products'))->assertOk();
+});
+
+it('hides the Brands link from the live sidebar once its feature is off, leaving Products reachable', function () {
+    $this->seed(AdminMenuSeeder::class);
+
+    $this->get(route('admin.dashboard'))->assertOk()->assertSee('Brands');
+
+    disableFeature('brands');
+
+    $this->get(route('admin.dashboard'))->assertOk()->assertDontSee('Brands')->assertSee('Products');
 });
 
 it('blocks roles, permissions, and users routes when access-control is off, leaving settings reachable', function () {
@@ -289,7 +344,8 @@ it('renders the features screen, only in the developer environment', function ()
 
     Livewire::test(FeaturesIndex::class)
         ->assertSee('Blog (Posts)')
-        ->assertSee('Categories & Tags (shared by Blog and Products)')
+        ->assertSee('Categories (shared by Blog and Products)')
+        ->assertSee('Tags (shared by Blog and Products)')
         ->assertSee('Chat')
         ->assertSee('File Manager');
 });

@@ -16,10 +16,12 @@ class Features
     public const ALL = [
         'env' => 'Env (App, Maintenance & API Settings)',
         'blog' => 'Blog (Posts)',
-        'taxonomy' => 'Categories & Tags (shared by Blog and Products)',
+        'categories' => 'Categories (shared by Blog and Products)',
+        'tags' => 'Tags (shared by Blog and Products)',
         'access-control' => 'Access Control (Roles, Permissions, Users)',
         'audit-log' => 'Audit Log',
         'products' => 'Products',
+        'brands' => 'Brands',
         'services' => 'Services',
         'orders' => 'Orders & Reports',
         'discounts' => 'Discounts (Products)',

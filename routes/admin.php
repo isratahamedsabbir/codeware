@@ -80,15 +80,19 @@ Route::middleware(['auth', 'admin', 'activity-log'])->group(function () {
         Route::get('/posts/{id}/edit', Form::class)->name('posts.edit');
     });
 
-    // Categories (Product + Post, one shared screen — pick a type when creating)
-    // and Tags (already shared the same way) — reachable regardless of whether
-    // Blog or Products is the one currently in use.
-    Route::middleware('feature:taxonomy')->group(function () {
+    // Categories (Product + Post, one shared screen — pick a type when creating) —
+    // reachable regardless of whether Blog or Products is the one currently in use.
+    // Its own feature toggle, separate from Tags.
+    Route::middleware('feature:categories')->group(function () {
         Route::get('/categories', App\Livewire\Admin\Categories\Index::class)->name('categories');
         Route::get('/categories/export', [CategoryExportController::class, 'export'])->name('categories.export');
         Route::get('/categories/create', App\Livewire\Admin\Categories\Form::class)->name('categories.create');
         Route::get('/categories/{id}/edit', App\Livewire\Admin\Categories\Form::class)->name('categories.edit');
+    });
 
+    // Tags (shared the same way as Categories) — its own feature toggle, separate
+    // from Categories.
+    Route::middleware('feature:tags')->group(function () {
         Route::get('/tags', App\Livewire\Admin\Tags\Index::class)->name('tags');
         Route::get('/tags/export', [TagExportController::class, 'export'])->name('tags.export');
         Route::get('/tags/create', App\Livewire\Admin\Tags\Form::class)->name('tags.create');
@@ -166,9 +170,9 @@ Route::middleware(['auth', 'admin', 'activity-log'])->group(function () {
         Route::get('/product-vendors/{id}/edit', App\Livewire\Admin\ProductVendors\Form::class)->name('product-vendors.edit');
     });
 
-    // Brands — still "products" feature-gated, just its own top-level sidebar
-    // item now rather than nested under Products (see AdminMenuSeeder).
-    Route::middleware('feature:products')->group(function () {
+    // Brands — its own feature toggle, separate from Products; also its own
+    // top-level sidebar item rather than nested under Products (see AdminMenuSeeder).
+    Route::middleware('feature:brands')->group(function () {
         Route::get('/product-brands', App\Livewire\Admin\ProductBrands\Index::class)->name('product-brands');
         Route::get('/product-brands/export', [ProductBrandExportController::class, 'export'])->name('product-brands.export');
         Route::get('/product-brands/create', App\Livewire\Admin\ProductBrands\Form::class)->name('product-brands.create');
