@@ -51,7 +51,7 @@ class Tag extends Model
             get: fn () => Str::slug(
                 (string) ($this->getTranslation('name', Locale::primary(), false)
                     ?: $this->getTranslation('name', 'en', false)),
-                '_',
+                '-',
             ),
         );
     }

@@ -16,7 +16,7 @@ it('post published scope filters correctly', function () {
 
 it('page auto-generates slug from title', function () {
     $page = Page::factory()->create(['title' => ['en' => 'About Us', 'bn' => ''], 'slug' => '']);
-    expect($page->fresh()->slug)->toBe('about_us');
+    expect($page->fresh()->slug)->toBe('about-us');
 });
 
 it('page published scope filters correctly', function () {

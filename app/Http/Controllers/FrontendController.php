@@ -349,7 +349,7 @@ class FrontendController extends Controller
     private function resolveBrand(string $slug): ?ProductBrand
     {
         return ProductBrand::active()->get()
-            ->first(fn (ProductBrand $brand) => $this->taxonomyKey($brand) === Str::slug($slug, '_'));
+            ->first(fn (ProductBrand $brand) => $this->taxonomyKey($brand) === Str::slug($slug, '-'));
     }
 
     /**
@@ -358,14 +358,14 @@ class FrontendController extends Controller
     private function resolveTag(string $slug): ?Tag
     {
         return Tag::where('status', 'active')->get()
-            ->first(fn (Tag $tag) => $this->taxonomyKey($tag) === Str::slug($slug, '_'));
+            ->first(fn (Tag $tag) => $this->taxonomyKey($tag) === Str::slug($slug, '-'));
     }
 
     private function taxonomyKey(Model $item): string
     {
         $name = (string) ($item->getTranslation('name', Locale::primary(), false) ?: $item->getTranslation('name', 'en', false));
 
-        return Str::slug(is_array($name) ? reset($name) : $name, '_');
+        return Str::slug(is_array($name) ? reset($name) : $name, '-');
     }
 
     /**

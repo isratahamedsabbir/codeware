@@ -18,12 +18,12 @@ use Illuminate\Validation\Rules\Unique;
 class Slug
 {
     /**
-     * Underscore separator, special characters stripped — e.g. "Men's Shoes!"
-     * becomes "mens_shoes", "Café Menu" becomes "cafe_menu".
+     * Hyphen separator, special characters stripped — e.g. "Men's Shoes!"
+     * becomes "mens-shoes", "Café Menu" becomes "cafe-menu".
      */
     public static function make(string $value): string
     {
-        return Str::slug($value, '_');
+        return Str::slug($value, '-');
     }
 
     /**

@@ -21,16 +21,16 @@ beforeEach(function () {
     $this->actingAs($this->admin);
 });
 
-it('formats slugs with underscores and strips special characters', function () {
-    expect(Slug::make("Men's Shoes!"))->toBe('mens_shoes')
-        ->and(Slug::make('Café Menu — Summer 2026'))->toBe('cafe_menu_summer_2026')
-        ->and(Slug::make('Hello   World'))->toBe('hello_world');
+it('formats slugs with hyphens and strips special characters', function () {
+    expect(Slug::make("Men's Shoes!"))->toBe('mens-shoes')
+        ->and(Slug::make('Café Menu — Summer 2026'))->toBe('cafe-menu-summer-2026')
+        ->and(Slug::make('Hello   World'))->toBe('hello-world');
 });
 
 it('live-types the product slug from the name as you type, until manually edited', function () {
     $component = Livewire::test(ProductForm::class)
         ->set('name.en', 'Blue Running Shoes')
-        ->assertSet('slug', 'blue_running_shoes');
+        ->assertSet('slug', 'blue-running-shoes');
 
     // Manually diverging from the auto-generated value stops further auto-updates.
     $component->set('slug', 'custom-shoe-slug')
@@ -50,20 +50,20 @@ it('does not auto-touch an existing product\'s slug when only its name is edited
 it('live-types slugs for posts, product categories, and post categories the same way', function () {
     Livewire::test(PostForm::class)
         ->set('title.en', 'My First Blog Post')
-        ->assertSet('slug', 'my_first_blog_post');
+        ->assertSet('slug', 'my-first-blog-post');
 
     Livewire::test(CategoryForm::class)
         ->set('name.en', 'Home Appliances')
-        ->assertSet('slug', 'home_appliances');
+        ->assertSet('slug', 'home-appliances');
 
     Livewire::test(CategoryForm::class)
         ->set('type', 'post_category')
         ->set('name.en', 'Company News')
-        ->assertSet('slug', 'company_news');
+        ->assertSet('slug', 'company-news');
 
     Livewire::test(PageForm::class)
         ->set('title.en', 'About Us')
-        ->assertSet('slug', 'about_us');
+        ->assertSet('slug', 'about-us');
 });
 
 it('keeps a product\'s slug and its paired page\'s slug identical after saving', function () {
@@ -71,7 +71,7 @@ it('keeps a product\'s slug and its paired page\'s slug identical after saving',
         ->set('name.en', 'Synced Product')
         ->call('save');
 
-    $page = Page::where(['type' => 'product', 'slug' => 'synced_product'])->sole();
+    $page = Page::where(['type' => 'product', 'slug' => 'synced-product'])->sole();
     $product = Product::findOrFail($page->product_id);
 
     expect($product->slug)->toBe($page->slug);
@@ -96,7 +96,7 @@ it('rejects a product category slug that collides with a post category, since ca
 
     Livewire::test(CategoryForm::class)
         ->set('name.en', 'Something Else')
-        ->set('slug', 'shared_category')
+        ->set('slug', 'shared-category')
         ->call('save')
         ->assertHasErrors(['slug']);
 });
@@ -106,7 +106,7 @@ it('locks the slug field for a linked page and ignores any edit attempt on save,
         ->set('name.en', 'Editable Product')
         ->call('save');
 
-    $page = Page::where(['type' => 'product', 'slug' => 'editable_product'])->sole();
+    $page = Page::where(['type' => 'product', 'slug' => 'editable-product'])->sole();
     $product = Product::findOrFail($page->product_id);
 
     $component = Livewire::test(PageForm::class, ['id' => $page->id]);
@@ -114,8 +114,8 @@ it('locks the slug field for a linked page and ignores any edit attempt on save,
 
     $component->set('slug', 'renamed_from_page')->call('save');
 
-    expect($product->fresh()->slug)->toBe('editable_product')
-        ->and($page->fresh()->slug)->toBe('editable_product');
+    expect($product->fresh()->slug)->toBe('editable-product')
+        ->and($page->fresh()->slug)->toBe('editable-product');
 });
 
 it('locks the slug field for a linked page and ignores any edit attempt on save, keeping the post category authoritative', function () {
@@ -124,15 +124,15 @@ it('locks the slug field for a linked page and ignores any edit attempt on save,
         ->set('name.en', 'Original Category')
         ->call('save');
 
-    $page = Page::where(['type' => 'post_category', 'slug' => 'original_category'])->sole();
+    $page = Page::where(['type' => 'post_category', 'slug' => 'original-category'])->sole();
     $category = PostCategory::findOrFail($page->category_id);
 
     Livewire::test(PageForm::class, ['id' => $page->id])
         ->set('slug', 'renamed_category')
         ->call('save');
 
-    expect($category->fresh()->slug)->toBe('original_category')
-        ->and($page->fresh()->slug)->toBe('original_category');
+    expect($category->fresh()->slug)->toBe('original-category')
+        ->and($page->fresh()->slug)->toBe('original-category');
 });
 
 it('does not affect other pages when editing a plain (non-typed) page\'s slug', function () {
@@ -140,7 +140,7 @@ it('does not affect other pages when editing a plain (non-typed) page\'s slug', 
         ->set('title.en', 'Plain Page')
         ->call('save');
 
-    $page = Page::where('slug', 'plain_page')->sole();
+    $page = Page::where('slug', 'plain-page')->sole();
     expect($page->type)->toBe('page');
 
     Livewire::test(PageForm::class, ['id' => $page->id])
@@ -258,7 +258,7 @@ it('creates a matching page slug when a post is created via the REST admin API',
     $this->postJson('/api/v1/admin/posts', ['title' => ['en' => 'API Created Post']])
         ->assertCreated();
 
-    $page = Page::where(['type' => 'post', 'slug' => 'api_created_post'])->sole();
+    $page = Page::where(['type' => 'post', 'slug' => 'api-created-post'])->sole();
 
     expect($page->post)->not->toBeNull();
 });
@@ -282,7 +282,7 @@ it('creates a matching page slug when a product category is created via the REST
     $this->postJson('/api/v1/admin/product-categories', ['name' => ['en' => 'API Created Category']])
         ->assertCreated();
 
-    $page = Page::where(['type' => 'product_category', 'slug' => 'api_created_category'])->sole();
+    $page = Page::where(['type' => 'product_category', 'slug' => 'api-created-category'])->sole();
 
     expect($page->category)->not->toBeNull();
 });
