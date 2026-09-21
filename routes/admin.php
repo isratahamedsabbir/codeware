@@ -134,6 +134,10 @@ Route::middleware(['auth', 'admin', 'activity-log'])->group(function () {
     // Settings & Email Templates — Admin/Super Admin only, not Staff
     Route::middleware('can:access-admin-system')->group(function () {
         Route::get('/settings', App\Livewire\Admin\Settings\Index::class)->name('settings');
+        // Theme Settings — its own screen (under Library & System) for the active
+        // theme's settings (site_theme plus homepage copy/imagery), separate from
+        // the general Settings page.
+        Route::get('/theme-settings', App\Livewire\Admin\ThemeSettings\Index::class)->name('theme-settings');
         Route::get('/seo', App\Livewire\Admin\Seo\Index::class)->name('seo');
         Route::get('/social', App\Livewire\Admin\Social\Index::class)->name('social');
         Route::get('/payment-gateways', App\Livewire\Admin\PaymentGateways\Index::class)->name('payment-gateways');

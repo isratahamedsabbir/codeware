@@ -149,6 +149,14 @@ class SettingsSeeder extends Seeder
             // ── Frontend ──
             ['key' => 'site_theme',               'value' => 'default', 'type' => 'select', 'group' => 'frontend', 'is_public' => true],
 
+            // ── Theme homepage ── the homepage copy & imagery the theme templates
+            // render (site_tagline, home_hero_image, home_promo_banner_1/2). Managed
+            // from the dedicated Theme Settings screen under Library & System.
+            ['key' => 'site_tagline',             'value' => '', 'type' => 'textarea', 'group' => 'frontend', 'is_public' => true],
+            ['key' => 'home_hero_image',          'value' => '', 'type' => 'string', 'group' => 'frontend', 'is_public' => true],
+            ['key' => 'home_promo_banner_1',      'value' => '', 'type' => 'string', 'group' => 'frontend', 'is_public' => true],
+            ['key' => 'home_promo_banner_2',      'value' => '', 'type' => 'string', 'group' => 'frontend', 'is_public' => true],
+
             // ── Frontend chat widget ── shows/hides the chat bubble on the
             // public site. See Settings → Theme → Frontend and ChatWidget.
             ['key' => 'chat_widget_enabled',      'value' => '1', 'type' => 'boolean', 'group' => 'frontend', 'is_public' => true],

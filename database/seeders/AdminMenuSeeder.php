@@ -57,6 +57,7 @@ class AdminMenuSeeder extends Seeder
 
         $this->group('Library & System', 14, [
             ['Settings', 'cog-6-tooth', 'admin.settings'],
+            ['Theme Settings', 'swatch', 'admin.theme-settings'],
             ['Developer Tools', 'command-line', 'admin.env'],
             ['Global SEO', 'magnifying-glass', 'admin.seo'],
             ['Social Links', 'share', 'admin.social'],

@@ -92,10 +92,10 @@
                                             default => ['title' => 'Site Icon', 'hint' => '512×512px, transparent', 'placeholder' => 'Choose a site icon from the library', 'mimes' => 'png,webp', 'maxSize' => 2],
                                         };
                                     @endphp
-                                    <x-admin-section-card header-border="border-zinc-100" icon="photo" :title="$imageMeta['title']">
-                                        <x-media-picker model="settings.{{ $setting->key }}" :label="$imageMeta['title']" :hint="$imageMeta['hint']"
-                                            :placeholder="$imageMeta['placeholder']" :mimes="$imageMeta['mimes']" :max-size-mb="$imageMeta['maxSize']"
-                                            only-images dropzone />
+                                    <x-admin-section-card header-border="border-zinc-100" icon="photo" :title="$imageMeta['title']"
+                                        :description="$imageMeta['hint']">
+                                        <x-media-picker model="settings.{{ $setting->key }}" :placeholder="$imageMeta['placeholder']" :mimes="$imageMeta['mimes']"
+                                            :max-size-mb="$imageMeta['maxSize']" only-images dropzone />
                                     </x-admin-section-card>
                                 @endforeach
                             </div>
