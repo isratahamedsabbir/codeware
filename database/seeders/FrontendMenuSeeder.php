@@ -15,6 +15,7 @@ class FrontendMenuSeeder extends Seeder
 {
     private const ITEMS = [
         ['label' => 'Home', 'url' => '/'],
+        ['label' => 'Shop', 'url' => '/shop'],
         ['label' => 'About Us', 'url' => '/about'],
         ['label' => 'Contact Us', 'url' => '/contact'],
         ['label' => 'FAQ', 'url' => '/faq'],

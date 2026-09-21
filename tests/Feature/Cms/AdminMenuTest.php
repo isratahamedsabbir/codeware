@@ -3,6 +3,9 @@
 use App\Livewire\Admin\Menu\Index as MenuIndex;
 use App\Models\Menu;
 use App\Models\MenuItem;
+use App\Models\Page;
+use App\Models\ProductBrand;
+use App\Models\ProductCategory;
 use App\Models\User;
 use Database\Seeders\AdminMenuSeeder;
 use Database\Seeders\RolePermissionSeeder;
@@ -341,4 +344,66 @@ it('lists every known menu in the selector, admin menu first', function () {
     Livewire::test(MenuIndex::class)
         ->assertSee('Admin Menu')
         ->assertSee('Frontend Menu');
+});
+
+it('links a menu item to a brand, resolving its storefront URL', function () {
+    $brand = ProductBrand::factory()->create(['name' => ['en' => 'Acme', 'bn' => '']]);
+
+    Livewire::test(MenuIndex::class)
+        ->call('selectMenu', 'frontend')
+        ->call('openCreate')
+        ->set('linkType', 'brand')
+        ->set('linkedBrandId', $brand->id)
+        ->call('save');
+
+    $item = MenuItem::where('label', 'Acme')->sole();
+
+    expect($item->group)->toBe('frontend')
+        ->and($item->url)->toBe('/brand/acme');
+});
+
+it('requires a brand when a menu item is set to link to a brand', function () {
+    Livewire::test(MenuIndex::class)
+        ->call('selectMenu', 'frontend')
+        ->call('openCreate')
+        ->set('label', 'Acme')
+        ->set('linkType', 'brand')
+        ->call('save')
+        ->assertHasErrors(['linkedBrandId']);
+});
+
+it('links a menu item to a category through its landing page', function () {
+    $category = ProductCategory::factory()->create(['name' => ['en' => 'Fertilizers', 'bn' => '']]);
+    pairPageFor($category, 'product_category', 'fertilizers', $this->admin->id);
+
+    Livewire::test(MenuIndex::class)
+        ->call('selectMenu', 'frontend')
+        ->call('openCreate')
+        ->set('linkType', 'category')
+        ->set('linkedCategoryId', $category->id)
+        ->call('save');
+
+    $item = MenuItem::where('label', 'Fertilizers')->sole();
+
+    expect($item->url)->toBe('/category/fertilizers');
+});
+
+it('links a menu item to a published page the storefront serves', function () {
+    $page = Page::factory()->published()->create([
+        'title' => ['en' => 'About Us', 'bn' => ''],
+        'slug' => 'about',
+        'type' => 'page',
+        'sort_order' => 0,
+    ]);
+
+    Livewire::test(MenuIndex::class)
+        ->call('selectMenu', 'frontend')
+        ->call('openCreate')
+        ->set('linkType', 'page')
+        ->set('linkedPageId', $page->id)
+        ->call('save');
+
+    $item = MenuItem::where('label', 'About Us')->sole();
+
+    expect($item->url)->toBe('/about');
 });

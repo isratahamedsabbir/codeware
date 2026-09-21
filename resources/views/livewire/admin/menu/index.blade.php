@@ -342,11 +342,61 @@
 
             @unless ($is_group)
                 <flux:field>
-                    <flux:label>{{ __('Link') }}</flux:label>
-                    <flux:input wire:model="url" placeholder="/admin/users or https://example.com" />
-                    <flux:description>{{ __('A path (e.g. /admin/users) or a full URL.') }}</flux:description>
-                    <flux:error name="url" />
+                    <flux:label>{{ __('Link to') }}</flux:label>
+                    <flux:select wire:model.live="linkType">
+                        <flux:select.option value="custom">{{ __('Custom link') }}</flux:select.option>
+                        <flux:select.option value="brand">{{ __('Brand') }}</flux:select.option>
+                        <flux:select.option value="category">{{ __('Category') }}</flux:select.option>
+                        <flux:select.option value="page">{{ __('Page') }}</flux:select.option>
+                    </flux:select>
+                    <flux:error name="linkType" />
                 </flux:field>
+
+                @if ($linkType === 'custom')
+                    <flux:field>
+                        <flux:label>{{ __('Link') }}</flux:label>
+                        <flux:input wire:model="url" placeholder="/about or https://example.com" />
+                        <flux:description>{{ __('A path (e.g. /about) or a full URL.') }}</flux:description>
+                        <flux:error name="url" />
+                    </flux:field>
+                @elseif ($linkType === 'brand')
+                    <flux:field>
+                        <flux:label>{{ __('Brand') }}</flux:label>
+                        <flux:select wire:model="linkedBrandId">
+                            <flux:select.option value="">{{ __('Select a brand') }}</flux:select.option>
+                            @foreach ($brands as $brand)
+                                <flux:select.option value="{{ $brand->id }}">{{ $brand->name }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                        <flux:error name="linkedBrandId" />
+                    </flux:field>
+                @elseif ($linkType === 'category')
+                    <flux:field>
+                        <flux:label>{{ __('Category') }}</flux:label>
+                        <flux:select wire:model="linkedCategoryId">
+                            <flux:select.option value="">{{ __('Select a category') }}</flux:select.option>
+                            @foreach ($categories as $category)
+                                <flux:select.option value="{{ $category->id }}">{{ str_repeat('— ', max(0, $category->depth)) }}{{ $category->name }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                        <flux:error name="linkedCategoryId" />
+                    </flux:field>
+                @elseif ($linkType === 'page')
+                    <flux:field>
+                        <flux:label>{{ __('Page') }}</flux:label>
+                        <flux:select wire:model="linkedPageId">
+                            <flux:select.option value="">{{ __('Select a page') }}</flux:select.option>
+                            @foreach ($pages as $page)
+                                <flux:select.option value="{{ $page->id }}">{{ $page->title }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                        <flux:error name="linkedPageId" />
+                    </flux:field>
+                @endif
+
+                @if ($linkType !== 'custom' && $url)
+                    <p class="mt-1 font-mono text-[11px] text-zinc-500">{{ $url }}</p>
+                @endif
 
                 <flux:field>
                     <flux:label>{{ __('Group') }}</flux:label>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Language;
+use App\Models\MenuItem;
 use App\Models\Page;
 use App\Models\Setting;
 use App\Models\User;
@@ -66,4 +67,17 @@ it('shows the contact phone in the header bar, not the email', function () {
         ->assertSee('+8801700000000')
         ->assertSee('tel:+8801700000000')
         ->assertDontSee('mailto:');
+});
+
+it('renders the header nav from the admin-managed frontend menu only', function () {
+    MenuItem::factory()->create(['group' => 'frontend', 'label' => 'Shop', 'url' => '/shop', 'sort_order' => 0]);
+    MenuItem::factory()->create(['group' => 'frontend', 'label' => 'Brands', 'url' => '/brand/acme', 'sort_order' => 1]);
+
+    $html = get('/shop')->assertOk()->getContent();
+
+    expect($html)->toContain('Brands');
+
+    // The desktop nav renders the two admin-managed items and nothing hardcoded
+    // beside them (Home/Shop/Categories were previously baked into the header).
+    expect(substr_count($html, 'text-[15px] font-semibold'))->toBe(2);
 });

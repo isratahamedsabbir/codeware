@@ -2,8 +2,6 @@
     $siteName = \App\Models\Setting::get('site_name', config('app.name'));
     $siteIcon = \App\Models\Setting::get('site_icon');
     $currentUrl = url()->current();
-
-    $topCategories = \App\Models\ProductCategory::headerCached();
 @endphp
 
 <header class="sticky top-0 z-40">
@@ -81,56 +79,20 @@
         </div>
     </div>
 
-    <nav class="hidden border-b border-gray-100 bg-white shadow-sm md:block">
-        <ul class="mx-auto flex max-w-7xl items-center px-4 sm:px-6">
-            <li>
-                <a href="{{ route('home') }}"
-                    class="inline-block px-3 py-3.5 text-[15px] font-semibold transition-colors {{ request()->routeIs('home') ? 'text-brand' : 'text-[#222] hover:text-brand' }}">
-                    {{ __('Home') }}
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('shop') }}"
-                    class="inline-block px-3 py-3.5 text-[15px] font-semibold transition-colors {{ request()->routeIs('shop', 'products.show', 'shop.category', 'shop.brand', 'shop.tag', 'favorites') ? 'text-brand' : 'text-[#222] hover:text-brand' }}">
-                    {{ __('Shop') }}
-                </a>
-            </li>
-
-            @if ($topCategories->isNotEmpty())
-                <li class="group relative">
-                    <button type="button" class="flex cursor-pointer items-center gap-1 px-3 py-3.5 text-[15px] font-semibold text-[#222] transition-colors group-hover:text-brand">
-                        {{ __('Categories') }}
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" />
-                        </svg>
-                    </button>
-                    <div class="invisible absolute left-0 top-full z-50 min-w-[230px] translate-y-1 rounded-md border border-gray-100 bg-white py-1.5 opacity-0 shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
-                        @foreach ($topCategories as $category)
-                            <a href="{{ route('shop.category', $category->slug) }}"
-                                class="flex items-center justify-between rounded-sm px-3 py-2 text-sm text-zinc-700 transition-colors hover:bg-gray-50 hover:text-brand">
-                                <span class="truncate">{{ $category->name }}</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7" />
-                                </svg>
-                            </a>
-                        @endforeach
-                        <a href="{{ route('shop') }}" class="mt-1 block border-t border-gray-100 px-3 py-2 text-sm font-semibold text-brand hover:text-brand-ink">
-                            {{ __('View all products') }}
+    @if ($menuItems->isNotEmpty())
+        <nav class="hidden border-b border-gray-100 bg-white shadow-sm md:block">
+            <ul class="mx-auto flex max-w-7xl items-center px-4 sm:px-6">
+                @foreach ($menuItems as $menuItem)
+                    <li>
+                        <a href="{{ url($menuItem->url) }}"
+                            class="inline-block px-3 py-3.5 text-[15px] font-semibold transition-colors {{ url($menuItem->url) === $currentUrl ? 'text-brand' : 'text-[#222] hover:text-brand' }}">
+                            {{ $menuItem->label }}
                         </a>
-                    </div>
-                </li>
-            @endif
-
-            @foreach ($menuItems ?? [] as $menuItem)
-                <li>
-                    <a href="{{ url($menuItem->url) }}"
-                        class="inline-block px-3 py-3.5 text-[15px] font-semibold transition-colors {{ url($menuItem->url) === $currentUrl ? 'text-brand' : 'text-[#222] hover:text-brand' }}">
-                        {{ $menuItem->label }}
-                    </a>
-                </li>
-            @endforeach
-        </ul>
-    </nav>
+                    </li>
+                @endforeach
+            </ul>
+        </nav>
+    @endif
 
     <input type="checkbox" id="mobile-menu" class="peer hidden">
     <div class="hidden border-b border-gray-100 bg-white px-4 py-4 peer-checked:block md:hidden">
@@ -139,14 +101,6 @@
             </div>
 
         <nav class="flex flex-col">
-            <a href="{{ route('home') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-gray-50 hover:text-brand">{{ __('Home') }}</a>
-            <a href="{{ route('shop') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-gray-50 hover:text-brand">{{ __('Shop') }}</a>
-            @if ($topCategories->isNotEmpty())
-                <p class="px-3 pb-1 pt-3 text-xs font-bold uppercase tracking-wide text-zinc-400">{{ __('Categories') }}</p>
-                @foreach ($topCategories as $category)
-                    <a href="{{ route('shop.category', $category->slug) }}" class="rounded-md px-3 py-2 text-sm text-zinc-600 transition-colors hover:bg-gray-50 hover:text-brand">{{ $category->name }}</a>
-                @endforeach
-            @endif
             @foreach ($menuItems ?? [] as $menuItem)
                 <a href="{{ url($menuItem->url) }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-gray-50 hover:text-brand">{{ $menuItem->label }}</a>
             @endforeach

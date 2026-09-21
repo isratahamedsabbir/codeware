@@ -4,6 +4,9 @@ namespace App\Livewire\Admin\Menu;
 
 use App\Models\Menu;
 use App\Models\MenuItem;
+use App\Models\Page;
+use App\Models\ProductBrand;
+use App\Models\ProductCategory;
 use App\Support\AdminActivity;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -12,6 +15,14 @@ use Livewire\Component;
 
 class Index extends Component
 {
+    /**
+     * Page slugs the storefront `page` route actually serves (routes/web.php
+     * restricts `/{slug}` to about|contact|faq) — only these are offered as
+     * menu link targets, so an admin can't link a menu item to a page that
+     * would 404.
+     */
+    private const PAGE_ROUTE_SLUGS = ['about', 'contact', 'faq'];
+
     public ?int $editingId = null;
 
     public ?int $deletingId = null;
@@ -33,6 +44,15 @@ class Index extends Component
 
     #[Validate('required|string|max:60')]
     public string $newMenuLabel = '';
+
+    /** How the item's link is picked — a hand-typed URL or a linked Brand/Category/Page. */
+    public string $linkType = 'custom';
+
+    public ?int $linkedBrandId = null;
+
+    public ?int $linkedCategoryId = null;
+
+    public ?int $linkedPageId = null;
 
     public function selectMenu(string $group): void
     {
@@ -72,7 +92,7 @@ class Index extends Component
 
     public function openCreate(?int $parentId = null): void
     {
-        $this->reset(['editingId', 'label', 'icon', 'is_group', 'url']);
+        $this->reset(['editingId', 'label', 'icon', 'is_group', 'url', 'linkType', 'linkedBrandId', 'linkedCategoryId', 'linkedPageId']);
         $this->parent_id = $parentId;
         $this->resetErrorBag();
         $this->dispatch('open-modal', name: 'menu-item-form');
@@ -93,9 +113,50 @@ class Index extends Component
             ? route($item->route_name, [], false)
             : $item->url;
         $this->parent_id = $item->parent_id;
+        $this->linkType = 'custom';
+        $this->linkedBrandId = null;
+        $this->linkedCategoryId = null;
+        $this->linkedPageId = null;
 
         $this->resetErrorBag();
         $this->dispatch('open-modal', name: 'menu-item-form');
+    }
+
+    public function updatedLinkType(): void
+    {
+        $this->linkedBrandId = null;
+        $this->linkedCategoryId = null;
+        $this->linkedPageId = null;
+    }
+
+    public function updatedLinkedBrandId(): void
+    {
+        $brand = $this->linkedBrandId ? ProductBrand::find($this->linkedBrandId) : null;
+
+        if ($brand) {
+            $this->label = $brand->name;
+            $this->url = route('shop.brand', $brand->slug, false);
+        }
+    }
+
+    public function updatedLinkedCategoryId(): void
+    {
+        $category = $this->linkedCategoryId ? ProductCategory::find($this->linkedCategoryId) : null;
+
+        if ($category && $category->slug) {
+            $this->label = $category->name;
+            $this->url = route('shop.category', $category->slug, false);
+        }
+    }
+
+    public function updatedLinkedPageId(): void
+    {
+        $page = $this->linkedPageId ? Page::find($this->linkedPageId) : null;
+
+        if ($page) {
+            $this->label = (string) $page->title;
+            $this->url = '/'.$page->slug;
+        }
     }
 
     public function save(): void
@@ -116,11 +177,22 @@ class Index extends Component
         ];
 
         if (! $isGroup) {
-            $rules['url'] = ['required', 'string', 'max:255', function ($attribute, $value, $fail) {
-                if ($value && ! preg_match('#^(/|https?://)#', $value)) {
-                    $fail(__('Link must start with /, http:// or https://.'));
-                }
-            }];
+            $rules['linkType'] = 'required|in:custom,brand,category,page';
+
+            if ($this->linkType === 'custom') {
+                $rules['url'] = ['required', 'string', 'max:255', function ($attribute, $value, $fail) {
+                    if ($value && ! preg_match('#^(/|https?://)#', $value)) {
+                        $fail(__('Link must start with /, http:// or https://.'));
+                    }
+                }];
+            } elseif ($this->linkType === 'brand') {
+                $rules['linkedBrandId'] = ['required', 'exists:categories,id'];
+            } elseif ($this->linkType === 'category') {
+                $rules['linkedCategoryId'] = ['required', 'exists:categories,id'];
+            } elseif ($this->linkType === 'page') {
+                $rules['linkedPageId'] = ['required', 'exists:pages,id'];
+            }
+
             $rules['parent_id'] = ['nullable', function ($attribute, $value, $fail) {
                 if ($value && ! MenuItem::where('id', $value)->where('is_group', true)->where('group', $this->activeGroup)->exists()) {
                     $fail(__('Invalid parent group.'));
@@ -129,6 +201,29 @@ class Index extends Component
         }
 
         $this->validate($rules);
+
+        // A brand/category/page target is resolved to its storefront URL rather
+        // than storing a stale route_name — the item becomes a plain link the
+        // moment it's saved, exactly like a hand-typed one.
+        if (! $isGroup && $this->linkType !== 'custom') {
+            match ($this->linkType) {
+                'brand' => function () {
+                    $brand = ProductBrand::findOrFail($this->linkedBrandId);
+                    $this->label = $brand->name;
+                    $this->url = route('shop.brand', $brand->slug, false);
+                },
+                'category' => function () {
+                    $category = ProductCategory::findOrFail($this->linkedCategoryId);
+                    $this->label = $category->name;
+                    $this->url = route('shop.category', $category->slug, false);
+                },
+                'page' => function () {
+                    $page = Page::findOrFail($this->linkedPageId);
+                    $this->label = (string) $page->title;
+                    $this->url = '/'.$page->slug;
+                },
+            };
+        }
 
         $data = [
             'group' => $this->activeGroup,
@@ -257,10 +352,26 @@ class Index extends Component
         // Admin Menu always sorts first, the rest alphabetically by name.
         $menus = Menu::all()->sortBy(fn (Menu $menu) => $menu->slug === MenuItem::GROUP_ADMIN_SIDEBAR ? '' : $menu->name)->values();
 
+        // Link-target pickers for the create/edit modal: brands, categories that
+        // have a landing page (their slug lives on the paired Page), and the
+        // published pages the storefront `page` route actually serves.
+        $brands = ProductBrand::active()->orderBy('sort_order')->orderBy('id')->get();
+
+        $categories = ProductCategory::tree(
+            ProductCategory::active()->with('page')->orderBy('sort_order')
+                ->get()
+                ->reject(fn (ProductCategory $category) => $category->page === null),
+        );
+
+        $pages = Page::ofType('page')->published()->whereIn('slug', self::PAGE_ROUTE_SLUGS)->orderBy('sort_order')->get();
+
         return view('livewire.admin.menu.index', [
             'topLevel' => $topLevel,
             'menus' => $menus,
             'groups' => $groups,
+            'brands' => $brands,
+            'categories' => $categories,
+            'pages' => $pages,
             // Header stat tiles — counted over every item in the active menu
             // (top-level and nested), not just $topLevel.
             'totalItems' => $items->count(),
