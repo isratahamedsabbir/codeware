@@ -62,5 +62,17 @@
                 <span class="text-[15px] font-bold text-brand">{{ format_money($product->price) }}</span>
             @endif
         </div>
+
+        <div class="pt-3">
+            <livewire:frontend.add-to-cart-button
+                :product-id="$product->id"
+                :slug="$product->slug"
+                :in-stock="$inStock"
+                :is-upcoming="$isUpcoming"
+                :requires-options="$product->hasVisibleVariations()"
+                :has-variations="$product->hasVisibleVariations()"
+                :key="'add-to-cart-'.$product->id"
+            />
+        </div>
     </div>
 </div>

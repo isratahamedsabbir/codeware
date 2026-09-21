@@ -36,6 +36,7 @@
             </form>
 
             <div class="flex shrink-0 items-center gap-1 sm:gap-2">
+                <livewire:frontend.cart-count :key="'cart-count'" />
                 <livewire:frontend.wishlist-count :key="'wishlist-count'" />
 
                 @auth
@@ -154,6 +155,7 @@
                 <a href="{{ url($menuItem->url) }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-gray-50 hover:text-brand">{{ $menuItem->label }}</a>
             @endforeach
             <a href="{{ route('favorites') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My favorites') }}</a>
+            <a href="{{ route('cart') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My cart') }}</a>
             @auth
                 <p class="px-3 pb-1 pt-3 text-xs font-bold uppercase tracking-wide text-zinc-400">{{ __('My account') }}</p>
                 <a href="{{ route('account.dashboard') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My Account') }}</a>

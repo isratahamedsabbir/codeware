@@ -8,6 +8,7 @@ use App\Models\Page;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Support\Locale;
+use App\Support\ProductCatalog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -31,9 +32,16 @@ class ProductController extends Controller
             ->when($request->query('category'), fn ($q, $slug) => $q->whereHas('categories.page', fn ($c) => $c->where('slug', $slug)))
             ->when($request->query('search'), fn ($q, $search) => $q->where("name->{$locale}", 'like', "%{$search}%"))
             ->when($request->query('featured') === '1', fn ($q) => $q->where('is_featured', true))
-            ->when($request->query('upcoming') === '1', fn ($q) => $q->where('is_upcoming', true))
-            ->when(in_array($request->query('type'), ['physical', 'digital'], true), fn ($q) => $q->where('product_type', $request->query('type')))
-            ->paginate($perPage);
+            ->when($request->query('upcoming') === '1', fn ($q) => $q->where('is_upcoming', true));
+
+        ProductCatalog::applyFilters($products, [
+            'attributes' => $this->attributesFrom($request),
+            'min_price' => $request->query('min_price'),
+            'max_price' => $request->query('max_price'),
+            'type' => (string) $request->query('type', ''),
+        ]);
+
+        $products = $products->paginate($perPage);
 
         return response()->json([
             'data' => $products->map(fn ($p) => $this->formatProduct($p, $locale)),
@@ -42,8 +50,21 @@ class ProductController extends Controller
                 'last_page' => $products->lastPage(),
                 'per_page' => $products->perPage(),
                 'total' => $products->total(),
+                'attributes' => ProductCatalog::attributeFacets(),
             ],
         ]);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function attributesFrom(Request $request): array
+    {
+        return array_filter(
+            (array) $request->query('attributes', []),
+            fn ($value, $name) => is_string($name) && $name !== '' && is_string($value) && $value !== '',
+            ARRAY_FILTER_USE_BOTH,
+        );
     }
 
     public function show(Request $request, string $slug): JsonResponse

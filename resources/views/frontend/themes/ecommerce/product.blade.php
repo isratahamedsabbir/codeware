@@ -13,25 +13,6 @@
         ->filter(fn (array $row) => $row['visible'] ?? true)
         ->values();
 
-    $variationGroups = [];
-    foreach ($visibleVariations as $row) {
-        foreach (($row['attributes'] ?? []) as $attribute => $value) {
-            $variationGroups[$attribute] = array_values(array_unique(array_merge($variationGroups[$attribute] ?? [], [$value])));
-        }
-    }
-
-    $variationRows = $visibleVariations->map(fn (array $row) => [
-        'attributes' => $row['attributes'] ?? [],
-        'price_label' => format_money($row['price'] ?? $product->price),
-        'discount_label' => (isset($row['price'], $row['discount_price']) && (float) $row['discount_price'] < (float) $row['price'])
-            ? format_money($row['discount_price'])
-            : null,
-        'stock_label' => (($row['quantity'] ?? null) === null || (int) $row['quantity'] > 0)
-            ? __('In stock')
-            : __('Out of stock'),
-        'in_stock' => ($row['quantity'] ?? null) === null ? $product->inStock() : (int) $row['quantity'] > 0,
-    ])->values();
-
     $galleryImages = collect()
         ->push($product->featured_image)
         ->merge($product->gallery->pluck('url'))
@@ -128,50 +109,8 @@
                 @endif
             @endif
 
-            @if ($hasVariations)
-                <div x-data="productVariants(@js([
-                    'groups' => $variationGroups,
-                    'variations' => $variationRows,
-                    'base_price_label' => format_money($product->price),
-                    'base_discount_label' => $baseDiscountLabel,
-                    'base_stock_label' => $baseStockLabel,
-                ]))" class="mt-6">
-                    <template x-for="(values, attribute) in groups" :key="attribute">
-                        <div class="mt-4">
-                            <h3 class="mb-2 text-sm font-semibold text-zinc-900" x-text="attribute"></h3>
-                            <div class="flex flex-wrap gap-2">
-                                <template x-for="value in values" :key="value">
-                                    <button type="button" @click="toggle(attribute, value)"
-                                        :class="selection[attribute] === value
-                                            ? 'border-primary bg-primary/10 text-primary'
-                                            : 'border-zinc-200 text-zinc-700 hover:border-primary/50'"
-                                        class="rounded-full border px-4 py-2 text-sm font-medium transition"
-                                        x-text="value"></button>
-                                </template>
-                            </div>
-                        </div>
-                    </template>
-
-                    <div class="mt-6 flex items-baseline gap-3">
-                        <template x-if="selected">
-                            <div class="flex flex-wrap items-baseline gap-3">
-                                <span class="text-3xl font-extrabold text-zinc-900" x-text="selected.discount_label || selected.price_label"></span>
-                                <span x-show="selected.discount_label" class="text-lg text-zinc-400 line-through" x-text="selected.price_label"></span>
-                                <span class="mt-1 w-full text-sm" :class="selected.in_stock ? 'text-emerald-600' : 'text-red-500'" x-text="selected.stock_label"></span>
-                            </div>
-                        </template>
-                        <template x-if="!selected">
-                            <div class="flex flex-wrap items-baseline gap-3">
-                                <span class="text-3xl font-extrabold text-zinc-900" x-text="base_discount_label || base_price_label"></span>
-                                <span x-show="base_discount_label" class="text-lg text-zinc-400 line-through" x-text="base_price_label"></span>
-                                @if (! $product->is_upcoming)
-                                    <span class="mt-1 w-full text-sm text-zinc-500">{{ __('Select options to see stock.') }}</span>
-                                @endif
-                            </div>
-                        </template>
-                    </div>
-                </div>
-            @endif
+            {{-- The option picker lives inside the add-to-cart component below, so the
+                 *picked* combination is what actually lands in the cart line. --}}
 
             <div class="mt-6 flex flex-wrap gap-2 text-sm text-zinc-600">
                 @if ($product->warranty_months > 0)
@@ -190,6 +129,16 @@
                         <span class="font-medium text-emerald-600">{{ __('Free shipping') }}</span>
                     @endif
                 </span>
+            </div>
+
+            <div class="mt-6">
+                <livewire:frontend.add-to-cart-button
+                    :product-id="$product->id"
+                    :adjustable="true"
+                    :quantity="1"
+                    :show-picker="$hasVariations"
+                    :key="'add-to-cart-'.$product->id"
+                />
             </div>
 
             @if (filled($product->description))
@@ -287,46 +236,6 @@
         </section>
     @endif
 </main>
-
-@if ($hasVariations)
-<script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('productVariants', (data) => ({
-            groups: data.groups,
-            variations: data.variations,
-            selection: {},
-            base_price_label: data.base_price_label,
-            base_discount_label: data.base_discount_label,
-            base_stock_label: data.base_stock_label,
-
-            toggle(attribute, value) {
-                if (this.selection[attribute] === value) {
-                    delete this.selection[attribute];
-                } else {
-                    this.selection[attribute] = value;
-                }
-            },
-
-            get selected() {
-                const names = Object.keys(this.selection).filter((name) => this.selection[name] !== undefined);
-                const namesCount = names.length;
-
-                if (!namesCount) {
-                    return null;
-                }
-
-                return this.variations.find((variation) => {
-                    const attrs = variation.attributes;
-                    const attrNames = Object.keys(attrs);
-
-                    return namesCount === attrNames.length
-                        && names.every((name) => this.selection[name] === attrs[name]);
-                }) ?? null;
-            },
-        }));
-    });
-</script>
-@endif
 
 @include('frontend.themes.ecommerce.partials.footer')
 

@@ -9,8 +9,8 @@
 @include('frontend.themes.ecommerce.partials.header')
 
 @php
-    $facets = collect(['category', 'brand', 'tag']);
-    $activeFacetCount = $facets->reject(fn ($facet) => blank($filters[$facet]))->count();
+    $facets = collect(['category', 'brand', 'tag', 'type', 'min_price', 'max_price']);
+    $activeFacetCount = $facets->reject(fn ($facet) => blank($filters[$facet]))->count() + count($filters['attributes']);
     $hasActiveFilters = $activeFacetCount > 0 || filled($filters['search']);
 @endphp
 
@@ -99,6 +99,75 @@
                         </div>
                     </section>
                 @endif
+
+                @if (! empty($attributeFacets))
+                    <section>
+                        <h2 class="mb-3 text-sm font-semibold text-zinc-900">{{ __('Options') }}</h2>
+                        @foreach ($attributeFacets as $name => $values)
+                            <h3 class="mb-2 mt-4 text-xs font-semibold uppercase tracking-wide text-zinc-500 first:mt-0">{{ $name }}</h3>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach ($values as $value => $count)
+                                    @php
+                                        $selected = ($filters['attributes'][$name] ?? null) === $value;
+                                        $nextAttributes = $selected
+                                            ? array_filter($filters['attributes'], fn ($_, $k) => $k !== $name, ARRAY_FILTER_USE_BOTH)
+                                            : ($filters['attributes'] + [$name => $value]);
+                                    @endphp
+                                    <a href="{{ request()->fullUrlWithQuery(['attributes' => $nextAttributes, 'page' => null]) }}"
+                                        class="rounded-full border px-3 py-1 text-xs transition {{ $selected ? 'border-primary bg-primary text-white' : 'border-zinc-200 text-zinc-600 hover:border-primary hover:text-primary' }}">
+                                        {{ $value }}
+                                        <span class="ml-1 text-[10px] {{ $selected ? 'text-white/80' : 'text-zinc-400' }}">({{ $count }})</span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        @endforeach
+                    </section>
+                @endif
+
+                <section>
+                    <h2 class="mb-3 text-sm font-semibold text-zinc-900">{{ __('Price') }}</h2>
+                    <form action="{{ route('shop') }}" method="GET" class="space-y-2">
+                        @foreach (request()->query() as $key => $value)
+                            @unless (in_array($key, ['min_price', 'max_price', 'page'], true))
+                                @if (is_array($value))
+                                    @foreach ($value as $subKey => $subValue)
+                                        <input type="hidden" name="{{ $key }}[{{ $subKey }}]" value="{{ $subValue }}">
+                                    @endforeach
+                                @else
+                                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                                @endif
+                            @endunless
+                        @endforeach
+                        <div class="flex items-center gap-2">
+                            <input type="number" name="min_price" value="{{ $filters['min_price'] }}" min="0"
+                                placeholder="{{ __('Min') }}"
+                                class="w-full rounded-xl border-zinc-200 px-3 py-2 text-sm">
+                            <span class="text-zinc-400">&ndash;</span>
+                            <input type="number" name="max_price" value="{{ $filters['max_price'] }}" min="0"
+                                placeholder="{{ __('Max') }}"
+                                class="w-full rounded-xl border-zinc-200 px-3 py-2 text-sm">
+                        </div>
+                        <button type="submit"
+                            class="w-full rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-600 transition hover:border-primary hover:text-primary">
+                            {{ __('Apply price') }}
+                        </button>
+                    </form>
+                </section>
+
+                <section>
+                    <h2 class="mb-3 text-sm font-semibold text-zinc-900">{{ __('Type') }}</h2>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach (['physical' => __('Physical'), 'digital' => __('Digital')] as $type => $label)
+                            @php
+                                $selected = $filters['type'] === $type;
+                            @endphp
+                            <a href="{{ request()->fullUrlWithQuery(['type' => $selected ? null : $type, 'page' => null]) }}"
+                                class="rounded-full border px-3 py-1 text-xs transition {{ $selected ? 'border-primary bg-primary text-white' : 'border-zinc-200 text-zinc-600 hover:border-primary hover:text-primary' }}">
+                                {{ $label }}
+                            </a>
+                        @endforeach
+                    </div>
+                </section>
             </div>
         </aside>
 
@@ -116,6 +185,18 @@
                 @if (filled($filters['search']))
                     <input type="hidden" name="search" value="{{ $filters['search'] }}">
                 @endif
+                @if (filled($filters['type']))
+                    <input type="hidden" name="type" value="{{ $filters['type'] }}">
+                @endif
+                @if (filled($filters['min_price']))
+                    <input type="hidden" name="min_price" value="{{ $filters['min_price'] }}">
+                @endif
+                @if (filled($filters['max_price']))
+                    <input type="hidden" name="max_price" value="{{ $filters['max_price'] }}">
+                @endif
+                @foreach ($filters['attributes'] as $attrName => $attrValue)
+                    <input type="hidden" name="attributes[{{ $attrName }}]" value="{{ $attrValue }}">
+                @endforeach
 
                 <label for="shop-sort" class="text-sm text-zinc-500">{{ __('Sort by') }}</label>
                 <select id="shop-sort" name="sort" onchange="this.form.submit()"

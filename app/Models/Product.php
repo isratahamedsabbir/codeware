@@ -156,6 +156,104 @@ class Product extends Model
         return $this->warranty_months !== null && $this->warranty_months > 0;
     }
 
+    /**
+     * The combination rows the admin left switched on ('visible').
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function visibleVariations(): array
+    {
+        return collect($this->variations ?? [])
+            ->filter(fn (array $row) => $row['visible'] ?? true)
+            ->values()
+            ->all();
+    }
+
+    public function hasVisibleVariations(): bool
+    {
+        return $this->visibleVariations() !== [];
+    }
+
+    /**
+     * The visible variation row matching exactly the given attribute map
+     * (attribute name => value, e.g. ['Color' => 'Red', 'Size' => 'M']) — or
+     * null when no such combination exists (or it's been toggled off). Used by
+     * the cart, checkout and order pipeline so a selected option always
+     * resolves against today's catalog.
+     *
+     * @param  array<string, string>  $attributes
+     * @return array<string, mixed>|null
+     */
+    public function variationRow(array $attributes): ?array
+    {
+        ksort($attributes);
+
+        foreach ($this->visibleVariations() as $row) {
+            $rowAttributes = $row['attributes'] ?? [];
+            ksort($rowAttributes);
+
+            if ($rowAttributes === $attributes) {
+                return $row;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * The price a selected option actually sells at — the combination's own
+     * price when one is set, else the base product price.
+     *
+     * @param  array<string, string>  $attributes
+     */
+    public function variationPrice(array $attributes): float
+    {
+        $row = $this->variationRow($attributes);
+
+        if ($row && ($row['price'] ?? null) !== null) {
+            return (float) $row['price'];
+        }
+
+        return (float) $this->price;
+    }
+
+    /**
+     * The discounted price for a selected option, when cheaper than the
+     * combination's own price — same guard as hasDiscount().
+     *
+     * @param  array<string, string>  $attributes
+     */
+    public function variationDiscount(array $attributes): ?float
+    {
+        $row = $this->variationRow($attributes);
+        $unitPrice = $this->variationPrice($attributes);
+
+        if ($row && ($row['discount_price'] ?? null) !== null && (float) $row['discount_price'] < $unitPrice) {
+            return (float) $row['discount_price'];
+        }
+
+        return null;
+    }
+
+    /**
+     * Whether a selected option can be ordered — the combination's own
+     * quantity when it overrides stock tracking, else the base product's
+     * stock. A null combination quantity means "inherit the base product",
+     * same convention as the public API detail response.
+     *
+     * @param  array<string, string>  $attributes
+     */
+    public function variationInStock(array $attributes): bool
+    {
+        $row = $this->variationRow($attributes);
+
+        if ($row) {
+            return ($row['quantity'] ?? null) === null ? $this->inStock() : (int) $row['quantity'] > 0;
+        }
+
+        return $this->inStock();
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', 'active');

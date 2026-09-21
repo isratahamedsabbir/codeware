@@ -317,6 +317,7 @@ class OrderController extends Controller
             'items' => $order->items->map(fn ($item) => [
                 'type' => $item->type,
                 'item_name' => $item->item_name,
+                'variations' => $item->variations ?: null,
                 'unit_price' => (float) $item->unit_price,
                 'quantity' => $item->quantity,
                 'line_total' => (float) $item->line_total,

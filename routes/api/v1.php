@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\Auth\LoginController;
 use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Auth\RegisterController;
 use App\Http\Controllers\Api\V1\Auth\SocialAuthController;
+use App\Http\Controllers\Api\V1\CartController;
 use App\Http\Controllers\Api\V1\ChatController;
 use App\Http\Controllers\Api\V1\CmsController;
 use App\Http\Controllers\Api\V1\CommentController;
@@ -34,6 +35,7 @@ use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\SubscriberController;
 use App\Http\Controllers\Api\V1\VoucherController;
 use App\Http\Controllers\WarrantyController;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 
 // Customer account auth — API-only (no admin panel UI), backed by the same `users`
@@ -122,6 +124,18 @@ Route::middleware('feature:orders')->group(function () {
     // customer's own email, no login — downloads the PDF warranty card for
     // whichever of this order's product items carry a warranty.
     Route::get('/orders/{orderNumber}/warranty', [WarrantyController::class, 'publicDownload'])->name('orders.warranty');
+
+    // Session-backed shopping cart (see App\Support\Cart). Uses StartSession so
+    // a guest's cart rides the session cookie like on the web storefront; the
+    // cart holds product ids + quantities only, with all money recomputed
+    // server-side at order time.
+    Route::middleware(StartSession::class)->group(function () {
+        Route::get('/cart', [CartController::class, 'show'])->name('cart.show');
+        Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
+        Route::put('/cart/items/{productId}', [CartController::class, 'update'])->name('cart.update');
+        Route::delete('/cart/items/{productId}', [CartController::class, 'destroy'])->name('cart.destroy');
+        Route::delete('/cart', [CartController::class, 'clear'])->name('cart.clear');
+    });
 });
 
 // Comments — on Posts, Products, and Services. Reading is public; posting a

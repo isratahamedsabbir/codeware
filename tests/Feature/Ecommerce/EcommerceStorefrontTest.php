@@ -257,3 +257,56 @@ it('falls back to the ecommerce storefront templates when the active theme ships
     get('/category/unknown')->assertNotFound();
     get('/products/unknown')->assertNotFound();
 });
+
+it('filters the shop by a selected attribute combination value', function () {
+    $red = storefrontProduct('attribute-red', ['name' => ['en' => 'Attribute Red Shirt', 'bn' => '']]);
+    $red->variations = [
+        ['attributes' => ['Color' => 'Red', 'Size' => 'M'], 'price' => 25, 'discount_price' => null, 'quantity' => 5, 'visible' => true],
+    ];
+    $red->save();
+
+    $blue = storefrontProduct('attribute-blue', ['name' => ['en' => 'Attribute Blue Shirt', 'bn' => '']]);
+    $blue->variations = [
+        ['attributes' => ['Color' => 'Blue', 'Size' => 'M'], 'price' => 25, 'discount_price' => null, 'quantity' => 5, 'visible' => true],
+    ];
+    $blue->save();
+
+    get('/shop?attributes[Color]=Red')
+        ->assertOk()
+        ->assertSee('Attribute Red Shirt')
+        ->assertDontSee('Attribute Blue Shirt');
+});
+
+it('filters the shop by price range and product type', function () {
+    storefrontProduct('range-cheap', ['name' => ['en' => 'Range Cheap', 'bn' => ''], 'price' => 10]);
+    storefrontProduct('range-mid', ['name' => ['en' => 'Range Mid', 'bn' => ''], 'price' => 50]);
+    storefrontProduct('range-expensive', ['name' => ['en' => 'Range Expensive', 'bn' => ''], 'price' => 100, 'product_type' => 'digital']);
+
+    get('/shop?min_price=20&max_price=80')
+        ->assertOk()
+        ->assertSee('Range Mid')
+        ->assertDontSee('Range Cheap')
+        ->assertDontSee('Range Expensive');
+
+    get('/shop?type=digital')
+        ->assertOk()
+        ->assertSee('Range Expensive')
+        ->assertDontSee('Range Mid');
+});
+
+it('renders attribute facets and price/type filters in the shop sidebar', function () {
+    $product = storefrontProduct('facet-item', ['name' => ['en' => 'Facet Item', 'bn' => '']]);
+    $product->variations = [
+        ['attributes' => ['Color' => 'Red', 'Size' => 'M'], 'price' => 22, 'discount_price' => null, 'quantity' => 5, 'visible' => true],
+    ];
+    $product->save();
+
+    get('/shop')
+        ->assertOk()
+        ->assertSee('Options')
+        ->assertSee('Color')
+        ->assertSee('Red')
+        ->assertSee('Size')
+        ->assertSee('Price')
+        ->assertSee('Physical');
+});

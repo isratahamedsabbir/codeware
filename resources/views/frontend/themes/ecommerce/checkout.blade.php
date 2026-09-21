@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Support\Locale::direction() }}">
+<head>
+    @include('partials.head')
+    @include('partials.seo-meta')
+</head>
+<body class="bg-page-bg font-storefront text-zinc-800 antialiased">
+
+@include('frontend.themes.ecommerce.partials.header')
+
+@php
+    $crumbs = [
+        ['label' => __('Home'), 'url' => route('home')],
+        ['label' => __('My cart'), 'url' => route('cart')],
+        ['label' => __('Checkout'), 'url' => null],
+    ];
+@endphp
+
+@include('frontend.themes.ecommerce.partials.breadcrumbs', ['crumbs' => $crumbs])
+
+<livewire:frontend.checkout />
+
+@include('frontend.themes.ecommerce.partials.footer')
+
+<livewire:frontend.chat-widget />
+
+@fluxScripts
+</body>
+</html>

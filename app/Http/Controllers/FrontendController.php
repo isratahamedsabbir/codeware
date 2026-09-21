@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CmsSection;
+use App\Models\Order;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductBrand;
@@ -12,6 +13,7 @@ use App\Models\Tag;
 use App\Support\Favorites;
 use App\Support\Frontend;
 use App\Support\Locale;
+use App\Support\ProductCatalog;
 use App\Support\Themes;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -105,6 +107,8 @@ class FrontendController extends Controller
             });
         }
 
+        ProductCatalog::applyFilters($query, $this->filtersFrom($request));
+
         switch ($request->query('sort')) {
             case 'price_asc':
                 $query->orderBy('price');
@@ -122,12 +126,17 @@ class FrontendController extends Controller
             'categories' => $this->shopCategories(),
             'brands' => $this->shopBrands(),
             'tags' => $this->shopTags(),
+            'attributeFacets' => ProductCatalog::attributeFacets(),
             'filters' => [
                 'category' => (string) $request->query('category', ''),
                 'brand' => (string) $request->query('brand', ''),
                 'tag' => (string) $request->query('tag', ''),
                 'search' => (string) $request->query('search', ''),
                 'sort' => (string) $request->query('sort', ''),
+                'attributes' => $this->filtersFrom($request)['attributes'],
+                'min_price' => is_numeric($request->query('min_price')) ? $request->query('min_price') : '',
+                'max_price' => is_numeric($request->query('max_price')) ? $request->query('max_price') : '',
+                'type' => (string) $request->query('type', ''),
             ],
             'title' => Setting::get('seo_meta_title') ?: Setting::get('site_name'),
             'page' => null,
@@ -136,6 +145,29 @@ class FrontendController extends Controller
             'currentSlug' => 'shop',
             'showVendorLogin' => Frontend::showVendorLogin(),
         ]);
+    }
+
+    /**
+     * The storefront filter set from the request — attributes are read as
+     * `attributes[Color]=Red` while price and type use their flat query
+     * params. Mirrored by the public API's ProductController.
+     *
+     * @return array{attributes: array<string, string>, min_price: mixed, max_price: mixed, type: string}
+     */
+    private function filtersFrom(Request $request): array
+    {
+        $attributes = array_filter(
+            (array) $request->query('attributes', []),
+            fn ($value, $name) => is_string($name) && $name !== '' && is_string($value) && $value !== '',
+            ARRAY_FILTER_USE_BOTH,
+        );
+
+        return [
+            'attributes' => $attributes,
+            'min_price' => $request->query('min_price'),
+            'max_price' => $request->query('max_price'),
+            'type' => (string) $request->query('type', ''),
+        ];
     }
 
     /**
@@ -292,6 +324,66 @@ class FrontendController extends Controller
             'navPages' => Frontend::navPages(),
             'menuItems' => Frontend::menuItems(),
             'currentSlug' => 'favorites',
+            'showVendorLogin' => Frontend::showVendorLogin(),
+        ]);
+    }
+
+    /**
+     * The shopping cart page — the session cart's lines, quantity controls and
+     * summary live in the CartPage Livewire component (see App\Support\Cart).
+     * Orderable only while the orders feature is on (the route group gates it).
+     */
+    public function cart()
+    {
+        return view('frontend.themes.'.Themes::view('cart'), [
+            'page' => null,
+            'sections' => collect(),
+            'title' => __('My cart'),
+            'navPages' => Frontend::navPages(),
+            'menuItems' => Frontend::menuItems(),
+            'currentSlug' => 'cart',
+            'showVendorLogin' => Frontend::showVendorLogin(),
+        ]);
+    }
+
+    /**
+     * The checkout page — cart summary plus a customer form that turns the cart
+     * into an Order (see the Checkout Livewire component).
+     */
+    public function checkout()
+    {
+        return view('frontend.themes.'.Themes::view('checkout'), [
+            'page' => null,
+            'sections' => collect(),
+            'title' => __('Checkout'),
+            'navPages' => Frontend::navPages(),
+            'menuItems' => Frontend::menuItems(),
+            'currentSlug' => 'checkout',
+            'showVendorLogin' => Frontend::showVendorLogin(),
+        ]);
+    }
+
+    /**
+     * The post-checkout confirmation page. Only reachable for the order that
+     * was just placed in this session — anything else bounces back to the shop,
+     * so an arbitrary (or guessed) order number can't be browsed.
+     */
+    public function orderConfirmation(string $orderNumber)
+    {
+        if (session('placed_order') !== $orderNumber) {
+            return redirect()->route('shop');
+        }
+
+        $order = Order::with('items')->where('order_number', $orderNumber)->firstOrFail();
+
+        return view('frontend.themes.'.Themes::view('order-confirmation'), [
+            'order' => $order,
+            'page' => null,
+            'sections' => collect(),
+            'title' => __('Order placed'),
+            'navPages' => Frontend::navPages(),
+            'menuItems' => Frontend::menuItems(),
+            'currentSlug' => 'checkout',
             'showVendorLogin' => Frontend::showVendorLogin(),
         ]);
     }

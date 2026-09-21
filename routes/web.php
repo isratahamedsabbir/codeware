@@ -28,6 +28,16 @@ Route::get('/tag/{slug}', [FrontendController::class, 'tag'])->name('shop.tag');
 // the moment they sign in (see App\Support\Favorites). No auth required.
 Route::get('/favorites', [FrontendController::class, 'favorites'])->name('favorites');
 
+// Cart + checkout — session-backed guest carts (see App\Support\Cart) that turn
+// into orders via the same server-side pipeline as the order API. Only exists
+// while the orders feature is enabled (consistent with the /api/v1/orders
+// routes). The confirmation page only shows the order placed in this session.
+Route::middleware('feature:orders')->group(function () {
+    Route::get('/cart', [FrontendController::class, 'cart'])->name('cart');
+    Route::get('/checkout', [FrontendController::class, 'checkout'])->name('checkout');
+    Route::get('/order-confirmation/{orderNumber}', [FrontendController::class, 'orderConfirmation'])->name('checkout.confirmation');
+});
+
 // Customer account — an ecommerce-store feature, so it only exists while the
 // ecommerce theme is active (CustomerController aborts 404 otherwise). Orders
 // are matched to the user by user_id first, then by their email, so history

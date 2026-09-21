@@ -335,3 +335,60 @@ it('public product listing includes puck_data nested under page, never at the to
     expect($response->json('data.0'))->not->toHaveKey('puck_data')
         ->and($response->json('data.0.page.puck_data'))->toBe($puckData);
 });
+
+it('filters products by a selected attribute combination value', function () {
+    Product::factory()->published()->create(['name' => ['en' => 'Red Shirt', 'bn' => ''], 'variations' => [
+        ['attributes' => ['Color' => 'Red', 'Size' => 'M'], 'price' => 25, 'discount_price' => null, 'quantity' => 5, 'visible' => true],
+    ]]);
+    Product::factory()->published()->create(['name' => ['en' => 'Blue Shirt', 'bn' => ''], 'variations' => [
+        ['attributes' => ['Color' => 'Blue', 'Size' => 'M'], 'price' => 25, 'discount_price' => null, 'quantity' => 5, 'visible' => true],
+    ]]);
+
+    $this->getJson('/api/v1/products?attributes[Color]=Red')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.name', 'Red Shirt');
+
+    $this->getJson('/api/v1/products?attributes[Color]=Blue&attributes[Size]=M')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.name', 'Blue Shirt');
+});
+
+it('exposes aggregated attribute facets in listing meta', function () {
+    foreach (['Red', 'Blue', 'Red'] as $i => $color) {
+        Product::factory()->published()->create(['name' => ['en' => "Shirt {$i}", 'bn' => ''], 'variations' => [
+            ['attributes' => ['Color' => $color, 'Size' => 'M'], 'price' => 25, 'discount_price' => null, 'quantity' => 5, 'visible' => true],
+            ['attributes' => ['Color' => 'Green', 'Size' => 'L'], 'price' => 25, 'discount_price' => null, 'quantity' => 5, 'visible' => true],
+        ]]);
+    }
+
+    $this->getJson('/api/v1/products')
+        ->assertOk()
+        ->assertJsonPath('meta.attributes.Color.Red', 2)
+        ->assertJsonPath('meta.attributes.Color.Blue', 1)
+        ->assertJsonPath('meta.attributes.Color.Green', 3)
+        ->assertJsonPath('meta.attributes.Size.M', 3)
+        ->assertJsonPath('meta.attributes.Size.L', 3);
+});
+
+it('filters products by a price range', function () {
+    Product::factory()->published()->create(['name' => ['en' => 'Cheap', 'bn' => ''], 'price' => 10]);
+    Product::factory()->published()->create(['name' => ['en' => 'Mid', 'bn' => ''], 'price' => 50]);
+    Product::factory()->published()->create(['name' => ['en' => 'Expensive', 'bn' => ''], 'price' => 100]);
+
+    $this->getJson('/api/v1/products?min_price=20&max_price=80')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.name', 'Mid');
+});
+
+it('ignores draft products when building attribute facets', function () {
+    Product::factory()->draft()->create(['variations' => [
+        ['attributes' => ['Color' => 'Red'], 'price' => 25, 'discount_price' => null, 'quantity' => 5, 'visible' => true],
+    ]]);
+
+    $this->getJson('/api/v1/products')
+        ->assertOk()
+        ->assertJsonPath('meta.attributes', []);
+});

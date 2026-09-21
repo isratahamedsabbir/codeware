@@ -20,6 +20,12 @@ return new class extends Migration
             // product or service must not rewrite what the customer actually
             // ordered and paid for.
             $table->string('item_name');
+            // The selected product variation (attribute name => value map) for
+            // a variant order line, e.g. {"Color":"Red","Size":"M"}. Null for
+            // base-product lines and service lines. The combination's price is
+            // already snapshotted into unit_price; this preserves *which*
+            // option the customer picked.
+            $table->json('variations')->nullable();
             $table->decimal('unit_price', 10, 2);
             $table->unsignedInteger('quantity');
             $table->decimal('line_total', 10, 2);
