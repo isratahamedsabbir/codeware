@@ -28,6 +28,15 @@ Route::get('/tag/{slug}', [FrontendController::class, 'tag'])->name('shop.tag');
 // the moment they sign in (see App\Support\Favorites). No auth required.
 Route::get('/favorites', [FrontendController::class, 'favorites'])->name('favorites');
 
+// Blog — the public posts feed (listing + single post), gated by the same
+// "blog" feature flag as the admin's Posts module. Post slugs, exactly like
+// product slugs, live on each post's paired Page, so the detail route is
+// resolved through that page's slug.
+Route::middleware('feature:blog')->group(function () {
+    Route::get('/blog', [FrontendController::class, 'blog'])->name('blog');
+    Route::get('/blog/{slug}', [FrontendController::class, 'post'])->name('blog.post');
+});
+
 // Cart + checkout — session-backed guest carts (see App\Support\Cart) that turn
 // into orders via the same server-side pipeline as the order API. Only exists
 // while the orders feature is enabled (consistent with the /api/v1/orders

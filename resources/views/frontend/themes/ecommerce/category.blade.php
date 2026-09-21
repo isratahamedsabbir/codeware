@@ -73,7 +73,7 @@
     @endforeach
 
     <section>
-        <div class="mb-6 flex items-end justify-between">
+        <div class="mb-6 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
             <div>
                 <h2 class="text-2xl font-bold text-zinc-900">{{ __('Products in :category', ['category' => $category->name]) }}</h2>
                 <p class="mt-1 text-sm text-zinc-500">{{ __(':count products found', ['count' => $products->total()]) }}</p>

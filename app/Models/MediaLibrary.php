@@ -97,7 +97,7 @@ class MediaLibrary extends Model
             ? Storage::disk($this->disk)->url($this->path)
             : ($this->attributes['url'] ?? null);
 
-        if ($url && !str_starts_with($url, 'http://') && !str_starts_with($url, 'https://')) {
+        if ($url && ! str_starts_with($url, 'http://') && ! str_starts_with($url, 'https://')) {
             $url = url($url);
         }
 

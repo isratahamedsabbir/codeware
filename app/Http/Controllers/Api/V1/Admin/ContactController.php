@@ -21,25 +21,25 @@ class ContactController extends Controller
 
         return response()->json([
             'data' => $contacts->map(fn ($contact) => [
-                'id'           => $contact->id,
-                'full_name'    => $contact->full_name,
+                'id' => $contact->id,
+                'full_name' => $contact->full_name,
                 'phone_number' => $contact->phone_number,
-                'email'        => $contact->email,
-                'subject'      => $contact->subject,
-                'message'      => $contact->message,
-                'status'       => $contact->status,
-                'created_at'   => $contact->created_at?->toIso8601String(),
+                'email' => $contact->email,
+                'subject' => $contact->subject,
+                'message' => $contact->message,
+                'status' => $contact->status,
+                'created_at' => $contact->created_at?->toIso8601String(),
                 'created_at_display' => $contact->created_at?->toDisplay(),
-                'updated_at'   => $contact->updated_at?->toIso8601String(),
+                'updated_at' => $contact->updated_at?->toIso8601String(),
                 'updated_at_display' => $contact->updated_at?->toDisplay(),
-                'deleted_at'   => $contact->deleted_at?->toIso8601String(),
+                'deleted_at' => $contact->deleted_at?->toIso8601String(),
                 'deleted_at_display' => $contact->deleted_at?->toDisplay(),
             ]),
             'meta' => [
                 'current_page' => $contacts->currentPage(),
-                'last_page'    => $contacts->lastPage(),
-                'per_page'     => $contacts->perPage(),
-                'total'        => $contacts->total(),
+                'last_page' => $contacts->lastPage(),
+                'per_page' => $contacts->perPage(),
+                'total' => $contacts->total(),
             ],
         ]);
     }
@@ -50,18 +50,18 @@ class ContactController extends Controller
 
         return response()->json([
             'data' => [
-                'id'           => $contact->id,
-                'full_name'    => $contact->full_name,
+                'id' => $contact->id,
+                'full_name' => $contact->full_name,
                 'phone_number' => $contact->phone_number,
-                'email'        => $contact->email,
-                'subject'      => $contact->subject,
-                'message'      => $contact->message,
-                'status'       => $contact->status,
-                'created_at'   => $contact->created_at?->toIso8601String(),
+                'email' => $contact->email,
+                'subject' => $contact->subject,
+                'message' => $contact->message,
+                'status' => $contact->status,
+                'created_at' => $contact->created_at?->toIso8601String(),
                 'created_at_display' => $contact->created_at?->toDisplay(),
-                'updated_at'   => $contact->updated_at?->toIso8601String(),
+                'updated_at' => $contact->updated_at?->toIso8601String(),
                 'updated_at_display' => $contact->updated_at?->toDisplay(),
-                'deleted_at'   => $contact->deleted_at?->toIso8601String(),
+                'deleted_at' => $contact->deleted_at?->toIso8601String(),
                 'deleted_at_display' => $contact->deleted_at?->toDisplay(),
             ],
         ]);
@@ -83,6 +83,7 @@ class ContactController extends Controller
     public function destroy(int $id): Response
     {
         Contact::findOrFail($id)->delete();
+
         return response()->noContent();
     }
 }

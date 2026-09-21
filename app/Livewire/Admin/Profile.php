@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
 class Profile extends Component
@@ -18,7 +19,7 @@ class Profile extends Component
 
     public string $email = '';
 
-    /** @var \Livewire\Features\SupportFileUploads\TemporaryUploadedFile|null */
+    /** @var TemporaryUploadedFile|null */
     public $photo = null;
 
     public string $current_password = '';
@@ -54,7 +55,7 @@ class Profile extends Component
         if (! empty($this->photo)) {
             $path = $this->photo->storeAs(
                 'profiles',
-                Str::uuid()->toString() . '.' . $this->photo->getClientOriginalExtension(),
+                Str::uuid()->toString().'.'.$this->photo->getClientOriginalExtension(),
                 'public',
             );
 

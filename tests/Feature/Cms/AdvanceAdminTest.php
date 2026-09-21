@@ -1,7 +1,6 @@
 <?php
 
 use App\Livewire\Admin\Advance\Backup;
-use App\Livewire\Admin\Advance\Database;
 use App\Livewire\Admin\Advance\Robots;
 use App\Livewire\Admin\Advance\Sitemap;
 use App\Models\Page;
@@ -46,10 +45,9 @@ it('lets an admin view the sitemap and robots.txt tools', function () {
     Livewire::test(Robots::class)->assertStatus(200);
 });
 
-it('lets an admin view the database and backup tools', function () {
+it('lets an admin view the backup tool', function () {
     $this->actingAs($this->admin);
 
-    Livewire::test(Database::class)->assertStatus(200);
     Livewire::test(Backup::class)->assertStatus(200);
 });
 
@@ -58,7 +56,6 @@ it('blocks staff from the advance routes', function () {
 
     $this->get(route('admin.advance.sitemap'))->assertForbidden();
     $this->get(route('admin.advance.robots'))->assertForbidden();
-    $this->get(route('admin.advance.database'))->assertForbidden();
     $this->get(route('admin.advance.backup'))->assertForbidden();
 });
 
@@ -92,18 +89,29 @@ it('saves robots.txt content through the form', function () {
     expect(File::get($this->robotsPath))->toBe("User-agent: *\nDisallow: /admin\n");
 });
 
-it('downloads a sql dump of the database', function () {
+it('downloads a zip containing the database dump and the storage files', function () {
     $this->actingAs($this->admin);
 
-    Livewire::test(Database::class)
+    $component = Livewire::test(Backup::class)
         ->call('download')
         ->assertFileDownloaded();
-});
 
-it('downloads a zip of the storage directory', function () {
-    $this->actingAs($this->admin);
+    $download = $component->effects['download'];
 
-    Livewire::test(Backup::class)
-        ->call('download')
-        ->assertFileDownloaded();
+    expect($download['name'])->toStartWith('full-backup-')->toEndWith('.zip');
+
+    $zipPath = tempnam(sys_get_temp_dir(), 'backup').'.zip';
+    file_put_contents($zipPath, base64_decode($download['content']));
+
+    $zip = new ZipArchive;
+    $zip->open($zipPath);
+
+    $names = collect(range(0, $zip->numFiles - 1))->map(fn (int $i) => $zip->getNameIndex($i));
+
+    expect($names->filter(fn (string $name) => str_starts_with($name, 'database/database-') && str_ends_with($name, '.sql')))
+        ->toHaveCount(1);
+
+    $zip->close();
+
+    @unlink($zipPath);
 });

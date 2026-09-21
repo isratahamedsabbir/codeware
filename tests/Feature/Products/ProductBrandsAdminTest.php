@@ -40,7 +40,7 @@ it('shows a "Both" badge for a shared (null-type) brand on the index, never misl
 
 it('filters the index to shared (null-type) brands only', function () {
     ProductBrand::factory()->create(['name' => ['en' => 'Shared Co', 'bn' => ''], 'type' => null]);
-    ProductBrand::factory()->create(['name' => ['en' => 'Product Only', 'bn' => ''], 'type' => \App\Models\ProductBrand::TYPE_PRODUCT]);
+    ProductBrand::factory()->create(['name' => ['en' => 'Product Only', 'bn' => ''], 'type' => ProductBrand::TYPE_PRODUCT]);
 
     Livewire::test(ProductBrandIndex::class)
         ->set('typeFilter', 'shared')

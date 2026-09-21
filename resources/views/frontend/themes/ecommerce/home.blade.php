@@ -29,7 +29,6 @@
         ->take(10);
 
     $homeBrands = \App\Models\ProductBrand::active()
-        ->whereNotNull('logo')
         ->orderBy('sort_order')
         ->take(10)
         ->get();
@@ -147,8 +146,12 @@
             <div class="grid grid-cols-2 gap-3 md:grid-cols-5 md:gap-4">
                 @foreach ($homeBrands as $brand)
                     <a href="{{ route('shop.brand', $brand->slug) }}"
-                        class="flex items-center justify-center rounded-md bg-white p-4 shadow-sm grayscale transition hover:shadow-md hover:grayscale-0">
-                        <img src="{{ $brand->logo }}" alt="{{ $brand->name }}" class="max-h-12 w-auto object-contain">
+                        class="flex min-h-[64px] items-center justify-center rounded-md bg-white p-4 shadow-sm transition hover:shadow-md {{ $brand->logo ? 'grayscale hover:grayscale-0' : '' }}">
+                        @if ($brand->logo)
+                            <img src="{{ $brand->logo }}" alt="{{ $brand->name }}" class="max-h-12 w-auto object-contain">
+                        @else
+                            <span class="text-center text-sm font-bold uppercase tracking-wide text-zinc-700">{{ $brand->name }}</span>
+                        @endif
                     </a>
                 @endforeach
             </div>

@@ -372,12 +372,6 @@ class Index extends Component
             'brands' => $brands,
             'categories' => $categories,
             'pages' => $pages,
-            // Header stat tiles — counted over every item in the active menu
-            // (top-level and nested), not just $topLevel.
-            'totalItems' => $items->count(),
-            'activeItems' => $items->where('is_active', true)->count(),
-            'groupCount' => $items->where('is_group', true)->count(),
-            'shortMenuCount' => $items->where('is_short_menu', true)->count(),
         ])->layout('layouts.admin', ['title' => __('Menu'), 'hidePageHeading' => true]);
     }
 }

@@ -27,7 +27,6 @@ use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\WarrantyController;
 use App\Livewire\Admin\About;
 use App\Livewire\Admin\Advance\Backup;
-use App\Livewire\Admin\Advance\Database;
 use App\Livewire\Admin\Advance\PasswordGenerator;
 use App\Livewire\Admin\Advance\Robots;
 use App\Livewire\Admin\Advance\Sitemap;
@@ -271,7 +270,6 @@ Route::middleware(['auth', 'admin', 'activity-log'])->group(function () {
         Route::middleware('feature:advance')->group(function () {
             Route::get('/advance/sitemap', Sitemap::class)->name('advance.sitemap');
             Route::get('/advance/robots', Robots::class)->name('advance.robots');
-            Route::get('/advance/database', Database::class)->name('advance.database');
             Route::get('/advance/backup', Backup::class)->name('advance.backup');
             Route::get('/advance/password-generator', PasswordGenerator::class)->name('advance.password-generator');
         });

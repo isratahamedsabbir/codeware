@@ -183,6 +183,16 @@
                                 @endforeach
                             </select>
                         </flux:field>
+
+                        <div class="mt-5 pt-5 border-t border-zinc-100 dark:border-zinc-700">
+                            <label class="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-300 cursor-pointer">
+                                <input type="checkbox" wire:model="settings.chat_widget_enabled" class="rounded border-zinc-300 text-primary" />
+                                Chat Box
+                            </label>
+                            <p class="text-xs text-zinc-400 mt-1">
+                                Shows the live support chat bubble in the corner of every public page.
+                            </p>
+                        </div>
                     </x-admin-section-card>
                 </div>
 

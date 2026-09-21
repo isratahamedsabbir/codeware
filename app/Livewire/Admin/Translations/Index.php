@@ -19,7 +19,9 @@ class Index extends Component
     use HasPerPage, WithPagination, WithSearch;
 
     public string $groupFilter = '';
+
     public string $filter = 'all';
+
     public string $localeFilter = '';
 
     /**
@@ -31,6 +33,7 @@ class Index extends Component
     public array $values = [];
 
     public ?string $deletingKey = null;
+
     public ?string $deletingGroup = null;
 
     #[Validate('required|string|max:191')]
@@ -108,7 +111,7 @@ class Index extends Component
     {
         $this->validateOnly('newKey');
 
-        $key   = trim($this->newKey);
+        $key = trim($this->newKey);
         $group = trim($this->newGroup) ?: '*';
 
         $exists = Translation::where('group', $group)->where('key', $key)->exists();
@@ -123,10 +126,10 @@ class Index extends Component
 
         foreach (Language::pluck('code') as $locale) {
             Translation::create([
-                'group'  => $group,
-                'key'    => $key,
+                'group' => $group,
+                'key' => $key,
                 'locale' => $locale,
-                'value'  => $locale === $default ? $key : null,
+                'value' => $locale === $default ? $key : null,
             ]);
         }
 
@@ -142,7 +145,7 @@ class Index extends Component
     public function confirmDelete(string $group, string $key): void
     {
         $this->deletingGroup = $group;
-        $this->deletingKey   = $key;
+        $this->deletingKey = $key;
         $this->dispatch('open-modal', name: 'translation-delete');
     }
 
@@ -207,11 +210,11 @@ class Index extends Component
         }
 
         return view('livewire.admin.translations.index', [
-            'rows'    => $rows,
-            'cells'   => $cells,
+            'rows' => $rows,
+            'cells' => $cells,
             'locales' => $locales,
-            'groups'  => Translation::distinct()->orderBy('group')->pluck('group'),
-            'stats'   => $this->stats($locales),
+            'groups' => Translation::distinct()->orderBy('group')->pluck('group'),
+            'stats' => $this->stats($locales),
         ])->layout('layouts.admin', ['title' => __('Translations')]);
     }
 
@@ -263,10 +266,10 @@ class Index extends Component
             foreach ($codes as $code) {
                 if (! $existing->has("{$row->group}|{$row->key}|{$code}")) {
                     $missing[] = [
-                        'group'      => $row->group,
-                        'key'        => $row->key,
-                        'locale'     => $code,
-                        'value'      => null,
+                        'group' => $row->group,
+                        'key' => $row->key,
+                        'locale' => $code,
+                        'value' => null,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ];
@@ -317,8 +320,8 @@ class Index extends Component
         return $locales->mapWithKeys(fn (Language $language) => [
             $language->code => [
                 'translated' => (int) ($translated[$language->code] ?? 0),
-                'total'      => $total,
-                'percent'    => $total > 0 ? (int) round(((int) ($translated[$language->code] ?? 0)) / $total * 100) : 0,
+                'total' => $total,
+                'percent' => $total > 0 ? (int) round(((int) ($translated[$language->code] ?? 0)) / $total * 100) : 0,
             ],
         ])->all();
     }

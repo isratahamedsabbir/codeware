@@ -37,14 +37,14 @@ class Form extends Component
         if ($id) {
             $language = Language::findOrFail($id);
 
-            $this->languageId  = $id;
-            $this->code        = $language->code;
-            $this->name        = $language->name;
+            $this->languageId = $id;
+            $this->code = $language->code;
+            $this->name = $language->name;
             $this->native_name = $language->native_name ?? '';
-            $this->direction   = $language->direction;
-            $this->flag        = $language->flag ?? '';
-            $this->is_active   = $language->is_active;
-            $this->sort_order  = $language->sort_order;
+            $this->direction = $language->direction;
+            $this->flag = $language->flag ?? '';
+            $this->is_active = $language->is_active;
+            $this->sort_order = $language->sort_order;
         } else {
             $this->sort_order = (int) Language::max('sort_order') + 1;
         }
@@ -65,14 +65,14 @@ class Form extends Component
         $existing = $creating ? null : Language::findOrFail($this->languageId);
 
         $data = [
-            'code'        => $this->code,
-            'name'        => $this->name,
+            'code' => $this->code,
+            'name' => $this->name,
             'native_name' => $this->native_name ?: null,
-            'direction'   => $this->direction,
-            'flag'        => $this->flag ?: null,
+            'direction' => $this->direction,
+            'flag' => $this->flag ?: null,
             // The default language must stay active regardless of the toggle.
-            'is_active'   => $this->is_active || (bool) $existing?->is_default,
-            'sort_order'  => $this->sort_order,
+            'is_active' => $this->is_active || (bool) $existing?->is_default,
+            'sort_order' => $this->sort_order,
         ];
 
         if ($existing) {
@@ -110,10 +110,10 @@ class Form extends Component
             ->whereNotIn('key', $existing)
             ->get()
             ->map(fn (Translation $row) => [
-                'group'      => $row->group,
-                'key'        => $row->key,
-                'locale'     => $locale,
-                'value'      => null,
+                'group' => $row->group,
+                'key' => $row->key,
+                'locale' => $locale,
+                'value' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ])

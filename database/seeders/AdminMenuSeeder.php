@@ -102,7 +102,6 @@ class AdminMenuSeeder extends Seeder
         $this->group('Advance', 23, [
             ['Sitemap', 'map', 'admin.advance.sitemap'],
             ['Robots.txt', 'globe-alt', 'admin.advance.robots'],
-            ['Database', 'circle-stack', 'admin.advance.database'],
             ['Backup', 'archive-box', 'admin.advance.backup'],
             ['Password Generator', 'key', 'admin.advance.password-generator'],
         ]);

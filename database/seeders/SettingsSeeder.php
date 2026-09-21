@@ -149,6 +149,10 @@ class SettingsSeeder extends Seeder
             // ── Frontend ──
             ['key' => 'site_theme',               'value' => 'default', 'type' => 'select', 'group' => 'frontend', 'is_public' => true],
 
+            // ── Frontend chat widget ── shows/hides the chat bubble on the
+            // public site. See Settings → Theme → Frontend and ChatWidget.
+            ['key' => 'chat_widget_enabled',      'value' => '1', 'type' => 'boolean', 'group' => 'frontend', 'is_public' => true],
+
             // ── Editor ──
             ['key' => 'puck_session_minutes',    'value' => '30', 'type' => 'integer', 'group' => 'editor', 'is_public' => false],
 

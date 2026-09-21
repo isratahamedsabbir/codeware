@@ -37,6 +37,7 @@ class TestController extends Controller
     public function testPrivateChannel()
     {
         broadcast(new TestPrivateChannel(['user_id' => auth()->id() ?? 1, 'msg' => 'hi i am sabbir.']));
+
         return response()->json([
             'message' => 'Successfully broadcasted to private channel.',
         ]);
@@ -45,6 +46,7 @@ class TestController extends Controller
     public function testPublicChannel()
     {
         broadcast(new TestPublicChannel(['user_id' => 1, 'msg' => 'hi i am sabbir.']));
+
         return response()->json([
             'message' => 'Successfully broadcasted to public channel.',
         ]);

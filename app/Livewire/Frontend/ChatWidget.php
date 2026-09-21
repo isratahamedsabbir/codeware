@@ -6,6 +6,7 @@ use App\Events\MessageSent;
 use App\Mail\ChatOtpMail;
 use App\Models\ChatMessage;
 use App\Models\Conversation;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -216,6 +217,12 @@ class ChatWidget extends Component
 
     public function render()
     {
+        // Hidden entirely when the admin switches it off from
+        // Settings → Theme → Frontend ("Chat Box").
+        if (! (bool) Setting::get('chat_widget_enabled', true)) {
+            return '<div></div>';
+        }
+
         return view('livewire.frontend.chat-widget');
     }
 }

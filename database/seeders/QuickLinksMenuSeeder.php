@@ -15,6 +15,7 @@ class QuickLinksMenuSeeder extends Seeder
     private const ITEMS = [
         ['label' => 'Home', 'url' => '/'],
         ['label' => 'Shop', 'url' => '/shop'],
+        ['label' => 'Blog', 'url' => '/blog'],
         ['label' => 'My Favorites', 'url' => '/favorites'],
     ];
 

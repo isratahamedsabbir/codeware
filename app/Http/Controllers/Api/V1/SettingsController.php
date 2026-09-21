@@ -29,6 +29,7 @@ class SettingsController extends Controller
                 'localization' => $this->group('localization'),
                 'currency' => $this->group('currency'),
                 'theme' => $this->group('colors'),
+                'frontend' => $this->group('frontend'),
                 'tracking' => $this->group('tracking'),
                 'shop' => $this->group('shop'),
                 'constant' => $this->constants(),

@@ -8,6 +8,7 @@ use App\Models\ProductCategory;
 use App\Models\Setting;
 use App\Models\Tag;
 use App\Models\User;
+use Database\Seeders\FrontendMenuSeeder;
 use Database\Seeders\RolePermissionSeeder;
 
 use function Pest\Laravel\get;
@@ -246,6 +247,35 @@ it('shows featured products and categories on the ecommerce homepage', function 
         ->assertSee('Featured Item')
         ->assertSee('Seeds')
         ->assertDontSee('Hidden Draft');
+});
+
+it('shows brands without a logo on the ecommerce homepage', function () {
+    $brand = ProductBrand::factory()->create(['name' => ['en' => 'Acme Supplies', 'bn' => ''], 'logo' => null]);
+    storefrontProduct('acme-item', ['name' => ['en' => 'Acme Item', 'bn' => ''], 'brand_id' => $brand->id]);
+
+    get('/')
+        ->assertOk()
+        ->assertSee('Shop by brand')
+        ->assertSee('Acme Supplies')
+        ->assertSee('/brand/acme-supplies');
+});
+
+it('prepends category and brand dropdowns to the ecommerce header menu', function () {
+    $this->seed(FrontendMenuSeeder::class);
+
+    $category = ProductCategory::factory()->create(['name' => ['en' => 'Fertilizers', 'bn' => '']]);
+    pairPageFor($category, 'product_category', 'fertilizers', $this->admin->id);
+
+    $brand = ProductBrand::factory()->create(['name' => ['en' => 'Acme Supplies', 'bn' => '']]);
+    storefrontProduct('acme-item', ['name' => ['en' => 'Acme Item', 'bn' => ''], 'brand_id' => $brand->id]);
+
+    get('/')
+        ->assertOk()
+        ->assertSee('Categories')
+        ->assertSee('/category/fertilizers')
+        ->assertSee('Brands')
+        ->assertSee('/brand/acme-supplies')
+        ->assertSeeInOrder(['Categories', 'Brands', 'Home']);
 });
 
 it('falls back to the ecommerce storefront templates when the active theme ships none', function () {

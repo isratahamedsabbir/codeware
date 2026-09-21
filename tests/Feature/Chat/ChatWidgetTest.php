@@ -5,6 +5,7 @@ use App\Livewire\Frontend\ChatWidget;
 use App\Mail\ChatOtpMail;
 use App\Models\ChatMessage;
 use App\Models\Conversation;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
@@ -15,6 +16,18 @@ use Spatie\Permission\Models\Role;
 beforeEach(function () {
     Role::findOrCreate('admin', 'web');
     $this->admin = User::factory()->admin()->create();
+});
+
+it('renders empty output when the chat widget is disabled in settings', function () {
+    Setting::set('chat_widget_enabled', false);
+
+    Livewire::test(ChatWidget::class)->assertDontSee('Open chat');
+});
+
+it('renders the chat bubble when the chat widget is enabled in settings', function () {
+    Setting::set('chat_widget_enabled', true);
+
+    Livewire::test(ChatWidget::class)->assertSee('Open chat');
 });
 
 it('requires a name and a valid email before sending an otp', function () {

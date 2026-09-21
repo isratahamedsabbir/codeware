@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -26,7 +27,7 @@ class Language extends Model
     protected function casts(): array
     {
         return [
-            'is_active'  => 'boolean',
+            'is_active' => 'boolean',
             'is_default' => 'boolean',
             'sort_order' => 'integer',
         ];
@@ -100,7 +101,7 @@ class Language extends Model
      * as a broken `__PHP_Incomplete_Class` and gets silently swallowed by the try/catch in
      * Locale::active(), leaving the language switcher with zero options.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, self>
+     * @return Collection<int, self>
      */
     public static function activeCached()
     {

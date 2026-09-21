@@ -34,7 +34,7 @@ class ScanTranslations extends Command
         }
 
         $default = Language::where('is_default', true)->value('code') ?? $locales[0];
-        $dryRun  = (bool) $this->option('dry-run');
+        $dryRun = (bool) $this->option('dry-run');
 
         $found = $this->scan();
 
@@ -58,6 +58,7 @@ class ScanTranslations extends Command
             if (mb_strlen($key) > 191) {
                 $skipped++;
                 $this->line("  <fg=yellow>too long, skipped:</> {$this->preview($key)}");
+
                 continue;
             }
 
@@ -75,12 +76,12 @@ class ScanTranslations extends Command
 
                 if (! $dryRun) {
                     Translation::create([
-                        'group'  => '*',
-                        'key'    => $key,
+                        'group' => '*',
+                        'key' => $key,
                         'locale' => $locale,
                         // The default locale reads naturally from the key itself; other
                         // locales start blank so they show up as untranslated.
-                        'value'  => $locale === $default ? $key : null,
+                        'value' => $locale === $default ? $key : null,
                     ]);
                 }
             }

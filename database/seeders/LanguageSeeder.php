@@ -17,24 +17,24 @@ class LanguageSeeder extends Seeder
     {
         $languages = [
             [
-                'code'        => 'en',
-                'name'        => 'English',
+                'code' => 'en',
+                'name' => 'English',
                 'native_name' => 'English',
-                'direction'   => 'ltr',
-                'flag'        => '🇬🇧',
-                'is_active'   => true,
-                'is_default'  => true,
-                'sort_order'  => 1,
+                'direction' => 'ltr',
+                'flag' => '🇬🇧',
+                'is_active' => true,
+                'is_default' => true,
+                'sort_order' => 1,
             ],
             [
-                'code'        => 'bn',
-                'name'        => 'Bengali',
+                'code' => 'bn',
+                'name' => 'Bengali',
                 'native_name' => 'বাংলা',
-                'direction'   => 'ltr',
-                'flag'        => '🇧🇩',
-                'is_active'   => true,
-                'is_default'  => false,
-                'sort_order'  => 2,
+                'direction' => 'ltr',
+                'flag' => '🇧🇩',
+                'is_active' => true,
+                'is_default' => false,
+                'sort_order' => 2,
             ],
         ];
 
@@ -53,7 +53,7 @@ class LanguageSeeder extends Seeder
     protected function importJsonFiles(): void
     {
         $codes = Language::pluck('code');
-        $keys  = [];
+        $keys = [];
 
         foreach ($codes as $code) {
             $path = lang_path("{$code}.json");
@@ -66,6 +66,7 @@ class LanguageSeeder extends Seeder
 
             if (! is_array($lines)) {
                 $this->command?->warn("Skipped lang/{$code}.json — invalid JSON.");
+
                 continue;
             }
 

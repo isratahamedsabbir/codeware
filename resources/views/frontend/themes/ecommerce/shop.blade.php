@@ -32,8 +32,31 @@
         </p>
     </div>
 
-    <div class="grid gap-8 lg:grid-cols-[17rem_1fr]">
-        <aside class="lg:sticky lg:top-24 lg:self-start">
+    <div class="grid gap-8 lg:grid-cols-[17rem_1fr]" x-data="{ filtersOpen: false }">
+        <div class="lg:hidden">
+            <button
+                type="button"
+                @click="filtersOpen = !filtersOpen"
+                :aria-expanded="filtersOpen"
+                aria-controls="shop-filters"
+                class="flex w-full items-center justify-between rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-semibold text-zinc-900 shadow-sm transition hover:border-primary"
+            >
+                <span class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+                    </svg>
+                    {{ __('Filters') }}
+                    @if ($activeFacetCount > 0)
+                        <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-white">{{ $activeFacetCount }}</span>
+                    @endif
+                </span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-zinc-400 transition-transform duration-200" :class="filtersOpen ? '-rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" />
+                </svg>
+            </button>
+        </div>
+
+        <aside id="shop-filters" class="lg:sticky lg:top-24 lg:self-start" :class="filtersOpen ? 'block' : 'hidden lg:block'">
             <div class="space-y-8 rounded-2xl border border-zinc-100 bg-white p-5 shadow-sm">
                 <form action="{{ route('shop') }}" method="GET" role="search">
                     <label for="shop-search" class="mb-2 block text-sm font-semibold text-zinc-900">{{ __('Search') }}</label>

@@ -8,6 +8,7 @@ use App\Support\ImageWatermarker;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class MediaController extends Controller
 {
@@ -55,7 +56,7 @@ class MediaController extends Controller
         ImageWatermarker::applyIfEnabled('public', $path, $mime);
 
         $media = MediaLibrary::create([
-            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+            'uuid' => (string) Str::uuid(),
             'filename' => $file->hashName(),
             'original_filename' => $file->getClientOriginalName(),
             'path' => $path,

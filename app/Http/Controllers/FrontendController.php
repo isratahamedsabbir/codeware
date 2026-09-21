@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\CmsSection;
 use App\Models\Order;
 use App\Models\Page;
+use App\Models\Post;
+use App\Models\PostCategory;
 use App\Models\Product;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
@@ -311,6 +313,80 @@ class FrontendController extends Controller
             'navPages' => Frontend::navPages(),
             'menuItems' => Frontend::menuItems(),
             'currentSlug' => $tag->slug,
+            'showVendorLogin' => Frontend::showVendorLogin(),
+        ]);
+    }
+
+    /**
+     * The blog feed — every published post, newest first, optionally narrowed
+     * to a category via ?category (category links come from the category's
+     * paired Page slug). Rendered through the active theme's blog template.
+     */
+    public function blog(Request $request)
+    {
+        $posts = Post::published()
+            ->with(['page', 'category.page', 'user:id,name', 'tags'])
+            ->orderByDesc('published_at')
+            ->orderByDesc('id');
+
+        if ($slug = $request->query('category')) {
+            $posts->whereHas('category.page', fn ($q) => $q->where('slug', $slug));
+        }
+
+        $categories = PostCategory::where('status', 'active')
+            ->with('page')
+            ->withCount(['posts' => fn ($q) => $q->where('status', 'active')])
+            ->orderBy('sort_order')
+            ->get()
+            ->filter(fn (PostCategory $category) => $category->page !== null);
+
+        return view('frontend.themes.'.Themes::view('blog'), [
+            'posts' => $posts->paginate(Setting::perPage())->withQueryString(),
+            'categories' => $categories,
+            'page' => null,
+            'sections' => collect(),
+            'title' => __('Blog'),
+            'navPages' => Frontend::navPages(),
+            'menuItems' => Frontend::menuItems(),
+            'currentSlug' => 'blog',
+            'showVendorLogin' => Frontend::showVendorLogin(),
+        ]);
+    }
+
+    /**
+     * A single blog post — title, meta (author, date, reading time), category,
+     * tags, and the post's paired Page's CMS sections (Puck-built content lives
+     * on the Page, just like products). Resolved by the paired Page's slug.
+     */
+    public function post(string $slug)
+    {
+        $post = Post::published()
+            ->with(['page', 'category.page', 'user:id,name', 'tags'])
+            ->whereHas('page', fn ($q) => $q->where('slug', $slug))
+            ->first();
+
+        abort_unless($post, 404, 'Unknown post.');
+
+        $sections = $post->page ? CmsSection::cachedForPage($post->page->id) : collect();
+
+        $related = Post::published()
+            ->with('page')
+            ->whereHas('page')
+            ->where('id', '!=', $post->id)
+            ->orderByDesc('published_at')
+            ->orderByDesc('id')
+            ->limit(3)
+            ->get();
+
+        return view('frontend.themes.'.Themes::view('post'), [
+            'post' => $post,
+            'related' => $related,
+            'sections' => $sections,
+            'page' => $post->page,
+            'title' => $post->page?->seo_title ?: $post->getTranslation('title', 'en', false),
+            'navPages' => Frontend::navPages(),
+            'menuItems' => Frontend::menuItems(),
+            'currentSlug' => $post->page?->slug ?? 'blog',
             'showVendorLogin' => Frontend::showVendorLogin(),
         ]);
     }

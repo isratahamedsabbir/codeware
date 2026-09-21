@@ -24,59 +24,7 @@
         </div>
     </div>
 
-    {{-- Stat tiles — same admin-stat-card pattern used across the admin
-         panel's index pages, scoped to the currently selected menu. --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
-        <div class="admin-card admin-stat-card admin-showcase-stat relative border-0! border-t-4! border-primary! shadow-sm!">
-            <div class="flex items-start justify-between">
-                <div>
-                    <p class="text-sm font-semibold text-zinc-500">{{ __('Total items') }}</p>
-                    <p class="admin-stat-value mt-2 font-extrabold text-zinc-900 leading-6">{{ $totalItems }}</p>
-                </div>
-                <div class="admin-stat-icon bg-blue-100">
-                    <flux:icon.bars-3 class="size-6 text-blue-600" />
-                </div>
-            </div>
-        </div>
-
-        <div class="admin-card admin-stat-card admin-showcase-stat relative border-0! border-t-4! border-emerald-500! shadow-sm!">
-            <div class="flex items-start justify-between">
-                <div>
-                    <p class="text-sm font-semibold text-zinc-500">{{ __('Active') }}</p>
-                    <p class="admin-stat-value mt-2 font-extrabold text-zinc-900 leading-6">{{ $activeItems }}</p>
-                </div>
-                <div class="admin-stat-icon bg-emerald-100">
-                    <flux:icon.check-circle class="size-6 text-emerald-600" />
-                </div>
-            </div>
-        </div>
-
-        <div class="admin-card admin-stat-card admin-showcase-stat relative border-0! border-t-4! border-indigo-500! shadow-sm!">
-            <div class="flex items-start justify-between">
-                <div>
-                    <p class="text-sm font-semibold text-zinc-500">{{ __('Groups') }}</p>
-                    <p class="admin-stat-value mt-2 font-extrabold text-zinc-900 leading-6">{{ $groupCount }}</p>
-                </div>
-                <div class="admin-stat-icon bg-indigo-100">
-                    <flux:icon.folder class="size-6 text-indigo-600" />
-                </div>
-            </div>
-        </div>
-
-        <div class="admin-card admin-stat-card admin-showcase-stat relative border-0! border-t-4! border-amber-500! shadow-sm!">
-            <div class="flex items-start justify-between">
-                <div>
-                    <p class="text-sm font-semibold text-zinc-500">{{ __('Short menu') }}</p>
-                    <p class="admin-stat-value mt-2 font-extrabold text-zinc-900 leading-6">{{ $shortMenuCount }}</p>
-                </div>
-                <div class="admin-stat-icon bg-amber-100">
-                    <flux:icon.bolt class="size-6 text-amber-600" />
-                </div>
-            </div>
-        </div>
-    </div>
-
-<div class="bg-white rounded-[5px] border border-zinc-100 shadow-sm overflow-hidden">
+    <div class="bg-white rounded-[5px] border border-zinc-100 shadow-sm overflow-hidden">
 
     {{-- Sortable tree --}}
     <div class=""

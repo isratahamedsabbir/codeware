@@ -27,6 +27,20 @@
 @endphp
 
 <footer class="mt-16 bg-brand text-white">
+    @if (\App\Support\Features::enabled('newsletter'))
+        <div class="border-b border-white/10">
+            <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-8 sm:flex-row sm:gap-8 sm:px-6">
+                <div class="text-center sm:text-left">
+                    <h2 class="text-lg font-bold text-white">{{ __('Subscribe to our newsletter') }}</h2>
+                    <p class="mt-1 text-sm text-white/70">{{ __('Get updates on new products and exclusive offers.') }}</p>
+                </div>
+                <div class="w-full sm:w-auto sm:min-w-[26rem]">
+                    <livewire:frontend.newsletter-subscribe :key="'footer-newsletter'" />
+                </div>
+            </div>
+        </div>
+    @endif
+
     <div class="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-10 sm:grid-cols-2 md:grid-cols-4 sm:px-6">
         <div>
             <a href="{{ url('/') }}" class="flex items-center gap-2">

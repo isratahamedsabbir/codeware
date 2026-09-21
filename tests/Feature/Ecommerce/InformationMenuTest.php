@@ -42,6 +42,8 @@ it('renders the quick links menu in the footer', function () {
     get('/shop')
         ->assertOk()
         ->assertSee('Quick Links')
+        ->assertSee('Blog', false)
+        ->assertSee('/blog')
         ->assertSee('My Favorites', false)
         ->assertSee('/favorites')
         ->assertSee('/shop');
