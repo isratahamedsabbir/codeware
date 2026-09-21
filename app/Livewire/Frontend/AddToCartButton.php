@@ -126,7 +126,10 @@ class AddToCartButton extends Component
 
     public function render()
     {
-        $product = ($this->requiresOptions && $this->slug === '') || $this->showPicker
+        // Whenever a product can carry options we need its full variation data:
+        // on the detail page the picker is rendered inline, and on product cards
+        // an options product opens a picker modal instead of the old link.
+        $product = $this->requiresOptions || $this->showPicker
             ? Product::find($this->productId)
             : null;
 

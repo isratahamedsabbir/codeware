@@ -98,11 +98,16 @@ class FrontendController extends Controller
 
         if ($term = trim((string) $request->query('search', ''))) {
             $locale = Locale::current();
-            $query->where(function (Builder $q) use ($term, $locale) {
-                $q->where('name->en', 'like', "%{$term}%");
+            $needle = '%'.mb_strtolower($term).'%';
+
+            // json_unquote(json_extract(...)) returns a binary-collation string
+            // in MySQL, making a plain LIKE case-sensitive even on a
+            // case-insensitive column — so compare both sides lowercased.
+            $query->where(function (Builder $q) use ($needle, $locale) {
+                $q->whereRaw('LOWER(json_unquote(json_extract(`name`, \'$."en"\'))) LIKE ?', [$needle]);
 
                 if ($locale !== 'en') {
-                    $q->orWhere("name->{$locale}", 'like', "%{$term}%");
+                    $q->orWhereRaw('LOWER(json_unquote(json_extract(`name`, \'$."'.mb_strtolower($locale).'"\'))) LIKE ?', [$needle]);
                 }
             });
         }
@@ -121,12 +126,18 @@ class FrontendController extends Controller
                 break;
         }
 
+        $priceBounds = (object) [
+            'min' => (float) Product::active()->min('price') ?: 0,
+            'max' => (float) Product::active()->max('price') ?: 100000,
+        ];
+
         return view('frontend.themes.'.Themes::view('shop'), [
             'products' => $query->paginate(Setting::perPage())->withQueryString(),
             'categories' => $this->shopCategories(),
             'brands' => $this->shopBrands(),
             'tags' => $this->shopTags(),
             'attributeFacets' => ProductCatalog::attributeFacets(),
+            'priceBounds' => $priceBounds,
             'filters' => [
                 'category' => (string) $request->query('category', ''),
                 'brand' => (string) $request->query('brand', ''),

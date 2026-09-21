@@ -24,18 +24,21 @@
                 </a>
             </div>
 
-            <form action="{{ route('shop') }}" method="GET" class="relative hidden flex-1 max-w-xl lg:block">
-                <input type="text" name="search" value="{{ request()->query('search') }}"
-                    placeholder="{{ __('Search products...') }}"
-                    class="w-full rounded-full bg-white py-2.5 pl-5 pr-11 text-sm text-gray-700 placeholder-gray-400 outline-none focus:ring-2 focus:ring-white/60">
-                <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-brand" aria-label="{{ __('Search') }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
-                    </svg>
-                </button>
-            </form>
+            <div class="relative hidden flex-1 max-w-xl lg:block">
+                <livewire:frontend.header-search :key="'header-search'" />
+            </div>
 
             <div class="flex shrink-0 items-center gap-1 sm:gap-2">
+                @if ($contactPhone = \App\Models\Setting::get('contact_phone'))
+                    <a href="tel:{{ $contactPhone }}"
+                        class="hidden items-center gap-1.5 text-xs font-medium text-white/80 transition-colors hover:text-white lg:flex"
+                        aria-label="{{ __('Call us') }}" title="{{ $contactPhone }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+                        </svg>
+                        <span class="whitespace-nowrap">{{ $contactPhone }}</span>
+                    </a>
+                @endif
                 <livewire:frontend.cart-count :key="'cart-count'" />
                 <livewire:frontend.wishlist-count :key="'wishlist-count'" />
 
@@ -131,16 +134,9 @@
 
     <input type="checkbox" id="mobile-menu" class="peer hidden">
     <div class="hidden border-b border-gray-100 bg-white px-4 py-4 peer-checked:block md:hidden">
-        <form action="{{ route('shop') }}" method="GET" class="relative mb-4">
-            <input type="text" name="search" value="{{ request()->query('search') }}"
-                placeholder="{{ __('Search products...') }}"
-                class="w-full rounded-full border border-zinc-200 bg-gray-50 py-2.5 pl-5 pr-11 text-sm outline-none focus:border-brand">
-            <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-brand" aria-label="{{ __('Search') }}">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
-                </svg>
-            </button>
-        </form>
+        <div class="relative mb-4">
+                <livewire:frontend.header-search :on-dark="false" :key="'header-search-mobile'" />
+            </div>
 
         <nav class="flex flex-col">
             <a href="{{ route('home') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-gray-50 hover:text-brand">{{ __('Home') }}</a>

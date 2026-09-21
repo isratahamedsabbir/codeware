@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\HasUniqueCode;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -19,12 +20,12 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password', 'photo', 'signature', 'provider', 'provider_id'])]
+#[Fillable(['name', 'email', 'code', 'password', 'photo', 'signature', 'provider', 'provider_id'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, HasRoles, Notifiable, TwoFactorAuthenticatable;
+    use HasApiTokens, HasFactory, HasRoles, HasUniqueCode, Notifiable, TwoFactorAuthenticatable;
 
     /**
      * Get the attributes that should be cast.
@@ -39,6 +40,14 @@ class User extends Authenticatable
             'is_blocked' => 'boolean',
             'is_delivery_boy' => 'boolean',
         ];
+    }
+
+    /**
+     * The auto-generated USR-XXXXXXXX business code (see HasUniqueCode).
+     */
+    protected function uniqueCodePrefix(): string
+    {
+        return 'USR';
     }
 
     /**

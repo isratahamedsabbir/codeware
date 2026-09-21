@@ -2,17 +2,17 @@
 
 namespace App\Models;
 
+use App\Concerns\HasUniqueCode;
 use App\Services\OrderEmailService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
 
 class Order extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUniqueCode;
 
     public const STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
@@ -41,12 +41,6 @@ class Order extends Model
 
     protected static function booted(): void
     {
-        static::creating(function (Order $order) {
-            if (empty($order->order_number)) {
-                $order->order_number = static::generateOrderNumber();
-            }
-        });
-
         // A confirmation to the customer and a notification to the admin —
         // both best-effort (see OrderEmailService), so a mail failure never
         // blocks the order itself from being created.
@@ -58,17 +52,17 @@ class Order extends Model
     }
 
     /**
-     * 'ORD-' + an 8-char code — collisions are astronomically unlikely, but the
-     * column is uniquely constrained, so re-roll on the rare clash rather than
-     * letting the insert fail.
+     * The auto-generated ORD-XXXXXXXX order number lives in the existing
+     * `order_number` column, not a new `code` column — see HasUniqueCode.
      */
-    private static function generateOrderNumber(): string
+    protected function uniqueCodeColumn(): string
     {
-        do {
-            $number = 'ORD-'.strtoupper(Str::random(8));
-        } while (static::where('order_number', $number)->exists());
+        return 'order_number';
+    }
 
-        return $number;
+    protected function uniqueCodePrefix(): string
+    {
+        return 'ORD';
     }
 
     public function items(): HasMany

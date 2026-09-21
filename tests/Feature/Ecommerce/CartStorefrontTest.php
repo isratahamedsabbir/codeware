@@ -215,17 +215,24 @@ function cartVariantProduct(string $slug): Product
     return $product;
 }
 
-it('shows a Select options card link for variant products and an add button otherwise', function () {
+it('shows an Add to cart picker button on variant product cards and a plain add button otherwise', function () {
     $variant = cartVariantProduct('variant-card');
     get('/shop')
         ->assertOk()
-        ->assertSee('Select options')
+        ->assertSee('Add to cart')
         ->assertSee('/products/variant-card');
+
+    // The card's option popup is server-rendered (hidden until opened), so
+    // its swatches are in the page HTML — the attribute groups plus values.
+    $html = get('/shop')->assertOk()->getContent();
+
+    expect(str_contains($html, 'Color'))->toBeTrue()
+        ->and(str_contains($html, 'Red'))->toBeTrue()
+        ->and(str_contains($html, 'Blue'))->toBeTrue();
 
     $base = cartProduct('plain-card', ['name' => ['en' => 'Plain Card', 'bn' => '']]);
     get('/shop')
         ->assertOk()
-        ->assertSee('Select options')
         ->assertSee('Add to cart')
         ->assertSee('/products/plain-card');
 });

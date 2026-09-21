@@ -171,7 +171,8 @@ it('renders the variation picker with grouped options on the product page', func
         ->assertSee('Red')
         ->assertSee('Blue')
         ->assertSee('Size')
-        ->assertSee('productVariants');
+        ->assertSee('productVariants')
+        ->assertSee('\u0022initial_selection\u0022:{\u0022Size\u0022:\u0022M\u0022,\u0022Color\u0022:\u0022Red\u0022}', false);
 });
 
 it('renders a category landing page with its products', function () {

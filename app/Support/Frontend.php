@@ -50,6 +50,32 @@ class Frontend
     }
 
     /**
+     * The "Information" menu (see InformationMenuSeeder) — the About/Contact/FAQ
+     * links rendered by the footer's Information column.
+     *
+     * @return Collection<int, MenuItem>
+     */
+    public static function informationMenu(): Collection
+    {
+        $rows = ContentCache::remember('information-menu', fn () => MenuItem::where('group', 'information')->where('is_active', true)->orderBy('sort_order')->get()->map->getAttributes()->all());
+
+        return MenuItem::hydrate($rows);
+    }
+
+    /**
+     * The "Quick Links" menu (see QuickLinksMenuSeeder) — the Home/Shop/shortcut
+     * links rendered by the footer's Quick Links column.
+     *
+     * @return Collection<int, MenuItem>
+     */
+    public static function quickLinks(): Collection
+    {
+        $rows = ContentCache::remember('quick-links', fn () => MenuItem::where('group', 'quick-links')->where('is_active', true)->orderBy('sort_order')->get()->map->getAttributes()->all());
+
+        return MenuItem::hydrate($rows);
+    }
+
+    /**
      * The "home" page — public root content, heavily reused across themes.
      */
     public static function homePage(): ?Page

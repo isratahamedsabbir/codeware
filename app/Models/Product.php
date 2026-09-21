@@ -7,6 +7,7 @@ use App\Concerns\HasComments;
 use App\Concerns\HasCreator;
 use App\Concerns\HasFaqs;
 use App\Concerns\HasReviews;
+use App\Concerns\HasUniqueCode;
 use App\Services\EmailTemplateService;
 use App\Support\Locale;
 use Illuminate\Database\Eloquent\Builder;
@@ -23,7 +24,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Product extends Model
 {
-    use CachesContent, HasComments, HasCreator, HasFactory, HasFaqs, HasReviews, HasTranslations, SoftDeletes;
+    use CachesContent, HasComments, HasCreator, HasFactory, HasFaqs, HasReviews, HasTranslations, HasUniqueCode, SoftDeletes;
 
     protected static function booted(): void
     {
@@ -50,11 +51,20 @@ class Product extends Model
         });
     }
 
+    /**
+     * The auto-generated PRD-XXXXXXXX business code (see HasUniqueCode) — a
+     * stable, public-facing id separate from the admin-entered, optional sku.
+     */
+    protected function uniqueCodePrefix(): string
+    {
+        return 'PRD';
+    }
+
     public array $translatable = ['name', 'description'];
 
     protected $fillable = [
         'name', 'description',
-        'brand_id', 'vendor_id', 'created_by', 'sku', 'variations',
+        'brand_id', 'vendor_id', 'created_by', 'code', 'sku', 'variations',
         'featured_image', 'status', 'product_type', 'price', 'discount_price', 'quantity', 'charge_shipping', 'is_featured',
         'is_upcoming', 'sort_order', 'warranty_months',
     ];
