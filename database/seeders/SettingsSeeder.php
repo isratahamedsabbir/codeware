@@ -41,7 +41,7 @@ class SettingsSeeder extends Seeder
             [
                 'key' => 'contact_address',
                 'value' => '',
-                'type' => 'string',
+                'type' => 'textarea',
                 'group' => 'general',
                 'is_public' => true,
             ],
