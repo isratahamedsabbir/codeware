@@ -3,19 +3,22 @@
 namespace App\Livewire\Admin\Contacts;
 
 use App\Concerns\HasPerPage;
+use App\Concerns\SendsCustomEmail;
 use App\Models\Contact;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use HasPerPage, WithPagination;
+    use HasPerPage, SendsCustomEmail, WithPagination;
 
     public string $search = '';
 
     public string $statusFilter = '';
 
     public ?int $viewingMessageId = null;
+
+    public ?int $viewingContactId = null;
 
     /**
      * Contacts has no delete action (deliberately read-only) — this array
@@ -35,9 +38,19 @@ class Index extends Component
         $this->resetPage();
     }
 
+    /**
+     * "Read" is a one-way status — once set, a contact can never be flipped
+     * back to "unread" (matches the UI, which drops the dropdown for a
+     * static badge as soon as a contact is read).
+     */
     public function updateStatus(int $id, string $status): void
     {
         $contact = Contact::findOrFail($id);
+
+        if ($contact->status === 'read') {
+            return;
+        }
+
         $contact->update(['status' => $status]);
     }
 
@@ -49,6 +62,25 @@ class Index extends Component
     public function closeMessage(): void
     {
         $this->viewingMessageId = null;
+    }
+
+    public function showContact(int $id): void
+    {
+        $this->viewingContactId = $id;
+        $this->dispatch('open-modal', name: 'contact-view');
+    }
+
+    /**
+     * Opens the SendsCustomEmail modal pre-filled with this contact's email
+     * — the "Reply by Email" button inside the view modal.
+     */
+    public function openCustomEmailFor(int $id): void
+    {
+        $contact = Contact::findOrFail($id);
+        $this->customEmailTo = $contact->email;
+        $this->customEmailSubject = 'Re: '.$contact->subject;
+        $this->dispatch('close-modal', name: 'contact-view');
+        $this->dispatch('open-modal', name: 'send-custom-email');
     }
 
     /**
