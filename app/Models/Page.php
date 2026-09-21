@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\CachesContent;
 use App\Concerns\HasCreator;
 use App\Support\Locale;
 use App\Support\Slug;
@@ -14,7 +15,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Page extends Model
 {
-    use HasCreator, HasFactory, HasTranslations;
+    use CachesContent, HasCreator, HasFactory, HasTranslations;
 
     public array $translatable = ['title', 'content', 'description'];
 

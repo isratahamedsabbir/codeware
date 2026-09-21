@@ -2,36 +2,23 @@
 
 namespace App\Livewire\Admin\Contacts;
 
+use App\Concerns\HasBulkSelection;
 use App\Concerns\HasPerPage;
 use App\Concerns\SendsCustomEmail;
+use App\Concerns\WithSearch;
 use App\Models\Contact;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use HasPerPage, SendsCustomEmail, WithPagination;
-
-    public string $search = '';
+    use HasBulkSelection, HasPerPage, SendsCustomEmail, WithPagination, WithSearch;
 
     public string $statusFilter = '';
 
     public ?int $viewingMessageId = null;
 
     public ?int $viewingContactId = null;
-
-    /**
-     * Contacts has no delete action (deliberately read-only) — this array
-     * only ever backs the "Export" bulk-selection button, never a delete.
-     *
-     * @var array<int, int>
-     */
-    public array $selectedIds = [];
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
-    }
 
     public function updatedStatusFilter(): void
     {
@@ -81,21 +68,6 @@ class Index extends Component
         $this->customEmailSubject = 'Re: '.$contact->subject;
         $this->dispatch('close-modal', name: 'contact-view');
         $this->dispatch('open-modal', name: 'send-custom-email');
-    }
-
-    /**
-     * Ctrl/Cmd+click row selection or the row's own checkbox (see the view) —
-     * toggles one contact id in/out of the "Export" bulk-selection.
-     */
-    public function toggleSelect(int $id): void
-    {
-        if (in_array($id, $this->selectedIds, true)) {
-            $this->selectedIds = array_values(array_diff($this->selectedIds, [$id]));
-
-            return;
-        }
-
-        $this->selectedIds[] = $id;
     }
 
     public function render()

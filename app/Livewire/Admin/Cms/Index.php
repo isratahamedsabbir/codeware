@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Cms;
 
 use App\Concerns\HasPerPage;
+use App\Concerns\WithSearch;
 use App\Models\CmsSection;
 use App\Models\Page;
 use App\Support\AdminActivity;
@@ -11,11 +12,9 @@ use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use HasPerPage, WithPagination;
+    use HasPerPage, WithPagination, WithSearch;
 
     public int $pageId;
-
-    public string $search = '';
 
     public ?int $deletingId = null;
 
@@ -24,11 +23,6 @@ class Index extends Component
     public function mount(int $pageId): void
     {
         $this->pageId = Page::findOrFail($pageId)->id;
-    }
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
     }
 
     public function reorder(array $order): void

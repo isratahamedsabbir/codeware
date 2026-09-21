@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Admin\ProductAttributes;
 
+use App\Concerns\HasBulkSelection;
 use App\Concerns\HasPerPage;
+use App\Concerns\WithSearch;
 use App\Models\ProductAttribute;
 use App\Support\AdminActivity;
 use Illuminate\Support\Str;
@@ -11,19 +13,9 @@ use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use HasPerPage, WithPagination;
-
-    public string $search = '';
+    use HasBulkSelection, HasPerPage, WithPagination, WithSearch;
 
     public ?int $deletingId = null;
-
-    /** @var array<int, int> */
-    public array $selectedIds = [];
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
-    }
 
     public function confirmDelete(int $id): void
     {
@@ -41,21 +33,6 @@ class Index extends Component
             $this->deletingId = null;
         }
         $this->dispatch('close-modal', name: 'product-attribute-delete');
-    }
-
-    /**
-     * Ctrl/Cmd+click row selection or the row's own checkbox (see the view) —
-     * toggles one attribute id in/out of the bulk-selection.
-     */
-    public function toggleSelect(int $id): void
-    {
-        if (in_array($id, $this->selectedIds, true)) {
-            $this->selectedIds = array_values(array_diff($this->selectedIds, [$id]));
-
-            return;
-        }
-
-        $this->selectedIds[] = $id;
     }
 
     public function confirmBulkDelete(): void

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use App\Models\SocialLink;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 
 class SettingsController extends Controller
 {
@@ -17,11 +18,11 @@ class SettingsController extends Controller
      */
     public function public(): JsonResponse
     {
-        $seo = $this->group('seo');
-        $seo['seo_canonical_urls'] = json_decode($seo['seo_canonical_urls'] ?? '[]', true) ?: [];
+        $data = Cache::remember('settings:public:v'.Setting::cacheVersion(), null, function () {
+            $seo = $this->group('seo');
+            $seo['seo_canonical_urls'] = json_decode($seo['seo_canonical_urls'] ?? '[]', true) ?: [];
 
-        return response()->json([
-            'data' => [
+            return [
                 'general' => $this->group('general'),
                 'images' => $this->group('images'),
                 'pagination' => $this->group('pagination'),
@@ -33,8 +34,10 @@ class SettingsController extends Controller
                 'constant' => $this->constants(),
                 'seo' => $seo,
                 'social_links' => SocialLink::urlsCached(),
-            ],
-        ]);
+            ];
+        });
+
+        return response()->json(['data' => $data]);
     }
 
     /**

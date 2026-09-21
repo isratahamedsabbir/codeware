@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CmsSection;
 use App\Models\Page;
 use App\Models\ProductCategory;
+use App\Support\ContentCache;
 use App\Support\Locale;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,11 +24,14 @@ class ProductCategoryController extends Controller
     {
         $locale = $this->resolveLocale($request);
 
-        $categories = ProductCategory::with('page')->orderBy('sort_order')->get();
+        $data = ContentCache::remember("api:categories:{$locale}", fn () => ProductCategory::with('page')
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn ($cat) => $this->formatCategory($cat, $locale))
+            ->values()
+            ->all());
 
-        return response()->json([
-            'data' => $categories->map(fn ($cat) => $this->formatCategory($cat, $locale)),
-        ]);
+        return response()->json(['data' => $data]);
     }
 
     public function show(Request $request, string $slug): JsonResponse

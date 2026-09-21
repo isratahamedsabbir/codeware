@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 /**
  * Writes a plain-SQL dump of the current MySQL database — schema (DROP + CREATE TABLE)
@@ -11,6 +12,11 @@ use Illuminate\Support\Facades\DB;
  */
 class DatabaseDumper
 {
+    protected static function isSafeIdentifier(string $name): bool
+    {
+        return preg_match('/^[A-Za-z0-9_]+$/', $name) === 1;
+    }
+
     public static function dumpTo(string $path): void
     {
         $handle = fopen($path, 'w');
@@ -36,6 +42,8 @@ class DatabaseDumper
     {
         return collect(DB::select('SHOW TABLES'))
             ->map(fn (object $row) => array_values((array) $row)[0])
+            ->filter(fn (string $table) => static::isSafeIdentifier($table))
+            ->values()
             ->all();
     }
 
@@ -44,6 +52,10 @@ class DatabaseDumper
      */
     protected static function writeTable($handle, string $table): void
     {
+        if (! static::isSafeIdentifier($table)) {
+            throw new InvalidArgumentException("Unsafe table name: {$table}");
+        }
+
         $createTable = DB::select("SHOW CREATE TABLE `{$table}`")[0]->{'Create Table'};
 
         fwrite($handle, "-- ----------------------------\n-- Table: {$table}\n-- ----------------------------\n\n");
@@ -52,9 +64,15 @@ class DatabaseDumper
 
         $pdo = DB::connection()->getPdo();
 
+        $orderColumn = static::orderColumn($table);
+
+        if (! static::isSafeIdentifier($orderColumn)) {
+            throw new InvalidArgumentException("Unsafe column name: {$orderColumn}");
+        }
+
         // Plain chunk() (offset-based) rather than chunkById(), since a few pivot
         // tables here have no single-column primary key for chunkById() to page by.
-        DB::table($table)->orderBy(self::orderColumn($table))->chunk(500, function ($rows) use ($handle, $table, $pdo) {
+        DB::table($table)->orderBy($orderColumn)->chunk(500, function ($rows) use ($handle, $table, $pdo) {
             foreach ($rows as $row) {
                 $data = (array) $row;
                 $columns = implode(', ', array_map(fn (string $column) => "`{$column}`", array_keys($data)));

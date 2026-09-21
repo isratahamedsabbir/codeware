@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Categories;
 
+use App\Concerns\HasBulkSelection;
 use App\Models\Category;
 use App\Support\AdminActivity;
 use App\Support\PageCascade;
@@ -11,6 +12,8 @@ use Livewire\Component;
 
 class Index extends Component
 {
+    use HasBulkSelection;
+
     public string $search = '';
 
     /**
@@ -29,9 +32,6 @@ class Index extends Component
     public ?int $deletingId = null;
 
     public ?int $viewingId = null;
-
-    /** @var array<int, int> */
-    public array $selectedIds = [];
 
     public function updatedTypeFilter(): void
     {
@@ -85,21 +85,6 @@ class Index extends Component
             $this->deletingId = null;
         }
         $this->dispatch('close-modal', name: 'category-delete');
-    }
-
-    /**
-     * Ctrl/Cmd+click row selection or the row's own checkbox (see the view) —
-     * toggles one category id in/out of the bulk-selection.
-     */
-    public function toggleSelect(int $id): void
-    {
-        if (in_array($id, $this->selectedIds, true)) {
-            $this->selectedIds = array_values(array_diff($this->selectedIds, [$id]));
-
-            return;
-        }
-
-        $this->selectedIds[] = $id;
     }
 
     public function confirmBulkDelete(): void

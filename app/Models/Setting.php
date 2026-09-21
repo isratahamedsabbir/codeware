@@ -37,7 +37,7 @@ class Setting extends Model
         return 'setting:v'.self::cacheVersion().":{$key}";
     }
 
-    private static function cacheVersion(): int
+    public static function cacheVersion(): int
     {
         return (int) Cache::rememberForever('settings:cache-version', fn () => 1);
     }

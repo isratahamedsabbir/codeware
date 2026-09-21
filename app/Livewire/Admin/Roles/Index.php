@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Roles;
 
 use App\Concerns\HasPerPage;
+use App\Concerns\WithSearch;
 use App\Support\AdminActivity;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -11,9 +12,7 @@ use Spatie\Permission\Models\Role;
 
 class Index extends Component
 {
-    use HasPerPage, WithPagination;
-
-    public string $search = '';
+    use HasPerPage, WithPagination, WithSearch;
 
     public ?int $deletingId = null;
 
@@ -27,11 +26,6 @@ class Index extends Component
     public function closeDetails(): void
     {
         $this->viewingId = null;
-    }
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
     }
 
     public function confirmDelete(int $id): void

@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Admin\Reviews;
 
+use App\Concerns\HasBulkSelection;
 use App\Concerns\HasPerPage;
+use App\Concerns\WithSearch;
 use App\Models\Post;
 use App\Models\Product;
 use App\Models\Review;
@@ -14,7 +16,7 @@ use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use HasPerPage, WithPagination;
+    use HasBulkSelection, HasPerPage, WithPagination, WithSearch;
 
     /**
      * Friendly type name (shown in the filter/table) → model class — kept in
@@ -26,8 +28,6 @@ class Index extends Component
         'service' => Service::class,
     ];
 
-    public string $search = '';
-
     public string $statusFilter = '';
 
     public string $typeFilter = '';
@@ -37,14 +37,6 @@ class Index extends Component
     public ?int $viewingId = null;
 
     public ?int $deletingId = null;
-
-    /** @var array<int, int> */
-    public array $selectedIds = [];
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
-    }
 
     public function updatedStatusFilter(): void
     {
@@ -96,21 +88,6 @@ class Index extends Component
             $this->deletingId = null;
         }
         $this->dispatch('close-modal', name: 'review-delete');
-    }
-
-    /**
-     * Ctrl/Cmd+click row selection or the row's own checkbox (see the view) —
-     * toggles one review id in/out of the bulk-selection.
-     */
-    public function toggleSelect(int $id): void
-    {
-        if (in_array($id, $this->selectedIds, true)) {
-            $this->selectedIds = array_values(array_diff($this->selectedIds, [$id]));
-
-            return;
-        }
-
-        $this->selectedIds[] = $id;
     }
 
     public function confirmBulkDelete(): void

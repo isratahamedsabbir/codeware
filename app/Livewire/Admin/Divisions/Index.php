@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Admin\Divisions;
 
+use App\Concerns\HasBulkSelection;
 use App\Concerns\HasPerPage;
+use App\Concerns\WithSearch;
 use App\Models\Country;
 use App\Models\Division;
 use App\Support\AdminActivity;
@@ -12,23 +14,13 @@ use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use HasPerPage, WithPagination;
-
-    public string $search = '';
+    use HasBulkSelection, HasPerPage, WithPagination, WithSearch;
 
     public string $statusFilter = '';
 
     public string $countryFilter = '';
 
     public ?int $deletingId = null;
-
-    /** @var array<int, int> */
-    public array $selectedIds = [];
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
-    }
 
     public function updatedStatusFilter(): void
     {
@@ -67,21 +59,6 @@ class Index extends Component
             $this->deletingId = null;
         }
         $this->dispatch('close-modal', name: 'division-delete');
-    }
-
-    /**
-     * Ctrl/Cmd+click row selection or the row's own checkbox (see the view) —
-     * toggles one division id in/out of the bulk-selection.
-     */
-    public function toggleSelect(int $id): void
-    {
-        if (in_array($id, $this->selectedIds, true)) {
-            $this->selectedIds = array_values(array_diff($this->selectedIds, [$id]));
-
-            return;
-        }
-
-        $this->selectedIds[] = $id;
     }
 
     public function confirmBulkDelete(): void

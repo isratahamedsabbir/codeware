@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\VoucherPurchases;
 
 use App\Concerns\HasPerPage;
+use App\Concerns\WithSearch;
 use App\Models\VoucherPurchase;
 use App\Services\VoucherEmailService;
 use App\Support\AdminActivity;
@@ -11,9 +12,7 @@ use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use HasPerPage, WithPagination;
-
-    public string $search = '';
+    use HasPerPage, WithPagination, WithSearch;
 
     public string $statusFilter = '';
 
@@ -27,11 +26,6 @@ class Index extends Component
     public function closeDetails(): void
     {
         $this->viewingId = null;
-    }
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
     }
 
     public function updatedStatusFilter(): void

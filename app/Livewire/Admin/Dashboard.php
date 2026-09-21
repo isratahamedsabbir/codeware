@@ -7,6 +7,7 @@ use App\Models\Page;
 use App\Models\Post;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 
 class Dashboard extends Component
@@ -37,22 +38,39 @@ class Dashboard extends Component
 
     public function mount(): void
     {
-        $this->totalProducts = Product::count();
-        $this->totalCategories = ProductCategory::count();
-        $this->totalPosts = Post::count();
-        $this->publishedPosts = Post::published()->count();
-        $this->draftPosts = Post::draft()->count();
-        $this->totalPages = Page::count();
-        $this->totalMedia = MediaLibrary::count();
+        foreach ($this->statistics() as $property => $value) {
+            $this->{$property} = $value;
+        }
+    }
 
-        $this->totalMediaSize = $this->formatBytes(MediaLibrary::sum('file_size'));
+    /**
+     * The stat cards' numbers. These are full-table COUNT/SUM queries that cost
+     * real time once a table grows past a few thousand rows, and they rarely
+     * change more than once a minute — so they're memoized briefly instead of
+     * re-run on every mount/Livewire request.
+     *
+     * @return array<string, int|string>
+     */
+    private function statistics(): array
+    {
+        return Cache::remember('admin:dashboard:statistics', 60, function () {
+            $monthStart = now()->startOfMonth();
 
-        $monthStart = now()->startOfMonth();
-
-        $this->productsThisMonth = Product::where('created_at', '>=', $monthStart)->count();
-        $this->postsThisMonth = Post::where('created_at', '>=', $monthStart)->count();
-        $this->pagesThisMonth = Page::where('created_at', '>=', $monthStart)->count();
-        $this->mediaThisMonth = MediaLibrary::where('created_at', '>=', $monthStart)->count();
+            return [
+                'totalProducts' => Product::count(),
+                'totalCategories' => ProductCategory::count(),
+                'totalPosts' => Post::count(),
+                'publishedPosts' => Post::published()->count(),
+                'draftPosts' => Post::draft()->count(),
+                'totalPages' => Page::count(),
+                'totalMedia' => MediaLibrary::count(),
+                'totalMediaSize' => $this->formatBytes(MediaLibrary::sum('file_size')),
+                'productsThisMonth' => Product::where('created_at', '>=', $monthStart)->count(),
+                'postsThisMonth' => Post::where('created_at', '>=', $monthStart)->count(),
+                'pagesThisMonth' => Page::where('created_at', '>=', $monthStart)->count(),
+                'mediaThisMonth' => MediaLibrary::where('created_at', '>=', $monthStart)->count(),
+            ];
+        });
     }
 
     private function formatBytes(int $bytes, int $precision = 2): string

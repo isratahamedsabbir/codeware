@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\ActivityLogs;
 
 use App\Concerns\HasPerPage;
+use App\Concerns\WithSearch;
 use App\Models\AdminActivityLog;
 use App\Models\User;
 use Livewire\Component;
@@ -10,9 +11,7 @@ use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use HasPerPage, WithPagination;
-
-    public string $search = '';
+    use HasPerPage, WithPagination, WithSearch;
 
     public string $actionFilter = '';
 
@@ -28,11 +27,6 @@ class Index extends Component
     public function closeLogDetails(): void
     {
         $this->viewingLogId = null;
-    }
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
     }
 
     public function updatedActionFilter(): void

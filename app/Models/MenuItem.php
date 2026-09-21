@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\CachesContent;
 use App\Support\Features;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\Gate;
 
 class MenuItem extends Model
 {
-    use HasFactory;
+    use CachesContent, HasFactory;
 
     /**
      * The reserved menu group backing the admin sidebar — the only one that's

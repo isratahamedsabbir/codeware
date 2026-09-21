@@ -3,12 +3,7 @@
     $siteIcon = \App\Models\Setting::get('site_icon');
     $currentUrl = url()->current();
 
-    $topCategories = \App\Models\ProductCategory::active()
-        ->with('page')
-        ->orderBy('sort_order')
-        ->get()
-        ->filter(fn ($category) => $category->page !== null)
-        ->take(12);
+    $topCategories = \App\Models\ProductCategory::headerCached();
 @endphp
 
 <header class="sticky top-0 z-40">

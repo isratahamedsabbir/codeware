@@ -2,14 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MenuItem;
 use App\Models\Order;
-use App\Models\Page;
-use App\Models\ProductVendor;
 use App\Models\Setting;
+use App\Support\Frontend;
 use App\Support\Themes;
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Role;
 
 /**
  * The customer account area behind a storefront login — dashboard, order
@@ -95,20 +92,9 @@ class CustomerController extends Controller
             'title' => Setting::get('seo_meta_title') ?: Setting::get('site_name'),
             'page' => null,
             'sections' => collect(),
-            'navPages' => Page::ofType('page')->published()->orderBy('sort_order')->get(),
-            'menuItems' => MenuItem::where('group', 'frontend')->where('is_active', true)->orderBy('sort_order')->get(),
-            'showVendorLogin' => $this->showVendorLogin(),
+            'navPages' => Frontend::navPages(),
+            'menuItems' => Frontend::menuItems(),
+            'showVendorLogin' => Frontend::showVendorLogin(),
         ];
-    }
-
-    /**
-     * Whether the Vendor Login link should appear in the header/footer —
-     * same rule as FrontendController::showVendorLogin().
-     */
-    private function showVendorLogin(): bool
-    {
-        $vendorRoleActive = Role::where('name', 'vendor')->where('status', 'active')->exists();
-
-        return $vendorRoleActive && ProductVendor::active()->exists();
     }
 }

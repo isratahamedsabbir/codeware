@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\CachesContent;
 use App\Concerns\HasCreator;
 use App\Support\Locale;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,7 +16,7 @@ use Spatie\Translatable\HasTranslations;
 
 class ProductBrand extends Model
 {
-    use HasCreator, HasFactory, HasTranslations, SoftDeletes;
+    use CachesContent, HasCreator, HasFactory, HasTranslations, SoftDeletes;
 
     // Lives in the unified taxonomy table alongside PostCategory /
     // ProductCategory / Tag — this type distinguishes brand rows.

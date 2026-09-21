@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Translations;
 
 use App\Concerns\HasPerPage;
+use App\Concerns\WithSearch;
 use App\Models\Language;
 use App\Models\Translation;
 use App\Support\AdminActivity;
@@ -15,9 +16,8 @@ use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use HasPerPage, WithPagination;
+    use HasPerPage, WithPagination, WithSearch;
 
-    public string $search = '';
     public string $groupFilter = '';
     public string $filter = 'all';
     public string $localeFilter = '';
@@ -43,11 +43,6 @@ class Index extends Component
         $this->localeFilter = Language::where('is_default', false)->active()->ordered()->value('code')
             ?? Language::active()->ordered()->value('code')
             ?? '';
-    }
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
     }
 
     public function updatedGroupFilter(): void

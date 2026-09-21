@@ -2,8 +2,10 @@
 
 namespace App\Livewire\Admin\Orders;
 
+use App\Concerns\HasBulkSelection;
 use App\Concerns\HasPerPage;
 use App\Concerns\SendsCustomEmail;
+use App\Concerns\WithSearch;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Setting;
@@ -18,35 +20,13 @@ use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use HasPerPage, SendsCustomEmail, WithPagination;
-
-    public string $search = '';
+    use HasBulkSelection, HasPerPage, SendsCustomEmail, WithPagination, WithSearch;
 
     public ?int $viewingId = null;
-
-    /** @var array<int, int> */
-    public array $selectedIds = [];
 
     /** The order_cancellation_cutoff_status Setting, edited from the Cancellation Rule modal. */
     #[Validate('required|in:pending,processing,shipped,delivered')]
     public string $cancellationCutoffStatus = 'shipped';
-
-    /**
-     * Ctrl/Cmd+click row selection or the row's own checkbox (see the view) —
-     * toggles one order id in/out of the bulk-selection. Orders is
-     * deliberately export-only (no bulk delete): selecting rows only ever
-     * feeds the "Export" button in the bulk toolbar.
-     */
-    public function toggleSelect(int $id): void
-    {
-        if (in_array($id, $this->selectedIds, true)) {
-            $this->selectedIds = array_values(array_diff($this->selectedIds, [$id]));
-
-            return;
-        }
-
-        $this->selectedIds[] = $id;
-    }
 
     public function viewDetails(int $id): void
     {
@@ -135,11 +115,6 @@ class Index extends Component
 
         $this->dispatch('close-modal', name: 'cancellation-rule-settings');
         $this->dispatch('notify', message: 'Cancellation rule saved.');
-    }
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
     }
 
     public function updatedStatusFilter(): void

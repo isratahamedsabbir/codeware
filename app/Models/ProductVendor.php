@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\CachesContent;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductVendor extends Model
 {
-    use HasFactory, SoftDeletes;
+    use CachesContent, HasFactory, SoftDeletes;
 
     protected $fillable = ['name', 'logo', 'signature', 'mobile', 'email', 'address', 'status', 'sort_order'];
 

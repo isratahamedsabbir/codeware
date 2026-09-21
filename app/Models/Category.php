@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\CachesContent;
 use App\Concerns\HasCreator;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -23,7 +24,7 @@ use Spatie\Translatable\HasTranslations;
  */
 class Category extends Model
 {
-    use HasCreator, HasFactory, HasTranslations;
+    use CachesContent, HasCreator, HasFactory, HasTranslations;
 
     public const TYPE_PRODUCT = 'product_category';
 

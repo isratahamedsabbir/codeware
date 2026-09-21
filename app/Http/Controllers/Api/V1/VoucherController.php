@@ -7,6 +7,7 @@ use App\Models\Setting;
 use App\Models\Voucher;
 use App\Models\VoucherPurchase;
 use App\Services\VoucherEmailService;
+use App\Support\ContentCache;
 use App\Support\Locale;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,15 +27,16 @@ class VoucherController extends Controller
     {
         $locale = $this->resolveLocale($request);
 
-        $vouchers = Voucher::query()
+        $data = ContentCache::remember("api:vouchers:{$locale}", fn () => Voucher::query()
             ->active()
             ->orderBy('sort_order')
             ->orderBy('id')
-            ->get();
+            ->get()
+            ->map(fn (Voucher $voucher) => $this->formatVoucher($voucher, $locale))
+            ->values()
+            ->all());
 
-        return response()->json([
-            'data' => $vouchers->map(fn (Voucher $voucher) => $this->formatVoucher($voucher, $locale)),
-        ]);
+        return response()->json(['data' => $data]);
     }
 
     public function show(Request $request, string $slug): JsonResponse

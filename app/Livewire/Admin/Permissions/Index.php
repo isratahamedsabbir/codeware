@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Permissions;
 
 use App\Concerns\HasPerPage;
+use App\Concerns\WithSearch;
 use Illuminate\Support\Str;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
@@ -12,19 +13,12 @@ use Spatie\Permission\Models\Permission;
 
 class Index extends Component
 {
-    use HasPerPage, WithPagination;
-
-    public string $search = '';
+    use HasPerPage, WithPagination, WithSearch;
 
     public bool $showCreateModal = false;
 
     #[Validate('required|string|max:255')]
     public string $newName = '';
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
-    }
 
     /**
      * Listens for a global JS event rather than relying on wire:click, since

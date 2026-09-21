@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Users;
 
 use App\Concerns\HasPerPage;
+use App\Concerns\WithSearch;
 use App\Models\User;
 use App\Support\AdminActivity;
 use Illuminate\Support\Facades\DB;
@@ -12,9 +13,7 @@ use Spatie\Permission\Models\Role;
 
 class Index extends Component
 {
-    use HasPerPage, WithPagination;
-
-    public string $search = '';
+    use HasPerPage, WithPagination, WithSearch;
 
     public string $roleFilter = '';
 
@@ -30,11 +29,6 @@ class Index extends Component
     public function closeDetails(): void
     {
         $this->viewingId = null;
-    }
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
     }
 
     public function updatedRoleFilter(): void

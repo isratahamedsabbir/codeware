@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\CachesContent;
 use App\Concerns\HasComments;
 use App\Concerns\HasCreator;
 use App\Concerns\HasReviews;
@@ -15,7 +16,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Service extends Model
 {
-    use HasComments, HasCreator, HasFactory, HasReviews, HasTranslations, SoftDeletes;
+    use CachesContent, HasComments, HasCreator, HasFactory, HasReviews, HasTranslations, SoftDeletes;
 
     public array $translatable = ['name', 'description'];
 

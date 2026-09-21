@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Concerns\CachesContent;
 use App\Concerns\HasCreator;
+use App\Support\ContentCache;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,7 +18,7 @@ use Spatie\Translatable\HasTranslations;
 
 class ProductCategory extends Model
 {
-    use HasCreator, HasFactory, HasTranslations;
+    use CachesContent, HasCreator, HasFactory, HasTranslations;
 
     protected $table = 'categories';
 
@@ -98,5 +100,42 @@ class ProductCategory extends Model
         }
 
         return $result;
+    }
+
+    /**
+     * Active top-level categories that have a landing page, capped at 12 — the
+     * storefront header's category dropdown (runs on every themed page).
+     *
+     * Cached as plain attribute arrays (category row + its own page row) and
+     * rehydrated with the page relation re-attached, so callers get models that
+     * behave exactly like a live query — the `slug` accessor and translatable
+     * `name` both keep working. See Language::activeCached() for why Eloquent
+     * instances are never stored in the cache directly.
+     *
+     * @return Collection<int, self>
+     */
+    public static function headerCached(): Collection
+    {
+        $rows = ContentCache::remember('header-categories', function () {
+            return static::query()
+                ->active()
+                ->with('page')
+                ->orderBy('sort_order')
+                ->get()
+                ->reject(fn (self $category) => $category->page === null)
+                ->take(12)
+                ->map(fn (self $category) => [
+                    'category' => $category->getAttributes(),
+                    'page' => $category->page->getAttributes(),
+                ])
+                ->values()
+                ->all();
+        });
+
+        return collect($rows)->map(function (array $row): self {
+            $category = static::hydrate([$row['category']])->first();
+
+            return tap($category, fn (self $c) => $c->setRelation('page', Page::hydrate([$row['page']])->first()));
+        })->values();
     }
 }

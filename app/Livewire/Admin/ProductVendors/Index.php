@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Admin\ProductVendors;
 
+use App\Concerns\HasBulkSelection;
 use App\Concerns\HasPerPage;
+use App\Concerns\WithSearch;
 use App\Models\ProductVendor;
 use App\Support\AdminActivity;
 use App\Support\EnvFile;
@@ -15,14 +17,9 @@ use RuntimeException;
 
 class Index extends Component
 {
-    use HasPerPage, WithPagination;
-
-    public string $search = '';
+    use HasBulkSelection, HasPerPage, WithPagination, WithSearch;
 
     public ?int $deletingId = null;
-
-    /** @var array<int, int> */
-    public array $selectedIds = [];
 
     /** The VENDOR_URL .env value, edited from the Settings modal (see saveVendorUrl()). */
     public string $vendorUrl = '';
@@ -30,11 +27,6 @@ class Index extends Component
     public function mount(): void
     {
         $this->vendorUrl = EnvFile::get('VENDOR_URL', '') ?? '';
-    }
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
     }
 
     /**
@@ -100,21 +92,6 @@ class Index extends Component
             $this->deletingId = null;
         }
         $this->dispatch('close-modal', name: 'product-vendor-delete');
-    }
-
-    /**
-     * Ctrl/Cmd+click row selection or the row's own checkbox (see the view) —
-     * toggles one vendor id in/out of the bulk-selection.
-     */
-    public function toggleSelect(int $id): void
-    {
-        if (in_array($id, $this->selectedIds, true)) {
-            $this->selectedIds = array_values(array_diff($this->selectedIds, [$id]));
-
-            return;
-        }
-
-        $this->selectedIds[] = $id;
     }
 
     public function confirmBulkDelete(): void

@@ -3,15 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\CmsSection;
-use App\Models\MenuItem;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
-use App\Models\ProductVendor;
 use App\Models\Setting;
 use App\Models\Tag;
 use App\Support\Favorites;
+use App\Support\Frontend;
 use App\Support\Locale;
 use App\Support\Themes;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,7 +19,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Spatie\Permission\Models\Role;
 
 class FrontendController extends Controller
 {
@@ -32,7 +30,7 @@ class FrontendController extends Controller
     {
         $theme = Themes::active();
 
-        $homePage = Page::where('slug', 'home')->first();
+        $homePage = Frontend::homePage();
 
         $sections = $homePage
             ? CmsSection::cachedForPage($homePage->id)
@@ -42,10 +40,10 @@ class FrontendController extends Controller
             'page' => $homePage,
             'sections' => $sections,
             'title' => $homePage?->seo_title ?: (Setting::get('seo_meta_title') ?: Setting::get('site_name')),
-            'navPages' => $this->navPages(),
-            'menuItems' => $this->frontendMenuItems(),
+            'navPages' => Frontend::navPages(),
+            'menuItems' => Frontend::menuItems(),
             'currentSlug' => 'home',
-            'showVendorLogin' => $this->showVendorLogin(),
+            'showVendorLogin' => Frontend::showVendorLogin(),
         ]);
     }
 
@@ -66,10 +64,10 @@ class FrontendController extends Controller
             'page' => $page,
             'sections' => $sections,
             'title' => $page->seo_title ?: $page->getTranslation('title', 'en', false),
-            'navPages' => $this->navPages(),
-            'menuItems' => $this->frontendMenuItems(),
+            'navPages' => Frontend::navPages(),
+            'menuItems' => Frontend::menuItems(),
             'currentSlug' => $slug,
-            'showVendorLogin' => $this->showVendorLogin(),
+            'showVendorLogin' => Frontend::showVendorLogin(),
         ]);
     }
 
@@ -133,10 +131,10 @@ class FrontendController extends Controller
             ],
             'title' => Setting::get('seo_meta_title') ?: Setting::get('site_name'),
             'page' => null,
-            'navPages' => $this->navPages(),
-            'menuItems' => $this->frontendMenuItems(),
+            'navPages' => Frontend::navPages(),
+            'menuItems' => Frontend::menuItems(),
             'currentSlug' => 'shop',
-            'showVendorLogin' => $this->showVendorLogin(),
+            'showVendorLogin' => Frontend::showVendorLogin(),
         ]);
     }
 
@@ -170,10 +168,10 @@ class FrontendController extends Controller
             'sections' => $product->page ? CmsSection::cachedForPage($product->page->id) : collect(),
             'page' => $product->page,
             'title' => $product->page?->seo_title ?: $product->name,
-            'navPages' => $this->navPages(),
-            'menuItems' => $this->frontendMenuItems(),
+            'navPages' => Frontend::navPages(),
+            'menuItems' => Frontend::menuItems(),
             'currentSlug' => $product->slug,
-            'showVendorLogin' => $this->showVendorLogin(),
+            'showVendorLogin' => Frontend::showVendorLogin(),
         ]);
     }
 
@@ -209,10 +207,10 @@ class FrontendController extends Controller
             'sections' => $category->page ? CmsSection::cachedForPage($category->page->id) : collect(),
             'page' => $category->page,
             'title' => $category->page?->seo_title ?: $category->name,
-            'navPages' => $this->navPages(),
-            'menuItems' => $this->frontendMenuItems(),
+            'navPages' => Frontend::navPages(),
+            'menuItems' => Frontend::menuItems(),
             'currentSlug' => $category->slug,
-            'showVendorLogin' => $this->showVendorLogin(),
+            'showVendorLogin' => Frontend::showVendorLogin(),
         ]);
     }
 
@@ -238,10 +236,10 @@ class FrontendController extends Controller
             'sections' => collect(),
             'page' => null,
             'title' => $brand->name,
-            'navPages' => $this->navPages(),
-            'menuItems' => $this->frontendMenuItems(),
+            'navPages' => Frontend::navPages(),
+            'menuItems' => Frontend::menuItems(),
             'currentSlug' => $brand->slug,
-            'showVendorLogin' => $this->showVendorLogin(),
+            'showVendorLogin' => Frontend::showVendorLogin(),
         ]);
     }
 
@@ -267,10 +265,10 @@ class FrontendController extends Controller
             'sections' => collect(),
             'page' => null,
             'title' => $tag->name,
-            'navPages' => $this->navPages(),
-            'menuItems' => $this->frontendMenuItems(),
+            'navPages' => Frontend::navPages(),
+            'menuItems' => Frontend::menuItems(),
             'currentSlug' => $tag->slug,
-            'showVendorLogin' => $this->showVendorLogin(),
+            'showVendorLogin' => Frontend::showVendorLogin(),
         ]);
     }
 
@@ -291,10 +289,10 @@ class FrontendController extends Controller
             'page' => null,
             'sections' => collect(),
             'title' => __('My Favorites'),
-            'navPages' => $this->navPages(),
-            'menuItems' => $this->frontendMenuItems(),
+            'navPages' => Frontend::navPages(),
+            'menuItems' => Frontend::menuItems(),
             'currentSlug' => 'favorites',
-            'showVendorLogin' => $this->showVendorLogin(),
+            'showVendorLogin' => Frontend::showVendorLogin(),
         ]);
     }
 
@@ -366,41 +364,5 @@ class FrontendController extends Controller
         $name = (string) ($item->getTranslation('name', Locale::primary(), false) ?: $item->getTranslation('name', 'en', false));
 
         return Str::slug(is_array($name) ? reset($name) : $name, '-');
-    }
-
-    /**
-     * Every standalone page (Home, About, Contact, FAQ, ...), in the admin's
-     * chosen order — used as the site nav by the "default" theme, so
-     * adding/reordering pages in the admin updates it automatically.
-     */
-    private function navPages()
-    {
-        return Page::ofType('page')->published()->orderBy('sort_order')->get();
-    }
-
-    /**
-     * The "Frontend" menu (see FrontendMenuSeeder, and /admin/menu), managed
-     * by hand rather than auto-generated from the page list — used as the site
-     * nav by the portfolio and ecommerce themes.
-     */
-    private function frontendMenuItems()
-    {
-        return MenuItem::where('group', 'frontend')
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->get();
-    }
-
-    /**
-     * Whether the Vendor Login link should appear — hidden whenever nobody
-     * could actually sign into the vendor portal: the 'vendor' role itself
-     * deactivated (see Roles\Index::toggleStatus, access-vendor-portal gate)
-     * or no active vendor exists for a user to be assigned to.
-     */
-    private function showVendorLogin(): bool
-    {
-        $vendorRoleActive = Role::where('name', 'vendor')->where('status', 'active')->exists();
-
-        return $vendorRoleActive && ProductVendor::active()->exists();
     }
 }

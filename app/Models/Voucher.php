@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\CachesContent;
 use App\Concerns\HasCreator;
 use App\Support\Locale;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,7 +20,7 @@ use Spatie\Translatable\HasTranslations;
  */
 class Voucher extends Model
 {
-    use HasCreator, HasFactory, HasTranslations, SoftDeletes;
+    use CachesContent, HasCreator, HasFactory, HasTranslations, SoftDeletes;
 
     public array $translatable = ['name', 'description'];
 

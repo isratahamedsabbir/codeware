@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\CachesContent;
 use App\Concerns\HasComments;
 use App\Concerns\HasCreator;
 use App\Concerns\HasFaqs;
@@ -22,7 +23,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Product extends Model
 {
-    use HasComments, HasCreator, HasFactory, HasFaqs, HasReviews, HasTranslations, SoftDeletes;
+    use CachesContent, HasComments, HasCreator, HasFactory, HasFaqs, HasReviews, HasTranslations, SoftDeletes;
 
     protected static function booted(): void
     {

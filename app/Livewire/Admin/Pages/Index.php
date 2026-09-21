@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Admin\Pages;
 
+use App\Concerns\HasBulkSelection;
 use App\Concerns\HasPerPage;
+use App\Concerns\WithSearch;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\PostCategory;
@@ -22,7 +24,7 @@ use RuntimeException;
 
 class Index extends Component
 {
-    use HasPerPage, WithPagination;
+    use HasBulkSelection, HasPerPage, WithPagination, WithSearch;
 
     /**
      * Human-readable labels for every Page::$type value — used for the type
@@ -35,8 +37,6 @@ class Index extends Component
         'product_category' => 'Product Category',
         'post_category' => 'Post Category',
     ];
-
-    public string $search = '';
 
     /**
      * 'all' or one of self::TYPES' keys. Defaults to 'page' so this screen keeps
@@ -54,9 +54,6 @@ class Index extends Component
 
     public int $puckSessionMinutes = 30;
 
-    /** @var array<int, int> */
-    public array $selectedIds = [];
-
     /** The FRONTEND_URL .env value, edited from the Settings modal (see saveFrontendUrl()). */
     public string $frontendUrl = '';
 
@@ -68,11 +65,6 @@ class Index extends Component
         $this->puckSessionMinutes = Setting::puckSessionMinutes();
         $this->frontendUrl = EnvFile::get('FRONTEND_URL', '') ?? '';
         $this->pagePreviewPath = EnvFile::get('FRONTEND_PAGE_PATH', '') ?? '';
-    }
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
     }
 
     public function updatedTypeFilter(): void
@@ -220,21 +212,6 @@ class Index extends Component
         }
         $this->deleteConfirmation = '';
         $this->dispatch('close-modal', name: 'page-delete');
-    }
-
-    /**
-     * Ctrl/Cmd+click row selection or the row's own checkbox (see the view) —
-     * toggles one page id in/out of the bulk-selection.
-     */
-    public function toggleSelect(int $id): void
-    {
-        if (in_array($id, $this->selectedIds, true)) {
-            $this->selectedIds = array_values(array_diff($this->selectedIds, [$id]));
-
-            return;
-        }
-
-        $this->selectedIds[] = $id;
     }
 
     public function confirmBulkDelete(): void

@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Admin\Products;
 
+use App\Concerns\HasBulkSelection;
 use App\Concerns\HasPerPage;
+use App\Concerns\WithSearch;
 use App\Models\Page;
 use App\Models\Product;
 use App\Support\AdminActivity;
@@ -18,18 +20,13 @@ use RuntimeException;
 
 class Index extends Component
 {
-    use HasPerPage, WithPagination;
-
-    public string $search = '';
+    use HasBulkSelection, HasPerPage, WithPagination, WithSearch;
 
     public string $statusFilter = '';
 
     public ?int $deletingId = null;
 
     public ?int $viewingId = null;
-
-    /** @var array<int, int> */
-    public array $selectedIds = [];
 
     /** The FRONTEND_URL .env value, edited from the Settings modal (see saveFrontendUrl()). */
     public string $frontendUrl = '';
@@ -41,11 +38,6 @@ class Index extends Component
     {
         $this->frontendUrl = EnvFile::get('FRONTEND_URL', '') ?? '';
         $this->productPreviewPath = EnvFile::get('FRONTEND_PRODUCT_PATH', '') ?? '';
-    }
-
-    public function updatedSearch(): void
-    {
-        $this->resetPage();
     }
 
     public function updatedStatusFilter(): void
@@ -185,21 +177,6 @@ class Index extends Component
             $this->deletingId = null;
         }
         $this->dispatch('close-modal', name: 'product-delete');
-    }
-
-    /**
-     * Ctrl/Cmd+click row selection or the row's own checkbox (see the view) —
-     * toggles one product id in/out of the bulk-selection.
-     */
-    public function toggleSelect(int $id): void
-    {
-        if (in_array($id, $this->selectedIds, true)) {
-            $this->selectedIds = array_values(array_diff($this->selectedIds, [$id]));
-
-            return;
-        }
-
-        $this->selectedIds[] = $id;
     }
 
     public function confirmBulkDelete(): void

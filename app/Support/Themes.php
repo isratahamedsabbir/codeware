@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Setting;
+use Illuminate\Support\Facades\Cache;
 
 class Themes
 {
@@ -14,9 +15,22 @@ class Themes
     /**
      * Every theme folder under resources/views/frontend/themes, as slug => label.
      *
+     * The folder list is a filesystem scan (scandir + is_dir per entry), so it's
+     * cached for a day rather than repeated on every themed request — the admin
+     * re-reads it live inside its own picker cache, and the folder list almost
+     * never changes outside a deployment.
+     *
      * @return array<string, string>
      */
     public static function all(): array
+    {
+        return Cache::remember('themes:all', 86400, fn () => self::scan());
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function scan(): array
     {
         if (! is_dir(self::path())) {
             return [];

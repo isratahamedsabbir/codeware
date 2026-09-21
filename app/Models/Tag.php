@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\CachesContent;
 use App\Support\Locale;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -13,7 +14,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Tag extends Model
 {
-    use HasFactory, HasTranslations;
+    use CachesContent, HasFactory, HasTranslations;
 
     // Lives in the unified taxonomy table alongside PostCategory /
     // ProductCategory / ProductBrand — the discriminator column still sets this

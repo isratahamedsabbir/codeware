@@ -5,7 +5,6 @@ namespace App\Livewire\Admin\Reports;
 use App\Concerns\HasPerPage;
 use App\Models\Order;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Collection;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -98,20 +97,32 @@ class Index extends Component
 
     public function render()
     {
-        $matching = $this->filteredQuery()->get();
+        $totals = (clone $this->filteredQuery())
+            ->selectRaw('COUNT(*) AS total_orders')
+            ->selectRaw("COALESCE(SUM(CASE WHEN payment_status = 'paid' THEN total END), 0) AS total_revenue")
+            ->selectRaw("COALESCE(SUM(CASE WHEN payment_status = 'pending' THEN total END), 0) AS pending_amount")
+            ->selectRaw("COALESCE(SUM(CASE WHEN payment_status = 'pending' THEN 1 END), 0) AS pending_count")
+            ->first();
 
-        $revenueByMethod = $matching->where('payment_status', 'paid')
+        $revenueByMethod = (clone $this->filteredQuery())
+            ->where('payment_status', 'paid')
             ->groupBy('payment_method')
-            ->map(fn (Collection $orders) => $orders->sum('total'));
+            ->selectRaw('payment_method, COALESCE(SUM(total), 0) AS total')
+            ->get()
+            ->pluck('total', 'payment_method');
 
-        $ordersByStatus = $matching->groupBy('status')->map->count();
+        $ordersByStatus = (clone $this->filteredQuery())
+            ->groupBy('status')
+            ->selectRaw('status, COUNT(*) AS total')
+            ->get()
+            ->pluck('total', 'status');
 
         return view('livewire.admin.reports.index', [
             'orders' => $this->filteredQuery()->latest()->paginate($this->perPage),
-            'totalOrders' => $matching->count(),
-            'totalRevenue' => $matching->where('payment_status', 'paid')->sum('total'),
-            'pendingAmount' => $matching->where('payment_status', 'pending')->sum('total'),
-            'pendingCount' => $matching->where('payment_status', 'pending')->count(),
+            'totalOrders' => (int) $totals->total_orders,
+            'totalRevenue' => (float) $totals->total_revenue,
+            'pendingAmount' => (float) $totals->pending_amount,
+            'pendingCount' => (int) $totals->pending_count,
             'revenueByMethod' => $revenueByMethod,
             'ordersByStatus' => $ordersByStatus,
         ])->layout('layouts.admin', ['title' => 'Reports']);

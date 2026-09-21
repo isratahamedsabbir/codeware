@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\CmsSection;
 use App\Models\Page;
+use App\Support\ContentCache;
 use App\Support\Locale;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -22,9 +23,11 @@ class PageController extends Controller
     {
         $locale = $this->resolveLocale($request);
 
-        $pages = Page::orderBy('sort_order')
-            ->get()
-            ->map(fn ($page) => $this->formatPage($page, $locale));
+        $rows = ContentCache::remember('api:pages', fn () => Page::orderBy('sort_order')->get()->map->getAttributes()->all());
+
+        $pages = Page::hydrate($rows)
+            ->map(fn ($page) => $this->formatPage($page, $locale))
+            ->values();
 
         return response()->json(['data' => $pages]);
     }
