@@ -21,6 +21,20 @@
                 }
             },
 
+            // A value button is disabled when, given the current selection, no
+            // combination that includes it is actually in stock — the variant
+            // stays visible but can't be bought.
+            canPick(attribute, value) {
+                const prospective = { ...this.selection, [attribute]: value };
+                const matches = this.variations.filter((variation) =>
+                    Object.keys(prospective).every((name) =>
+                        prospective[name] !== undefined && variation.attributes[name] === prospective[name]
+                    )
+                );
+
+                return matches.length > 0 && matches.some((variation) => variation.in_stock);
+            },
+
             get pickedCount() {
                 return Object.keys(this.selection).filter((name) => this.selection[name] !== undefined).length;
             },
@@ -82,10 +96,10 @@
             'discount_label' => (isset($row['price'], $row['discount_price']) && (float) $row['discount_price'] < (float) $row['price'])
                 ? format_money($row['discount_price'])
                 : null,
-            'stock_label' => (($row['quantity'] ?? null) === null || (int) $row['quantity'] > 0)
+            'in_stock' => (int) ($row['quantity'] ?? 0) > 0,
+            'stock_label' => (int) ($row['quantity'] ?? 0) > 0
                 ? __('In stock')
                 : __('Out of stock'),
-            'in_stock' => ($row['quantity'] ?? null) === null ? $product->inStock() : (int) $row['quantity'] > 0,
         ])->values()->all();
 
         $pickerBaseDiscount = $product->hasDiscount() ? format_money($product->discount_price) : null;
@@ -163,9 +177,12 @@
                                         <div class="flex flex-wrap gap-2">
                                             <template x-for="value in values" :key="value">
                                                 <button type="button" @click="toggle(attribute, value)"
-                                                    :class="selection[attribute] === value
-                                                        ? 'border-primary bg-primary/10 text-primary'
-                                                        : 'border-zinc-200 text-zinc-700 hover:border-primary/50'"
+                                                    :disabled="!canPick(attribute, value)"
+                                                    :class="!canPick(attribute, value)
+                                                        ? 'cursor-not-allowed border-zinc-200 text-zinc-300 line-through'
+                                                        : (selection[attribute] === value
+                                                            ? 'border-primary bg-primary/10 text-primary'
+                                                            : 'border-zinc-200 text-zinc-700 hover:border-primary/50')"
                                                     class="rounded-full border px-4 py-2 text-sm font-medium transition"
                                                     x-text="value"></button>
                                             </template>
@@ -244,9 +261,12 @@
                     <div class="flex flex-wrap gap-2">
                         <template x-for="value in values" :key="value">
                             <button type="button" @click="toggle(attribute, value)"
-                                :class="selection[attribute] === value
-                                    ? 'border-primary bg-primary/10 text-primary'
-                                    : 'border-zinc-200 text-zinc-700 hover:border-primary/50'"
+                                :disabled="!canPick(attribute, value)"
+                                :class="!canPick(attribute, value)
+                                    ? 'cursor-not-allowed border-zinc-200 text-zinc-300 line-through'
+                                    : (selection[attribute] === value
+                                        ? 'border-primary bg-primary/10 text-primary'
+                                        : 'border-zinc-200 text-zinc-700 hover:border-primary/50')"
                                 class="rounded-full border px-4 py-2 text-sm font-medium transition"
                                 x-text="value"></button>
                         </template>

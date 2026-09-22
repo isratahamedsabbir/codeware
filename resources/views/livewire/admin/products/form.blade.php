@@ -93,7 +93,7 @@
                     <div class="mt-4">
                         <flux:field>
                             <flux:label>
-                                Quantity<x-field-hint text="Leave blank to mark this product out of stock." />
+                                Quantity<x-field-hint :@if ($variations !== [] && collect($variations)->contains(fn ($row) => filled($row['quantity'] ?? null))) text="Auto-sums the variant Qty values below." @else text="Leave blank to mark this product out of stock." @endif />
                                 <x-slot:trailing>
                                     @if ($quantity !== '' && (int) $quantity > 0)
                                         <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-200">
@@ -221,7 +221,7 @@
                             <flux:field>
                                 <flux:label class="text-[11px] text-zinc-500">Qty</flux:label>
                                 <flux:input type="number" step="1" min="0" size="sm"
-                                    wire:model="variations.{{ $i }}.quantity" placeholder="∞" />
+                                    wire:model="variations.{{ $i }}.quantity" placeholder="0" />
                             </flux:field>
                             <div class="col-span-3">
                                 <flux:error name="variations.{{ $i }}.quantity" />

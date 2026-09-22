@@ -248,8 +248,9 @@ class Product extends Model
     /**
      * Whether a selected option can be ordered — the combination's own
      * quantity when it overrides stock tracking, else the base product's
-     * stock. A null combination quantity means "inherit the base product",
-     * same convention as the public API detail response.
+     * stock. A null/blank combination quantity means out of stock — same
+     * convention as an explicit 0, so a variant with no Qty set is treated
+     * as unavailable rather than inheriting the base product's stock.
      *
      * @param  array<string, string>  $attributes
      */
@@ -258,7 +259,7 @@ class Product extends Model
         $row = $this->variationRow($attributes);
 
         if ($row) {
-            return ($row['quantity'] ?? null) === null ? $this->inStock() : (int) $row['quantity'] > 0;
+            return (int) ($row['quantity'] ?? 0) > 0;
         }
 
         return $this->inStock();

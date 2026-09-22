@@ -329,6 +329,28 @@ class Form extends Component
         return json_encode($attributes);
     }
 
+    /**
+     * When the product uses variants, the overall Quantity is the sum of every
+     * variant's quantity (a variant stock IS the product stock). Runs live on
+     * any variation change and again at the top of save()/saveAndOpenPageBuilder()
+     * so validation always sees the merged total. A blank variant Qty counts
+     * as 0 (out of stock), so with variants present the field always reflects
+     * the variant total.
+     */
+    private function syncQuantityFromVariations(): void
+    {
+        if ($this->variations === []) {
+            return;
+        }
+
+        $total = collect($this->variations)->reduce(
+            fn ($carry, $row) => $carry + (int) ($row['quantity'] ?? 0),
+            0
+        );
+
+        $this->quantity = (string) $total;
+    }
+
     public function removeVariation(int $index): void
     {
         unset($this->variations[$index]);
@@ -380,7 +402,7 @@ class Form extends Component
                 'attributes' => $row['attributes'],
                 'price' => filled($row['price'] ?? null) ? $row['price'] : null,
                 'discount_price' => filled($row['discount_price'] ?? null) ? $row['discount_price'] : null,
-                'quantity' => filled($row['quantity'] ?? null) ? $row['quantity'] : null,
+                'quantity' => filled($row['quantity'] ?? null) ? $row['quantity'] : 0,
                 'visible' => (bool) ($row['visible'] ?? true),
             ])
             ->values()
@@ -400,6 +422,12 @@ class Form extends Component
     {
         if ($name === 'variationActiveAttributes' || str_starts_with($name, 'variationSelectedValues.')) {
             $this->generateVariations();
+
+            return;
+        }
+
+        if (str_starts_with($name, 'variations.')) {
+            $this->syncQuantityFromVariations();
 
             return;
         }
@@ -522,6 +550,8 @@ class Form extends Component
 
     public function saveAndOpenPageBuilder(): void
     {
+        $this->syncQuantityFromVariations();
+
         if (empty($this->slug) && $this->primaryValue('name')) {
             $this->slug = Slug::make($this->primaryValue('name'));
         }
@@ -562,6 +592,8 @@ class Form extends Component
 
     public function save(): void
     {
+        $this->syncQuantityFromVariations();
+
         if (empty($this->slug) && $this->primaryValue('name')) {
             $this->slug = Slug::make($this->primaryValue('name'));
         }

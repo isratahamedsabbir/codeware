@@ -70,25 +70,32 @@
                             </td>
 
                             {{-- User --}}
-                            <td class="px-4 py-2">
+                            <td class="px-4 py-[5px]">
                                 <div class="flex items-center gap-3">
                                     @if ($user->photo_url)
                                         <img src="{{ $user->photo_url }}" alt="{{ $user->name }}"
-                                            class="w-9 h-9 rounded-xl object-cover shrink-0">
+                                            class="w-8 h-8 rounded-xl object-cover shrink-0">
                                     @else
                                         <div
-                                            class="w-9 h-9 rounded-xl bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-white text-xs font-bold shrink-0">
+                                            class="w-8 h-8 rounded-xl bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-white text-xs font-bold shrink-0">
                                             {{ $user->initials() }}
                                         </div>
                                     @endif
                                     <div class="min-w-0">
-                                        <div class="font-medium text-zinc-900 text-sm leading-snug truncate">
+                                        <div class="font-medium text-zinc-900 text-[12.5px] leading-[1.15] truncate">
                                             <x-truncate :text="$user->name" />
                                             @if ($user->id === auth()->id())
                                                 <span class="text-zinc-400 font-normal">(you)</span>
                                             @endif
                                         </div>
-                                        <div class="text-xs text-zinc-500 truncate"><x-truncate :text="$user->email" /></div>
+                                        @if ($user->code)
+                                            <div class="leading-none">
+                                                <x-copy-text :text="$user->code" class="font-mono text-[10.5px] font-medium tracking-wide text-indigo-600 block leading-none">
+                                                    <x-truncate :text="$user->code" />
+                                                </x-copy-text>
+                                            </div>
+                                        @endif
+                                        <div class="text-[10.5px] leading-none text-zinc-500 truncate"><x-truncate :text="$user->email" /></div>
                                     </div>
                                 </div>
                             </td>

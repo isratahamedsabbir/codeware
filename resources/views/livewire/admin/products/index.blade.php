@@ -167,16 +167,23 @@
                                 <x-copy-text :text="$product->id" class="font-mono text-sm text-zinc-500">{{ $product->id }}</x-copy-text>
                             </td>
 
-                            {{-- Name + slug (slug below, click to copy) --}}
-                            <td class="px-4 py-2">
-                                <div class="font-medium text-zinc-900 text-sm leading-snug"
+                            {{-- Name + unique code + slug (code and slug below the name, click to copy) --}}
+                            <td class="px-4 py-[5px]">
+                                <div class="font-medium text-zinc-900 text-[12.5px] leading-[1.15]"
                                     @if ($product->getTranslation('name', 'bn', false))
                                         title="{{ $product->getTranslation('name', 'en', false) }} — {{ $product->getTranslation('name', 'bn', false) }}"
                                     @endif>
                                     <x-truncate :text="$product->getTranslation('name', 'en', false)" />
                                 </div>
-                                <div class="mt-0.5">
-                                    <x-copy-text :text="$product->slug" class="font-mono text-[11px] text-zinc-500 block">
+                                @if ($product->code)
+                                    <div class="leading-none">
+                                        <x-copy-text :text="$product->code" class="font-mono text-[10.5px] font-medium tracking-wide text-indigo-600 block leading-none">
+                                            <x-truncate :text="$product->code" />
+                                        </x-copy-text>
+                                    </div>
+                                @endif
+                                <div class="leading-none">
+                                    <x-copy-text :text="$product->slug" class="font-mono text-[10.5px] text-zinc-500 block leading-none">
                                         <x-truncate :text="$product->slug" />
                                     </x-copy-text>
                                 </div>
@@ -208,13 +215,25 @@
 
                             {{-- Stock --}}
                             <td class="px-4 py-2">
+                                @php $hasVariantStock = collect($product->variations ?? [])->contains(fn ($row) => ($row['quantity'] ?? null) !== null && $row['quantity'] !== ''); @endphp
                                 @if ($product->quantity > 0)
-                                    <span class="text-sm text-zinc-700">{{ $product->quantity }}</span>
+                                    @if ($hasVariantStock)
+                                        <button type="button" wire:click="viewStock({{ $product->id }})"
+                                            aria-label="View variant stock"
+                                            class="cursor-pointer group/stock inline-flex items-center gap-1 text-sm text-zinc-700 hover:text-indigo-600 font-medium transition-colors">
+                                            {{ number_format((float) $product->quantity, 0) }}
+                                            <span class="text-[10px] font-medium text-zinc-400 group-hover/stock:text-indigo-500">({{\Illuminate\Support\Str::plural('variant', count($product->variations ?? []))}})</span>
+                                        </button>
+                                    @else
+                                        <span class="text-sm text-zinc-700">{{ number_format((float) $product->quantity, 0) }}</span>
+                                    @endif
                                 @else
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-600 border border-rose-200 whitespace-nowrap">
+                                    <button type="button" wire:click="{{ $hasVariantStock ? 'viewStock('.$product->id.')' : '' }}"
+                                        aria-label="{{ $hasVariantStock ? 'View variant stock' : '' }}"
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-600 border border-rose-200 whitespace-nowrap {{ $hasVariantStock ? 'cursor-pointer hover:bg-rose-100' : 'cursor-default' }}">
                                         <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
                                         Out of stock
-                                    </span>
+                                    </button>
                                 @endif
                             </td>
 
@@ -457,6 +476,54 @@
             </div>
         </flux:modal>
     @endcan
+
+    {{-- Stock breakdown modal — shows each variant's quantity for the
+         product whose "variants" stock button was clicked in the table. --}}
+    <flux:modal name="product-stock" class="md:w-96"
+        x-on:open-modal.window="if ($event.detail.name === 'product-stock') $flux.modal('product-stock').show()"
+        x-on:close-modal.window="if ($event.detail.name === 'product-stock') $flux.modal('product-stock').close()">
+        @if ($stockProductId)
+            @php $stockProduct = \App\Models\Product::find($stockProductId); @endphp
+            @if ($stockProduct)
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 6 6 18" /><path d="m6 6 12 12" /><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                        </div>
+                        <div class="min-w-0">
+                            <flux:heading class="truncate">{{ $stockProduct->getTranslation('name', 'en', false) }}</flux:heading>
+                            <flux:text class="text-sm text-zinc-500">Variant stock breakdown</flux:text>
+                        </div>
+                    </div>
+                    <div class="rounded-xl border border-zinc-200 overflow-hidden divide-y divide-zinc-100">
+                        @php
+                            $breakdown = collect($stockProduct->variations ?? [])
+                                ->filter(fn ($row) => ($row['quantity'] ?? null) !== null && $row['quantity'] !== '')
+                                ->map(fn ($row) => [
+                                    'label' => collect($row['attributes'] ?? [])->map(fn ($v, $k) => $k.': '.$v)->implode(', '),
+                                    'quantity' => (int) $row['quantity'],
+                                ])
+                                ->values();
+                        @endphp
+                        @forelse ($breakdown as $row)
+                            <div class="flex items-center justify-between gap-3 px-3.5 py-2">
+                                <span class="text-sm text-zinc-700 min-w-0"><x-truncate :text="$row['label']" limit="40" /></span>
+                                <span class="font-mono text-sm font-medium {{ $row['quantity'] > 0 ? 'text-zinc-900' : 'text-rose-500' }} shrink-0">{{ $row['quantity'] }}</span>
+                            </div>
+                        @empty
+                            <div class="px-3.5 py-4 text-sm text-zinc-400 text-center">No variant quantities set.</div>
+                        @endforelse
+                    </div>
+                    <div class="flex items-center justify-between gap-3 px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-200">
+                        <span class="text-sm font-medium text-zinc-600">Total</span>
+                        <span class="font-mono text-sm font-semibold text-zinc-900">{{ (int) $stockProduct->quantity }}</span>
+                    </div>
+                </div>
+            @endif
+        @endif
+    </flux:modal>
 
 </div>
 

@@ -31,6 +31,13 @@ it('displays users in the table', function () {
     Livewire::test(UsersIndex::class)->assertSee('Jane Doe');
 });
 
+it('shows the generated unique code between the name and email in the table', function () {
+    $user = User::factory()->create(['name' => 'Jane Doe', 'email' => 'jane@example.com']);
+
+    Livewire::test(UsersIndex::class)
+        ->assertSeeInOrder(['Jane Doe', $user->code, 'jane@example.com']);
+});
+
 it('can filter users by role', function () {
     User::factory()->create(['name' => 'Manager User', 'email' => 'manager@example.com'])->assignRole('manager');
     User::factory()->create(['name' => 'Plain User', 'email' => 'plain@example.com']);

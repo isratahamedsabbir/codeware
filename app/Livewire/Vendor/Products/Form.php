@@ -291,7 +291,7 @@ class Form extends Component
                 'attributes' => $row['attributes'],
                 'price' => filled($row['price'] ?? null) ? $row['price'] : null,
                 'discount_price' => filled($row['discount_price'] ?? null) ? $row['discount_price'] : null,
-                'quantity' => filled($row['quantity'] ?? null) ? $row['quantity'] : null,
+                'quantity' => filled($row['quantity'] ?? null) ? $row['quantity'] : 0,
                 'visible' => (bool) ($row['visible'] ?? true),
             ])
             ->values()

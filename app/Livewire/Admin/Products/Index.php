@@ -28,6 +28,9 @@ class Index extends Component
 
     public ?int $viewingId = null;
 
+    /** The product whose per-variant stock the "variants" stock modal shows. */
+    public ?int $stockProductId = null;
+
     /** The FRONTEND_URL .env value, edited from the Settings modal (see saveFrontendUrl()). */
     public string $frontendUrl = '';
 
@@ -158,6 +161,12 @@ class Index extends Component
     public function closeDetails(): void
     {
         $this->viewingId = null;
+    }
+
+    public function viewStock(int $id): void
+    {
+        $this->stockProductId = $id;
+        $this->dispatch('open-modal', name: 'product-stock');
     }
 
     public function confirmDelete(int $id): void

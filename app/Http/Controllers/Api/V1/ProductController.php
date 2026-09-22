@@ -150,7 +150,7 @@ class ProductController extends Controller
                 ->map(function ($row) {
                     $price = ($row['price'] ?? null) !== null ? (float) $row['price'] : null;
                     $discountPrice = ($row['discount_price'] ?? null) !== null ? (float) $row['discount_price'] : null;
-                    $quantity = ($row['quantity'] ?? null) !== null ? (int) $row['quantity'] : null;
+                    $quantity = (int) ($row['quantity'] ?? 0);
 
                     return [
                         'attributes' => $row['attributes'] ?? [],
@@ -161,10 +161,9 @@ class ProductController extends Controller
                             ? $discountPrice
                             : null,
                         'quantity' => $quantity,
-                        // Null quantity means this combination doesn't override the
-                        // base product's stock tracking — same convention as
-                        // Product::inStock().
-                        'in_stock' => $quantity === null || $quantity > 0,
+                        // A blank quantity is out of stock, same as an explicit 0 —
+                        // it never inherits the base product's stock tracking.
+                        'in_stock' => $quantity > 0,
                     ];
                 })->values();
             $data['related_products'] = $related->map(fn ($p) => $this->formatProduct($p, $locale))->values();

@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Admin\Products\Index as ProductsIndex;
+use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\User;
@@ -25,6 +26,14 @@ it('opens and closes the view details modal for a product', function () {
         ->assertSee('Wireless Mouse')
         ->call('closeDetails')
         ->assertSet('viewingId', null);
+});
+
+it('shows the generated unique code between the name and slug in the datatable', function () {
+    $product = Product::factory()->create(['name' => ['en' => 'Wireless Keyboard', 'bn' => '']]);
+    Page::factory()->create(['type' => 'product', 'product_id' => $product->id, 'slug' => 'wireless-keyboard', 'status' => 'active']);
+
+    Livewire::test(ProductsIndex::class)
+        ->assertSeeInOrder(['Wireless Keyboard', $product->code, 'wireless-keyboard']);
 });
 
 it('toggles a product\'s upcoming status', function () {
