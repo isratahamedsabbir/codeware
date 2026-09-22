@@ -132,6 +132,7 @@ class Form extends Component
                 'quantity' => $row['quantity'] ?? '',
                 'visible' => $row['visible'] ?? true,
                 'image' => $row['image'] ?? '',
+                'note' => $row['note'] ?? '',
             ])->all();
 
             foreach ($this->variations as $row) {
@@ -295,6 +296,7 @@ class Form extends Component
                 'quantity' => filled($row['quantity'] ?? null) ? $row['quantity'] : 0,
                 'visible' => (bool) ($row['visible'] ?? true),
                 'image' => filled($row['image'] ?? null) ? $row['image'] : null,
+                'note' => filled($row['note'] ?? null) ? $row['note'] : null,
             ])
             ->values()
             ->all();

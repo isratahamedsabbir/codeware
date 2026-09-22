@@ -182,18 +182,22 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                 @forelse ($variations as $i => $row)
                     <div wire:key="variation-{{ $i }}"
-                        class="group/var rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden transition-shadow hover:shadow-md {{ ($row['visible'] ?? true) ? '' : 'opacity-60' }}">
-                        <div class="flex items-center justify-between gap-2 px-3.5 py-2.5 border-b border-zinc-100 bg-linear-to-r from-violet-50/70 to-transparent">
-                            <div class="min-w-0 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm">
-                                @foreach ($row['attributes'] as $attributeName => $value)
-                                    @if (! $loop->first)
-                                        <span class="text-zinc-300">·</span>
-                                    @endif
-                                    <span class="font-semibold text-zinc-800 truncate">{{ $attributeName }}</span>
-                                    <span class="font-medium text-violet-600 truncate">{{ $value }}</span>
-                                @endforeach
+                        class="group/var relative flex flex-col overflow-hidden rounded-xl border bg-white shadow-sm transition-all duration-200 {{ ($row['visible'] ?? true) ? 'border-zinc-200 hover:border-violet-200 hover:shadow-md' : 'border-zinc-100 bg-zinc-50/40 opacity-60 hover:opacity-80' }}">
+
+                        {{-- Header — numbered badge + option pills + visibility/remove --}}
+                        <div class="flex items-center justify-between gap-2 border-b border-zinc-100 bg-linear-to-r from-violet-50/70 via-white to-white px-3 py-2.5">
+                            <div class="flex min-w-0 items-center gap-2">
+                                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-violet-100 text-[10px] font-bold text-violet-600">{{ $loop->iteration }}</span>
+                                <div class="flex min-w-0 flex-wrap items-center gap-1">
+                                    @foreach ($row['attributes'] as $attributeName => $value)
+                                        <span class="inline-flex max-w-full items-center rounded-md border border-violet-100 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-violet-700 shadow-sm">
+                                            <span class="mr-1 font-normal text-zinc-400">{{ $attributeName }}:</span>
+                                            <span class="truncate">{{ $value }}</span>
+                                        </span>
+                                    @endforeach
+                                </div>
                             </div>
-                            <div class="shrink-0 flex items-center gap-2">
+                            <div class="flex shrink-0 items-center gap-1.5">
                                 <flux:tooltip content="Show on the storefront">
                                     <flux:switch wire:model.live="variations.{{ $i }}.visible" size="sm" />
                                 </flux:tooltip>
@@ -205,12 +209,16 @@
                                 </button>
                             </div>
                         </div>
+
+                        {{-- Image — full-width dashed upload area --}}
                         <div class="px-3 pt-3">
                             <x-media-picker model="variations.{{ $i }}.image" label=""
-                                placeholder="Variant image" mimes="jpg,jpeg,png,webp" only-images
-                                :picker-id="'variation-image-'.$i" compact />
+                                placeholder="Add variant image" mimes="jpg,jpeg,png,webp" only-images dropzone
+                                :picker-id="'variation-image-'.$i" />
                         </div>
-                        <div class="p-3 grid grid-cols-3 gap-2">
+
+                        {{-- Pricing / stock fields --}}
+                        <div class="p-3 grid grid-cols-2 gap-2">
                             <flux:field>
                                 <flux:label class="text-[11px] text-zinc-500">Price</flux:label>
                                 <flux:input type="number" step="0.01" min="0" size="sm"
@@ -218,19 +226,29 @@
                                 <flux:error name="variations.{{ $i }}.price" />
                             </flux:field>
                             <flux:field>
-                                <flux:label class="text-[11px] text-zinc-500">Discount</flux:label>
-                                <flux:input type="number" step="0.01" min="0" size="sm"
-                                    wire:model="variations.{{ $i }}.discount_price" placeholder="None" />
-                                <flux:error name="variations.{{ $i }}.discount_price" />
-                            </flux:field>
-                            <flux:field>
                                 <flux:label class="text-[11px] text-zinc-500">Qty</flux:label>
                                 <flux:input type="number" step="1" min="0" size="sm"
                                     wire:model="variations.{{ $i }}.quantity" placeholder="0" />
-                            </flux:field>
-                            <div class="col-span-3">
                                 <flux:error name="variations.{{ $i }}.quantity" />
+                            </flux:field>
+                            <div class="col-span-2 -mt-2.5">
+                                <div class="mb-1 flex items-center gap-1">
+                                    <span class="text-[11px] font-medium text-zinc-500">Note</span>
+                                    <x-field-hint text="Internal note for this variant (won't be shown on the storefront)." />
+                                </div>
+                                <flux:textarea rows="2" size="sm" wire:model="variations.{{ $i }}.note"
+                                    placeholder="Optional note…" class="resize-none" />
+                                <flux:error name="variations.{{ $i }}.note" />
                             </div>
+                        </div>
+
+                        {{-- Footer — stock status --}}
+                        <div class="mt-auto flex items-center justify-between border-t border-zinc-100 bg-zinc-50/60 px-3 py-2">
+                            <span class="text-[10px] font-medium text-zinc-400">Variant #{{ $loop->iteration }}</span>
+                            <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold {{ (int) ($row['quantity'] ?? 0) > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600' }}">
+                                <span class="w-1 h-1 rounded-full {{ (int) ($row['quantity'] ?? 0) > 0 ? 'bg-emerald-500' : 'bg-rose-500' }}"></span>
+                                {{ (int) ($row['quantity'] ?? 0) > 0 ? 'In stock' : 'Out of stock' }}
+                            </span>
                         </div>
                     </div>
                 @empty
