@@ -45,10 +45,33 @@ class Index extends Component
         $this->js('window.location.reload()');
     }
 
+    public function resetSettings(): void
+    {
+        $this->mount();
+    }
+
     public function render()
     {
+        $themes = Themes::all();
+
+        $themeCards = collect($themes)
+            ->mapWithKeys(function (string $label, string $slug): array {
+                $base = Themes::path().'/'.$slug;
+                $files = is_dir($base)
+                    ? array_merge(glob($base.'/*.blade.php') ?: [], glob($base.'/*/*.blade.php') ?: [])
+                    : [];
+
+                return [$slug => [
+                    'label' => $label,
+                    'templates' => count($files),
+                    'shop' => is_file($base.'/shop.blade.php'),
+                ]];
+            })
+            ->all();
+
         return view('livewire.admin.theme-settings.index', [
-            'themes' => Themes::all(),
+            'themes' => $themes,
+            'themeCards' => $themeCards,
             'activeTheme' => Themes::active(),
         ])->layout('layouts.admin', ['title' => 'Theme Settings']);
     }

@@ -39,6 +39,8 @@ beforeEach(function () {
         MAIL_FROM_ADDRESS="hello@example.test"
         MAIL_FROM_NAME="Test App"
 
+        CACHE_STORE=file
+
         APP_KEY=base64:untouchedsecretkeyvalue==
         ENV);
 
@@ -198,6 +200,36 @@ it('allows a blank vendor portal url', function () {
         ->assertHasNoErrors();
 
     expect(EnvFile::get('VENDOR_URL'))->toBe('');
+});
+
+it('loads and saves the cms editor base url', function () {
+    Livewire::test(EnvIndex::class)
+        ->assertSet('env.CMS_EDITOR_BASE_URL', '')
+        ->set('env.CMS_EDITOR_BASE_URL', 'https://editor.example.test')
+        ->call('confirmSaveEnv')
+        ->call('saveEnv')
+        ->assertHasNoErrors();
+
+    expect(EnvFile::get('CMS_EDITOR_BASE_URL'))->toBe('https://editor.example.test');
+});
+
+it('rejects an invalid cms editor base url', function () {
+    Livewire::test(EnvIndex::class)
+        ->set('env.CMS_EDITOR_BASE_URL', 'not-a-url')
+        ->call('confirmSaveEnv')
+        ->assertHasErrors(['env.CMS_EDITOR_BASE_URL']);
+
+    expect(EnvFile::get('CMS_EDITOR_BASE_URL'))->toBeNull();
+});
+
+it('allows a blank cms editor base url', function () {
+    Livewire::test(EnvIndex::class)
+        ->set('env.CMS_EDITOR_BASE_URL', '')
+        ->call('confirmSaveEnv')
+        ->call('saveEnv')
+        ->assertHasNoErrors();
+
+    expect(EnvFile::get('CMS_EDITOR_BASE_URL'))->toBe('');
 });
 
 it('leaves a line completely untouched, quoting style included, when its value did not change', function () {

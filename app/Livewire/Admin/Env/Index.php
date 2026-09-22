@@ -90,6 +90,10 @@ class Index extends Component
                 'GOOGLE_CLIENT_SECRET' => ['label' => 'Google Client Secret', 'type' => 'password'],
                 'GOOGLE_REDIRECT_URI' => ['label' => 'Google Redirect URI', 'type' => 'text'],
             ],
+            'CMS Editor' => [
+                'CMS_EDITOR_BASE_URL' => ['label' => 'CMS Editor Base URL', 'type' => 'text',
+                    'hint' => 'Base URL of the Next.js Puck editor that loads when you open a post, page or product in the visual editor (e.g. http://194.233.65.83:3002).'],
+            ],
             'Facebook Login' => [
                 'FACEBOOK_CLIENT_ID' => ['label' => 'Facebook App ID', 'type' => 'text'],
                 'FACEBOOK_CLIENT_SECRET' => ['label' => 'Facebook App Secret', 'type' => 'password'],
@@ -130,6 +134,7 @@ class Index extends Component
             // Not `url` — this intentionally holds a ${APP_URL}/... interpolation
             // (phpdotenv resolves it at runtime), which a strict URL check would reject.
             'env.GOOGLE_REDIRECT_URI' => 'nullable|string',
+            'env.CMS_EDITOR_BASE_URL' => 'nullable|url',
             'env.FACEBOOK_CLIENT_ID' => 'nullable|string',
             'env.FACEBOOK_CLIENT_SECRET' => 'nullable|string',
             'env.FACEBOOK_REDIRECT_URI' => 'nullable|string',

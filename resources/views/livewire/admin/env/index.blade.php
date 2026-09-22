@@ -78,7 +78,7 @@
              here to avoid rendering the same group twice. Any future env group
              added to envFields() without a custom card still falls back to the
              generic card below. --}}
-        @php $manuallyRenderedGroups = ['App', 'Google Login', 'Facebook Login', 'reCAPTCHA', 'Google Maps', 'AWS S3', 'Firebase']; @endphp
+        @php $manuallyRenderedGroups = ['App', 'Google Login', 'Facebook Login', 'reCAPTCHA', 'Google Maps', 'AWS S3', 'Firebase', 'CMS Editor']; @endphp
 
         @foreach ($this->envFields() as $groupLabel => $fields)
             @continue(in_array($groupLabel, $manuallyRenderedGroups, true))
@@ -378,6 +378,27 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 </ol>
                 <flux:text class="text-xs text-zinc-500">
                     This file grants full admin access to the Firebase project — keep it out of the public disk and out of version control.
+                </flux:text>
+            </x-admin-section-card>
+        </div>
+
+        {{-- CMS Editor --}}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+            <x-admin-section-card header-border="border-zinc-100" icon="pencil-square" title="CMS Editor"
+                description="Base URL of the Next.js Puck editor this admin panel opens for visual editing.">
+                @foreach ($this->envFields()['CMS Editor'] as $key => $meta)
+                    @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
+                @endforeach
+            </x-admin-section-card>
+
+            <x-admin-section-card header-border="border-zinc-100" icon="book-open" title="What this controls" body-class="px-6 py-5 space-y-3">
+                <ul class="list-disc list-inside space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
+                    <li>The <strong>Edit</strong> buttons on the Products, Pages and Posts screens build their Puck editor URL from this value.</li>
+                    <li>It must point at the host where the Next.js CMS editor runs — including its port, if any (e.g. <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">http://194.233.65.83:3002</span>).</li>
+                    <li>Leave it blank to disable the visual editor buttons, or to keep them pointed at <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">localhost</span> on a local install.</li>
+                </ul>
+                <flux:text class="text-xs text-zinc-500">
+                    Read at runtime as <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">config('cms.editor_base_url')</span> — saving here clears the config cache so the new value is picked up immediately.
                 </flux:text>
             </x-admin-section-card>
         </div>

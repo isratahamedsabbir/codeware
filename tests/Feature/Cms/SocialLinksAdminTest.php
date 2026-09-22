@@ -74,6 +74,45 @@ it('exposes saved urls through SocialLink::url()', function () {
         ->and(SocialLink::url('twitter'))->toBeNull();
 });
 
+it('adds a custom social link dynamically', function () {
+    $this->artisan('db:seed', ['--class' => SocialLinkSeeder::class]);
+
+    Livewire::test(SocialIndex::class)
+        ->call('addLink')
+        ->set('links.7.platform', 'Discord')
+        ->set('links.7.label', 'Discord')
+        ->set('links.7.url', 'https://discord.gg/codeware')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(SocialLink::where('platform', 'discord')->value('url'))->toBe('https://discord.gg/codeware')
+        ->and(SocialLink::url('discord'))->toBe('https://discord.gg/codeware')
+        ->and(SocialLink::url('facebook'))->toBeNull();
+});
+
+it('removes a social link when saved', function () {
+    $this->artisan('db:seed', ['--class' => SocialLinkSeeder::class]);
+
+    Livewire::test(SocialIndex::class)
+        ->call('removeLink', 0)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(SocialLink::where('platform', 'facebook')->exists())->toBeFalse()
+        ->and(SocialLink::url('facebook'))->toBeNull();
+});
+
+it('ignores blank new rows on save', function () {
+    $this->artisan('db:seed', ['--class' => SocialLinkSeeder::class]);
+
+    Livewire::test(SocialIndex::class)
+        ->call('addLink')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(SocialLink::count())->toBe(7);
+});
+
 it('blocks staff from the social links screen', function () {
     $this->seed(RolePermissionSeeder::class);
     $staff = User::factory()->create();
