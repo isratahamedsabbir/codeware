@@ -161,6 +161,7 @@ class ProductController extends Controller
                             ? $discountPrice
                             : null,
                         'quantity' => $quantity,
+                        'image' => $row['image'] ?? null,
                         // A blank quantity is out of stock, same as an explicit 0 —
                         // it never inherits the base product's stock tracking.
                         'in_stock' => $quantity > 0,

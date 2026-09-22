@@ -179,7 +179,7 @@
             @endif
 
             {{-- Cards --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                 @forelse ($variations as $i => $row)
                     <div wire:key="variation-{{ $i }}"
                         class="group/var rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden transition-shadow hover:shadow-md {{ ($row['visible'] ?? true) ? '' : 'opacity-60' }}">
@@ -205,6 +205,11 @@
                                 </button>
                             </div>
                         </div>
+                        <div class="px-3 pt-3">
+                            <x-media-picker model="variations.{{ $i }}.image" label=""
+                                placeholder="Variant image" mimes="jpg,jpeg,png,webp" only-images
+                                :picker-id="'variation-image-'.$i" compact />
+                        </div>
                         <div class="p-3 grid grid-cols-3 gap-2">
                             <flux:field>
                                 <flux:label class="text-[11px] text-zinc-500">Price</flux:label>
@@ -229,7 +234,7 @@
                         </div>
                     </div>
                 @empty
-                    <div class="sm:col-span-2 rounded-xl border-2 border-dashed border-zinc-200 py-10 px-6 text-center">
+                    <div class="sm:col-span-2 xl:col-span-3 rounded-xl border-2 border-dashed border-zinc-200 py-10 px-6 text-center">
                         <div class="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-violet-500/10 text-violet-500">
                             <flux:icon.adjustments-horizontal class="size-5" />
                         </div>

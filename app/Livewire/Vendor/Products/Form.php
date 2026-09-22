@@ -131,6 +131,7 @@ class Form extends Component
                 'discount_price' => $row['discount_price'] ?? '',
                 'quantity' => $row['quantity'] ?? '',
                 'visible' => $row['visible'] ?? true,
+                'image' => $row['image'] ?? '',
             ])->all();
 
             foreach ($this->variations as $row) {
@@ -281,7 +282,7 @@ class Form extends Component
      * generateVariations() already guards against it, but keeps save() safe
      * regardless.
      *
-     * @return array<int, array{attributes: array<string, string>, price: ?string, discount_price: ?string, quantity: ?string, visible: bool}>
+     * @return array<int, array{attributes: array<string, string>, price: ?string, discount_price: ?string, quantity: ?string, visible: bool, image: ?string}>
      */
     private function cleanedVariations(): array
     {
@@ -293,6 +294,7 @@ class Form extends Component
                 'discount_price' => filled($row['discount_price'] ?? null) ? $row['discount_price'] : null,
                 'quantity' => filled($row['quantity'] ?? null) ? $row['quantity'] : 0,
                 'visible' => (bool) ($row['visible'] ?? true),
+                'image' => filled($row['image'] ?? null) ? $row['image'] : null,
             ])
             ->values()
             ->all();

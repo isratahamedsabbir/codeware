@@ -120,9 +120,9 @@ class Form extends Component
      * of deleted, and regenerated back into existence later without losing
      * its price. Shape: [['attributes' => ['Color' => 'Red', 'Size' =>
      * 'Small'], 'price' => '500.00', 'discount_price' => null, 'quantity' =>
-     * '10', 'visible' => true], ...].
+     * '10', 'visible' => true, 'image' => null], ...].
      *
-     * @var array<int, array{attributes: array<string, string>, price: string, discount_price: string, quantity: string, visible: bool}>
+     * @var array<int, array{attributes: array<string, string>, price: string, discount_price: string, quantity: string, visible: bool, image: ?string}>
      */
     public array $variations = [];
 
@@ -187,6 +187,7 @@ class Form extends Component
                 'discount_price' => $row['discount_price'] ?? '',
                 'quantity' => $row['quantity'] ?? '',
                 'visible' => $row['visible'] ?? true,
+                'image' => $row['image'] ?? '',
             ])->all();
 
             foreach ($this->variations as $row) {
@@ -312,6 +313,7 @@ class Form extends Component
                 'discount_price' => '',
                 'quantity' => '',
                 'visible' => true,
+                'image' => '',
             ])
             ->values()
             ->all();
@@ -392,7 +394,7 @@ class Form extends Component
      * generateVariations() already guards against it, but keeps save() safe
      * regardless.
      *
-     * @return array<int, array{attributes: array<string, string>, price: ?string, discount_price: ?string, quantity: ?string, visible: bool}>
+     * @return array<int, array{attributes: array<string, string>, price: ?string, discount_price: ?string, quantity: ?string, visible: bool, image: ?string}>
      */
     private function cleanedVariations(): array
     {
@@ -404,6 +406,7 @@ class Form extends Component
                 'discount_price' => filled($row['discount_price'] ?? null) ? $row['discount_price'] : null,
                 'quantity' => filled($row['quantity'] ?? null) ? $row['quantity'] : 0,
                 'visible' => (bool) ($row['visible'] ?? true),
+                'image' => filled($row['image'] ?? null) ? $row['image'] : null,
             ])
             ->values()
             ->all();
@@ -571,6 +574,7 @@ class Form extends Component
         $rules['variations.*.price'] = 'nullable|numeric|min:0';
         $rules['variations.*.discount_price'] = 'nullable|numeric|min:0|lt:variations.*.price';
         $rules['variations.*.quantity'] = 'nullable|integer|min:0|lte:quantity';
+        $rules['variations.*.image'] = 'nullable|string|max:500';
         $rules['faqs.*.question'] = 'nullable|string|max:255';
         $rules['category_ids'] = 'array';
         $rules['category_ids.*'] = 'integer|exists:categories,id,type,product_category';
@@ -613,6 +617,7 @@ class Form extends Component
         $rules['variations.*.price'] = 'nullable|numeric|min:0';
         $rules['variations.*.discount_price'] = 'nullable|numeric|min:0|lt:variations.*.price';
         $rules['variations.*.quantity'] = 'nullable|integer|min:0|lte:quantity';
+        $rules['variations.*.image'] = 'nullable|string|max:500';
         $rules['faqs.*.question'] = 'nullable|string|max:255';
         $rules['category_ids'] = 'array';
         $rules['category_ids.*'] = 'integer|exists:categories,id,type,product_category';
