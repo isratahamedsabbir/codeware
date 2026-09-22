@@ -77,6 +77,25 @@
 
                             <div class="space-y-1.5">
                                 <label
+                                    class="block text-[10px] font-medium uppercase tracking-widest text-slate-500">Theme</label>
+                                <div class="flex items-center gap-3">
+                                    <select wire:model="theme"
+                                        class="block h-8 rounded border border-slate-300 text-sm text-slate-800 px-3 bg-white focus:border-secondary focus:ring-1 focus:ring-secondary outline-none flex-1">
+                                        @foreach (\App\Support\EmailThemes::all() as $slug => $label)
+                                            <option value="{{ $slug }}">{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <p class="text-[11px] text-slate-400">Every file in
+                                    <code>resources/views/emails/templates/</code> shows up here — pick one to set the
+                                    email layout. Copy a file and change its colors to create a new theme.</p>
+                                @error('theme')
+                                    <span class="text-[11px] text-rose-600 font-medium">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label
                                     class="block text-[10px] font-medium uppercase tracking-widest text-slate-500">Subject</label>
                                 <input type="text" wire:model="subjectTemplate"
                                     class="block w-full h-8 rounded border border-slate-300 text-sm text-slate-800 px-3 focus:border-secondary focus:ring-1 focus:ring-secondary outline-none" />

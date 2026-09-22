@@ -7,6 +7,7 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Services\EmailTemplateRenderer;
 use App\Services\EmailTemplateService;
+use App\Support\EmailThemes;
 use App\Support\EnvFile;
 use Database\Seeders\EmailTemplatesSeeder;
 use Database\Seeders\RolePermissionSeeder;
@@ -53,6 +54,7 @@ it('loads template details when selecting a template', function () {
         'subject_template' => 'Order #{{order_id}} confirmed',
         'body_template' => '<p>Hello {{customer_name}}</p>',
         'variables' => ['customer_name', 'order_id'],
+        'theme' => 'ocean',
         'active' => true,
     ]);
 
@@ -61,6 +63,7 @@ it('loads template details when selecting a template', function () {
         ->call('selectTemplate', $template->id)
         ->assertSet('templateKey', $template->key)
         ->assertSet('subjectTemplate', 'Order #{{order_id}} confirmed')
+        ->assertSet('theme', 'ocean')
         ->assertSet('variablesList', 'customer_name, order_id')
         ->assertSet('active', true);
 });
@@ -81,6 +84,7 @@ it('updates email template content through livewire form', function () {
         ->call('selectTemplate', $template->id)
         ->set('subjectTemplate', 'Receipt #{{order_id}}')
         ->set('bodyTemplate', '<p>Hi {{customer_name}}</p>')
+        ->set('theme', 'royal')
         ->set('variablesList', 'customer_name, order_id')
         ->set('active', false)
         ->call('save')
@@ -89,10 +93,23 @@ it('updates email template content through livewire form', function () {
     $this->assertDatabaseHas('email_templates', [
         'id' => $template->id,
         'subject_template' => 'Receipt #{{order_id}}',
+        'theme' => 'royal',
         'active' => false,
     ]);
 
     expect(EmailTemplate::query()->findOrFail($template->id)->variables)->toBe(['customer_name', 'order_id']);
+});
+
+it('rejects an unknown theme when saving an email template', function () {
+    $user = User::factory()->admin()->create();
+    $template = EmailTemplate::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test(Index::class)
+        ->call('selectTemplate', $template->id)
+        ->set('theme', 'not-a-theme')
+        ->call('save')
+        ->assertHasErrors(['theme']);
 });
 
 it('generates a preview from template and variables', function () {
@@ -107,13 +124,16 @@ it('generates a preview from template and variables', function () {
         ->test(Index::class)
         ->set('subjectTemplate', 'Hi {{name}}')
         ->set('bodyTemplate', 'Welcome {{name}}')
+        ->set('theme', 'ocean')
         ->set('previewVariablesJson', '{"name": "Rahim"}')
         ->call('generatePreview')
         ->assertSet('previewSubject', 'Hi Rahim')
         ->assertSet('previewBody', 'Welcome Rahim')
         ->assertSet('previewHtml', fn (string $html) => str_contains($html, 'Welcome Rahim')
             && str_contains($html, 'email-wrapper')
-            && str_contains($html, 'Get in touch'));
+            && str_contains($html, 'Get in touch')
+            && str_contains($html, 'background:#1e7bc4')
+            && str_contains($html, 'background:#eef5fb'));
 });
 
 it('renders subject and body with variables', function () {
@@ -136,6 +156,7 @@ it('sends email through the template service', function () {
         'key' => 'order_confirmation',
         'subject_template' => 'Order #{{order_id}} confirmed',
         'body_template' => '<p>Dear {{customer_name}}</p>',
+        'theme' => 'slate',
         'active' => true,
     ]);
 
@@ -150,6 +171,7 @@ it('sends email through the template service', function () {
     Mail::assertSent(TemplateDrivenMail::class, function (TemplateDrivenMail $mail) {
         return $mail->subjectLine === 'Order #10 confirmed'
             && str_contains($mail->bodyHtml, 'Dear Rahim')
+            && $mail->emailTheme === 'slate'
             && $mail->hasTo('rahim@example.com');
     });
 });
@@ -399,6 +421,7 @@ describe('send custom email', function () {
             'subject_template' => 'Hi {{ customer_name }}, welcome!',
             'body_template' => 'Thanks for joining {{ customer_name }}.',
             'variables' => ['customer_name'],
+            'theme' => 'sunset',
             'active' => true,
         ]);
 
@@ -418,6 +441,7 @@ describe('send custom email', function () {
         Mail::assertSent(TemplateDrivenMail::class, function (TemplateDrivenMail $mail) {
             return $mail->hasTo('destination@example.test')
                 && $mail->subjectLine === 'Hi Rahim, welcome!'
+                && $mail->emailTheme === 'sunset'
                 && str_contains($mail->bodyHtml, 'Thanks for joining Rahim.');
         });
     });
@@ -455,10 +479,10 @@ describe('send custom email', function () {
     });
 });
 
-it('renders the template-driven email view', function () {
+it('renders the default email theme view', function () {
     Setting::set('contact_email', 'support@example.com');
 
-    $html = view('emails.template-driven', [
+    $html = view(EmailThemes::view('default'), [
         'subjectLine' => 'Order #10 confirmed',
         'bodyHtml' => '<p>Dear Rahim,</p><p>Thank you for your order.</p>',
     ])->render();

@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Support\EmailThemes;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
@@ -20,7 +21,8 @@ class TemplateDrivenMail extends Mailable
     public function __construct(
         public string $subjectLine,
         public string $bodyHtml,
-        public string $viewName = 'emails.template-driven',
+        public ?string $viewName = null,
+        public string $emailTheme = 'default',
         array $attachments = [],
     ) {
         // Assigned to the inherited (untyped) Mailable::$attachments property,
@@ -38,10 +40,11 @@ class TemplateDrivenMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: $this->viewName,
+            view: $this->viewName ?? EmailThemes::view($this->emailTheme),
             with: [
                 'subjectLine' => $this->subjectLine,
                 'bodyHtml' => $this->bodyHtml,
+                'emailTheme' => $this->emailTheme,
             ],
         );
     }

@@ -6,6 +6,7 @@ use App\Mail\TemplateDrivenMail;
 use App\Models\EmailTemplate;
 use App\Services\EmailTemplateRenderer;
 use App\Support\AdminActivity;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -33,9 +34,9 @@ trait SendsCustomEmail
      * Active templates available in the "Send Email" modal. Empty key means the
      * freeform subject/description path.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, EmailTemplate>
+     * @return Collection<int, EmailTemplate>
      */
-    public function customEmailTemplates(): \Illuminate\Database\Eloquent\Collection
+    public function customEmailTemplates(): Collection
     {
         return EmailTemplate::query()->where('active', true)->orderBy('name')->get();
     }
@@ -119,7 +120,7 @@ trait SendsCustomEmail
                 $subject = $renderer->renderSubject($template->subject_template, is_array($variables) ? $variables : []);
                 $body = $renderer->renderBody($template->body_template, is_array($variables) ? $variables : []);
 
-                Mail::to($validated['customEmailTo'])->send(new TemplateDrivenMail($subject, $body));
+                Mail::to($validated['customEmailTo'])->send(new TemplateDrivenMail($subject, $body, emailTheme: $template->theme ?? 'default'));
             } else {
                 Mail::to($validated['customEmailTo'])->send(new TemplateDrivenMail(
                     $validated['customEmailSubject'],

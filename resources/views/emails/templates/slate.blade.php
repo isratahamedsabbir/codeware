@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -9,7 +9,7 @@
   body {
     margin: 0;
     padding: 0;
-    background-color: #f0f4f8;
+    background-color: #f1f5f9;
     font-family: 'Poppins', Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
@@ -26,11 +26,11 @@
 </head>
 <body>
 
-<div class="email-wrapper" style="background:#f0f4f8;padding:32px 16px;min-height:100vh;">
+<div class="email-wrapper" style="background:#f1f5f9;padding:32px 16px;min-height:100vh;">
   <div style="max-width:580px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;">
 
-    <!-- ── HERO STRIP ── -->
-    <div class="hero-strip" style="background:#7cc242;padding:28px 40px;display:flex;align-items:center;gap:16px;">
+    <!-- â”€â”€ HERO STRIP â”€â”€ -->
+    <div class="hero-strip" style="background:#334155;padding:28px 40px;display:flex;align-items:center;gap:16px;">
       <div style="background:#ffffff;border-radius:14px;padding:10px 22px;box-shadow:0 4px 12px rgba(0,0,0,0.08);margin:0 auto;">
         <img src="{{ \App\Models\Setting::get('site_icon') ?: asset('default/logo.png') }}"
              alt="{{ config('app.name') }}"
@@ -38,7 +38,7 @@
       </div>
     </div>
 
-    <!-- ── BODY ── -->
+    <!-- â”€â”€ BODY â”€â”€ -->
     <div class="body-pad" style="padding:36px 40px;">
 
       {!! $bodyHtml !!}
@@ -58,7 +58,7 @@
            style="flex:1;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;color:inherit;">
           <div>
             <p style="margin:0;font-size:11px;color:#94a3b8;font-weight:400;">Email</p>
-            <p style="margin:3px 0 0;font-size:12px;color:#5d9c1f;font-weight:600;">{{ \App\Models\Setting::get('contact_email') }}</p>
+            <p style="margin:3px 0 0;font-size:12px;color:#1e293b;font-weight:600;">{{ \App\Models\Setting::get('contact_email') }}</p>
           </div>
         </a>
         @endif
@@ -69,7 +69,7 @@
            style="flex:1;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;color:inherit;">
           <div>
             <p style="margin:0;font-size:11px;color:#94a3b8;font-weight:400;">Website</p>
-            <p style="margin:3px 0 0;font-size:12px;color:#5d9c1f;font-weight:600;">{{ config('app.name') }}</p>
+            <p style="margin:3px 0 0;font-size:12px;color:#1e293b;font-weight:600;">{{ config('app.name') }}</p>
           </div>
         </a>
         @endif
@@ -80,7 +80,7 @@
       @if (config('app.frontend_url'))
       <div style="text-align:center;margin-top:32px;">
         <a href="{{ config('app.frontend_url') }}"
-           style="display:inline-block;background:#7cc242;color:#ffffff;font-family:'Poppins',Arial,sans-serif;font-size:14px;font-weight:600;padding:14px 40px;border-radius:50px;letter-spacing:0.4px;">
+           style="display:inline-block;background:#334155;color:#ffffff;font-family:'Poppins',Arial,sans-serif;font-size:14px;font-weight:600;padding:14px 40px;border-radius:50px;letter-spacing:0.4px;">
           Visit Our Website
         </a>
       </div>
@@ -88,9 +88,9 @@
 
     </div>
 
-    <!-- ── FOOTER ── -->
+    <!-- â”€â”€ FOOTER â”€â”€ -->
     <div class="footer-pad" style="background:#f8fafc;border-top:1px solid #f1f5f9;padding:20px 40px;text-align:center;">
-      <p style="margin:0;font-size:12px;color:#94a3b8;font-weight:400;">© {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</p>
+      <p style="margin:0;font-size:12px;color:#94a3b8;font-weight:400;">Â© {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</p>
     </div>
 
   </div>

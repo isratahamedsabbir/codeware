@@ -31,7 +31,7 @@ class EmailTemplateService
         $subject = $this->renderer->renderSubject($template->subject_template, $variables);
         $body = $this->renderer->renderBody($template->body_template, $variables);
 
-        Mail::to($recipient)->send(new TemplateDrivenMail($subject, $body, attachments: $attachments));
+        Mail::to($recipient)->send(new TemplateDrivenMail($subject, $body, emailTheme: $template->theme ?? 'default', attachments: $attachments));
 
         return true;
     }

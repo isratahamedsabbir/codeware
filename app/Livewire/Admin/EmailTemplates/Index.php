@@ -8,9 +8,11 @@ use App\Models\Setting;
 use App\Services\EmailTemplateRenderer;
 use App\Services\EmailTemplateService;
 use App\Support\AdminActivity;
+use App\Support\EmailThemes;
 use App\Support\EnvFile;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class Index extends Component
@@ -34,6 +36,8 @@ class Index extends Component
     public string $subjectTemplate = '';
 
     public string $bodyTemplate = '';
+
+    public string $theme = 'default';
 
     public string $variablesList = '';
 
@@ -178,6 +182,7 @@ class Index extends Component
             'description' => ['nullable', 'string', 'max:255'],
             'subjectTemplate' => ['required', 'string', 'max:191'],
             'bodyTemplate' => ['required', 'string'],
+            'theme' => ['required', 'string', Rule::in(array_keys(EmailThemes::all()))],
             'variablesList' => ['nullable', 'string'],
             'active' => ['required', 'boolean'],
         ]);
@@ -188,6 +193,7 @@ class Index extends Component
             'description' => $validated['description'] ?: null,
             'subject_template' => $validated['subjectTemplate'],
             'body_template' => $validated['bodyTemplate'],
+            'theme' => $validated['theme'],
             'variables' => $this->parseVariablesList($validated['variablesList']),
             'active' => $validated['active'],
         ]);
@@ -203,7 +209,7 @@ class Index extends Component
         $this->previewSubject = $renderer->renderSubject($this->subjectTemplate, $variables);
         $this->previewBody = $renderer->renderBody($this->bodyTemplate, $variables);
 
-        $this->previewHtml = view('emails.template-driven', [
+        $this->previewHtml = view(EmailThemes::view($this->theme), [
             'subjectLine' => $this->previewSubject,
             'bodyHtml' => $this->previewBody,
         ])->render();
@@ -226,6 +232,7 @@ class Index extends Component
         $this->description = (string) ($template->description ?? '');
         $this->subjectTemplate = $template->subject_template;
         $this->bodyTemplate = $template->body_template;
+        $this->theme = $template->theme ?? 'default';
         $this->variablesList = implode(', ', $template->variables ?? []);
         $this->active = (bool) $template->active;
         $this->previewVariablesJson = $this->buildPreviewJson($template->variables ?? []);

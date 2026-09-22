@@ -92,7 +92,7 @@ class ContactController extends Controller
         Mail::to(Setting::get('contact_email') ?: 'contact@idesk360.com')->send(new TemplateDrivenMail(
             $data['subject'].' - '.$data['full_name'],
             $body,
-            $data['view_name'] ?? 'emails.template-driven',
+            $data['view_name'] ?? 'emails.templates.default',
         ));
 
         return response()->json([
