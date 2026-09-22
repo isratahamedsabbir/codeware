@@ -49,6 +49,12 @@ class Index extends Component
         $rows = Setting::all();
 
         foreach ($rows as $setting) {
+            // Watermark is configured from the Media Library now, not here — it
+            // must not be re-written by this page's save(), so leave it out.
+            if (str_starts_with($setting->key, 'watermark_')) {
+                continue;
+            }
+
             // Boolean settings are stored as the string "0"/"1" (no cast on the
             // Setting model). Left as a string, a checkbox bound to it renders
             // checked no matter what — JS truthiness treats "0" as true, unlike

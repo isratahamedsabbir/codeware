@@ -29,34 +29,21 @@
 @endphp
 
 @push('page-header-actions')
+    {{-- Plain onclick (same cross-DOM approach as the Media Library's header
+         buttons): this is rendered by the layout's header via @push/@stack, so
+         it has no wire:id ancestor to call $wire on. The root <div> below
+         forwards the event (x-on:open-theme-install.window) to openInstallModal(). --}}
+    <flux:button variant="outline" size="sm" icon="arrow-up-tray"
+        onclick="window.dispatchEvent(new CustomEvent('open-theme-install'))">
+        Install Theme
+    </flux:button>
+
     <flux:button variant="outline" size="sm" icon="arrow-top-right-on-square" href="{{ $frontendUrl }}" target="_blank">
         View Public Site
     </flux:button>
 @endpush
 
-<div class="space-y-5">
-
-    {{-- ── Live site status ─────────────────────────────────────────────── --}}
-    <div
-        class="flex flex-col gap-3 rounded-[5px] border border-zinc-200 bg-white px-5 py-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-800/40 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex items-center gap-3 min-w-0">
-            <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-                <flux:icon.globe-alt class="size-5" />
-            </span>
-            <div class="min-w-0">
-                <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Public Site</p>
-                <p class="truncate text-xs text-zinc-400">
-                    Currently live on
-                    <span class="font-mono font-medium text-zinc-500 dark:text-zinc-300">{{ $themes[$activeTheme] ?? $activeTheme }}</span>
-                    — {{ $frontendUrl }}
-                </p>
-            </div>
-        </div>
-        <div class="flex items-center gap-2 shrink-0">
-            <a href="{{ route('admin.settings') }}"
-                class="text-xs font-medium text-zinc-400 transition-colors hover:text-zinc-600 dark:hover:text-zinc-200">Back to Settings</a>
-        </div>
-    </div>
+<div class="space-y-5" x-data="{ showThemeGuide: false }" x-on:open-theme-install.window="$wire.openInstallModal()">
 
     {{-- ── Site Design ── --}}
     <x-admin-section-card header-border="border-zinc-100" icon="swatch" title="Site Design"
@@ -196,6 +183,64 @@
             @endforeach
         </div>
 
+        {{-- Selected theme's own settings (read from the theme folder's theme.json) --}}
+        @php
+            $selectedSlug = $settings['site_theme'] ?? $activeTheme;
+            $selectedCard = $themeCards[$selectedSlug] ?? null;
+        @endphp
+
+        @if ($selectedCard)
+            <div class="mt-5 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-800/40">
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <h4 class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+                        {{ $selectedCard['manifest']['name'] }}
+                    </h4>
+
+                    @if (filled($selectedCard['manifest']['version']))
+                        <span class="rounded-full bg-zinc-100 px-2.5 py-0.5 font-mono text-[11px] font-medium text-zinc-500 dark:bg-zinc-700 dark:text-zinc-300">
+                            v{{ $selectedCard['manifest']['version'] }}
+                        </span>
+                    @endif
+
+                    @if ($selectedSlug === $activeTheme)
+                        <span class="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+                            Live
+                        </span>
+                    @endif
+
+                    @if (filled($selectedCard['manifest']['author']))
+                        <span class="ml-auto text-xs text-zinc-400">
+                            by {{ $selectedCard['manifest']['author'] }}
+                        </span>
+                    @endif
+                </div>
+
+                @if (filled($selectedCard['manifest']['description']))
+                    <p class="mt-2 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                        {{ $selectedCard['manifest']['description'] }}
+                    </p>
+                @endif
+
+                <div class="mt-4 flex flex-wrap items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                    <span class="flex items-center gap-1.5">
+                        <flux:icon.document-text class="size-3.5 text-zinc-400" />
+                        {{ $selectedCard['templates'] }} templates
+                    </span>
+                    @if ($selectedCard['shop'])
+                        <span class="flex items-center gap-1.5">
+                            <flux:icon.shopping-bag class="size-3.5 text-zinc-400" />
+                            shop pages
+                        </span>
+                    @endif
+                    @foreach ($selectedCard['manifest']['tags'] as $tag)
+                        <span class="rounded-md border border-zinc-200 bg-zinc-50 px-2 py-0.5 font-mono text-[11px] text-zinc-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                            {{ $tag }}
+                        </span>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         <p class="flex items-center gap-1.5 text-xs text-zinc-400">
             <flux:icon.sparkles class="size-3.5 text-amber-400" />
             Adding a theme is as simple as dropping a new folder into
@@ -203,6 +248,26 @@
             — it shows up here automatically.
         </p>
     </x-admin-section-card>
+
+    {{-- ── Theme's own settings ──────────────────────────────────────────────
+         If the selected theme ships a settings.blade.php at its root, render it
+         inline (its fields bind to settings.theme_{slug}_* keys, which this
+         component hydrates on mount and persists on save). --}}
+    @if ($selectedHasSettings)
+        <x-admin-section-card header-border="border-zinc-100" icon="adjustments-horizontal" title="Theme Settings"
+            description="Settings the selected theme ({{ $selectedSlug }}) defines itself — saved under the theme_&lt;slug&gt;_ prefix.">
+            <x-slot:titleActions>
+                <button type="button" @click="showThemeGuide = true" title="How theme settings work"
+                    class="flex size-5 items-center justify-center text-zinc-400 transition-colors hover:text-primary cursor-pointer">
+                    <flux:icon.information-circle class="size-4" />
+                </button>
+            </x-slot:titleActions>
+            @include('frontend.themes.'.$selectedSlug.'.settings', [
+                'themeSlug' => $selectedSlug,
+                'settings' => $settings,
+            ])
+        </x-admin-section-card>
+    @endif
 
     {{-- ── Homepage ── --}}
     <x-admin-section-card header-border="border-zinc-100" icon="home" title="Homepage"
@@ -267,6 +332,151 @@
             </div>
         </div>
     </x-admin-section-card>
+
+    {{-- ── Install Theme modal ─────────────────────────────────────────────── --}}
+    @if ($showInstallModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+            <div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-zinc-200 bg-white shadow-xl dark:border-zinc-700 dark:bg-zinc-800"
+                @click.away="$wire.closeInstallModal()">
+
+                <div class="flex items-center justify-between border-b border-zinc-100 px-6 py-4 dark:border-zinc-700">
+                    <h3 class="text-sm font-medium text-zinc-900 dark:text-zinc-100">Install Theme</h3>
+                    <button wire:click="closeInstallModal"
+                        class="rounded p-1 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-700">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="grid gap-5 p-6">
+                    <p class="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                        Upload your theme as a
+                        <code class="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">.zip</code>
+                        of a single folder — e.g.
+                        <code class="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">my-theme/</code>
+                        containing your
+                        <code class="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">home.blade.php</code>,
+                        <code class="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">page.blade.php</code>
+                        etc. The folder name becomes the theme's name, and it shows up in the picker above immediately after installing.
+                    </p>
+
+                    <a href="{{ asset('docs/theme-builder-guide.pdf') }}" target="_blank"
+                        class="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50/70 p-4 transition-colors hover:border-emerald-300 hover:bg-emerald-50 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:hover:border-emerald-500/50">
+                        <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400">
+                            <flux:icon.document-text class="size-5" />
+                        </span>
+                        <span class="min-w-0">
+                            <span class="block text-sm font-semibold text-zinc-800 dark:text-zinc-100">Theme Builder Guide</span>
+                            <span class="block text-xs text-zinc-500 dark:text-zinc-400">How to structure, package and install a theme — open the PDF in a new tab</span>
+                        </span>
+                        <flux:icon.arrow-top-right-on-square class="ml-auto size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                    </a>
+
+                    <div class="flex flex-col items-center gap-3 rounded-lg border border-dashed border-zinc-300 bg-zinc-50/60 p-5 text-center dark:border-zinc-600 dark:bg-zinc-800/30">
+                        <input type="file" wire:model="themeZip" accept=".zip" class="hidden" id="theme-zip-input">
+                        @if ($themeZip)
+                            <p class="max-w-full truncate text-xs font-medium text-zinc-600 dark:text-zinc-300">{{ $themeZip->getClientOriginalName() }}</p>
+                        @else
+                            <p class="text-xs text-zinc-400 dark:text-zinc-500">Choose a .zip file to upload</p>
+                        @endif
+                        <flux:button variant="outline" size="sm"
+                            onclick="document.getElementById('theme-zip-input').click()">
+                            Choose File
+                        </flux:button>
+                    </div>
+
+                    @error('themeZip')
+                        <p class="text-xs font-medium text-red-600 dark:text-red-400">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="flex items-center justify-end gap-2 border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+                    <flux:button variant="ghost" size="sm" wire:click="closeInstallModal">Cancel</flux:button>
+                    <flux:button variant="primary" size="sm" wire:click="installTheme" wire:loading.attr="disabled">
+                        <span wire:loading.remove>Install Theme</span>
+                        <span wire:loading>Installing…</span>
+                    </flux:button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- ── Theme Settings Guide modal ─────────────────────────────────────── --}}
+    <div x-show="showThemeGuide" x-cloak x-transition
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+        @keydown.escape.window="showThemeGuide = false">
+        <div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-zinc-200 bg-white shadow-xl dark:border-zinc-700 dark:bg-zinc-800"
+            @click.away="showThemeGuide = false">
+
+            <div class="flex items-center justify-between border-b border-zinc-100 px-6 py-4 dark:border-zinc-700">
+                <h3 class="flex items-center gap-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                    <flux:icon.information-circle class="size-4 text-primary" />
+                    Theme Settings Guide
+                </h3>
+                <button type="button" @click="showThemeGuide = false"
+                    class="rounded p-1 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-700">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="grid gap-4 p-6 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+                <p>
+                    Themes can define their own settings. Drop a
+                    <code class="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[11px] text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">settings.blade.php</code>
+                    file inside the theme folder and it appears in this panel automatically.
+                </p>
+
+                <div class="rounded-lg border border-zinc-200 bg-zinc-50/70 p-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+                    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">1. Fields bind to settings</p>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                        Use Flux fields. Each control's key starts with the theme slug so settings stay namespaced per theme:
+                    </p>
+                    <pre class="mt-2 overflow-x-auto rounded-md bg-zinc-900 p-3 font-mono text-[11px] leading-relaxed text-zinc-100"><code>&lt;flux:field&gt;
+    &lt;flux:label&gt;Hero badge&lt;/flux:label&gt;
+    &lt;flux:input wire:model="settings.theme_first_one_hero_badge" /&gt;
+&lt;/flux:field&gt;</code></pre>
+                </div>
+
+                <div class="rounded-lg border border-zinc-200 bg-zinc-50/70 p-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+                    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">2. Read it in your theme views</p>
+                    <pre class="overflow-x-auto rounded-md bg-zinc-900 p-3 font-mono text-[11px] leading-relaxed text-zinc-100"><code>{{-- inside home.blade.php --}}
+@php($badge = \App\Models\Setting::get('theme_first_one_hero_badge'))
+@if ($badge) &lt;span&gt;{{ $badge }}&lt;/span&gt; @endif</code></pre>
+                </div>
+
+                <div class="rounded-lg border border-zinc-200 bg-zinc-50/70 p-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+                    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">3. Stored in the database</p>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                        Values persist in the
+                        <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[10px] text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">settings</code>
+                        table under the
+                        <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[10px] text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">theme_&lt;slug&gt;_*</code>
+                        key format and survive theme switching — each theme keeps its own values. Values are read with
+                        <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[10px] text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">Setting::get()</code>
+                        and written via
+                        <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[10px] text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">Setting::set()</code>.
+                    </p>
+                </div>
+
+                <p class="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50/70 p-4 text-xs text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300">
+                    <flux:icon.light-bulb class="mt-0.5 size-4 shrink-0" />
+                    <span>
+                        For a full walkthrough of theme structure, packages and install rules, open the
+                        <a href="{{ asset('docs/theme-builder-guide.pdf') }}" target="_blank"
+                            class="font-semibold text-blue-700 underline decoration-blue-300 underline-offset-2 hover:decoration-blue-500 dark:text-blue-300">
+                            Theme Builder Guide PDF</a>.
+                    </span>
+                </p>
+            </div>
+
+            <div class="flex items-center justify-end border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+                <flux:button variant="primary" size="sm" @click="showThemeGuide = false">Got it</flux:button>
+            </div>
+        </div>
+    </div>
 
     {{-- ── Save bar ── --}}
     <div

@@ -13,6 +13,9 @@
         $siteIcon = \App\Models\Setting::get('site_icon_white') ?: \App\Models\Setting::get('site_icon');
         $contactEmail = \App\Models\Setting::get('contact_email');
         $contactAddress = \App\Models\Setting::get('contact_address');
+        $pfHeroTitle = \App\Models\Setting::get('theme_portfolio_hero_title', 'Full Stack Developer');
+        $pfHeroTagline = \App\Models\Setting::get('theme_portfolio_hero_tagline', 'Building fast, reliable, and scalable web applications with modern tools. Passionate about clean code and thoughtful design.');
+        $pfAvailability = \App\Models\Setting::get('theme_portfolio_availability', 'Available for new projects');
         $socialIcons = [
             'facebook' => ['abbr' => 'FB', 'label' => 'Facebook'],
             'twitter' => ['abbr' => 'X', 'label' => 'Twitter'],
@@ -119,7 +122,7 @@
                         <polyline points="16 18 22 12 16 6" />
                         <polyline points="8 6 2 12 8 18" />
                     </svg>
-                    Full Stack Developer
+                    {{ $pfHeroTitle }}
                 </span>
 
                 <h1 class="pf-heading pf-animate text-4xl font-extrabold leading-tight tracking-tight sm:text-6xl" style="animation-delay:200ms">
@@ -128,7 +131,7 @@
                 </h1>
 
                 <p class="pf-animate mx-auto mt-6 max-w-xl text-lg text-(--pf-text-muted) sm:text-xl" style="animation-delay:300ms">
-                    Building fast, reliable, and scalable web applications with modern tools. Passionate about clean code and thoughtful design.
+                    {{ $pfHeroTagline }}
                 </p>
 
                 <div class="pf-animate mt-10 flex flex-wrap justify-center gap-4" style="animation-delay:400ms">
@@ -366,7 +369,7 @@
 
                                 <div class="mt-5 flex items-center gap-2 rounded-lg px-4 py-3" style="background-color: color-mix(in srgb, var(--pf-primary) 12%, transparent);">
                                     <span class="pf-pulse-dot h-2 w-2 rounded-full"></span>
-                                    <span class="pf-mono text-xs font-medium text-(--pf-primary)">Available for new projects</span>
+                                    <span class="pf-mono text-xs font-medium text-(--pf-primary)">{{ $pfAvailability }}</span>
                                 </div>
                             </div>
                         @endif

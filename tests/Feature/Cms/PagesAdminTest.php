@@ -101,3 +101,11 @@ it('saves and opens the puck editor for a new page', function () {
     $xjs = $component->effects['xjs'] ?? [];
     expect($xjs[0]['expression'] ?? null)->toContain('\/puck\/edit\/page\/');
 });
+
+it('shows the page constants usage guide via the info icon on the page form Constant card', function () {
+    Livewire::test(PagesForm::class)
+        ->assertSee('How Page Constants Work')
+        ->assertSee('page_constant(')
+        ->assertSee('by page slug + key')
+        ->assertSee('data.constant');
+});

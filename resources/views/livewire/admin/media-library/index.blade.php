@@ -10,9 +10,18 @@
         onclick="window.dispatchEvent(new CustomEvent('open-media-picker', { detail: { pickerId: 'media-library-manage-picker', onlyImages: false, mimes: 'jpg,jpeg,png,gif,webp,pdf,mp4,mp3,doc,docx,xls,xlsx', maxSizeKb: 10240 } }))">
         Upload Files
     </flux:button>
+
+    {{-- Same cross-DOM event approach as Upload Files: the header renders outside
+         this component's root, so this dispatches a window event that the root
+         <div> below (x-on:open-watermark-modal.window) forwards to
+         openWatermarkModal() in Index.php. --}}
+    <flux:button variant="ghost" size="sm" icon="photo"
+        onclick="window.dispatchEvent(new CustomEvent('open-watermark-modal'))">
+        Watermark
+    </flux:button>
 @endpush
 
-<div class="space-y-5">
+<div class="space-y-5" x-data x-on:open-watermark-modal.window="$wire.openWatermarkModal()">
 
     {{-- ─── Media Grid ──────────────────────────────────────────────────────── --}}
     <div class="rounded-[5px] border border-slate-200 bg-white overflow-hidden">
@@ -378,6 +387,71 @@
                 </div>
             </div>
         @endif
+    @endif
+
+    {{-- ─── Watermark Settings Modal ───────────────────────────────────────── --}}
+    {{-- Opened by the header "Watermark" button (see the @push above) — the
+    configuration moved here from Settings → Other. Saves to the same four
+    Setting keys ImageWatermarker reads when stamping uploads. --}}
+    @if ($showWatermarkModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+            <div class="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl"
+                @click.away="$wire.closeWatermarkModal()">
+
+                <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+                    <h3 class="text-sm font-medium text-slate-900">Watermark Settings</h3>
+                    <button wire:click="closeWatermarkModal"
+                        class="rounded p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="grid gap-5 p-6">
+                    {{-- Enable --}}
+                    <label class="flex items-center gap-2 text-sm text-slate-800">
+                        <input type="checkbox" wire:model="watermarkEnabled" class="rounded border-slate-300 text-primary" />
+                        Stamp this image on every file uploaded to the Media Library
+                    </label>
+
+                    {{-- Image --}}
+                    <x-media-picker model="watermarkImage" label="Watermark Image" hint="PNG with transparency works best"
+                        placeholder="Select watermark image from library" mimes="png,jpg,jpeg,webp" only-images dropzone />
+
+                    {{-- Position + opacity --}}
+                    <div class="grid grid-cols-1 gap-4">
+                        <flux:field>
+                            <flux:label>Position</flux:label>
+                            <select wire:model="watermarkPosition"
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/10">
+                                <option value="top-left">Top left</option>
+                                <option value="top-right">Top right</option>
+                                <option value="bottom-left">Bottom left</option>
+                                <option value="bottom-right">Bottom right</option>
+                                <option value="center">Center</option>
+                            </select>
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>Opacity ({{ $watermarkOpacity }}%)</flux:label>
+                            <input type="range" min="0" max="100" wire:model.live.debounce.50ms="watermarkOpacity" class="w-full" />
+                        </flux:field>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 border-t border-slate-100 bg-slate-50 px-6 py-4">
+                    <button type="button" wire:click="closeWatermarkModal"
+                        class="rounded-md border border-slate-200 bg-white px-4 py-2 text-xs font-medium tracking-wide text-slate-600 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1">
+                        Cancel
+                    </button>
+                    <button type="button" wire:click="saveWatermark"
+                        class="rounded-md bg-primary px-4 py-2 text-xs font-medium tracking-wide text-white transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1">
+                        Save Watermark
+                    </button>
+                </div>
+            </div>
+        </div>
     @endif
 
 </div>

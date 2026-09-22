@@ -331,3 +331,23 @@ it('seeds Pages as a standalone menu item, with no separate CMS item', function 
         ->and($pages->parent_id)->toBeNull()
         ->and(MenuItem::where('route_name', 'admin.cms')->exists())->toBeFalse();
 });
+
+it('shows the card usage guide via the info icon on the Cards card', function () {
+    $page = Page::factory()->create();
+
+    Livewire::test(CmsForm::class, ['pageId' => $page->id])
+        ->assertSee('How Section Cards Work')
+        ->assertSee('cms_cards(')
+        ->assertSee('repeatable tile')
+        ->assertSee('data.cms[...].cards');
+});
+
+it('shows the constant usage guide via the info icon on the Constant card', function () {
+    $page = Page::factory()->create();
+
+    Livewire::test(CmsForm::class, ['pageId' => $page->id])
+        ->assertSee('How Section Constants Work')
+        ->assertSee('cms_constant(')
+        ->assertSee('key/value pair scoped')
+        ->assertSee('data.cms[...].constant');
+});

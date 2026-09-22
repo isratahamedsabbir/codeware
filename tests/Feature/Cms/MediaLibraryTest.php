@@ -3,6 +3,7 @@
 use App\Livewire\Admin\MediaLibrary\Index as MediaIndex;
 use App\Livewire\Admin\MediaLibrary\PickerModal;
 use App\Models\MediaLibrary;
+use App\Models\Setting;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Http\UploadedFile;
@@ -102,4 +103,74 @@ it('rejects a disallowed file extension for chunked upload', function () {
         'filename' => 'virus.exe',
         'allowedExt' => 'jpg,png',
     ])->assertStatus(422);
+});
+
+it('opens the watermark modal pre-filled with the saved settings', function () {
+    Setting::set('watermark_enabled', '1');
+    Setting::set('watermark_image', '/storage/watermark.png');
+    Setting::set('watermark_position', 'top-left');
+    Setting::set('watermark_opacity', '35');
+
+    Livewire::test(MediaIndex::class)
+        ->call('openWatermarkModal')
+        ->assertSet('showWatermarkModal', true)
+        ->assertSet('watermarkEnabled', true)
+        ->assertSet('watermarkImage', '/storage/watermark.png')
+        ->assertSet('watermarkPosition', 'top-left')
+        ->assertSet('watermarkOpacity', 35)
+        ->assertSee('Watermark Settings')
+        ->assertSee('Watermark Image');
+});
+
+it('saves watermark settings from the modal', function () {
+    Livewire::test(MediaIndex::class)
+        ->call('openWatermarkModal')
+        ->set('watermarkEnabled', true)
+        ->set('watermarkImage', '/storage/watermark.png')
+        ->set('watermarkPosition', 'center')
+        ->set('watermarkOpacity', 60)
+        ->call('saveWatermark')
+        ->assertSet('showWatermarkModal', false)
+        ->assertDispatched('notify')
+        ->assertHasNoErrors();
+
+    expect(Setting::get('watermark_enabled'))->toBe('1')
+        ->and(Setting::get('watermark_image'))->toBe('/storage/watermark.png')
+        ->and(Setting::get('watermark_position'))->toBe('center')
+        ->and(Setting::get('watermark_opacity'))->toBe('60');
+});
+
+it('saves a disabled watermark without losing the other settings', function () {
+    Setting::set('watermark_enabled', '1');
+    Setting::set('watermark_image', '/storage/watermark.png');
+    Setting::set('watermark_position', 'bottom-right');
+    Setting::set('watermark_opacity', '50');
+
+    Livewire::test(MediaIndex::class)
+        ->call('openWatermarkModal')
+        ->set('watermarkEnabled', false)
+        ->call('saveWatermark')
+        ->assertHasNoErrors();
+
+    expect(Setting::get('watermark_enabled'))->toBe('0')
+        ->and(Setting::get('watermark_image'))->toBe('/storage/watermark.png')
+        ->and(Setting::get('watermark_position'))->toBe('bottom-right')
+        ->and(Setting::get('watermark_opacity'))->toBe('50');
+});
+
+it('rejects an invalid watermark position or opacity', function () {
+    Livewire::test(MediaIndex::class)
+        ->call('openWatermarkModal')
+        ->set('watermarkPosition', 'middle')
+        ->set('watermarkOpacity', 150)
+        ->call('saveWatermark')
+        ->assertHasErrors(['watermarkPosition', 'watermarkOpacity']);
+});
+
+it('closing the watermark modal dismisses it', function () {
+    Livewire::test(MediaIndex::class)
+        ->call('openWatermarkModal')
+        ->assertSet('showWatermarkModal', true)
+        ->call('closeWatermarkModal')
+        ->assertSet('showWatermarkModal', false);
 });

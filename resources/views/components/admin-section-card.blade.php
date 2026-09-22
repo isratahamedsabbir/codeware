@@ -19,7 +19,12 @@
                 <x-dynamic-component :component="'flux::icon.'.$icon" class="size-5" />
             </div>
             <div class="min-w-0">
-                <flux:heading size="sm">{{ $title }}</flux:heading>
+                <div class="flex items-center gap-2">
+                    <flux:heading size="sm">{{ $title }}</flux:heading>
+                    @isset($titleActions)
+                        <span class="flex items-center">{{ $titleActions }}</span>
+                    @endisset
+                </div>
                 @if ($description)
                     <flux:text class="text-xs text-zinc-500">{{ $description }}</flux:text>
                 @endif

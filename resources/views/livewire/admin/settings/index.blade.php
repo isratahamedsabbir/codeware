@@ -209,37 +209,8 @@
                     </flux:field>
                 </x-admin-section-card>
 
-                {{-- Watermark --}}
-                <x-admin-section-card header-border="border-zinc-100" icon="photo" title="Watermark"
-                    description="Stamps this image onto every file uploaded to the Media Library.">
-                    <x-slot:actions>
-                        <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
-                            <input type="checkbox" wire:model="settings.watermark_enabled" class="rounded border-zinc-300 text-primary" />
-                            Enable
-                        </label>
-                    </x-slot:actions>
-
-                    <x-media-picker model="settings.watermark_image" label="Watermark Image" hint="PNG with transparency works best"
-                        placeholder="Select watermark image from library" mimes="png,jpg,jpeg,webp" only-images dropzone />
-
-                    <div class="grid grid-cols-1 gap-4">
-                        <flux:field>
-                            <flux:label>Position</flux:label>
-                            <select wire:model="settings.watermark_position"
-                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                                <option value="top-left">Top left</option>
-                                <option value="top-right">Top right</option>
-                                <option value="bottom-left">Bottom left</option>
-                                <option value="bottom-right">Bottom right</option>
-                                <option value="center">Center</option>
-                            </select>
-                        </flux:field>
-                        <flux:field>
-                            <flux:label>Opacity ({{ $settings['watermark_opacity'] ?? 50 }}%)</flux:label>
-                            <input type="range" min="0" max="100" wire:model="settings.watermark_opacity" class="w-full" />
-                        </flux:field>
-                    </div>
-                </x-admin-section-card>
+                {{-- Watermark was here — moved to the Media Library, where a
+                     button in the header opens a modal for configuring it. --}}
 
                 {{-- Calculator widget --}}
                 <x-admin-section-card header-border="border-zinc-100" icon="calculator" title="Calculator"
@@ -335,11 +306,17 @@
         </div>
 
         {{-- Constant tab --}}
-        <div x-show="tab === 'constant'">
+        <div x-show="tab === 'constant'" x-data="{ showConstantsGuide: false }">
             <div class="max-w-[1600px] space-y-5">
                 <x-admin-section-card header-border="border-zinc-100" icon="variable" title="Constant"
                     description="Freeform key/value pairs, available site-wide — not tied to any page or CMS section."
                     collapsible :collapsed="true">
+                    <x-slot:titleActions>
+                        <button type="button" @click="showConstantsGuide = true" title="How constants work"
+                            class="flex size-5 items-center justify-center text-zinc-400 transition-colors hover:text-primary cursor-pointer">
+                            <flux:icon.information-circle class="size-4" />
+                        </button>
+                    </x-slot:titleActions>
                     <x-slot:actions>
                         <flux:button size="sm" variant="outline" icon="plus" wire:click="addConstant" x-on:click="open = true">Add field</flux:button>
                     </x-slot:actions>
@@ -426,6 +403,77 @@
                     @endforelse
                     </div>
                 </x-admin-section-card>
+            </div>
+
+            {{-- Constant guide modal --}}
+            <div x-show="showConstantsGuide" x-cloak x-transition
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+                @keydown.escape.window="showConstantsGuide = false">
+                <div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-zinc-200 bg-white shadow-xl dark:border-zinc-700 dark:bg-zinc-800"
+                    @click.away="showConstantsGuide = false">
+
+                    <div class="flex items-center justify-between border-b border-zinc-100 px-6 py-4 dark:border-zinc-700">
+                        <h3 class="flex items-center gap-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                            <flux:icon.variable class="size-4 text-primary" />
+                            How Constants Work
+                        </h3>
+                        <button type="button" @click="showConstantsGuide = false"
+                            class="rounded p-1 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-700">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="grid gap-4 p-6 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+                        <p>
+                            A <strong>Constant</strong> is a free-form key/value pair you can reuse across the whole site —
+                            phone numbers, social links, footer text, anything — without hard-coding it in a theme template.
+                        </p>
+
+                        <div class="rounded-lg border border-zinc-200 bg-zinc-50/70 p-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+                            <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">1. Give it a unique key</p>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                                Keys must be letters, numbers and underscores only — e.g.
+                                <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[10px] text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">support_email</code>.
+                                Set the value, then save.
+                            </p>
+                        </div>
+
+                        <div class="rounded-lg border border-zinc-200 bg-zinc-50/70 p-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+                            <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">2. Read it anywhere</p>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400">Use it in theme templates, pages or API values:</p>
+                            <pre class="mt-2 overflow-x-auto rounded-md bg-zinc-900 p-3 font-mono text-[11px] leading-relaxed text-zinc-100"><code>@{{-- inside home.blade.php --}}
+@{{ setting_constant('support_email') }}
+
+@@if (setting_constant('support_email'))
+    &lt;a href="mailto:@{{ setting_constant('support_email') }}"&gt;Contact support&lt;/a&gt;
+@@endif</code></pre>
+                        </div>
+
+                        <div class="rounded-lg border border-zinc-200 bg-zinc-50/70 p-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+                            <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">3. API access</p>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                                Public API exposes them under
+                                <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[10px] text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">/api/v1/settings</code>
+                                &rarr; <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[10px] text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">constant</code>
+                                map, keyed by name.
+                            </p>
+                        </div>
+
+                        <p class="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50/70 p-4 text-xs text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
+                            <flux:icon.exclamation-triangle class="mt-0.5 size-4 shrink-0" />
+                            <span>
+                                File-type constants store a media-library asset; in templates a file constant resolves to its
+                                public URL. Changing or deleting a key also affects every place that reads it.
+                            </span>
+                        </p>
+                    </div>
+
+                    <div class="flex items-center justify-end border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+                        <flux:button variant="primary" size="sm" @click="showConstantsGuide = false">Got it</flux:button>
+                    </div>
+                </div>
             </div>
         </div>
 

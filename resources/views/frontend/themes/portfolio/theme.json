@@ -1,0 +1,7 @@
+{
+    "name": "Portfolio",
+    "description": "A personal portfolio theme: hero, projects, experience, education, skills and a contact section, with light/dark toggle and its own style.css / script.js.",
+    "version": "1.0.0",
+    "author": "Codeware",
+    "tags": ["portfolio", "personal"]
+}

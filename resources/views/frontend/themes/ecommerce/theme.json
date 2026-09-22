@@ -1,0 +1,7 @@
+{
+    "name": "Ecommerce",
+    "description": "The full-featured storefront theme: shop, product, category, brand and tag pages, blog, cart, checkout, favorites, order confirmation and the customer account area. Restyle this theme to spin up your own storefront.",
+    "version": "1.0.0",
+    "author": "Codeware",
+    "tags": ["shop", "blog", "cart", "checkout", "account"]
+}

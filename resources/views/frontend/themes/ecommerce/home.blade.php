@@ -55,6 +55,11 @@
                     </div>
                 @endif
                 <div class="absolute inset-x-0 bottom-0 p-6 md:p-8">
+                    @if ($heroBadge = \App\Models\Setting::get('theme_ecommerce_hero_badge'))
+                        <span class="mb-3 inline-block rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur">
+                            {{ $heroBadge }}
+                        </span>
+                    @endif
                     <h1 class="max-w-xl text-2xl font-bold uppercase leading-tight text-white md:text-4xl">
                         {{ filled($siteTagline) ? $siteTagline : __('Welcome to :site', ['site' => $siteName]) }}
                     </h1>

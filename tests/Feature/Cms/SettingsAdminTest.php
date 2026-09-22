@@ -147,6 +147,32 @@ it('does not show the floating button (or any other "other"-group) setting in th
         });
 });
 
+it('no longer manages watermark settings — they moved to the Media Library', function () {
+    Setting::factory()->create(['key' => 'watermark_enabled', 'value' => '1', 'group' => 'other', 'type' => 'boolean']);
+    Setting::factory()->create(['key' => 'watermark_image', 'value' => '/storage/watermark.png', 'group' => 'other', 'type' => 'string']);
+    Setting::factory()->create(['key' => 'watermark_opacity', 'value' => '50', 'group' => 'other', 'type' => 'string']);
+
+    $component = Livewire::test(SettingsIndex::class);
+
+    expect($component->get('settings'))->not->toHaveKey('watermark_enabled')
+        ->and($component->get('settings'))->not->toHaveKey('watermark_image')
+        ->and($component->get('settings'))->not->toHaveKey('watermark_opacity');
+
+    $component->assertDontSee('Watermark Image');
+});
+
+it('does not overwrite watermark settings when saving the settings page', function () {
+    Setting::set('watermark_opacity', '25');
+    Setting::set('watermark_enabled', '1');
+
+    Livewire::test(SettingsIndex::class)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(Setting::get('watermark_opacity'))->toBe('25')
+        ->and(Setting::get('watermark_enabled'))->toBe('1');
+});
+
 it('renders the other tab with color fields', function () {
     Setting::factory()->create(['key' => 'primary_color', 'value' => '#2563eb', 'group' => 'colors', 'type' => 'color']);
     Setting::factory()->create(['key' => 'secondary_color', 'value' => '#059669', 'group' => 'colors', 'type' => 'color']);
@@ -448,4 +474,12 @@ it('saves the environment from the settings form and clears the config cache', f
     expect(EnvFile::get('APP_ENV'))->toBe('staging');
 
     @unlink($envPath);
+});
+
+it('shows the constants usage guide via the info icon on the Constant card', function () {
+    Livewire::test(SettingsIndex::class)
+        ->assertSee('How Constants Work')
+        ->assertSee('setting_constant(')
+        ->assertSee('/api/v1/settings')
+        ->assertSee('File-type constants');
 });

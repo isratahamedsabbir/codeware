@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\MediaLibrary;
 
 use App\Models\MediaLibrary;
+use App\Models\Setting;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\On;
@@ -45,6 +46,18 @@ class Index extends Component
     public string $editCaption = '';
 
     public string $editDescription = '';
+
+    // Watermark (configured from the Media Library header button — used to live
+    // on Settings → Other, moved here with the same four Setting keys)
+    public bool $showWatermarkModal = false;
+
+    public bool $watermarkEnabled = false;
+
+    public ?string $watermarkImage = null;
+
+    public string $watermarkPosition = 'bottom-right';
+
+    public int $watermarkOpacity = 50;
 
     public function updatingSearch(): void
     {
@@ -243,6 +256,46 @@ class Index extends Component
         $this->selectedMediaIds = array_values(array_diff($this->selectedMediaIds, [$mediaId]));
 
         $this->dispatch('notify', message: 'Media deleted successfully');
+    }
+
+    /**
+     * The Watermark header button (see @push('page-header-actions') in
+     * index.blade.php, which is rendered outside this component's DOM root) has
+     * no wire:id ancestor to call $wire on — it dispatches a plain window event
+     * that the root <div x-on:open-watermark-modal.window=...> picks up.
+     */
+    public function openWatermarkModal(): void
+    {
+        $this->watermarkEnabled = Setting::get('watermark_enabled', '0') === '1';
+        $this->watermarkImage = Setting::get('watermark_image') ?: null;
+        $this->watermarkPosition = (string) Setting::get('watermark_position', 'bottom-right');
+        $this->watermarkOpacity = (int) Setting::get('watermark_opacity', 50);
+        $this->showWatermarkModal = true;
+    }
+
+    public function closeWatermarkModal(): void
+    {
+        $this->showWatermarkModal = false;
+    }
+
+    public function saveWatermark(): void
+    {
+        // watermarkEnabled intentionally not validated: a checkbox sends nothing
+        // when cleared, and $this->watermarkEnabled ? '1' : '0' below is safe for
+        // every value Livewire may deliver ('', '1', 'on', true, false).
+        $this->validate([
+            'watermarkImage' => ['nullable', 'string', 'max:2048'],
+            'watermarkPosition' => ['required', 'in:top-left,top-right,bottom-left,bottom-right,center'],
+            'watermarkOpacity' => ['required', 'integer', 'min:0', 'max:100'],
+        ]);
+
+        Setting::set('watermark_enabled', $this->watermarkEnabled ? '1' : '0');
+        Setting::set('watermark_image', $this->watermarkImage);
+        Setting::set('watermark_position', $this->watermarkPosition);
+        Setting::set('watermark_opacity', (string) $this->watermarkOpacity);
+
+        $this->closeWatermarkModal();
+        $this->dispatch('notify', message: 'Watermark settings saved successfully');
     }
 
     public function render()

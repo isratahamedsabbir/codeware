@@ -5,10 +5,20 @@ namespace App\Livewire\Admin\ThemeSettings;
 use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\Themes;
+use Illuminate\Support\Facades\File;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Livewire\WithFileUploads;
 
 class Index extends Component
 {
+    use WithFileUploads;
+
+    public bool $showInstallModal = false;
+
+    /** @var TemporaryUploadedFile|null */
+    public $themeZip = null;
+
     /**
      * The settings this screen owns: the active site design (site_theme) plus
      * the homepage copy & imagery the theme templates render. Boolean values
@@ -19,9 +29,11 @@ class Index extends Component
 
     public function mount(): void
     {
-        $rows = Setting::whereIn('key', $this->keys())->get()->keyBy('key');
+        $keys = array_merge($this->keys(), $this->scopedThemeKeys());
 
-        foreach ($this->keys() as $key) {
+        $rows = Setting::whereIn('key', $keys)->get()->keyBy('key');
+
+        foreach ($keys as $key) {
             $row = $rows->get($key);
             $value = $row?->value ?? '';
 
@@ -31,7 +43,7 @@ class Index extends Component
 
     public function save(): void
     {
-        foreach ($this->keys() as $key) {
+        foreach ($this->savableKeys() as $key) {
             if (array_key_exists($key, $this->settings)) {
                 Setting::set($key, $this->settings[$key]);
             }
@@ -50,9 +62,190 @@ class Index extends Component
         $this->mount();
     }
 
+    /**
+     * The Install Theme header button (see @push('page-header-actions') in
+     * index.blade.php, rendered outside this component's DOM root) has no
+     * wire:id ancestor — it dispatches a window event the root <div> picks up,
+     * same cross-DOM pattern as the Media Library's watermark button.
+     */
+    public function openInstallModal(): void
+    {
+        $this->resetErrorBag('themeZip');
+        $this->showInstallModal = true;
+    }
+
+    public function closeInstallModal(): void
+    {
+        $this->reset('themeZip', 'showInstallModal');
+    }
+
+    /**
+     * Installs a theme uploaded as zip of a single folder into
+     * resources/views/frontend/themes/ (the folder name becomes the slug).
+     * The zip's contents are validated before anything touches the themes
+     * directory: path-traversal entries are rejected, total size is capped,
+     * and an existing theme folder of the same slug is never overwritten.
+     */
+    public function installTheme(): void
+    {
+        $this->validate([
+            'themeZip' => ['required', 'file', 'mimes:zip'],
+        ]);
+
+        $zip = new \ZipArchive;
+
+        if ($zip->open($this->themeZip->getRealPath()) !== true) {
+            $this->addError('themeZip', 'This file is not a valid zip theme package.');
+
+            return;
+        }
+
+        $temp = tempnam(sys_get_temp_dir(), 'theme-install-');
+        @unlink($temp);
+        File::makeDirectory($temp, 0777, true, true);
+
+        try {
+            $this->extractThemeZip($zip, $temp);
+            $zip->close();
+        } catch (\Throwable $e) {
+            $zip->close();
+            File::deleteDirectory($temp);
+            $this->addError('themeZip', $e->getMessage());
+
+            return;
+        }
+
+        $root = $this->singleRootFolder($temp);
+
+        if ($root === null) {
+            File::deleteDirectory($temp);
+            $this->addError('themeZip', 'The zip must contain exactly one theme folder at its root (plus unavoidable junk like __MACOSX is fine).');
+
+            return;
+        }
+
+        $slug = $this->slugify($root);
+
+        if ($slug === '') {
+            File::deleteDirectory($temp);
+            $this->addError('themeZip', 'The theme folder name could not be turned into a valid slug (letters, numbers, dashes and underscores only).');
+
+            return;
+        }
+
+        $themesPath = Themes::path();
+        File::ensureDirectoryExists($themesPath);
+
+        if (is_dir($themesPath.'/'.$slug) || is_file($themesPath.'/'.$slug)) {
+            File::deleteDirectory($temp);
+            $this->addError('themeZip', "A theme named \"{$slug}\" already exists. Rename the folder inside the zip and try again.");
+
+            return;
+        }
+
+        try {
+            File::moveDirectory($temp.'/'.$root, $themesPath.'/'.$slug);
+        } catch (\Throwable $e) {
+            File::deleteDirectory($temp);
+            $this->addError('themeZip', 'Could not move the theme into place: '.$e->getMessage());
+
+            return;
+        }
+
+        File::deleteDirectory($temp);
+        Themes::forget();
+
+        AdminActivity::log('created', "Theme \"{$slug}\" installed");
+
+        // A real reload so the new theme card appears in the picker.
+        $this->showInstallModal = false;
+        session()->flash('success', "Theme \"{$slug}\" installed.");
+        $this->js('window.location.reload()');
+    }
+
+    /**
+     * @throws \RuntimeException when an entry is unsafe or the package is too big
+     */
+    private function extractThemeZip(\ZipArchive $zip, string $temp): void
+    {
+        $tempRoot = realpath($temp);
+        $totalSize = 0;
+        $entryCount = $zip->numFiles;
+
+        if ($entryCount > 2000) {
+            throw new \RuntimeException('The zip contains too many files to be a theme (max 2000).');
+        }
+
+        for ($i = 0; $i < $entryCount; $i++) {
+            $name = str_replace('\\', '/', $zip->getNameIndex($i));
+
+            if ($name === '' || str_starts_with($name, '__MACOSX/')) {
+                continue;
+            }
+
+            // Reject path traversal, absolute paths and drive-qualified paths.
+            if (preg_match('#(^|/)\.\.(/|$)#', $name) || str_starts_with($name, '/') || preg_match('#^[A-Za-z]:/.*$#', $name)) {
+                throw new \RuntimeException('The zip contains unsafe file paths.');
+            }
+
+            $stat = $zip->statIndex($i);
+            $totalSize += (int) $stat['size'];
+
+            if ($totalSize > 52428800) {
+                throw new \RuntimeException('The theme package is too large (max 50MB).');
+            }
+
+            $target = $temp.'/'.$name;
+
+            if (str_ends_with($name, '/')) {
+                File::makeDirectory($target, 0777, true, true);
+
+                continue;
+            }
+
+            // mkdir before checking realpath: dirname() of a not-yet-created
+            // nested path (and the file's own realpath, before it exists) both
+            // resolve to false. The string checks above already rule out
+            // traversal/absolute paths, so this is defense-in-depth.
+            File::makeDirectory(dirname($target), 0777, true, true);
+
+            $realDir = realpath(dirname($target));
+
+            if ($realDir === false || ! str_starts_with($realDir, $tempRoot)) {
+                throw new \RuntimeException('The zip contains unsafe file paths.');
+            }
+
+            file_put_contents($target, (string) $zip->getFromIndex($i));
+        }
+    }
+
+    /**
+     * The single top-level folder inside an extracted zip, or null when the zip
+     * has extra top-level files/folders (junk entries like __MACOSX and dotfiles
+     * are ignored).
+     */
+    private function singleRootFolder(string $temp): ?string
+    {
+        $entries = array_values(array_filter(
+            scandir($temp) ?: [],
+            fn (string $entry) => ! in_array($entry, ['.', '..', '__MACOSX'], true) && ! str_starts_with($entry, '.')
+        ));
+
+        $directories = array_values(array_filter($entries, fn (string $entry) => is_dir($temp.'/'.$entry)));
+        $files = array_values(array_filter($entries, fn (string $entry) => ! is_dir($temp.'/'.$entry)));
+
+        return count($directories) === 1 && count($files) === 0 ? $directories[0] : null;
+    }
+
+    private function slugify(string $name): string
+    {
+        return trim(preg_replace('/[^A-Za-z0-9_-]/', '-', strtolower($name)), '-');
+    }
+
     public function render()
     {
         $themes = Themes::all();
+        $selectedSlug = $this->settings['site_theme'] ?? Themes::active();
 
         $themeCards = collect($themes)
             ->mapWithKeys(function (string $label, string $slug): array {
@@ -65,6 +258,8 @@ class Index extends Component
                     'label' => $label,
                     'templates' => count($files),
                     'shop' => is_file($base.'/shop.blade.php'),
+                    'manifest' => Themes::manifest($slug),
+                    'hasSettings' => Themes::hasSettings($slug),
                 ]];
             })
             ->all();
@@ -73,6 +268,8 @@ class Index extends Component
             'themes' => $themes,
             'themeCards' => $themeCards,
             'activeTheme' => Themes::active(),
+            'selectedSlug' => $selectedSlug,
+            'selectedHasSettings' => Themes::hasSettings($selectedSlug),
         ])->layout('layouts.admin', ['title' => 'Theme Settings']);
     }
 
@@ -93,5 +290,37 @@ class Index extends Component
             'home_promo_banner_1',
             'home_promo_banner_2',
         ];
+    }
+
+    /**
+     * Every theme-scoped setting this screen persists — i.e. any stored
+     * settings key using the "theme_{slug}_..." prefix that a theme's own
+     * settings.blade.php reads/writes. Hydrated into the form on mount and
+     * saved back on save(), so each theme's fields live under its own prefix
+     * and can never collide with another theme's (or the core keys above).
+     *
+     * @return array<int, string>
+     */
+    private function scopedThemeKeys(): array
+    {
+        return Setting::where('key', 'like', 'theme\\_%')->pluck('key')->all();
+    }
+
+    /**
+     * What save() writes: the core keys plus every theme-scoped key currently
+     * held in the form (the selected theme's settings.blade.php is the only
+     * thing that populates theme_* fields, so those are the only scoped keys
+     * the admin can ever change on this screen).
+     *
+     * @return array<int, string>
+     */
+    private function savableKeys(): array
+    {
+        $scoped = array_values(array_filter(
+            array_keys($this->settings),
+            fn (string $key) => str_starts_with($key, 'theme_')
+        ));
+
+        return array_values(array_unique([...$this->keys(), ...$scoped]));
     }
 }
