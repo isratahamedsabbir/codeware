@@ -167,15 +167,14 @@
                                     </div>
                                 @endif
 
-                                @if ($previewBody !== '')
-                                    <div class="bg-white border border-slate-200 rounded-lg max-h-[320px] overflow-y-auto">
+                                @if ($previewHtml !== '')
+                                    <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
                                         <div class="px-4 py-3 border-b border-slate-100 bg-slate-50">
                                             <p class="text-[10px] font-medium uppercase tracking-widest text-slate-400">
-                                                Rendered Body</p>
+                                                Rendered Email (full layout)</p>
                                         </div>
-                                        <div class="p-5 text-sm text-slate-800 leading-relaxed preview-canvas">
-                                            {!! $previewBody !!}
-                                        </div>
+                                        <iframe title="Email template preview" class="w-full h-[560px]"
+                                            style="border:0" srcdoc="{{ $previewHtml }}"></iframe>
                                     </div>
                                 @endif
                             </div>
@@ -193,7 +192,7 @@
         <div class="space-y-5">
             <flux:heading>{{ __('Send Email') }}</flux:heading>
             <flux:text class="text-sm text-zinc-500">
-                {{ __('Sends a one-off email using whatever mail settings are currently saved — not tied to any template.') }}
+                {{ __('Sends a one-off email using whatever mail settings are currently saved. Pick a template to send with it, or leave it blank for a freeform email.') }}
             </flux:text>
 
             <div class="space-y-4">
@@ -204,16 +203,36 @@
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('Subject') }}</flux:label>
-                    <flux:input type="text" wire:model="customEmailSubject" placeholder="Subject" />
-                    <flux:error name="customEmailSubject" />
+                    <flux:label>{{ __('Template') }}</flux:label>
+                    <flux:select wire:model.live="customEmailTemplateKey">
+                        <flux:select.option value="">{{ __('Custom email (no template)') }}</flux:select.option>
+                        @foreach ($this->customEmailTemplates() as $template)
+                            <flux:select.option value="{{ $template->key }}">{{ $template->name }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+                    <flux:error name="customEmailTemplateKey" />
                 </flux:field>
 
-                <flux:field>
-                    <flux:label>{{ __('Description') }}</flux:label>
-                    <flux:textarea wire:model="customEmailDescription" rows="6" placeholder="Message" />
-                    <flux:error name="customEmailDescription" />
-                </flux:field>
+                @if ($customEmailTemplateKey !== '')
+                    <flux:field>
+                        <flux:label>{{ __('Variables (JSON)') }}</flux:label>
+                        <flux:textarea wire:model="customEmailVariables" rows="5" placeholder='{"name": "Rahim"}' class="font-mono text-xs" />
+                        <flux:error name="customEmailVariables" />
+                        <flux:description>{{ __('Values for the template placeholders. Pre-filled with the template\'s declared variables.') }}</flux:description>
+                    </flux:field>
+                @else
+                    <flux:field>
+                        <flux:label>{{ __('Subject') }}</flux:label>
+                        <flux:input type="text" wire:model="customEmailSubject" placeholder="Subject" />
+                        <flux:error name="customEmailSubject" />
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>{{ __('Description') }}</flux:label>
+                        <flux:textarea wire:model="customEmailDescription" rows="6" placeholder="Message" />
+                        <flux:error name="customEmailDescription" />
+                    </flux:field>
+                @endif
             </div>
 
             <div class="flex gap-2 pt-1">

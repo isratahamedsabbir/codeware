@@ -15,9 +15,6 @@
             <button type="button" @click="tab = 'currency'"
                 :class="tab==='currency'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="mx-4 rounded-none! py-3 text-sm -mb-px">Currency</button>
-            <button type="button" @click="tab = 'theme'"
-                :class="tab==='theme'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
-                class="mx-4 rounded-none! py-3 text-sm -mb-px">Theme</button>
             <button type="button" @click="tab = 'other'"
                 :class="tab==='other'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
                 class="mx-4 rounded-none! py-3 text-sm -mb-px">Other</button>
@@ -73,6 +70,27 @@
                             @continue (! isset($groupedSettings[$rightGroup]))
                             @include('partials.admin-settings-group-card', ['group' => $rightGroup, 'items' => $groupedSettings[$rightGroup]])
                         @endforeach
+
+                        {{-- Backend (admin panel colors) — shared the old Theme tab with the
+                             frontend Site Design picker, which moved to the dedicated Theme
+                             Settings screen. The colors themselves belong here in General. --}}
+                        <x-admin-section-card header-border="border-zinc-100" icon="swatch" title="Backend"
+                            description="Colors used across the admin panel, including buttons.">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                @foreach ($colorSettings as $setting)
+                                    <flux:field>
+                                        <flux:label>{{ ucwords(str_replace('_', ' ', $setting->key)) }}</flux:label>
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg border border-zinc-300 shrink-0"
+                                                 style="background-color: {{ $settings[$setting->key] ?? '#ffffff' }}"
+                                                 x-data
+                                                 :style="'background-color: ' + ($wire.settings['{{ $setting->key }}'] || '#ffffff')"></div>
+                                            <flux:input wire:model="settings.{{ $setting->key }}" placeholder="#000000" class="flex-1 font-mono" />
+                                        </div>
+                                    </flux:field>
+                                @endforeach
+                            </div>
+                        </x-admin-section-card>
                     </div>
 
                     @foreach ($groupedSettings as $group => $items)
@@ -146,56 +164,6 @@
                         </div>
                     </flux:field>
                 </x-admin-section-card>
-            </div>
-        </div>
-
-        {{-- Theme tab --}}
-        <div x-show="tab === 'theme'">
-            <div class="max-w-[1600px] space-y-5">
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
-                    <x-admin-section-card header-border="border-zinc-100" icon="swatch" title="Backend"
-                        description="Colors used across the admin panel, including buttons.">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            @foreach ($colorSettings as $setting)
-                                <flux:field>
-                                    <flux:label>{{ ucwords(str_replace('_', ' ', $setting->key)) }}</flux:label>
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-lg border border-zinc-300 shrink-0"
-                                             style="background-color: {{ $settings[$setting->key] ?? '#ffffff' }}"
-                                             x-data
-                                             :style="'background-color: ' + ($wire.settings['{{ $setting->key }}'] || '#ffffff')"></div>
-                                        <flux:input wire:model="settings.{{ $setting->key }}" placeholder="#000000" class="flex-1 font-mono" />
-                                    </div>
-                                </flux:field>
-                            @endforeach
-                        </div>
-                    </x-admin-section-card>
-
-                    <x-admin-section-card header-border="border-zinc-100" icon="globe-alt" title="Frontend"
-                        description="Choose the design shown to visitors on the public site.">
-                        <flux:field class="max-w-sm">
-                            <flux:label>Site Design<x-field-hint text="{{ __('The design shown at your site\'s homepage (:url).', ['url' => url('/')]) }}" /></flux:label>
-                            <select wire:model="settings.site_theme"
-                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                                @foreach (\App\Support\Themes::all() as $slug => $label)
-                                    <option value="{{ $slug }}">{{ $label }}</option>
-                                @endforeach
-                            </select>
-                        </flux:field>
-
-                        <div class="mt-5 pt-5 border-t border-zinc-100 dark:border-zinc-700">
-                            <label class="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-300 cursor-pointer">
-                                <input type="checkbox" wire:model="settings.chat_widget_enabled" class="rounded border-zinc-300 text-primary" />
-                                Chat Box
-                            </label>
-                            <p class="text-xs text-zinc-400 mt-1">
-                                Shows the live support chat bubble in the corner of every public page.
-                            </p>
-                        </div>
-                    </x-admin-section-card>
-                </div>
-
             </div>
         </div>
 

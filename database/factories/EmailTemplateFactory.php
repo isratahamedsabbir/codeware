@@ -24,6 +24,7 @@ class EmailTemplateFactory extends Factory
             'subject_template' => fake()->sentence(),
             'body_template' => '<p>'.fake()->paragraph().'</p>',
             'variables' => ['customer_name', 'order_id'],
+            'theme' => 'default',
             'active' => true,
         ];
     }

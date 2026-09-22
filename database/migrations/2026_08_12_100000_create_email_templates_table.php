@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('subject_template');
             $table->longText('body_template');
             $table->json('variables')->nullable();
+            $table->string('theme')->default('default');
             $table->boolean('active')->default(true);
             $table->timestamps();
         });

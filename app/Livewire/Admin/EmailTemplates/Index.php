@@ -45,6 +45,8 @@ class Index extends Component
 
     public string $previewBody = '';
 
+    public string $previewHtml = '';
+
     /** @var array<string, string> */
     public array $mailSettings = [];
 
@@ -200,6 +202,11 @@ class Index extends Component
 
         $this->previewSubject = $renderer->renderSubject($this->subjectTemplate, $variables);
         $this->previewBody = $renderer->renderBody($this->bodyTemplate, $variables);
+
+        $this->previewHtml = view('emails.template-driven', [
+            'subjectLine' => $this->previewSubject,
+            'bodyHtml' => $this->previewBody,
+        ])->render();
     }
 
     public function render(): View
@@ -224,6 +231,7 @@ class Index extends Component
         $this->previewVariablesJson = $this->buildPreviewJson($template->variables ?? []);
         $this->previewSubject = '';
         $this->previewBody = '';
+        $this->previewHtml = '';
     }
 
     /**

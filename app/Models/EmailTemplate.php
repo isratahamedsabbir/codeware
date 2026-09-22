@@ -18,6 +18,7 @@ class EmailTemplate extends Model
         'subject_template',
         'body_template',
         'variables',
+        'theme',
         'active',
     ];
 

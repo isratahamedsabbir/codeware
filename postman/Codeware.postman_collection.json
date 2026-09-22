@@ -26,7 +26,14 @@
 		{ "key": "chat_token", "value": "", "type": "string" },
 		{ "key": "subscriber_id", "value": "", "type": "string" },
 		{ "key": "device_id", "value": "test-device-1", "type": "string" },
-		{ "key": "notification_id", "value": "", "type": "string" }
+		{ "key": "notification_id", "value": "", "type": "string" },
+		{ "key": "service_slug", "value": "", "type": "string" },
+		{ "key": "service_id", "value": "", "type": "string" },
+		{ "key": "voucher_slug", "value": "", "type": "string" },
+		{ "key": "voucher_id", "value": "", "type": "string" },
+		{ "key": "comment_id", "value": "", "type": "string" },
+		{ "key": "review_id", "value": "", "type": "string" },
+		{ "key": "social_provider", "value": "google", "type": "string" }
 	],
 	"item": [
 		{
@@ -144,6 +151,22 @@
 						"method": "POST",
 						"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{customer_token}}", "type": "string" }] },
 						"url": "{{base_url}}/auth/email/resend"
+					}
+				},
+				{
+					"name": "Social Login Redirect",
+					"request": {
+						"method": "GET",
+						"description": "Returns the OAuth provider's consent URL in `data.url` (Google or Facebook — switches on `{{social_provider}}`).",
+						"url": "{{base_url}}/auth/{{social_provider}}/redirect"
+					}
+				},
+				{
+					"name": "Social Login Callback",
+					"request": {
+						"method": "GET",
+						"description": "The provider redirects back here after the user approves; this 302s the browser to `{FRONTEND_URL}/auth/callback` with `?token=` (on success) or `?error=`. In Postman just check the Location header — it isn't a JSON response.",
+						"url": "{{base_url}}/auth/{{social_provider}}/callback"
 					}
 				}
 			]
@@ -267,6 +290,35 @@
 						{
 							"name": "List Product Categories",
 							"request": { "method": "GET", "url": "{{base_url}}/product-categories?locale=en" }
+						},
+						{
+							"name": "Get Product Category by Slug",
+							"request": { "method": "GET", "url": "{{base_url}}/product-categories/{{category_slug}}?locale=en" }
+						}
+					]
+				},
+				{
+					"name": "Services",
+					"item": [
+						{
+							"name": "List Services",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/services?locale=en&per_page=12&search=",
+									"host": ["{{base_url}}"],
+									"path": ["services"],
+									"query": [
+										{ "key": "locale", "value": "en" },
+										{ "key": "per_page", "value": "12" },
+										{ "key": "search", "value": "", "disabled": true }
+									]
+								}
+							}
+						},
+						{
+							"name": "Get Service by Slug",
+							"request": { "method": "GET", "url": "{{base_url}}/services/{{service_slug}}?locale=en" }
 						}
 					]
 				},
@@ -410,6 +462,182 @@
 					]
 				},
 				{
+					"name": "Cart",
+					"description": "Session-backed shopping cart — rides a cookie from the session middleware (no auth). Prices are recomputed server-side, so the API never trusts client amounts. Ordering is handled by the Orders endpoints.",
+					"item": [
+						{
+							"name": "Get Cart",
+							"request": { "method": "GET", "url": "{{base_url}}/cart" }
+						},
+						{
+							"name": "Add to Cart",
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"product_id\": {{product_id}},\n    \"quantity\": 1,\n    \"attributes\": { \"size\": \"42\" }\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/cart"
+							}
+						},
+						{
+							"name": "Update Cart Item",
+							"request": {
+								"method": "PUT",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"quantity\": 2,\n    \"attributes\": { \"size\": \"42\" }\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/cart/items/{{product_id}}"
+							}
+						},
+						{
+							"name": "Remove Cart Item",
+							"request": { "method": "DELETE", "url": "{{base_url}}/cart/items/{{product_id}}" }
+						},
+						{
+							"name": "Clear Cart",
+							"request": { "method": "DELETE", "url": "{{base_url}}/cart" }
+						}
+					]
+				},
+				{
+					"name": "Comments",
+					"description": "Comments on Posts, Products, and Services. Listing is public; posting a comment/reply or deleting your own requires a logged-in customer account.",
+					"item": [
+						{
+							"name": "List Comments",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/comments?commentable_type=post&commentable_id=1&per_page=15",
+									"host": ["{{base_url}}"],
+									"path": ["comments"],
+									"query": [
+										{ "key": "commentable_type", "value": "post" },
+										{ "key": "commentable_id", "value": "1" },
+										{ "key": "per_page", "value": "15", "disabled": true }
+									]
+								}
+							}
+						},
+						{
+							"name": "Create Comment",
+							"request": {
+								"method": "POST",
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{customer_token}}", "type": "string" }] },
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"commentable_type\": \"post\",\n    \"commentable_id\": 1,\n    \"body\": \"Great post!\",\n    \"parent_id\": null\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/comments"
+							}
+						},
+						{
+							"name": "Delete Comment",
+							"request": {
+								"method": "DELETE",
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{customer_token}}", "type": "string" }] },
+								"url": "{{base_url}}/comments/{{comment_id}}"
+							}
+						}
+					]
+				},
+				{
+					"name": "Reviews",
+					"description": "Star-rated reviews on Posts, Products, and Services. Listing is public; writing or deleting your own requires a logged-in customer account.",
+					"item": [
+						{
+							"name": "List Reviews",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{base_url}}/reviews?reviewable_type=product&reviewable_id=1&per_page=15",
+									"host": ["{{base_url}}"],
+									"path": ["reviews"],
+									"query": [
+										{ "key": "reviewable_type", "value": "product" },
+										{ "key": "reviewable_id", "value": "1" },
+										{ "key": "per_page", "value": "15", "disabled": true }
+									]
+								}
+							}
+						},
+						{
+							"name": "Create Review",
+							"request": {
+								"method": "POST",
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{customer_token}}", "type": "string" }] },
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"reviewable_type\": \"product\",\n    \"reviewable_id\": 1,\n    \"rating\": 5,\n    \"title\": \"Excellent!\",\n    \"body\": \"Really happy with this purchase.\"\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/reviews"
+							}
+						},
+						{
+							"name": "Delete Review",
+							"request": {
+								"method": "DELETE",
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{customer_token}}", "type": "string" }] },
+								"url": "{{base_url}}/reviews/{{review_id}}"
+							}
+						}
+					]
+				},
+				{
+					"name": "Vouchers",
+					"description": "Gift vouchers — gate `feature:vouchers`. Buying issues a unique voucher code and emails the customer a designed PDF voucher.",
+					"item": [
+						{
+							"name": "List Vouchers",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 200) {",
+											"    const body = pm.response.json();",
+											"    const first = body.data[0];",
+											"    if (first) {",
+											"        pm.collectionVariables.set('voucher_id', first.id);",
+											"        pm.collectionVariables.set('voucher_slug', first.slug);",
+											"    }",
+											"}"
+										]
+									}
+								}
+							],
+							"request": { "method": "GET", "url": "{{base_url}}/vouchers?locale=en" }
+						},
+						{
+							"name": "Get Voucher by Slug",
+							"request": { "method": "GET", "url": "{{base_url}}/vouchers/{{voucher_slug}}?locale=en" }
+						},
+						{
+							"name": "Purchase Voucher",
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"voucher_id\": {{voucher_id}},\n    \"customer_name\": \"John Doe\",\n    \"customer_email\": \"john@example.com\",\n    \"customer_phone\": \"+8801700000000\",\n    \"recipient_name\": \"Jane\",\n    \"message\": \"Happy birthday!\"\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/vouchers"
+							}
+						}
+					]
+				},
+				{
 					"name": "Chat",
 					"description": "Guest chat widget REST equivalent — gated by the `chat` feature flag. Verify OTP returns an encrypted token; paste it into `chat_token` (done automatically) and use it as the Bearer token on Get/Send Messages.",
 					"item": [
@@ -513,10 +741,70 @@
 							}
 						},
 						{
+							"name": "Create Order (Products Only)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const body = pm.response.json();",
+											"    pm.collectionVariables.set('order_number', body.data.order_number);",
+											"}"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"customer_name\": \"John Doe\",\n    \"customer_email\": \"{{order_email}}\",\n    \"customer_phone\": \"+8801700000000\",\n    \"shipping_address\": \"123 Main Street, Dhaka\",\n    \"payment_method\": \"cod\",\n    \"items\": [\n        { \"product_id\": {{product_id}}, \"quantity\": 1 }\n    ]\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/orders/products"
+							}
+						},
+						{
+							"name": "Create Order (Services Only)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const body = pm.response.json();",
+											"    pm.collectionVariables.set('order_number', body.data.order_number);",
+											"}"
+										]
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"customer_name\": \"John Doe\",\n    \"customer_email\": \"{{order_email}}\",\n    \"customer_phone\": \"+8801700000000\",\n    \"payment_method\": \"cod\",\n    \"items\": [\n        { \"service_id\": {{service_id}}, \"quantity\": 1 }\n    ]\n}",
+									"options": { "raw": { "language": "json" } }
+								},
+								"url": "{{base_url}}/orders/services"
+							}
+						},
+						{
 							"name": "Get Order by Number",
 							"request": {
 								"method": "GET",
 								"url": "{{base_url}}/orders/{{order_number}}?email={{order_email}}"
+							}
+						},
+						{
+							"name": "Download Warranty Card",
+							"request": {
+								"method": "GET",
+								"description": "Downloads the order's warranty card as a PDF — no login, just the order number + the customer's email.",
+								"url": "{{base_url}}/orders/{{order_number}}/warranty?email={{order_email}}"
 							}
 						}
 					]

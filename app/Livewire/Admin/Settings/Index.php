@@ -200,7 +200,9 @@ class Index extends Component
         $groupOrder = ['general' => 0, 'pagination' => 1, 'images' => 2, 'localization' => 3, 'newsletter' => 4];
 
         return view('livewire.admin.settings.index', [
-            // 'frontend' (site_theme) and 'colors' live under the Theme tab, not here.
+            // 'colors' renders hand-rolled as the Backend card in the General tab,
+            // not through this generic per-group loop. 'frontend' (site_theme and the
+            // theme homepage copy/imagery) lives on the dedicated Theme Settings screen.
             // 'other' is hand-rendered in its own tab (the Floating Button card) rather
             // than through this generic per-group loop. 'shop' (shop_enabled) is
             // controlled only via the header toggle (ShopToggle), never a form field here.

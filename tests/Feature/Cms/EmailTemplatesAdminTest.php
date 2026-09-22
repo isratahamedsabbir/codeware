@@ -110,7 +110,10 @@ it('generates a preview from template and variables', function () {
         ->set('previewVariablesJson', '{"name": "Rahim"}')
         ->call('generatePreview')
         ->assertSet('previewSubject', 'Hi Rahim')
-        ->assertSet('previewBody', 'Welcome Rahim');
+        ->assertSet('previewBody', 'Welcome Rahim')
+        ->assertSet('previewHtml', fn (string $html) => str_contains($html, 'Welcome Rahim')
+            && str_contains($html, 'email-wrapper')
+            && str_contains($html, 'Get in touch'));
 });
 
 it('renders subject and body with variables', function () {
@@ -370,6 +373,85 @@ describe('send custom email', function () {
             ->assertHasNoErrors();
 
         Mail::assertSent(TemplateDrivenMail::class, fn (TemplateDrivenMail $mail) => str_contains($mail->bodyHtml, '&lt;script&gt;'));
+    });
+
+    it('pre-fills the variables editor when a template is selected', function () {
+        EmailTemplate::factory()->create([
+            'key' => 'custom_welcome',
+            'variables' => ['customer_name', 'order_id'],
+            'active' => true,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(Index::class)
+            ->set('customEmailTemplateKey', 'custom_welcome')
+            ->assertSet('customEmailVariables', fn (string $json) => json_decode($json, true) === [
+                'customer_name' => 'customer_name',
+                'order_id' => 'order_id',
+            ]);
+    });
+
+    it('sends an email using the selected template with variables', function () {
+        Mail::fake();
+
+        EmailTemplate::factory()->create([
+            'key' => 'custom_welcome',
+            'subject_template' => 'Hi {{ customer_name }}, welcome!',
+            'body_template' => 'Thanks for joining {{ customer_name }}.',
+            'variables' => ['customer_name'],
+            'active' => true,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(Index::class)
+            ->set('customEmailTo', 'destination@example.test')
+            ->set('customEmailTemplateKey', 'custom_welcome')
+            ->set('customEmailVariables', '{"customer_name": "Rahim"}')
+            ->call('sendCustomEmail')
+            ->assertHasNoErrors()
+            ->assertDispatched('notify', message: 'Email sent to destination@example.test.')
+            ->assertSet('customEmailTemplateKey', '')
+            ->assertSet('customEmailVariables', '')
+            ->assertSet('customEmailSubject', '')
+            ->assertSet('customEmailDescription', '');
+
+        Mail::assertSent(TemplateDrivenMail::class, function (TemplateDrivenMail $mail) {
+            return $mail->hasTo('destination@example.test')
+                && $mail->subjectLine === 'Hi Rahim, welcome!'
+                && str_contains($mail->bodyHtml, 'Thanks for joining Rahim.');
+        });
+    });
+
+    it('requires valid json for variables when a template is selected', function () {
+        Mail::fake();
+
+        $template = EmailTemplate::factory()->create(['active' => true]);
+
+        Livewire::actingAs($this->admin)
+            ->test(Index::class)
+            ->set('customEmailTo', 'destination@example.test')
+            ->set('customEmailTemplateKey', $template->key)
+            ->set('customEmailVariables', 'not-json')
+            ->call('sendCustomEmail')
+            ->assertHasErrors(['customEmailVariables' => 'json']);
+
+        Mail::assertNothingSent();
+    });
+
+    it('warns when the selected template is missing or inactive', function () {
+        Mail::fake();
+
+        EmailTemplate::factory()->create(['key' => 'hidden_welcome', 'active' => false]);
+
+        Livewire::actingAs($this->admin)
+            ->test(Index::class)
+            ->set('customEmailTo', 'destination@example.test')
+            ->set('customEmailTemplateKey', 'hidden_welcome')
+            ->set('customEmailVariables', '{}')
+            ->call('sendCustomEmail')
+            ->assertDispatched('notify', message: 'Could not send — the selected template is missing or inactive.');
+
+        Mail::assertNothingSent();
     });
 });
 

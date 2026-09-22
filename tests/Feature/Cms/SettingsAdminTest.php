@@ -29,7 +29,7 @@ it('keeps a fixed section order with General and Images first, regardless of row
     // which isn't guaranteed without an ORDER BY. General and Images render as
     // separate side-by-side cards in the General tab (see the view) — both need
     // to be present and correctly populated. 'frontend' (site_theme) is excluded
-    // from this listing entirely — it renders under the Theme tab instead.
+    // from this listing entirely — it renders on the dedicated Theme Settings screen.
     Setting::factory()->create(['key' => 'site_theme', 'value' => 'default', 'group' => 'frontend', 'type' => 'select']);
     Setting::factory()->create(['key' => 'app_locale', 'value' => 'en', 'group' => 'localization', 'type' => 'string']);
     Setting::factory()->create(['key' => 'site_icon', 'value' => '', 'group' => 'images', 'type' => 'string']);
@@ -126,13 +126,16 @@ it('does not show SEO settings in the general tab', function () {
         });
 });
 
-it('does not show colors settings in the general tab', function () {
+it('does not list colors in the generic grouped settings (they render as the Backend card), and shows them under General', function () {
     Setting::factory()->create(['key' => 'primary_color', 'value' => '#2563eb', 'group' => 'colors', 'type' => 'color']);
+    Setting::factory()->create(['key' => 'secondary_color', 'value' => '#059669', 'group' => 'colors', 'type' => 'color']);
 
     Livewire::test(SettingsIndex::class)
         ->assertViewHas('groupedSettings', function ($groups) {
             return ! $groups->has('colors');
-        });
+        })
+        ->assertSee('Backend')
+        ->assertSee('Primary Color');
 });
 
 it('does not show the floating button (or any other "other"-group) setting in the general tab', function () {
@@ -275,14 +278,16 @@ it('saves the app locale through the settings form', function () {
     expect(Setting::where('key', 'app_locale')->value('value'))->toBe('bn');
 });
 
-it('renders site theme as a select populated from available theme folders, not a free-text input', function () {
+it('no longer renders the site theme picker on Settings — it moved to the Theme Settings screen', function () {
     Setting::factory()->create(['key' => 'site_theme', 'value' => 'default', 'group' => 'frontend', 'type' => 'select']);
 
     Livewire::test(SettingsIndex::class)
-        ->assertSee('Site Design')
-        ->assertSeeHtml('<option value="default">Default</option>')
-        ->assertSeeHtml('<option value="ecommerce">Ecommerce</option>')
-        ->assertSeeHtml('<option value="portfolio">Portfolio</option>');
+        ->assertDontSee('Site Design')
+        ->assertDontSee('Ecommerce')
+        ->assertDontSee('Chat Box')
+        ->assertViewHas('groupedSettings', function ($groups) {
+            return ! $groups->has('frontend');
+        });
 });
 
 it('does not double-render the label for image settings', function () {
