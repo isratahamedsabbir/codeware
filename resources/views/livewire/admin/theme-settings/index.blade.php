@@ -163,12 +163,6 @@
                                 </div>
                             @endif
                         </div>
-
-                        {{-- Selected check --}}
-                        <span x-show="$wire.settings.site_theme === '{{ $slug }}'" x-cloak
-                            class="absolute right-2 top-2 z-10 flex size-6 items-center justify-center rounded-full bg-primary text-white shadow ring-2 ring-white">
-                            <flux:icon.check class="size-3.5" />
-                        </span>
                     </div>
 
                     {{-- Footer --}}
@@ -193,12 +187,9 @@
                                 @endif
                             </p>
                         </div>
-                        <span aria-hidden="true"
-                            class="flex size-4 shrink-0 items-center justify-center rounded-full border transition
-                                {{ $selected || $slug === $activeTheme ? 'border-primary ring-2 ring-primary/25' : 'border-zinc-300 dark:border-zinc-600' }}">
-                            @if ($selected)
-                                <span class="size-2 rounded-full bg-primary"></span>
-                            @endif
+                        <span x-show="$wire.settings.site_theme === '{{ $slug }}'" x-cloak
+                            class="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow">
+                            <flux:icon.check class="size-3.5" />
                         </span>
                     </div>
                 </label>

@@ -1,7 +1,24 @@
+@php
+    $statuses = $this->sectionStatuses();
+    $configuredCount = collect($statuses)->where('state', 'configured')->count();
+    $statusTotal = count($statuses);
+@endphp
+
 <div x-data="{
+    activeTab: 'overview',
+    highlighted: null,
+    setTab(tab) { this.activeTab = tab; },
+    jumpTo(tab, section) {
+        this.activeTab = tab;
+        this.highlighted = section;
+        this.$nextTick(() => setTimeout(() => {
+            const el = document.getElementById('env-section-' + section);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 50));
+    },
     init() {
         // A link into this page can point straight at one field, e.g.
-        // .../env#VENDOR_URL — scroll it into view and flash it once rendered.
+        // .../env#VENDOR_URL â€” scroll it into view and flash it once rendered.
         if (location.hash) {
             const id = 'env-field-' + location.hash.slice(1);
             this.$nextTick(() => setTimeout(() => {
@@ -15,169 +32,294 @@
     }
 }">
     <div class="max-w-[1600px] space-y-5">
+
+        {{-- â”€â”€ Sticky page header: title + tabs + save â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+        <div class="sticky top-14 z-10 -mx-1 px-1">
+            <div class="rounded-xl border border-zinc-200 bg-white/95 shadow-sm backdrop-blur dark:border-zinc-700 dark:bg-zinc-800/95">
+                <div class="flex flex-wrap items-center gap-3 px-4 pt-3.5 pb-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <flux:icon.beaker class="size-5" />
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Environment Settings</p>
+                            <p class="truncate text-xs text-zinc-400">
+                                <span class="font-medium text-emerald-600 dark:text-emerald-400">{{ $configuredCount }}</span>
+                                of {{ $statusTotal }} configurations complete
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-1 border-t border-zinc-100 px-2 py-2 dark:border-zinc-700/60">
+                    @php
+                        $tabs = [
+                            'overview' => ['Overview', 'squares-2x2'],
+                            'general' => ['General', 'cog-6-tooth'],
+                            'authentication' => ['Authentication', 'lock-closed'],
+                            'integrations' => ['Integrations', 'puzzle-piece'],
+                        ];
+                    @endphp
+                    @foreach ($tabs as $tabKey => [$tabLabel, $tabIcon])
+                        <button type="button" x-on:click="setTab('{{ $tabKey }}')"
+                            x-bind:class="activeTab === '{{ $tabKey }}' ? 'bg-primary/10 text-primary' : 'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200'"
+                            class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer">
+                            <x-dynamic-component :component="'flux::icon.'.$tabIcon" class="size-4" />
+                            {{ __($tabLabel) }}
+                        </button>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
+        {{-- â”€â”€ Careful notice â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
         <div class="rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm dark:bg-amber-950 dark:border-amber-800 dark:text-amber-300">
             <strong>{{ __('Careful') }}:</strong>
             {{ __('These edit the live .env file this server runs on. A wrong value can take the site down until it is fixed. A backup of the current file is saved automatically before every change. Mail credentials live on the Email Templates page instead.') }}
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
-            {{-- Maintenance mode --}}
-            <x-admin-section-card header-border="border-zinc-100" icon="wrench" title="Maintenance Mode"
-                icon-color="{{ $maintenanceMode ? 'bg-red-500/10 text-red-600' : 'bg-primary/10 text-primary' }}"
-                description="Takes the public site offline for every visitor. The admin panel and login stay reachable either way."
-                class="w-full {{ $maintenanceMode ? 'border-red-300! dark:border-red-800!' : '' }}">
-                <x-slot:actions>
+        {{-- â”€â”€ Overview tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+        <div x-show="activeTab === 'overview'" x-cloak class="space-y-5">
+            {{-- System status --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <button type="button" x-on:click="jumpTo('general', 'maintenance')"
+                    class="flex items-center gap-4 rounded-xl border border-zinc-200 bg-white p-4 text-left shadow-sm transition-all hover:border-primary/40 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800/40">
+                    <span class="flex size-10 shrink-0 items-center justify-center rounded-lg {{ $maintenanceMode ? 'bg-red-500/10 text-red-600' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' }}">
+                        <flux:icon.wrench class="size-5" />
+                    </span>
+                    <span class="flex-1 min-w-0">
+                        <span class="block text-sm font-semibold text-zinc-800 dark:text-zinc-100">Maintenance Mode</span>
+                        <span class="block text-xs text-zinc-400">Public site availability</span>
+                    </span>
                     @if ($maintenanceMode)
                         <span class="inline-flex items-center gap-1.5 rounded-full bg-red-50 dark:bg-red-950 px-3 py-1 text-xs font-semibold text-red-700 dark:text-red-300 ring-1 ring-red-600/20">
                             <span class="size-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                            Site is offline
+                            Offline
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-600/20">
+                            <span class="size-1.5 rounded-full bg-emerald-500"></span>
+                            Online
                         </span>
                     @endif
-                </x-slot:actions>
+                </button>
 
-                @if ($maintenanceMode)
-                    <flux:button size="sm" variant="danger" wire:click="disableMaintenanceMode" wire:loading.attr="disabled">
-                        Bring Site Back Online
-                    </flux:button>
-                @else
-                    <flux:button size="sm" variant="outline" wire:click="confirmEnableMaintenanceMode" wire:loading.attr="disabled">
-                        Enable Maintenance Mode
-                    </flux:button>
-                @endif
-            </x-admin-section-card>
-
-            {{-- Debug mode --}}
-            <x-admin-section-card header-border="border-zinc-100" icon="bug-ant" title="Debug Mode"
-                icon-color="{{ $debugMode ? 'bg-amber-500/10 text-amber-600' : 'bg-primary/10 text-primary' }}"
-                description="Shows full error details and stack traces to visitors. Leave this off in production."
-                class="w-full {{ $debugMode ? 'border-amber-300! dark:border-amber-800!' : '' }}">
-                <x-slot:actions>
+                <button type="button" x-on:click="jumpTo('general', 'debug')"
+                    class="flex items-center gap-4 rounded-xl border border-zinc-200 bg-white p-4 text-left shadow-sm transition-all hover:border-primary/40 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800/40">
+                    <span class="flex size-10 shrink-0 items-center justify-center rounded-lg {{ $debugMode ? 'bg-amber-500/10 text-amber-600' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' }}">
+                        <flux:icon.bug-ant class="size-5" />
+                    </span>
+                    <span class="flex-1 min-w-0">
+                        <span class="block text-sm font-semibold text-zinc-800 dark:text-zinc-100">Debug Mode</span>
+                        <span class="block text-xs text-zinc-400">Error detail visibility</span>
+                    </span>
                     @if ($debugMode)
                         <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300 ring-1 ring-amber-600/20">
                             <span class="size-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                            Debug on
+                            On
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-600/20">
+                            <span class="size-1.5 rounded-full bg-emerald-500"></span>
+                            Off
                         </span>
                     @endif
-                </x-slot:actions>
+                </button>
+            </div>
 
-                @if ($debugMode)
-                    <flux:button size="sm" variant="danger" wire:click="disableDebugMode" wire:loading.attr="disabled">
-                        Turn Debug Mode Off
-                    </flux:button>
-                @else
-                    <flux:button size="sm" variant="outline" wire:click="confirmEnableDebugMode" wire:loading.attr="disabled">
-                        Enable Debug Mode
-                    </flux:button>
-                @endif
-            </x-admin-section-card>
+            {{-- Integration status grid --}}
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Integration status</p>
+                    <p class="text-xs text-zinc-400">Click a card to jump straight to its settings.</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach ($statuses as $key => $status)
+                    @php
+                        $state = $status['state'];
+                        $iconBg = $state === 'configured' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : ($state === 'partial' ? 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400' : 'bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500');
+                        [$pillBg, $pillText] = $state === 'configured' ? ['bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 ring-emerald-600/20', 'Configured'] : ($state === 'partial' ? ['bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 ring-amber-600/20', 'Partially configured'] : ['bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 ring-zinc-500/10', 'Not configured']);
+                    @endphp
+                    <button type="button" x-on:click="jumpTo('{{ $status['tab'] }}', '{{ $key }}')"
+                        class="group flex flex-col gap-3.5 rounded-xl border border-zinc-200 bg-white p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800/40 dark:hover:border-zinc-600">
+                        <span class="flex items-start justify-between gap-2">
+                            <span class="flex size-9 shrink-0 items-center justify-center rounded-lg {{ $iconBg }} group-hover:scale-105 transition-transform">
+                                <x-dynamic-component :component="'flux::icon.'.$status['icon']" class="size-4.5" />
+                            </span>
+                            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 {{ $pillBg }}">{{ $pillText }}</span>
+                        </span>
+                        <span class="min-w-0">
+                            <span class="block text-sm font-semibold text-zinc-800 dark:text-zinc-100">{{ $status['title'] }}</span>
+                            <span class="block text-xs text-zinc-400">{{ $status['note'] }}</span>
+                        </span>
+                    </button>
+                @endforeach
+            </div>
         </div>
 
-        {{-- App, Google Login, Facebook Login, reCAPTCHA, Google Maps and AWS S3
-             each get their own hand-built section further down (own layout and — for
-             reCAPTCHA — an Enable toggle), so skip them here to avoid rendering the
-             same group twice. Each section's guide note opens from the info icon on
-             its card (see the env-info modal at the bottom). Any future env group
-             added to envFields() without a custom card still falls back to the
-             generic card below. --}}
-        @php $manuallyRenderedGroups = ['App', 'Google Login', 'Facebook Login', 'reCAPTCHA', 'Google Maps', 'AWS S3', 'Firebase', 'CMS Editor']; @endphp
+        {{-- â”€â”€ General tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+        <div x-show="activeTab === 'general'" x-cloak class="space-y-5">
 
-        @foreach ($this->envFields() as $groupLabel => $fields)
-            @continue(in_array($groupLabel, $manuallyRenderedGroups, true))
-            <x-admin-section-card header-border="border-zinc-100" icon="rocket-launch" title="{{ __($groupLabel) }}">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    @foreach ($fields as $key => $meta)
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                {{-- Maintenance mode --}}
+                <x-admin-section-card id="env-section-maintenance" header-border="border-zinc-100" icon="wrench" title="Maintenance Mode"
+                    icon-color="{{ $maintenanceMode ? 'bg-red-500/10 text-red-600' : 'bg-primary/10 text-primary' }}"
+                    description="Takes the public site offline for every visitor. The admin panel and login stay reachable either way."
+                    class="w-full scroll-mt-24 {{ $maintenanceMode ? 'border-red-300! dark:border-red-800!' : '' }}"
+                    x-bind:class="highlighted === 'maintenance' ? 'ring-2 ring-primary/50 border-primary' : ''">
+                    <x-slot:actions>
+                        @if ($maintenanceMode)
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-red-50 dark:bg-red-950 px-3 py-1 text-xs font-semibold text-red-700 dark:text-red-300 ring-1 ring-red-600/20">
+                                <span class="size-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                                Site is offline
+                            </span>
+                        @endif
+                    </x-slot:actions>
+
+                    @if ($maintenanceMode)
+                        <flux:button size="sm" variant="danger" wire:click="disableMaintenanceMode" wire:loading.attr="disabled">
+                            Bring Site Back Online
+                        </flux:button>
+                    @else
+                        <flux:button size="sm" variant="outline" wire:click="confirmEnableMaintenanceMode" wire:loading.attr="disabled">
+                            Enable Maintenance Mode
+                        </flux:button>
+                    @endif
+                </x-admin-section-card>
+
+                {{-- Debug mode --}}
+                <x-admin-section-card id="env-section-debug" header-border="border-zinc-100" icon="bug-ant" title="Debug Mode"
+                    icon-color="{{ $debugMode ? 'bg-amber-500/10 text-amber-600' : 'bg-primary/10 text-primary' }}"
+                    description="Shows full error details and stack traces to visitors. Leave this off in production."
+                    class="w-full scroll-mt-24 {{ $debugMode ? 'border-amber-300! dark:border-amber-800!' : '' }}"
+                    x-bind:class="highlighted === 'debug' ? 'ring-2 ring-primary/50 border-primary' : ''">
+                    <x-slot:actions>
+                        @if ($debugMode)
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300 ring-1 ring-amber-600/20">
+                                <span class="size-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                Debug on
+                            </span>
+                        @endif
+                    </x-slot:actions>
+
+                    @if ($debugMode)
+                        <flux:button size="sm" variant="danger" wire:click="disableDebugMode" wire:loading.attr="disabled">
+                            Turn Debug Mode Off
+                        </flux:button>
+                    @else
+                        <flux:button size="sm" variant="outline" wire:click="confirmEnableDebugMode" wire:loading.attr="disabled">
+                            Enable Debug Mode
+                        </flux:button>
+                    @endif
+                </x-admin-section-card>
+            </div>
+
+            {{-- App --}}
+            <x-admin-section-card id="env-section-app" class="scroll-mt-24" header-border="border-zinc-100" icon="rocket-launch" title="App" x-bind:class="highlighted === 'app' ? 'ring-2 ring-primary/50 border-primary' : ''"
+                description="Core application identity, URLs and cache store.">
+                <x-slot:actions>
+                    <button type="button" wire:click="openInfo('app')" title="About this section"
+                        class="inline-flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-primary cursor-pointer">
+                        <flux:icon.information-circle class="size-5" />
+                    </button>
+                </x-slot:actions>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-5">
+                    @foreach ($this->envFields()['App'] as $key => $meta)
                         @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
                     @endforeach
                 </div>
             </x-admin-section-card>
-        @endforeach
+        </div>
 
-        {{-- App --}}
-        <x-admin-section-card header-border="border-zinc-100" icon="rocket-launch" title="App"
-            description="Core application identity, URLs and cache store.">
-            <x-slot:actions>
-                <button type="button" wire:click="openInfo('app')" title="About this section"
-                    class="inline-flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-primary cursor-pointer">
-                    <flux:icon.information-circle class="size-5" />
-                </button>
-            </x-slot:actions>
-            @foreach ($this->envFields()['App'] as $key => $meta)
-                @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
-            @endforeach
-        </x-admin-section-card>
+        {{-- â”€â”€ Authentication tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+        <div x-show="activeTab === 'authentication'" x-cloak class="space-y-5">
 
-        {{-- Google Login --}}
-        <x-admin-section-card header-border="border-zinc-100" icon="globe-alt" title="Google Login">
-            <x-slot:actions>
-                <button type="button" wire:click="openInfo('google-login')" title="Where to get these"
-                    class="inline-flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-primary cursor-pointer">
-                    <flux:icon.information-circle class="size-5" />
-                </button>
-            </x-slot:actions>
-            @foreach ($this->envFields()['Google Login'] as $key => $meta)
-                @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
-            @endforeach
-        </x-admin-section-card>
+            {{-- Google Login --}}
+            <x-admin-section-card id="env-section-google-login" class="scroll-mt-24" header-border="border-zinc-100" icon="globe-alt" title="Google Login" x-bind:class="highlighted === 'google-login' ? 'ring-2 ring-primary/50 border-primary' : ''">
+                <x-slot:actions>
+                    <button type="button" wire:click="openInfo('google-login')" title="Where to get these"
+                        class="inline-flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-primary cursor-pointer">
+                        <flux:icon.information-circle class="size-5" />
+                    </button>
+                </x-slot:actions>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-5">
+                    @foreach ($this->envFields()['Google Login'] as $key => $meta)
+                        @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
+                    @endforeach
+                </div>
+            </x-admin-section-card>
 
-        {{-- Facebook Login --}}
-        <x-admin-section-card header-border="border-zinc-100" icon="chat-bubble-left-right" title="Facebook Login">
-            <x-slot:actions>
-                <button type="button" wire:click="openInfo('facebook-login')" title="Where to get these"
-                    class="inline-flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-primary cursor-pointer">
-                    <flux:icon.information-circle class="size-5" />
-                </button>
-            </x-slot:actions>
-            @foreach ($this->envFields()['Facebook Login'] as $key => $meta)
-                @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
-            @endforeach
-        </x-admin-section-card>
+            {{-- Facebook Login --}}
+            <x-admin-section-card id="env-section-facebook-login" class="scroll-mt-24" header-border="border-zinc-100" icon="chat-bubble-left-right" title="Facebook Login" x-bind:class="highlighted === 'facebook-login' ? 'ring-2 ring-primary/50 border-primary' : ''">
+                <x-slot:actions>
+                    <button type="button" wire:click="openInfo('facebook-login')" title="Where to get these"
+                        class="inline-flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-primary cursor-pointer">
+                        <flux:icon.information-circle class="size-5" />
+                    </button>
+                </x-slot:actions>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-5">
+                    @foreach ($this->envFields()['Facebook Login'] as $key => $meta)
+                        @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
+                    @endforeach
+                </div>
+            </x-admin-section-card>
 
-        {{-- Tracking --}}
-        <x-admin-section-card header-border="border-zinc-100" icon="chart-bar" title="Google Pixel"
-            description="The Measurement/Pixel ID (e.g. G-XXXXXXXXXX or AW-XXXXXXXXX) exposed via the public settings API for the frontend to use.">
-            <x-slot:actions>
-                <button type="button" wire:click="openInfo('pixel')" title="Integration guide"
-                    class="inline-flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-primary cursor-pointer">
-                    <flux:icon.information-circle class="size-5" />
-                </button>
-            </x-slot:actions>
-            <flux:field>
-                <flux:label>Google Pixel ID</flux:label>
-                <flux:input wire:model="settings.google_pixel_id" placeholder="G-XXXXXXXXXX" class="font-mono" />
-            </flux:field>
-        </x-admin-section-card>
+            {{-- reCAPTCHA --}}
+            <x-admin-section-card id="env-section-recaptcha" class="scroll-mt-24" header-border="border-zinc-100" icon="shield-check" title="reCAPTCHA" x-bind:class="highlighted === 'recaptcha' ? 'ring-2 ring-primary/50 border-primary' : ''"
+                description="Shown on the admin login form only while enabled and both keys below are set.">
+                <x-slot:actions>
+                    <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
+                        <input type="checkbox" wire:model="settings.recaptcha_enabled" class="rounded border-zinc-300 text-primary" />
+                        Enable
+                    </label>
+                    <button type="button" wire:click="openInfo('recaptcha')" title="Where to get these"
+                        class="inline-flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-primary cursor-pointer">
+                        <flux:icon.information-circle class="size-5" />
+                    </button>
+                </x-slot:actions>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-5">
+                    @foreach ($this->envFields()['reCAPTCHA'] as $key => $meta)
+                        @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
+                    @endforeach
+                </div>
+            </x-admin-section-card>
+        </div>
 
-        {{-- reCAPTCHA --}}
-        <x-admin-section-card header-border="border-zinc-100" icon="shield-check" title="reCAPTCHA"
-            description="Shown on the admin login form only while enabled and both keys below are set.">
-            <x-slot:actions>
-                <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
-                    <input type="checkbox" wire:model="settings.recaptcha_enabled" class="rounded border-zinc-300 text-primary" />
-                    Enable
-                </label>
-                <button type="button" wire:click="openInfo('recaptcha')" title="Where to get these"
-                    class="inline-flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-primary cursor-pointer">
-                    <flux:icon.information-circle class="size-5" />
-                </button>
-            </x-slot:actions>
+        {{-- â”€â”€ Integrations tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+        <div x-show="activeTab === 'integrations'" x-cloak class="space-y-5">
 
-            @foreach ($this->envFields()['reCAPTCHA'] as $key => $meta)
-                @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
-            @endforeach
-        </x-admin-section-card>
+            {{-- Google Pixel --}}
+            <x-admin-section-card id="env-section-pixel" class="scroll-mt-24" header-border="border-zinc-100" icon="chart-bar" title="Google Pixel" x-bind:class="highlighted === 'pixel' ? 'ring-2 ring-primary/50 border-primary' : ''"
+                description="The Measurement/Pixel ID (e.g. G-XXXXXXXXXX or AW-XXXXXXXXX) exposed via the public settings API for the frontend to use.">
+                <x-slot:actions>
+                    <button type="button" wire:click="openInfo('pixel')" title="Integration guide"
+                        class="inline-flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-primary cursor-pointer">
+                        <flux:icon.information-circle class="size-5" />
+                    </button>
+                </x-slot:actions>
+                <div class="max-w-xl">
+                    <flux:field>
+                        <flux:label>Google Pixel ID</flux:label>
+                        <flux:input wire:model="settings.google_pixel_id" placeholder="G-XXXXXXXXXX" class="font-mono" />
+                    </flux:field>
+                </div>
+            </x-admin-section-card>
 
-        {{-- Google Maps --}}
-        <x-admin-section-card header-border="border-zinc-100" icon="map" title="Google Maps"
-            description="Used wherever the app needs to render a Google Map (e.g. store/branch locations).">
-            <x-slot:actions>
-                <button type="button" wire:click="openInfo('google-maps')" title="Where to get this"
-                    class="inline-flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-primary cursor-pointer">
-                    <flux:icon.information-circle class="size-5" />
-                </button>
-            </x-slot:actions>
-            @foreach ($this->envFields()['Google Maps'] as $key => $meta)
-                @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
-            @endforeach
+            {{-- Google Maps --}}
+            <x-admin-section-card id="env-section-google-maps" class="scroll-mt-24" header-border="border-zinc-100" icon="map" title="Google Maps" x-bind:class="highlighted === 'google-maps' ? 'ring-2 ring-primary/50 border-primary' : ''"
+                description="Used wherever the app needs to render a Google Map (e.g. store/branch locations).">
+                <x-slot:actions>
+                    <button type="button" wire:click="openInfo('google-maps')" title="Where to get this"
+                        class="inline-flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-primary cursor-pointer">
+                        <flux:icon.information-circle class="size-5" />
+                    </button>
+                </x-slot:actions>
+                <div class="max-w-xl">
+                    @foreach ($this->envFields()['Google Maps'] as $key => $meta)
+                        @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
+                    @endforeach
+                </div>
 
                 @if (config('services.google_maps.api_key'))
                     <div wire:ignore
@@ -192,13 +334,13 @@
                             window.__gmapsPreviewCallbacks = window.__gmapsPreviewCallbacks || [];
                             window.__gmapsPreviewCallbacks.push(render);
                             // Google calls this global itself (not our callback param) when the
-                            // key is rejected outright — wrong key, billing disabled, or (most
+                            // key is rejected outright â€” wrong key, billing disabled, or (most
                             // commonly, since this often differs per environment) this domain
-                            // isn't in the key's allowed HTTP referrers — so surface that here
+                            // isn't in the key's allowed HTTP referrers â€” so surface that here
                             // instead of leaving the box permanently blank with only a console
                             // warning to explain why.
                             window.gm_authFailure = () => {
-                                $el.innerHTML = '<div class=\'flex items-center justify-center h-full text-center text-xs text-rose-500 px-4\'>{{ __('Google rejected this key — check that this domain is in the key\'s allowed HTTP referrers (Google Cloud Console → Credentials), and that billing / the Maps JavaScript API are enabled.') }}</div>';
+                                $el.innerHTML = '<div class=\'flex items-center justify-center h-full text-center text-xs text-rose-500 px-4\'>{{ __('Google rejected this key â€” check that this domain is in the key\'s allowed HTTP referrers (Google Cloud Console â†’ Credentials), and that billing / the Maps JavaScript API are enabled.') }}</div>';
                             };
                             if (window.__gmapsPreviewLoading) return;
                             window.__gmapsPreviewLoading = true;
@@ -211,7 +353,7 @@
                         class="mt-4 h-56 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700"
                     ></div>
                     <flux:text class="text-xs text-zinc-500 mt-2">
-                        {{ __('Live preview using the saved key, just to confirm it works — centered on a placeholder location. The maps used elsewhere in the app can point anywhere.') }}
+                        {{ __('Live preview using the saved key, just to confirm it works â€” centered on a placeholder location. The maps used elsewhere in the app can point anywhere.') }}
                     </flux:text>
                 @else
                     <div class="mt-4 flex flex-col items-center justify-center gap-2 h-56 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 text-zinc-400 text-sm">
@@ -219,68 +361,98 @@
                         <span>{{ __('Save an API key above to preview the map here.') }}</span>
                     </div>
                 @endif
-        </x-admin-section-card>
+            </x-admin-section-card>
 
-        {{-- AWS S3 --}}
-        <x-admin-section-card header-border="border-zinc-100" icon="cloud" title="AWS S3"
-            description="Only needed if FILESYSTEM_DISK is set to s3 — otherwise uploads stay on local disk and these are unused.">
-            <x-slot:actions>
-                <button type="button" wire:click="openInfo('aws-s3')" title="Where to get these"
-                    class="inline-flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-primary cursor-pointer">
-                    <flux:icon.information-circle class="size-5" />
-                </button>
-            </x-slot:actions>
-            @foreach ($this->envFields()['AWS S3'] as $key => $meta)
-                @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
-            @endforeach
-        </x-admin-section-card>
-
-        {{-- Firebase --}}
-        <x-admin-section-card header-border="border-zinc-100" icon="fire" title="Firebase"
-            description="Service-account credentials for the Firebase Admin SDK (e.g. push notifications).">
-            <x-slot:actions>
-                <button type="button" wire:click="openInfo('firebase')" title="Where to get this"
-                    class="inline-flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-primary cursor-pointer">
-                    <flux:icon.information-circle class="size-5" />
-                </button>
-            </x-slot:actions>
-            <flux:field>
-                <flux:label>{{ __('Service Account JSON Path') }}<x-field-hint :text="__($this->envFields()['Firebase']['FIREBASE_CREDENTIALS_PATH']['hint'])" /></flux:label>
-                <div class="flex items-center gap-2">
-                    @if ($env['FIREBASE_CREDENTIALS_PATH'] ?? null)
-                        @if (! $this->firebaseCredentialsExist())
-                            <span title="{{ __('File not found on the private storage disk.') }}">
-                                <flux:icon.exclamation-triangle class="size-5 text-red-500 shrink-0" />
-                            </span>
-                        @else
-                            <span title="{{ __('File found.') }}">
-                                <flux:icon.check-circle class="size-5 text-emerald-500 shrink-0" />
-                            </span>
-                        @endif
-                    @endif
-                    <flux:input wire:model.live="env.FIREBASE_CREDENTIALS_PATH" placeholder="firebase-service-account.json" class="font-mono" />
+            {{-- AWS S3 --}}
+            <x-admin-section-card id="env-section-aws-s3" class="scroll-mt-24" header-border="border-zinc-100" icon="cloud" title="AWS S3" x-bind:class="highlighted === 'aws-s3' ? 'ring-2 ring-primary/50 border-primary' : ''"
+                description="Only needed if FILESYSTEM_DISK is set to s3 â€” otherwise uploads stay on local disk and these are unused.">
+                <x-slot:actions>
+                    <button type="button" wire:click="openInfo('aws-s3')" title="Where to get these"
+                        class="inline-flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-primary cursor-pointer">
+                        <flux:icon.information-circle class="size-5" />
+                    </button>
+                </x-slot:actions>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-5">
+                    @foreach ($this->envFields()['AWS S3'] as $key => $meta)
+                        @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
+                    @endforeach
                 </div>
-                <flux:error name="env.FIREBASE_CREDENTIALS_PATH" />
-            </flux:field>
-        </x-admin-section-card>
+            </x-admin-section-card>
 
-        {{-- CMS Editor --}}
-        <x-admin-section-card header-border="border-zinc-100" icon="pencil-square" title="CMS Editor"
-            description="Base URL of the Next.js Puck editor this admin panel opens for visual editing.">
-            <x-slot:actions>
-                <button type="button" wire:click="openInfo('cms-editor')" title="What this controls"
-                    class="inline-flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-primary cursor-pointer">
-                    <flux:icon.information-circle class="size-5" />
-                </button>
-            </x-slot:actions>
-            @foreach ($this->envFields()['CMS Editor'] as $key => $meta)
-                @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
+            {{-- Firebase --}}
+            <x-admin-section-card id="env-section-firebase" class="scroll-mt-24" header-border="border-zinc-100" icon="fire" title="Firebase" x-bind:class="highlighted === 'firebase' ? 'ring-2 ring-primary/50 border-primary' : ''"
+                description="Service-account credentials for the Firebase Admin SDK (e.g. push notifications).">
+                <x-slot:actions>
+                    <button type="button" wire:click="openInfo('firebase')" title="Where to get this"
+                        class="inline-flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-primary cursor-pointer">
+                        <flux:icon.information-circle class="size-5" />
+                    </button>
+                </x-slot:actions>
+                <div class="max-w-xl">
+                    <flux:field>
+                        <flux:label>{{ __('Service Account JSON Path') }}<x-field-hint :text="__($this->envFields()['Firebase']['FIREBASE_CREDENTIALS_PATH']['hint'])" /></flux:label>
+                        <div class="flex items-center gap-2">
+                            @if ($env['FIREBASE_CREDENTIALS_PATH'] ?? null)
+                                @if (! $this->firebaseCredentialsExist())
+                                    <span title="{{ __('File not found on the private storage disk.') }}">
+                                        <flux:icon.exclamation-triangle class="size-5 text-red-500 shrink-0" />
+                                    </span>
+                                @else
+                                    <span title="{{ __('File found.') }}">
+                                        <flux:icon.check-circle class="size-5 text-emerald-500 shrink-0" />
+                                    </span>
+                                @endif
+                            @endif
+                            <flux:input wire:model.live="env.FIREBASE_CREDENTIALS_PATH" placeholder="firebase-service-account.json" class="font-mono" />
+                        </div>
+                        <flux:error name="env.FIREBASE_CREDENTIALS_PATH" />
+                    </flux:field>
+                </div>
+            </x-admin-section-card>
+
+            {{-- CMS Editor --}}
+            <x-admin-section-card id="env-section-cms-editor" class="scroll-mt-24" header-border="border-zinc-100" icon="pencil-square" title="CMS Editor" x-bind:class="highlighted === 'cms-editor' ? 'ring-2 ring-primary/50 border-primary' : ''"
+                description="Base URL of the Next.js Puck editor this admin panel opens for visual editing.">
+                <x-slot:actions>
+                    <button type="button" wire:click="openInfo('cms-editor')" title="What this controls"
+                        class="inline-flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-primary cursor-pointer">
+                        <flux:icon.information-circle class="size-5" />
+                    </button>
+                </x-slot:actions>
+                <div class="max-w-xl">
+                    @foreach ($this->envFields()['CMS Editor'] as $key => $meta)
+                        @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
+                    @endforeach
+                </div>
+            </x-admin-section-card>
+
+            {{-- Fallback: any future env group added without a hand-built card above --}}
+            @php $manuallyRenderedGroups = ['App', 'Google Login', 'Facebook Login', 'reCAPTCHA', 'Google Maps', 'AWS S3', 'Firebase', 'CMS Editor']; @endphp
+            @foreach ($this->envFields() as $groupLabel => $fields)
+                @continue(in_array($groupLabel, $manuallyRenderedGroups, true))
+                <x-admin-section-card header-border="border-zinc-100" icon="rocket-launch" title="{{ __($groupLabel) }}">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        @foreach ($fields as $key => $meta)
+                            @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
+                        @endforeach
+                    </div>
+                </x-admin-section-card>
             @endforeach
-        </x-admin-section-card>
+        </div>
 
-        <flux:button size="sm" variant="primary" wire:click="confirmSaveEnv" wire:loading.attr="disabled">
-            {{ __('Save Environment Settings') }}
-        </flux:button>
+        {{-- â”€â”€ Sticky save bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+        <div
+            class="sticky bottom-0 z-10 flex flex-col gap-3 rounded-[5px] border border-zinc-200 bg-white/95 px-5 py-3.5 shadow-[0_-4px_16px_-8px_rgba(0,0,0,0.15)] backdrop-blur dark:border-zinc-700 dark:bg-zinc-800/90 sm:flex-row sm:items-center sm:justify-between">
+            <p class="text-xs text-zinc-400">
+                Changes are written to the live <span class="font-mono text-xs">.env</span> file and the configuration cache is cleared once you save.
+            </p>
+            <div class="flex items-center gap-2.5 shrink-0">
+                <flux:button variant="primary" wire:click="confirmSaveEnv" wire:loading.attr="disabled" size="sm">
+                    <span wire:loading.remove>Save Environment Settings</span>
+                    <span wire:loading>Savingâ€¦</span>
+                </flux:button>
+            </div>
+        </div>
     </div>
 
     {{-- Section info modal --}}
@@ -306,48 +478,48 @@
             <div class="max-h-[65vh] overflow-y-auto pr-1 space-y-4 text-sm text-zinc-600 dark:text-zinc-400">
                 @if ($infoKey === 'app')
                     <ul class="list-disc list-inside space-y-2">
-                        <li><strong>App Name</strong> — shown in emails, error pages and some admin screens.</li>
-                        <li><strong>App URL</strong> / <strong>Frontend URL</strong> / <strong>Vendor Portal URL</strong> — must match the real domains this install is served on, or links, redirects and CORS will break.</li>
-                        <li><strong>Cache Store</strong> — pick <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">database</span> or <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">file</span> unless this server has Redis installed and reachable.</li>
+                        <li><strong>App Name</strong> â€” shown in emails, error pages and some admin screens.</li>
+                        <li><strong>App URL</strong> / <strong>Frontend URL</strong> / <strong>Vendor Portal URL</strong> â€” must match the real domains this install is served on, or links, redirects and CORS will break.</li>
+                        <li><strong>Cache Store</strong> â€” pick <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">database</span> or <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">file</span> unless this server has Redis installed and reachable.</li>
                     </ul>
                     <flux:text class="text-xs text-zinc-500">
                         Changing the URLs or cache store may require a full page reload to take effect everywhere. The Environment setting moved to Settings > General.
                     </flux:text>
                 @elseif ($infoKey === 'google-login')
                     <ol class="list-decimal list-inside space-y-2">
-                        <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">console.cloud.google.com</span> → create (or pick) a project.</li>
-                        <li>APIs &amp; Services → Credentials → Create Credentials → <strong>OAuth client ID</strong>.</li>
+                        <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">console.cloud.google.com</span> â†’ create (or pick) a project.</li>
+                        <li>APIs &amp; Services â†’ Credentials â†’ Create Credentials â†’ <strong>OAuth client ID</strong>.</li>
                         <li>Application type: <strong>Web application</strong>.</li>
                         <li>Under Authorized redirect URIs, paste the exact value from the <strong>Google Redirect URI</strong> field (e.g. <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded break-all">{{ str_replace('${APP_URL}', config('app.url'), $env['GOOGLE_REDIRECT_URI'] ?? '') }}</span>).</li>
-                        <li>Create — copy the <strong>Client ID</strong> and <strong>Client secret</strong> it gives you into the fields, then save.</li>
+                        <li>Create â€” copy the <strong>Client ID</strong> and <strong>Client secret</strong> it gives you into the fields, then save.</li>
                     </ol>
                     <flux:text class="text-xs text-zinc-500">
                         First time setting this up, Google may also ask you to configure the OAuth consent screen (app name, support email) before it lets you create the client ID.
                     </flux:text>
                 @elseif ($infoKey === 'facebook-login')
                     <ol class="list-decimal list-inside space-y-2">
-                        <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">developers.facebook.com</span> → My Apps → Create App → type <strong>Consumer</strong> (or "Other").</li>
+                        <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">developers.facebook.com</span> â†’ My Apps â†’ Create App â†’ type <strong>Consumer</strong> (or "Other").</li>
                         <li>Add the <strong>Facebook Login</strong> product to the app.</li>
-                        <li>App Settings → Basic — copy the <strong>App ID</strong> and <strong>App Secret</strong> into the fields.</li>
-                        <li>Facebook Login → Settings → Valid OAuth Redirect URIs, paste the exact value from the <strong>Facebook Redirect URI</strong> field (e.g. <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded break-all">{{ str_replace('${APP_URL}', config('app.url'), $env['FACEBOOK_REDIRECT_URI'] ?? '') }}</span>).</li>
+                        <li>App Settings â†’ Basic â€” copy the <strong>App ID</strong> and <strong>App Secret</strong> into the fields.</li>
+                        <li>Facebook Login â†’ Settings â†’ Valid OAuth Redirect URIs, paste the exact value from the <strong>Facebook Redirect URI</strong> field (e.g. <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded break-all">{{ str_replace('${APP_URL}', config('app.url'), $env['FACEBOOK_REDIRECT_URI'] ?? '') }}</span>).</li>
                         <li>Save changes on Facebook's side, then Save Environment Settings here.</li>
                     </ol>
                     <flux:text class="text-xs text-zinc-500">
-                        The app stays in "Development" mode by default — only you (and any testers you add under Roles) can log in with it until you submit it for App Review.
+                        The app stays in "Development" mode by default â€” only you (and any testers you add under Roles) can log in with it until you submit it for App Review.
                     </flux:text>
                 @elseif ($infoKey === 'pixel')
                     <div>
                         <flux:heading size="sm" class="mb-2">1. Get the ID from Google</flux:heading>
                         <ol class="list-decimal list-inside space-y-1">
-                            <li>Google Analytics (GA4): <span class="text-zinc-500">analytics.google.com</span> → Admin → Data Streams → your web stream → copy the <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">Measurement ID</span> (<span class="font-mono text-xs">G-XXXXXXXXXX</span>).</li>
-                            <li>Google Ads conversion tracking: Ads → Tools → Conversions → copy the <span class="font-mono text-xs">AW-XXXXXXXXX</span> ID instead.</li>
+                            <li>Google Analytics (GA4): <span class="text-zinc-500">analytics.google.com</span> â†’ Admin â†’ Data Streams â†’ your web stream â†’ copy the <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">Measurement ID</span> (<span class="font-mono text-xs">G-XXXXXXXXXX</span>).</li>
+                            <li>Google Ads conversion tracking: Ads â†’ Tools â†’ Conversions â†’ copy the <span class="font-mono text-xs">AW-XXXXXXXXX</span> ID instead.</li>
                             <li>Paste it into the field and save.</li>
                         </ol>
                     </div>
                     <div>
                         <flux:heading size="sm" class="mb-2">2. Read it from Next.js</flux:heading>
                         <flux:text class="text-xs text-zinc-500 mb-2">
-                            The value is already public — it comes back from
+                            The value is already public â€” it comes back from
                             <span class="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">GET /api/v1/settings/public</span>
                             as <span class="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">data.tracking.google_pixel_id</span>. Fetch it once in the root layout and inject the gtag script:
                         </flux:text>
@@ -390,24 +562,24 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   );
 }' }}</code></pre>
                         <flux:text class="text-xs text-zinc-500 mt-2">
-                            Leave the field blank to skip loading gtag entirely — the snippet above already guards for that.
+                            Leave the field blank to skip loading gtag entirely â€” the snippet above already guards for that.
                         </flux:text>
                     </div>
                 @elseif ($infoKey === 'recaptcha')
                     <ol class="list-decimal list-inside space-y-2">
-                        <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">google.com/recaptcha/admin</span> → create a new site.</li>
+                        <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">google.com/recaptcha/admin</span> â†’ create a new site.</li>
                         <li>reCAPTCHA type: <strong>reCAPTCHA v3</strong>.</li>
                         <li>Add this domain (and <span class="font-mono text-xs">localhost</span> for local testing).</li>
                         <li>Copy the <strong>Site Key</strong> and <strong>Secret Key</strong> into the fields, then save.</li>
                     </ol>
                     <flux:text class="text-xs text-zinc-500">
-                        v3 is invisible — no checkbox. It runs in the background and scores each login attempt once a Site Key is saved; clearing both fields turns it off again.
+                        v3 is invisible â€” no checkbox. It runs in the background and scores each login attempt once a Site Key is saved; clearing both fields turns it off again.
                     </flux:text>
                 @elseif ($infoKey === 'google-maps')
                     <ol class="list-decimal list-inside space-y-2">
-                        <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">console.cloud.google.com</span> → create (or pick) a project.</li>
-                        <li>APIs &amp; Services → Library → enable <strong>Maps JavaScript API</strong> (and <strong>Places API</strong> if needed).</li>
-                        <li>APIs &amp; Services → Credentials → Create Credentials → <strong>API Key</strong>.</li>
+                        <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">console.cloud.google.com</span> â†’ create (or pick) a project.</li>
+                        <li>APIs &amp; Services â†’ Library â†’ enable <strong>Maps JavaScript API</strong> (and <strong>Places API</strong> if needed).</li>
+                        <li>APIs &amp; Services â†’ Credentials â†’ Create Credentials â†’ <strong>API Key</strong>.</li>
                         <li>Restrict the key to <strong>HTTP referrers</strong> (your domain, and <span class="font-mono text-xs">localhost</span> for local testing) so it can't be reused elsewhere if it leaks.</li>
                         <li>Copy the key into the field, then save.</li>
                     </ol>
@@ -416,33 +588,33 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                     </flux:text>
                 @elseif ($infoKey === 'aws-s3')
                     <ol class="list-decimal list-inside space-y-2">
-                        <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">console.aws.amazon.com/s3</span> → create (or pick) a bucket, note its name and region.</li>
-                        <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">console.aws.amazon.com/iam</span> → Users → Create user with programmatic access, grant it S3 access to that bucket.</li>
-                        <li>Copy the generated <strong>Access Key ID</strong> and <strong>Secret Access Key</strong> into the fields — AWS only shows the secret once.</li>
+                        <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">console.aws.amazon.com/s3</span> â†’ create (or pick) a bucket, note its name and region.</li>
+                        <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">console.aws.amazon.com/iam</span> â†’ Users â†’ Create user with programmatic access, grant it S3 access to that bucket.</li>
+                        <li>Copy the generated <strong>Access Key ID</strong> and <strong>Secret Access Key</strong> into the fields â€” AWS only shows the secret once.</li>
                         <li>Fill in the <strong>Region</strong> and <strong>Bucket</strong> to match the bucket you created, then save.</li>
                     </ol>
                     <flux:text class="text-xs text-zinc-500">
-                        Leave <strong>Use Path-Style Endpoint</strong> off for real AWS S3 — it's only for S3-compatible services (MinIO, DigitalOcean Spaces, etc.) that require it.
+                        Leave <strong>Use Path-Style Endpoint</strong> off for real AWS S3 â€” it's only for S3-compatible services (MinIO, DigitalOcean Spaces, etc.) that require it.
                     </flux:text>
                 @elseif ($infoKey === 'firebase')
                     <ol class="list-decimal list-inside space-y-2">
-                        <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">console.firebase.google.com</span> → your project → gear icon → <strong>Project settings</strong>.</li>
-                        <li><strong>Service accounts</strong> tab → <strong>Generate new private key</strong> — downloads a JSON file.</li>
+                        <li><span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">console.firebase.google.com</span> â†’ your project â†’ gear icon â†’ <strong>Project settings</strong>.</li>
+                        <li><strong>Service accounts</strong> tab â†’ <strong>Generate new private key</strong> â€” downloads a JSON file.</li>
                         <li>In <strong>File Manager</strong>, navigate to <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">storage/app/private</span> and upload the JSON file there.</li>
                         <li>Paste its path <em>relative to that folder</em> into the field (e.g. just <span class="font-mono text-xs">firebase-service-account.json</span>, or <span class="font-mono text-xs">firebase/service-account.json</span> if you put it in a subfolder), then save.</li>
                         <li>The icon next to the field turns green once the file is found there.</li>
                     </ol>
                     <flux:text class="text-xs text-zinc-500">
-                        This file grants full admin access to the Firebase project — keep it out of the public disk and out of version control.
+                        This file grants full admin access to the Firebase project â€” keep it out of the public disk and out of version control.
                     </flux:text>
                 @elseif ($infoKey === 'cms-editor')
                     <ul class="list-disc list-inside space-y-2">
                         <li>The <strong>Edit</strong> buttons on the Products, Pages and Posts screens build their Puck editor URL from this value.</li>
-                        <li>It must point at the host where the Next.js CMS editor runs — including its port, if any (e.g. <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">http://194.233.65.83:3002</span>).</li>
+                        <li>It must point at the host where the Next.js CMS editor runs â€” including its port, if any (e.g. <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">http://194.233.65.83:3002</span>).</li>
                         <li>Leave it blank to disable the visual editor buttons, or to keep them pointed at <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">localhost</span> on a local install.</li>
                     </ul>
                     <flux:text class="text-xs text-zinc-500">
-                        Read at runtime as <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">config('cms.editor_base_url')</span> — saving here clears the config cache so the new value is picked up immediately.
+                        Read at runtime as <span class="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">config('cms.editor_base_url')</span> â€” saving here clears the config cache so the new value is picked up immediately.
                     </flux:text>
                 @endif
             </div>
@@ -461,7 +633,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <flux:heading>{{ __('Save environment settings?') }}</flux:heading>
             </div>
             <flux:text class="text-sm text-zinc-500">
-                {{ __('This overwrites the live .env file and clears the configuration cache. If a value is wrong — especially the database credentials — the site may stop working until it is corrected.') }}
+                {{ __('This overwrites the live .env file and clears the configuration cache. If a value is wrong â€” especially the database credentials â€” the site may stop working until it is corrected.') }}
             </flux:text>
             <div class="flex gap-2 pt-1">
                 <button wire:click="saveEnv" wire:loading.attr="disabled"

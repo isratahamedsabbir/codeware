@@ -257,6 +257,34 @@ it('rejects unknown info keys', function () {
         ->assertSet('infoKey', null);
 });
 
+it('renders the integration status overview grid and sticky header', function () {
+    $this->get(route('admin.env'))
+        ->assertOk()
+        ->assertSee('Environment Settings', false)
+        ->assertSee('Integration status', false)
+        ->assertSee('Configured', false)
+        ->assertSee('Not configured', false)
+        ->assertSee("jumpTo('general', 'app')", false)
+        ->assertSee("highlighted === 'app'", false)
+        ->assertSee("highlighted === 'google-maps'", false)
+        ->assertSee('Save Environment Settings', false);
+});
+
+it('computes per-section configuration status for the overview grid', function () {
+    Livewire::test(EnvIndex::class)
+        ->set('env.GOOGLE_CLIENT_ID', 'abc')
+        ->set('env.GOOGLE_CLIENT_SECRET', 'def')
+        ->set('env.RECAPTCHA_SITE_KEY', 'site')
+        ->call('sectionStatuses')
+        ->assertReturned(fn ($result) => is_array($result)
+            && $result['app']['state'] === 'configured'
+            && $result['google-login']['state'] === 'configured'
+            && $result['recaptcha']['state'] === 'partial'
+            && $result['pixel']['state'] === 'empty'
+            && $result['google-login']['tab'] === 'authentication'
+            && $result['pixel']['tab'] === 'integrations');
+});
+
 it('leaves a line completely untouched, quoting style included, when its value did not change', function () {
     // Passing back MAIL_FROM_NAME's own current value must not rewrite its line at all —
     // otherwise every save silently strips quotes from every untouched field, which for a
