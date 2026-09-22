@@ -27,6 +27,20 @@ class Index extends Component
 
     public bool $debugMode = false;
 
+    public ?string $infoKey = null;
+
+    public function openInfo(string $key): void
+    {
+        $allowed = ['app', 'google-login', 'facebook-login', 'pixel', 'recaptcha', 'google-maps', 'aws-s3', 'firebase', 'cms-editor'];
+
+        if (! in_array($key, $allowed, true)) {
+            return;
+        }
+
+        $this->infoKey = $key;
+        $this->dispatch('open-modal', name: 'env-info');
+    }
+
     public function mount(): void
     {
         $this->loadEnv();

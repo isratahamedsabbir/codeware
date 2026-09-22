@@ -232,6 +232,31 @@ it('allows a blank cms editor base url', function () {
     expect(EnvFile::get('CMS_EDITOR_BASE_URL'))->toBe('');
 });
 
+it('shows each section note in a modal opened from an info icon on its card', function () {
+    $infoKeys = ['app', 'google-login', 'facebook-login', 'pixel', 'recaptcha', 'google-maps', 'aws-s3', 'firebase', 'cms-editor'];
+
+    $this->get(route('admin.env'))
+        ->assertOk()
+        ->assertSee('data-modal="env-info"', false)
+        ->assertSee('data-modal="env-save-confirm"', false);
+
+    foreach ($infoKeys as $infoKey) {
+        $this->get(route('admin.env'))
+            ->assertSee(sprintf('openInfo(\'%s\')', $infoKey), false);
+    }
+
+    Livewire::test(EnvIndex::class)
+        ->call('openInfo', 'google-login')
+        ->assertSet('infoKey', 'google-login')
+        ->assertDispatched('open-modal', name: 'env-info');
+});
+
+it('rejects unknown info keys', function () {
+    Livewire::test(EnvIndex::class)
+        ->call('openInfo', 'not-a-section')
+        ->assertSet('infoKey', null);
+});
+
 it('leaves a line completely untouched, quoting style included, when its value did not change', function () {
     // Passing back MAIL_FROM_NAME's own current value must not rewrite its line at all —
     // otherwise every save silently strips quotes from every untouched field, which for a
