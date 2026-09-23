@@ -185,6 +185,10 @@ class Form extends Component
             $this->price = (string) $product->price;
             $this->discount_price = $product->discount_price !== null ? (string) $product->discount_price : '';
             $this->discount_id = $product->discounts->first()?->id !== null ? (string) $product->discounts->first()->id : '';
+
+            if ($this->discount_id === '') {
+                $this->discount_price = '';
+            }
             $this->quantity = $product->quantity !== null ? (string) $product->quantity : '';
             $this->warranty_months = $product->warranty_months !== null ? (string) $product->warranty_months : '';
             $this->is_featured = (bool) $product->is_featured;
@@ -325,7 +329,7 @@ class Form extends Component
             ->map(fn ($attributes) => $existing->get($this->variationComboKey($attributes)) ?? [
                 'attributes' => $attributes,
                 'sku' => $this->autoVariantSku($attributes),
-                'price' => '',
+                'price' => $this->price,
                 'discount_price' => $this->discount_price,
                 'quantity' => '',
                 'visible' => true,
@@ -656,14 +660,25 @@ class Form extends Component
     }
 
     /**
-     * Every discount in the Discounts list, for the product-level dropdown —
-     * active and inactive ones alike, since attaching one never depended on
-     * its status being on (see Discounts\Form, which links any discount).
+     * Active discounts only, for the product-level dropdown — inactive
+     * ones are hidden so they can't be newly attached from here. The
+     * product's current discount is kept even if it went inactive, so an
+     * existing attachment never silently disappears from the select.
      */
     #[Computed]
     public function discountOptions()
     {
-        return Discount::orderBy('name')->get();
+        $active = Discount::active()->orderBy('name')->get();
+
+        if ($this->discount_id !== '' && ! $active->contains('id', (int) $this->discount_id)) {
+            $current = Discount::find((int) $this->discount_id);
+            if ($current) {
+                $active->push($current);
+                $active = $active->sortBy('name')->values();
+            }
+        }
+
+        return $active;
     }
 
     public function openPuckEditor(): void
@@ -815,7 +830,7 @@ class Form extends Component
             'sku' => $this->sku !== '' ? $this->sku : null,
             'product_type' => $this->product_type,
             'price' => $this->price,
-            'discount_price' => $this->discount_price !== '' ? $this->discount_price : null,
+            'discount_price' => $this->discount_price !== '' && $this->discount_id !== '' ? $this->discount_price : null,
             'quantity' => $this->quantity !== '' ? $this->quantity : 0,
             'warranty_months' => $this->warranty_months !== '' ? $this->warranty_months : null,
             'is_featured' => $this->is_featured,

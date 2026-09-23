@@ -26,7 +26,8 @@ test('admin can access the admin dashboard overview page', function () {
 
     $response = $this->get(config('app.admin_url'));
     $response->assertOk();
-    $response->assertSee('System Overview');
+    $response->assertSee('Welcome back,')
+        ->assertSee('Workspace overview');
 
     // Check Livewire rendering and state
     Livewire::test(AdminDashboard::class)
@@ -34,6 +35,6 @@ test('admin can access the admin dashboard overview page', function () {
         ->assertSet('totalPosts', 3)
         ->assertSet('publishedPosts', 2)
         ->assertSet('draftPosts', 1)
-        ->assertSee('Total Products')
-        ->assertSee('Blog Posts');
+        ->assertSee('Products')
+        ->assertSee('Posts');
 });

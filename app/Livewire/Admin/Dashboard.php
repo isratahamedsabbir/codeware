@@ -89,8 +89,6 @@ class Dashboard extends Component
     public function render()
     {
         return view('livewire.admin.dashboard', [
-            'recentProducts' => Product::with('categories')->latest()->take(5)->get(),
-            'recentPosts' => Post::with('category')->latest()->take(5)->get(),
             'lowStockProducts' => Product::with('categories')
                 ->where('quantity', '<=', Setting::productMinStockQuantity())
                 ->orderBy('quantity')

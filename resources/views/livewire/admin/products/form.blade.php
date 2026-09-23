@@ -105,30 +105,16 @@
                                 @foreach ($this->discountOptions as $discount)
                                     <flux:select.option value="{{ $discount->id }}">
                                         {{ $discount->name }} — {{ $discount->type === 'percentage' ? rtrim(rtrim(number_format((float) $discount->value, 2), '0'), '.').'% off' : number_format((float) $discount->value, 2).' off' }}
-                                        @if ($discount->status === 'inactive')( inactive )@endif
                                     </flux:select.option>
                                 @endforeach
                             </flux:select>
                             <flux:error name="discount_id" />
                         </flux:field>
                     </div>
-                    @if ($discount_id !== '')
-                        @php $selectedDiscount = $this->discountOptions->firstWhere('id', (int) $discount_id); @endphp
-                        @if ($selectedDiscount)
-                            <p class="text-xs mt-1 font-medium {{ $selectedDiscount->isCurrentlyValid() ? 'text-emerald-600' : 'text-amber-600' }}">
-                                {{ $selectedDiscount->isCurrentlyValid() ? 'This discount is active' : 'This discount is not currently active' }}
-                                @if ($selectedDiscount->starts_at || $selectedDiscount->ends_at)
-                                    ({{ $selectedDiscount->starts_at?->toDisplay('M j') ?: 'ever' }} → {{ $selectedDiscount->ends_at?->toDisplay('M j') ?: 'ever' }})
-                                @endif
-                            </p>
-                        @endif
-                    @endif
                     @if ($discount_price !== '' && is_numeric($price) && is_numeric($discount_price) && (float) $discount_price < (float) $price && (float) $price > 0)
                         <p class="text-xs text-emerald-600 font-medium mt-2">
                             {{ round((1 - ((float) $discount_price / (float) $price)) * 100) }}% off — shown as a strikethrough sale price. Applied to all variants below (editable per variant).
                         </p>
-                    @else
-                        <p class="text-xs text-zinc-400 mt-2">Leave Discount Price blank to sell at the regular price.</p>
                     @endif
 
                     <div class="mt-4">
