@@ -145,6 +145,8 @@ it('returns public settings grouped by category', function () {
     Setting::factory()->create(['key' => 'secondary_color', 'value' => '#7cc242', 'group' => 'colors', 'is_public' => true]);
     Setting::factory()->create(['key' => 'seo_meta_title', 'value' => 'Codeware | Home', 'group' => 'seo', 'is_public' => true]);
     Setting::factory()->create(['key' => 'shop_enabled', 'value' => '1', 'group' => 'shop', 'is_public' => true]);
+    Setting::factory()->create(['key' => 'custom_head_code', 'value' => '<script>console.log("head")</script>', 'group' => 'custom-code', 'is_public' => true]);
+    Setting::factory()->create(['key' => 'custom_body_code', 'value' => '<script>console.log("body")</script>', 'group' => 'custom-code', 'is_public' => true]);
 
     $response = $this->getJson('/api/v1/settings/public');
 
@@ -159,7 +161,9 @@ it('returns public settings grouped by category', function () {
         ->assertJsonPath('data.theme.secondary_color', '#7cc242')
         ->assertJsonPath('data.seo.seo_meta_title', 'Codeware | Home')
         ->assertJsonPath('data.shop.shop_enabled', '1')
-        ->assertJsonStructure(['data' => ['general', 'images', 'pagination', 'localization', 'currency', 'theme', 'tracking', 'shop', 'constant', 'seo', 'social_links']]);
+        ->assertJsonPath('data.custom_code.custom_head_code', '<script>console.log("head")</script>')
+        ->assertJsonPath('data.custom_code.custom_body_code', '<script>console.log("body")</script>')
+        ->assertJsonStructure(['data' => ['general', 'images', 'pagination', 'localization', 'currency', 'theme', 'tracking', 'shop', 'custom_code', 'constant', 'seo', 'social_links']]);
 });
 
 it('decodes seo_canonical_urls into an array within the seo group', function () {
