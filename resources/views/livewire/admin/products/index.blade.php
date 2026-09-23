@@ -35,6 +35,10 @@
                  (see resources/css/app.css). --}}
             <div class="page-header-actions flex items-center gap-2 shrink-0">
                 @can('access-admin-system')
+                    <flux:button variant="ghost" size="sm" icon="exclamation-triangle"
+                        x-on:click="$dispatch('open-modal', { name: 'product-stock-settings' })">
+                        Stock Settings
+                    </flux:button>
                     <flux:button variant="ghost" size="sm" icon="cog-6-tooth"
                         x-on:click="$dispatch('open-modal', { name: 'frontend-url-settings' })">
                         Frontend URL
@@ -127,8 +131,12 @@
                 </thead>
                 <tbody x-ref="sortableRows" class="divide-y divide-gray-200">
                     @forelse ($products as $product)
+                        @php
+                            $isSelected = in_array($product->id, $selectedIds, true);
+                            $lowStock = (int) $product->quantity <= $minStockQuantity;
+                        @endphp
                         <tr wire:key="product-{{ $product->id }}"
-                            class="group/row hover:bg-indigo-50/30 transition-colors cursor-default {{ in_array($product->id, $selectedIds, true) ? 'bg-indigo-50 ring-1 ring-inset ring-indigo-300' : '' }}"
+                            class="group/row hover:bg-indigo-50/30 transition-colors cursor-default {{ $isSelected ? 'bg-indigo-50 ring-1 ring-inset ring-indigo-300' : ($lowStock ? 'bg-rose-50/70' : '') }}"
                             data-product-id="{{ $product->id }}"
                             @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()"
                             @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $product->id }}) }">
@@ -235,6 +243,14 @@
                                         Out of stock
                                     </button>
                                 @endif
+                                @if ($lowStock && (int) $product->quantity > 0)
+                                    <button type="button" wire:click="{{ $hasVariantStock ? 'viewStock('.$product->id.')' : '' }}"
+                                        aria-label="{{ $hasVariantStock ? 'View variant stock' : '' }}"
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap {{ $hasVariantStock ? 'cursor-pointer hover:bg-amber-100' : 'cursor-default' }}">
+                                        <flux:icon.exclamation-triangle class="w-3 h-3" />
+                                        Low stock
+                                    </button>
+                                @endif
                             </td>
 
                             {{-- Status --}}
@@ -330,7 +346,7 @@
 
                             {{-- Actions — disabled while a bulk selection is active, so the
                                  per-row actions can't conflict with the bulk toolbar above. --}}
-                            <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-100 border-l border-zinc-100 px-4 py-2">
+                            <td class="sticky right-0 z-10 {{ $lowStock ? 'bg-rose-50 group-hover/row:bg-rose-100' : 'bg-white group-hover/row:bg-indigo-100' }} border-l border-zinc-100 px-4 py-2">
                                 @php $bulkActive = count($selectedIds) > 0; @endphp
                                 <x-admin-row-actions :actions="[
                                     ['href' => route('admin.products.show', $product->id), 'icon' => 'eye', 'label' => 'View', 'color' => 'secondary', 'disabled' => $bulkActive],
@@ -467,6 +483,40 @@
                 </flux:field>
                 <div class="flex gap-2 pt-1">
                     <flux:button size="sm" variant="primary" wire:click="saveFrontendUrl" wire:loading.attr="disabled">
+                        Save
+                    </flux:button>
+                    <flux:modal.close>
+                        <flux:button size="sm" variant="ghost">Cancel</flux:button>
+                    </flux:modal.close>
+                </div>
+            </div>
+        </flux:modal>
+    @endcan
+
+    {{-- Settings Modal — Stock threshold. Whole block gated (not just the
+         trigger button above) so the markup never reaches a staff response
+         at all, regardless of whether it's shown. --}}
+    @can('access-admin-system')
+        <flux:modal name="product-stock-settings" class="md:w-96"
+            x-on:open-modal.window="if ($event.detail.name === 'product-stock-settings') $flux.modal('product-stock-settings').show()"
+            x-on:close-modal.window="if ($event.detail.name === 'product-stock-settings') $flux.modal('product-stock-settings').close()">
+            <div class="space-y-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <flux:icon.exclamation-triangle class="w-5 h-5 text-primary" />
+                    </div>
+                    <flux:heading>Stock Settings</flux:heading>
+                </div>
+                <flux:text class="text-sm text-zinc-500">
+                    Products whose quantity is at or below this threshold show a warning chip and a red row on this list.
+                </flux:text>
+                <flux:field>
+                    <flux:label>Minimum stock quantity</flux:label>
+                    <flux:input type="number" wire:model="minStockQuantity" min="0" step="1" />
+                    <flux:error name="minStockQuantity" />
+                </flux:field>
+                <div class="flex gap-2 pt-1">
+                    <flux:button size="sm" variant="primary" wire:click="saveStockSettings" wire:loading.attr="disabled">
                         Save
                     </flux:button>
                     <flux:modal.close>

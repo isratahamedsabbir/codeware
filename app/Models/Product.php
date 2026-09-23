@@ -131,6 +131,16 @@ class Product extends Model
     }
 
     /**
+     * The discounts from the Discpunts list attached to this product (pivot:
+     * discount_product). Selecting one in the product form applies its sale
+     * price to the product and every variant — see Products\Form.
+     */
+    public function discounts(): BelongsToMany
+    {
+        return $this->belongsToMany(Discount::class);
+    }
+
+    /**
      * Who has favorited this product (see App\Support\Favorites).
      */
     public function wishlists(): HasMany

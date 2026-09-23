@@ -267,6 +267,97 @@
         </script> 
     @endscript
 
+    {{-- Low Stock Alerts — only while the Products feature is enabled. --}}
+    @if ($productsEnabled)
+        <div class="mb-5">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xs font-bold text-zinc-800 uppercase tracking-widest inline-flex items-center gap-2">
+                    <flux:icon.exclamation-triangle class="size-3.5 text-amber-500" />
+                    Low Stock Alerts
+                    @if ($lowStockProducts->count() > 0)
+                        <span class="rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-[10px] font-bold tabular-nums">
+                            {{ $lowStockProducts->count() }}
+                        </span>
+                    @endif
+                </h2>
+                <a href="{{ route('admin.products') }}" wire:navigate.hover
+                   class="text-xs font-bold text-primary hover:text-blue-700 transition-colors flex items-center gap-1">
+                    Manage Products
+                    <flux:icon.chevron-right class="size-3" />
+                </a>
+            </div>
+
+            <div class="admin-card shadow-sm! border-0! overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="bg-zinc-50 text-left">
+                                <th class="px-4 py-2.5 text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Product</th>
+                                <th class="hidden md:table-cell px-4 py-2.5 text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Category</th>
+                                <th class="px-4 py-2.5 text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Stock</th>
+                                <th class="px-4 py-2.5 text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider text-right">Price</th>
+                                <th class="px-4 py-2.5 text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider text-center">Status</th>
+                                <th class="px-4 py-2.5 text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-zinc-100">
+                            @forelse ($lowStockProducts as $product)
+                                <tr class="hover:bg-slate-50/60 transition-colors">
+                                    <td class="px-4 py-3">
+                                        <p class="font-semibold text-zinc-800">
+                                            {{ $product->getTranslation('name', 'en', false) }}
+                                        </p>
+                                        @if ($product->code)
+                                            <p class="font-mono text-[11px] text-zinc-400 leading-none mt-0.5">{{ $product->code }}</p>
+                                        @endif
+                                    </td>
+                                    <td class="hidden md:table-cell px-4 py-3 text-zinc-500">
+                                        {{ $product->categories->isNotEmpty() ? $product->categories->map(fn ($c) => $c->getTranslation('name', 'en', false))->implode(', ') : '—' }}
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        @if ((int) $product->quantity === 0)
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-600 border border-rose-200 whitespace-nowrap">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                                Out of stock
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap">
+                                                <flux:icon.exclamation-triangle class="w-3 h-3" />
+                                                {{ (int) $product->quantity }} left
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="px-4 py-3 text-right tabular-nums text-zinc-700 font-medium">
+                                        {{ number_format((float) $product->price, 2) }}
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap
+                                            {{ $product->status === 'active' ? 'bg-green-50 text-green-600 border border-green-200' : 'bg-red-50 text-red-600 border border-red-200' }}">
+                                            {{ ucfirst($product->status) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 text-right whitespace-nowrap">
+                                        <a href="{{ route('admin.products.edit', $product->id) }}" wire:navigate.hover
+                                           class="text-xs font-bold text-primary hover:text-blue-700 transition-colors">
+                                            Restock
+                                        </a>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="px-5 py-10 text-center">
+                                        <flux:icon.check-circle class="size-8 text-zinc-200 mx-auto mb-2" />
+                                        <p class="text-sm font-medium text-zinc-400">All products are well stocked.</p>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- Quick Actions Section --}}
     <div class="mb-5">
         <h2 class="text-xs font-bold text-zinc-800 uppercase tracking-widest mb-4">Workspace Quick Actions</h2>

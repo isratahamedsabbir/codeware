@@ -7,6 +7,8 @@ use App\Models\Page;
 use App\Models\Post;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\Setting;
+use App\Support\Features;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 
@@ -89,6 +91,13 @@ class Dashboard extends Component
         return view('livewire.admin.dashboard', [
             'recentProducts' => Product::with('categories')->latest()->take(5)->get(),
             'recentPosts' => Post::with('category')->latest()->take(5)->get(),
+            'lowStockProducts' => Product::with('categories')
+                ->where('quantity', '<=', Setting::productMinStockQuantity())
+                ->orderBy('quantity')
+                ->orderBy('id')
+                ->take(10)
+                ->get(),
+            'productsEnabled' => Features::enabled('products'),
         ])->layout('layouts.admin', ['title' => 'Dashboard', 'hidePageHeading' => true]);
     }
 }

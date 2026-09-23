@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Products;
 
 use App\Concerns\HasSeoFields;
 use App\Concerns\HasTranslatableFields;
+use App\Models\Discount;
 use App\Models\MediaLibrary;
 use App\Models\Page;
 use App\Models\Product;
@@ -80,6 +81,14 @@ class Form extends Component
 
     #[Validate('nullable|numeric|min:0|lt:price')]
     public string $discount_price = '';
+
+    /**
+     * The discount from the Discounts list applied to this product (pivot:
+     * discount_product). Selecting one auto-computes discount_price from the
+     * product price and pushes it into every variant — see updatedDiscountId().
+     */
+    #[Validate('nullable|integer|exists:discounts,id')]
+    public string $discount_id = '';
 
     #[Validate('nullable|integer|min:0')]
     public string $quantity = '';
@@ -175,6 +184,7 @@ class Form extends Component
             $this->product_type = $product->product_type;
             $this->price = (string) $product->price;
             $this->discount_price = $product->discount_price !== null ? (string) $product->discount_price : '';
+            $this->discount_id = $product->discounts->first()?->id !== null ? (string) $product->discounts->first()->id : '';
             $this->quantity = $product->quantity !== null ? (string) $product->quantity : '';
             $this->warranty_months = $product->warranty_months !== null ? (string) $product->warranty_months : '';
             $this->is_featured = (bool) $product->is_featured;
@@ -316,7 +326,7 @@ class Form extends Component
                 'attributes' => $attributes,
                 'sku' => $this->autoVariantSku($attributes),
                 'price' => '',
-                'discount_price' => '',
+                'discount_price' => $this->discount_price,
                 'quantity' => '',
                 'visible' => true,
                 'image' => '',
@@ -482,6 +492,79 @@ class Form extends Component
     }
 
     /**
+     * When the product-level discount price is set (or cleared), push it into
+     * every variant's discount_price so the sale price applies across the board
+     * automatically. Each variant can still be overridden individually
+     * afterwards — only a change to the base discount re-applies it.
+     */
+    public function updatedDiscountPrice(): void
+    {
+        $this->pushDiscountPriceToVariants();
+    }
+
+    /**
+     * A discount picked from the Discounts list: apply its sale price to the
+     * product (discount_price) and onward into every variant. Clearing the
+     * selection removes the applied discount prices too, putting the product
+     * back at its regular price.
+     */
+    public function updatedDiscountId(): void
+    {
+        if ($this->discount_id === '') {
+            $this->discount_price = '';
+        } else {
+            $this->applySelectedDiscountToPrice();
+        }
+
+        $this->pushDiscountPriceToVariants();
+    }
+
+    /**
+     * While a discount is applied, a change to the regular price re-derives
+     * the sale price (e.g. 10% off a new price) instead of leaving the old
+     * computed value behind.
+     */
+    public function updatedPrice(): void
+    {
+        if ($this->discount_id === '') {
+            return;
+        }
+
+        $this->applySelectedDiscountToPrice();
+        $this->pushDiscountPriceToVariants();
+    }
+
+    /**
+     * Recomputes discount_price from the selected discount and the current
+     * price. Skipped for a non-numeric/zero price so a still-empty price never
+     * locks in a bogus 0.00 sale price that fails validation.
+     */
+    private function applySelectedDiscountToPrice(): void
+    {
+        if (! is_numeric($this->price) || (float) $this->price <= 0) {
+            return;
+        }
+
+        $discount = Discount::find((int) $this->discount_id);
+
+        if ($discount) {
+            $this->discount_price = number_format($discount->priceFor((float) $this->price), 2, '.', '');
+        }
+    }
+
+    /**
+     * Pushes the current product-level discount_price into every variant so a
+     * discount applied at product level automatically covers the whole
+     * combination set ("discount added to the product lands on the variants").
+     */
+    private function pushDiscountPriceToVariants(): void
+    {
+        foreach ($this->variations as $i => $row) {
+            $this->variations[$i]['discount_price'] = $this->discount_price;
+        }
+    }
+
+    /**
      * Fires on direct manual edits to the slug field too, so the red/green
      * indicator stays accurate whether the slug came from auto-typing or a
      * deliberate override.
@@ -570,6 +653,17 @@ class Form extends Component
     public function productVendors()
     {
         return ProductVendor::orderBy('sort_order')->orderBy('name')->get();
+    }
+
+    /**
+     * Every discount in the Discounts list, for the product-level dropdown —
+     * active and inactive ones alike, since attaching one never depended on
+     * its status being on (see Discounts\Form, which links any discount).
+     */
+    #[Computed]
+    public function discountOptions()
+    {
+        return Discount::orderBy('name')->get();
     }
 
     public function openPuckEditor(): void
@@ -748,6 +842,8 @@ class Form extends Component
         $product->categories()->sync($this->category_ids);
 
         $product->tags()->sync($this->tag_ids);
+
+        $product->discounts()->sync($this->discount_id !== '' ? [(int) $this->discount_id] : []);
 
         $product->syncFaqs($this->cleanedFaqs());
 

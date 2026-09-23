@@ -7,6 +7,7 @@ use App\Concerns\HasPerPage;
 use App\Concerns\WithSearch;
 use App\Models\Page;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\EnvFile;
 use App\Support\PageCascade;
@@ -37,10 +38,14 @@ class Index extends Component
     /** The FRONTEND_PRODUCT_PATH .env value — see saveFrontendUrl(). */
     public string $productPreviewPath = '';
 
+    /** Stock level at or below which a product row shows the low-stock warning — see saveStockSettings(). */
+    public int $minStockQuantity = 10;
+
     public function mount(): void
     {
         $this->frontendUrl = EnvFile::get('FRONTEND_URL', '') ?? '';
         $this->productPreviewPath = EnvFile::get('FRONTEND_PRODUCT_PATH', '') ?? '';
+        $this->minStockQuantity = Setting::productMinStockQuantity();
     }
 
     public function updatedStatusFilter(): void
@@ -87,6 +92,27 @@ class Index extends Component
 
         $this->dispatch('close-modal', name: 'frontend-url-settings');
         $this->dispatch('notify', message: 'Frontend URL saved.');
+    }
+
+    /**
+     * Persists the stock threshold at which products count as "low stock" on
+     * this screen (rows at or below it turn red with a warning) — straight
+     * from this page's Stock Settings modal.
+     */
+    public function saveStockSettings(): void
+    {
+        Gate::authorize('access-admin-system');
+
+        $this->validate([
+            'minStockQuantity' => 'required|integer|min:0|max:1000000',
+        ], [], ['minStockQuantity' => 'minimum stock quantity']);
+
+        Setting::set('product_min_stock_quantity', $this->minStockQuantity);
+
+        AdminActivity::log('updated', 'Product minimum stock quantity set to '.$this->minStockQuantity);
+
+        $this->dispatch('close-modal', name: 'product-stock-settings');
+        $this->dispatch('notify', message: 'Stock settings saved.');
     }
 
     public function reorder(array $order): void

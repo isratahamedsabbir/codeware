@@ -71,4 +71,14 @@ class Setting extends Model
     {
         return static::get('order_cancellation_cutoff_status', 'shipped');
     }
+
+    /**
+     * Stock level at or below which a product counts as "low stock" and gets
+     * its warning row on the admin Products list — driven by the Stock
+     * Settings modal on that screen.
+     */
+    public static function productMinStockQuantity(): int
+    {
+        return (int) static::get('product_min_stock_quantity', 10);
+    }
 }

@@ -84,11 +84,52 @@
 
                 {{-- Pricing & Stock (not translatable — shown regardless of locale tab) --}}
                 <div class="mt-4" wire:key="pricing-stock-panel">
-                    <flux:field>
-                        <flux:label>Price</flux:label>
-                        <flux:input type="number" wire:model.live.debounce.400ms="price" min="0" step="0.01" />
-                        <flux:error name="price" />
-                    </flux:field>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <flux:field>
+                            <flux:label>Price</flux:label>
+                            <flux:input type="number" wire:model.live.debounce.400ms="price" min="0" step="0.01" />
+                            <flux:error name="price" />
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>Discount Price<x-field-hint text="Applied to every variant automatically — each variant can still override it below." /></flux:label>
+                            <flux:input type="number" wire:model.live.debounce.400ms="discount_price" min="0" step="0.01" placeholder="No discount" />
+                            <flux:error name="discount_price" />
+                        </flux:field>
+                    </div>
+
+                    <div class="mt-4">
+                        <flux:field>
+                            <flux:label>Discount<x-field-hint text="Pick one from your Discounts list — its sale price is worked out from this product's price and applied to every variant automatically. Variants inherit it; there's no per-variant discount picker." /></flux:label>
+                            <flux:select wire:model.live="discount_id">
+                                <flux:select.option value="">No discount</flux:select.option>
+                                @foreach ($this->discountOptions as $discount)
+                                    <flux:select.option value="{{ $discount->id }}">
+                                        {{ $discount->name }} — {{ $discount->type === 'percentage' ? rtrim(rtrim(number_format((float) $discount->value, 2), '0'), '.').'% off' : number_format((float) $discount->value, 2).' off' }}
+                                        @if ($discount->status === 'inactive')( inactive )@endif
+                                    </flux:select.option>
+                                @endforeach
+                            </flux:select>
+                            <flux:error name="discount_id" />
+                        </flux:field>
+                    </div>
+                    @if ($discount_id !== '')
+                        @php $selectedDiscount = $this->discountOptions->firstWhere('id', (int) $discount_id); @endphp
+                        @if ($selectedDiscount)
+                            <p class="text-xs mt-1 font-medium {{ $selectedDiscount->isCurrentlyValid() ? 'text-emerald-600' : 'text-amber-600' }}">
+                                {{ $selectedDiscount->isCurrentlyValid() ? 'This discount is active' : 'This discount is not currently active' }}
+                                @if ($selectedDiscount->starts_at || $selectedDiscount->ends_at)
+                                    ({{ $selectedDiscount->starts_at?->toDisplay('M j') ?: 'ever' }} → {{ $selectedDiscount->ends_at?->toDisplay('M j') ?: 'ever' }})
+                                @endif
+                            </p>
+                        @endif
+                    @endif
+                    @if ($discount_price !== '' && is_numeric($price) && is_numeric($discount_price) && (float) $discount_price < (float) $price && (float) $price > 0)
+                        <p class="text-xs text-emerald-600 font-medium mt-2">
+                            {{ round((1 - ((float) $discount_price / (float) $price)) * 100) }}% off — shown as a strikethrough sale price. Applied to all variants below (editable per variant).
+                        </p>
+                    @else
+                        <p class="text-xs text-zinc-400 mt-2">Leave Discount Price blank to sell at the regular price.</p>
+                    @endif
 
                     <div class="mt-4">
                         <flux:field>
@@ -96,12 +137,12 @@
                                 Quantity<x-field-hint :@if ($variations !== [] && collect($variations)->contains(fn ($row) => filled($row['quantity'] ?? null))) text="Auto-sums the variant Qty values below." @else text="Leave blank to mark this product out of stock." @endif />
                                 <x-slot:trailing>
                                     @if ($quantity !== '' && (int) $quantity > 0)
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-200">
+                                        <span class="inline-flex items-center gap-1 ml-3 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-200">
                                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                             {{ (int) $quantity }} in stock
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-600 border border-rose-200">
+                                        <span class="inline-flex items-center gap-1 ml-3 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-600 border border-rose-200">
                                             <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
                                             Out of stock
                                         </span>
@@ -218,7 +259,7 @@
                         </div>
 
                         {{-- Pricing / stock fields --}}
-                        <div class="p-3 grid grid-cols-2 gap-2">
+                        <div class="p-3 grid grid-cols-3 gap-2">
                             <flux:field>
                                 <flux:label class="text-[11px] text-zinc-500">Price</flux:label>
                                 <flux:input type="number" step="0.01" min="0" size="sm"
@@ -226,12 +267,18 @@
                                 <flux:error name="variations.{{ $i }}.price" />
                             </flux:field>
                             <flux:field>
+                                <flux:label class="text-[11px] text-zinc-500">Discount</flux:label>
+                                <flux:input type="number" step="0.01" min="0" size="sm"
+                                    wire:model="variations.{{ $i }}.discount_price" placeholder="None" />
+                                <flux:error name="variations.{{ $i }}.discount_price" />
+                            </flux:field>
+                            <flux:field>
                                 <flux:label class="text-[11px] text-zinc-500">Qty</flux:label>
                                 <flux:input type="number" step="1" min="0" size="sm"
                                     wire:model="variations.{{ $i }}.quantity" placeholder="0" />
                                 <flux:error name="variations.{{ $i }}.quantity" />
                             </flux:field>
-                            <div class="col-span-2 -mt-2.5">
+                            <div class="col-span-3 -mt-2.5">
                                 <div class="mb-1 flex items-center gap-1">
                                     <span class="text-[11px] font-medium text-zinc-500">Note</span>
                                     <x-field-hint text="Internal note for this variant (won't be shown on the storefront)." />
