@@ -86,7 +86,7 @@
                         <flux:error name="parentId" />
                     </flux:field>
 
-                    <x-media-picker model="icon" label="Icon" hint="64×64px, transparent" placeholder="Select icon image from library"
+                    <x-media-picker model="icon" label="Icon" size-hint="64 × 64, transparent" placeholder="Select icon image from library"
                         :picker-id="$iconPickerId" mimes="png,webp" :max-size-mb="1" only-images dropzone />
                 </x-admin-section-card>
             </div>

@@ -6,7 +6,7 @@
         </flux:button>
     @endpush
 
-    <div class="w-full bg-white rounded-[5px] shadow-sm p-6 space-y-4">
+    <div class="w-full bg-white rounded-[5px] shadow-sm p-6 space-y-3">
 
         <flux:field>
             <flux:label>Code <span class="text-red-500 ml-0.5">*</span><x-field-hint text="Customers enter this at checkout — always stored uppercase." /></flux:label>

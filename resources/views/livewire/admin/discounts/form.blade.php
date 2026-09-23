@@ -6,7 +6,7 @@
         </flux:button>
     @endpush
 
-    <div class="w-full bg-white rounded-[5px] shadow-sm p-6 space-y-4">
+    <div class="w-full bg-white rounded-[5px] shadow-sm p-6 space-y-3">
 
         <flux:field>
             <flux:label>Name <span class="text-red-500 ml-0.5">*</span><x-field-hint text="Internal label, e.g. 'Winter Sale 20%'." /></flux:label>

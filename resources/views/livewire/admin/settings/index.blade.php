@@ -104,16 +104,17 @@
                                 @foreach ($items as $setting)
                                     @continue (! in_array($setting->key, ['site_icon', 'site_icon_white', 'favicon', 'loader'], true))
                                     @php
-                                        $imageMeta = match ($setting->key) {
-                                            'favicon' => ['title' => 'Favicon', 'hint' => '32×32px, square', 'placeholder' => 'Choose a favicon from the library', 'mimes' => 'ico,png', 'maxSize' => 1],
-                                            'loader' => ['title' => 'Loader', 'hint' => '200×200px, square', 'placeholder' => 'Choose a loading animation from the library', 'mimes' => 'gif,png,jpg', 'maxSize' => 2],
-                                            'site_icon_white' => ['title' => 'White Icon', 'hint' => '512×512px, transparent', 'placeholder' => 'Choose a white icon from the library', 'mimes' => 'png,webp', 'maxSize' => 2],
-                                            default => ['title' => 'Site Icon', 'hint' => '512×512px, transparent', 'placeholder' => 'Choose a site icon from the library', 'mimes' => 'png,webp', 'maxSize' => 2],
+$imageMeta = match ($setting->key) {
+                                            'favicon' => ['title' => 'Favicon', 'hint' => '32×32px, square', 'size' => '32 × 32', 'placeholder' => 'Choose a favicon from the library', 'mimes' => 'ico,png', 'maxSize' => 1],
+                                            'loader' => ['title' => 'Loader', 'hint' => '200×200px, square', 'size' => '200 × 200', 'placeholder' => 'Choose a loading animation from the library', 'mimes' => 'gif,png,jpg', 'maxSize' => 2],
+                                            'site_icon_white' => ['title' => 'White Icon', 'hint' => '512×512px, transparent', 'size' => '512 × 512', 'placeholder' => 'Choose a white icon from the library', 'mimes' => 'png,webp', 'maxSize' => 2],
+                                            default => ['title' => 'Site Icon', 'hint' => '512×512px, transparent', 'size' => '512 × 512', 'placeholder' => 'Choose a site icon from the library', 'mimes' => 'png,webp', 'maxSize' => 2],
                                         };
                                     @endphp
                                     <x-admin-section-card header-border="border-zinc-100" icon="photo" :title="$imageMeta['title']"
                                         :description="$imageMeta['hint']">
-                                        <x-media-picker model="settings.{{ $setting->key }}" :placeholder="$imageMeta['placeholder']" :mimes="$imageMeta['mimes']"
+                                        <x-media-picker model="settings.{{ $setting->key }}" label="" :size-hint="$imageMeta['size']"
+                                            :placeholder="$imageMeta['placeholder']" :mimes="$imageMeta['mimes']"
                                             :max-size-mb="$imageMeta['maxSize']" only-images dropzone />
                                     </x-admin-section-card>
                                 @endforeach
@@ -131,39 +132,87 @@
 
         {{-- Currency tab --}}
         <div x-show="tab === 'currency'">
-            <div class="max-w-[1600px] space-y-5">
+            <div class="max-w-[1600px]">
                 <x-admin-section-card header-border="border-zinc-100" icon="banknotes" title="Currency"
                     description="Set the currency used across the site for product pricing and payments.">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <flux:field>
-                            <flux:label>Currency Code</flux:label>
-                            <flux:input wire:model="settings.currency_code" placeholder="BDT, USD, EUR" class="uppercase" />
-                        </flux:field>
-                        <flux:field>
-                            <flux:label>Currency Symbol</flux:label>
-                            <flux:input wire:model="settings.currency_symbol" placeholder="৳, $, €" />
-                        </flux:field>
-                        <flux:field>
-                            <flux:label>Symbol Position</flux:label>
-                            <select wire:model="settings.currency_position"
-                                class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                                <option value="left">Left (৳1,250.00)</option>
-                                <option value="right">Right (1,250.00 ৳)</option>
-                            </select>
-                        </flux:field>
-                        <flux:field>
-                            <flux:label>Decimal Places</flux:label>
-                            <flux:input type="number" wire:model="settings.decimal_places" min="0" max="4" />
-                        </flux:field>
-                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
-                    <flux:field>
-                        <flux:label>Preview</flux:label>
-                        <div class="rounded-lg bg-zinc-50 dark:bg-zinc-800/50 px-4 py-6 text-center">
-                            <span class="text-2xl font-bold text-zinc-800 dark:text-zinc-100" x-data
-                                x-text="($wire.settings.currency_position || 'left') === 'right' ? '1,250.00 ' + ($wire.settings.currency_symbol || '৳') : ($wire.settings.currency_symbol || '৳') + '1,250.00'"></span>
+                        {{-- Form --}}
+                        <div class="lg:col-span-2 space-y-6">
+                            <div>
+                                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">Currency</p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <flux:field>
+                                        <flux:label>Currency Code</flux:label>
+                                        <flux:input wire:model="settings.currency_code" placeholder="BDT, USD, EUR" class="uppercase" maxlength="3" />
+                                        <flux:error name="settings.currency_code" />
+                                    </flux:field>
+                                    <flux:field>
+                                        <flux:label>Currency Symbol</flux:label>
+                                        <flux:input wire:model="settings.currency_symbol" placeholder="৳, $, €" maxlength="4" />
+                                        <flux:error name="settings.currency_symbol" />
+                                    </flux:field>
+                                </div>
+                            </div>
+
+                            <div>
+                                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">Formatting</p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <flux:field>
+                                        <flux:label>Symbol Position</flux:label>
+                                        <div class="relative">
+                                            <select wire:model="settings.currency_position"
+                                                class="w-full appearance-none rounded-lg border border-zinc-300 bg-white pl-3 pr-9 py-2 text-sm text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200">
+                                                <option value="left">Before amount — ৳1,250.00</option>
+                                                <option value="right">After amount — 1,250.00 ৳</option>
+                                            </select>
+                                            <flux:icon.chevron-down class="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
+                                        </div>
+                                    </flux:field>
+                                    <flux:field>
+                                        <flux:label>Decimal Places</flux:label>
+                                        <flux:input type="number" wire:model="settings.decimal_places" min="0" max="4" />
+                                        <flux:error name="settings.decimal_places" />
+                                    </flux:field>
+                                </div>
+                            </div>
                         </div>
-                    </flux:field>
+
+                        {{-- Live preview --}}
+                        <div class="lg:col-span-1">
+                            <div class="rounded-xl bg-zinc-50 px-5 py-7 text-center dark:bg-zinc-800/50"
+                                x-data="{
+                                    fmt(value) {
+                                        const dec = parseInt($wire.settings.decimal_places || '2', 10);
+                                        const num = Number(value || 0).toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+                                        const sym = $wire.settings.currency_symbol || '৳';
+                                        return ($wire.settings.currency_position || 'left') === 'right' ? num + ' ' + sym : sym + num;
+                                    }
+                                }">
+                                <p class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Live Preview</p>
+                                <p class="mt-2 text-3xl font-bold tabular-nums text-zinc-900 dark:text-white" x-text="fmt(1250)"></p>
+                                <span class="mt-1 inline-block text-[10px] font-medium uppercase tracking-wider text-zinc-400"
+                                    x-text="$wire.settings.currency_code || 'BDT'"></span>
+
+                                <div class="mx-auto my-6 h-px w-full bg-zinc-200 dark:bg-zinc-700"></div>
+
+                                <div class="space-y-1.5 text-sm">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-zinc-500 dark:text-zinc-400">Subtotal</span>
+                                        <span class="tabular-nums text-zinc-800 dark:text-zinc-200" x-text="fmt(899.5)"></span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-zinc-500 dark:text-zinc-400">Shipping</span>
+                                        <span class="text-emerald-600">Free</span>
+                                    </div>
+                                    <div class="flex items-center justify-between border-t border-zinc-200 pt-2 font-semibold dark:border-zinc-700">
+                                        <span class="text-zinc-800 dark:text-zinc-100">Total</span>
+                                        <span class="tabular-nums text-zinc-900 dark:text-white" x-text="fmt(1250)"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </x-admin-section-card>
             </div>
         </div>

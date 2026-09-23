@@ -6,7 +6,7 @@
         </flux:button>
     @endpush
 
-    <div class="w-full max-w-2xl bg-white rounded-[5px] shadow-sm p-6 space-y-4">
+    <div class="w-full max-w-2xl bg-white rounded-[5px] shadow-sm p-6 space-y-3">
 
         <x-admin-locale-tabs>
             @foreach (\App\Support\Locale::active() as $language)

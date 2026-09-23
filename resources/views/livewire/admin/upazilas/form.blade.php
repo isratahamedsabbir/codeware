@@ -6,7 +6,7 @@
         </flux:button>
     @endpush
 
-    <div class="w-full max-w-2xl bg-white rounded-[5px] shadow-sm p-6 space-y-4">
+    <div class="w-full max-w-2xl bg-white rounded-[5px] shadow-sm p-6 space-y-3">
 
         <flux:field>
             <flux:label>District <span class="text-red-500 ml-0.5">*</span></flux:label>

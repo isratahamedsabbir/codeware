@@ -273,62 +273,49 @@
     <x-admin-section-card header-border="border-zinc-100" icon="home" title="Homepage"
         description="Copy and imagery the homepage of your theme renders on the public site.">
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <div class="space-y-7">
 
-            {{-- Left: text + behavior --}}
-            <div class="space-y-5">
-                <flux:field>
-                    <flux:label>Site Tagline<x-field-hint text="A short line under the site name on the homepage." /></flux:label>
-                    <flux:textarea wire:model="settings.site_tagline" class="h-24" placeholder="e.g. Your one-stop shop for everything" />
-                </flux:field>
-
-                <div class="rounded-lg border border-zinc-100 bg-zinc-50/60 p-4 dark:border-zinc-700 dark:bg-zinc-800/30">
-                    <div class="flex items-center justify-between gap-3">
-                        <div class="flex items-center gap-3">
-                            <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-                                <flux:icon.chat-bubble-oval-left class="size-4" />
-                            </span>
-                            <div>
-                                <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Live Chat Widget</p>
-                                <p class="text-xs text-zinc-400">Support bubble on every public page.</p>
-                            </div>
-                        </div>
-                        <label class="relative inline-flex cursor-pointer items-center">
-                            <input type="checkbox" wire:model="settings.chat_widget_enabled" class="peer sr-only">
-                            <div
-                                class="h-5 w-9 rounded-full bg-zinc-300 transition-colors peer-checked:bg-emerald-500 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-500/40 dark:bg-zinc-600"></div>
-                            <div
-                                class="absolute left-0.5 top-0.5 size-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4"></div>
-                        </label>
+            {{-- Hero --}}
+            <div>
+                <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-400">Hero Banner</p>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+                    <div class="lg:col-span-1">
+                        <flux:textarea wire:model="settings.site_tagline" class="h-44 resize-none"
+                            placeholder="e.g. Your one-stop shop for everything" />
+                    </div>
+                    <div class="lg:col-span-2">
+                        <x-media-picker model="settings.home_hero_image" label="Hero Image" size-hint="1920 × 600" preview dropzone drop-height="h-44"
+                            only-images mimes="jpg,jpeg,png,gif,webp" :max-size-mb="4" placeholder="Choose from the library" />
                     </div>
                 </div>
             </div>
 
-            {{-- Right: imagery --}}
-            <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
-                @php
-                    $imageSlots = [
-                        ['key' => 'settings.home_hero_image', 'label' => 'Hero Image', 'hint' => 'Large banner at the top', 'tint' => 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400'],
-                        ['key' => 'settings.home_promo_banner_1', 'label' => 'Promo Banner 1', 'hint' => 'Strip below the hero', 'tint' => 'bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400'],
-                        ['key' => 'settings.home_promo_banner_2', 'label' => 'Promo Banner 2', 'hint' => 'Second promotional strip', 'tint' => 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400'],
-                    ];
-                @endphp
+            {{-- Promo Banners --}}
+            <div>
+                <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-400">Promo Banners</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <x-media-picker model="settings.home_promo_banner_1" label="Promo Banner 1" size-hint="1200 × 400" preview dropzone drop-height="h-40"
+                        only-images mimes="jpg,jpeg,png,gif,webp" :max-size-mb="4" placeholder="Choose from the library" />
+                    <x-media-picker model="settings.home_promo_banner_2" label="Promo Banner 2" size-hint="1200 × 400" preview dropzone drop-height="h-40"
+                        only-images mimes="jpg,jpeg,png,gif,webp" :max-size-mb="4" placeholder="Choose from the library" />
+                </div>
+            </div>
 
-                @foreach ($imageSlots as $slot)
-                    <div class="rounded-lg border border-zinc-100 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800/40">
-                        <div class="mb-3 flex items-center gap-3">
-                            <span class="flex size-9 shrink-0 items-center justify-center rounded-lg {{ $slot['tint'] }}">
-                                <flux:icon.photo class="size-4" />
-                            </span>
-                            <div class="min-w-0">
-                                <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">{{ $slot['label'] }}</p>
-                                <p class="text-xs leading-tight text-zinc-400">{{ $slot['hint'] }}</p>
-                            </div>
-                        </div>
-                        <x-media-picker :model="$slot['key']" label="" only-images mimes="jpg,jpeg,png,gif,webp"
-                            :max-size-mb="4" placeholder="Choose from the library" />
+            {{-- Behavior --}}
+            <div>
+                <div class="flex items-center justify-between gap-3 rounded-lg border border-zinc-100 bg-zinc-50/60 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800/30">
+                    <div>
+                        <p class="text-sm font-medium text-zinc-800 dark:text-zinc-100">Live Chat Widget</p>
+                        <p class="text-xs text-zinc-400">Support bubble on every public page.</p>
                     </div>
-                @endforeach
+                    <label class="relative inline-flex shrink-0 cursor-pointer items-center">
+                        <input type="checkbox" wire:model="settings.chat_widget_enabled" class="peer sr-only">
+                        <div
+                            class="h-5 w-9 rounded-full bg-zinc-300 transition-colors peer-checked:bg-emerald-500 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-500/40 dark:bg-zinc-600"></div>
+                        <div
+                            class="absolute left-0.5 top-0.5 size-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4"></div>
+                    </label>
+                </div>
             </div>
         </div>
     </x-admin-section-card>
@@ -495,4 +482,5 @@
         </div>
     </div>
 
+    <livewire:admin.media-library.picker-modal key="theme-settings-picker-modal" />
 </div>

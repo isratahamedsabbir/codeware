@@ -212,7 +212,7 @@
 
                         {{-- Image — full-width dashed upload area --}}
                         <div class="px-3 pt-3">
-                            <x-media-picker model="variations.{{ $i }}.image" label=""
+                            <x-media-picker model="variations.{{ $i }}.image" label="Variant Image" size-hint="Square"
                                 placeholder="Add variant image" mimes="jpg,jpeg,png,webp" only-images dropzone
                                 :picker-id="'variation-image-'.$i" />
                         </div>
@@ -472,7 +472,7 @@
             {{-- Featured Image --}}
             <x-admin-section-card icon="photo" title="Thumbnail Image" icon-color="bg-blue-500/10 text-blue-600"
                 body-class="px-4 py-3" description="Shown in the product catalog. Recommended 800×800px.">
-                <x-media-picker model="featured_image" label="" placeholder="Select featured image"
+                <x-media-picker model="featured_image" label="" size-hint="Square, 800 × 800" placeholder="Select featured image"
                     :picker-id="$featuredImagePickerId" mimes="jpg,jpeg,png,webp" only-images dropzone />
             </x-admin-section-card>
 

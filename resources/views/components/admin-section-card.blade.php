@@ -4,7 +4,7 @@
     'description' => null,
     'iconColor' => 'bg-primary/10 text-primary',
     'actions' => null,
-    'bodyClass' => 'px-6 py-5 space-y-4',
+    'bodyClass' => 'px-6 py-5 space-y-3',
     'headerBorder' => 'border-zinc-200',
     'collapsible' => false,
     'collapsed' => true,

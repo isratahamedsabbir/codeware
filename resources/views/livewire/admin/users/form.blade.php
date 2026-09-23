@@ -48,7 +48,7 @@
                 </div>
             </div>
 
-            <div class="space-y-4">
+            <div class="space-y-3">
                 <flux:field>
                     <flux:label>Name <span class="text-red-500 ml-0.5">*</span></flux:label>
                     <flux:input wire:model="name" placeholder="Full name" />

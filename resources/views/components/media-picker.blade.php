@@ -3,10 +3,14 @@
     'label' => 'Image',
     'hint' => null,
     'placeholder' => 'No file selected',
+    'uploadLabel' => 'Upload a File',
+    'dropHint' => 'Drag and drop files here',
+    'sizeHint' => null,
     'preview' => true,
     'pickerId' => null,
     'compact' => true,
     'dropzone' => false,
+    'dropHeight' => null,
     'onlyImages' => false,
     'mimes' => 'jpg,jpeg,png,gif,webp',
     'maxSizeMb' => 2,
@@ -17,6 +21,9 @@
     $extLabels = ['jpg' => 'JPG', 'jpeg' => 'JPG', 'png' => 'PNG', 'gif' => 'GIF', 'webp' => 'WEBP', 'ico' => 'ICO', 'svg' => 'SVG'];
     $formatLabels = array_values(array_unique(array_map(fn ($e) => $extLabels[$e] ?? strtoupper($e), explode(',', $mimes))));
     $uploadNote = $onlyImages ? 'Max '.$maxSizeMb.'MB · '.implode(', ', $formatLabels) : null;
+    $dropHeightClass = $dropHeight ?: ($uploadNote ? 'h-28' : 'h-24');
+    $dzHeading = $label ? $label.' Upload' : $uploadLabel;
+    $dzHint = $sizeHint ? 'Recommended: '.$sizeHint : ($hint ?: $dropHint);
 @endphp
 
 {{-- ================================================================
@@ -83,7 +90,7 @@
         this.$wire.set('{{ $model }}', null);
     }
 }" class="w-full min-w-0 space-y-2">
-    @if ($label)
+    @if ($label && ! $dropzone)
         <div class="mb-2 min-h-9">
             <label class="block text-sm font-medium text-zinc-800">{{ $label }}</label>
             @if ($hint)
@@ -97,7 +104,7 @@
         {{-- Preview / dropzone --}}
         @if ($preview && $dropzone)
             <button type="button" @click="openPicker()"
-                class="relative flex {{ $uploadNote ? 'h-28' : 'h-24' }} w-full shrink-0 flex-col items-center justify-center gap-1.5 overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-3 transition-colors hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                class="relative flex {{ $dropHeightClass }} w-full shrink-0 flex-col items-center justify-center gap-1.5 overflow-hidden rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-3 transition-colors hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400">
                 <template x-if="selectedUrl">
                     <img :src="selectedUrl" alt="" class="absolute inset-0 h-full w-full object-cover" />
                 </template>
@@ -110,8 +117,8 @@
                                     d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
                             </svg>
                         </span>
-                        <span class="text-sm font-semibold text-slate-700">Upload a File</span>
-                        <span class="text-xs text-slate-400">Drag and drop files here</span>
+                        <span class="text-sm font-semibold text-slate-700">{{ $dzHeading }}</span>
+                        <span class="text-xs text-slate-400">{{ $dzHint }}</span>
                         @if ($uploadNote)
                             <span class="mt-0.5 text-[10px] text-slate-300">{{ $uploadNote }}</span>
                         @endif

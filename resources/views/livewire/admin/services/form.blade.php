@@ -6,7 +6,7 @@
         </flux:button>
     @endpush
 
-    <div class="w-full max-w-2xl bg-white rounded-[5px] shadow-sm p-6 space-y-4">
+    <div class="w-full max-w-2xl bg-white rounded-[5px] shadow-sm p-6 space-y-3">
 
         <x-admin-locale-tabs>
             @foreach (\App\Support\Locale::active() as $language)
@@ -43,7 +43,7 @@
             <flux:error name="price" />
         </flux:field>
 
-        <x-media-picker model="featuredImage" label="Image" hint="Shown on the service listing" placeholder="Select an image from library" mimes="jpg,jpeg,png,webp,svg" only-images dropzone />
+        <x-media-picker model="featuredImage" label="Service Image" size-hint="1200 × 675" placeholder="Select an image from library" mimes="jpg,jpeg,png,webp,svg" only-images dropzone />
 
         {{-- Footer --}}
         <div class="-mx-6 -mb-6 mt-6 flex items-center gap-3 flex-wrap rounded-b-lg border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-700 dark:bg-zinc-800/40">
