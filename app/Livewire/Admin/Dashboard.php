@@ -90,8 +90,11 @@ class Dashboard extends Component
     {
         return view('livewire.admin.dashboard', [
             'lowStockProducts' => Product::with('categories')
-                ->where('quantity', '<=', Setting::productMinStockQuantity())
-                ->orderBy('quantity')
+                ->where(function ($query) {
+                    $query->whereNull('quantity')
+                        ->orWhere('quantity', '<=', Setting::productMinStockQuantity());
+                })
+                ->orderByRaw('COALESCE(quantity, 0)')
                 ->orderBy('id')
                 ->take(10)
                 ->get(),

@@ -20,6 +20,7 @@
     @php
         $siteIcon = \App\Models\Setting::get('site_icon');
         $favicon = \App\Models\Setting::get('favicon');
+        $sidebarLogo = \App\Models\Setting::get('sidebar_logo');
         $adminPrimaryColor = \App\Models\Setting::get('primary_color', '#1e7bc4');
         $adminSecondaryColor = \App\Models\Setting::get('secondary_color', '#7cc242');
         $calculatorEnabled = (bool) \App\Models\Setting::get('calculator_enabled', true);
@@ -160,7 +161,7 @@
             <a href="{{ route('admin.dashboard') }}" wire:navigate.hover title="{{ config('app.name') }}"
                 class="flex items-center gap-3 admin-sidebar-logo shrink-0"> 
                 <div class="rounded">  
-                    <img src="{{ $siteIcon ?: '/default/logo.png' }}" alt="{{ config('app.name') }}" class="w-10">
+                    <img src="{{ $sidebarLogo ?: ($siteIcon ?: '/default/logo.png') }}" alt="{{ config('app.name') }}" class="w-10">
                 </div>  
                 <!-- <div class="min-w-0">
                     <p class="truncate text-sm font-bold tracking-wide text-white">{{ config('app.name') }}</p>

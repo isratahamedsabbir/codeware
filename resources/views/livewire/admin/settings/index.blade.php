@@ -102,12 +102,13 @@
                                  block (title, hint and file picker together). --}}
                             <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-start">
                                 @foreach ($items as $setting)
-                                    @continue (! in_array($setting->key, ['site_icon', 'site_icon_white', 'favicon', 'loader'], true))
+                                    @continue (! in_array($setting->key, ['site_icon', 'site_icon_white', 'favicon', 'loader', 'sidebar_logo'], true))
                                     @php
 $imageMeta = match ($setting->key) {
                                             'favicon' => ['title' => 'Favicon', 'hint' => '32×32px, square', 'size' => '32 × 32', 'placeholder' => 'Choose a favicon from the library', 'mimes' => 'ico,png', 'maxSize' => 1],
                                             'loader' => ['title' => 'Loader', 'hint' => '200×200px, square', 'size' => '200 × 200', 'placeholder' => 'Choose a loading animation from the library', 'mimes' => 'gif,png,jpg', 'maxSize' => 2],
                                             'site_icon_white' => ['title' => 'White Icon', 'hint' => '512×512px, transparent', 'size' => '512 × 512', 'placeholder' => 'Choose a white icon from the library', 'mimes' => 'png,webp', 'maxSize' => 2],
+                                            'sidebar_logo' => ['title' => 'Sidebar Logo', 'hint' => 'Admin panel sidebar brand image', 'size' => 'logo', 'placeholder' => 'Choose a logo from the library', 'mimes' => 'png,webp,jpg,svg', 'maxSize' => 2],
                                             default => ['title' => 'Site Icon', 'hint' => '512×512px, transparent', 'size' => '512 × 512', 'placeholder' => 'Choose a site icon from the library', 'mimes' => 'png,webp', 'maxSize' => 2],
                                         };
                                     @endphp
