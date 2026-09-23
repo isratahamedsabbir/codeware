@@ -84,6 +84,7 @@ class OrderController extends Controller
                     'service_id' => null,
                     'type' => 'product',
                     'item_name' => $product->getTranslation('name', 'en', false),
+                    'sku' => $product->sku,
                     'unit_price' => $unitPrice,
                     'quantity' => $quantity,
                     'line_total' => round($unitPrice * $quantity, 2),
@@ -179,6 +180,7 @@ class OrderController extends Controller
                 'service_id' => $isProduct ? null : $model->id,
                 'type' => $isProduct ? 'product' : 'service',
                 'item_name' => $model->getTranslation('name', 'en', false),
+                'sku' => $isProduct ? $model->sku : null,
                 'unit_price' => $unitPrice,
                 'quantity' => $quantity,
                 'line_total' => round($unitPrice * $quantity, 2),
@@ -317,6 +319,7 @@ class OrderController extends Controller
             'items' => $order->items->map(fn ($item) => [
                 'type' => $item->type,
                 'item_name' => $item->item_name,
+                'sku' => $item->sku,
                 'variations' => $item->variations ?: null,
                 'unit_price' => (float) $item->unit_price,
                 'quantity' => $item->quantity,

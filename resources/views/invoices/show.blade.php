@@ -127,7 +127,7 @@
         <tbody>
             @foreach ($order->items as $item)
                 <tr>
-                    <td>{{ $item->item_name }}</td>
+                    <td>{{ $item->item_name }}{!! $item->sku ? '<br><small style="color:#6b7280;">'.$item->sku.'</small>' : '' !!}</td>
                     <td class="text-right">{{ number_format((float) $item->unit_price, 2) }}</td>
                     <td class="text-right">{{ $item->quantity }}</td>
                     <td class="text-right">{{ number_format((float) $item->line_total, 2) }}</td>

@@ -119,10 +119,13 @@ class Form extends Component
      * doesn't actually exist (e.g. no Red XXL in stock) can be hidden instead
      * of deleted, and regenerated back into existence later without losing
      * its price. Shape: [['attributes' => ['Color' => 'Red', 'Size' =>
-     * 'Small'], 'price' => '500.00', 'discount_price' => null, 'quantity' =>
-     * '10', 'visible' => true, 'image' => null, 'note' => null], ...].
+     * 'Small'], 'sku' => 'TSHIRT-RED-S', 'price' => '500.00',
+     * 'discount_price' => null, 'quantity' => '10', 'visible' => true,
+     * 'image' => null, 'note' => null], ...]. Every combination carries its
+     * own sku, auto-derived from the base product sku + the attribute values
+     * (see autoVariantSku()) and shown read-only in the card's footer.
      *
-     * @var array<int, array{attributes: array<string, string>, price: string, discount_price: string, quantity: string, visible: bool, image: ?string, note: ?string}>
+     * @var array<int, array{attributes: array<string, string>, sku: string, price: string, discount_price: string, quantity: string, visible: bool, image: ?string, note: ?string}>
      */
     public array $variations = [];
 
@@ -183,6 +186,7 @@ class Form extends Component
                 // a single 'attribute'/'value' pair — fold them into the same
                 // shape so existing data keeps working under the new picker.
                 'attributes' => $row['attributes'] ?? (filled($row['attribute'] ?? null) ? [$row['attribute'] => $row['value']] : []),
+                'sku' => $row['sku'] ?? '',
                 'price' => $row['price'] ?? '',
                 'discount_price' => $row['discount_price'] ?? '',
                 'quantity' => $row['quantity'] ?? '',
@@ -310,6 +314,7 @@ class Form extends Component
         $this->variations = collect($combinations)
             ->map(fn ($attributes) => $existing->get($this->variationComboKey($attributes)) ?? [
                 'attributes' => $attributes,
+                'sku' => $this->autoVariantSku($attributes),
                 'price' => '',
                 'discount_price' => '',
                 'quantity' => '',
@@ -319,6 +324,29 @@ class Form extends Component
             ])
             ->values()
             ->all();
+    }
+
+    /**
+     * Derives a combination's sku from the base product sku + its attribute
+     * values, e.g. base "TSHIRT" with Color: Red, Size: Small →
+     * "TSHIRT-RED-SMALL". Values are uppercased, stripped to safe characters,
+     * and joined in attribute order. Returns '' when the product has no base
+     * sku yet, so a combination added before the sku is set stays blank (and
+     * gets filled the same way at save time).
+     *
+     * @param  array<string, string>  $attributes
+     */
+    public function autoVariantSku(array $attributes): string
+    {
+        if ($this->sku === '') {
+            return '';
+        }
+
+        $suffix = collect($attributes)
+            ->map(fn (string $value) => Str::upper(preg_replace('/[^A-Za-z0-9]+/', '', Str::ascii($value)) ?: 'X'))
+            ->implode('-');
+
+        return $suffix === '' ? $this->sku : "{$this->sku}-{$suffix}";
     }
 
     /**
@@ -394,9 +422,10 @@ class Form extends Component
     /**
      * Drops any row left with no attributes — shouldn't normally happen since
      * generateVariations() already guards against it, but keeps save() safe
-     * regardless.
+     * regardless. A blank row sku is auto-filled from the base sku, same as
+     * generateVariations() does for brand-new combinations.
      *
-     * @return array<int, array{attributes: array<string, string>, price: ?string, discount_price: ?string, quantity: ?string, visible: bool, image: ?string, note: ?string}>
+     * @return array<int, array{attributes: array<string, string>, sku: ?string, price: ?string, discount_price: ?string, quantity: ?string, visible: bool, image: ?string, note: ?string}>
      */
     private function cleanedVariations(): array
     {
@@ -404,6 +433,7 @@ class Form extends Component
             ->filter(fn ($row) => filled($row['attributes'] ?? null))
             ->map(fn ($row) => [
                 'attributes' => $row['attributes'],
+                'sku' => filled($row['sku'] ?? null) ? $row['sku'] : $this->autoVariantSku($row['attributes']),
                 'price' => filled($row['price'] ?? null) ? $row['price'] : null,
                 'discount_price' => filled($row['discount_price'] ?? null) ? $row['discount_price'] : null,
                 'quantity' => filled($row['quantity'] ?? null) ? $row['quantity'] : 0,
@@ -554,6 +584,47 @@ class Form extends Component
         $this->js('window.open('.json_encode($url).', \'_blank\')');
     }
 
+    /**
+     * Per-combination sku validation: each auto-generated sku must be unique
+     * across the product's own combinations and never equal to the base
+     * product sku. Global uniqueness can't be DB-enforced (the skus live
+     * inside a JSON array), so uniqueness is scoped to the product — the same
+     * convention cart/order resolution uses to tell combinations apart.
+     *
+     * @return array<int, string|\Closure>
+     */
+    private function variationSkuRules(): array
+    {
+        return [
+            'nullable', 'string',
+            function (string $attribute, mixed $value, \Closure $fail): void {
+                if ($value === null || $value === '') {
+                    return;
+                }
+
+                if ($value === $this->sku) {
+                    $fail('The variant SKU must be different from the product SKU.');
+
+                    return;
+                }
+
+                $index = (int) Str::after(Str::before($attribute, '.sku'), 'variations.');
+
+                foreach ($this->variations as $i => $row) {
+                    if ($i === $index) {
+                        continue;
+                    }
+
+                    if (($row['sku'] ?? '') === $value) {
+                        $fail("The variant SKU {$value} is already used on another variant.");
+
+                        return;
+                    }
+                }
+            },
+        ];
+    }
+
     public function saveAndOpenPageBuilder(): void
     {
         $this->syncQuantityFromVariations();
@@ -579,6 +650,7 @@ class Form extends Component
         $rules['variations.*.quantity'] = 'nullable|integer|min:0|lte:quantity';
         $rules['variations.*.image'] = 'nullable|string|max:500';
         $rules['variations.*.note'] = 'nullable|string|max:2000';
+        $rules['variations.*.sku'] = $this->variationSkuRules();
         $rules['faqs.*.question'] = 'nullable|string|max:255';
         $rules['category_ids'] = 'array';
         $rules['category_ids.*'] = 'integer|exists:categories,id,type,product_category';
@@ -623,6 +695,7 @@ class Form extends Component
         $rules['variations.*.quantity'] = 'nullable|integer|min:0|lte:quantity';
         $rules['variations.*.image'] = 'nullable|string|max:500';
         $rules['variations.*.note'] = 'nullable|string|max:2000';
+        $rules['variations.*.sku'] = $this->variationSkuRules();
         $rules['faqs.*.question'] = 'nullable|string|max:255';
         $rules['category_ids'] = 'array';
         $rules['category_ids.*'] = 'integer|exists:categories,id,type,product_category';

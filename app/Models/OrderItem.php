@@ -13,7 +13,7 @@ class OrderItem extends Model
     public const TYPES = ['product', 'service'];
 
     protected $fillable = [
-        'order_id', 'product_id', 'service_id', 'type', 'item_name', 'unit_price', 'quantity', 'line_total', 'variations',
+        'order_id', 'product_id', 'service_id', 'type', 'item_name', 'sku', 'unit_price', 'quantity', 'line_total', 'variations',
     ];
 
     protected function casts(): array

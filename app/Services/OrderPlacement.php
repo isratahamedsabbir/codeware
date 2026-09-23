@@ -69,6 +69,10 @@ class OrderPlacement
                 'product_id' => $product->id,
                 'service_id' => null,
                 'item_name' => $product->getTranslation('name', 'en', false),
+                // The combination's own sku when the product uses options,
+                // else the base product sku — either way the receipt records
+                // exactly which unit was ordered.
+                'sku' => ($isVariant && filled($variation['sku'] ?? null)) ? $variation['sku'] : ($product->sku ?? null),
                 'unit_price' => $unitPrice,
                 'quantity' => $quantity,
                 'line_total' => round(($discountPrice ?? $unitPrice) * $quantity, 2),

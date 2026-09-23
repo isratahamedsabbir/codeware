@@ -67,6 +67,9 @@
                             <tr>
                                 <td class="px-6 py-3 text-sm text-zinc-800">
                                     {{ $item->item_name }}
+                                    @if ($item->sku)
+                                        <span class="block text-xs font-mono text-zinc-400">{{ $item->sku }}</span>
+                                    @endif
                                     @if ($item->type === 'service')
                                         <span class="text-xs text-zinc-400">(service)</span>
                                     @endif

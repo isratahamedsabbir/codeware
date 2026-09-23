@@ -20,6 +20,10 @@ return new class extends Migration
             // product or service must not rewrite what the customer actually
             // ordered and paid for.
             $table->string('item_name');
+            // The exact SKU at order time — a variant combination's own sku
+            // when the product uses options, else the product sku. Snapshotted
+            // like item_name, so a later sku edit can't rewrite the receipt.
+            $table->string('sku')->nullable();
             // The selected product variation (attribute name => value map) for
             // a variant order line, e.g. {"Color":"Red","Size":"M"}. Null for
             // base-product lines and service lines. The combination's price is

@@ -242,9 +242,11 @@
                             </div>
                         </div>
 
-                        {{-- Footer — stock status --}}
-                        <div class="mt-auto flex items-center justify-between border-t border-zinc-100 bg-zinc-50/60 px-3 py-2">
-                            <span class="text-[10px] font-medium text-zinc-400">Variant #{{ $loop->iteration }}</span>
+                        {{-- Footer — auto-generated sku + stock status --}}
+                        <div class="mt-auto flex items-center justify-between gap-2 border-t border-zinc-100 bg-zinc-50/60 px-3 py-2">
+                            <span class="min-w-0 truncate font-mono text-[10px] font-medium text-zinc-500" title="Variant SKU (auto)">
+                                {{ (($row['sku'] ?? '') !== '') ? $row['sku'] : $this->autoVariantSku($row['attributes'] ?? []) }}
+                            </span>
                             <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold {{ (int) ($row['quantity'] ?? 0) > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600' }}">
                                 <span class="w-1 h-1 rounded-full {{ (int) ($row['quantity'] ?? 0) > 0 ? 'bg-emerald-500' : 'bg-rose-500' }}"></span>
                                 {{ (int) ($row['quantity'] ?? 0) > 0 ? 'In stock' : 'Out of stock' }}

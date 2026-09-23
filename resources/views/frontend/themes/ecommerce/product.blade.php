@@ -88,7 +88,9 @@
 
             <h1 class="mt-4 text-3xl font-extrabold tracking-tight text-zinc-900">{{ $product->name }}</h1>
 
-            @if ($product->sku)
+            {{-- On variant products the base SKU belongs to the parent — the
+                 picker above shows the selected combination's own SKU instead. --}}
+            @if ($product->sku && ! $hasVariations)
                 <p class="mt-1 text-sm text-zinc-500">{{ __('SKU: :sku', ['sku' => $product->sku]) }}</p>
             @endif
 

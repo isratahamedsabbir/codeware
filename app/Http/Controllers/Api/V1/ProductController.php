@@ -154,6 +154,7 @@ class ProductController extends Controller
 
                     return [
                         'attributes' => $row['attributes'] ?? [],
+                        'sku' => ($row['sku'] ?? null) ?: null,
                         'price' => $price,
                         // Only counts if it's actually cheaper than this combination's
                         // own price — same guard as Product::hasDiscount().

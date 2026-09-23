@@ -92,6 +92,7 @@
 
         $variationRows = collect($variations)->map(fn (array $row) => [
             'attributes' => $row['attributes'] ?? [],
+            'sku' => ($row['sku'] ?? null) ?: null,
             'price_label' => format_money($row['price'] ?? $product->price),
             'discount_label' => (isset($row['price'], $row['discount_price']) && (float) $row['discount_price'] < (float) $row['price'])
                 ? format_money($row['discount_price'])
@@ -196,6 +197,9 @@
                                             <span class="text-2xl font-extrabold text-zinc-900" x-text="selected.discount_label || selected.price_label"></span>
                                             <span x-show="selected.discount_label" class="text-base text-zinc-400 line-through" x-text="selected.price_label"></span>
                                             <span class="mt-1 w-full text-sm" :class="selected.in_stock ? 'text-emerald-600' : 'text-red-500'" x-text="selected.stock_label"></span>
+                                            <template x-if="selected.sku">
+                                                <span class="mt-1 w-full text-xs text-zinc-400">{{ __('SKU') }}: <span class="font-mono" x-text="selected.sku"></span></span>
+                                            </template>
                                         </div>
                                     </template>
                                     <template x-if="!selected">
@@ -280,6 +284,9 @@
                         <span class="text-3xl font-extrabold text-zinc-900" x-text="selected.discount_label || selected.price_label"></span>
                         <span x-show="selected.discount_label" class="text-lg text-zinc-400 line-through" x-text="selected.price_label"></span>
                         <span class="mt-1 w-full text-sm" :class="selected.in_stock ? 'text-emerald-600' : 'text-red-500'" x-text="selected.stock_label"></span>
+                        <template x-if="selected.sku">
+                            <span class="mt-1 w-full text-xs text-zinc-400">{{ __('SKU') }}: <span class="font-mono" x-text="selected.sku"></span></span>
+                        </template>
                     </div>
                 </template>
                 <template x-if="!selected">
