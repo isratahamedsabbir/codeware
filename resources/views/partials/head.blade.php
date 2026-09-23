@@ -10,7 +10,7 @@
     $favicon = \App\Models\Setting::get('favicon');
 @endphp
 @if ($favicon)
-    <link rel="icon" href="{{ $favicon }}" sizes="any">
+    <link rel="icon" href="{{ $favicon }}" type="{{ Str::endsWith($favicon, '.svg') ? 'image/svg+xml' : 'image/x-icon' }}" sizes="any">
 @else
     <link rel="icon" href="/favicon/favicon.ico" sizes="any">
     <link rel="icon" href="/favicon/favicon-32x32.png" type="image/png" sizes="32x32">

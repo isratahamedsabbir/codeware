@@ -238,5 +238,9 @@ class SettingsSeeder extends Seeder
         foreach ($settings as $setting) {
             Setting::updateOrCreate(['key' => $setting['key']], $setting);
         }
+
+        // updateOrCreate() bypasses Setting::set()'s cache-busting, so bump the
+        // settings cache version to orphan any previously cached "forever" values.
+        \Illuminate\Support\Facades\Cache::forever('settings:cache-version', Setting::cacheVersion() + 1);
     }
 }
