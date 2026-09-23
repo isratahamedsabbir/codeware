@@ -90,6 +90,34 @@
                             <td colspan="3" class="px-6 py-3 text-sm font-semibold text-zinc-700 text-right">Subtotal</td>
                             <td class="px-6 py-3 text-sm font-semibold text-zinc-900 text-right">{{ number_format((float) $order->subtotal, 2) }} {{ $order->currency }}</td>
                         </tr>
+                        @if ((float) $order->discount > 0)
+                            <tr>
+                                <td colspan="3" class="px-6 py-3 text-sm font-semibold text-zinc-700 text-right">Discount</td>
+                                <td class="px-6 py-3 text-sm font-semibold text-emerald-600 text-right">-{{ number_format((float) $order->discount, 2) }} {{ $order->currency }}</td>
+                            </tr>
+                        @endif
+                        @if ((float) $order->vat_amount > 0)
+                            <tr>
+                                <td colspan="3" class="px-6 py-3 text-sm font-semibold text-zinc-700 text-right">
+                                    @if ($order->vat_rate !== null)
+                                        <span>{{ $order->vat_rate }}% </span>
+                                    @endif
+                                    {{ \App\Models\Setting::vatLabel() }}
+                                </td>
+                                <td class="px-6 py-3 text-sm font-semibold text-zinc-900 text-right">{{ number_format((float) $order->vat_amount, 2) }} {{ $order->currency }}</td>
+                            </tr>
+                        @endif
+                        @if ((float) $order->shipping_cost > 0)
+                            <tr>
+                                <td colspan="3" class="px-6 py-3 text-sm font-semibold text-zinc-700 text-right">
+                                    Shipping
+                                    @if ($order->shipping_method)
+                                        <span class="text-zinc-400">({{ $order->shipping_method }})</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-3 text-sm font-semibold text-zinc-900 text-right">{{ number_format((float) $order->shipping_cost, 2) }} {{ $order->currency }}</td>
+                            </tr>
+                        @endif
                         <tr>
                             <td colspan="3" class="px-6 py-3 text-sm font-bold text-zinc-800 text-right">Total</td>
                             <td class="px-6 py-3 text-sm font-bold text-zinc-900 text-right">{{ number_format((float) $order->total, 2) }} {{ $order->currency }}</td>

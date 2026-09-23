@@ -92,9 +92,15 @@
                         <dt class="text-zinc-500">{{ __(':count items', ['count' => $count]) }}</dt>
                         <dd class="font-semibold text-zinc-900">{{ format_money($subtotal) }}</dd>
                     </div>
+                    @if ($vatEnabled && $vat > 0)
+                        <div class="flex items-center justify-between">
+                            <dt class="text-zinc-500">{{ $vatLabel }}</dt>
+                            <dd class="font-semibold text-zinc-900">{{ format_money($vat) }}</dd>
+                        </div>
+                    @endif
                     <div class="flex items-center justify-between border-t border-zinc-100 pt-3">
                         <dt class="text-base font-bold text-zinc-900">{{ __('Total') }}</dt>
-                        <dd class="text-lg font-extrabold text-zinc-900">{{ format_money($subtotal) }}</dd>
+                        <dd class="text-lg font-extrabold text-zinc-900">{{ format_money($total) }}</dd>
                     </div>
                 </dl>
 

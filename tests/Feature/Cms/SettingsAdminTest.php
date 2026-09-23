@@ -243,7 +243,7 @@ it('seeder creates seo settings', function () {
 it('seeder creates currency settings', function () {
     $this->artisan('db:seed', ['--class' => 'SettingsSeeder']);
 
-    foreach (['currency_code', 'currency_symbol', 'currency_position', 'decimal_places'] as $key) {
+    foreach (['currency_code', 'currency_symbol', 'currency_position', 'decimal_places', 'vat_enabled', 'vat_rate'] as $key) {
         expect(Setting::where('key', $key)->exists())->toBeTrue();
     }
 });
@@ -257,13 +257,31 @@ it('does not show currency settings in the general tab', function () {
         });
 });
 
-it('renders the currency tab with currency fields', function () {
+it('renders the currency section in the general tab with currency fields', function () {
     Livewire::test(SettingsIndex::class)
         ->assertSee('Currency')
         ->assertSee('Currency Code')
         ->assertSee('Symbol Position')
         ->assertSee('Decimal Places')
-        ->assertSee('Preview');
+        ->assertSee('Live Preview');
+});
+
+it('renders the VAT toggle and rate in the VAT section', function () {
+    Livewire::test(SettingsIndex::class)
+        ->assertSee('VAT')
+        ->assertSee('Yes — add VAT to orders')
+        ->assertSee('No — exclude VAT');
+});
+
+it('saves the VAT toggle and rate through the form', function () {
+    Livewire::test(SettingsIndex::class)
+        ->set('settings.vat_enabled', '1')
+        ->set('settings.vat_rate', '15')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(Setting::get('vat_enabled'))->toBe('1')
+        ->and(Setting::get('vat_rate'))->toBe('15');
 });
 
 it('saves currency settings through the form', function () {

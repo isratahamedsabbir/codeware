@@ -72,21 +72,29 @@ class ProductController extends Controller
         $locale = $this->resolveLocale($request);
 
         $product = Product::active()
-            ->with(['categories.page', 'brand', 'tags', 'gallery', 'page', 'faqs'])
+            ->with(['categories.page', 'brand', 'tags', 'gallery', 'page', 'faqs', 'relatedProducts.page'])
             ->whereHas('page', fn ($q) => $q->where('slug', $slug))
             ->firstOrFail();
 
-        $categoryIds = $product->categories->pluck('id');
+        // Manually linked related products (picked from the product form) win;
+        // otherwise fall back to up to 4 same-category products.
+        $related = $product->relatedProducts
+            ->where('status', 'active')
+            ->take(4);
 
-        $related = $categoryIds->isNotEmpty()
-            ? Product::active()
-                ->with(['categories', 'tags', 'page'])
-                ->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $categoryIds))
-                ->where('id', '!=', $product->id)
-                ->orderBy('sort_order')
-                ->limit(4)
-                ->get()
-            : collect();
+        if ($related->isEmpty()) {
+            $categoryIds = $product->categories->pluck('id');
+
+            $related = $categoryIds->isNotEmpty()
+                ? Product::active()
+                    ->with(['categories', 'tags', 'page'])
+                    ->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $categoryIds))
+                    ->where('id', '!=', $product->id)
+                    ->orderBy('sort_order')
+                    ->limit(4)
+                    ->get()
+                : collect();
+        }
 
         return response()->json([
             'data' => $this->formatProduct($product, $locale, withDetail: true, related: $related),

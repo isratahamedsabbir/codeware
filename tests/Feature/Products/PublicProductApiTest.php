@@ -250,6 +250,25 @@ it('related_products excludes current product', function () {
     expect($ids)->not->toContain($product->id);
 });
 
+it('prefers manually-picked related products over the same-category fallback', function () {
+    $cat = ProductCategory::factory()->create();
+    $product = Product::factory()->published()->create();
+    $product->categories()->attach($cat);
+    pairPageFor($product, 'product', 'manual-related', $this->admin->id);
+
+    $sibling = Product::factory()->published()->create();
+    $sibling->categories()->attach($cat);
+
+    $picked = Product::factory()->published()->create();
+    $product->relatedProducts()->attach($picked->id, ['sort_order' => 0]);
+
+    $response = $this->getJson("/api/v1/products/{$product->slug}")
+        ->assertJsonCount(1, 'data.related_products');
+
+    $ids = collect($response->json('data.related_products'))->pluck('id');
+    expect($ids)->toContain($picked->id)->not->toContain($sibling->id);
+});
+
 it('includes the paired page\'s constant map and cms sections on a single product', function () {
     $product = Product::factory()->published()->create();
     $page = pairPageFor($product, 'product', 'cms-product', $this->admin->id);

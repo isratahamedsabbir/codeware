@@ -100,6 +100,18 @@ class Product extends Model
     }
 
     /**
+     * Products explicitly linked as "related" from the product form — a
+     * self-referential association (pivot: product_related_product). When
+     * empty, the API falls back to same-category products.
+     */
+    public function relatedProducts(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'product_related_product', 'product_id', 'related_product_id')
+            ->withPivot('sort_order')
+            ->orderBy('product_related_product.sort_order');
+    }
+
+    /**
      * Shares the single polymorphic `taggables` pivot table with Post's own
      * tags() — see Tag::posts()/Tag::products().
      */

@@ -81,4 +81,46 @@ class Setting extends Model
     {
         return (int) static::get('product_min_stock_quantity', 10);
     }
+
+    /**
+     * Whether VAT is applied to orders — driven by the VAT toggle in
+     * Settings → Currency. Off by default.
+     */
+    public static function vatEnabled(): bool
+    {
+        return (bool) static::get('vat_enabled', false);
+    }
+
+    /**
+     * VAT percentage applied to orders when vatEnabled() is true — the
+     * "VAT Rate" field in Settings → Currency.
+     */
+    public static function vatRate(): float
+    {
+        return (float) static::get('vat_rate', 0);
+    }
+
+    /**
+     * The tax label shown next to the VAT line on order totals (e.g. "VAT"
+     * or "Sales Tax") — Settings → Currency → "VAT Label".
+     */
+    public static function vatLabel(): string
+    {
+        return (string) static::get('vat_label', 'VAT');
+    }
+
+    /**
+     * The VAT amount owed on a given taxable total (the order's discounted
+     * subtotal) at the configured rate — zero when VAT is disabled. This is
+     * the single place every order pipeline reads from, so the storefront
+     * checkout, the order API and any future totals all agree.
+     */
+    public static function vatFor(float $taxable): float
+    {
+        if (! self::vatEnabled()) {
+            return 0.0;
+        }
+
+        return round($taxable * (self::vatRate() / 100), 2);
+    }
 }

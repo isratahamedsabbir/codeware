@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Setting;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Cache;
 
 class SettingsSeeder extends Seeder
 {
@@ -136,6 +137,13 @@ class SettingsSeeder extends Seeder
             ['key' => 'currency_position',      'value' => 'left', 'type' => 'string', 'group' => 'currency', 'is_public' => true],
             ['key' => 'decimal_places',         'value' => '2', 'type' => 'number', 'group' => 'currency', 'is_public' => true],
 
+            // ── VAT / Tax ── when enabled, every order gets the configured
+            // percentage added on top of its (discounted) subtotal — see
+            // Setting::vatFor() and the order placement pipeline.
+            ['key' => 'vat_enabled',            'value' => '0', 'type' => 'boolean', 'group' => 'currency', 'is_public' => true],
+            ['key' => 'vat_rate',               'value' => '15', 'type' => 'number', 'group' => 'currency', 'is_public' => true],
+            ['key' => 'vat_label',              'value' => 'VAT', 'type' => 'string', 'group' => 'currency', 'is_public' => true],
+
             // ── SEO ──
             ['key' => 'seo_meta_title',           'value' => '', 'type' => 'string', 'group' => 'seo', 'is_public' => true],
             ['key' => 'seo_meta_description',     'value' => '', 'type' => 'textarea', 'group' => 'seo', 'is_public' => true],
@@ -241,6 +249,6 @@ class SettingsSeeder extends Seeder
 
         // updateOrCreate() bypasses Setting::set()'s cache-busting, so bump the
         // settings cache version to orphan any previously cached "forever" values.
-        \Illuminate\Support\Facades\Cache::forever('settings:cache-version', Setting::cacheVersion() + 1);
+        Cache::forever('settings:cache-version', Setting::cacheVersion() + 1);
     }
 }

@@ -356,9 +356,84 @@
         {{-- ── SIDEBAR ── --}}
         <div class="w-[320px] shrink-0 space-y-3">
 
+            {{-- Featured Image --}}
+            <x-admin-section-card icon="photo" title="Thumbnail Image" icon-color="bg-blue-500/10 text-blue-600"
+                body-class="px-4 py-3" description="Shown in the product catalog. Recommended 800×800px.">
+                <x-media-picker model="featured_image" label="" size-hint="Square, 800 × 800" placeholder="Select featured image"
+                    :picker-id="$featuredImagePickerId" mimes="jpg,jpeg,png,webp" only-images dropzone />
+            </x-admin-section-card>
+
+            {{-- Categories --}}
+            <x-admin-section-card icon="tag" title="Categories" icon-color="bg-amber-500/10 text-amber-600"
+                body-class="px-4 py-3" description="A product can belong to more than one category.">
+                <div
+                    x-data="{
+                        selectedIds: @entangle('category_ids'),
+                        tree: @js($this->categoryPickerTree),
+                        openParents: new Set(),
+                        get visible() {
+                            return this.tree.filter(row => {
+                                if (row.parent_id === null) return true;
+                                const parent = this.tree.find(c => c.id === row.parent_id);
+                                return parent ? this.openParents.has(parent.id) : true;
+                            });
+                        },
+                        expand(parentId) {
+                            this.openParents.has(parentId) ? this.openParents.delete(parentId) : this.openParents.add(parentId);
+                        },
+                        autoExpandMatching() {
+                            this.tree.filter(row => this.selectedIds.includes(row.id)).forEach(row => {
+                                let cur = this.tree.find(c => c.id === row.parent_id);
+                                while (cur) {
+                                    this.openParents.add(cur.id);
+                                    cur = this.tree.find(c => c.id === cur.parent_id);
+                                }
+                            });
+                        },
+                        childCount(id) {
+                            return this.tree.filter(c => c.parent_id === id).length;
+                        },
+                        init() { this.autoExpandMatching(); },
+                    }">
+                    <div class="max-h-72 overflow-y-auto border border-zinc-200 rounded-lg p-1.5 space-y-0.5">
+                        <template x-for="row in visible" :key="row.id">
+                            <div class="flex items-center gap-1.5 group rounded-lg py-1 px-1 hover:bg-amber-50/70 transition-colors"
+                                :style="`padding-left: ${row.depth * 16 + 2}px`">
+                                {{-- Expand toggle — only for parents --}}
+                                <button type="button" x-show="row.has_children"
+                                    @click="expand(row.id)"
+                                    class="flex size-5 shrink-0 items-center justify-center rounded-md text-zinc-500 transition-colors cursor-pointer hover:bg-amber-100/80 hover:text-amber-600"
+                                    :aria-expanded="openParents.has(row.id) ? 'true' : 'false'">
+                                    <svg x-show="!openParents.has(row.id)" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+                                    <svg x-show="openParents.has(row.id)" x-cloak class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14" /></svg>
+                                </button>
+                                <span x-show="!row.has_children" class="size-5 shrink-0"></span>
+
+                                <label class="flex min-w-0 flex-1 items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" :value="row.id" x-model="selectedIds"
+                                        class="size-3.5 shrink-0 rounded border-zinc-300 text-amber-600 focus:ring-amber-500" />
+                                    <span class="truncate text-sm text-zinc-700 transition-colors"
+                                        :class="selectedIds.includes(row.id) ? 'font-semibold text-zinc-900' : ''" x-text="row.name"></span>
+                                </label>
+
+                                {{-- Child count badge --}}
+                                <span x-show="row.has_children && childCount(row.id) > 0"
+                                    class="shrink-0 rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-500"
+                                    x-text="childCount(row.id)"></span>
+                            </div>
+                        </template>
+                        @if ($this->categoryTree->isEmpty())
+                        <p class="text-xs text-zinc-400 px-2 py-1">No categories yet — create one from Product Categories first.</p>
+                        @endif
+                    </div>
+                </div>
+                <flux:error name="category_ids" />
+            </x-admin-section-card>
+
             {{-- Brand --}}
             <x-admin-section-card icon="star" title="Brand" icon-color="bg-yellow-500/10 text-yellow-600"
-                body-class="px-4 py-3" description="Optional — which brand this product belongs to.">
+                body-class="px-4 py-3" description="Optional — which brand this product belongs to."
+                collapsible :collapsed="true">
                 <select wire:model="brand_id" class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
                     <option value="">No brand</option>
                     @foreach ($this->productBrands as $brand)
@@ -377,7 +452,8 @@
 
             {{-- Vendor --}}
             <x-admin-section-card icon="briefcase" title="Vendor" icon-color="bg-sky-500/10 text-sky-600"
-                body-class="px-4 py-3" description="Optional — which vendor supplies this product.">
+                body-class="px-4 py-3" description="Optional — which vendor supplies this product."
+                collapsible :collapsed="true">
                 <select wire:model="vendor_id" class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
                     <option value="">No vendor</option>
                     @foreach ($this->productVendors as $vendor)
@@ -394,25 +470,10 @@
                 <flux:error name="vendor_id" />
             </x-admin-section-card>
 
-            {{-- Categories --}}
-            <x-admin-section-card icon="tag" title="Categories" icon-color="bg-amber-500/10 text-amber-600"
-                body-class="px-4 py-3" description="A product can belong to more than one category.">
-                <flux:checkbox.group wire:model="category_ids" class="flex flex-col items-stretch gap-1 max-h-72 overflow-y-auto border border-zinc-200 rounded-lg p-2 **:data-flux-field:mb-0!">
-                    @forelse ($this->categoryTree as $cat)
-                        <div class="rounded-md py-px hover:bg-zinc-50 transition-colors **:data-flux-field:gap-x-1.5 **:data-flux-field:gap-y-0 [&_ui-label]:text-xs [&_ui-label]:leading-none [&_ui-checkbox]:size-3.5" style="padding-left: {{ 8 + $cat->depth * 8 }}px">
-                            <flux:checkbox value="{{ $cat->id }}"
-                                label="{{ $cat->getTranslation('name', \App\Support\Locale::primary(), false) }}" />
-                        </div>
-                    @empty
-                        <p class="text-xs text-zinc-400 px-2 py-1">No categories yet — create one from Product Categories first.</p>
-                    @endforelse
-                </flux:checkbox.group>
-                <flux:error name="category_ids" />
-            </x-admin-section-card>
-
             {{-- Tags — product-typed and post-typed pools, no legacy (App\Models\Tag) --}}
             <x-admin-section-card icon="hashtag" title="Tags" icon-color="bg-rose-500/10 text-rose-600"
-                body-class="px-4 py-3" description="Label this product for filtering and search.">
+                body-class="px-4 py-3" description="Label this product for filtering and search."
+                collapsible :collapsed="true">
                 <div
                     x-data="{
                         tagIds: @entangle('tag_ids'),
@@ -504,16 +565,103 @@
                 <flux:error name="tag_ids" />
             </x-admin-section-card>
 
-            {{-- Featured Image --}}
-            <x-admin-section-card icon="photo" title="Thumbnail Image" icon-color="bg-blue-500/10 text-blue-600"
-                body-class="px-4 py-3" description="Shown in the product catalog. Recommended 800×800px.">
-                <x-media-picker model="featured_image" label="" size-hint="Square, 800 × 800" placeholder="Select featured image"
-                    :picker-id="$featuredImagePickerId" mimes="jpg,jpeg,png,webp" only-images dropzone />
+            {{-- Related Products — tag-style search picker over every other product --}}
+            <x-admin-section-card icon="square-2-stack" title="Related Products"
+                icon-color="bg-teal-500/10 text-teal-600"
+                body-class="px-4 py-3"
+                description="Products shown alongside this one — pick them the same way as tags."
+                collapsible :collapsed="true">
+                <div
+                    x-data="{
+                        relatedIds: @entangle('related_product_ids'),
+                        allProducts: @js($this->relatedProductOptions),
+                        query: '',
+                        open: false,
+                        panelStyle: '',
+                        get filtered() {
+                            const q = this.query.trim().toLowerCase();
+                            return this.allProducts.filter(p => !this.relatedIds.includes(p.id) && (!q || p.name.toLowerCase().includes(q)));
+                        },
+                        get selected() {
+                            return this.relatedIds.map(id => this.allProducts.find(p => p.id === id)).filter(Boolean);
+                        },
+                        updatePosition() {
+                            this.$nextTick(() => {
+                                const trigger = this.$refs.relatedBox;
+                                if (!trigger) return;
+                                const rect = trigger.getBoundingClientRect();
+                                this.panelStyle = `top:${rect.bottom + 4}px; left:${rect.left}px; width:${rect.width}px;`;
+                            });
+                        },
+                        openDropdown() {
+                            this.open = true;
+                            this.updatePosition();
+                        },
+                        addRelated(id) {
+                            if (!this.relatedIds.includes(id)) this.relatedIds.push(id);
+                            this.query = '';
+                            this.$refs.relatedSearch.focus();
+                        },
+                        removeRelated(id) {
+                            this.relatedIds = this.relatedIds.filter(existing => existing !== id);
+                        },
+                        init() {
+                            const handler = (e) => {
+                                if (!this.$refs.relatedSearch || !document.body.contains(this.$refs.relatedSearch)) {
+                                    document.removeEventListener('click', handler);
+                                    return;
+                                }
+                                if (!this.open) return;
+                                if (this.$refs.relatedBox && this.$refs.relatedBox.contains(e.target)) return;
+                                if (e.target.closest('[data-related-panel]')) return;
+                                this.open = false;
+                            };
+                            document.addEventListener('click', handler);
+                            window.addEventListener('resize', () => this.open && this.updatePosition());
+                            window.addEventListener('scroll', () => this.open && this.updatePosition(), true);
+                        },
+                    }"
+                    class="relative"
+                >
+                    <div x-ref="relatedBox" @click="$refs.relatedSearch.focus()"
+                        class="flex flex-wrap items-center gap-1.5 min-h-9 w-full rounded-lg border border-zinc-200 px-2 py-1.5 cursor-text focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-100 transition-all">
+                        <template x-for="product in selected" :key="product.id">
+                            <span class="inline-flex items-center gap-1 rounded-full bg-teal-50 pl-2.5 pr-1.5 py-1 text-xs font-medium text-teal-700">
+                                <span x-text="product.name"></span>
+                                <button type="button" @click.stop="removeRelated(product.id)"
+                                    class="rounded-full p-0.5 hover:bg-teal-100 transition-colors">
+                                    <flux:icon name="x-mark" variant="micro" class="size-3" />
+                                </button>
+                            </span>
+                        </template>
+
+                        <input type="text" x-ref="relatedSearch" x-model="query" @focus="openDropdown()" @input="open = true; updatePosition()"
+                            placeholder="Search products…"
+                            class="flex-1 min-w-25 border-0 p-0.5 text-sm outline-none focus:ring-0" />
+                    </div>
+
+                    <template x-teleport="body">
+                        <div data-related-panel x-show="open && filtered.length" x-cloak x-transition :style="panelStyle"
+                            class="fixed z-50 max-h-56 overflow-y-auto rounded-lg border border-zinc-200 bg-white shadow-lg py-1">
+                            <template x-for="product in filtered" :key="product.id">
+                                <button type="button" @click="addRelated(product.id)"
+                                    class="block w-full px-3 py-1.5 text-left text-sm text-zinc-700 hover:bg-zinc-50 transition-colors"
+                                    x-text="product.name"></button>
+                            </template>
+                        </div>
+                    </template>
+
+                    <p x-show="open && query && !filtered.length" x-cloak class="mt-1 text-xs text-zinc-400">
+                        No matching products.
+                    </p>
+                </div>
+                <flux:error name="related_product_ids" />
             </x-admin-section-card>
 
             {{-- Gallery --}}
             <x-admin-section-card icon="squares-2x2" title="Gallery" icon-color="bg-indigo-500/10 text-indigo-600"
-                body-class="px-4 py-3" description="Extra product photos, shown on the product page. Drag to reorder.">
+                body-class="px-4 py-3" description="Extra product photos, shown on the product page. Drag to reorder."
+                collapsible :collapsed="true">
                 <div
                     x-data="{
                         pickerId: @js($galleryPickerId),

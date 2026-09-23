@@ -3,6 +3,7 @@
 namespace App\Livewire\Frontend;
 
 use App\Models\Setting;
+use App\Models\ShippingMethod;
 use App\Services\OrderPlacement;
 use App\Support\Cart;
 use App\Support\PaymentMethods;
@@ -26,6 +27,14 @@ class Checkout extends Component
 
     public float $subtotal = 0;
 
+    public float $vat = 0;
+
+    public float $total = 0;
+
+    public bool $vatEnabled = false;
+
+    public string $vatLabel = '';
+
     public string $customer_name = '';
 
     public string $customer_email = '';
@@ -35,6 +44,14 @@ class Checkout extends Component
     public string $shipping_address = '';
 
     public string $payment_method = 'cod';
+
+    public ?int $shipping_method_id = null;
+
+    public array $shippingMethods = [];
+
+    public string $shipping = '0';
+
+    public string $shippingLabel = '';
 
     public string $notes = '';
 
@@ -46,9 +63,23 @@ class Checkout extends Component
     {
         $this->paymentMethods = PaymentMethods::available();
 
-        if ($user = auth()->user()) {
-            $this->customer_name = $user->name;
-            $this->customer_email = $user->email;
+        $this->shippingMethods = ShippingMethod::active()
+            ->orderBy('cost')
+            ->get()
+            ->map(fn (ShippingMethod $method) => [
+                'id' => $method->id,
+                'name' => $method->name,
+                'cost' => (float) $method->cost,
+                'label' => $method->cost > 0
+                    ? format_money($method->cost)
+                    : __('Free'),
+            ])
+            ->values()
+            ->all();
+
+        if (auth()->user()) {
+            $this->customer_name = auth()->user()->name;
+            $this->customer_email = auth()->user()->email;
         }
 
         $this->refresh();
@@ -75,6 +106,40 @@ class Checkout extends Component
 
         $this->count = (int) collect($this->items)->sum('quantity');
         $this->subtotal = Cart::subtotal();
+
+        $this->vatEnabled = Setting::vatEnabled();
+        $this->vatLabel = Setting::vatLabel();
+        // No coupon is applied at display time (that's done at placement), so
+        // the shown VAT is estimated on the raw subtotal — the real, order-level
+        // figure is computed on the discounted subtotal at order time.
+        $this->vat = Setting::vatFor($this->subtotal);
+
+        // Default to the cheapest shipping method the first time the cart is
+        // non-empty, so the summary always has a concrete shipping figure.
+        if ($this->shipping_method_id === null && ! empty($this->shippingMethods)) {
+            $this->shipping_method_id = $this->shippingMethods[0]['id'];
+        }
+
+        [$this->shippingLabel, $this->shipping] = $this->currentShipping();
+
+        $this->total = round($this->subtotal + $this->vat + (float) $this->shipping, 2);
+    }
+
+    /**
+     * The selected method's [label, cost] — [null, 0] when nothing is selected
+     * (or no methods are configured at all).
+     *
+     * @return array{0: string, 1: float}
+     */
+    private function currentShipping(): array
+    {
+        $method = collect($this->shippingMethods)->firstWhere('id', $this->shipping_method_id);
+
+        if (! $method) {
+            return ['', 0.0];
+        }
+
+        return [$method['name'], $method['cost']];
     }
 
     public function placeOrder()
@@ -104,6 +169,7 @@ class Checkout extends Component
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'required|string|max:30',
             'shipping_address' => 'required|string|max:2000',
+            'shipping_method_id' => ['nullable', 'integer', Rule::exists('shipping_methods', 'id')->where('status', 'active')],
             'payment_method' => ['required', 'string', Rule::in(array_keys(PaymentMethods::available()))],
             'notes' => 'nullable|string|max:1000',
             'coupon_code' => 'nullable|string|max:50',
@@ -125,6 +191,7 @@ class Checkout extends Component
                     'notes' => $validated['notes'] !== '' ? $validated['notes'] : null,
                 ],
                 $validated['coupon_code'] !== '' ? $validated['coupon_code'] : null,
+                $validated['shipping_method_id'],
             );
         } catch (ValidationException $e) {
             foreach ($e->errors() as $field => $messages) {

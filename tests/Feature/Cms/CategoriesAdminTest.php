@@ -83,7 +83,7 @@ it('rejects a slug that collides across types, since categories are now globally
     Livewire::test(CategoryForm::class)
         ->set('type', Category::TYPE_POST)
         ->set('name.en', 'Something Else')
-        ->set('slug', 'shared_slug')
+        ->set('slug', 'shared-slug')
         ->call('save')
         ->assertHasErrors(['slug']);
 });

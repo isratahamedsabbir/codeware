@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Service;
 use App\Models\Setting;
+use App\Models\ShippingMethod;
 use App\Models\Transaction;
 use App\Support\PaymentMethods;
 use Illuminate\Http\JsonResponse;
@@ -37,6 +38,7 @@ class OrderController extends Controller
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'required|string|max:30',
             'shipping_address' => ($shippingRequired ? 'required' : 'nullable').'|string|max:2000',
+            'shipping_method_id' => ['nullable', 'integer', Rule::exists('shipping_methods', 'id')->where('status', 'active')],
             'payment_method' => ['required', 'string', Rule::in(array_keys(PaymentMethods::available()))],
             'notes' => 'nullable|string|max:1000',
             'coupon_code' => 'nullable|string|max:50',
@@ -110,9 +112,14 @@ class OrderController extends Controller
 
         [$couponCode, $discount] = $this->applyCoupon($validated['coupon_code'] ?? null, $subtotal, $lines, $products);
 
-        $total = round($subtotal - $discount, 2);
+        $taxable = round($subtotal - $discount, 2);
+        $vat = Setting::vatFor($taxable);
+        $vatRate = Setting::vatEnabled() ? Setting::vatRate() : null;
 
-        $order = $this->persistOrder($validated, $lines, $subtotal, $couponCode, $discount, $total, $currency);
+        [$shippingMethod, $shippingCost] = $this->shippingSnapshot($validated['shipping_method_id'] ?? null, $lines);
+        $total = round($taxable + $vat + $shippingCost, 2);
+
+        $order = $this->persistOrder($validated, $lines, $subtotal, $couponCode, $discount, $vat, $vatRate, $shippingMethod, $shippingCost, $total, $currency);
 
         return response()->json([
             'data' => $this->formatOrder($order->load('items')),
@@ -151,6 +158,7 @@ class OrderController extends Controller
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'required|string|max:30',
             'shipping_address' => ($isProduct ? 'required' : 'nullable').'|string|max:2000',
+            'shipping_method_id' => ['nullable', 'integer', Rule::exists('shipping_methods', 'id')->where('status', 'active')],
             'payment_method' => ['required', 'string', Rule::in(array_keys(PaymentMethods::available()))],
             'notes' => 'nullable|string|max:1000',
             'coupon_code' => 'nullable|string|max:50',
@@ -192,9 +200,14 @@ class OrderController extends Controller
 
         [$couponCode, $discount] = $this->applyCoupon($validated['coupon_code'] ?? null, $subtotal, $lines, $isProduct ? $catalog : collect());
 
-        $total = round($subtotal - $discount, 2);
+        $taxable = round($subtotal - $discount, 2);
+        $vat = Setting::vatFor($taxable);
+        $vatRate = Setting::vatEnabled() ? Setting::vatRate() : null;
 
-        $order = $this->persistOrder($validated, $lines, $subtotal, $couponCode, $discount, $total, $currency);
+        [$shippingMethod, $shippingCost] = $this->shippingSnapshot($validated['shipping_method_id'] ?? null, $lines);
+        $total = round($taxable + $vat + $shippingCost, 2);
+
+        $order = $this->persistOrder($validated, $lines, $subtotal, $couponCode, $discount, $vat, $vatRate, $shippingMethod, $shippingCost, $total, $currency);
 
         return response()->json([
             'data' => $this->formatOrder($order->load('items')),
@@ -249,11 +262,38 @@ class OrderController extends Controller
     }
 
     /**
+     * Resolves an active shipping method's name + cost for the order snapshot.
+     * The cost comes from the table, never the client. Shipping only applies to
+     * a cart that has something physical in it — a service-only cart (nothing
+     * to deliver) always carries no shipping fee, regardless of the id sent.
+     *
+     * @return array{0: ?string, 1: float}
+     */
+    private function shippingSnapshot(?int $shippingMethodId, Collection $lines): array
+    {
+        $hasProduct = $lines->contains(fn (array $line) => $line['type'] === 'product');
+
+        if ($shippingMethodId === null || ! $hasProduct) {
+            return [null, 0.0];
+        }
+
+        $method = ShippingMethod::active()->find($shippingMethodId);
+
+        if (! $method) {
+            throw ValidationException::withMessages([
+                'shipping_method_id' => 'The selected shipping method is no longer available.',
+            ]);
+        }
+
+        return [$method->name, (float) $method->cost];
+    }
+
+    /**
      * @param  array<string, mixed>  $validated
      */
-    private function persistOrder(array $validated, Collection $lines, float $subtotal, string $couponCode, float $discount, float $total, string $currency): Order
+    private function persistOrder(array $validated, Collection $lines, float $subtotal, string $couponCode, float $discount, float $vat, ?float $vatRate, ?string $shippingMethod, float $shippingCost, float $total, string $currency): Order
     {
-        return DB::transaction(function () use ($validated, $lines, $subtotal, $couponCode, $discount, $total, $currency) {
+        return DB::transaction(function () use ($validated, $lines, $subtotal, $couponCode, $discount, $vat, $vatRate, $shippingMethod, $shippingCost, $total, $currency) {
             $order = Order::create([
                 'user_id' => auth('sanctum')->id(),
                 'customer_name' => $validated['customer_name'],
@@ -265,6 +305,10 @@ class OrderController extends Controller
                 'subtotal' => $subtotal,
                 'coupon_code' => $couponCode !== '' ? $couponCode : null,
                 'discount' => $discount,
+                'vat_amount' => $vat,
+                'vat_rate' => $vatRate,
+                'shipping_method' => $shippingMethod,
+                'shipping_cost' => $shippingCost,
                 'total' => $total,
                 'notes' => $validated['notes'] ?? null,
             ]);
@@ -313,6 +357,10 @@ class OrderController extends Controller
             'subtotal' => (float) $order->subtotal,
             'coupon_code' => $order->coupon_code,
             'discount' => (float) $order->discount,
+            'vat_amount' => (float) $order->vat_amount,
+            'vat_rate' => $order->vat_rate !== null ? (float) $order->vat_rate : null,
+            'shipping_method' => $order->shipping_method,
+            'shipping_cost' => (float) $order->shipping_cost,
             'total' => (float) $order->total,
             'created_at' => $order->created_at?->toIso8601String(),
             'created_at_display' => $order->created_at?->toDisplay(),

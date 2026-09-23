@@ -84,6 +84,37 @@
                     <header class="flex items-center gap-3 border-b border-zinc-100 px-5 py-4">
                         <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand/10 text-sm font-bold text-brand">2</span>
                         <div>
+                            <h2 class="text-sm font-bold uppercase tracking-wide text-zinc-800">{{ __('Shipping') }}</h2>
+                            <p class="text-xs text-zinc-500">{{ __('Choose a delivery method for your order.') }}</p>
+                        </div>
+                    </header>
+                    <div class="space-y-5 p-5">
+                        <div>
+                            @if ($shippingMethods)
+                                <div class="grid gap-2.5 sm:grid-cols-2">
+                                    @foreach ($shippingMethods as $method)
+                                        <label class="relative flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition has-[:checked]:border-brand has-[:checked]:bg-brand/5 has-[:checked]:text-brand hover:border-zinc-400">
+                                            <span class="flex items-center gap-3">
+                                                <input type="radio" name="shipping_method_id" value="{{ $method['id'] }}" wire:model="shipping_method_id"
+                                                    class="h-4 w-4 border-zinc-300 text-brand focus:ring-2 focus:ring-brand/30">
+                                                <span class="truncate">{{ $method['name'] }}</span>
+                                            </span>
+                                            <span @if ($method['cost'] === 0) class="text-sm font-bold text-emerald-600" @endif>{{ $method['label'] }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            @else
+                                <p class="text-sm text-zinc-500">{{ __('No shipping methods are available right now.') }}</p>
+                            @endif
+                            @error('shipping_method_id') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+                </section>
+
+                <section class="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+                    <header class="flex items-center gap-3 border-b border-zinc-100 px-5 py-4">
+                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand/10 text-sm font-bold text-brand">3</span>
+                        <div>
                             <h2 class="text-sm font-bold uppercase tracking-wide text-zinc-800">{{ __('Payment') }}</h2>
                             <p class="text-xs text-zinc-500">{{ __('Choose how you would like to pay.') }}</p>
                         </div>
@@ -167,9 +198,21 @@
                         <dt class="text-zinc-500">{{ __('Subtotal') }}</dt>
                         <dd class="font-semibold text-zinc-900">{{ format_money($subtotal) }}</dd>
                     </div>
+                    @if ($vatEnabled && $vat > 0)
+                        <div class="flex items-center justify-between">
+                            <dt class="text-zinc-500">{{ $vatLabel }}</dt>
+                            <dd class="font-semibold text-zinc-900">{{ format_money($vat) }}</dd>
+                        </div>
+                    @endif
+                    @if ((float) $shipping > 0)
+                        <div class="flex items-center justify-between">
+                            <dt class="text-zinc-500">{{ __('Shipping') }}</dt>
+                            <dd class="font-semibold text-zinc-900">{{ format_money($shipping) }}</dd>
+                        </div>
+                    @endif
                     <div class="flex items-center justify-between border-t border-zinc-100 pt-3">
                         <dt class="text-base font-bold text-zinc-900">{{ __('Total') }}</dt>
-                        <dd class="text-lg font-extrabold text-brand">{{ format_money($subtotal) }}</dd>
+                        <dd class="text-lg font-extrabold text-brand">{{ format_money($total) }}</dd>
                     </div>
                 </dl>
             </aside>

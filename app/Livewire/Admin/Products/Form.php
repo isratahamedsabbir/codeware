@@ -64,6 +64,16 @@ class Form extends Component
     #[Validate('nullable|array')]
     public array $tag_ids = [];
 
+    /**
+     * Products explicitly linked as "related" — a self-referential set chosen
+     * from the product picker; the public API shows these (falling back to
+     * same-category products when empty).
+     *
+     * @var array<int, int>
+     */
+    #[Validate('nullable|array')]
+    public array $related_product_ids = [];
+
     #[Validate('nullable|string|max:255')]
     public string $newTagName = '';
 
@@ -178,6 +188,9 @@ class Form extends Component
             $this->slug = $product->slug ?? '';
             $this->category_ids = $product->categories->pluck('id')->all();
             $this->tag_ids = $product->tags->pluck('id')->all();
+            $this->related_product_ids = $product->relatedProducts()
+                ->pluck('product_related_product.related_product_id')
+                ->all();
             $this->brand_id = $product->brand_id !== null ? (string) $product->brand_id : '';
             $this->vendor_id = $product->vendor_id !== null ? (string) $product->vendor_id : '';
             $this->sku = $product->sku ?? '';
@@ -601,10 +614,51 @@ class Form extends Component
         return ProductCategory::tree($this->productCategories);
     }
 
+    /**
+     * Same flattened tree, but as plain arrays for the Alpine expandable
+     * picker — each row carries its id, name, parent, depth and child stats so
+     * the client can render +/− toggles and show/hide children without a
+     * second round trip.
+     */
+    #[Computed]
+    public function categoryPickerTree()
+    {
+        return $this->categoryTree
+            ->map(fn ($cat) => [
+                'id' => $cat->id,
+                'name' => $cat->getTranslation('name', Locale::primary(), false),
+                'parent_id' => $cat->parent_id,
+                'depth' => $cat->depth,
+                'has_children' => $this->categoryTree->contains(fn ($c) => $c->parent_id === $cat->id),
+                'child_count' => $this->categoryTree->where('parent_id', $cat->id)->count(),
+            ])
+            ->values()
+            ->all();
+    }
+
     #[Computed]
     public function tags()
     {
         return Tag::where(fn ($q) => $q->whereIn('type', [Tag::TYPE_PRODUCT, Tag::TYPE_POST])->orWhereNull('type'))->orderBy('id')->get();
+    }
+
+    /**
+     * Candidate products for the Related Products picker — every product
+     * except the one being edited (a product can't be related to itself).
+     * Bound client-side; the search filtering happens in the Alpine widget.
+     */
+    #[Computed]
+    public function relatedProductOptions()
+    {
+        return Product::query()
+            ->when($this->productId, fn ($q) => $q->where('id', '!=', $this->productId))
+            ->orderBy('id')
+            ->get()
+            ->map(fn ($p) => [
+                'id' => $p->id,
+                'name' => $p->getTranslation('name', Locale::primary(), false),
+            ])
+            ->all();
     }
 
     /**
@@ -764,6 +818,7 @@ class Form extends Component
         $rules['category_ids'] = 'array';
         $rules['category_ids.*'] = 'integer|exists:categories,id,type,product_category';
         $rules['tag_ids.*'] = [Rule::exists('categories', 'id')->where(fn ($q) => $q->whereIn('type', Tag::TYPES)->orWhereNull('type'))];
+        $rules['related_product_ids.*'] = ['integer', Rule::exists('products', 'id')];
 
         $this->validate($rules);
 
@@ -809,6 +864,7 @@ class Form extends Component
         $rules['category_ids'] = 'array';
         $rules['category_ids.*'] = 'integer|exists:categories,id,type,product_category';
         $rules['tag_ids.*'] = [Rule::exists('categories', 'id')->where(fn ($q) => $q->whereIn('type', Tag::TYPES)->orWhereNull('type'))];
+        $rules['related_product_ids.*'] = ['integer', Rule::exists('products', 'id')];
 
         $this->validate($rules);
 
@@ -857,6 +913,12 @@ class Form extends Component
         $product->categories()->sync($this->category_ids);
 
         $product->tags()->sync($this->tag_ids);
+
+        $product->relatedProducts()->sync(
+            collect($this->related_product_ids)
+                ->filter(fn ($id) => (int) $id !== $product->id)
+                ->mapWithKeys(fn ($id, $index) => [(int) $id => ['sort_order' => $index]])->all()
+        );
 
         $product->discounts()->sync($this->discount_id !== '' ? [(int) $this->discount_id] : []);
 

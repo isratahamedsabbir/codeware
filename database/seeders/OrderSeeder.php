@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Service;
+use App\Models\ShippingMethod;
 use App\Models\Transaction;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -55,6 +56,13 @@ class OrderSeeder extends Seeder
 
             $subtotal = round($lines->sum('line_total'), 2);
 
+            // Product orders carry a shipping snapshot — a random active method
+            // where there is one, else no shipping fee at all. The demo data
+            // mirrors the OderPlacement total: subtotal + shipping.
+            $shipping = $productLines->isNotEmpty() && ShippingMethod::active()->exists()
+                ? ShippingMethod::active()->inRandomOrder()->first()
+                : null;
+
             $order = Order::create([
                 'customer_name' => fake()->name(),
                 'customer_email' => fake()->safeEmail(),
@@ -67,7 +75,9 @@ class OrderSeeder extends Seeder
                 'payment_status' => $paymentStatus,
                 'currency' => 'BDT',
                 'subtotal' => $subtotal,
-                'total' => $subtotal,
+                'shipping_method' => $shipping?->name,
+                'shipping_cost' => $shipping?->cost ?? 0,
+                'total' => round($subtotal + (float) ($shipping?->cost ?? 0), 2),
                 'notes' => fake()->boolean(20) ? fake()->sentence() : null,
                 'created_at' => fake()->dateTimeBetween('-60 days', 'now'),
             ]);
@@ -78,7 +88,7 @@ class OrderSeeder extends Seeder
                 'order_id' => $order->id,
                 'reference' => 'TXN-'.strtoupper(Str::random(10)),
                 'payment_method' => $paymentMethod,
-                'amount' => $subtotal,
+                'amount' => $order->total,
                 'currency' => 'BDT',
                 'status' => match ($paymentStatus) {
                     'paid' => 'success',

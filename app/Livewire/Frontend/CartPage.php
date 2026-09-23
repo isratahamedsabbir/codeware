@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Frontend;
 
+use App\Models\Setting;
 use App\Support\Cart;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -20,6 +21,14 @@ class CartPage extends Component
     public int $count = 0;
 
     public float $subtotal = 0;
+
+    public float $vat = 0;
+
+    public float $total = 0;
+
+    public bool $vatEnabled = false;
+
+    public string $vatLabel = '';
 
     public function mount(): void
     {
@@ -47,6 +56,11 @@ class CartPage extends Component
 
         $this->count = (int) collect($this->items)->sum('quantity');
         $this->subtotal = Cart::subtotal();
+
+        $this->vatEnabled = Setting::vatEnabled();
+        $this->vatLabel = Setting::vatLabel();
+        $this->vat = Setting::vatFor($this->subtotal);
+        $this->total = round($this->subtotal + $this->vat, 2);
     }
 
     public function increase(int|string $key): void

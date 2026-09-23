@@ -34,6 +34,17 @@ return new class extends Migration
             // server-computed server-side, never trusted from the client.
             $table->string('coupon_code', 50)->nullable();
             $table->decimal('discount', 10, 2)->default(0);
+            // VAT snapshot — the tax amount (and the rate it was computed at)
+            // applied to this order when Settings → Currency → VAT is enabled.
+            // Rate is stored too, so a later rate change never rewrites history.
+            $table->decimal('vat_amount', 10, 2)->default(0);
+            $table->decimal('vat_rate', 5, 2)->nullable();
+            // Shipping snapshot — the chosen delivery method's name and cost at
+            // order time. Snapshotted (no FK) like vat_amount/vat_rate, so a
+            // method's later rename, price change or deletion never rewrites an
+            // order's history. 0.00 on orders with nothing physical to deliver.
+            $table->string('shipping_method')->nullable();
+            $table->decimal('shipping_cost', 10, 2)->default(0);
             $table->decimal('total', 10, 2);
             $table->text('notes')->nullable();
             $table->timestamps();

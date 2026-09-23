@@ -83,6 +83,28 @@
                                         <td class="px-5 py-3 text-right text-sm text-green-600">-{{ format_money($order->discount) }}</td>
                                     </tr>
                                 @endif
+                                @if ((float) $order->vat_amount > 0)
+                                    <tr>
+                                        <th colspan="3" class="px-5 py-3 text-right text-sm font-semibold text-zinc-500">
+                                            @if ($order->vat_rate !== null)
+                                                <span class="mr-1">{{ $order->vat_rate }}%</span>
+                                            @endif
+                                            {{ \App\Models\Setting::vatLabel() }}
+                                        </th>
+                                        <td class="px-5 py-3 text-right text-sm text-zinc-800">{{ format_money($order->vat_amount) }}</td>
+                                    </tr>
+                                @endif
+                                @if ((float) $order->shipping_cost > 0)
+                                    <tr>
+                                        <th colspan="3" class="px-5 py-3 text-right text-sm font-semibold text-zinc-500">
+                                            {{ __('Shipping') }}
+                                            @if ($order->shipping_method)
+                                                <span class="ml-1 text-xs font-medium text-zinc-400">({{ $order->shipping_method }})</span>
+                                            @endif
+                                        </th>
+                                        <td class="px-5 py-3 text-right text-sm text-zinc-800">{{ format_money($order->shipping_cost) }}</td>
+                                    </tr>
+                                @endif
                                 <tr class="bg-gray-50">
                                     <th colspan="3" class="px-5 py-3.5 text-right text-sm font-bold text-zinc-800">{{ __('Total') }}</th>
                                     <td class="px-5 py-3.5 text-right text-sm font-bold text-brand">{{ format_money($order->total) }}</td>
@@ -95,6 +117,12 @@
                 <div class="grid gap-6 sm:grid-cols-2">
                     <section class="rounded-lg border border-zinc-200 bg-white p-5">
                         <h2 class="text-sm font-bold uppercase tracking-wide text-zinc-500">{{ __('Shipping') }}</h2>
+                        @if ($order->shipping_method)
+                            <p class="mt-3 text-sm font-semibold text-zinc-800">{{ $order->shipping_method }}</p>
+                            <p class="text-sm text-zinc-500">
+                                {{ (float) $order->shipping_cost > 0 ? format_money($order->shipping_cost) : __('Free') }}
+                            </p>
+                        @endif
                         @if ($order->shipping_address)
                             <p class="mt-3 whitespace-pre-line text-sm leading-relaxed text-zinc-700">{{ $order->shipping_address }}</p>
                             <p class="mt-2 text-sm text-gray-600">{{ $order->customer_name }}</p>

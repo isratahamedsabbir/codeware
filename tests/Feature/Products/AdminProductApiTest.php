@@ -42,9 +42,9 @@ it('admin can create a product category', function () {
         'name' => ['en' => 'New Category', 'bn' => 'নতুন বিভাগ'],
         'icon' => 'leaf',
         'sort_order' => 1,
-    ])->assertCreated()->assertJsonPath('data.slug', 'new_category');
+    ])->assertCreated()->assertJsonPath('data.slug', 'new-category');
 
-    expect(Page::where(['type' => 'product_category', 'slug' => 'new_category'])->exists())->toBeTrue();
+    expect(Page::where(['type' => 'product_category', 'slug' => 'new-category'])->exists())->toBeTrue();
 });
 
 it('admin can update a product category', function () {
@@ -86,9 +86,9 @@ it('admin can create a product', function () {
         'name' => ['en' => 'Test Product', 'bn' => ''],
         'category_ids' => [$cat->id],
         'status' => 'inactive',
-    ])->assertCreated()->assertJsonPath('data.slug', 'test_product');
+    ])->assertCreated()->assertJsonPath('data.slug', 'test-product');
 
-    expect(Page::where(['type' => 'product', 'slug' => 'test_product'])->exists())->toBeTrue();
+    expect(Page::where(['type' => 'product', 'slug' => 'test-product'])->exists())->toBeTrue();
 
     $product = Product::findOrFail($response->json('data.id'));
     expect($product->categories->pluck('id')->all())->toBe([$cat->id]);
@@ -205,7 +205,7 @@ it('admin can create a product with gallery sync', function () {
     ]);
 
     $response->assertCreated();
-    $page = Page::where(['type' => 'product', 'slug' => 'gallery_product'])->firstOrFail();
+    $page = Page::where(['type' => 'product', 'slug' => 'gallery-product'])->firstOrFail();
     $product = Product::findOrFail($page->product_id);
     expect($product->gallery()->count())->toBe(2);
     expect($product->gallery()->wherePivot('sort_order', 0)->first()->id)->toBe($media1->id);
@@ -307,7 +307,7 @@ it('admin can create a product with puck_data and faq, puck_data landing on the 
         'faq' => $faq,
     ])->assertCreated();
 
-    $page = Page::where(['type' => 'product', 'slug' => 'puck_product'])->sole();
+    $page = Page::where(['type' => 'product', 'slug' => 'puck-product'])->sole();
     $product = Product::findOrFail($page->product_id);
     $savedFaq = $product->faqs->first();
     expect($page->puck_data)->toBe($puckData);

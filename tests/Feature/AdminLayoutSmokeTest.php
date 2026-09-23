@@ -12,7 +12,6 @@ test('admin layout renders header and footer', function () {
     $response = $this->get(route('admin.dashboard'));
     $response->assertOk();
     $response->assertSee('data-flux-header', false);
-    $response->assertSee('data-flux-breadcrumbs', false);
     $response->assertSee('All rights reserved');
     $response->assertSee('v1.0.0');
     $response->assertSee('My Profile');

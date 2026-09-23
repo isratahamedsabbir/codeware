@@ -6,6 +6,7 @@ use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Setting;
+use App\Models\ShippingMethod;
 use App\Models\Transaction;
 use App\Support\Cart;
 use Illuminate\Support\Collection;
@@ -36,7 +37,7 @@ class OrderPlacement
      *     notes?: ?string,
      * }  $customer
      */
-    public function placeProducts(array $items, array $customer, ?string $couponCode = null): Order
+    public function placeProducts(array $items, array $customer, ?string $couponCode = null, ?int $shippingMethodId = null): Order
     {
         $rawItems = collect($items);
 
@@ -86,9 +87,18 @@ class OrderPlacement
 
         [$couponCode, $discount] = $this->applyCoupon($couponCode, $subtotal, $lines);
 
-        $total = round($subtotal - $discount, 2);
+        $taxable = round($subtotal - $discount, 2);
+        $vat = Setting::vatFor($taxable);
+        $vatRate = Setting::vatEnabled() ? Setting::vatRate() : null;
 
-        return DB::transaction(function () use ($customer, $lines, $subtotal, $couponCode, $discount, $total, $currency) {
+        // A selected shipping method is resolved server-side — the client never
+        // gets to name its price. Cost is snapshotted onto the order so a later
+        // price change can't rewrite history.
+        [$shippingMethod, $shippingCost] = $this->shippingSnapshot($shippingMethodId);
+
+        $total = round($taxable + $vat + $shippingCost, 2);
+
+        return DB::transaction(function () use ($customer, $lines, $subtotal, $couponCode, $discount, $vat, $vatRate, $shippingMethod, $shippingCost, $total, $currency) {
             $order = Order::create([
                 'user_id' => auth()->id(),
                 'customer_name' => $customer['customer_name'],
@@ -100,6 +110,10 @@ class OrderPlacement
                 'subtotal' => $subtotal,
                 'coupon_code' => $couponCode !== '' ? $couponCode : null,
                 'discount' => $discount,
+                'vat_amount' => $vat,
+                'vat_rate' => $vatRate,
+                'shipping_method' => $shippingMethod,
+                'shipping_cost' => $shippingCost,
                 'total' => $total,
                 'notes' => $customer['notes'] ?? null,
             ]);
@@ -119,6 +133,31 @@ class OrderPlacement
 
             return $order;
         });
+    }
+
+    /**
+     * Resolves an active shipping method's name + cost for the order snapshot.
+     * The cost always comes from the table, never the client. Returns [null,
+     * 0.0] when no method was chosen — a storefront with no active methods (or
+     * an order with nothing physical to ship) simply carries no shipping fee.
+     *
+     * @return array{0: ?string, 1: float}
+     */
+    private function shippingSnapshot(?int $shippingMethodId): array
+    {
+        if ($shippingMethodId === null) {
+            return [null, 0.0];
+        }
+
+        $method = ShippingMethod::active()->find($shippingMethodId);
+
+        if (! $method) {
+            throw ValidationException::withMessages([
+                'shipping_method_id' => 'The selected shipping method is no longer available.',
+            ]);
+        }
+
+        return [$method->name, (float) $method->cost];
     }
 
     /**

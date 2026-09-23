@@ -52,6 +52,25 @@
                     <dd class="font-semibold text-emerald-600">&minus; {{ format_money($order->discount) }}</dd>
                 </div>
             @endif
+            @if ((float) $order->vat_amount > 0)
+                <div class="flex items-center justify-between">
+                    <dt class="text-zinc-500">
+                        {{ $order->vat_rate !== null ? $order->vat_rate.'% ' : '' }}{{ \App\Models\Setting::vatLabel() }}
+                    </dt>
+                    <dd class="font-semibold text-zinc-900">{{ format_money($order->vat_amount) }}</dd>
+                </div>
+            @endif
+            @if ((float) $order->shipping_cost > 0)
+                <div class="flex items-center justify-between">
+                    <dt class="text-zinc-500">
+                        {{ __('Shipping') }}
+                        @if ($order->shipping_method)
+                            <span class="text-zinc-400">({{ $order->shipping_method }})</span>
+                        @endif
+                    </dt>
+                    <dd class="font-semibold text-zinc-900">{{ format_money($order->shipping_cost) }}</dd>
+                </div>
+            @endif
             <div class="flex items-center justify-between border-t border-zinc-100 pt-3">
                 <dt class="text-base font-bold text-zinc-900">{{ __('Total') }}</dt>
                 <dd class="text-xl font-extrabold text-zinc-900">{{ format_money($order->total) }}</dd>

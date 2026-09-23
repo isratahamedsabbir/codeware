@@ -150,6 +150,24 @@
                         <td class="label">Subtotal</td>
                         <td class="value">{{ number_format((float) $order->subtotal, 2) }} {{ $order->currency }}</td>
                     </tr>
+                    @if ((float) $order->discount > 0)
+                        <tr>
+                            <td class="label">Discount</td>
+                            <td class="value">-{{ number_format((float) $order->discount, 2) }} {{ $order->currency }}</td>
+                        </tr>
+                    @endif
+                    @if ((float) $order->vat_amount > 0)
+                        <tr>
+                            <td class="label">{{ $order->vat_rate !== null ? $order->vat_rate.'% ' : '' }}{{ \App\Models\Setting::vatLabel() }}</td>
+                            <td class="value">{{ number_format((float) $order->vat_amount, 2) }} {{ $order->currency }}</td>
+                        </tr>
+                    @endif
+                    @if ((float) $order->shipping_cost > 0)
+                        <tr>
+                            <td class="label">Shipping{{ $order->shipping_method ? ' ('.$order->shipping_method.')' : '' }}</td>
+                            <td class="value">{{ number_format((float) $order->shipping_cost, 2) }} {{ $order->currency }}</td>
+                        </tr>
+                    @endif
                     <tr class="grand">
                         <td class="label">Total</td>
                         <td class="value">{{ number_format((float) $order->total, 2) }} {{ $order->currency }}</td>

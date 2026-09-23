@@ -209,9 +209,11 @@ class Index extends Component
             // 'colors' renders hand-rolled as the Backend card in the General tab,
             // not through this generic per-group loop. 'frontend' (site_theme and the
             // theme homepage copy/imagery) lives on the dedicated Theme Settings screen.
-            // 'other' is hand-rendered in its own tab (the Floating Button card) rather
-            // than through this generic per-group loop. 'shop' (shop_enabled) is
-            // controlled only via the header toggle (ShopToggle), never a form field here.
+            // 'currency' (currency + VAT fields with a live-preview modal) is hand-rendered
+            // in the General tab, not through this generic per-group loop. 'other' is
+            // hand-rendered in its own tab (the Floating Button card) rather than through
+            // this generic per-group loop. 'shop' (shop_enabled) is controlled only via the
+            // header toggle (ShopToggle), never a form field here.
             // 'orders' (order_cancellation_cutoff_status) has its own settings modal on
             // the admin Orders screen, same as 'editor' (puck_session_minutes) does on Pages.
             'groupedSettings' => Setting::whereNotIn('group', ['layout', 'seo', 'colors', 'currency', 'frontend', 'other', 'editor', 'custom-code', 'tracking', 'shop', 'orders'])
@@ -219,7 +221,6 @@ class Index extends Component
                 ->groupBy('group')
                 ->sortBy(fn ($items, $group) => $groupOrder[$group] ?? count($groupOrder)),
             'colorSettings' => Setting::where('group', 'colors')->get(),
-            'currencySettings' => Setting::where('group', 'currency')->get(),
         ])->layout('layouts.admin', ['title' => 'Settings']);
     }
 }

@@ -27,7 +27,8 @@ class Order extends Model
     protected $fillable = [
         'user_id', 'order_number', 'customer_name', 'customer_email', 'customer_phone',
         'shipping_address', 'status', 'payment_method', 'payment_status',
-        'currency', 'subtotal', 'coupon_code', 'discount', 'total', 'notes',
+        'currency', 'subtotal', 'coupon_code', 'discount', 'vat_amount', 'vat_rate',
+        'shipping_method', 'shipping_cost', 'total', 'notes',
     ];
 
     protected function casts(): array
@@ -35,6 +36,8 @@ class Order extends Model
         return [
             'subtotal' => 'decimal:2',
             'discount' => 'decimal:2',
+            'vat_amount' => 'decimal:2',
+            'shipping_cost' => 'decimal:2',
             'total' => 'decimal:2',
         ];
     }
