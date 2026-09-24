@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Category;
+use App\Models\Language;
 use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -118,6 +119,44 @@ it('does not inject theme colors when the ecommerce theme is not active', functi
     $this->get('/')
         ->assertOk()
         ->assertDontSee('--color-brand:');
+});
+
+it('shows a language switcher in the ecommerce header when more than one language is active', function () {
+    Setting::set('site_theme', 'ecommerce');
+    Language::create(['code' => 'en', 'name' => 'English', 'is_active' => true, 'is_default' => true]);
+    Language::create(['code' => 'bn', 'name' => 'Bengali', 'native_name' => 'বাংলা', 'flag' => '🇧🇩', 'is_active' => true]);
+
+    $this->get('/')
+        ->assertOk()
+        ->assertSee('Change language', false)
+        ->assertSee('বাংলা')
+        ->assertSee('en', false);
+});
+
+it('switches the storefront language per-visitor via the lang query param', function () {
+    Setting::set('site_theme', 'ecommerce');
+    Language::create(['code' => 'en', 'name' => 'English', 'is_active' => true, 'is_default' => true]);
+    Language::create(['code' => 'bn', 'name' => 'Bengali', 'native_name' => 'বাংলা', 'is_active' => true]);
+
+    $this->get('/?lang=bn')
+        ->assertOk()
+        ->assertSessionHas('frontend_locale', 'bn');
+});
+
+it('hides the ecommerce language switcher while only one language is active', function () {
+    Setting::set('site_theme', 'ecommerce');
+    Language::create(['code' => 'en', 'name' => 'English', 'is_active' => true, 'is_default' => true]);
+
+    $this->get('/')->assertOk()->assertDontSee('Change language', false);
+});
+
+it('hides the ecommerce language switcher once disabled in settings', function () {
+    Setting::set('site_theme', 'ecommerce');
+    Setting::set('language_switcher_enabled', '0');
+    Language::create(['code' => 'en', 'name' => 'English', 'is_active' => true, 'is_default' => true]);
+    Language::create(['code' => 'bn', 'name' => 'Bengali', 'native_name' => 'বাংলা', 'is_active' => true]);
+
+    $this->get('/')->assertOk()->assertDontSee('Change language', false);
 });
 
 it('ranks best-selling products by units sold on non-cancelled orders', function () {

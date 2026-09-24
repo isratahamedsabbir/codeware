@@ -225,13 +225,13 @@
 
                                 <template x-if="cartQty > 0">
                                     <div class="mt-6 flex w-full items-center gap-2">
-                                        <div class="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-full border-2 border-brand bg-brand/5 p-0.5" wire:loading.class="opacity-70" wire:target="increment,decrement">
-                                            <button type="button" @click="less()" wire:loading.attr="disabled" aria-label="{{ __('Remove one') }}" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-brand shadow-sm transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50">
+                                        <div class="flex h-10 min-w-0 flex-1 items-stretch overflow-hidden rounded-[5px] border border-brand bg-white shadow-sm" wire:loading.class="opacity-70" wire:target="increment,decrement">
+                                            <button type="button" @click="less()" wire:loading.attr="disabled" aria-label="{{ __('Remove one') }}" class="flex w-10 shrink-0 items-center justify-center border-r border-brand/20 bg-brand/5 text-brand transition !rounded-none hover:bg-red-50 hover:text-red-600 disabled:opacity-50">
                                                 <template x-if="cartQty === 1"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg></template>
                                                 <template x-if="cartQty > 1"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" /></svg></template>
                                             </button>
-                                            <span class="truncate text-sm font-bold text-brand"><span class="tabular-nums" x-text="cartQty"></span> {{ __('in cart') }}</span>
-                                            <button type="button" @click="more()" wire:loading.attr="disabled" aria-label="{{ __('Add one more') }}" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand text-white shadow-sm transition hover:opacity-90 disabled:opacity-50">
+                                            <span class="flex min-w-0 flex-1 items-center justify-center gap-1 truncate text-sm font-medium text-zinc-600"><span class="tabular-nums font-bold text-brand" x-text="cartQty"></span> {{ __('in cart') }}</span>
+                                            <button type="button" @click="more()" wire:loading.attr="disabled" aria-label="{{ __('Add one more') }}" class="flex w-10 shrink-0 items-center justify-center bg-brand text-white transition !rounded-none hover:opacity-90 disabled:opacity-50">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                                             </button>
                                         </div>
@@ -330,13 +330,13 @@
 
             <template x-if="cartQty > 0">
                 <div class="mt-6 flex w-full items-center gap-2">
-                    <div class="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-full border-2 border-brand bg-brand/5 p-0.5" wire:loading.class="opacity-70" wire:target="increment,decrement">
-                        <button type="button" @click="less()" wire:loading.attr="disabled" aria-label="{{ __('Remove one') }}" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-brand shadow-sm transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50">
+                    <div class="flex h-10 min-w-0 flex-1 items-stretch overflow-hidden rounded-[5px] border border-brand bg-white shadow-sm" wire:loading.class="opacity-70" wire:target="increment,decrement">
+                        <button type="button" @click="less()" wire:loading.attr="disabled" aria-label="{{ __('Remove one') }}" class="flex w-10 shrink-0 items-center justify-center border-r border-brand/20 bg-brand/5 text-brand transition !rounded-none hover:bg-red-50 hover:text-red-600 disabled:opacity-50">
                             <template x-if="cartQty === 1"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg></template>
                             <template x-if="cartQty > 1"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" /></svg></template>
                         </button>
-                        <span class="truncate text-sm font-bold text-brand"><span class="tabular-nums" x-text="cartQty"></span> {{ __('in cart') }}</span>
-                        <button type="button" @click="more()" wire:loading.attr="disabled" aria-label="{{ __('Add one more') }}" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand text-white shadow-sm transition hover:opacity-90 disabled:opacity-50">
+                        <span class="flex min-w-0 flex-1 items-center justify-center gap-1 truncate text-sm font-medium text-zinc-600"><span class="tabular-nums font-bold text-brand" x-text="cartQty"></span> {{ __('in cart') }}</span>
+                        <button type="button" @click="more()" wire:loading.attr="disabled" aria-label="{{ __('Add one more') }}" class="flex w-10 shrink-0 items-center justify-center bg-brand text-white transition !rounded-none hover:opacity-90 disabled:opacity-50">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                         </button>
                     </div>
@@ -388,22 +388,22 @@
         {{-- Already in the cart: a stepper replaces the button so the shopper
              can add more (or take one out — the last one empties the line). --}}
         <div class="flex w-full items-center gap-2">
-            <div class="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-full border-2 border-brand bg-brand/5 p-0.5" wire:loading.class="opacity-70" wire:target="increment,decrement">
-                <button type="button" wire:click="decrement" wire:loading.attr="disabled" aria-label="{{ __('Remove one') }}" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-brand shadow-sm transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50">
+            <div class="flex h-10 min-w-0 flex-1 items-stretch overflow-hidden rounded-[5px] border border-brand bg-white shadow-sm" wire:loading.class="opacity-70" wire:target="increment,decrement">
+                <button type="button" wire:click="decrement" wire:loading.attr="disabled" aria-label="{{ __('Remove one') }}" class="flex w-10 shrink-0 items-center justify-center border-r border-brand/20 bg-brand/5 text-brand transition !rounded-none hover:bg-red-50 hover:text-red-600 disabled:opacity-50">
                     @if ($inCart === 1)
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
                     @else
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" /></svg>
                     @endif
                 </button>
-                <span class="truncate text-sm font-bold text-brand"><span class="tabular-nums">{{ $inCart }}</span> {{ __('in cart') }}</span>
-                <button type="button" wire:click="increment" wire:loading.attr="disabled" aria-label="{{ __('Add one more') }}" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand text-white shadow-sm transition hover:opacity-90 disabled:opacity-50">
+                <span class="flex min-w-0 flex-1 items-center justify-center gap-1 truncate text-sm font-medium text-zinc-600"><span class="tabular-nums font-bold text-brand">{{ $inCart }}</span> {{ __('in cart') }}</span>
+                <button type="button" wire:click="increment" wire:loading.attr="disabled" aria-label="{{ __('Add one more') }}" class="flex w-10 shrink-0 items-center justify-center bg-brand text-white transition !rounded-none hover:opacity-90 disabled:opacity-50">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                 </button>
             </div>
             @if ($adjustable)
                 <a href="{{ route('cart') }}"
-                    class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-zinc-300 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 shadow-sm transition hover:border-brand hover:text-brand">
+                    class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-[5px] border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-700 shadow-sm transition hover:border-brand hover:text-brand">
                     {{ __('View cart') }}
                 </a>
             @endif

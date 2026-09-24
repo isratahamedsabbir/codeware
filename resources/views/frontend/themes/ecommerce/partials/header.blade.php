@@ -12,6 +12,10 @@
     $headerBrands = \App\Models\ProductBrand::active()
         ->orderBy('sort_order')
         ->get();
+
+    $languages = \App\Support\Locale::active();
+    $currentLocale = \App\Support\Locale::current();
+    $languageSwitcherEnabled = (bool) \App\Models\Setting::get('language_switcher_enabled', true);
 @endphp
 
 <header class="sticky top-0 z-40">
@@ -46,6 +50,37 @@
                         </svg>
                         <span class="whitespace-nowrap">{{ $contactPhone }}</span>
                     </a>
+                @endif
+                @if ($languageSwitcherEnabled && $languages->count() > 1)
+                    <details class="group relative">
+                        <summary
+                            class="flex cursor-pointer list-none items-center gap-1.5 rounded-full bg-white/10 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/20 [&::-webkit-details-marker]:hidden"
+                            aria-label="{{ __('Change language') }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 0 1-3.827-5.802" />
+                            </svg>
+                            <span class="text-xs font-bold uppercase">{{ $currentLocale }}</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="hidden h-4 w-4 transition-transform group-open:rotate-180 sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" />
+                            </svg>
+                        </summary>
+                        <div class="absolute right-0 top-full z-50 mt-2 w-44 rounded-card border border-zinc-100 bg-white py-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
+                            @foreach ($languages as $language)
+                                <a href="{{ request()->fullUrlWithQuery(['lang' => $language->code]) }}"
+                                    class="flex items-center gap-2 px-3.5 py-2 text-sm font-semibold transition-colors {{ $language->code === $currentLocale ? 'text-brand' : 'text-zinc-700 hover:bg-gray-50 hover:text-brand' }}">
+                                    @if ($language->flag)
+                                        <span>{{ $language->flag }}</span>
+                                    @endif
+                                    <span class="flex-1 truncate">{{ $language->native_name ?: $language->name }}</span>
+                                    @if ($language->code === $currentLocale)
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                        </svg>
+                                    @endif
+                                </a>
+                            @endforeach
+                        </div>
+                    </details>
                 @endif
                 <livewire:frontend.cart-count :key="'cart-count'" />
                 <livewire:frontend.wishlist-count :key="'wishlist-count'" />
