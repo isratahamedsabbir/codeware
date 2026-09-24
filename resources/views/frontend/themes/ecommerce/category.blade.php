@@ -5,7 +5,7 @@
     @include('partials.seo-meta')
     @include('partials.custom-code-head')
 </head>
-<body class="bg-white text-sf-text antialiased">
+<body class="bg-page-bg font-storefront text-sf-text antialiased">
 
 @include('frontend.themes.ecommerce.partials.header')
 
@@ -51,7 +51,7 @@
         @continue(blank($section->localizedCards()))
 
         <section id="{{ $section->name }}" class="mb-10">
-            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4">
                 @foreach ($section->localizedCards() as $card)
                     <div class="group overflow-hidden rounded-card border border-zinc-100 bg-white shadow-sm">
                         @if ($card['image'])
@@ -85,7 +85,7 @@
         </div>
 
         @if ($products->isNotEmpty())
-            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4">
                 @foreach ($products as $product)
                     @include('frontend.themes.ecommerce.partials.product-card', ['product' => $product])
                 @endforeach

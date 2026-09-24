@@ -5,7 +5,7 @@
     @include('partials.seo-meta')
     @include('partials.custom-code-head')
 </head>
-<body class="bg-white text-sf-text antialiased">
+<body class="bg-white font-storefront text-sf-text antialiased">
 
 @include('frontend.themes.ecommerce.partials.header')
 
@@ -39,7 +39,7 @@
 @include('frontend.themes.ecommerce.partials.breadcrumbs', ['crumbs' => $crumbs])
 
 <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-    <div class="grid gap-10 lg:grid-cols-2">
+    <div class="grid gap-8 md:grid-cols-2 lg:gap-10">
         <div class="space-y-4">
             @if ($galleryImages)
                 {{-- Gallery: vertical thumbnail rail + main image with a smooth
@@ -338,7 +338,7 @@
 
         <section id="{{ $section->name }}" class="mx-auto max-w-7xl border-t border-zinc-100 py-12">
             <h2 class="mb-6 text-2xl font-bold text-sf-heading">{{ $section->name }}</h2>
-            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4">
                 @foreach ($section->localizedCards() as $card)
                     <div class="group overflow-hidden rounded-card border border-zinc-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
                         @if ($card['image'])
@@ -364,7 +364,7 @@
     @if ($related->isNotEmpty())
         <section class="mx-auto max-w-7xl border-t border-zinc-100 py-12">
             <h2 class="mb-6 text-2xl font-bold text-sf-heading">{{ __('You may also like') }}</h2>
-            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4">
                 @foreach ($related as $product)
                     @include('frontend.themes.ecommerce.partials.product-card', ['product' => $product])
                 @endforeach

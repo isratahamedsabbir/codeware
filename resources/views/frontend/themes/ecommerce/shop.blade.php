@@ -427,7 +427,7 @@
             </div>
 
             @if ($products->isNotEmpty())
-                <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5">
                     @foreach ($products as $product)
                         @include('frontend.themes.ecommerce.partials.product-card', ['product' => $product])
                     @endforeach

@@ -5,7 +5,7 @@
     @include('partials.seo-meta')
     @include('partials.custom-code-head')
 </head>
-<body class="bg-white text-sf-text antialiased">
+<body class="bg-white font-storefront text-sf-text antialiased">
 
 @include('frontend.themes.ecommerce.partials.header')
 

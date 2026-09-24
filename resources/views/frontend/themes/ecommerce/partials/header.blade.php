@@ -64,12 +64,12 @@
                 @if ($languageSwitcherEnabled && $languages->count() > 1)
                     <details class="group relative">
                         <summary
-                            class="flex cursor-pointer list-none items-center gap-1.5 rounded-full bg-white/10 px-3 py-2 text-sm font-semibold text-sf-header-text transition hover:bg-white/20 [&::-webkit-details-marker]:hidden"
+                            class="flex cursor-pointer list-none items-center gap-1.5 rounded-full bg-white/10 p-2 text-sm font-semibold text-sf-header-text transition hover:bg-white/20 sm:px-3 [&::-webkit-details-marker]:hidden"
                             aria-label="{{ __('Change language') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 0 1-3.827-5.802" />
                             </svg>
-                            <span class="text-xs font-bold uppercase">{{ $currentLocale }}</span>
+                            <span class="hidden text-xs font-bold uppercase sm:inline">{{ $currentLocale }}</span>
                             <svg xmlns="http://www.w3.org/2000/svg" class="hidden h-4 w-4 transition-transform group-open:rotate-180 sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" />
                             </svg>

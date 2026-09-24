@@ -135,12 +135,12 @@
                 <h1 class="sr-only">{{ $siteName }}</h1>
             </a>
 
-            <div class="hidden flex-col gap-4 lg:flex">
+            <div class="grid grid-cols-2 gap-4 lg:flex lg:flex-col">
                 @foreach ([
                     ['image' => $promoImage1, 'label' => __('New arrivals'), 'url' => $promoLink('theme_ecommerce_promo_1_link')],
                     ['image' => $promoImage2, 'label' => __('Best deals'), 'url' => $promoLink('theme_ecommerce_promo_2_link')],
                 ] as $promo)
-                    <a href="{{ $promo['url'] }}" class="group/promo relative block h-1/2 overflow-hidden rounded-card">
+                    <a href="{{ $promo['url'] }}" class="group/promo relative block h-32 overflow-hidden rounded-card sm:h-44 lg:h-1/2">
                         @if ($promo['image'])
                             <img src="{{ $promo['image'] }}" alt="{{ $promo['label'] }}" class="h-full w-full object-cover transition duration-500 group-hover/promo:scale-105">
                             <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
