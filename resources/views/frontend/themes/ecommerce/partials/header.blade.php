@@ -9,6 +9,16 @@
         ->get()
         ->filter(fn ($category) => $category->page !== null);
 
+    // The dropdown shows top-level categories, each expandable into its
+    // children. A child whose parent isn't listed (inactive / no page) is
+    // promoted to the top level so it never disappears.
+    $headerCategoryIds = $headerCategories->pluck('id')->flip();
+    $headerChildrenByParent = $headerCategories
+        ->filter(fn ($category) => $category->parent_id && $headerCategoryIds->has($category->parent_id))
+        ->groupBy('parent_id');
+    $headerTopCategories = $headerCategories
+        ->reject(fn ($category) => $category->parent_id && $headerCategoryIds->has($category->parent_id));
+
     $headerBrands = \App\Models\ProductBrand::active()
         ->orderBy('sort_order')
         ->get();
@@ -143,11 +153,12 @@
                             <div x-show="open" x-cloak x-transition @click="open = false"
                                 class="absolute left-0 top-full z-50 ml-0 flex w-72 max-h-[min(24rem,60vh)] flex-col rounded-r-lg rounded-b-lg border border-gray-100 bg-white py-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
                                 <div class="min-h-0 overflow-y-auto overscroll-contain">
-                                    @foreach ($headerCategories as $category)
-                                        <a href="{{ route('shop.category', $category->slug) }}"
-                                            class="block truncate px-4 py-2 text-sm font-semibold text-zinc-700 transition-colors hover:bg-gray-50 hover:text-brand">
-                                            {{ $category->name }}
-                                        </a>
+                                    @foreach ($headerTopCategories as $category)
+                                        @include('frontend.themes.ecommerce.partials.header-category-item', [
+                                            'category' => $category,
+                                            'childrenByParent' => $headerChildrenByParent,
+                                            'depth' => 0,
+                                        ])
                                     @endforeach
                                 </div>
                                 <a href="{{ route('shop') }}"
@@ -208,8 +219,12 @@
         <nav class="flex flex-col">
             @if ($headerCategories->isNotEmpty())
                 <p class="px-3 pb-1 pt-2 text-xs font-bold uppercase tracking-wide text-zinc-400">{{ __('Categories') }}</p>
-                @foreach ($headerCategories as $category)
-                    <a href="{{ route('shop.category', $category->slug) }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ $category->name }}</a>
+                @foreach ($headerTopCategories as $category)
+                    @include('frontend.themes.ecommerce.partials.header-category-item', [
+                        'category' => $category,
+                        'childrenByParent' => $headerChildrenByParent,
+                        'depth' => 0,
+                    ])
                 @endforeach
             @endif
             @if ($headerBrands->isNotEmpty())
