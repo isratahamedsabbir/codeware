@@ -6,24 +6,46 @@
         init() {
             const validTabs = ['general', 'custom-code', 'constant', 'other'];
             if (!validTabs.includes(this.tab)) this.tab = 'general';
-            this.$watch('tab', (value) => localStorage.setItem('admin-settings-tab', value));
+            this.$watch('tab', (value) => {
+                try { localStorage.setItem('admin-settings-tab', value) } catch (e) {}
+                // Keep the address shareable: ?tab=… reopens the same tab.
+                const url = new URL(location.href);
+                url.searchParams.set('tab', value);
+                history.replaceState(history.state, '', url);
+            });
         }
     }">
 
-        {{-- Tab nav --}}
-        <div class="flex gap-0 mb-6 border-b border-zinc-200 dark:border-zinc-700">
-            <button type="button" @click="tab = 'general'"
-                :class="tab==='general'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
-                class="mx-4 ml-0 rounded-none! py-3 text-sm -mb-px">General</button>
-            <button type="button" @click="tab = 'custom-code'"
-                :class="tab==='custom-code'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
-                class="mx-4 rounded-none! py-3 text-sm -mb-px">Custom Code</button>
-            <button type="button" @click="tab = 'constant'"
-                :class="tab==='constant'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
-                class="mx-4 rounded-none! py-3 text-sm -mb-px">Constant</button>
-            <button type="button" @click="tab = 'other'"
-                :class="tab==='other'?'border-b-2 border-primary text-primary font-medium':'text-zinc-500 hover:text-zinc-700'"
-                class="mx-4 rounded-none! py-3 text-sm -mb-px">Other</button>
+        {{-- Tab nav — a card of icon tabs, each with a one-line summary. --}}
+        @php
+            $settingsTabs = [
+                'general' => ['General', 'cog-6-tooth', 'Currency, VAT, site identity, images'],
+                'custom-code' => ['Custom Code', 'code-bracket', 'Head & body scripts'],
+                'constant' => ['Constant', 'variable', 'Site-wide key / value pairs'],
+                'other' => ['Other', 'squares-2x2', 'Widgets, toggles, admin tools'],
+            ];
+        @endphp
+        <div role="tablist" aria-label="Settings sections"
+            class="mb-6 flex gap-1 overflow-x-auto rounded-xl border border-zinc-200 bg-white p-1.5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+            @foreach ($settingsTabs as $key => [$label, $icon, $summary])
+                <button type="button" role="tab" @click="tab = '{{ $key }}'"
+                    :aria-selected="tab === '{{ $key }}'"
+                    :class="tab === '{{ $key }}'
+                        ? 'bg-primary/10 text-primary ring-1 ring-primary/20'
+                        : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100'"
+                    class="group flex min-w-44 flex-1 items-center gap-3 rounded-lg! px-3.5 py-2.5 text-left transition-colors">
+                    <span :class="tab === '{{ $key }}'
+                            ? 'bg-primary text-white shadow-sm'
+                            : 'bg-zinc-100 text-zinc-500 group-hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400'"
+                        class="flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors">
+                        <flux:icon :name="$icon" variant="mini" class="size-4.5" />
+                    </span>
+                    <span class="min-w-0">
+                        <span class="block truncate text-sm font-semibold">{{ $label }}</span>
+                        <span class="block truncate text-[11px] font-normal text-zinc-400">{{ $summary }}</span>
+                    </span>
+                </button>
+            @endforeach
         </div>
 
         {{-- General tab --}}

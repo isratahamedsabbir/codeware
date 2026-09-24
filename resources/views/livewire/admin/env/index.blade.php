@@ -33,42 +33,38 @@
 }">
     <div class="max-w-[1600px] space-y-5">
 
-        {{-- â”€â”€ Sticky page header: title + tabs + save â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+        {{-- â”€â”€ Sticky tab bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
         <div class="sticky top-14 z-10 -mx-1 px-1">
-            <div class="rounded-xl border border-zinc-200 bg-white/95 shadow-sm backdrop-blur dark:border-zinc-700 dark:bg-zinc-800/95">
-                <div class="flex flex-wrap items-center gap-3 px-4 pt-3.5 pb-3">
-                    <div class="flex items-center gap-3 min-w-0">
-                        <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                            <flux:icon.beaker class="size-5" />
-                        </div>
-                        <div class="min-w-0">
-                            <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Environment Settings</p>
-                            <p class="truncate text-xs text-zinc-400">
-                                <span class="font-medium text-emerald-600 dark:text-emerald-400">{{ $configuredCount }}</span>
-                                of {{ $statusTotal }} configurations complete
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex flex-wrap items-center gap-1 border-t border-zinc-100 px-2 py-2 dark:border-zinc-700/60">
-                    @php
-                        $tabs = [
-                            'overview' => ['Overview', 'squares-2x2'],
-                            'general' => ['General', 'cog-6-tooth'],
-                            'authentication' => ['Authentication', 'lock-closed'],
-                            'integrations' => ['Integrations', 'puzzle-piece'],
-                        ];
-                    @endphp
-                    @foreach ($tabs as $tabKey => [$tabLabel, $tabIcon])
-                        <button type="button" x-on:click="setTab('{{ $tabKey }}')"
-                            x-bind:class="activeTab === '{{ $tabKey }}' ? 'bg-primary/10 text-primary' : 'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200'"
-                            class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer">
-                            <x-dynamic-component :component="'flux::icon.'.$tabIcon" class="size-4" />
-                            {{ __($tabLabel) }}
-                        </button>
-                    @endforeach
-                </div>
+            {{-- Same card-of-icon-tabs as Settings, each with a one-line summary. --}}
+            @php
+                $tabs = [
+                    'overview' => ['Overview', 'squares-2x2', $configuredCount.' of '.$statusTotal.' configured'],
+                    'general' => ['General', 'cog-6-tooth', 'App, maintenance, debug mode'],
+                    'authentication' => ['Authentication', 'lock-closed', 'Google & Facebook login, reCAPTCHA'],
+                    'integrations' => ['Integrations', 'puzzle-piece', 'Pixel, Maps, S3, Firebase'],
+                ];
+            @endphp
+            <div role="tablist" aria-label="Developer Tools sections"
+                class="flex gap-1 overflow-x-auto rounded-xl border border-zinc-200 bg-white/95 p-1.5 shadow-sm backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95">
+                @foreach ($tabs as $tabKey => [$tabLabel, $tabIcon, $tabSummary])
+                    <button type="button" role="tab" x-on:click="setTab('{{ $tabKey }}')"
+                        x-bind:aria-selected="activeTab === '{{ $tabKey }}'"
+                        x-bind:class="activeTab === '{{ $tabKey }}'
+                            ? 'bg-primary/10 text-primary ring-1 ring-primary/20'
+                            : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100'"
+                        class="group flex min-w-44 flex-1 items-center gap-3 rounded-lg! px-3.5 py-2.5 text-left transition-colors">
+                        <span x-bind:class="activeTab === '{{ $tabKey }}'
+                                ? 'bg-primary text-white shadow-sm'
+                                : 'bg-zinc-100 text-zinc-500 group-hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400'"
+                            class="flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors">
+                            <flux:icon :name="$tabIcon" variant="mini" class="size-4.5" />
+                        </span>
+                        <span class="min-w-0">
+                            <span class="block truncate text-sm font-semibold">{{ __($tabLabel) }}</span>
+                            <span class="block truncate text-[11px] font-normal text-zinc-400">{{ $tabSummary }}</span>
+                        </span>
+                    </button>
+                @endforeach
             </div>
         </div>
 
@@ -169,23 +165,12 @@
                     class="w-full scroll-mt-24 {{ $maintenanceMode ? 'border-red-300! dark:border-red-800!' : '' }}"
                     x-bind:class="highlighted === 'maintenance' ? 'ring-2 ring-primary/50 border-primary' : ''">
                     <x-slot:actions>
-                        @if ($maintenanceMode)
-                            <span class="inline-flex items-center gap-1.5 rounded-full bg-red-50 dark:bg-red-950 px-3 py-1 text-xs font-semibold text-red-700 dark:text-red-300 ring-1 ring-red-600/20">
-                                <span class="size-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                                Site is offline
-                            </span>
-                        @endif
+                        <button type="button" wire:click="toggleMaintenanceMode" role="switch"
+                            aria-checked="{{ $maintenanceMode ? 'true' : 'false' }}" title="Take the public site offline"
+                            class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors {{ $maintenanceMode ? 'bg-red-500' : 'bg-zinc-300 dark:bg-zinc-600' }}">
+                            <span class="absolute left-0.5 top-0.5 size-4 rounded-full bg-white shadow transition-transform {{ $maintenanceMode ? 'translate-x-4' : '' }}"></span>
+                        </button>
                     </x-slot:actions>
-
-                    @if ($maintenanceMode)
-                        <flux:button size="sm" variant="danger" wire:click="disableMaintenanceMode" wire:loading.attr="disabled">
-                            Bring Site Back Online
-                        </flux:button>
-                    @else
-                        <flux:button size="sm" variant="outline" wire:click="confirmEnableMaintenanceMode" wire:loading.attr="disabled">
-                            Enable Maintenance Mode
-                        </flux:button>
-                    @endif
                 </x-admin-section-card>
 
                 {{-- Debug mode --}}
@@ -195,23 +180,12 @@
                     class="w-full scroll-mt-24 {{ $debugMode ? 'border-amber-300! dark:border-amber-800!' : '' }}"
                     x-bind:class="highlighted === 'debug' ? 'ring-2 ring-primary/50 border-primary' : ''">
                     <x-slot:actions>
-                        @if ($debugMode)
-                            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300 ring-1 ring-amber-600/20">
-                                <span class="size-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                                Debug on
-                            </span>
-                        @endif
+                        <button type="button" wire:click="toggleDebugMode" role="switch"
+                            aria-checked="{{ $debugMode ? 'true' : 'false' }}" title="Show full error details to visitors"
+                            class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors {{ $debugMode ? 'bg-amber-500' : 'bg-zinc-300 dark:bg-zinc-600' }}">
+                            <span class="absolute left-0.5 top-0.5 size-4 rounded-full bg-white shadow transition-transform {{ $debugMode ? 'translate-x-4' : '' }}"></span>
+                        </button>
                     </x-slot:actions>
-
-                    @if ($debugMode)
-                        <flux:button size="sm" variant="danger" wire:click="disableDebugMode" wire:loading.attr="disabled">
-                            Turn Debug Mode Off
-                        </flux:button>
-                    @else
-                        <flux:button size="sm" variant="outline" wire:click="confirmEnableDebugMode" wire:loading.attr="disabled">
-                            Enable Debug Mode
-                        </flux:button>
-                    @endif
                 </x-admin-section-card>
             </div>
 
@@ -639,58 +613,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <button wire:click="saveEnv" wire:loading.attr="disabled"
                     class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-amber-600 hover:bg-amber-700 transition-colors border-none cursor-pointer">
                     {{ __('Save anyway') }}
-                </button>
-                <flux:modal.close>
-                    <flux:button size="sm" variant="ghost">{{ __('Cancel') }}</flux:button>
-                </flux:modal.close>
-            </div>
-        </div>
-    </flux:modal>
-
-    {{-- Maintenance mode confirmation --}}
-    <flux:modal name="maintenance-mode-confirm" class="md:w-96"
-        x-on:open-modal.window="if ($event.detail.name === 'maintenance-mode-confirm') $flux.modal('maintenance-mode-confirm').show()"
-        x-on:close-modal.window="if ($event.detail.name === 'maintenance-mode-confirm') $flux.modal('maintenance-mode-confirm').close()">
-        <div class="space-y-4">
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center shrink-0">
-                    <flux:icon.exclamation-triangle class="w-5 h-5 text-red-500" />
-                </div>
-                <flux:heading>{{ __('Enable maintenance mode?') }}</flux:heading>
-            </div>
-            <flux:text class="text-sm text-zinc-500">
-                {{ __('Every visitor to the public site will see a "down for maintenance" page until you turn this back off. The admin panel and login stay reachable, so you can always come back here to re-enable the site.') }}
-            </flux:text>
-            <div class="flex gap-2 pt-1">
-                <button wire:click="enableMaintenanceMode" wire:loading.attr="disabled"
-                    class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">
-                    {{ __('Take site offline') }}
-                </button>
-                <flux:modal.close>
-                    <flux:button size="sm" variant="ghost">{{ __('Cancel') }}</flux:button>
-                </flux:modal.close>
-            </div>
-        </div>
-    </flux:modal>
-
-    {{-- Debug mode confirmation --}}
-    <flux:modal name="debug-mode-confirm" class="md:w-96"
-        x-on:open-modal.window="if ($event.detail.name === 'debug-mode-confirm') $flux.modal('debug-mode-confirm').show()"
-        x-on:close-modal.window="if ($event.detail.name === 'debug-mode-confirm') $flux.modal('debug-mode-confirm').close()">
-        <div class="space-y-4">
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
-                    <flux:icon.exclamation-triangle class="w-5 h-5 text-amber-500" />
-                </div>
-                <flux:heading>{{ __('Enable debug mode?') }}</flux:heading>
-            </div>
-            <flux:text class="text-sm text-zinc-500">
-                {{ __('Errors will show full stack traces, file paths, and environment values to every visitor until you turn this back off. Only enable this briefly while actively debugging.') }}
-            </flux:text>
-            <div class="flex gap-2 pt-1">
-                <button wire:click="enableDebugMode" wire:loading.attr="disabled"
-                    class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-amber-600 hover:bg-amber-700 transition-colors border-none cursor-pointer">
-                    {{ __('Enable debug mode') }}
                 </button>
                 <flux:modal.close>
                     <flux:button size="sm" variant="ghost">{{ __('Cancel') }}</flux:button>

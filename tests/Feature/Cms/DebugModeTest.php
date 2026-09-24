@@ -83,3 +83,26 @@ it('surfaces a clear error instead of a false success when the write fails', fun
         ->assertSet('debugMode', false)
         ->assertDispatched('notify', message: 'Could not update debug mode: Could not read '.EnvFile::path().'.');
 });
+
+it('can be turned on straight from the header switch, with no confirm modal', function () {
+    Livewire::test(EnvIndex::class)
+        ->assertSet('debugMode', false)
+        ->call('toggleDebugMode')
+        ->assertSet('debugMode', true)
+        ->assertDispatched('notify');
+
+    expect(EnvFile::get('APP_DEBUG'))->toBe('true');
+});
+
+it('can be turned back off straight from the header switch', function () {
+    EnvFile::set(['APP_DEBUG' => 'true']);
+    config(['app.debug' => true]);
+
+    Livewire::test(EnvIndex::class)
+        ->assertSet('debugMode', true)
+        ->call('toggleDebugMode')
+        ->assertSet('debugMode', false)
+        ->assertDispatched('notify');
+
+    expect(EnvFile::get('APP_DEBUG'))->toBe('false');
+});

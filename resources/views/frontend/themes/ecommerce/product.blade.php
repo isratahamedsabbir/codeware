@@ -168,24 +168,12 @@
         </div>
 
         <div class="lg:py-4">
-            <div class="flex flex-wrap items-center gap-2">
-                @if ($product->brand)
-                    <a href="{{ route('shop.brand', $product->brand->slug) }}"
-                        class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-zinc-600 hover:bg-brand/10 hover:text-brand">
-                        {{ $product->brand->name }}
-                    </a>
-                @endif
+            {{-- The name leads the column; brand / type live with the categories below. --}}
+            <h1 class="text-3xl font-extrabold tracking-tight text-sf-heading">{{ $product->name }}</h1>
 
-                <span class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-500">
-                    {{ $product->product_type === 'digital' ? __('Digital') : __('Physical') }}
-                </span>
-
-                @if ($product->is_upcoming)
-                    <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">{{ __('Upcoming') }}</span>
-                @endif
-            </div>
-
-            <h1 class="mt-4 text-3xl font-extrabold tracking-tight text-sf-heading">{{ $product->name }}</h1>
+            @if ($product->is_upcoming)
+                <span class="mt-3 inline-block rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">{{ __('Upcoming') }}</span>
+            @endif
 
             {{-- On variant products the base SKU belongs to the parent — the
                  picker above shows the selected combination's own SKU instead. --}}
@@ -249,33 +237,34 @@
                 </div>
             @endif
 
-            @if ($product->categories->isNotEmpty() || $product->tags->isNotEmpty())
-                <div class="mt-8 border-t border-zinc-100 pt-6">
-                    @if ($product->categories->isNotEmpty())
-                        <div class="flex flex-wrap items-center gap-2">
-                            <span class="text-sm text-zinc-500">{{ __('Categories:') }}</span>
-                            @foreach ($product->categories as $category)
-                                <a href="{{ route('shop.category', $category->slug) }}"
-                                    class="rounded-full border border-zinc-200 px-3 py-1 text-xs font-medium text-zinc-600 transition hover:border-brand hover:text-brand">
-                                    {{ $category->name }}
-                                </a>
-                            @endforeach
-                        </div>
-                    @endif
+            {{-- Product details as plain value pills — categories, brand, type,
+                 then any tags — no labels in front of them. --}}
+            <div class="mt-8 flex flex-wrap items-center gap-2 border-t border-zinc-100 pt-6">
+                @foreach ($product->categories as $category)
+                    <a href="{{ route('shop.category', $category->slug) }}"
+                        class="rounded-full border border-zinc-200 px-3 py-1 text-xs font-medium text-zinc-600 transition hover:border-brand hover:text-brand">
+                        {{ $category->name }}
+                    </a>
+                @endforeach
 
-                    @if ($product->tags->isNotEmpty())
-                        <div class="mt-3 flex flex-wrap items-center gap-2">
-                            <span class="text-sm text-zinc-500">{{ __('Tags:') }}</span>
-                            @foreach ($product->tags as $tag)
-                                <a href="{{ route('shop.tag', $tag->slug) }}"
-                                    class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600 transition hover:bg-brand/10 hover:text-brand">
-                                    #{{ $tag->name }}
-                                </a>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
-            @endif
+                @if ($product->brand)
+                    <a href="{{ route('shop.brand', $product->brand->slug) }}"
+                        class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-zinc-600 transition hover:bg-brand/10 hover:text-brand">
+                        {{ $product->brand->name }}
+                    </a>
+                @endif
+
+                <span class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-500">
+                    {{ $product->product_type === 'digital' ? __('Digital') : __('Physical') }}
+                </span>
+
+                @foreach ($product->tags as $tag)
+                    <a href="{{ route('shop.tag', $tag->slug) }}"
+                        class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600 transition hover:bg-brand/10 hover:text-brand">
+                        #{{ $tag->name }}
+                    </a>
+                @endforeach
+            </div>
         </div>
     </div>
 

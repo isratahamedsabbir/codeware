@@ -33,6 +33,31 @@ function storefrontProduct(string $slug, array $attributes = []): Product
     return $product;
 }
 
+it('leads the product page with its name and lists category, brand, type and tag values without labels', function () {
+    $brand = ProductBrand::factory()->create(['name' => ['en' => 'Agroma', 'bn' => '']]);
+    $category = ProductCategory::factory()->create(['name' => ['en' => 'Herbal Tea', 'bn' => '']]);
+    pairPageFor($category, 'product_category', 'herbal-tea', $this->admin->id);
+    $tag = Tag::create(['name' => ['en' => 'Organic', 'bn' => ''], 'status' => 'active']);
+
+    $product = storefrontProduct('spearmint-tea', ['name' => ['en' => 'Spearmint Tea', 'bn' => ''], 'brand_id' => $brand->id]);
+    $product->categories()->attach($category);
+    $product->tags()->attach($tag);
+
+    $html = get('/products/spearmint-tea')->assertOk()->getContent();
+    $main = substr($html, strpos($html, '<main'));
+
+    // The name comes first; the value pills follow in order, with no labels.
+    expect(strpos($main, 'Spearmint Tea</h1>'))->toBeLessThan(strpos($main, 'Herbal Tea'))
+        ->and($main)->not->toContain('Categories:')
+        ->and($main)->not->toContain('Brand:')
+        ->and($main)->not->toContain('Type:')
+        ->and($main)->not->toContain('Tags:');
+
+    get('/products/spearmint-tea')->assertSeeInOrder([
+        'Spearmint Tea</h1>', 'Herbal Tea', 'Agroma', 'Physical', '#Organic',
+    ], false);
+});
+
 it('lists only active products on the shop page', function () {
     $visible = storefrontProduct('visible-product', ['name' => ['en' => 'Visible Product', 'bn' => '']]);
     $hidden = Product::factory()->draft()->create(['name' => ['en' => 'Hidden Product', 'bn' => '']]);

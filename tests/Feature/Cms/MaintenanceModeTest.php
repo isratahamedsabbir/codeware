@@ -80,3 +80,25 @@ it('brings the site back online', function () {
     expect(app()->isDownForMaintenance())->toBeFalse();
     $this->get('/')->assertStatus(200);
 });
+
+it('can be turned on straight from the header switch, with no confirm modal', function () {
+    Livewire::test(EnvIndex::class)
+        ->assertSet('maintenanceMode', false)
+        ->call('toggleMaintenanceMode')
+        ->assertSet('maintenanceMode', true)
+        ->assertDispatched('notify');
+
+    expect(app()->isDownForMaintenance())->toBeTrue();
+});
+
+it('can be turned back off straight from the header switch', function () {
+    Artisan::call('down');
+
+    Livewire::test(EnvIndex::class)
+        ->assertSet('maintenanceMode', true)
+        ->call('toggleMaintenanceMode')
+        ->assertSet('maintenanceMode', false)
+        ->assertDispatched('notify');
+
+    expect(app()->isDownForMaintenance())->toBeFalse();
+});

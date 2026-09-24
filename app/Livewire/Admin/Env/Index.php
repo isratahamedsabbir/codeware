@@ -327,6 +327,33 @@ class Index extends Component
     }
 
     /**
+     * Header-switch toggle — computes the target from the CURRENT state (the
+     * switch is a plain button, not a bound checkbox), flips the real
+     * maintenance state, and reverts if the artisan command didn't stick
+     * (e.g. it couldn't write the down file).
+     */
+    public function toggleMaintenanceMode(): void
+    {
+        $target = ! $this->maintenanceMode;
+
+        Artisan::call($target ? 'down' : 'up');
+
+        if (app()->isDownForMaintenance() !== $target) {
+            $this->dispatch('notify', message: 'Could not change maintenance mode.');
+
+            return;
+        }
+
+        $this->maintenanceMode = $target;
+
+        AdminActivity::log('updated', $target ? 'Enabled maintenance mode' : 'Disabled maintenance mode');
+
+        $this->dispatch('notify', message: $target
+            ? 'Maintenance mode enabled. The public site is now offline.'
+            : 'Maintenance mode disabled. The site is back online.');
+    }
+
+    /**
      * Takes the public site offline — the admin panel and /login stay reachable
      * regardless (see bootstrap/app.php's preventRequestsDuringMaintenance
      * exceptions), so this can never lock the admin out of turning it back off.
@@ -357,6 +384,34 @@ class Index extends Component
     public function confirmEnableDebugMode(): void
     {
         $this->dispatch('open-modal', name: 'debug-mode-confirm');
+    }
+
+    /**
+     * Header-switch toggle — computes the target from the CURRENT state (the
+     * switch is a plain button, not a bound checkbox), writes APP_DEBUG to
+     * match, and reverts with an error if the write can't happen.
+     */
+    public function toggleDebugMode(): void
+    {
+        $target = ! $this->debugMode;
+
+        try {
+            EnvFile::set(['APP_DEBUG' => $target ? 'true' : 'false']);
+        } catch (\RuntimeException $e) {
+            $this->dispatch('notify', message: 'Could not update debug mode: '.$e->getMessage());
+
+            return;
+        }
+
+        Artisan::call('config:clear');
+
+        $this->debugMode = $target;
+
+        AdminActivity::log('updated', $target ? 'Enabled debug mode' : 'Disabled debug mode');
+
+        $this->dispatch('notify', message: $target
+            ? 'Debug mode enabled. Errors will now show full stack traces to visitors.'
+            : 'Debug mode disabled.');
     }
 
     /**
