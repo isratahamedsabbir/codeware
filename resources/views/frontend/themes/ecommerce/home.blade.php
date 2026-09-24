@@ -158,20 +158,13 @@
     @if ($homeCategories->isNotEmpty())
         <section class="mt-8 bg-white py-8 lg:py-10">
             <div class="mx-auto max-w-7xl px-4 sm:px-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h2 class="text-lg font-bold uppercase tracking-wide text-sf-text md:text-2xl">{{ __('Shop by category') }}</h2>
-                        <p class="mt-1 text-sm text-gray-600">{{ __('Explore our product categories') }}</p>
-                    </div>
-                    <a href="{{ route('shop') }}" class="shrink-0 text-sm font-semibold text-brand hover:underline">{{ __('View all') }} →</a>
-                </div>
 
                 {{-- A snap-scrolling row: 3 / 5 / 6 tiles per view. The arrows only
                      appear once the tiles overflow, and fade out at either end.
                      While it overflows it also auto-advances one tile every 3s
                      (looping back to the start), pausing on hover / touch, in a
                      background tab, and for visitors who prefer reduced motion. --}}
-                <div class="group/cats relative mt-5 rounded-card bg-gray-100 p-3 md:p-4"
+                <div class="group/cats relative" aria-label="{{ __('Shop by category') }}" role="region"
                     x-data="{
                         canPrev: false,
                         canNext: false,
@@ -207,10 +200,10 @@
                     @touchstart.passive="paused = true" @touchend.passive="setTimeout(() => paused = false, 4000)"
                     @focusin="paused = true" @focusout="paused = false">
                     <div x-ref="track" @scroll.passive="update()"
-                        class="flex snap-x snap-mandatory gap-2.5 overflow-x-auto scroll-smooth md:gap-4 no-scrollbar">
+                        class="-mx-1 flex snap-x snap-mandatory gap-2.5 overflow-x-auto scroll-smooth px-1 py-1.5 md:gap-4 no-scrollbar">
                         @foreach ($homeCategories as $category)
                             <a href="{{ route('shop.category', $category->slug) }}"
-                                class="flex h-[104px] w-[calc((100%-1.25rem)/3)] shrink-0 snap-start flex-col items-center justify-center gap-1.5 rounded-card bg-white p-2.5 text-center shadow-sm transition hover:shadow-md md:h-[131px] md:w-[calc((100%-4rem)/5)] md:p-3 lg:w-[calc((100%-5rem)/6)]">
+                                class="flex h-[104px] w-[calc((100%-1.25rem)/3)] shrink-0 snap-start flex-col items-center justify-center gap-1.5 rounded-card bg-white p-2.5 text-center shadow-sm transition hover:shadow-md md:h-[131px] md:w-[calc((100%-4rem)/5)] md:p-3 lg:w-[calc((100%-5rem)/6)] border border-zinc-200/80">
                                 @if ($category->icon)
                                     <img src="{{ $category->icon }}" alt="" class="h-[50px] w-[50px] rounded-lg object-contain">
                                 @else
