@@ -170,6 +170,18 @@ class Product extends Model
     }
 
     /**
+     * Whether this customer has bought the product — any non-cancelled order
+     * of theirs (by account, or a guest order placed with their email; see
+     * Order::scopeForCustomer) containing it. Gates writing a review.
+     */
+    public function wasPurchasedBy(User $user): bool
+    {
+        return $this->orderItems()
+            ->whereHas('order', fn ($q) => $q->forCustomer($user)->where('status', '!=', 'cancelled'))
+            ->exists();
+    }
+
+    /**
      * Total units sold on non-cancelled orders. Reuses the eager-loadable
      * `sold_quantity` aggregate when present (e.g. the homepage best-sellers
      * query), otherwise falls back to its own query.

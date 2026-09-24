@@ -314,6 +314,11 @@
         </div>
     </div>
 
+    {{-- Reviews: approved ones for everyone; the form only for buyers. --}}
+    @if (\App\Support\Features::enabled('reviews'))
+        <livewire:frontend.product-reviews :product-id="$product->id" :key="'product-reviews-'.$product->id" />
+    @endif
+
     @if ($product->faqs->where('is_active', true)->isNotEmpty())
         <section class="mx-auto mt-14 max-w-3xl">
             <h2 class="mb-5 text-2xl font-bold text-sf-heading">{{ __('Frequently asked questions') }}</h2>

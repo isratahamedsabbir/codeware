@@ -1,4 +1,13 @@
 @push('page-header-actions')
+    {{-- Same cross-DOM event approach as Upload Files: the header renders outside
+         this component's root, so this dispatches a window event that the root
+         <div> below (x-on:open-watermark-modal.window) forwards to
+         openWatermarkModal() in Index.php. --}}
+    <flux:button variant="ghost" size="sm" icon="photo"
+        onclick="window.dispatchEvent(new CustomEvent('open-watermark-modal'))">
+        Watermark
+    </flux:button>
+
     {{-- Opens the same shared picker/upload modal every other admin screen uses
          (<x-media-picker>'s openPicker()) so the upload experience — including
          chunked upload for files over 10MB and inline attribute editing — is
@@ -9,15 +18,6 @@
     <flux:button variant="ghost" size="sm" icon="arrow-up-tray"
         onclick="window.dispatchEvent(new CustomEvent('open-media-picker', { detail: { pickerId: 'media-library-manage-picker', onlyImages: false, mimes: 'jpg,jpeg,png,gif,webp,pdf,mp4,mp3,doc,docx,xls,xlsx', maxSizeKb: 10240 } }))">
         Upload Files
-    </flux:button>
-
-    {{-- Same cross-DOM event approach as Upload Files: the header renders outside
-         this component's root, so this dispatches a window event that the root
-         <div> below (x-on:open-watermark-modal.window) forwards to
-         openWatermarkModal() in Index.php. --}}
-    <flux:button variant="ghost" size="sm" icon="photo"
-        onclick="window.dispatchEvent(new CustomEvent('open-watermark-modal'))">
-        Watermark
     </flux:button>
 @endpush
 

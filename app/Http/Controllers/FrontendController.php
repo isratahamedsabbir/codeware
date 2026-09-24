@@ -203,15 +203,24 @@ class FrontendController extends Controller
 
         abort_unless($product, 404, 'Unknown product.');
 
-        $related = $product->categories->isNotEmpty()
-            ? Product::active()
+        // Manually linked related products (picked from the product form) win;
+        // otherwise fall back to up to 4 same-category products — same rule as
+        // the public API's ProductController::show().
+        $related = $product->relatedProducts()
+            ->active()
+            ->with(['categories', 'brand', 'tags', 'page'])
+            ->limit(4)
+            ->get();
+
+        if ($related->isEmpty() && $product->categories->isNotEmpty()) {
+            $related = Product::active()
                 ->with(['categories', 'brand', 'tags', 'page'])
                 ->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $product->categories->pluck('id')))
                 ->where('id', '!=', $product->id)
                 ->orderBy('sort_order')
                 ->limit(4)
-                ->get()
-            : collect();
+                ->get();
+        }
 
         return view('frontend.themes.'.Themes::view('product'), [
             'product' => $product,

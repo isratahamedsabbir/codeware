@@ -217,21 +217,41 @@
             </div>
 
         <nav class="flex flex-col">
+            {{-- Categories and Brands collapse to a single row each so the menu
+                 stays short; tap the heading to open the list. --}}
+            @php
+                $mobileSection = 'flex w-full items-center justify-between rounded-md! px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand';
+            @endphp
             @if ($headerCategories->isNotEmpty())
-                <p class="px-3 pb-1 pt-2 text-xs font-bold uppercase tracking-wide text-zinc-400">{{ __('Categories') }}</p>
-                @foreach ($headerTopCategories as $category)
-                    @include('frontend.themes.ecommerce.partials.header-category-item', [
-                        'category' => $category,
-                        'childrenByParent' => $headerChildrenByParent,
-                        'depth' => 0,
-                    ])
-                @endforeach
+                <div x-data="{ open: false }" class="border-b border-zinc-100">
+                    <button type="button" @click="open = ! open" :aria-expanded="open" class="{{ $mobileSection }}">
+                        <span>{{ __('Categories') }}</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-zinc-400 transition-transform duration-200" :class="open && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" /></svg>
+                    </button>
+                    <div x-show="open" x-collapse x-cloak class="pb-2">
+                        @foreach ($headerTopCategories as $category)
+                            @include('frontend.themes.ecommerce.partials.header-category-item', [
+                                'category' => $category,
+                                'childrenByParent' => $headerChildrenByParent,
+                                'depth' => 0,
+                            ])
+                        @endforeach
+                        <a href="{{ route('shop') }}" class="mt-1 block px-3 py-2 text-sm font-semibold text-brand">{{ __('All categories') }} →</a>
+                    </div>
+                </div>
             @endif
             @if ($headerBrands->isNotEmpty())
-                <p class="px-3 pb-1 pt-2 text-xs font-bold uppercase tracking-wide text-zinc-400">{{ __('Brands') }}</p>
-                @foreach ($headerBrands as $brand)
-                    <a href="{{ route('shop.brand', $brand->slug) }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ $brand->name }}</a>
-                @endforeach
+                <div x-data="{ open: false }" class="border-b border-zinc-100">
+                    <button type="button" @click="open = ! open" :aria-expanded="open" class="{{ $mobileSection }}">
+                        <span>{{ __('Brands') }}</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-zinc-400 transition-transform duration-200" :class="open && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" /></svg>
+                    </button>
+                    <div x-show="open" x-collapse x-cloak class="pb-2">
+                        @foreach ($headerBrands as $brand)
+                            <a href="{{ route('shop.brand', $brand->slug) }}" class="block rounded-md py-2 pl-9 pr-3 text-sm font-semibold text-zinc-700 transition-colors hover:bg-gray-50 hover:text-brand">{{ $brand->name }}</a>
+                        @endforeach
+                    </div>
+                </div>
             @endif
             @foreach ($menuItems ?? [] as $menuItem)
                 <a href="{{ url($menuItem->url) }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ $menuItem->label }}</a>
