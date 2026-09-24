@@ -32,13 +32,6 @@ class Form extends Component
     public array $selectedRoles = [];
 
     /**
-     * Whether this user is a delivery rider — only ever a customer account,
-     * never admin/staff/vendor (see updatedSelectedRoles() and save()'s own
-     * guard).
-     */
-    public bool $is_delivery_boy = false;
-
-    /**
      * Vendor ids this user can log into the Vendor Portal for — a user can be
      * assigned to more than one vendor, see User::vendors().
      *
@@ -82,7 +75,6 @@ class Form extends Component
             $this->vendor_ids = $user->vendors->pluck('id')->all();
             $this->signature = $user->signature;
             $this->existingPhotoPath = $user->photo;
-            $this->is_delivery_boy = $user->is_delivery_boy;
 
             return;
         }
@@ -93,20 +85,13 @@ class Form extends Component
     }
 
     /**
-     * An admin, staff or vendor can never be a delivery rider — flip the
-     * switch back off the moment any of those roles gets checked, rather than only catching it
-     * as a validation error at save() time.
+     * The delivery_boy role can't be combined with admin/staff/vendor — only
+     * a customer account can be a delivery rider.
      */
-    public function updatedSelectedRoles(): void
+    private function hasDeliveryRoleConflict(): bool
     {
-        if ($this->hasDeliveryIneligibleRole()) {
-            $this->is_delivery_boy = false;
-        }
-    }
-
-    private function hasDeliveryIneligibleRole(): bool
-    {
-        return array_intersect(User::DELIVERY_INELIGIBLE_ROLES, $this->selectedRoles) !== [];
+        return in_array(User::DELIVERY_ROLE, $this->selectedRoles, true)
+            && array_intersect(User::DELIVERY_INELIGIBLE_ROLES, $this->selectedRoles) !== [];
     }
 
     public function updatedPhoto(): void
@@ -162,8 +147,8 @@ class Form extends Component
             return;
         }
 
-        if ($this->is_delivery_boy && $this->hasDeliveryIneligibleRole()) {
-            $this->addError('is_delivery_boy', 'Only a customer account can be a delivery boy — an admin, staff or vendor cannot.');
+        if ($this->hasDeliveryRoleConflict()) {
+            $this->addError('selectedRoles', 'The delivery_boy role cannot be combined with admin, staff or vendor.');
 
             return;
         }
@@ -187,7 +172,6 @@ class Form extends Component
         $user->email = $data['email'];
         $user->signature = $this->persistSignature($user);
         $user->photo = $this->persistPhoto();
-        $user->is_delivery_boy = $this->is_delivery_boy;
 
         if ($this->password) {
             $user->password = $this->password;

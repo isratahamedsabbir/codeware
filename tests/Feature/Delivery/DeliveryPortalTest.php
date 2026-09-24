@@ -2,8 +2,10 @@
 
 use App\Livewire\Admin\Orders\Show as AdminOrderShow;
 use App\Livewire\Delivery\Auth\Login;
+use App\Livewire\Delivery\Dashboard;
 use App\Livewire\Delivery\Orders\Index;
 use App\Livewire\Delivery\Orders\Show;
+use App\Livewire\Delivery\Profile;
 use App\Mail\DeliveryOtpMail;
 use App\Models\Order;
 use App\Models\User;
@@ -14,8 +16,8 @@ use Livewire\Livewire;
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
 
-    $this->rider = User::factory()->create(['password' => 'correct-password', 'is_delivery_boy' => true]);
-    $this->rider->assignRole('customer');
+    $this->rider = User::factory()->create(['password' => 'correct-password']);
+    $this->rider->assignRole(['customer', 'delivery_boy']);
 });
 
 it('serves its own login page on the delivery host', function () {
@@ -24,17 +26,17 @@ it('serves its own login page on the delivery host', function () {
         ->assertSeeLivewire(Login::class);
 });
 
-it('logs a delivery boy in and lands them on their orders', function () {
+it('logs a delivery boy in and lands them on their dashboard', function () {
     Livewire::test(Login::class)
         ->set('email', $this->rider->email)
         ->set('password', 'correct-password')
         ->call('authenticate')
-        ->assertRedirect(route('delivery.orders'));
+        ->assertRedirect(route('delivery.dashboard'));
 
     expect(auth()->id())->toBe($this->rider->id);
 });
 
-it('rejects a customer who is not a delivery boy', function () {
+it('rejects a customer without the delivery_boy role', function () {
     $customer = User::factory()->create(['password' => 'correct-password']);
     $customer->assignRole('customer');
 
@@ -47,9 +49,9 @@ it('rejects a customer who is not a delivery boy', function () {
     expect(auth()->check())->toBeFalse();
 });
 
-it('denies portal access to a flagged account that also holds an admin, staff or vendor role', function (string $role) {
-    $user = User::factory()->create(['is_delivery_boy' => true]);
-    $user->assignRole($role);
+it('denies portal access to a delivery boy who also holds an admin, staff or vendor role', function (string $role) {
+    $user = User::factory()->create();
+    $user->assignRole(['delivery_boy', $role]);
 
     $this->actingAs($user)
         ->get('http://'.config('app.delivery_host').'/')
@@ -57,7 +59,7 @@ it('denies portal access to a flagged account that also holds an admin, staff or
 })->with(['admin', 'staff', 'vendor']);
 
 it('lists only the orders assigned to the signed-in rider', function () {
-    $other = User::factory()->create(['is_delivery_boy' => true]);
+    $other = User::factory()->create()->assignRole('delivery_boy');
 
     Order::factory()->status('shipped')->create(['delivery_boy_id' => $this->rider->id, 'customer_name' => 'Mine Customer']);
     Order::factory()->create(['delivery_boy_id' => $other->id, 'customer_name' => 'Other Customer']);
@@ -152,8 +154,8 @@ it('lets an admin assign an order to a delivery boy', function () {
 
 it('refuses to assign an order to someone who is not a delivery boy', function () {
     $order = Order::factory()->status('pending')->create();
-    $vendor = User::factory()->create(['is_delivery_boy' => true]);
-    $vendor->assignRole('vendor');
+    $vendor = User::factory()->create();
+    $vendor->assignRole(['delivery_boy', 'vendor']);
 
     $this->actingAs(User::factory()->admin()->create());
 
@@ -163,4 +165,34 @@ it('refuses to assign an order to someone who is not a delivery boy', function (
         ->assertHasErrors('deliveryBoyId');
 
     expect($order->fresh()->delivery_boy_id)->toBeNull();
+});
+
+it('shows the rider their own delivery counts on the dashboard', function () {
+    Order::factory()->status('shipped')->count(2)->create(['delivery_boy_id' => $this->rider->id]);
+    Order::factory()->status('delivered')->create(['delivery_boy_id' => $this->rider->id, 'delivered_at' => now()]);
+    Order::factory()->status('shipped')->count(3)->create();
+
+    $this->actingAs($this->rider);
+
+    Livewire::test(Dashboard::class)
+        ->assertViewHas('toDeliverCount', 2)
+        ->assertViewHas('deliveredTodayCount', 1)
+        ->assertViewHas('deliveredCount', 1);
+});
+
+it('serves every portal page to a delivery boy', function (string $path) {
+    $this->actingAs($this->rider)
+        ->get('http://'.config('app.delivery_host').$path)
+        ->assertOk();
+})->with(['/', '/orders', '/profile']);
+
+it('lets the rider update their own profile name', function () {
+    $this->actingAs($this->rider);
+
+    Livewire::test(Profile::class)
+        ->set('name', 'Renamed Rider')
+        ->call('updateProfile')
+        ->assertHasNoErrors();
+
+    expect($this->rider->fresh()->name)->toBe('Renamed Rider');
 });

@@ -1,8 +1,10 @@
 <?php
 
 use App\Livewire\Delivery\Auth\Login;
+use App\Livewire\Delivery\Dashboard;
 use App\Livewire\Delivery\Orders\Index as OrdersIndex;
 use App\Livewire\Delivery\Orders\Show as OrdersShow;
+use App\Livewire\Delivery\Profile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +23,10 @@ Route::post('/logout', function (Request $request) {
 })->middleware('auth')->name('logout');
 
 Route::middleware(['auth', 'can:access-delivery-portal'])->group(function () {
-    Route::get('/', OrdersIndex::class)->name('orders');
+    Route::get('/', Dashboard::class)->name('dashboard');
+
+    Route::get('/profile', Profile::class)->name('profile');
+
+    Route::get('/orders', OrdersIndex::class)->name('orders');
     Route::get('/orders/{orderId}', OrdersShow::class)->name('orders.show');
 });

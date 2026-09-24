@@ -126,7 +126,7 @@ class Login extends Component
      */
     private function intendedUrl(): string
     {
-        return session()->pull('url.intended', route('delivery.orders'));
+        return session()->pull('url.intended', route('delivery.dashboard'));
     }
 
     /**

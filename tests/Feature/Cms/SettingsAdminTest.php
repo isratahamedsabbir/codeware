@@ -173,12 +173,12 @@ it('does not overwrite watermark settings when saving the settings page', functi
         ->and(Setting::get('watermark_enabled'))->toBe('1');
 });
 
-it('renders the other tab with color fields', function () {
+it('renders the widgets tab with color fields', function () {
     Setting::factory()->create(['key' => 'primary_color', 'value' => '#2563eb', 'group' => 'colors', 'type' => 'color']);
     Setting::factory()->create(['key' => 'secondary_color', 'value' => '#059669', 'group' => 'colors', 'type' => 'color']);
 
     Livewire::test(SettingsIndex::class)
-        ->assertSee('Other')
+        ->assertSee('Widgets')
         ->assertViewHas('colorSettings', function ($settings) {
             return $settings->pluck('key')->contains('primary_color')
                 && $settings->pluck('key')->contains('secondary_color');

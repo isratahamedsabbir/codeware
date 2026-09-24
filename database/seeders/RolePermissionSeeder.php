@@ -61,6 +61,11 @@ class RolePermissionSeeder extends Seeder
         // it grants nothing under /admin/*.
         Role::findOrCreate('vendor', 'web');
 
+        // Delivery boy: same idea as Vendor — no admin-panel permissions, only
+        // gates entry to the separate Delivery Portal (see access-delivery-portal
+        // in AppServiceProvider). Never combined with admin/staff/vendor.
+        Role::findOrCreate('delivery_boy', 'web');
+
         // Customer: the default tier for everyone who registers through the public
         // site/API (see CreateNewUser) — no admin-panel permissions, access-admin
         // already excludes it. Every user belongs to some role; this is the

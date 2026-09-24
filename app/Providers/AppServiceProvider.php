@@ -89,8 +89,8 @@ class AppServiceProvider extends ServiceProvider
             && ! $user->hasInactiveRole());
 
         // Delivery-rider portal (App\Livewire\Delivery\*) — another separate
-        // door: a customer account flagged is_delivery_boy (Admin → Users) that
-        // holds no admin/staff/vendor role — see User::isDeliveryBoy().
+        // door, like the vendor portal: the 'delivery_boy' role, never
+        // combined with admin/staff/vendor — see User::isDeliveryBoy().
         Gate::define('access-delivery-portal', fn ($user) => $user->isDeliveryBoy()
             && ! $user->hasInactiveRole());
 

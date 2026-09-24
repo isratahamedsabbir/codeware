@@ -27,9 +27,12 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, HasRoles, HasUniqueCode, Notifiable, TwoFactorAuthenticatable;
 
+    /** The role that opens the Delivery Portal (see 'access-delivery-portal'). */
+    public const DELIVERY_ROLE = 'delivery_boy';
+
     /**
-     * Roles that can never be a delivery rider — only a plain customer account
-     * can (see Users\Form and the 'access-delivery-portal' gate).
+     * Roles that can never be combined with DELIVERY_ROLE — only a customer
+     * account can be a delivery rider (see Users\Form and the gate).
      */
     public const DELIVERY_INELIGIBLE_ROLES = ['admin', 'staff', 'vendor'];
 
@@ -44,7 +47,6 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_blocked' => 'boolean',
-            'is_delivery_boy' => 'boolean',
         ];
     }
 
@@ -97,24 +99,27 @@ class User extends Authenticatable
     }
 
     /**
-     * True when this account is marked as a delivery rider and still holds
-     * no admin/staff/vendor role — the flag alone isn't enough, so a rider
-     * later promoted to one of those roles loses delivery access right away.
+     * True when this account holds the delivery_boy role and no
+     * admin/staff/vendor role — the role alone isn't enough, so a rider who
+     * also picks up one of those roles loses delivery access right away.
      */
     public function isDeliveryBoy(): bool
     {
-        return $this->is_delivery_boy && ! $this->hasAnyRole(self::DELIVERY_INELIGIBLE_ROLES);
+        return $this->hasRole(self::DELIVERY_ROLE) && ! $this->hasAnyRole(self::DELIVERY_INELIGIBLE_ROLES);
     }
 
     /**
      * Riders an admin can assign an order to — see isDeliveryBoy(), plus
-     * blocked accounts left out since they can't log in to deliver.
+     * blocked accounts and deactivated roles left out since they can't log
+     * in to deliver.
      */
     public function scopeDeliveryBoys(Builder $query): Builder
     {
-        return $query->where('is_delivery_boy', true)
-            ->where('is_blocked', false)
-            ->whereDoesntHave('roles', fn (Builder $q) => $q->whereIn('name', self::DELIVERY_INELIGIBLE_ROLES));
+        return $query->where('is_blocked', false)
+            ->whereHas('roles', fn (Builder $q) => $q->where('name', self::DELIVERY_ROLE))
+            ->whereDoesntHave('roles', fn (Builder $q) => $q->where(fn (Builder $q2) => $q2
+                ->whereIn('name', self::DELIVERY_INELIGIBLE_ROLES)
+                ->orWhere('status', 'inactive')));
     }
 
     public function documents(): HasMany

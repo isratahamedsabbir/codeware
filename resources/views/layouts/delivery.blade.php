@@ -22,7 +22,9 @@
     <body class="min-h-screen bg-slate-50 antialiased dark:bg-zinc-900">
         @php
             $portalNavItems = collect([
+                ['label' => __('Dashboard'), 'icon' => 'home', 'route' => 'delivery.dashboard', 'current' => request()->routeIs('delivery.dashboard')],
                 ['label' => __('My Deliveries'), 'icon' => 'truck', 'route' => 'delivery.orders', 'current' => request()->routeIs('delivery.orders*')],
+                ['label' => __('Profile'), 'icon' => 'user-circle', 'route' => 'delivery.profile', 'current' => request()->routeIs('delivery.profile')],
             ]);
         @endphp
         <flux:sidebar sticky collapsible="mobile" class="admin-sidebar"
@@ -35,7 +37,7 @@
             }">
             {{-- Logo + search, combined into one bordered row — matches the admin panel's sidebar header. --}}
             <div class="px-0 border-b border-gray-100 shrink-0 flex items-center gap-3 pt-1 pb-2">
-                <a href="{{ route('delivery.orders') }}" wire:navigate.hover title="{{ config('app.name') }}" class="shrink-0">
+                <a href="{{ route('delivery.dashboard') }}" wire:navigate.hover title="{{ config('app.name') }}" class="shrink-0">
                     <img src="{{ \App\Models\Setting::get('site_icon') ?: '/default/logo.png' }}" alt="{{ config('app.name') }}" class="w-10">
                 </a>
 
@@ -121,6 +123,9 @@
 
                     <flux:menu.separator />
 
+                    <flux:menu.item :href="route('delivery.profile')" icon="user-circle" wire:navigate>
+                        {{ __('My Profile') }}
+                    </flux:menu.item>
 
                     <form method="POST" action="{{ route('delivery.logout') }}" class="w-full">
                         @csrf

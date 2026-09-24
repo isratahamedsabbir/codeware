@@ -90,6 +90,7 @@
                         <p class="text-sm text-zinc-500">No roles available yet. Create one first.</p>
                     @endforelse
                 </div>
+                <flux:error name="selectedRoles" />
             </div>
 
             {{-- Footer --}}
@@ -102,23 +103,22 @@
         {{-- ── SIDEBAR ── --}}
         <div class="w-[320px] shrink-0 space-y-4">
 
-            {{-- Delivery Boy --}}
-            @php $deliveryIneligible = array_intersect(\App\Models\User::DELIVERY_INELIGIBLE_ROLES, $selectedRoles) !== []; @endphp
-            <x-admin-section-card icon="truck" title="Delivery Boy" icon-color="bg-emerald-500/10 text-emerald-600"
-                body-class="px-4 py-3">
-                <flux:field variant="inline">
-                    <flux:switch wire:model.live="is_delivery_boy" :disabled="$deliveryIneligible" />
-                    <flux:label>Marks this user as a delivery rider</flux:label>
-                </flux:field>
-                <p class="mt-1 text-xs text-zinc-400">
-                    @if ($deliveryIneligible)
-                        Only a customer account can be a delivery boy — remove the admin/staff/vendor role first.
+            {{-- Delivery Portal — shown once the delivery_boy role (left) is
+                 selected, the same way Vendor Access follows the vendor role. --}}
+            @if (in_array(\App\Models\User::DELIVERY_ROLE, $selectedRoles))
+                @php $deliveryConflict = array_intersect(\App\Models\User::DELIVERY_INELIGIBLE_ROLES, $selectedRoles) !== []; @endphp
+                <x-admin-section-card icon="truck" title="Delivery Portal" icon-color="bg-emerald-500/10 text-emerald-600"
+                    body-class="px-4 py-3">
+                    @if ($deliveryConflict)
+                        <p class="text-xs text-red-600">A delivery boy can't also be admin, staff or vendor — untick that role.</p>
                     @else
-                        Logs in at {{ config('app.delivery_host') }} to deliver the orders assigned to them.
+                        <p class="text-xs text-zinc-500">
+                            Logs in at <span class="font-medium text-zinc-700">{{ config('app.delivery_host') }}</span>
+                            and sees only the orders assigned to them.
+                        </p>
                     @endif
-                </p>
-                <flux:error name="is_delivery_boy" />
-            </x-admin-section-card>
+                </x-admin-section-card>
+            @endif
 
             {{-- Vendor Access — only meaningful once the Vendor role (below) is
                  selected; see Form::save(), which clears any assignment made here
