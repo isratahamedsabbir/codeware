@@ -15,9 +15,30 @@
     $bannerChip = 'pointer-events-none absolute left-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-md bg-zinc-900/75 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm backdrop-blur';
 @endphp
 
-<div class="space-y-6">
-    <div>
-        <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-400">Homepage banners</p>
+{{-- Tabs: one section at a time. Both stay mounted (x-show) so every media
+     picker keeps its Livewire binding; the last tab is remembered per browser. --}}
+<div
+    x-data="{
+        tab: (() => { try { return localStorage.getItem('theme-ecommerce-tab') || 'banners' } catch (e) { return 'banners' } })(),
+        open(name) { this.tab = name; try { localStorage.setItem('theme-ecommerce-tab', name) } catch (e) {} },
+    }"
+    class="space-y-5"
+>
+    <div role="tablist" class="flex gap-1 border-b border-zinc-200 dark:border-zinc-700">
+        @foreach (['banners' => ['Banners', 'photo'], 'colors' => ['Colors', 'swatch']] as $tabKey => [$tabLabel, $tabIcon])
+            <button type="button" role="tab" @click="open('{{ $tabKey }}')"
+                :aria-selected="tab === '{{ $tabKey }}'"
+                :class="tab === '{{ $tabKey }}'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:hover:text-zinc-200'"
+                class="-mb-px inline-flex items-center gap-2 rounded-none! border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors">
+                <flux:icon :name="$tabIcon" variant="mini" class="size-4" />
+                {{ $tabLabel }}
+            </button>
+        @endforeach
+    </div>
+
+    <div role="tabpanel" x-show="tab === 'banners'">
         <div class="grid grid-cols-1 gap-4 lg:h-[26rem] lg:grid-cols-3 lg:grid-rows-2">
             {{-- Hero slider — one upload box per slide; the tabs along the bottom
                  switch between slides, add one, or remove one. Every picker stays
@@ -103,71 +124,170 @@
             </div>
         </div>
     </div>
-
     {{-- Colors — one per storefront area. Blank means "use the default"
-         (shown as the swatch until you pick one); partials/head.blade.php
-         turns each into the matching --color-* CSS variable. --}}
+         (partials/head.blade.php turns each set value into the matching
+         --color-* CSS variable). The mini storefront on the right previews
+         the current values live, before saving. --}}
     @php
+        // [key, label, default, hint] — keys are written out in full so the
+        // Theme Settings component discovers them (see scopedThemeKeys()).
         $colorGroups = [
-            'Header' => [
-                ['theme_ecommerce_header_bg_color', 'Background', '#045b30', 'Top bar with the logo, search and account.'],
-                ['theme_ecommerce_header_text_color', 'Text & icons', '#ffffff', 'Site name, phone number, icons.'],
-            ],
-            'Menu bar' => [
-                ['theme_ecommerce_nav_bg_color', 'Background', '#ffffff', 'The Categories / Brands / pages row.'],
-                ['theme_ecommerce_nav_text_color', 'Links', '#222222', 'Menu link text.'],
-            ],
-            'Footer' => [
-                ['theme_ecommerce_footer_bg_color', 'Background', '#045b30', 'Main footer area.'],
-                ['theme_ecommerce_footer_text_color', 'Text', '#ffffff', 'Headings, links and contact details.'],
-                ['theme_ecommerce_footer_bottom_color', 'Copyright bar', '#1d2327', 'The thin strip at the very bottom.'],
-            ],
-            'Buttons' => [
-                ['theme_ecommerce_button_bg_color', 'Background', '#045b30', 'Add to cart, Checkout, Place order, Shop now…'],
-                ['theme_ecommerce_button_text_color', 'Text', '#ffffff', 'Label on those buttons.'],
-            ],
-            'Text' => [
-                ['theme_ecommerce_heading_color', 'Headings', '#171717', 'Titles, product names and totals.'],
-                ['theme_ecommerce_text_color', 'Body text', '#262626', 'Regular copy and labels.'],
-                ['theme_ecommerce_price_color', 'Prices', '#045b30', 'Product prices on cards and the product page.'],
-            ],
-            'Accents' => [
-                ['theme_ecommerce_accent_color', 'Links & highlights', '#045b30', 'Links, selected filters, badges, active states.'],
-                ['theme_ecommerce_sale_color', 'Sale badge', '#c01616', 'The "-30%" discount badge.'],
-                ['theme_ecommerce_page_bg_color', 'Page background', '#f2f4f8', 'Background behind all storefront pages.'],
-            ],
+            'Header' => ['icon' => 'bars-3-bottom-left', 'fields' => [
+                ['theme_ecommerce_header_bg_color', 'Background', '#045b30', 'Logo, search and account bar'],
+                ['theme_ecommerce_header_text_color', 'Text & icons', '#ffffff', 'Site name, phone, icons'],
+            ]],
+            'Menu bar' => ['icon' => 'bars-3', 'fields' => [
+                ['theme_ecommerce_nav_bg_color', 'Background', '#ffffff', 'Categories / Brands / pages row'],
+                ['theme_ecommerce_nav_text_color', 'Links', '#222222', 'Menu link text'],
+            ]],
+            'Buttons' => ['icon' => 'cursor-arrow-rays', 'fields' => [
+                ['theme_ecommerce_button_bg_color', 'Background', '#045b30', 'Add to cart, Checkout, Place order'],
+                ['theme_ecommerce_button_text_color', 'Text', '#ffffff', 'Button labels'],
+            ]],
+            'Text' => ['icon' => 'language', 'fields' => [
+                ['theme_ecommerce_heading_color', 'Headings', '#171717', 'Titles, product names, totals'],
+                ['theme_ecommerce_text_color', 'Body text', '#262626', 'Regular copy and labels'],
+                ['theme_ecommerce_price_color', 'Prices', '#045b30', 'Prices on cards and product page'],
+            ]],
+            'Accents' => ['icon' => 'sparkles', 'fields' => [
+                ['theme_ecommerce_accent_color', 'Links & highlights', '#045b30', 'Links, badges, active states'],
+                ['theme_ecommerce_sale_color', 'Sale badge', '#c01616', 'The "-30%" discount badge'],
+                ['theme_ecommerce_page_bg_color', 'Page background', '#f2f4f8', 'Behind every storefront page'],
+            ]],
+            'Footer' => ['icon' => 'window', 'fields' => [
+                ['theme_ecommerce_footer_bg_color', 'Background', '#045b30', 'Main footer area'],
+                ['theme_ecommerce_footer_text_color', 'Text', '#ffffff', 'Headings, links, contact details'],
+                ['theme_ecommerce_footer_bottom_color', 'Copyright bar', '#1d2327', 'Thin strip at the very bottom'],
+            ]],
         ];
     @endphp
 
-    <div>
-        <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-400">Colors</p>
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            @foreach ($colorGroups as $group => $fields)
-                <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
-                    <p class="mb-3 text-sm font-semibold text-zinc-800 dark:text-zinc-100">{{ $group }}</p>
-                    <div class="space-y-3">
-                        @foreach ($fields as [$key, $label, $default, $hint])
-                            <div x-data="{ fallback: '{{ $default }}' }">
-                                <div class="mb-1 flex items-center justify-between">
-                                    <label for="{{ $key }}" class="flex items-center text-xs font-medium text-zinc-600 dark:text-zinc-300">
-                                        {{ $label }}<x-field-hint :text="$hint" />
+    <div
+        x-data="{
+            // Current value of a color, or its default. Areas that default to
+            // the accent follow it, exactly like the storefront CSS does.
+            c(key, fallback) {
+                const v = ($wire.settings[key] || '').trim();
+                return /^#[0-9a-fA-F]{3,8}$/.test(v) ? v : fallback;
+            },
+            get accent() { return this.c('theme_ecommerce_accent_color', this.c('theme_ecommerce_primary_color', '#045b30')); },
+        }"
+        role="tabpanel" x-show="tab === 'colors'" x-cloak
+    >
+        <p class="mb-3 text-xs text-zinc-500 dark:text-zinc-400">Leave a color on its default to follow the brand accent.</p>
+
+        <div class="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_19rem] xl:items-start">
+            {{-- Color groups --}}
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                @foreach ($colorGroups as $group => $meta)
+                    <section class="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+                        <header class="flex items-center justify-between gap-3 border-b border-zinc-100 bg-zinc-50/70 px-4 py-2.5 dark:border-zinc-700 dark:bg-zinc-800/50">
+                            <span class="flex items-center gap-2 text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+                                <flux:icon :name="$meta['icon']" variant="mini" class="size-4 text-zinc-400" />
+                                {{ $group }}
+                            </span>
+                            {{-- The group's palette at a glance --}}
+                            <span class="flex -space-x-1">
+                                @foreach ($meta['fields'] as [$key, , $default])
+                                    <span class="size-4 rounded-full ring-2 ring-white dark:ring-zinc-800"
+                                        :style="`background: ${c('{{ $key }}', '{{ $default }}')}`"></span>
+                                @endforeach
+                            </span>
+                        </header>
+
+                        <div class="divide-y divide-zinc-100 px-4 dark:divide-zinc-800">
+                            @foreach ($meta['fields'] as [$key, $label, $default, $hint])
+                                <div class="flex items-center justify-between gap-3 py-2.5">
+                                    <label for="{{ $key }}" class="min-w-0">
+                                        <span class="block truncate text-sm font-medium text-zinc-700 dark:text-zinc-200">{{ $label }}</span>
+                                        <span class="block truncate text-[11px] text-zinc-400">{{ $hint }}</span>
                                     </label>
-                                    <button type="button" x-show="$wire.settings['{{ $key }}']" x-cloak
-                                        @click="$wire.set('settings.{{ $key }}', '', false)"
-                                        class="text-[11px] font-medium text-zinc-400 hover:text-red-500">Reset</button>
+
+                                    <div class="flex h-9 w-36 shrink-0 items-center gap-2 rounded-lg border border-zinc-200 bg-white pl-1.5 pr-1 transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15 dark:border-zinc-700 dark:bg-zinc-800">
+                                        <span class="relative size-6 shrink-0 overflow-hidden rounded-md shadow-inner ring-1 ring-black/10"
+                                            :style="`background: ${c('{{ $key }}', '{{ $default }}')}`">
+                                            <input type="color" title="Pick a color"
+                                                :value="c('{{ $key }}', '{{ $default }}')"
+                                                @input="$wire.set('settings.{{ $key }}', $event.target.value, false)"
+                                                class="absolute inset-0 size-full cursor-pointer opacity-0">
+                                        </span>
+                                        <input id="{{ $key }}" type="text" maxlength="9" spellcheck="false"
+                                            wire:model="settings.{{ $key }}" placeholder="{{ $default }}"
+                                            class="h-full min-w-0 flex-1 border-0! bg-transparent p-0 font-mono text-xs uppercase text-zinc-700 shadow-none! outline-none placeholder:normal-case placeholder:text-zinc-400 focus:ring-0 dark:text-zinc-200">
+                                        <button type="button" title="Reset to default"
+                                            x-show="$wire.settings['{{ $key }}']" x-cloak
+                                            @click="$wire.set('settings.{{ $key }}', '', false)"
+                                            class="flex size-6 shrink-0 items-center justify-center rounded-md text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-700">
+                                            <flux:icon.arrow-uturn-left variant="micro" class="size-3.5" />
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="flex items-center gap-2">
-                                    <input type="color"
-                                        :value="$wire.settings['{{ $key }}'] || fallback"
-                                        @input="$wire.set('settings.{{ $key }}', $event.target.value, false)"
-                                        class="h-9 w-11 shrink-0 cursor-pointer rounded-lg border border-zinc-300 bg-white p-1 dark:border-zinc-600 dark:bg-zinc-800">
-                                    <flux:input id="{{ $key }}" wire:model="settings.{{ $key }}" placeholder="{{ $default }}" size="sm" class="font-mono" />
-                                </div>
+                            @endforeach
+                        </div>
+                    </section>
+                @endforeach
+            </div>
+
+            {{-- Live preview — a miniature storefront painted with the values above. --}}
+            <aside class="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm xl:sticky xl:top-24 dark:border-zinc-700 dark:bg-zinc-900">
+                <div class="flex items-center justify-between border-b border-zinc-100 px-4 py-2.5 dark:border-zinc-700">
+                    <span class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Live preview</span>
+                    <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600 dark:bg-emerald-500/10">Updates as you pick</span>
+                </div>
+
+                <div class="p-3">
+                    <div class="overflow-hidden rounded-lg ring-1 ring-zinc-200 dark:ring-zinc-700" style="font-family: 'Trebuchet MS', 'Segoe UI', sans-serif">
+                        {{-- Header --}}
+                        <div class="flex items-center gap-2 px-2.5 py-2"
+                            :style="`background: ${c('theme_ecommerce_header_bg_color', accent)}; color: ${c('theme_ecommerce_header_text_color', '#ffffff')}`">
+                            <span class="size-3 rounded-full bg-current opacity-80"></span>
+                            <span class="text-[10px] font-bold">Codeware</span>
+                            <span class="ml-1 h-3.5 flex-1 rounded bg-white/90"></span>
+                            <span class="size-2.5 rounded-sm border border-current opacity-80"></span>
+                            <span class="size-2.5 rounded-full border border-current opacity-80"></span>
+                        </div>
+                        {{-- Menu bar --}}
+                        <div class="flex gap-2.5 border-b border-black/5 px-2.5 py-1.5 text-[9px] font-semibold"
+                            :style="`background: ${c('theme_ecommerce_nav_bg_color', '#ffffff')}; color: ${c('theme_ecommerce_nav_text_color', '#222222')}`">
+                            <span>Categories</span><span>Brands</span><span :style="`color: ${accent}`">Home</span><span>Shop</span>
+                        </div>
+                        {{-- Page --}}
+                        <div class="space-y-2 p-2.5" :style="`background: ${c('theme_ecommerce_page_bg_color', '#f2f4f8')}`">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] font-bold" :style="`color: ${c('theme_ecommerce_heading_color', '#171717')}`">Best sellers</span>
+                                <span class="text-[9px] font-semibold" :style="`color: ${accent}`">View all →</span>
                             </div>
-                        @endforeach
+                            <div class="grid grid-cols-2 gap-2">
+                                @foreach (['Spearmint tea', 'Green tea'] as $i => $name)
+                                    <div class="overflow-hidden rounded-md bg-white shadow-sm">
+                                        <div class="relative h-12 bg-zinc-100">
+                                            @if ($i === 0)
+                                                <span class="absolute left-1 top-1 rounded px-1 text-[8px] font-bold text-white"
+                                                    :style="`background: ${c('theme_ecommerce_sale_color', '#c01616')}`">-30%</span>
+                                            @endif
+                                        </div>
+                                        <div class="space-y-1 p-1.5">
+                                            <p class="truncate text-[9px] font-semibold" :style="`color: ${c('theme_ecommerce_heading_color', '#171717')}`">{{ $name }}</p>
+                                            <p class="truncate text-[8px]" :style="`color: ${c('theme_ecommerce_text_color', '#262626')}`">100 gm · Organic</p>
+                                            <p class="text-[10px] font-bold" :style="`color: ${c('theme_ecommerce_price_color', accent)}`">৳450</p>
+                                            <span class="block rounded py-1 text-center text-[8px] font-semibold"
+                                                :style="`background: ${c('theme_ecommerce_button_bg_color', accent)}; color: ${c('theme_ecommerce_button_text_color', '#ffffff')}`">Add to cart</span>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        {{-- Footer --}}
+                        <div class="space-y-1 px-2.5 py-2" :style="`background: ${c('theme_ecommerce_footer_bg_color', accent)}; color: ${c('theme_ecommerce_footer_text_color', '#ffffff')}`">
+                            <p class="text-[9px] font-bold">Quick Links</p>
+                            <p class="text-[8px] opacity-75">About Us · Contact · FAQ</p>
+                        </div>
+                        <div class="px-2.5 py-1 text-[8px]" :style="`background: ${c('theme_ecommerce_footer_bottom_color', '#1d2327')}; color: ${c('theme_ecommerce_footer_text_color', '#ffffff')}`">
+                            <span class="opacity-75">© Codeware. All rights reserved.</span>
+                        </div>
                     </div>
                 </div>
-            @endforeach
+            </aside>
         </div>
     </div>
 </div>

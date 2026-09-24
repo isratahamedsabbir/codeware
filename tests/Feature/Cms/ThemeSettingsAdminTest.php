@@ -195,7 +195,8 @@ it('renders the selected theme settings blade when the theme ships one', functio
     Livewire::test(ThemeSettings::class)
         ->set('settings.site_theme', 'ecommerce')
         // The ecommerce card holds the homepage banner uploads + its colors only.
-        ->assertSee('Homepage banners')
+        ->assertSee('Banners')
+        ->assertSee("tab === 'colors'", false)
         ->assertSee('heroSlides.0')
         ->assertSee('Add slide')
         ->assertSee('settings.home_promo_banner_2')

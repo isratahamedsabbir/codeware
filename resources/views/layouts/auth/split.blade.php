@@ -244,6 +244,9 @@
             to   { opacity: 1; transform: translateY(0)    scale(1); }
         }
     </style>
+@if ($customCode ?? false)
+    @include('partials.custom-code-head')
+@endif
 </head> 
 
 <body class="min-h-screen auth-bg antialiased flex items-center justify-center p-4 sm:p-6 overflow-y-auto!"> 
@@ -311,6 +314,9 @@
     </script>
 
     @fluxScripts
+@if ($customCode ?? false)
+    @include('partials.custom-code-body')
+@endif
 </body>
 
 </html>

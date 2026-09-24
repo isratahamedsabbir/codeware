@@ -1,4 +1,4 @@
-<x-layouts::auth :title="$title ?? null" :noindex="false">
+<x-layouts::auth :title="$title ?? null" :noindex="false" :custom-code="true">
     @php
         $introHeading = \App\Models\Setting::get('theme_default_intro_heading');
         $introText = \App\Models\Setting::get('theme_default_intro_text');

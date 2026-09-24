@@ -10,6 +10,7 @@
 <head>
     @include('partials.head')
     @include('partials.seo-meta')
+    @include('partials.custom-code-head')
 </head>
 <body class="bg-page-bg font-storefront text-sf-text antialiased">
 
@@ -83,5 +84,6 @@
 <livewire:frontend.chat-widget />
 
 @fluxScripts
+@include('partials.custom-code-body')
 </body>
 </html>

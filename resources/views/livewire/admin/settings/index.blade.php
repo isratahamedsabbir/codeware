@@ -253,7 +253,10 @@ $imageMeta = match ($setting->key) {
         {{-- Other tab --}}
         <div x-show="tab === 'other'">
             <div class="max-w-[1600px]">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                <x-admin-section-card header-border="border-zinc-100" icon="squares-2x2" title="Other"
+                    description="Admin panel widgets and tools — floating action button, calculator, sticky note, shop toggle, language switcher and more."
+                    collapsible :collapsed="true">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
                 {{-- Floating action button --}}
                 <x-admin-section-card header-border="border-zinc-100" x-data icon="cursor-arrow-rays" title="Floating Button"
                     description="Shows a floating button in the corner of every admin page.">
@@ -360,7 +363,8 @@ $imageMeta = match ($setting->key) {
                         Turning this off does not change the admin panel's language, only hides the switcher itself.
                     </p>
                 </x-admin-section-card>
-                </div>
+                    </div>
+                </x-admin-section-card>
             </div>
         </div>
 

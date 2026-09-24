@@ -5,6 +5,7 @@
     @include('partials.seo-meta')
     <link rel="stylesheet" href="{{ asset('themes/portfolio/style.css') }}">
     <style>[x-cloak]{display:none!important}</style>
+    @include('partials.custom-code-head')
 </head>
 <body class="theme-portfolio antialiased">
 
@@ -420,5 +421,6 @@
 
     @fluxScripts
     <script src="{{ asset('themes/portfolio/script.js') }}" defer></script>
+@include('partials.custom-code-body')
 </body>
 </html>
