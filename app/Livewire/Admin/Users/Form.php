@@ -32,8 +32,9 @@ class Form extends Component
     public array $selectedRoles = [];
 
     /**
-     * Whether this user is a delivery rider — never true for an admin or
-     * vendor (see updatedSelectedRoles() and save()'s own guard).
+     * Whether this user is a delivery rider — only ever a customer account,
+     * never admin/staff/vendor (see updatedSelectedRoles() and save()'s own
+     * guard).
      */
     public bool $is_delivery_boy = false;
 
@@ -92,8 +93,8 @@ class Form extends Component
     }
 
     /**
-     * An admin or vendor can never be a delivery rider — flip the switch back
-     * off the moment either role gets checked, rather than only catching it
+     * An admin, staff or vendor can never be a delivery rider — flip the
+     * switch back off the moment any of those roles gets checked, rather than only catching it
      * as a validation error at save() time.
      */
     public function updatedSelectedRoles(): void
@@ -105,7 +106,7 @@ class Form extends Component
 
     private function hasDeliveryIneligibleRole(): bool
     {
-        return in_array('admin', $this->selectedRoles, true) || in_array('vendor', $this->selectedRoles, true);
+        return array_intersect(User::DELIVERY_INELIGIBLE_ROLES, $this->selectedRoles) !== [];
     }
 
     public function updatedPhoto(): void
@@ -162,7 +163,7 @@ class Form extends Component
         }
 
         if ($this->is_delivery_boy && $this->hasDeliveryIneligibleRole()) {
-            $this->addError('is_delivery_boy', 'An admin or vendor cannot be marked as a delivery boy.');
+            $this->addError('is_delivery_boy', 'Only a customer account can be a delivery boy — an admin, staff or vendor cannot.');
 
             return;
         }

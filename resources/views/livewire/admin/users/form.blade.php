@@ -103,7 +103,7 @@
         <div class="w-[320px] shrink-0 space-y-4">
 
             {{-- Delivery Boy --}}
-            @php $deliveryIneligible = in_array('admin', $selectedRoles) || in_array('vendor', $selectedRoles); @endphp
+            @php $deliveryIneligible = array_intersect(\App\Models\User::DELIVERY_INELIGIBLE_ROLES, $selectedRoles) !== []; @endphp
             <x-admin-section-card icon="truck" title="Delivery Boy" icon-color="bg-emerald-500/10 text-emerald-600"
                 body-class="px-4 py-3">
                 <flux:field variant="inline">
@@ -112,7 +112,9 @@
                 </flux:field>
                 <p class="mt-1 text-xs text-zinc-400">
                     @if ($deliveryIneligible)
-                        An admin or vendor cannot be marked as a delivery boy — remove that role first.
+                        Only a customer account can be a delivery boy — remove the admin/staff/vendor role first.
+                    @else
+                        Logs in at {{ config('app.delivery_host') }} to deliver the orders assigned to them.
                     @endif
                 </p>
                 <flux:error name="is_delivery_boy" />

@@ -53,6 +53,24 @@ return [
             ?: env('VENDOR_SUBDOMAIN', 'vendor').'.'.(parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST) ?: 'localhost'),
     ),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Delivery Portal Host
+    |--------------------------------------------------------------------------
+    |
+    | The hostname the delivery-rider portal (App\Livewire\Delivery\*) is
+    | served on — its own subdomain with its own login, exactly like the
+    | vendor portal above. Read in bootstrap/app.php for the delivery route
+    | group's ->domain() binding.
+    |
+    */
+
+    'delivery_host' => env(
+        'DELIVERY_HOST',
+        parse_url((string) env('DELIVERY_URL', ''), PHP_URL_HOST)
+            ?: env('DELIVERY_SUBDOMAIN', 'deliveryboy').'.'.(parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST) ?: 'localhost'),
+    ),
+
     // The admin panel's base URL — where /dashboard and the old /admin path
     // bounce users to. Kept separate from APP_URL because the panel now lives
     // on its own host (see admin_host below).

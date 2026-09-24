@@ -88,6 +88,12 @@ class AppServiceProvider extends ServiceProvider
             && $user->vendors()->exists()
             && ! $user->hasInactiveRole());
 
+        // Delivery-rider portal (App\Livewire\Delivery\*) — another separate
+        // door: a customer account flagged is_delivery_boy (Admin → Users) that
+        // holds no admin/staff/vendor role — see User::isDeliveryBoy().
+        Gate::define('access-delivery-portal', fn ($user) => $user->isDeliveryBoy()
+            && ! $user->hasInactiveRole());
+
         // File Manager reads/writes anywhere under the project root (including .env),
         // so — unlike most admin screens — it gets its own granular gates rather than
         // riding solely on the blanket access-admin check: 'view' for browsing/downloading,

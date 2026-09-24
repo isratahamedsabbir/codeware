@@ -35,6 +35,14 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->name('vendor.')
                 ->group(base_path('routes/vendor.php'));
 
+            // Delivery-rider portal — same separate-host, own-login setup as
+            // the vendor portal above. routes/delivery.php applies 'auth' +
+            // 'can:access-delivery-portal' itself to everything except /login.
+            Route::middleware('web')
+                ->domain(config('app.delivery_host'))
+                ->name('delivery.')
+                ->group(base_path('routes/delivery.php'));
+
             // Admin panel — its own subdomain rather than a path prefix, with
             // its own login (App\Livewire\Admin\Auth\Login) rather than
             // sharing Fortify's — so it's a fully separate panel from the main

@@ -29,11 +29,13 @@ class Order extends Model
         'shipping_address', 'status', 'payment_method', 'payment_status',
         'currency', 'subtotal', 'coupon_code', 'discount', 'vat_amount', 'vat_rate',
         'shipping_method', 'shipping_cost', 'total', 'notes',
+        'delivery_boy_id', 'delivered_at',
     ];
 
     protected function casts(): array
     {
         return [
+            'delivered_at' => 'datetime',
             'subtotal' => 'decimal:2',
             'discount' => 'decimal:2',
             'vat_amount' => 'decimal:2',
@@ -80,6 +82,25 @@ class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * The delivery rider assigned from Admin → Orders → Show — see the
+     * delivery portal (App\Livewire\Delivery\*), which only ever shows a
+     * rider the orders assigned to them here.
+     */
+    public function deliveryBoy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'delivery_boy_id');
+    }
+
+    /**
+     * Whether the assigned rider can still complete this order — not once
+     * it's already delivered or has been cancelled.
+     */
+    public function isAwaitingDelivery(): bool
+    {
+        return ! in_array($this->status, ['delivered', 'cancelled'], true);
     }
 
     public function transactions(): HasMany

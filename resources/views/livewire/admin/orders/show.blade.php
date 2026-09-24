@@ -190,6 +190,39 @@
                     Save Changes
                 </flux:button>
             </x-admin-section-card>
+
+            {{-- Delivery boy — only customer accounts flagged in Admin → Users.
+                 The rider sees this order at the delivery portal and marks it
+                 delivered with the OTP emailed to the customer. --}}
+            <x-admin-section-card icon="truck" title="Delivery Boy" icon-color="bg-emerald-500/10 text-emerald-600">
+                @if ($order->status === 'delivered')
+                    <p class="text-sm text-zinc-700">
+                        Delivered by <span class="font-medium">{{ $order->deliveryBoy?->name ?? '—' }}</span>
+                        @if ($order->delivered_at)
+                            <span class="block text-xs text-zinc-400">{{ $order->delivered_at->toDisplay() }}</span>
+                        @endif
+                    </p>
+                @elseif ($order->status === 'cancelled')
+                    <p class="text-sm text-zinc-500">Cancelled orders can't be assigned.</p>
+                @else
+                    <flux:field>
+                        <flux:select wire:model="deliveryBoyId">
+                            <flux:select.option value="">— Not assigned —</flux:select.option>
+                            @foreach ($deliveryBoys as $rider)
+                                <flux:select.option value="{{ $rider->id }}">{{ $rider->name }} ({{ $rider->email }})</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                        @if ($deliveryBoys->isEmpty())
+                            <p class="text-xs text-zinc-400">No delivery boys yet — mark a customer account as one in Users.</p>
+                        @endif
+                        <flux:error name="deliveryBoyId" />
+                    </flux:field>
+
+                    <flux:button size="sm" variant="primary" wire:click="assignDeliveryBoy" wire:loading.attr="disabled" class="w-full">
+                        Assign
+                    </flux:button>
+                @endif
+            </x-admin-section-card>
         </div>
 
     </div>

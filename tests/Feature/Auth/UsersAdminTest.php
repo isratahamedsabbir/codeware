@@ -265,6 +265,19 @@ it('rejects marking an admin as a delivery boy', function () {
     expect($user->fresh()->is_delivery_boy)->toBeFalse();
 });
 
+it('rejects marking a staff member as a delivery boy', function () {
+    Role::findOrCreate('staff', 'web');
+    $user = User::factory()->create()->assignRole('staff');
+
+    Livewire::test(UsersForm::class, ['id' => $user->id])
+        ->set('selectedRoles', ['staff'])
+        ->set('is_delivery_boy', true)
+        ->call('save')
+        ->assertHasErrors(['is_delivery_boy']);
+
+    expect($user->fresh()->is_delivery_boy)->toBeFalse();
+});
+
 it('rejects marking a vendor as a delivery boy', function () {
     Role::findOrCreate('vendor', 'web');
     $user = User::factory()->create()->assignRole('vendor');

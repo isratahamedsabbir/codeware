@@ -28,6 +28,12 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, HasRoles, HasUniqueCode, Notifiable, TwoFactorAuthenticatable;
 
     /**
+     * Roles that can never be a delivery rider — only a plain customer account
+     * can (see Users\Form and the 'access-delivery-portal' gate).
+     */
+    public const DELIVERY_INELIGIBLE_ROLES = ['admin', 'staff', 'vendor'];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -80,6 +86,35 @@ class User extends Authenticatable
     public function vendors(): BelongsToMany
     {
         return $this->belongsToMany(ProductVendor::class, 'product_vendor_user', 'user_id', 'vendor_id');
+    }
+
+    /**
+     * Orders assigned to this user as their delivery rider (see Order::deliveryBoy()).
+     */
+    public function assignedDeliveries(): HasMany
+    {
+        return $this->hasMany(Order::class, 'delivery_boy_id');
+    }
+
+    /**
+     * True when this account is marked as a delivery rider and still holds
+     * no admin/staff/vendor role — the flag alone isn't enough, so a rider
+     * later promoted to one of those roles loses delivery access right away.
+     */
+    public function isDeliveryBoy(): bool
+    {
+        return $this->is_delivery_boy && ! $this->hasAnyRole(self::DELIVERY_INELIGIBLE_ROLES);
+    }
+
+    /**
+     * Riders an admin can assign an order to — see isDeliveryBoy(), plus
+     * blocked accounts left out since they can't log in to deliver.
+     */
+    public function scopeDeliveryBoys(Builder $query): Builder
+    {
+        return $query->where('is_delivery_boy', true)
+            ->where('is_blocked', false)
+            ->whereDoesntHave('roles', fn (Builder $q) => $q->whereIn('name', self::DELIVERY_INELIGIBLE_ROLES));
     }
 
     public function documents(): HasMany
