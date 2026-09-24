@@ -1,4 +1,64 @@
 <form wire:submit="save" class="space-y-5">
+    {{-- Profile photo: a picked file previews straight away; nothing is stored
+         until the form is saved. --}}
+    @php
+        $user = auth()->user();
+        $previewUrl = match (true) {
+            $photo && ! $errors->has('photo') => $photo->temporaryUrl(),
+            $removePhoto => null,
+            default => $user->photo_url,
+        };
+    @endphp
+    <div class="flex flex-wrap items-center gap-5">
+        <label for="profile-photo" class="group relative block size-20 shrink-0 cursor-pointer overflow-hidden rounded-full bg-brand/10 ring-4 ring-white shadow-md">
+            @if ($previewUrl)
+                <img src="{{ $previewUrl }}" alt="{{ $user->name }}" class="size-full object-cover">
+            @else
+                <span class="flex size-full items-center justify-center text-2xl font-bold uppercase text-brand">{{ $user->initials() }}</span>
+            @endif
+            <span class="absolute inset-0 flex items-center justify-center bg-black/45 text-white opacity-0 transition group-hover:opacity-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0Z" />
+                </svg>
+            </span>
+            <span wire:loading.flex wire:target="photo" class="absolute inset-0 items-center justify-center bg-white/80">
+                <svg class="size-6 animate-spin text-brand" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Z"></path>
+                </svg>
+            </span>
+        </label>
+
+        <div class="min-w-0">
+            <p class="text-sm font-semibold text-sf-text">{{ __('Profile photo') }}</p>
+            <p class="mt-0.5 text-xs text-zinc-500">{{ __('JPG, PNG or WebP, up to 2 MB.') }}</p>
+            <div class="mt-2.5 flex flex-wrap items-center gap-2">
+                <label for="profile-photo"
+                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 shadow-sm transition hover:border-brand hover:text-brand">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" /></svg>
+                    {{ $previewUrl ? __('Change photo') : __('Upload photo') }}
+                </label>
+                @if ($previewUrl)
+                    <button type="button" wire:click="removeCurrentPhoto"
+                        class="rounded-md px-3 py-1.5 text-xs font-semibold text-zinc-500 transition hover:bg-red-50 hover:text-red-600">
+                        {{ __('Remove') }}
+                    </button>
+                @endif
+            </div>
+            @if ($photo || $removePhoto)
+                <p class="mt-1.5 text-xs font-medium text-amber-600">{{ __('Save changes to apply your new photo.') }}</p>
+            @endif
+        </div>
+
+        <input id="profile-photo" type="file" wire:model="photo" accept="image/jpeg,image/png,image/webp" class="sr-only">
+    </div>
+    @error('photo')
+        <p class="-mt-2 text-xs text-red-600">{{ $message }}</p>
+    @enderror
+
+    <hr class="border-zinc-200">
+
     <div>
         <label for="name" class="mb-1.5 block text-sm font-semibold text-zinc-700">
             {{ __('Name') }}

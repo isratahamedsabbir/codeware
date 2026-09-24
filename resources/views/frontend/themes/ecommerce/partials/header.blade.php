@@ -87,15 +87,17 @@
 
                 @auth
                     <details class="group relative">
+                        {{-- Signed in: just the avatar circle (photo, or initials). --}}
                         <summary
-                            class="flex cursor-pointer list-none items-center gap-2 rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-brand transition hover:bg-white/90 [&::-webkit-details-marker]:hidden"
-                            aria-label="{{ __('My account') }}">
-                            <span class="flex h-7 w-7 items-center justify-center rounded-full bg-brand text-xs font-bold uppercase text-sf-header-text">
-                                {{ auth()->user()->initials() }}
-                            </span>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-open:rotate-180 hidden sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" />
-                            </svg>
+                            class="flex cursor-pointer list-none rounded-full ring-2 ring-white/70 transition hover:ring-white group-open:ring-white [&::-webkit-details-marker]:hidden"
+                            aria-label="{{ __('My account') }}" title="{{ auth()->user()->name }}">
+                            @if (auth()->user()->photo_url)
+                                <img src="{{ auth()->user()->photo_url }}" alt="{{ auth()->user()->name }}" class="h-9 w-9 rounded-full object-cover">
+                            @else
+                                <span class="flex h-9 w-9 items-center justify-center rounded-full bg-white text-xs font-bold uppercase text-brand">
+                                    {{ auth()->user()->initials() }}
+                                </span>
+                            @endif
                         </summary>
                         <div class="absolute right-0 top-full z-50 mt-2 w-52 rounded-card border border-zinc-100 bg-white py-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
                             <p class="border-b border-zinc-100 px-3.5 py-2">
