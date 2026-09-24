@@ -58,6 +58,8 @@ class DatabaseSeeder extends Seeder
         // local/dev seeding but skip this on a real deploy's first seed.
         $this->call(DemoContentSeeder::class);
         $this->call(OrderSeeder::class);
+        // After OrderSeeder, so the demo rider gets a few orders assigned.
+        $this->call(DeliveryBoySeeder::class);
         $this->call(CommentSeeder::class);
         $this->call(CouponSeeder::class);
         $this->call(DiscountSeeder::class);
