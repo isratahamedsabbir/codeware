@@ -56,7 +56,7 @@ class CustomerController extends Controller
 
         abort_unless($order->belongsToCustomer(auth()->user()), 404, 'Unknown order.');
 
-        $order->load(['items', 'transactions']);
+        $order->load(['items.product', 'transactions']);
 
         return view('frontend.themes.'.Themes::view('account.order'), $this->viewData([
             'order' => $order,

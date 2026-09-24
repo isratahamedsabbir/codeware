@@ -112,6 +112,22 @@ it('lists every order the customer can see', function () {
         ->assertSee($orders[2]->order_number);
 });
 
+it('renders the order detail page in the checkout card style with invoice links', function () {
+    $customer = User::factory()->create(['email' => 'styled@example.com']);
+    $order = Order::factory()->create([
+        'user_id' => $customer->id,
+        'customer_email' => 'styled@example.com',
+        'shipping_address' => '12 Road, Dhaka',
+        'shipping_method' => 'Express',
+    ]);
+    $order->items()->create(['type' => 'product', 'item_name' => 'Spearmint Tea', 'unit_price' => 450, 'quantity' => 2, 'line_total' => 900]);
+
+    actingAs($customer)->get("/account/orders/{$order->order_number}")
+        ->assertOk()
+        ->assertSeeInOrder([$order->order_number, 'Download invoice (PDF)', 'Order items', 'Spearmint Tea', 'Total', 'Delivery details', '12 Road, Dhaka', 'Payment'], false)
+        ->assertSee(\Illuminate\Support\Facades\URL::signedRoute('invoices.public.download', ['order' => $order->order_number]), false);
+});
+
 it('shows an order detail page only to the customer it belongs to', function () {
     $customer = User::factory()->create(['email' => 'customer@example.com']);
     $other = User::factory()->create(['email' => 'other@example.com']);

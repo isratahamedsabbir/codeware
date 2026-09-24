@@ -9,18 +9,7 @@
 <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-12">
     <div class="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-            <p class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-brand">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-                </svg>
-                {{ __('Shopping cart') }}
-            </p>
-            <h1 class="mt-1 flex items-center gap-3 text-2xl font-extrabold tracking-tight text-sf-heading md:text-3xl">
-                {{ __('My cart') }}
-                @if ($count > 0)
-                    <span class="rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-bold tracking-normal text-brand">{{ trans_choice(':count item|:count items', $count, ['count' => $count]) }}</span>
-                @endif
-            </h1>
+            <h1 class="text-2xl font-extrabold tracking-tight text-sf-heading md:text-3xl">{{ __('My cart') }}</h1>
             <p class="mt-1 text-sm text-zinc-500">{{ __('Review your items before checkout.') }}</p>
         </div>
 
@@ -62,6 +51,11 @@
     @else
         <div class="grid gap-8 lg:grid-cols-[1fr_22rem] lg:items-start">
             <section class="overflow-hidden rounded-card border border-zinc-200 bg-white shadow-sm">
+                <header class="flex items-center justify-between gap-3 border-b border-zinc-100 bg-zinc-50/60 px-5 py-4">
+                    <h2 class="text-base font-bold text-sf-heading">{{ __('Cart items') }}</h2>
+                    <span class="rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-bold text-brand">{{ trans_choice(':count item|:count items', $count, ['count' => $count]) }}</span>
+                </header>
+
                 {{-- Column headings (desktop only — rows stack on small screens). --}}
                 <div class="hidden grid-cols-[1fr_7rem_8rem_7rem_2.5rem] items-center gap-4 border-b border-zinc-100 bg-zinc-50/60 px-5 py-3 text-xs font-bold uppercase tracking-wide text-zinc-500 md:grid">
                     <span>{{ __('Product') }}</span>
@@ -208,27 +202,12 @@
 
                 <div class="px-5 pb-5">
                     <a href="{{ route('checkout') }}"
-                        class="flex w-full items-center justify-center gap-2 rounded-full bg-sf-button px-6 py-3.5 text-sm font-bold text-sf-button-text shadow-sm transition hover:opacity-90">
-                        {{ __('Proceed to checkout') }}
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                        class="flex w-full items-center justify-center gap-2 rounded-[5px] bg-sf-button px-6 py-4 text-sm font-bold text-sf-button-text shadow-md shadow-brand/20 transition hover:opacity-90">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
                         </svg>
+                        <span>{{ __('Proceed to checkout') }}</span>
                     </a>
-
-                    <ul class="mt-5 space-y-2.5 border-t border-zinc-100 pt-4 text-xs text-zinc-500">
-                        <li class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-                            </svg>
-                            {{ __('Secure checkout') }}
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
-                            </svg>
-                            {{ __('Choose your delivery option at checkout') }}
-                        </li>
-                    </ul>
                 </div>
             </aside>
         </div>
