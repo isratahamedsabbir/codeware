@@ -38,15 +38,15 @@
         @endforeach
     </div>
 
-    <div role="tabpanel" x-show="tab === 'banners'">
+    <div role="tabpanel" x-show="tab === 'banners'" x-data="{ activeSlide: 0 }">
         <div class="grid grid-cols-1 gap-4 lg:h-[26rem] lg:grid-cols-3 lg:grid-rows-2">
             {{-- Hero slider — one upload box per slide; the tabs along the bottom
                  switch between slides, add one, or remove one. Every picker stays
                  mounted (only the active one is shown) so each keeps its binding. --}}
-            <div class="relative lg:col-span-2 lg:row-span-2" x-data="{ activeSlide: 0 }">
+            <div class="relative lg:col-span-2 lg:row-span-2">
                 @foreach ($heroSlides as $i => $slide)
                     <div wire:key="hero-slide-{{ $i }}" x-show="activeSlide === {{ $i }}" @if ($i > 0) x-cloak @endif>
-                        <x-media-picker model="heroSlides.{{ $i }}" label="Hero slide {{ $i + 1 }}" size-hint="1920 × 600" preview dropzone drop-height="h-64 lg:h-[26rem]"
+                        <x-media-picker model="heroSlides.{{ $i }}.image" label="Hero slide {{ $i + 1 }}" size-hint="1920 × 600" preview dropzone drop-height="h-64 lg:h-[26rem]"
                             only-images mimes="jpg,jpeg,png,gif,webp" :max-size-mb="4" placeholder="Choose from the library" />
                     </div>
                 @endforeach
@@ -64,8 +64,8 @@
                                 :class="activeSlide === {{ $i }} ? 'ring-2 ring-white' : 'opacity-70 hover:opacity-100'"
                                 class="flex h-11 w-16 items-center justify-center overflow-hidden rounded-md bg-white/15 text-xs font-bold text-white transition"
                                 aria-label="Slide {{ $i + 1 }}">
-                                @if (filled($slide))
-                                    <img src="{{ $slide }}" alt="" class="h-full w-full object-cover">
+                                @if (filled($slide['image']))
+                                    <img src="{{ $slide['image'] }}" alt="" class="h-full w-full object-cover">
                                 @else
                                     {{ $i + 1 }}
                                 @endif
@@ -122,6 +122,37 @@
                         class="{{ $bannerLink }}">
                 </label>
             </div>
+
+        {{-- The selected slide's text and link (follows the slide tabs above). --}}
+        <div class="mt-4 rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/70 px-4 py-2.5 dark:border-zinc-700 dark:bg-zinc-800/50">
+                <span class="flex items-center gap-2 text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+                    <flux:icon.document-text variant="mini" class="size-4 text-zinc-400" />
+                    Slide <span x-text="activeSlide + 1"></span> content
+                </span>
+                <span class="text-[11px] text-zinc-400">Shown over the slide on the homepage — all optional</span>
+            </div>
+            @foreach ($heroSlides as $i => $slide)
+                <div wire:key="hero-content-{{ $i }}" x-show="activeSlide === {{ $i }}" @if ($i > 0) x-cloak @endif
+                    class="grid grid-cols-1 gap-4 p-4 lg:grid-cols-2">
+                    <div class="space-y-4">
+                        <flux:field>
+                            <flux:label>Title</flux:label>
+                            <flux:input wire:model="heroSlides.{{ $i }}.title" placeholder="e.g. Fresh organic tea" maxlength="120" />
+                        </flux:field>
+                        <flux:field>
+                            <flux:label>Link<x-field-hint text="A page on this site (e.g. /shop?category=tea) or a full https:// address. Blank opens the Shop page." /></flux:label>
+                            <flux:input wire:model="heroSlides.{{ $i }}.link" icon="link" placeholder="/shop" />
+                        </flux:field>
+                    </div>
+                    <flux:field>
+                        <flux:label>Description</flux:label>
+                        <flux:textarea wire:model="heroSlides.{{ $i }}.description" rows="4" class="resize-none"
+                            placeholder="e.g. Hand-picked leaves, delivered fresh to your door." maxlength="300" />
+                    </flux:field>
+                </div>
+            @endforeach
+        </div>
         </div>
     </div>
     {{-- Colors — one per storefront area. Blank means "use the default"

@@ -9,22 +9,15 @@
 
 @php
     $siteName = \App\Models\Setting::get('site_name', config('app.name'));
-    // Hero slider images (Theme Settings → Homepage banners); installs that
-    // predate the slider fall back to the single hero image.
-    $heroSlides = json_decode((string) \App\Models\Setting::get('home_hero_slides', ''), true);
-    $heroSlides = is_array($heroSlides)
-        ? array_values(array_filter($heroSlides, 'filled'))
-        : array_values(array_filter([\App\Models\Setting::get('home_hero_image')], 'filled'));
+    // Hero slider (Theme Settings → Banners): each slide {image, title,
+    // description, url}; older image-only data still renders.
+    $heroSlides = \App\Support\HeroSlides::forStorefront();
     $promoImage1 = \App\Models\Setting::get('home_promo_banner_1');
     $promoImage2 = \App\Models\Setting::get('home_promo_banner_2');
 
     // Promo tile links (Theme Settings): a site path or an http(s) URL —
     // anything else (blank, javascript:, …) falls back to the Shop page.
-    $promoLink = function (string $key): string {
-        $link = trim((string) \App\Models\Setting::get($key));
-
-        return preg_match('#^(/(?!/)|https?://)#i', $link) ? $link : route('shop');
-    };
+    $promoLink = fn (string $key): string => \App\Support\HeroSlides::safeUrl(\App\Models\Setting::get($key));
 
     $featured = \App\Models\Product::active()
         ->featured()
@@ -70,11 +63,13 @@
 <main>
     <div class="mx-auto w-full max-w-7xl px-4 sm:px-6">
         <section class="mt-6 grid w-full grid-cols-1 gap-4 lg:h-[440px] lg:grid-cols-3">
-            <a href="{{ route('shop') }}"
+            <a href="{{ $heroSlides[0]['url'] ?? route('shop') }}"
                 @if (count($heroSlides) > 1)
+                    :href="links[active]"
                     x-data="{
                         active: 0,
                         count: {{ count($heroSlides) }},
+                        links: @js(array_column($heroSlides, 'url')),
                         timer: null,
                         start() { this.stop(); this.timer = setInterval(() => this.go(this.active + 1), 5000); },
                         stop() { clearInterval(this.timer); },
@@ -86,11 +81,32 @@
                 class="group/hero relative block h-[300px] overflow-hidden rounded-card lg:col-span-2 lg:h-full">
                 @if ($heroSlides !== [])
                     @foreach ($heroSlides as $i => $slide)
-                        <img src="{{ $slide }}" alt="{{ $siteName }}" @if ($i > 0) loading="lazy" @endif
+                        @php $hasText = filled($slide['title']) || filled($slide['description']); @endphp
+                        <div
                             @if (count($heroSlides) > 1)
-                                :class="active === {{ $i }} ? '!opacity-100 scale-100' : 'opacity-0 scale-105'"
+                                :class="active === {{ $i }} ? '!opacity-100 z-[1]' : 'opacity-0'"
+                                :aria-hidden="active !== {{ $i }}"
                             @endif
-                            class="absolute inset-0 h-full w-full object-cover transition duration-1000 ease-out {{ $i === 0 ? '' : 'opacity-0' }}">
+                            class="absolute inset-0 transition-opacity duration-1000 ease-out {{ $i === 0 ? '' : 'opacity-0' }}">
+                            <img src="{{ $slide['image'] }}" alt="{{ $slide['title'] ?: $siteName }}" @if ($i > 0) loading="lazy" @endif
+                                @if (count($heroSlides) > 1)
+                                    :class="active === {{ $i }} ? 'scale-100' : 'scale-105'"
+                                @endif
+                                class="h-full w-full object-cover transition-transform duration-[1600ms] ease-out">
+
+                            @if ($hasText)
+                                {{-- Text only gets a shade behind it when there's text to read. --}}
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-transparent"></div>
+                                <div class="absolute inset-x-0 bottom-0 p-6 pb-12 md:p-10 md:pb-14">
+                                    @if (filled($slide['title']))
+                                        <h2 class="max-w-xl text-2xl font-bold leading-tight text-white drop-shadow md:text-4xl">{{ $slide['title'] }}</h2>
+                                    @endif
+                                    @if (filled($slide['description']))
+                                        <p class="mt-2 max-w-lg text-sm text-white/90 drop-shadow md:text-base">{{ $slide['description'] }}</p>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
                     @endforeach
 
                     @if (count($heroSlides) > 1)

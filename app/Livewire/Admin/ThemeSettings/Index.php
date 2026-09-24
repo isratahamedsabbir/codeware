@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\ThemeSettings;
 
 use App\Models\Setting;
 use App\Support\AdminActivity;
+use App\Support\HeroSlides;
 use App\Support\Themes;
 use Illuminate\Support\Facades\File;
 use Livewire\Component;
@@ -28,15 +29,15 @@ class Index extends Component
     public array $settings = [];
 
     /** Most hero slides the homepage slider takes. */
-    public const MAX_HERO_SLIDES = 6;
+    public const MAX_HERO_SLIDES = HeroSlides::MAX;
 
     /**
-     * The homepage hero slider's images, in order (a URL per slide, '' for a
-     * slide whose image hasn't been picked yet). Persisted as a JSON list in
-     * `home_hero_slides`; the first one is mirrored into `home_hero_image` so
-     * anything reading the single hero image keeps working.
+     * The homepage hero slider, in order — each slide {image, title,
+     * description, link} (see App\Support\HeroSlides). Persisted as a JSON
+     * list in `home_hero_slides`; the first image is mirrored into
+     * `home_hero_image` so anything reading the single hero image keeps working.
      *
-     * @var array<int, string>
+     * @var array<int, array{image: string, title: string, description: string, link: string}>
      */
     public array $heroSlides = [];
 
@@ -53,17 +54,15 @@ class Index extends Component
             $this->settings[$key] = $row?->type === 'boolean' ? (bool) $value : (string) $value;
         }
 
-        // Older installs only have the single hero image — it becomes slide 1.
-        $slides = json_decode((string) Setting::get('home_hero_slides', ''), true);
-        $this->heroSlides = is_array($slides) && $slides !== []
-            ? array_values(array_map('strval', $slides))
-            : [(string) ($this->settings['home_hero_image'] ?? '')];
+        // Older installs (plain image URLs, or only the single hero image) load
+        // as image-only slides.
+        $this->heroSlides = HeroSlides::stored() ?: [HeroSlides::blank()];
     }
 
     public function addHeroSlide(): void
     {
         if (count($this->heroSlides) < self::MAX_HERO_SLIDES) {
-            $this->heroSlides[] = '';
+            $this->heroSlides[] = HeroSlides::blank();
         }
     }
 
@@ -71,14 +70,18 @@ class Index extends Component
     {
         unset($this->heroSlides[$index]);
 
-        $this->heroSlides = array_values($this->heroSlides) ?: [''];
+        $this->heroSlides = array_values($this->heroSlides) ?: [HeroSlides::blank()];
     }
 
     public function save(): void
     {
-        $slides = array_values(array_filter(array_map(fn ($url) => trim((string) $url), $this->heroSlides)));
+        // A slide without an image isn't shown, so it isn't kept either.
+        $slides = array_values(array_filter(
+            array_map(HeroSlides::normalize(...), $this->heroSlides),
+            fn (array $slide) => $slide['image'] !== '',
+        ));
         Setting::set('home_hero_slides', json_encode($slides));
-        $this->settings['home_hero_image'] = $slides[0] ?? '';
+        $this->settings['home_hero_image'] = $slides[0]['image'] ?? '';
 
         foreach ($this->savableKeys() as $key) {
             if (array_key_exists($key, $this->settings)) {

@@ -254,43 +254,74 @@ it('loads existing theme settings into the form', function () {
         ->and($component->get('settings.popup_title'))->toBe('Welcome');
 });
 
-it('manages multiple hero slides and mirrors the first into home_hero_image', function () {
+it('manages multiple hero slides and mirrors the first image into home_hero_image', function () {
     // An install from before the slider: its single hero image becomes slide 1.
     Setting::factory()->create(['key' => 'home_hero_image', 'value' => 'media/old.jpg', 'group' => 'frontend', 'type' => 'string']);
 
+    $slide = fn (string $image, string $title = '', string $description = '', string $link = '') => compact('image', 'title', 'description', 'link');
+
     $component = Livewire::test(ThemeSettings::class)
-        ->assertSet('heroSlides', ['media/old.jpg'])
+        ->assertSet('heroSlides', [$slide('media/old.jpg')])
         ->call('addHeroSlide')
-        ->set('heroSlides.1', 'media/two.jpg')
+        ->set('heroSlides.1.image', 'media/two.jpg')
+        ->set('heroSlides.1.title', 'Fresh tea')
+        ->set('heroSlides.1.description', 'Hand-picked leaves.')
+        ->set('heroSlides.1.link', '/shop?category=tea')
         ->call('addHeroSlide')
-        ->set('heroSlides.2', 'media/three.jpg')
+        ->set('heroSlides.2.image', 'media/three.jpg')
         ->call('removeHeroSlide', 0)
-        ->assertSet('heroSlides', ['media/two.jpg', 'media/three.jpg']);
+        ->assertSet('heroSlides', [
+            $slide('media/two.jpg', 'Fresh tea', 'Hand-picked leaves.', '/shop?category=tea'),
+            $slide('media/three.jpg'),
+        ]);
 
     foreach (range(1, 10) as $_) {
         $component->call('addHeroSlide');
     }
     expect($component->get('heroSlides'))->toHaveCount(ThemeSettings::MAX_HERO_SLIDES);
 
+    // The blank slides (no image) are dropped on save.
     $component->call('save');
 
-    expect(json_decode(Setting::where('key', 'home_hero_slides')->value('value'), true))->toBe(['media/two.jpg', 'media/three.jpg'])
+    $saved = [
+        $slide('media/two.jpg', 'Fresh tea', 'Hand-picked leaves.', '/shop?category=tea'),
+        $slide('media/three.jpg'),
+    ];
+    expect(json_decode(Setting::where('key', 'home_hero_slides')->value('value'), true))->toBe($saved)
         ->and(Setting::where('key', 'home_hero_image')->value('value'))->toBe('media/two.jpg');
 
-    Livewire::test(ThemeSettings::class)->assertSet('heroSlides', ['media/two.jpg', 'media/three.jpg']);
+    Livewire::test(ThemeSettings::class)->assertSet('heroSlides', $saved);
 });
 
-it('renders the homepage hero as a slider when several slides are set', function () {
+it('still reads hero slides saved as plain image URLs', function () {
+    Setting::set('home_hero_slides', json_encode(['media/a.jpg', 'media/b.jpg']));
+
+    Livewire::test(ThemeSettings::class)
+        ->assertSet('heroSlides.0.image', 'media/a.jpg')
+        ->assertSet('heroSlides.1.image', 'media/b.jpg')
+        ->assertSet('heroSlides.1.title', '');
+});
+
+it('renders the homepage hero as a slider with each slide\'s title, description and link', function () {
     Setting::set('site_theme', 'ecommerce');
-    Setting::set('home_hero_slides', json_encode(['/storage/a.jpg', '/storage/b.jpg']));
+    Setting::set('home_hero_slides', json_encode([
+        ['image' => '/storage/a.jpg', 'title' => 'Fresh organic tea', 'description' => 'Hand-picked leaves.', 'link' => '/shop?category=tea'],
+        ['image' => '/storage/b.jpg', 'title' => '', 'description' => '', 'link' => 'javascript:alert(1)'],
+    ]));
 
     $this->get('/')
         ->assertOk()
         ->assertSee('/storage/a.jpg')
         ->assertSee('/storage/b.jpg')
-        ->assertSee('Next slide');
+        ->assertSee('Fresh organic tea')
+        ->assertSee('Hand-picked leaves.')
+        ->assertSee('Next slide')
+        // The banner links to the active slide; the first one is in the markup.
+        ->assertSee('href="/shop?category=tea"', false)
+        // An unsafe link never reaches the page — that slide opens the shop.
+        ->assertDontSee('javascript:alert(1)', false);
 
-    Setting::set('home_hero_slides', json_encode(['/storage/a.jpg']));
+    Setting::set('home_hero_slides', json_encode([['image' => '/storage/a.jpg']]));
 
     $this->get('/')->assertOk()->assertSee('/storage/a.jpg')->assertDontSee('Next slide');
 });
@@ -327,7 +358,7 @@ it('saves theme settings through Setting::set', function () {
 
     Livewire::test(ThemeSettings::class)
         ->set('settings.site_theme', 'ecommerce')
-        ->set('heroSlides.0', 'media/hero.jpg')
+        ->set('heroSlides.0.image', 'media/hero.jpg')
         ->set('settings.chat_widget_enabled', false)
         ->set('settings.popup_enabled', true)
         ->set('settings.popup_title', 'Welcome to our store')
