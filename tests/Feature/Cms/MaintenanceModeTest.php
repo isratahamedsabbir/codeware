@@ -102,3 +102,14 @@ it('can be turned back off straight from the header switch', function () {
 
     expect(app()->isDownForMaintenance())->toBeFalse();
 });
+
+it('turns on when the bound header switch is flipped', function () {
+    Livewire::test(EnvIndex::class)
+        ->set('maintenanceMode', true)
+        ->assertSet('maintenanceMode', true)
+        ->assertDispatched('notify');
+
+    expect(app()->isDownForMaintenance())->toBeTrue();
+
+    Artisan::call('up');
+});

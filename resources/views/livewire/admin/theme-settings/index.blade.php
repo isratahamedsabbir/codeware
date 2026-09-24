@@ -275,13 +275,7 @@
         description="The support chat bubble on the public site. Visitors verify with an email code before chatting.">
 
         <x-slot:actions>
-            <label class="relative inline-flex shrink-0 cursor-pointer items-center" title="Enable Live Chat">
-                <input type="checkbox" wire:model="settings.chat_widget_enabled" class="peer sr-only">
-                <div
-                    class="h-5 w-9 rounded-full bg-zinc-300 transition-colors peer-checked:bg-emerald-500 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-500/40 dark:bg-zinc-600"></div>
-                <div
-                    class="absolute left-0.5 top-0.5 size-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4"></div>
-            </label>
+            <flux:switch wire:model="settings.chat_widget_enabled" aria-label="Enable Live Chat" title="Enable Live Chat" />
         </x-slot:actions>
     </x-admin-section-card>
 
@@ -291,13 +285,7 @@
         collapsible :collapsed="true">
 
         <x-slot:actions>
-            <label class="relative inline-flex shrink-0 cursor-pointer items-center" title="Show Announcement Popup">
-                <input type="checkbox" wire:model="settings.popup_enabled" class="peer sr-only">
-                <div
-                    class="h-5 w-9 rounded-full bg-zinc-300 transition-colors peer-checked:bg-emerald-500 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-500/40 dark:bg-zinc-600"></div>
-                <div
-                    class="absolute left-0.5 top-0.5 size-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4"></div>
-            </label>
+            <flux:switch wire:model="settings.popup_enabled" aria-label="Show Announcement Popup" title="Show Announcement Popup" />
         </x-slot:actions>
 
         <div class="space-y-7">

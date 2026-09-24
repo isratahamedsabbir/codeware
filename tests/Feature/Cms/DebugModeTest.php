@@ -21,6 +21,10 @@ beforeEach(function () {
 
     EnvFile::$pathOverride = $this->envPath;
 
+    // Match the fixture's APP_DEBUG=false — mount() reads config('app.debug'),
+    // which otherwise comes from the real .env and may well be true locally.
+    config(['app.debug' => false]);
+
     $this->seed(RolePermissionSeeder::class);
     $this->admin = User::factory()->admin()->create();
     $this->actingAs($this->admin);
@@ -105,4 +109,23 @@ it('can be turned back off straight from the header switch', function () {
         ->assertDispatched('notify');
 
     expect(EnvFile::get('APP_DEBUG'))->toBe('false');
+});
+
+it('turns on when the bound header switch is flipped', function () {
+    Livewire::test(EnvIndex::class)
+        ->set('debugMode', true)
+        ->assertSet('debugMode', true)
+        ->assertDispatched('notify');
+
+    expect(EnvFile::get('APP_DEBUG'))->toBe('true');
+});
+
+it('snaps the bound header switch back off when the .env write fails', function () {
+    $component = Livewire::test(EnvIndex::class)->assertSet('debugMode', false);
+
+    EnvFile::$pathOverride = sys_get_temp_dir().'/nonexistent-dir-'.uniqid().'/.env';
+
+    $component->set('debugMode', true)
+        ->assertSet('debugMode', false)
+        ->assertDispatched('notify');
 });

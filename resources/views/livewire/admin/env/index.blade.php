@@ -68,11 +68,7 @@
                     description="Takes the public site offline for every visitor. The admin panel and login stay reachable either way."
                     class="w-full scroll-mt-24 {{ $maintenanceMode ? 'border-red-300! dark:border-red-800!' : '' }}">
                     <x-slot:actions>
-                        <button type="button" wire:click="toggleMaintenanceMode" role="switch"
-                            aria-checked="{{ $maintenanceMode ? 'true' : 'false' }}" title="Take the public site offline"
-                            class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors {{ $maintenanceMode ? 'bg-red-500' : 'bg-zinc-300 dark:bg-zinc-600' }}">
-                            <span class="absolute left-0.5 top-0.5 size-4 rounded-full bg-white shadow transition-transform {{ $maintenanceMode ? 'translate-x-4' : '' }}"></span>
-                        </button>
+                        <flux:switch wire:model.live="maintenanceMode" aria-label="Maintenance mode" title="Take the public site offline" />
                     </x-slot:actions>
                 </x-admin-section-card>
 
@@ -82,11 +78,7 @@
                     description="Shows full error details and stack traces to visitors. Leave this off in production."
                     class="w-full scroll-mt-24 {{ $debugMode ? 'border-amber-300! dark:border-amber-800!' : '' }}">
                     <x-slot:actions>
-                        <button type="button" wire:click="toggleDebugMode" role="switch"
-                            aria-checked="{{ $debugMode ? 'true' : 'false' }}" title="Show full error details to visitors"
-                            class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors {{ $debugMode ? 'bg-amber-500' : 'bg-zinc-300 dark:bg-zinc-600' }}">
-                            <span class="absolute left-0.5 top-0.5 size-4 rounded-full bg-white shadow transition-transform {{ $debugMode ? 'translate-x-4' : '' }}"></span>
-                        </button>
+                        <flux:switch wire:model.live="debugMode" aria-label="Debug mode" title="Show full error details to visitors" />
                     </x-slot:actions>
                 </x-admin-section-card>
             </div>
@@ -100,7 +92,7 @@
                         <flux:icon.information-circle class="size-5" />
                     </button>
                 </x-slot:actions>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-5">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-3">
                     @foreach ($this->envFields()['App'] as $key => $meta)
                         @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
                     @endforeach
@@ -119,7 +111,7 @@
                         <flux:icon.information-circle class="size-5" />
                     </button>
                 </x-slot:actions>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-5">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-3">
                     @foreach ($this->envFields()['Google Login'] as $key => $meta)
                         @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
                     @endforeach
@@ -134,7 +126,7 @@
                         <flux:icon.information-circle class="size-5" />
                     </button>
                 </x-slot:actions>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-5">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-3">
                     @foreach ($this->envFields()['Facebook Login'] as $key => $meta)
                         @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
                     @endforeach
@@ -154,7 +146,7 @@
                         <flux:icon.information-circle class="size-5" />
                     </button>
                 </x-slot:actions>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-5">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-3">
                     @foreach ($this->envFields()['reCAPTCHA'] as $key => $meta)
                         @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
                     @endforeach
@@ -248,7 +240,7 @@
                         <flux:icon.information-circle class="size-5" />
                     </button>
                 </x-slot:actions>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-5">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-3">
                     @foreach ($this->envFields()['AWS S3'] as $key => $meta)
                         @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
                     @endforeach

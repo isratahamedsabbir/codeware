@@ -240,10 +240,27 @@ class Index extends Component
     }
 
     /**
-     * Header-switch toggle — computes the target from the CURRENT state (the
-     * switch is a plain button, not a bound checkbox), flips the real
-     * maintenance state, and reverts if the artisan command didn't stick
-     * (e.g. it couldn't write the down file).
+     * The header <flux:switch> binds straight to maintenanceMode, so by now
+     * the property already holds the requested value — put the real state
+     * back and run the toggle, which only commits it once the change sticks.
+     */
+    public function updatedMaintenanceMode(bool $value): void
+    {
+        $this->maintenanceMode = ! $value;
+        $this->toggleMaintenanceMode();
+    }
+
+    /** Same as updatedMaintenanceMode(), for the Debug Mode header switch. */
+    public function updatedDebugMode(bool $value): void
+    {
+        $this->debugMode = ! $value;
+        $this->toggleDebugMode();
+    }
+
+    /**
+     * Computes the target from the CURRENT state, flips the real maintenance
+     * state, and reverts if the artisan command didn't stick (e.g. it
+     * couldn't write the down file).
      */
     public function toggleMaintenanceMode(): void
     {
@@ -300,9 +317,8 @@ class Index extends Component
     }
 
     /**
-     * Header-switch toggle — computes the target from the CURRENT state (the
-     * switch is a plain button, not a bound checkbox), writes APP_DEBUG to
-     * match, and reverts with an error if the write can't happen.
+     * Computes the target from the CURRENT state, writes APP_DEBUG to match,
+     * and reverts with an error if the write can't happen.
      */
     public function toggleDebugMode(): void
     {
