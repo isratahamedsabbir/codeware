@@ -60,6 +60,20 @@
                 }) ?? null;
             },
 
+            // How many of the selected combination are already in the cart —
+            // read live from the component, so the stepper follows every change.
+            get cartQty() {
+                return this.selected ? (this.$wire.inCartByCombo[this.selected.key] ?? 0) : 0;
+            },
+
+            more() {
+                if (this.selected) this.$wire.call('increment', { ...this.selection });
+            },
+
+            less() {
+                if (this.selected) this.$wire.call('decrement', { ...this.selection });
+            },
+
             async addToCart() {
                 if (!this.ready || !this.selected || !this.selected.in_stock) {
                     return;
@@ -92,6 +106,7 @@
 
         $variationRows = collect($variations)->map(fn (array $row) => [
             'attributes' => $row['attributes'] ?? [],
+            'key' => \App\Support\Cart::signature(array_map('strval', $row['attributes'] ?? [])),
             'sku' => ($row['sku'] ?? null) ?: null,
             'price_label' => format_money($row['price'] ?? $product->price),
             'discount_label' => (isset($row['price'], $row['discount_price']) && (float) $row['discount_price'] < (float) $row['price'])
@@ -132,16 +147,12 @@
                     aria-live="polite"
                     class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
                 >
-                    @if ($added)
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                        </svg>
-                        <span>{{ __('Added') }}</span>
-                    @else
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-                        </svg>
-                        <span>{{ __('Add to cart') }}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                    </svg>
+                    <span>{{ __('Add to cart') }}</span>
+                    @if ($comboTotal = array_sum($inCartByCombo))
+                        <span class="rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-bold">{{ __(':count in cart', ['count' => $comboTotal]) }}</span>
                     @endif
                 </button>
 
@@ -212,6 +223,21 @@
                                     </template>
                                 </div>
 
+                                <template x-if="cartQty > 0">
+                                    <div class="mt-6 flex w-full items-center gap-2">
+                                        <div class="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-full border-2 border-brand bg-brand/5 p-0.5" wire:loading.class="opacity-70" wire:target="increment,decrement">
+                                            <button type="button" @click="less()" wire:loading.attr="disabled" aria-label="{{ __('Remove one') }}" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-brand shadow-sm transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50">
+                                                <template x-if="cartQty === 1"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg></template>
+                                                <template x-if="cartQty > 1"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" /></svg></template>
+                                            </button>
+                                            <span class="truncate text-sm font-bold text-brand"><span class="tabular-nums" x-text="cartQty"></span> {{ __('in cart') }}</span>
+                                            <button type="button" @click="more()" wire:loading.attr="disabled" aria-label="{{ __('Add one more') }}" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand text-white shadow-sm transition hover:opacity-90 disabled:opacity-50">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                                <template x-if="cartQty === 0">
                                 <div class="mt-6 flex w-full items-center gap-2">
                                     @if ($adjustable)
                                         <div class="flex shrink-0 items-center rounded-full border border-zinc-200 bg-white">
@@ -240,6 +266,7 @@
                                         <span>{{ __('Add to cart') }}</span>
                                     </button>
                                 </div>
+                                </template>
 
                                 @error('options')
                                     <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
@@ -301,6 +328,21 @@
                 </template>
             </div>
 
+            <template x-if="cartQty > 0">
+                <div class="mt-6 flex w-full items-center gap-2">
+                    <div class="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-full border-2 border-brand bg-brand/5 p-0.5" wire:loading.class="opacity-70" wire:target="increment,decrement">
+                        <button type="button" @click="less()" wire:loading.attr="disabled" aria-label="{{ __('Remove one') }}" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-brand shadow-sm transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50">
+                            <template x-if="cartQty === 1"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg></template>
+                            <template x-if="cartQty > 1"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" /></svg></template>
+                        </button>
+                        <span class="truncate text-sm font-bold text-brand"><span class="tabular-nums" x-text="cartQty"></span> {{ __('in cart') }}</span>
+                        <button type="button" @click="more()" wire:loading.attr="disabled" aria-label="{{ __('Add one more') }}" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand text-white shadow-sm transition hover:opacity-90 disabled:opacity-50">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                        </button>
+                    </div>
+                </div>
+            </template>
+            <template x-if="cartQty === 0">
             <div class="mt-6 flex w-full items-center gap-2">
                 @if ($adjustable)
                     <div class="flex shrink-0 items-center rounded-full border border-zinc-200 bg-white">
@@ -320,23 +362,17 @@
                     type="button"
                     @click="addToCart()"
                     :disabled="!ready || (selected && !selected.in_stock)"
-                    :class="ready && selected && selected.in_stock ? ({{ $added ? "'bg-emerald-600'" : "'bg-brand'" }}) : 'cursor-not-allowed bg-zinc-300'"
+                    :class="ready && selected && selected.in_stock ? 'bg-brand' : 'cursor-not-allowed bg-zinc-300'"
                     aria-live="polite"
                     class="inline-flex flex-1 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
                 >
-                    @if ($added)
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                        </svg>
-                        <span>{{ __('Added') }}</span>
-                    @else
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
                         </svg>
                         <span>{{ __('Add to cart') }}</span>
-                    @endif
                 </button>
             </div>
+            </template>
 
             @error('options')
                 <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
@@ -348,6 +384,30 @@
             disabled
             class="w-full cursor-not-allowed rounded-full bg-zinc-100 px-4 py-2.5 text-center text-sm font-semibold text-zinc-400"
         >{{ __('Out of stock') }}</button>
+    @elseif ($inCart > 0)
+        {{-- Already in the cart: a stepper replaces the button so the shopper
+             can add more (or take one out — the last one empties the line). --}}
+        <div class="flex w-full items-center gap-2">
+            <div class="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-full border-2 border-brand bg-brand/5 p-0.5" wire:loading.class="opacity-70" wire:target="increment,decrement">
+                <button type="button" wire:click="decrement" wire:loading.attr="disabled" aria-label="{{ __('Remove one') }}" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-brand shadow-sm transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50">
+                    @if ($inCart === 1)
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+                    @else
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" /></svg>
+                    @endif
+                </button>
+                <span class="truncate text-sm font-bold text-brand"><span class="tabular-nums">{{ $inCart }}</span> {{ __('in cart') }}</span>
+                <button type="button" wire:click="increment" wire:loading.attr="disabled" aria-label="{{ __('Add one more') }}" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand text-white shadow-sm transition hover:opacity-90 disabled:opacity-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                </button>
+            </div>
+            @if ($adjustable)
+                <a href="{{ route('cart') }}"
+                    class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-zinc-300 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 shadow-sm transition hover:border-brand hover:text-brand">
+                    {{ __('View cart') }}
+                </a>
+            @endif
+        </div>
     @else
         <div class="flex w-full items-center gap-2">
             @if ($adjustable)
@@ -368,19 +428,12 @@
                 type="button"
                 wire:click="add"
                 aria-live="polite"
-                class="inline-flex flex-1 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 {{ $added ? 'bg-emerald-600' : 'bg-brand' }}"
+                class="inline-flex flex-1 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 bg-brand"
             >
-                @if ($added)
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                    </svg>
-                    <span>{{ __('Added') }}</span>
-                @else
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
                     </svg>
                     <span>{{ __('Add to cart') }}</span>
-                @endif
             </button>
         </div>
     @endif

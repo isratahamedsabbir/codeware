@@ -43,6 +43,18 @@ class AddToCartButton extends Component
 
     public bool $isUpcoming = false;
 
+    /** Quantity of this product's plain (no-options) line already in the cart. */
+    public int $inCart = 0;
+
+    /**
+     * Quantity already in the cart per option combination of this product,
+     * keyed by Cart::signature() — lets the picker swap its add button for a
+     * stepper once the selected combination is in the cart.
+     *
+     * @var array<string, int>
+     */
+    public array $inCartByCombo = [];
+
     public function mount(int $productId, string $slug = '', int $quantity = 1, bool $adjustable = false, bool $requiresOptions = false, bool $showPicker = false, bool $hasVariations = false, ?bool $inStock = null, ?bool $isUpcoming = null): void
     {
         $this->productId = $productId;
@@ -52,6 +64,7 @@ class AddToCartButton extends Component
         $this->requiresOptions = $requiresOptions;
         $this->showPicker = $showPicker;
         $this->hasVariations = $hasVariations;
+        $this->syncCart();
 
         // Product cards already know these, so they pass them in and save the
         // lookup; the detail page leaves them null and we read the product
@@ -121,7 +134,54 @@ class AddToCartButton extends Component
 
         Cart::add($this->productId, $this->quantity, $attributes);
         $this->added = true;
+        $this->syncCart();
         $this->dispatch('cart-updated');
+    }
+
+    /**
+     * The in-cart stepper's "+": one more of the line (plain product or the
+     * given option combination), through the same stock/option checks as add().
+     *
+     * @param  array<string, string>|null  $attributes
+     */
+    public function increment(?array $attributes = []): void
+    {
+        $quantity = $this->quantity;
+        $this->quantity = 1;
+        $this->add($attributes);
+        $this->quantity = $quantity;
+    }
+
+    /**
+     * The in-cart stepper's "−": one fewer of the line; at zero the line leaves
+     * the cart and the control falls back to its "Add to cart" button.
+     *
+     * @param  array<string, string>|null  $attributes
+     */
+    public function decrement(?array $attributes = []): void
+    {
+        $attributes = $attributes === null ? [] : array_map('strval', $attributes);
+        $key = Cart::lineKey($this->productId, $attributes);
+
+        Cart::setQuantity($key, Cart::quantity($key) - 1);
+
+        $this->syncCart();
+        $this->added = $this->inCart > 0 || $this->inCartByCombo !== [];
+        $this->dispatch('cart-updated');
+    }
+
+    private function syncCart(): void
+    {
+        $this->inCart = Cart::quantity($this->productId);
+
+        $prefix = $this->productId.'::';
+        $this->inCartByCombo = [];
+
+        foreach (Cart::items() as $key => $quantity) {
+            if (str_starts_with((string) $key, $prefix)) {
+                $this->inCartByCombo[substr((string) $key, strlen($prefix))] = (int) $quantity;
+            }
+        }
     }
 
     public function render()

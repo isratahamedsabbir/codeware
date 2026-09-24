@@ -47,7 +47,8 @@
 
     {{-- ── Site Design ── --}}
     <x-admin-section-card header-border="border-zinc-100" icon="swatch" title="Site Design"
-        description="The design shown to visitors on the public site. Pick a theme card — changes apply once you save.">
+        description="The design shown to visitors on the public site. Pick a theme card — changes apply once you save."
+        collapsible :collapsed="true">
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             @foreach ($themes as $slug => $label)
@@ -271,7 +272,8 @@
 
     {{-- ── Homepage ── --}}
     <x-admin-section-card header-border="border-zinc-100" icon="home" title="Homepage"
-        description="Copy and imagery the homepage of your theme renders on the public site.">
+        description="Copy and imagery the homepage of your theme renders on the public site."
+        collapsible :collapsed="true">
 
         <div class="space-y-7">
 
@@ -324,7 +326,8 @@
 
     {{-- ── Popup (announcement) ────────────────────────────────────────────── --}}
     <x-admin-section-card header-border="border-zinc-100" icon="megaphone" title="Popup"
-        description="A one-time announcement popup for visitors: it appears on their first visit and, once closed, never bothers them again.">
+        description="A one-time announcement popup for visitors: it appears on their first visit and, once closed, never bothers them again."
+        collapsible :collapsed="true">
 
         <x-slot:actions>
             <label class="relative inline-flex shrink-0 cursor-pointer items-center" title="Show Announcement Popup">

@@ -54,6 +54,54 @@ it('adds a product to the cart from its card', function () {
     expect(session('cart'))->toBe([$product->id => 1]);
 });
 
+it('swaps the add button for an in-cart stepper that adds and removes one at a time', function () {
+    $product = cartProduct('stepper', ['name' => ['en' => 'Stepper Thing', 'bn' => ''], 'price' => 100]);
+
+    $component = Livewire::test(AddToCartButton::class, ['productId' => $product->id])
+        ->assertSee('Add to cart')
+        ->assertDontSee('in cart')
+        ->call('add')
+        ->assertSet('inCart', 1)
+        ->assertSee('in cart')
+        ->assertDontSee('Added')
+        ->call('increment')
+        ->call('increment')
+        ->assertSet('inCart', 3)
+        ->assertDispatched('cart-updated');
+
+    expect(session('cart'))->toBe([$product->id => 3]);
+
+    $component->call('decrement')->call('decrement')->call('decrement')
+        ->assertSet('inCart', 0)
+        ->assertSee('Add to cart');
+
+    expect(session('cart'))->toBe([]);
+
+    // A fresh render of a product already in the cart starts on the stepper.
+    Cart::add($product->id, 2);
+    Livewire::test(AddToCartButton::class, ['productId' => $product->id])
+        ->assertSet('inCart', 2)
+        ->assertSee('in cart');
+});
+
+it('tracks the in-cart quantity per option combination for the picker stepper', function () {
+    $product = cartVariantProduct('stepper-variant');
+    $product->update(['variations' => [
+        ['attributes' => ['Color' => 'Red', 'Size' => 'M'], 'price' => 22, 'discount_price' => null, 'quantity' => 5, 'visible' => true],
+    ]]);
+    $red = ['Color' => 'Red', 'Size' => 'M'];
+
+    Livewire::test(AddToCartButton::class, ['productId' => $product->id, 'showPicker' => true])
+        ->call('add', $red)
+        ->call('increment', $red)
+        ->assertSet('inCartByCombo', [Cart::signature($red) => 2])
+        ->call('decrement', $red)
+        ->call('decrement', $red)
+        ->assertSet('inCartByCombo', []);
+
+    expect(session('cart'))->toBe([]);
+});
+
 it('does not let you add an out-of-stock or upcoming product to the cart', function () {
     $outOfStock = cartProduct('no-stock', ['name' => ['en' => 'No Stock', 'bn' => ''], 'quantity' => 0]);
     $upcoming = cartProduct('soon', ['name' => ['en' => 'Coming Soon', 'bn' => ''], 'is_upcoming' => true]);
