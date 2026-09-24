@@ -58,6 +58,32 @@ it('leads the product page with its name and lists category, brand, type and tag
     ], false);
 });
 
+it('shows the stock status as a badge beside the product name and no shipping-charge note', function () {
+    storefrontProduct('in-stock-tea', ['name' => ['en' => 'In Stock Tea', 'bn' => ''], 'quantity' => 5, 'charge_shipping' => true]);
+    storefrontProduct('sold-out-tea', ['name' => ['en' => 'Sold Out Tea', 'bn' => ''], 'quantity' => 0, 'charge_shipping' => false]);
+
+    get('/products/in-stock-tea')->assertOk()
+        ->assertSeeInOrder(['In Stock Tea</h1>', 'In stock', 'Add to cart'], false)
+        ->assertDontSee('Shipping charges apply')
+        ->assertDontSee('Free shipping');
+
+    get('/products/sold-out-tea')->assertOk()
+        ->assertSeeInOrder(['Sold Out Tea</h1>', 'Out of stock'], false)
+        ->assertSee('Free shipping');
+
+    // Variant products: the badge and the price under the name start from the
+    // default (first) combination and follow the picker via `variant-selected`.
+    $variant = storefrontProduct('variant-tea', ['name' => ['en' => 'Variant Tea', 'bn' => ''], 'quantity' => 5, 'price' => 999]);
+    $variant->update(['variations' => [
+        ['attributes' => ['Weight' => '100 gm'], 'price' => 450, 'discount_price' => null, 'quantity' => 5, 'visible' => true, 'sku' => 'TEA-100'],
+        ['attributes' => ['Weight' => '50 gm'], 'price' => 250, 'discount_price' => null, 'quantity' => 0, 'visible' => true],
+    ]]);
+
+    get('/products/variant-tea')->assertOk()
+        ->assertSeeInOrder(['Variant Tea</h1>', 'In stock', 'TEA-100', format_money(450), '100 gm'], false)
+        ->assertSee('variant-selected', false);
+});
+
 it('lists only active products on the shop page', function () {
     $visible = storefrontProduct('visible-product', ['name' => ['en' => 'Visible Product', 'bn' => '']]);
     $hidden = Product::factory()->draft()->create(['name' => ['en' => 'Hidden Product', 'bn' => '']]);

@@ -756,6 +756,17 @@ flux\:table\:row:hover {
     background: var(--color-scrollbar-thumb-hover);
 }
 
+/* ── Hidden scrollbar (still scrollable) — e.g. the homepage category slider.
+   Unlayered like the rules above, so it wins over the global `*` scrollbar
+   styling (a layered Tailwind utility would lose to it). ── */
+.no-scrollbar {
+    scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
 /* ── Chat scrollbars (WhatsApp-style: a bit more visible than the site default) ── */
 
 .chat-scroll {

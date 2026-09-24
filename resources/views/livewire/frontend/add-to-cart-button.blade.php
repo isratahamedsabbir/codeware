@@ -9,6 +9,26 @@
             // option — the "Select options to see stock." placeholder never
             // flashes when a product carries variations.
             selection: (data.initial_selection && { ...data.initial_selection }) || {},
+
+            init() {
+                if (! data.announce_stock) return;
+
+                // The product page prints the price under the name and the stock
+                // badge beside it (outside this component) — keep both in step
+                // with the picked combination.
+                const announce = () => window.dispatchEvent(new CustomEvent('variant-selected', {
+                    detail: {
+                        productId: data.product_id,
+                        selected: !! this.selected,
+                        inStock: this.selected ? this.selected.in_stock : null,
+                        priceLabel: this.selected ? this.selected.price_label : this.base_price_label,
+                        discountLabel: this.selected ? this.selected.discount_label : this.base_discount_label,
+                        sku: this.selected ? this.selected.sku : null,
+                    },
+                }));
+                this.$watch('selected', announce);
+                announce();
+            },
             base_price_label: data.base_price_label,
             base_discount_label: data.base_discount_label,
             base_stock_label: data.base_stock_label,
@@ -125,6 +145,9 @@
         'groups' => $variationGroups,
         'variations' => $variationRows,
         'initial_selection' => $variations[0]['attributes'] ?? null,
+        'product_id' => $productId,
+        // Only the product page's inline picker drives the price / stock by the name.
+        'announce_stock' => $showPicker && ! $requiresOptions,
         'base_price_label' => $product !== null ? format_money($product->price) : null,
         'base_discount_label' => $pickerBaseDiscount,
         'base_stock_label' => ($product !== null && $product->inStock()) ? __('In stock') : __('Out of stock'),
@@ -239,20 +262,6 @@
                                 </template>
                                 <template x-if="cartQty === 0">
                                 <div class="mt-6 flex w-full items-center gap-2">
-                                    @if ($adjustable)
-                                        <div class="flex shrink-0 items-center rounded-full border border-zinc-200 bg-white">
-                                            <button type="button" wire:click="decrease" aria-label="{{ __('Decrease quantity') }}"
-                                                class="flex h-11 w-9 items-center justify-center rounded-l-full text-lg font-semibold text-zinc-600 transition hover:text-brand">
-                                                &minus;
-                                            </button>
-                                            <span class="w-10 text-center text-sm font-bold text-sf-heading">{{ $quantity }}</span>
-                                            <button type="button" wire:click="increase" aria-label="{{ __('Increase quantity') }}"
-                                                class="flex h-11 w-9 items-center justify-center rounded-r-full text-lg font-semibold text-zinc-600 transition hover:text-brand">
-                                                +
-                                            </button>
-                                        </div>
-                                    @endif
-
                                     <button
                                         type="button"
                                         @click="addToCart()"
@@ -306,28 +315,6 @@
                 </div>
             </template>
 
-            <div class="mt-6 flex items-baseline gap-3">
-                <template x-if="selected">
-                    <div class="flex flex-wrap items-baseline gap-3">
-                        <span class="text-3xl font-extrabold text-sf-heading" x-text="selected.discount_label || selected.price_label"></span>
-                        <span x-show="selected.discount_label" class="text-lg text-zinc-400 line-through" x-text="selected.price_label"></span>
-                        <span class="mt-1 w-full text-sm" :class="selected.in_stock ? 'text-emerald-600' : 'text-red-500'" x-text="selected.stock_label"></span>
-                        <template x-if="selected.sku">
-                            <span class="mt-1 w-full text-xs text-zinc-400">{{ __('SKU') }}: <span class="font-mono" x-text="selected.sku"></span></span>
-                        </template>
-                    </div>
-                </template>
-                <template x-if="!selected">
-                    <div class="flex flex-wrap items-baseline gap-3">
-                        <span class="text-3xl font-extrabold text-sf-heading" x-text="base_discount_label || base_price_label"></span>
-                        <span x-show="base_discount_label" class="text-lg text-zinc-400 line-through" x-text="base_price_label"></span>
-                        @if (! $product->is_upcoming)
-                            <span class="mt-1 w-full text-sm text-zinc-500">{{ __('Select options to see stock.') }}</span>
-                        @endif
-                    </div>
-                </template>
-            </div>
-
             <template x-if="cartQty > 0">
                 <div class="mt-6 flex w-full items-center gap-2">
                     <div class="flex h-10 min-w-0 flex-1 items-stretch overflow-hidden rounded-[5px] border border-brand bg-white shadow-sm" wire:loading.class="opacity-70" wire:target="increment,decrement">
@@ -344,20 +331,6 @@
             </template>
             <template x-if="cartQty === 0">
             <div class="mt-6 flex w-full items-center gap-2">
-                @if ($adjustable)
-                    <div class="flex shrink-0 items-center rounded-full border border-zinc-200 bg-white">
-                        <button type="button" wire:click="decrease" aria-label="{{ __('Decrease quantity') }}"
-                            class="flex h-11 w-9 items-center justify-center rounded-l-full text-lg font-semibold text-zinc-600 transition hover:text-brand">
-                            &minus;
-                        </button>
-                        <span class="w-10 text-center text-sm font-bold text-sf-heading">{{ $quantity }}</span>
-                        <button type="button" wire:click="increase" aria-label="{{ __('Increase quantity') }}"
-                            class="flex h-11 w-9 items-center justify-center rounded-r-full text-lg font-semibold text-zinc-600 transition hover:text-brand">
-                            +
-                        </button>
-                    </div>
-                @endif
-
                 <button
                     type="button"
                     @click="addToCart()"
@@ -410,20 +383,6 @@
         </div>
     @else
         <div class="flex w-full items-center gap-2">
-            @if ($adjustable)
-                <div class="flex shrink-0 items-center rounded-full border border-zinc-200 bg-white">
-                    <button type="button" wire:click="decrease" aria-label="{{ __('Decrease quantity') }}"
-                        class="flex h-11 w-9 items-center justify-center rounded-l-full text-lg font-semibold text-zinc-600 transition hover:text-brand">
-                        &minus;
-                    </button>
-                    <span class="w-10 text-center text-sm font-bold text-sf-heading">{{ $quantity }}</span>
-                    <button type="button" wire:click="increase" aria-label="{{ __('Increase quantity') }}"
-                        class="flex h-11 w-9 items-center justify-center rounded-r-full text-lg font-semibold text-zinc-600 transition hover:text-brand">
-                        +
-                    </button>
-                </div>
-            @endif
-
             <button
                 type="button"
                 wire:click="add"

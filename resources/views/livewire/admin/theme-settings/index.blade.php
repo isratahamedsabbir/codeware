@@ -256,7 +256,7 @@
          component hydrates on mount and persists on save). --}}
     @if ($selectedHasSettings)
         <x-admin-section-card header-border="border-zinc-100" icon="adjustments-horizontal" title="Theme Settings"
-            description="Settings the selected theme ({{ $selectedSlug }}) defines itself — saved under the theme_&lt;slug&gt;_ prefix.">
+            description="Settings the selected theme ({{ $selectedSlug }}) defines itself — saved under the theme_{{ $selectedSlug }}_ prefix.">
             <x-slot:titleActions>
                 <button type="button" @click="showThemeGuide = true" title="How theme settings work"
                     class="flex size-5 items-center justify-center text-zinc-400 transition-colors hover:text-primary cursor-pointer">

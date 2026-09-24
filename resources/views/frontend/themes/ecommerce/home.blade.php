@@ -33,7 +33,7 @@
         ->orderBy('sort_order')
         ->get()
         ->filter(fn ($category) => $category->page !== null)
-        ->take(10);
+        ->take(20);
 
     $homeBrands = \App\Models\ProductBrand::active()
         ->orderBy('sort_order')
@@ -166,11 +166,51 @@
                     <a href="{{ route('shop') }}" class="shrink-0 text-sm font-semibold text-brand hover:underline">{{ __('View all') }} →</a>
                 </div>
 
-                <div class="mt-5 rounded-card bg-gray-100 p-3 md:p-4">
-                    <div class="grid grid-cols-3 gap-2.5 sm:grid-cols-2 md:grid-cols-5 md:gap-4 lg:grid-cols-6">
+                {{-- A snap-scrolling row: 3 / 5 / 6 tiles per view. The arrows only
+                     appear once the tiles overflow, and fade out at either end.
+                     While it overflows it also auto-advances one tile every 3s
+                     (looping back to the start), pausing on hover / touch, in a
+                     background tab, and for visitors who prefer reduced motion. --}}
+                <div class="group/cats relative mt-5 rounded-card bg-gray-100 p-3 md:p-4"
+                    x-data="{
+                        canPrev: false,
+                        canNext: false,
+                        update() {
+                            const t = this.$refs.track;
+                            this.canPrev = t.scrollLeft > 4;
+                            this.canNext = t.scrollLeft + t.clientWidth < t.scrollWidth - 4;
+                        },
+                        page(dir) {
+                            const t = this.$refs.track;
+                            t.scrollBy({ left: dir * t.clientWidth, behavior: 'smooth' });
+                        },
+                        paused: false,
+                        timer: null,
+                        step() {
+                            const t = this.$refs.track;
+                            if (this.paused || document.hidden || ! (this.canPrev || this.canNext)) return;
+                            if (! this.canNext) {
+                                t.scrollTo({ left: 0, behavior: 'smooth' });
+                                return;
+                            }
+                            const tile = t.firstElementChild;
+                            const gap = parseFloat(getComputedStyle(t).columnGap) || 0;
+                            t.scrollBy({ left: (tile ? tile.offsetWidth : t.clientWidth) + gap, behavior: 'smooth' });
+                        },
+                        autoplay() {
+                            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+                            this.timer = setInterval(() => this.step(), 3000);
+                        },
+                    }"
+                    x-init="update(); new ResizeObserver(() => update()).observe($refs.track); autoplay()"
+                    @mouseenter="paused = true" @mouseleave="paused = false"
+                    @touchstart.passive="paused = true" @touchend.passive="setTimeout(() => paused = false, 4000)"
+                    @focusin="paused = true" @focusout="paused = false">
+                    <div x-ref="track" @scroll.passive="update()"
+                        class="flex snap-x snap-mandatory gap-2.5 overflow-x-auto scroll-smooth md:gap-4 no-scrollbar">
                         @foreach ($homeCategories as $category)
                             <a href="{{ route('shop.category', $category->slug) }}"
-                                class="flex h-[104px] flex-col items-center justify-center gap-1.5 rounded-card bg-white p-2.5 text-center shadow-sm transition hover:shadow-md md:h-[131px] md:p-3">
+                                class="flex h-[104px] w-[calc((100%-1.25rem)/3)] shrink-0 snap-start flex-col items-center justify-center gap-1.5 rounded-card bg-white p-2.5 text-center shadow-sm transition hover:shadow-md md:h-[131px] md:w-[calc((100%-4rem)/5)] md:p-3 lg:w-[calc((100%-5rem)/6)]">
                                 @if ($category->icon)
                                     <img src="{{ $category->icon }}" alt="" class="h-[50px] w-[50px] rounded-lg object-contain">
                                 @else
@@ -187,6 +227,15 @@
                             </a>
                         @endforeach
                     </div>
+
+                    <button type="button" x-show="canPrev" x-transition.opacity x-cloak @click="page(-1)" aria-label="{{ __('Previous categories') }}"
+                        class="absolute left-0 top-1/2 z-10 hidden h-10 w-10 -translate-x-1/2 md:flex -translate-y-1/2 items-center justify-center rounded-full! border border-zinc-200 bg-white text-sf-text shadow-md transition hover:border-brand hover:text-brand">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+                    </button>
+                    <button type="button" x-show="canNext" x-transition.opacity x-cloak @click="page(1)" aria-label="{{ __('Next categories') }}"
+                        class="absolute right-0 top-1/2 z-10 hidden h-10 w-10 translate-x-1/2 md:flex -translate-y-1/2 items-center justify-center rounded-full! border border-zinc-200 bg-white text-sf-text shadow-md transition hover:border-brand hover:text-brand">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
+                    </button>
                 </div>
             </div>
         </section>

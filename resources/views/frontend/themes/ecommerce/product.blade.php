@@ -23,7 +23,6 @@
 
     $hasVariations = $visibleVariations->isNotEmpty();
     $baseDiscountLabel = $product->hasDiscount() ? format_money($product->discount_price) : null;
-    $baseStockLabel = $product->inStock() ? __('In stock') : __('Out of stock');
 
     $crumbs = [
         ['label' => __('Home'), 'url' => url('/')],
@@ -169,38 +168,85 @@
 
         <div class="lg:py-4">
             {{-- The name leads the column; brand / type live with the categories below. --}}
-            <h1 class="text-3xl font-extrabold tracking-tight text-sf-heading">{{ $product->name }}</h1>
+            {{-- Name, then price right under it; a status badge sits beside the
+                 name (upcoming, or stock). On variant products the price, SKU and
+                 stock follow the combination picked in the add-to-cart picker
+                 below, which announces it with a `variant-selected` event; the
+                 first combination (the picker's default) renders server-side. --}}
+            @php
+                $firstVariation = $visibleVariations->first();
+                $variantPrice = $firstVariation['price'] ?? $product->price;
+                $initial = $hasVariations
+                    ? [
+                        'inStock' => (int) ($firstVariation['quantity'] ?? 0) > 0,
+                        'priceLabel' => format_money($variantPrice),
+                        'discountLabel' => isset($firstVariation['price'], $firstVariation['discount_price'])
+                            && (float) $firstVariation['discount_price'] < (float) $firstVariation['price']
+                                ? format_money($firstVariation['discount_price'])
+                                : null,
+                        'sku' => ($firstVariation['sku'] ?? null) ?: null,
+                    ]
+                    : [
+                        'inStock' => $product->inStock(),
+                        'priceLabel' => format_money($product->price),
+                        'discountLabel' => $baseDiscountLabel,
+                        'sku' => $product->sku ?: null,
+                    ];
+            @endphp
 
-            @if ($product->is_upcoming)
-                <span class="mt-3 inline-block rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">{{ __('Upcoming') }}</span>
-            @endif
+            <div
+                x-data="{
+                    selected: true,
+                    inStock: @js($initial['inStock']),
+                    priceLabel: @js($initial['priceLabel']),
+                    discountLabel: @js($initial['discountLabel']),
+                    sku: @js($initial['sku']),
+                }"
+                @if ($hasVariations)
+                    @variant-selected.window="if ($event.detail.productId === {{ $product->id }}) {
+                        selected = $event.detail.selected;
+                        inStock = $event.detail.inStock;
+                        priceLabel = $event.detail.priceLabel;
+                        discountLabel = $event.detail.discountLabel;
+                        sku = $event.detail.sku;
+                    }"
+                @endif
+            >
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+                    <h1 class="text-3xl font-extrabold tracking-tight text-sf-heading">{{ $product->name }}</h1>
 
-            {{-- On variant products the base SKU belongs to the parent — the
-                 picker above shows the selected combination's own SKU instead. --}}
-            @if ($product->sku && ! $hasVariations)
-                <p class="mt-1 text-sm text-zinc-500">{{ __('SKU: :sku', ['sku' => $product->sku]) }}</p>
-            @endif
-
-            @if (! $hasVariations)
-                <div class="mt-6 flex items-baseline gap-3">
-                    @if ($baseDiscountLabel)
-                        <span class="text-3xl font-extrabold text-sf-heading">{{ $baseDiscountLabel }}</span>
-                        <span class="text-lg text-zinc-400 line-through">{{ format_money($product->price) }}</span>
+                    @if ($product->is_upcoming)
+                        <span class="inline-flex shrink-0 items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">{{ __('Upcoming') }}</span>
                     @else
-                        <span class="text-3xl font-extrabold text-sf-heading">{{ format_money($product->price) }}</span>
+                        {{-- Two fixed badges toggled with x-show (no class juggling). --}}
+                        <span x-show="selected && inStock" @unless ($initial['inStock']) x-cloak @endunless
+                            class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+                            <span class="size-1.5 rounded-full bg-emerald-500"></span>
+                            {{ __('In stock') }}
+                        </span>
+                        <span x-show="selected && ! inStock" @if ($initial['inStock']) x-cloak @endif
+                            class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 ring-1 ring-inset ring-red-600/20">
+                            <span class="size-1.5 rounded-full bg-red-500"></span>
+                            {{ __('Out of stock') }}
+                        </span>
                     @endif
                 </div>
 
-                @if (! $product->is_upcoming)
-                    <p class="mt-2 text-sm {{ $product->inStock() ? 'text-emerald-600' : 'text-red-500' }}">
-                        {{ $baseStockLabel }}
-                    </p>
-                @endif
-            @endif
+                <p x-show="sku" @unless ($initial['sku']) x-cloak @endunless class="mt-1 text-sm text-zinc-500">
+                    {{ __('SKU') }}: <span class="font-mono" x-text="sku">{{ $initial['sku'] }}</span>
+                </p>
+
+                <div class="mt-4 flex items-baseline gap-3">
+                    <span class="text-3xl font-extrabold text-sf-price" x-text="discountLabel || priceLabel">{{ $initial['discountLabel'] ?: $initial['priceLabel'] }}</span>
+                    <span x-show="discountLabel" @unless ($initial['discountLabel']) x-cloak @endunless
+                        class="text-lg text-zinc-400 line-through" x-text="priceLabel">{{ $initial['priceLabel'] }}</span>
+                </div>
+            </div>
 
             {{-- The option picker lives inside the add-to-cart component below, so the
                  *picked* combination is what actually lands in the cart line. --}}
 
+            @if ($product->warranty_months > 0 || ! $product->charge_shipping)
             <div class="mt-6 flex flex-wrap gap-2 text-sm text-zinc-600">
                 @if ($product->warranty_months > 0)
                     <span class="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 px-3 py-1.5">
@@ -211,14 +257,14 @@
                     </span>
                 @endif
 
-                <span class="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 px-3 py-1.5">
-                    @if ($product->charge_shipping)
-                        <span>{{ __('Shipping charges apply') }}</span>
-                    @else
+                {{-- Only free shipping is worth calling out; charged shipping shows at checkout. --}}
+                @unless ($product->charge_shipping)
+                    <span class="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 px-3 py-1.5">
                         <span class="font-medium text-emerald-600">{{ __('Free shipping') }}</span>
-                    @endif
-                </span>
+                    </span>
+                @endunless
             </div>
+            @endif
 
             <div class="mt-6">
                 <livewire:frontend.add-to-cart-button
