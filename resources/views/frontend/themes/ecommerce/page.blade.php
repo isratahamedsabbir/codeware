@@ -17,9 +17,16 @@
 ])
 
 <main>
-    <section class="mx-auto max-w-3xl px-6 py-12 text-center">
-        <h1 class="text-4xl font-extrabold text-sf-heading">{{ $page->getTranslation('title', 'en', false) }}</h1>
-    </section>
+    @php $block = \App\Support\PageBlocks::for($page->slug); @endphp
+
+    @if ($block === 'frontend.contact-form')
+        {{-- Contact gets its own layout: details beside the form. --}}
+        @include('frontend.themes.ecommerce.partials.contact-page')
+    @else
+        <section class="mx-auto max-w-3xl px-6 py-12 text-center">
+            <h1 class="text-4xl font-extrabold text-sf-heading">{{ $page->getTranslation('title', 'en', false) }}</h1>
+        </section>
+    @endif
 
     @foreach ($sections as $section)
         @continue(blank($section->localizedCards()))
@@ -50,7 +57,7 @@
         </section>
     @endforeach
 
-    @if ($block = \App\Support\PageBlocks::for($page->slug))
+    @if ($block && $block !== 'frontend.contact-form')
         <section class="mx-auto max-w-xl px-6 py-16">
             @livewire($block)
         </section>

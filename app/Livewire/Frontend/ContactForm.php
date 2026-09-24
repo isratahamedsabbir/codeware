@@ -25,6 +25,9 @@ class ContactForm extends Component
 
     public bool $sent = false;
 
+    /** Optional message placeholder a theme can pass in (its own wording). */
+    public string $messagePlaceholder = '';
+
     protected function rules(): array
     {
         return [
