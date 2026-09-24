@@ -144,7 +144,10 @@ Route::middleware(['auth', 'admin', 'activity-log'])->group(function () {
         Route::get('/features', App\Livewire\Admin\Features\Index::class)->name('features');
 
         Route::middleware('feature:env')->group(function () {
-            Route::get('/env', App\Livewire\Admin\Env\Index::class)->name('env');
+            // Route name stays 'admin.env' — saved menu items reference it (see MenuItem).
+            Route::get('/developer-tools', App\Livewire\Admin\Env\Index::class)->name('env');
+            // Old path — keeps bookmarks and /env#KEY deep links working.
+            Route::redirect('/env', '/developer-tools', 301);
         });
 
         Route::middleware('feature:email-templates')->group(function () {

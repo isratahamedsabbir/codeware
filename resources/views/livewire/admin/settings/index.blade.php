@@ -4,7 +4,9 @@
         tab: new URLSearchParams(location.search).get('tab') || localStorage.getItem('admin-settings-tab') || 'general',
         showConstantsGuide: false,
         init() {
-            const validTabs = ['general', 'custom-code', 'constant', 'other'];
+            const validTabs = ['general', 'custom-code', 'constant', 'widgets'];
+            // 'other' was this tab's old name — keep old links/bookmarks working.
+            if (this.tab === 'other') this.tab = 'widgets';
             if (!validTabs.includes(this.tab)) this.tab = 'general';
             this.$watch('tab', (value) => {
                 try { localStorage.setItem('admin-settings-tab', value) } catch (e) {}
@@ -22,7 +24,7 @@
                 'general' => ['General', 'cog-6-tooth', 'Currency, VAT, site identity, images'],
                 'custom-code' => ['Custom Code', 'code-bracket', 'Head & body scripts'],
                 'constant' => ['Constant', 'variable', 'Site-wide key / value pairs'],
-                'other' => ['Other', 'squares-2x2', 'Widgets, toggles, admin tools'],
+                'widgets' => ['Widgets', 'squares-2x2', 'Header widgets, toggles, admin tools'],
             ];
         @endphp
         <div role="tablist" aria-label="Settings sections"
@@ -272,13 +274,10 @@ $imageMeta = match ($setting->key) {
             </div>
         </div>
 
-        {{-- Other tab --}}
-        <div x-show="tab === 'other'">
+        {{-- Widgets tab — each widget is its own card, straight in the grid. --}}
+        <div x-show="tab === 'widgets'">
             <div class="max-w-[1600px]">
-                <x-admin-section-card header-border="border-zinc-100" icon="squares-2x2" title="Other"
-                    description="Admin panel widgets and tools — floating action button, calculator, sticky note, shop toggle, language switcher and more."
-                    collapsible :collapsed="true">
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
                 {{-- Floating action button --}}
                 <x-admin-section-card header-border="border-zinc-100" x-data icon="cursor-arrow-rays" title="Floating Button"
                     description="Shows a floating button in the corner of every admin page.">
@@ -385,8 +384,7 @@ $imageMeta = match ($setting->key) {
                         Turning this off does not change the admin panel's language, only hides the switcher itself.
                     </p>
                 </x-admin-section-card>
-                    </div>
-                </x-admin-section-card>
+                </div>
             </div>
         </div>
 

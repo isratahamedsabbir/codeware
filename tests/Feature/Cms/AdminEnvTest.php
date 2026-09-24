@@ -257,32 +257,13 @@ it('rejects unknown info keys', function () {
         ->assertSet('infoKey', null);
 });
 
-it('renders the integration status overview grid and sticky header', function () {
+it('opens on the General tab with no Overview tab', function () {
     $this->get(route('admin.env'))
         ->assertOk()
-        ->assertSee('Environment Settings', false)
-        ->assertSee('Integration status', false)
-        ->assertSee('Configured', false)
-        ->assertSee('Not configured', false)
-        ->assertSee("jumpTo('general', 'app')", false)
-        ->assertSee("highlighted === 'app'", false)
-        ->assertSee("highlighted === 'google-maps'", false)
+        ->assertSee("activeTab: 'general'", false)
+        ->assertDontSee('Integration status', false)
+        ->assertDontSee("setTab('overview')", false)
         ->assertSee('Save Environment Settings', false);
-});
-
-it('computes per-section configuration status for the overview grid', function () {
-    Livewire::test(EnvIndex::class)
-        ->set('env.GOOGLE_CLIENT_ID', 'abc')
-        ->set('env.GOOGLE_CLIENT_SECRET', 'def')
-        ->set('env.RECAPTCHA_SITE_KEY', 'site')
-        ->call('sectionStatuses')
-        ->assertReturned(fn ($result) => is_array($result)
-            && $result['app']['state'] === 'configured'
-            && $result['google-login']['state'] === 'configured'
-            && $result['recaptcha']['state'] === 'partial'
-            && $result['pixel']['state'] === 'empty'
-            && $result['google-login']['tab'] === 'authentication'
-            && $result['pixel']['tab'] === 'integrations');
 });
 
 it('leaves a line completely untouched, quoting style included, when its value did not change', function () {
@@ -318,4 +299,12 @@ it('surfaces a clear error instead of a false success when the write fails', fun
     // directory doesn't exist, the read is what actually fails first.
     $component->call('confirmSaveEnv')->call('saveEnv')
         ->assertDispatched('notify', message: 'Could not save environment settings: Could not read '.EnvFile::path().'.');
+});
+
+it('serves the page at /developer-tools and redirects the old /env path there', function () {
+    expect(route('admin.env'))->toEndWith('/developer-tools');
+
+    $this->get(config('app.admin_url').'/env')
+        ->assertStatus(301)
+        ->assertRedirect(config('app.admin_url').'/developer-tools');
 });

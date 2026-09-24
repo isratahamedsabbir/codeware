@@ -1,24 +1,9 @@
-@php
-    $statuses = $this->sectionStatuses();
-    $configuredCount = collect($statuses)->where('state', 'configured')->count();
-    $statusTotal = count($statuses);
-@endphp
-
 <div x-data="{
-    activeTab: 'overview',
-    highlighted: null,
+    activeTab: 'general',
     setTab(tab) { this.activeTab = tab; },
-    jumpTo(tab, section) {
-        this.activeTab = tab;
-        this.highlighted = section;
-        this.$nextTick(() => setTimeout(() => {
-            const el = document.getElementById('env-section-' + section);
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 50));
-    },
     init() {
         // A link into this page can point straight at one field, e.g.
-        // .../env#VENDOR_URL â€” scroll it into view and flash it once rendered.
+        // .../developer-tools#VENDOR_URL â€” scroll it into view and flash it once rendered.
         if (location.hash) {
             const id = 'env-field-' + location.hash.slice(1);
             this.$nextTick(() => setTimeout(() => {
@@ -38,7 +23,6 @@
             {{-- Same card-of-icon-tabs as Settings, each with a one-line summary. --}}
             @php
                 $tabs = [
-                    'overview' => ['Overview', 'squares-2x2', $configuredCount.' of '.$statusTotal.' configured'],
                     'general' => ['General', 'cog-6-tooth', 'App, maintenance, debug mode'],
                     'authentication' => ['Authentication', 'lock-closed', 'Google & Facebook login, reCAPTCHA'],
                     'integrations' => ['Integrations', 'puzzle-piece', 'Pixel, Maps, S3, Firebase'],
@@ -74,86 +58,6 @@
             {{ __('These edit the live .env file this server runs on. A wrong value can take the site down until it is fixed. A backup of the current file is saved automatically before every change. Mail credentials live on the Email Templates page instead.') }}
         </div>
 
-        {{-- â”€â”€ Overview tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
-        <div x-show="activeTab === 'overview'" x-cloak class="space-y-5">
-            {{-- System status --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <button type="button" x-on:click="jumpTo('general', 'maintenance')"
-                    class="flex items-center gap-4 rounded-xl border border-zinc-200 bg-white p-4 text-left shadow-sm transition-all hover:border-primary/40 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800/40">
-                    <span class="flex size-10 shrink-0 items-center justify-center rounded-lg {{ $maintenanceMode ? 'bg-red-500/10 text-red-600' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' }}">
-                        <flux:icon.wrench class="size-5" />
-                    </span>
-                    <span class="flex-1 min-w-0">
-                        <span class="block text-sm font-semibold text-zinc-800 dark:text-zinc-100">Maintenance Mode</span>
-                        <span class="block text-xs text-zinc-400">Public site availability</span>
-                    </span>
-                    @if ($maintenanceMode)
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-red-50 dark:bg-red-950 px-3 py-1 text-xs font-semibold text-red-700 dark:text-red-300 ring-1 ring-red-600/20">
-                            <span class="size-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                            Offline
-                        </span>
-                    @else
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-600/20">
-                            <span class="size-1.5 rounded-full bg-emerald-500"></span>
-                            Online
-                        </span>
-                    @endif
-                </button>
-
-                <button type="button" x-on:click="jumpTo('general', 'debug')"
-                    class="flex items-center gap-4 rounded-xl border border-zinc-200 bg-white p-4 text-left shadow-sm transition-all hover:border-primary/40 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800/40">
-                    <span class="flex size-10 shrink-0 items-center justify-center rounded-lg {{ $debugMode ? 'bg-amber-500/10 text-amber-600' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' }}">
-                        <flux:icon.bug-ant class="size-5" />
-                    </span>
-                    <span class="flex-1 min-w-0">
-                        <span class="block text-sm font-semibold text-zinc-800 dark:text-zinc-100">Debug Mode</span>
-                        <span class="block text-xs text-zinc-400">Error detail visibility</span>
-                    </span>
-                    @if ($debugMode)
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300 ring-1 ring-amber-600/20">
-                            <span class="size-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                            On
-                        </span>
-                    @else
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-600/20">
-                            <span class="size-1.5 rounded-full bg-emerald-500"></span>
-                            Off
-                        </span>
-                    @endif
-                </button>
-            </div>
-
-            {{-- Integration status grid --}}
-            <div class="flex items-center justify-between gap-3">
-                <div>
-                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Integration status</p>
-                    <p class="text-xs text-zinc-400">Click a card to jump straight to its settings.</p>
-                </div>
-            </div>
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                @foreach ($statuses as $key => $status)
-                    @php
-                        $state = $status['state'];
-                        $iconBg = $state === 'configured' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : ($state === 'partial' ? 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400' : 'bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500');
-                        [$pillBg, $pillText] = $state === 'configured' ? ['bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 ring-emerald-600/20', 'Configured'] : ($state === 'partial' ? ['bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 ring-amber-600/20', 'Partially configured'] : ['bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 ring-zinc-500/10', 'Not configured']);
-                    @endphp
-                    <button type="button" x-on:click="jumpTo('{{ $status['tab'] }}', '{{ $key }}')"
-                        class="group flex flex-col gap-3.5 rounded-xl border border-zinc-200 bg-white p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800/40 dark:hover:border-zinc-600">
-                        <span class="flex items-start justify-between gap-2">
-                            <span class="flex size-9 shrink-0 items-center justify-center rounded-lg {{ $iconBg }} group-hover:scale-105 transition-transform">
-                                <x-dynamic-component :component="'flux::icon.'.$status['icon']" class="size-4.5" />
-                            </span>
-                            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 {{ $pillBg }}">{{ $pillText }}</span>
-                        </span>
-                        <span class="min-w-0">
-                            <span class="block text-sm font-semibold text-zinc-800 dark:text-zinc-100">{{ $status['title'] }}</span>
-                            <span class="block text-xs text-zinc-400">{{ $status['note'] }}</span>
-                        </span>
-                    </button>
-                @endforeach
-            </div>
-        </div>
-
         {{-- â”€â”€ General tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
         <div x-show="activeTab === 'general'" x-cloak class="space-y-5">
 
@@ -162,8 +66,7 @@
                 <x-admin-section-card id="env-section-maintenance" header-border="border-zinc-100" icon="wrench" title="Maintenance Mode"
                     icon-color="{{ $maintenanceMode ? 'bg-red-500/10 text-red-600' : 'bg-primary/10 text-primary' }}"
                     description="Takes the public site offline for every visitor. The admin panel and login stay reachable either way."
-                    class="w-full scroll-mt-24 {{ $maintenanceMode ? 'border-red-300! dark:border-red-800!' : '' }}"
-                    x-bind:class="highlighted === 'maintenance' ? 'ring-2 ring-primary/50 border-primary' : ''">
+                    class="w-full scroll-mt-24 {{ $maintenanceMode ? 'border-red-300! dark:border-red-800!' : '' }}">
                     <x-slot:actions>
                         <button type="button" wire:click="toggleMaintenanceMode" role="switch"
                             aria-checked="{{ $maintenanceMode ? 'true' : 'false' }}" title="Take the public site offline"
@@ -177,8 +80,7 @@
                 <x-admin-section-card id="env-section-debug" header-border="border-zinc-100" icon="bug-ant" title="Debug Mode"
                     icon-color="{{ $debugMode ? 'bg-amber-500/10 text-amber-600' : 'bg-primary/10 text-primary' }}"
                     description="Shows full error details and stack traces to visitors. Leave this off in production."
-                    class="w-full scroll-mt-24 {{ $debugMode ? 'border-amber-300! dark:border-amber-800!' : '' }}"
-                    x-bind:class="highlighted === 'debug' ? 'ring-2 ring-primary/50 border-primary' : ''">
+                    class="w-full scroll-mt-24 {{ $debugMode ? 'border-amber-300! dark:border-amber-800!' : '' }}">
                     <x-slot:actions>
                         <button type="button" wire:click="toggleDebugMode" role="switch"
                             aria-checked="{{ $debugMode ? 'true' : 'false' }}" title="Show full error details to visitors"
@@ -190,7 +92,7 @@
             </div>
 
             {{-- App --}}
-            <x-admin-section-card id="env-section-app" class="scroll-mt-24" header-border="border-zinc-100" icon="rocket-launch" title="App" x-bind:class="highlighted === 'app' ? 'ring-2 ring-primary/50 border-primary' : ''"
+            <x-admin-section-card id="env-section-app" class="scroll-mt-24" header-border="border-zinc-100" icon="rocket-launch" title="App"
                 description="Core application identity, URLs and cache store.">
                 <x-slot:actions>
                     <button type="button" wire:click="openInfo('app')" title="About this section"
@@ -210,7 +112,7 @@
         <div x-show="activeTab === 'authentication'" x-cloak class="space-y-5">
 
             {{-- Google Login --}}
-            <x-admin-section-card id="env-section-google-login" class="scroll-mt-24" header-border="border-zinc-100" icon="globe-alt" title="Google Login" x-bind:class="highlighted === 'google-login' ? 'ring-2 ring-primary/50 border-primary' : ''">
+            <x-admin-section-card id="env-section-google-login" class="scroll-mt-24" header-border="border-zinc-100" icon="globe-alt" title="Google Login">
                 <x-slot:actions>
                     <button type="button" wire:click="openInfo('google-login')" title="Where to get these"
                         class="inline-flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-primary cursor-pointer">
@@ -225,7 +127,7 @@
             </x-admin-section-card>
 
             {{-- Facebook Login --}}
-            <x-admin-section-card id="env-section-facebook-login" class="scroll-mt-24" header-border="border-zinc-100" icon="chat-bubble-left-right" title="Facebook Login" x-bind:class="highlighted === 'facebook-login' ? 'ring-2 ring-primary/50 border-primary' : ''">
+            <x-admin-section-card id="env-section-facebook-login" class="scroll-mt-24" header-border="border-zinc-100" icon="chat-bubble-left-right" title="Facebook Login">
                 <x-slot:actions>
                     <button type="button" wire:click="openInfo('facebook-login')" title="Where to get these"
                         class="inline-flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-primary cursor-pointer">
@@ -240,7 +142,7 @@
             </x-admin-section-card>
 
             {{-- reCAPTCHA --}}
-            <x-admin-section-card id="env-section-recaptcha" class="scroll-mt-24" header-border="border-zinc-100" icon="shield-check" title="reCAPTCHA" x-bind:class="highlighted === 'recaptcha' ? 'ring-2 ring-primary/50 border-primary' : ''"
+            <x-admin-section-card id="env-section-recaptcha" class="scroll-mt-24" header-border="border-zinc-100" icon="shield-check" title="reCAPTCHA"
                 description="Shown on the admin login form only while enabled and both keys below are set.">
                 <x-slot:actions>
                     <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
@@ -264,7 +166,7 @@
         <div x-show="activeTab === 'integrations'" x-cloak class="space-y-5">
 
             {{-- Google Pixel --}}
-            <x-admin-section-card id="env-section-pixel" class="scroll-mt-24" header-border="border-zinc-100" icon="chart-bar" title="Google Pixel" x-bind:class="highlighted === 'pixel' ? 'ring-2 ring-primary/50 border-primary' : ''"
+            <x-admin-section-card id="env-section-pixel" class="scroll-mt-24" header-border="border-zinc-100" icon="chart-bar" title="Google Pixel"
                 description="The Measurement/Pixel ID (e.g. G-XXXXXXXXXX or AW-XXXXXXXXX) exposed via the public settings API for the frontend to use.">
                 <x-slot:actions>
                     <button type="button" wire:click="openInfo('pixel')" title="Integration guide"
@@ -281,7 +183,7 @@
             </x-admin-section-card>
 
             {{-- Google Maps --}}
-            <x-admin-section-card id="env-section-google-maps" class="scroll-mt-24" header-border="border-zinc-100" icon="map" title="Google Maps" x-bind:class="highlighted === 'google-maps' ? 'ring-2 ring-primary/50 border-primary' : ''"
+            <x-admin-section-card id="env-section-google-maps" class="scroll-mt-24" header-border="border-zinc-100" icon="map" title="Google Maps"
                 description="Used wherever the app needs to render a Google Map (e.g. store/branch locations).">
                 <x-slot:actions>
                     <button type="button" wire:click="openInfo('google-maps')" title="Where to get this"
@@ -338,7 +240,7 @@
             </x-admin-section-card>
 
             {{-- AWS S3 --}}
-            <x-admin-section-card id="env-section-aws-s3" class="scroll-mt-24" header-border="border-zinc-100" icon="cloud" title="AWS S3" x-bind:class="highlighted === 'aws-s3' ? 'ring-2 ring-primary/50 border-primary' : ''"
+            <x-admin-section-card id="env-section-aws-s3" class="scroll-mt-24" header-border="border-zinc-100" icon="cloud" title="AWS S3"
                 description="Only needed if FILESYSTEM_DISK is set to s3 â€” otherwise uploads stay on local disk and these are unused.">
                 <x-slot:actions>
                     <button type="button" wire:click="openInfo('aws-s3')" title="Where to get these"
@@ -354,7 +256,7 @@
             </x-admin-section-card>
 
             {{-- Firebase --}}
-            <x-admin-section-card id="env-section-firebase" class="scroll-mt-24" header-border="border-zinc-100" icon="fire" title="Firebase" x-bind:class="highlighted === 'firebase' ? 'ring-2 ring-primary/50 border-primary' : ''"
+            <x-admin-section-card id="env-section-firebase" class="scroll-mt-24" header-border="border-zinc-100" icon="fire" title="Firebase"
                 description="Service-account credentials for the Firebase Admin SDK (e.g. push notifications).">
                 <x-slot:actions>
                     <button type="button" wire:click="openInfo('firebase')" title="Where to get this"
@@ -385,7 +287,7 @@
             </x-admin-section-card>
 
             {{-- CMS Editor --}}
-            <x-admin-section-card id="env-section-cms-editor" class="scroll-mt-24" header-border="border-zinc-100" icon="pencil-square" title="CMS Editor" x-bind:class="highlighted === 'cms-editor' ? 'ring-2 ring-primary/50 border-primary' : ''"
+            <x-admin-section-card id="env-section-cms-editor" class="scroll-mt-24" header-border="border-zinc-100" icon="pencil-square" title="CMS Editor"
                 description="Base URL of the Next.js Puck editor this admin panel opens for visual editing.">
                 <x-slot:actions>
                     <button type="button" wire:click="openInfo('cms-editor')" title="What this controls"

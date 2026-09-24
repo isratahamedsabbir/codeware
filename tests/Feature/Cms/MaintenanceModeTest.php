@@ -54,7 +54,7 @@ it('blocks the public site but keeps the admin panel and login reachable while e
     // middleware (App\Http\Middleware\PreventRequestsDuringMaintenance) lets
     // that host through so the panel that turns maintenance back off is never
     // cut off from doing so.
-    $this->get(config('app.admin_url').'/env')->assertOk();
+    $this->get(config('app.admin_url').'/developer-tools')->assertOk();
 });
 
 it('does not block Livewire\'s own AJAX endpoint, so the toggle can turn itself back off', function () {

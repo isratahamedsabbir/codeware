@@ -9,10 +9,7 @@
         {{-- PayPal --}}
         <x-admin-section-card icon="credit-card" title="PayPal">
             <x-slot:actions>
-                <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
-                    <input type="checkbox" wire:model="gateways.paypal.is_enabled" class="rounded border-zinc-300 text-primary" />
-                    Enable
-                </label>
+                <flux:switch wire:model="gateways.paypal.is_enabled" aria-label="Enable" />
             </x-slot:actions>
 
             <flux:field>
@@ -38,10 +35,7 @@
         {{-- Stripe --}}
         <x-admin-section-card icon="credit-card" title="Stripe" icon-color="bg-indigo-500/10 text-indigo-600">
             <x-slot:actions>
-                <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
-                    <input type="checkbox" wire:model="gateways.stripe.is_enabled" class="rounded border-zinc-300 text-primary" />
-                    Enable
-                </label>
+                <flux:switch wire:model="gateways.stripe.is_enabled" aria-label="Enable" />
             </x-slot:actions>
 
             <flux:field>
@@ -71,10 +65,7 @@
         {{-- bKash --}}
         <x-admin-section-card icon="credit-card" title="bKash" icon-color="bg-rose-500/10 text-rose-600">
             <x-slot:actions>
-                <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
-                    <input type="checkbox" wire:model="gateways.bkash.is_enabled" class="rounded border-zinc-300 text-primary" />
-                    Enable
-                </label>
+                <flux:switch wire:model="gateways.bkash.is_enabled" aria-label="Enable" />
             </x-slot:actions>
 
             <flux:field>
@@ -108,10 +99,7 @@
         {{-- SSLCommerz --}}
         <x-admin-section-card icon="credit-card" title="SSLCommerz" icon-color="bg-amber-500/10 text-amber-600">
             <x-slot:actions>
-                <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
-                    <input type="checkbox" wire:model="gateways.sslcommerz.is_enabled" class="rounded border-zinc-300 text-primary" />
-                    Enable
-                </label>
+                <flux:switch wire:model="gateways.sslcommerz.is_enabled" aria-label="Enable" />
             </x-slot:actions>
 
             <flux:field>
@@ -137,10 +125,7 @@
         {{-- Apple Pay --}}
         <x-admin-section-card icon="credit-card" title="Apple Pay" icon-color="bg-zinc-500/10 text-zinc-600">
             <x-slot:actions>
-                <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
-                    <input type="checkbox" wire:model="gateways.applepay.is_enabled" class="rounded border-zinc-300 text-primary" />
-                    Enable
-                </label>
+                <flux:switch wire:model="gateways.applepay.is_enabled" aria-label="Enable" />
             </x-slot:actions>
 
             <flux:field>
@@ -162,10 +147,7 @@
         {{-- Google Pay --}}
         <x-admin-section-card icon="credit-card" title="Google Pay" icon-color="bg-blue-500/10 text-blue-600">
             <x-slot:actions>
-                <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
-                    <input type="checkbox" wire:model="gateways.googlepay.is_enabled" class="rounded border-zinc-300 text-primary" />
-                    Enable
-                </label>
+                <flux:switch wire:model="gateways.googlepay.is_enabled" aria-label="Enable" />
             </x-slot:actions>
 
             <flux:field>
