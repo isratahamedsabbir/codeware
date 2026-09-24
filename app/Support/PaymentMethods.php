@@ -41,4 +41,18 @@ class PaymentMethods
     {
         return self::available()[$method] ?? ucfirst($method);
     }
+
+    /**
+     * The storefront icon (an <x-storefront.icon> name) for a payment method:
+     * cash for COD, a phone for mobile wallets, a card for everything else.
+     */
+    public static function icon(string $method): string
+    {
+        return match (strtolower($method)) {
+            self::COD => 'banknotes',
+            'bkash', 'nagad', 'rocket', 'applepay' => 'smartphone',
+            'paypal' => 'wallet',
+            default => 'credit-card',
+        };
+    }
 }

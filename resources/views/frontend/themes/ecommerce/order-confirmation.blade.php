@@ -22,21 +22,7 @@
 
 <main class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-12">
     {{-- Progress: every step of the purchase flow is done. --}}
-    <ol class="mb-8 flex items-center justify-center gap-2 text-xs font-semibold sm:gap-3">
-        @foreach ([__('Cart'), __('Checkout'), __('Order placed')] as $label)
-            <li class="flex items-center gap-2">
-                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500 text-white shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                    </svg>
-                </span>
-                <span class="text-zinc-700">{{ $label }}</span>
-                @unless ($loop->last)
-                    <span class="h-px w-6 bg-emerald-400 sm:w-10"></span>
-                @endunless
-            </li>
-        @endforeach
-    </ol>
+    <x-storefront.checkout-steps :current="4" class="mb-8 justify-center" />
 
     {{-- Success hero --}}
     <section class="relative overflow-hidden rounded-card border border-zinc-200 bg-white shadow-sm">
