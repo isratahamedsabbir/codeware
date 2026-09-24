@@ -43,7 +43,9 @@
         </div>
     </div>
 
-    <div @if ($collapsible) x-show="open" x-collapse @endif class="{{ $bodyClass }}">
-        {{ $slot }}
-    </div>
+    @if (trim((string) $slot) !== '')
+        <div @if ($collapsible) x-show="open" x-collapse @endif class="{{ $bodyClass }}">
+            {{ $slot }}
+        </div>
+    @endif
 </div>

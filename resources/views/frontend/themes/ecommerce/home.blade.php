@@ -8,7 +8,6 @@
 
 @php
     $siteName = \App\Models\Setting::get('site_name', config('app.name'));
-    $siteTagline = \App\Models\Setting::get('site_tagline');
     // Hero slider images (Theme Settings → Homepage banners); installs that
     // predate the slider fall back to the single hero image.
     $heroSlides = json_decode((string) \App\Models\Setting::get('home_hero_slides', ''), true);
@@ -17,6 +16,14 @@
         : array_values(array_filter([\App\Models\Setting::get('home_hero_image')], 'filled'));
     $promoImage1 = \App\Models\Setting::get('home_promo_banner_1');
     $promoImage2 = \App\Models\Setting::get('home_promo_banner_2');
+
+    // Promo tile links (Theme Settings): a site path or an http(s) URL —
+    // anything else (blank, javascript:, …) falls back to the Shop page.
+    $promoLink = function (string $key): string {
+        $link = trim((string) \App\Models\Setting::get($key));
+
+        return preg_match('#^(/(?!/)|https?://)#i', $link) ? $link : route('shop');
+    };
 
     $featured = \App\Models\Product::active()
         ->featured()
@@ -84,7 +91,6 @@
                             @endif
                             class="absolute inset-0 h-full w-full object-cover transition duration-1000 ease-out {{ $i === 0 ? '' : 'opacity-0' }}">
                     @endforeach
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
 
                     @if (count($heroSlides) > 1)
                         <button type="button" @click.prevent="go(active - 1)" aria-label="{{ __('Previous slide') }}"
@@ -107,32 +113,19 @@
                     <div class="flex h-full w-full items-center bg-gradient-to-br from-brand to-emerald-800 px-8 md:px-12">
                     </div>
                 @endif
-                <div class="absolute inset-x-0 bottom-0 p-6 md:p-8">
-                    @if ($heroBadge = \App\Models\Setting::get('theme_ecommerce_hero_badge'))
-                        <span class="mb-3 inline-block rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur">
-                            {{ $heroBadge }}
-                        </span>
-                    @endif
-                    <h1 class="max-w-xl text-2xl font-bold uppercase leading-tight text-white md:text-4xl">
-                        {{ filled($siteTagline) ? $siteTagline : __('Welcome to :site', ['site' => $siteName]) }}
-                    </h1>
-                    <p class="mt-2 max-w-lg text-sm text-white/85 md:text-base">
-                        {{ __('Browse our full collection across categories, brands and more.') }}
-                    </p>
-                    <span class="mt-4 inline-block rounded-md bg-white px-6 py-2.5 text-sm font-semibold text-brand transition hover:opacity-90">
-                        {{ __('Shop now') }}
-                    </span>
-                </div>
+                {{-- The hero is image-only; this keeps the page's main heading for
+                     search engines and screen readers. --}}
+                <h1 class="sr-only">{{ $siteName }}</h1>
             </a>
 
             <div class="hidden flex-col gap-4 lg:flex">
                 @foreach ([
-                    ['image' => $promoImage1, 'label' => __('New arrivals')],
-                    ['image' => $promoImage2, 'label' => __('Best deals')],
+                    ['image' => $promoImage1, 'label' => __('New arrivals'), 'url' => $promoLink('theme_ecommerce_promo_1_link')],
+                    ['image' => $promoImage2, 'label' => __('Best deals'), 'url' => $promoLink('theme_ecommerce_promo_2_link')],
                 ] as $promo)
-                    <a href="{{ route('shop') }}" class="relative block h-1/2 overflow-hidden rounded-card">
+                    <a href="{{ $promo['url'] }}" class="group/promo relative block h-1/2 overflow-hidden rounded-card">
                         @if ($promo['image'])
-                            <img src="{{ $promo['image'] }}" alt="{{ $promo['label'] }}" class="h-full w-full object-cover">
+                            <img src="{{ $promo['image'] }}" alt="{{ $promo['label'] }}" class="h-full w-full object-cover transition duration-500 group-hover/promo:scale-105">
                             <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
                         @else
                             <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-secondary to-brand">

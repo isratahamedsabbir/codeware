@@ -294,6 +294,25 @@ it('renders the homepage hero as a slider when several slides are set', function
     $this->get('/')->assertOk()->assertSee('/storage/a.jpg')->assertDontSee('Next slide');
 });
 
+it('links each promo banner to its own URL, falling back to the shop', function () {
+    Livewire::test(ThemeSettings::class)
+        ->set('settings.site_theme', 'ecommerce')
+        ->assertSee('New arrivals link')
+        ->assertSee('Best deals link')
+        ->set('settings.theme_ecommerce_promo_1_link', '/shop?sort=newest')
+        ->set('settings.theme_ecommerce_promo_2_link', 'javascript:alert(1)')
+        ->call('save');
+
+    expect(Setting::where('key', 'theme_ecommerce_promo_1_link')->value('value'))->toBe('/shop?sort=newest');
+
+    $this->get('/')
+        ->assertOk()
+        ->assertSee('href="/shop?sort=newest"', false)
+        // An unsafe link never reaches the page — that tile opens the shop.
+        ->assertDontSee('javascript:alert(1)', false)
+        ->assertSee('href="'.route('shop').'" class="group/promo', false);
+});
+
 it('lists every installed theme folder as a selectable design', function () {
     Livewire::test(ThemeSettings::class)
         ->assertViewHas('themes', fn ($themes) => collect(['default', 'ecommerce', 'portfolio'])->diff(array_keys($themes))->isEmpty());

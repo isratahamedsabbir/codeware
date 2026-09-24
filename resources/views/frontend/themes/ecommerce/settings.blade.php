@@ -9,6 +9,9 @@
     once an image is set.
 --}}
 @php
+    // The promo link field sits along the bottom of its banner box — clicks on
+    // it stay in the input (it's layered above the picker button, not inside it).
+    $bannerLink = 'w-full rounded-md border !border-white/25 bg-zinc-900/70 py-1.5 pl-8 pr-3 text-xs font-medium text-white shadow-sm outline-none backdrop-blur placeholder:text-white/50 focus:!border-white/70';
     $bannerChip = 'pointer-events-none absolute left-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-md bg-zinc-900/75 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm backdrop-blur';
 @endphp
 
@@ -75,6 +78,12 @@
                     <flux:icon.photo variant="micro" class="size-3.5" />
                     Promo · New arrivals <span class="font-normal text-white/60">· 1200 × 400</span>
                 </span>
+                <label class="absolute inset-x-3 bottom-3 z-10 block" title="Where this banner links to — a page on this site (e.g. /shop?sort=newest) or a full https:// address. Blank opens the Shop page.">
+                    <span class="sr-only">New arrivals link</span>
+                    <flux:icon.link variant="micro" class="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-white/70" />
+                    <input type="text" wire:model="settings.theme_ecommerce_promo_1_link" placeholder="Link — e.g. /shop?sort=newest (blank = Shop)"
+                        class="{{ $bannerLink }}">
+                </label>
             </div>
 
             {{-- Promo 2 — "Best deals" tile --}}
@@ -85,6 +94,12 @@
                     <flux:icon.photo variant="micro" class="size-3.5" />
                     Promo · Best deals <span class="font-normal text-white/60">· 1200 × 400</span>
                 </span>
+                <label class="absolute inset-x-3 bottom-3 z-10 block" title="Where this banner links to — a page on this site (e.g. /shop?sort=newest) or a full https:// address. Blank opens the Shop page.">
+                    <span class="sr-only">Best deals link</span>
+                    <flux:icon.link variant="micro" class="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-white/70" />
+                    <input type="text" wire:model="settings.theme_ecommerce_promo_2_link" placeholder="Link — e.g. /shop?sort=newest (blank = Shop)"
+                        class="{{ $bannerLink }}">
+                </label>
             </div>
         </div>
     </div>
