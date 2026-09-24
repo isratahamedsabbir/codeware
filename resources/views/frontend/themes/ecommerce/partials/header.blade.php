@@ -19,10 +19,10 @@
 @endphp
 
 <header class="sticky top-0 z-40">
-    <div class="bg-brand text-white">
+    <div class="bg-sf-header text-sf-header-text">
         <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
             <div class="flex min-w-0 items-center gap-3">
-                <label for="mobile-menu" class="cursor-pointer rounded-md p-2 text-white hover:bg-white/10 md:hidden" aria-label="{{ __('Menu') }}">
+                <label for="mobile-menu" class="cursor-pointer rounded-md p-2 text-sf-header-text hover:bg-white/10 md:hidden" aria-label="{{ __('Menu') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
@@ -32,7 +32,7 @@
                     @if ($siteIcon)
                         <img src="{{ $siteIcon }}" alt="{{ $siteName }}" class="h-9 w-auto">
                     @endif
-                    <span class="truncate text-lg font-bold text-white">{{ $siteName }}</span>
+                    <span class="truncate text-lg font-bold text-sf-header-text">{{ $siteName }}</span>
                 </a>
             </div>
 
@@ -43,7 +43,7 @@
             <div class="flex shrink-0 items-center gap-1 sm:gap-2">
                 @if ($contactPhone = \App\Models\Setting::get('contact_phone'))
                     <a href="tel:{{ $contactPhone }}"
-                        class="hidden items-center gap-1.5 text-base font-semibold text-white/80 transition-colors hover:text-white lg:flex"
+                        class="hidden items-center gap-1.5 text-base font-semibold text-sf-header-text/80 transition-colors hover:text-sf-header-text lg:flex"
                         aria-label="{{ __('Call us') }}" title="{{ $contactPhone }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
@@ -54,7 +54,7 @@
                 @if ($languageSwitcherEnabled && $languages->count() > 1)
                     <details class="group relative">
                         <summary
-                            class="flex cursor-pointer list-none items-center gap-1.5 rounded-full bg-white/10 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/20 [&::-webkit-details-marker]:hidden"
+                            class="flex cursor-pointer list-none items-center gap-1.5 rounded-full bg-white/10 px-3 py-2 text-sm font-semibold text-sf-header-text transition hover:bg-white/20 [&::-webkit-details-marker]:hidden"
                             aria-label="{{ __('Change language') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 0 1-3.827-5.802" />
@@ -90,7 +90,7 @@
                         <summary
                             class="flex cursor-pointer list-none items-center gap-2 rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-brand transition hover:bg-white/90 [&::-webkit-details-marker]:hidden"
                             aria-label="{{ __('My account') }}">
-                            <span class="flex h-7 w-7 items-center justify-center rounded-full bg-brand text-xs font-bold uppercase text-white">
+                            <span class="flex h-7 w-7 items-center justify-center rounded-full bg-brand text-xs font-bold uppercase text-sf-header-text">
                                 {{ auth()->user()->initials() }}
                             </span>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-open:rotate-180 hidden sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -99,7 +99,7 @@
                         </summary>
                         <div class="absolute right-0 top-full z-50 mt-2 w-52 rounded-card border border-zinc-100 bg-white py-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
                             <p class="border-b border-zinc-100 px-3.5 py-2">
-                                <span class="block truncate text-sm font-bold text-zinc-800">{{ auth()->user()->name }}</span>
+                                <span class="block truncate text-sm font-bold text-sf-text">{{ auth()->user()->name }}</span>
                                 <span class="block truncate text-xs text-gray-500">{{ auth()->user()->email }}</span>
                             </p>
                             <a href="{{ route('account.dashboard') }}" class="block px-3.5 py-2 text-sm font-semibold text-zinc-700 transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My Account') }}</a>
@@ -125,14 +125,14 @@
     </div>
 
     @if ($menuItems->isNotEmpty() || $headerCategories->isNotEmpty() || $headerBrands->isNotEmpty())
-        <nav class="hidden border-b border-gray-100 bg-white shadow-sm md:block">
+        <nav class="hidden border-b border-gray-100 bg-sf-nav shadow-sm md:block">
             <ul class="mx-auto flex max-w-7xl items-center px-4 sm:px-6">
                 @if ($headerCategories->isNotEmpty())
                     <li>
                         <div x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false" class="relative">
                             <button type="button" @click="open = !open" :aria-expanded="open"
                                 :class="{ 'text-brand': open }"
-                                class="flex cursor-pointer items-center gap-1 px-3 py-3.5 text-[15px] font-semibold text-[#222] transition-colors hover:text-brand">
+                                class="flex cursor-pointer items-center gap-1 px-3 py-3.5 text-[15px] font-semibold text-sf-nav-text transition-colors hover:text-brand">
                                 <span>{{ __('Categories') }}</span>
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" />
@@ -161,7 +161,7 @@
                         <div x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false" class="relative">
                             <button type="button" @click="open = !open" :aria-expanded="open"
                                 :class="{ 'text-brand': open }"
-                                class="flex cursor-pointer items-center gap-1 px-3 py-3.5 text-[15px] font-semibold text-[#222] transition-colors hover:text-brand">
+                                class="flex cursor-pointer items-center gap-1 px-3 py-3.5 text-[15px] font-semibold text-sf-nav-text transition-colors hover:text-brand">
                                 <span>{{ __('Brands') }}</span>
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" />
@@ -188,7 +188,7 @@
                 @foreach ($menuItems as $menuItem)
                     <li>
                         <a href="{{ url($menuItem->url) }}"
-                            class="inline-block px-3 py-3.5 text-[15px] font-semibold transition-colors {{ url($menuItem->url) === $currentUrl ? 'text-brand' : 'text-[#222] hover:text-brand' }}">
+                            class="inline-block px-3 py-3.5 text-[15px] font-semibold transition-colors {{ url($menuItem->url) === $currentUrl ? 'text-brand' : 'text-sf-nav-text hover:text-brand' }}">
                             {{ $menuItem->label }}
                         </a>
                     </li>
@@ -207,31 +207,31 @@
             @if ($headerCategories->isNotEmpty())
                 <p class="px-3 pb-1 pt-2 text-xs font-bold uppercase tracking-wide text-zinc-400">{{ __('Categories') }}</p>
                 @foreach ($headerCategories as $category)
-                    <a href="{{ route('shop.category', $category->slug) }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-gray-50 hover:text-brand">{{ $category->name }}</a>
+                    <a href="{{ route('shop.category', $category->slug) }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ $category->name }}</a>
                 @endforeach
             @endif
             @if ($headerBrands->isNotEmpty())
                 <p class="px-3 pb-1 pt-2 text-xs font-bold uppercase tracking-wide text-zinc-400">{{ __('Brands') }}</p>
                 @foreach ($headerBrands as $brand)
-                    <a href="{{ route('shop.brand', $brand->slug) }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-gray-50 hover:text-brand">{{ $brand->name }}</a>
+                    <a href="{{ route('shop.brand', $brand->slug) }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ $brand->name }}</a>
                 @endforeach
             @endif
             @foreach ($menuItems ?? [] as $menuItem)
-                <a href="{{ url($menuItem->url) }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-gray-50 hover:text-brand">{{ $menuItem->label }}</a>
+                <a href="{{ url($menuItem->url) }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ $menuItem->label }}</a>
             @endforeach
-            <a href="{{ route('favorites') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My favorites') }}</a>
-            <a href="{{ route('cart') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My cart') }}</a>
+            <a href="{{ route('favorites') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My favorites') }}</a>
+            <a href="{{ route('cart') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My cart') }}</a>
             @auth
                 <p class="px-3 pb-1 pt-3 text-xs font-bold uppercase tracking-wide text-zinc-400">{{ __('My account') }}</p>
-                <a href="{{ route('account.dashboard') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My Account') }}</a>
-                <a href="{{ route('account.orders') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My Orders') }}</a>
-                <a href="{{ route('account.profile') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-gray-50 hover:text-brand">{{ __('Profile') }}</a>
+                <a href="{{ route('account.dashboard') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My Account') }}</a>
+                <a href="{{ route('account.orders') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My Orders') }}</a>
+                <a href="{{ route('account.profile') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ __('Profile') }}</a>
                 <form method="POST" action="{{ route('logout') }}" class="mt-2">
                     @csrf
                     <button type="submit" class="w-full rounded-full bg-red-50 px-5 py-2.5 text-center text-sm font-semibold text-red-600 transition hover:bg-red-100">{{ __('Log out') }}</button>
                 </form>
             @else
-                <a href="{{ route('login') }}" class="mt-2 rounded-full bg-brand px-5 py-2.5 text-center text-sm font-semibold text-white transition hover:opacity-90">{{ __('Sign in') }}</a>
+                <a href="{{ route('login') }}" class="mt-2 rounded-full bg-sf-button px-5 py-2.5 text-center text-sm font-semibold text-sf-button-text transition hover:opacity-90">{{ __('Sign in') }}</a>
             @endauth
         </nav>
     </div>

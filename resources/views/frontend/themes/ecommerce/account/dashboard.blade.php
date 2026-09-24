@@ -4,7 +4,7 @@
     @include('partials.head')
     @include('partials.seo-meta')
 </head>
-<body class="bg-page-bg font-storefront text-zinc-800 antialiased">
+<body class="bg-page-bg font-storefront text-sf-text antialiased">
 
 @include('frontend.themes.ecommerce.partials.header')
 
@@ -21,7 +21,7 @@
 
     <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         <div class="mb-6">
-            <h1 class="text-lg font-bold uppercase tracking-wide text-zinc-800 md:text-2xl">{{ __('My Account') }}</h1>
+            <h1 class="text-lg font-bold uppercase tracking-wide text-sf-text md:text-2xl">{{ __('My Account') }}</h1>
             <p class="mt-1 text-sm text-gray-600">{{ __('Welcome back, :name — here is what is happening with your orders.', ['name' => $user->name]) }}</p>
         </div>
 
@@ -32,7 +32,7 @@
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div class="rounded-card border border-zinc-200 bg-white p-5">
                         <h2 class="text-sm font-bold uppercase tracking-wide text-zinc-500">{{ __('Profile') }}</h2>
-                        <p class="mt-2 text-base font-semibold text-zinc-800">{{ $user->name }}</p>
+                        <p class="mt-2 text-base font-semibold text-sf-text">{{ $user->name }}</p>
                         <p class="text-sm text-gray-600">{{ $user->email }}</p>
                         <a href="{{ route('account.profile') }}"
                             class="mt-3 inline-block text-sm font-semibold text-brand hover:underline">
@@ -42,7 +42,7 @@
 
                     <div class="rounded-card border border-zinc-200 bg-white p-5">
                         <h2 class="text-sm font-bold uppercase tracking-wide text-zinc-500">{{ __('Orders') }}</h2>
-                        <p class="mt-2 text-3xl font-bold text-zinc-800">{{ $orders->count() }}</p>
+                        <p class="mt-2 text-3xl font-bold text-sf-text">{{ $orders->count() }}</p>
                         <p class="text-sm text-gray-600">{{ __('items in your recent orders') }}</p>
                         <a href="{{ route('account.orders') }}"
                             class="mt-3 inline-block text-sm font-semibold text-brand hover:underline">
@@ -63,7 +63,7 @@
                         <div class="px-5 py-12 text-center">
                             <p class="text-sm text-gray-500">{{ __('You have not placed any orders yet.') }}</p>
                             <a href="{{ route('shop') }}"
-                                class="mt-4 inline-block rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-white transition hover:opacity-90">
+                                class="mt-4 inline-block rounded-full bg-sf-button px-6 py-2.5 text-sm font-semibold text-sf-button-text transition hover:opacity-90">
                                 {{ __('Start shopping') }}
                             </a>
                         </div>
@@ -73,14 +73,14 @@
                                 <li class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                                     <div>
                                         <a href="{{ route('account.orders.show', $order->order_number) }}"
-                                            class="font-semibold text-zinc-800 hover:text-brand">
+                                            class="font-semibold text-sf-text hover:text-brand">
                                             {{ $order->order_number }}
                                         </a>
                                         <p class="text-xs text-gray-500">{{ $order->created_at?->toDisplay() }}</p>
                                     </div>
                                     <div class="flex items-center gap-3">
                                         @include('frontend.themes.ecommerce.account.partials.status-badge', ['status' => $order->status])
-                                        <span class="text-sm font-bold text-zinc-800">{{ format_money($order->total) }}</span>
+                                        <span class="text-sm font-bold text-sf-text">{{ format_money($order->total) }}</span>
                                     </div>
                                 </li>
                             @endforeach

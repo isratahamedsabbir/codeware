@@ -4,7 +4,7 @@
     @include('partials.head')
     @include('partials.seo-meta')
 </head>
-<body class="bg-page-bg font-storefront text-zinc-800 antialiased">
+<body class="bg-page-bg font-storefront text-sf-text antialiased">
 
 @include('frontend.themes.ecommerce.partials.header')
 
@@ -21,7 +21,7 @@
 
     <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         <div class="mb-6">
-            <h1 class="text-lg font-bold uppercase tracking-wide text-zinc-800 md:text-2xl">{{ __('Profile') }}</h1>
+            <h1 class="text-lg font-bold uppercase tracking-wide text-sf-text md:text-2xl">{{ __('Profile') }}</h1>
             <p class="mt-1 text-sm text-gray-600">{{ __('Update your name, email, and password.') }}</p>
         </div>
 

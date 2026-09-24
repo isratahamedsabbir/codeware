@@ -26,13 +26,13 @@
     ];
 @endphp
 
-<footer class="mt-16 bg-brand text-white">
+<footer class="mt-16 bg-sf-footer text-sf-footer-text">
     @if (\App\Support\Features::enabled('newsletter'))
-        <div class="border-b border-white/10">
+        <div class="border-b border-sf-footer-text/10">
             <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-8 sm:flex-row sm:gap-8 sm:px-6">
                 <div class="text-center sm:text-left">
-                    <h2 class="text-lg font-bold text-white">{{ __('Subscribe to our newsletter') }}</h2>
-                    <p class="mt-1 text-sm text-white/70">{{ __('Get updates on new products and exclusive offers.') }}</p>
+                    <h2 class="text-lg font-bold text-sf-footer-text">{{ __('Subscribe to our newsletter') }}</h2>
+                    <p class="mt-1 text-sm text-sf-footer-text/70">{{ __('Get updates on new products and exclusive offers.') }}</p>
                 </div>
                 <div class="w-full sm:w-auto sm:min-w-[26rem]">
                     <livewire:frontend.newsletter-subscribe :key="'footer-newsletter'" />
@@ -47,44 +47,44 @@
                 @if (\App\Models\Setting::get('site_icon'))
                     <img src="{{ \App\Models\Setting::get('site_icon') }}" alt="{{ $siteName }}" class="h-8 w-auto">
                 @endif
-                <span class="text-lg font-bold text-white">{{ $siteName }}</span>
+                <span class="text-lg font-bold text-sf-footer-text">{{ $siteName }}</span>
             </a>
             @if ($siteTagline)
-                <p class="mt-2 text-sm text-white/70">{{ $siteTagline }}</p>
+                <p class="mt-2 text-sm text-sf-footer-text/70">{{ $siteTagline }}</p>
             @endif
             @if ($contactAddress)
-                <p class="mt-2 whitespace-pre-line text-sm leading-relaxed text-white/70">{{ __('Address') }}: {{ $contactAddress }}</p>
+                <p class="mt-2 whitespace-pre-line text-sm leading-relaxed text-sf-footer-text/70">{{ __('Address') }}: {{ $contactAddress }}</p>
             @endif
         </div>
 
         <div>
-            <h3 class="mb-3 text-lg font-semibold text-white">{{ __('Quick Links') }}</h3>
+            <h3 class="mb-3 text-lg font-semibold text-sf-footer-text">{{ __('Quick Links') }}</h3>
             @if ($quickLinks->isNotEmpty())
                 <ul class="space-y-2 text-sm">
                     @foreach ($quickLinks as $menuItem)
-                        <li><a href="{{ url($menuItem->url) }}" class="font-medium text-white/80 hover:underline hover:text-white">{{ $menuItem->label }}</a></li>
+                        <li><a href="{{ url($menuItem->url) }}" class="font-medium text-sf-footer-text/80 hover:underline hover:text-sf-footer-text">{{ $menuItem->label }}</a></li>
                     @endforeach
                 </ul>
             @else
-                <p class="text-sm text-white/70">{{ __('The quick links will appear here once they are published.') }}</p>
+                <p class="text-sm text-sf-footer-text/70">{{ __('The quick links will appear here once they are published.') }}</p>
             @endif
         </div>
 
         <div>
-            <h3 class="mb-3 text-lg font-semibold text-white">{{ __('Information') }}</h3>
+            <h3 class="mb-3 text-lg font-semibold text-sf-footer-text">{{ __('Information') }}</h3>
             @if ($informationMenu->isNotEmpty())
                 <ul class="space-y-2 text-sm">
                     @foreach ($informationMenu as $menuItem)
-                        <li><a href="{{ url($menuItem->url) }}" class="font-medium text-white/80 hover:underline hover:text-white">{{ $menuItem->label }}</a></li>
+                        <li><a href="{{ url($menuItem->url) }}" class="font-medium text-sf-footer-text/80 hover:underline hover:text-sf-footer-text">{{ $menuItem->label }}</a></li>
                     @endforeach
                 </ul>
             @else
-                <p class="text-sm text-white/70">{{ __('The information pages will appear here once they are published.') }}</p>
+                <p class="text-sm text-sf-footer-text/70">{{ __('The information pages will appear here once they are published.') }}</p>
             @endif
         </div>
 
         <div>
-            <h3 class="mb-3 text-lg font-semibold text-white">{{ __('Connect with us') }}</h3>
+            <h3 class="mb-3 text-lg font-semibold text-sf-footer-text">{{ __('Connect with us') }}</h3>
             @if ($socials->isNotEmpty())
                 <div class="flex flex-wrap gap-2.5">
                     @foreach ($socials as $platform => $social)
@@ -108,9 +108,9 @@
                 </div>
             @endif
             @if ($contactPhone || $contactEmail)
-                <div class="mt-3 flex flex-col gap-2 text-sm text-white/70">
+                <div class="mt-3 flex flex-col gap-2 text-sm text-sf-footer-text/70">
                     @if ($contactPhone)
-                        <a href="tel:{{ $contactPhone }}" class="inline-flex items-center gap-2 transition-colors hover:text-white">
+                        <a href="tel:{{ $contactPhone }}" class="inline-flex items-center gap-2 transition-colors hover:text-sf-footer-text">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
                             </svg>
@@ -118,7 +118,7 @@
                         </a>
                     @endif
                     @if ($contactEmail)
-                        <a href="mailto:{{ $contactEmail }}" class="inline-flex items-center gap-2 transition-colors hover:text-white">
+                        <a href="mailto:{{ $contactEmail }}" class="inline-flex items-center gap-2 transition-colors hover:text-sf-footer-text">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
                             </svg>
@@ -127,12 +127,12 @@
                     @endif
                 </div>
             @endif
-            <p class="mt-3 text-sm text-white/70">{{ __('We\'re always happy to hear from you.') }}</p>
+            <p class="mt-3 text-sm text-sf-footer-text/70">{{ __('We\'re always happy to hear from you.') }}</p>
         </div>
     </div>
 
-    <div class="bg-brand-ink py-3">
-        <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 text-sm text-white/80 sm:flex-row sm:px-6">
+    <div class="bg-sf-footer-bottom py-3">
+        <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 text-sm text-sf-footer-text/80 sm:flex-row sm:px-6">
             <p>&copy; {{ now()->setTimezone(display_timezone())->year }} {{ $siteName }}. {{ __('All rights reserved.') }}</p>
             <a href="https://codewarelimited.com" target="_blank" rel="noopener" class="font-semibold text-[#f7941d] hover:underline">
                 {{ __('Developed by Codeware Limited') }}

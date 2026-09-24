@@ -4,7 +4,7 @@
     @include('partials.head')
     @include('partials.seo-meta')
 </head>
-<body class="bg-white text-zinc-800 antialiased">
+<body class="bg-white text-sf-text antialiased">
 
 @include('frontend.themes.ecommerce.partials.header')
 
@@ -170,7 +170,7 @@
             <div class="flex flex-wrap items-center gap-2">
                 @if ($product->brand)
                     <a href="{{ route('shop.brand', $product->brand->slug) }}"
-                        class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-zinc-600 hover:bg-primary/10 hover:text-primary">
+                        class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-zinc-600 hover:bg-brand/10 hover:text-brand">
                         {{ $product->brand->name }}
                     </a>
                 @endif
@@ -184,7 +184,7 @@
                 @endif
             </div>
 
-            <h1 class="mt-4 text-3xl font-extrabold tracking-tight text-zinc-900">{{ $product->name }}</h1>
+            <h1 class="mt-4 text-3xl font-extrabold tracking-tight text-sf-heading">{{ $product->name }}</h1>
 
             {{-- On variant products the base SKU belongs to the parent — the
                  picker above shows the selected combination's own SKU instead. --}}
@@ -195,10 +195,10 @@
             @if (! $hasVariations)
                 <div class="mt-6 flex items-baseline gap-3">
                     @if ($baseDiscountLabel)
-                        <span class="text-3xl font-extrabold text-zinc-900">{{ $baseDiscountLabel }}</span>
+                        <span class="text-3xl font-extrabold text-sf-heading">{{ $baseDiscountLabel }}</span>
                         <span class="text-lg text-zinc-400 line-through">{{ format_money($product->price) }}</span>
                     @else
-                        <span class="text-3xl font-extrabold text-zinc-900">{{ format_money($product->price) }}</span>
+                        <span class="text-3xl font-extrabold text-sf-heading">{{ format_money($product->price) }}</span>
                     @endif
                 </div>
 
@@ -215,7 +215,7 @@
             <div class="mt-6 flex flex-wrap gap-2 text-sm text-zinc-600">
                 @if ($product->warranty_months > 0)
                     <span class="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 px-3 py-1.5">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                         </svg>
                         {{ __(':months months warranty', ['months' => $product->warranty_months]) }}
@@ -243,7 +243,7 @@
 
             @if (filled($product->description))
                 <div class="mt-8 border-t border-zinc-100 pt-6">
-                    <h2 class="mb-3 text-lg font-bold text-zinc-900">{{ __('Description') }}</h2>
+                    <h2 class="mb-3 text-lg font-bold text-sf-heading">{{ __('Description') }}</h2>
                     <div class="whitespace-pre-line leading-relaxed text-zinc-600">{{ $product->description }}</div>
                 </div>
             @endif
@@ -255,7 +255,7 @@
                             <span class="text-sm text-zinc-500">{{ __('Categories:') }}</span>
                             @foreach ($product->categories as $category)
                                 <a href="{{ route('shop.category', $category->slug) }}"
-                                    class="rounded-full border border-zinc-200 px-3 py-1 text-xs font-medium text-zinc-600 transition hover:border-primary hover:text-primary">
+                                    class="rounded-full border border-zinc-200 px-3 py-1 text-xs font-medium text-zinc-600 transition hover:border-brand hover:text-brand">
                                     {{ $category->name }}
                                 </a>
                             @endforeach
@@ -267,7 +267,7 @@
                             <span class="text-sm text-zinc-500">{{ __('Tags:') }}</span>
                             @foreach ($product->tags as $tag)
                                 <a href="{{ route('shop.tag', $tag->slug) }}"
-                                    class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600 transition hover:bg-primary/10 hover:text-primary">
+                                    class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600 transition hover:bg-brand/10 hover:text-brand">
                                     #{{ $tag->name }}
                                 </a>
                             @endforeach
@@ -280,11 +280,11 @@
 
     @if ($product->faqs->where('is_active', true)->isNotEmpty())
         <section class="mx-auto mt-14 max-w-3xl">
-            <h2 class="mb-5 text-2xl font-bold text-zinc-900">{{ __('Frequently asked questions') }}</h2>
+            <h2 class="mb-5 text-2xl font-bold text-sf-heading">{{ __('Frequently asked questions') }}</h2>
             <div class="space-y-3">
                 @foreach ($product->faqs->where('is_active', true) as $faq)
                     <details class="group rounded-card border border-zinc-100 bg-white shadow-sm">
-                        <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-medium text-zinc-900">
+                        <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-medium text-sf-heading">
                             {{ $faq->question }}
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 text-zinc-400 transition group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" />
@@ -301,7 +301,7 @@
         @continue(blank($section->localizedCards()))
 
         <section id="{{ $section->name }}" class="mx-auto max-w-7xl border-t border-zinc-100 py-12">
-            <h2 class="mb-6 text-2xl font-bold text-zinc-900">{{ $section->name }}</h2>
+            <h2 class="mb-6 text-2xl font-bold text-sf-heading">{{ $section->name }}</h2>
             <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach ($section->localizedCards() as $card)
                     <div class="group overflow-hidden rounded-card border border-zinc-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
@@ -313,7 +313,7 @@
                         @endif
                         <div class="p-4">
                             @if ($card['title'])
-                                <h3 class="font-semibold text-zinc-900">{{ $card['title'] }}</h3>
+                                <h3 class="font-semibold text-sf-heading">{{ $card['title'] }}</h3>
                             @endif
                             @if ($card['description'])
                                 <p class="mt-1.5 text-sm text-zinc-500 line-clamp-2">{{ $card['description'] }}</p>
@@ -327,7 +327,7 @@
 
     @if ($related->isNotEmpty())
         <section class="mx-auto max-w-7xl border-t border-zinc-100 py-12">
-            <h2 class="mb-6 text-2xl font-bold text-zinc-900">{{ __('You may also like') }}</h2>
+            <h2 class="mb-6 text-2xl font-bold text-sf-heading">{{ __('You may also like') }}</h2>
             <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach ($related as $product)
                     @include('frontend.themes.ecommerce.partials.product-card', ['product' => $product])

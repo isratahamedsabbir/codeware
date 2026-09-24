@@ -4,12 +4,17 @@
     @include('partials.head')
     @include('partials.seo-meta')
 </head>
-<body class="bg-page-bg font-storefront text-zinc-800 antialiased">
+<body class="bg-page-bg font-storefront text-sf-text antialiased">
 
 @php
     $siteName = \App\Models\Setting::get('site_name', config('app.name'));
     $siteTagline = \App\Models\Setting::get('site_tagline');
-    $heroImage = \App\Models\Setting::get('home_hero_image');
+    // Hero slider images (Theme Settings → Homepage banners); installs that
+    // predate the slider fall back to the single hero image.
+    $heroSlides = json_decode((string) \App\Models\Setting::get('home_hero_slides', ''), true);
+    $heroSlides = is_array($heroSlides)
+        ? array_values(array_filter($heroSlides, 'filled'))
+        : array_values(array_filter([\App\Models\Setting::get('home_hero_image')], 'filled'));
     $promoImage1 = \App\Models\Setting::get('home_promo_banner_1');
     $promoImage2 = \App\Models\Setting::get('home_promo_banner_2');
 
@@ -57,11 +62,47 @@
 <main>
     <div class="mx-auto w-full max-w-7xl px-4 sm:px-6">
         <section class="mt-6 grid w-full grid-cols-1 gap-4 lg:h-[440px] lg:grid-cols-3">
-            <a href="{{ route('shop') }}" class="relative block h-[300px] overflow-hidden rounded-card lg:col-span-2 lg:h-full">
-                @if ($heroImage)
-                    <img src="{{ $heroImage }}" alt="{{ $siteName }}"
-                        class="h-full w-full object-cover">
+            <a href="{{ route('shop') }}"
+                @if (count($heroSlides) > 1)
+                    x-data="{
+                        active: 0,
+                        count: {{ count($heroSlides) }},
+                        timer: null,
+                        start() { this.stop(); this.timer = setInterval(() => this.go(this.active + 1), 5000); },
+                        stop() { clearInterval(this.timer); },
+                        go(i) { this.active = (i + this.count) % this.count; },
+                    }"
+                    x-init="start()"
+                    @mouseenter="stop()" @mouseleave="start()"
+                @endif
+                class="group/hero relative block h-[300px] overflow-hidden rounded-card lg:col-span-2 lg:h-full">
+                @if ($heroSlides !== [])
+                    @foreach ($heroSlides as $i => $slide)
+                        <img src="{{ $slide }}" alt="{{ $siteName }}" @if ($i > 0) loading="lazy" @endif
+                            @if (count($heroSlides) > 1)
+                                :class="active === {{ $i }} ? '!opacity-100 scale-100' : 'opacity-0 scale-105'"
+                            @endif
+                            class="absolute inset-0 h-full w-full object-cover transition duration-1000 ease-out {{ $i === 0 ? '' : 'opacity-0' }}">
+                    @endforeach
                     <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+
+                    @if (count($heroSlides) > 1)
+                        <button type="button" @click.prevent="go(active - 1)" aria-label="{{ __('Previous slide') }}"
+                            class="absolute left-4 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-sf-text opacity-0 shadow-md backdrop-blur transition hover:bg-white group-hover/hero:opacity-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+                        </button>
+                        <button type="button" @click.prevent="go(active + 1)" aria-label="{{ __('Next slide') }}"
+                            class="absolute right-4 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-sf-text opacity-0 shadow-md backdrop-blur transition hover:bg-white group-hover/hero:opacity-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
+                        </button>
+                        <div class="absolute bottom-4 right-6 z-10 flex items-center gap-1.5 md:bottom-8 md:right-8">
+                            @foreach ($heroSlides as $i => $slide)
+                                <button type="button" @click.prevent="go({{ $i }})" aria-label="{{ __('Slide :n', ['n' => $i + 1]) }}"
+                                    :class="active === {{ $i }} ? '!w-6 !bg-white' : 'hover:bg-white/80'"
+                                    class="h-2 w-2 rounded-full bg-white/50 transition-all duration-300"></button>
+                            @endforeach
+                        </div>
+                    @endif
                 @else
                     <div class="flex h-full w-full items-center bg-gradient-to-br from-brand to-emerald-800 px-8 md:px-12">
                     </div>
@@ -109,7 +150,7 @@
             <div class="mx-auto max-w-7xl px-4 sm:px-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-lg font-bold uppercase tracking-wide text-zinc-800 md:text-2xl">{{ __('Shop by category') }}</h2>
+                        <h2 class="text-lg font-bold uppercase tracking-wide text-sf-text md:text-2xl">{{ __('Shop by category') }}</h2>
                         <p class="mt-1 text-sm text-gray-600">{{ __('Explore our product categories') }}</p>
                     </div>
                     <a href="{{ route('shop') }}" class="shrink-0 text-sm font-semibold text-brand hover:underline">{{ __('View all') }} →</a>
@@ -219,7 +260,7 @@
                         @endif
                         <div class="p-3">
                             @if ($card['title'])
-                                <h3 class="font-semibold text-zinc-800">{{ $card['title'] }}</h3>
+                                <h3 class="font-semibold text-sf-text">{{ $card['title'] }}</h3>
                             @endif
                             @if ($card['description'])
                                 <p class="mt-1.5 text-sm text-zinc-500 line-clamp-2">{{ $card['description'] }}</p>

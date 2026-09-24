@@ -4,7 +4,7 @@
     @include('partials.head')
     @include('partials.seo-meta')
 </head>
-<body class="bg-white text-zinc-800 antialiased">
+<body class="bg-white text-sf-text antialiased">
 
 @include('frontend.themes.ecommerce.partials.header')
 
@@ -20,8 +20,8 @@
 
 <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
     <header class="mb-8">
-        <h1 class="text-3xl font-extrabold text-zinc-900 sm:text-4xl">
-            <span class="text-primary">#</span>{{ $tag->name }}
+        <h1 class="text-3xl font-extrabold text-sf-heading sm:text-4xl">
+            <span class="text-brand">#</span>{{ $tag->name }}
         </h1>
         <p class="mt-1 text-sm text-zinc-500">{{ __('Products labeled with this tag') }}</p>
     </header>
@@ -29,10 +29,10 @@
     <section>
         <div class="mb-6 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
             <div>
-                <h2 class="text-2xl font-bold text-zinc-900">{{ __('Products tagged :tag', ['tag' => $tag->name]) }}</h2>
+                <h2 class="text-2xl font-bold text-sf-heading">{{ __('Products tagged :tag', ['tag' => $tag->name]) }}</h2>
                 <p class="mt-1 text-sm text-zinc-500">{{ __(':count products found', ['count' => $products->total()]) }}</p>
             </div>
-            <a href="{{ route('shop', ['tag' => $tag->slug]) }}" class="text-sm font-semibold text-primary hover:underline">
+            <a href="{{ route('shop', ['tag' => $tag->slug]) }}" class="text-sm font-semibold text-brand hover:underline">
                 {{ __('Filter in shop') }} →
             </a>
         </div>
@@ -48,8 +48,8 @@
             </div>
         @else
             <div class="flex flex-col items-center justify-center rounded-card border border-dashed border-zinc-200 py-24 text-center">
-                <h2 class="text-lg font-semibold text-zinc-900">{{ __('No products with this tag yet') }}</h2>
-                <a href="{{ route('shop') }}" class="mt-5 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">
+                <h2 class="text-lg font-semibold text-sf-heading">{{ __('No products with this tag yet') }}</h2>
+                <a href="{{ route('shop') }}" class="mt-5 rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">
                     {{ __('View all products') }}
                 </a>
             </div>

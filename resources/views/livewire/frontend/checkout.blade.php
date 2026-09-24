@@ -1,8 +1,8 @@
 @php
-    $base = 'w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-800 shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/20';
-    $baseError = 'w-full rounded-xl border border-red-300 bg-white px-4 py-2.5 text-sm text-zinc-800 shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-red-400 focus:ring-2 focus:ring-red-100';
-    $icon = 'w-full rounded-xl border border-zinc-300 bg-white py-2.5 pl-10 pr-4 text-sm text-zinc-800 shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/20';
-    $iconError = 'w-full rounded-xl border border-red-300 bg-white py-2.5 pl-10 pr-4 text-sm text-zinc-800 shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-red-400 focus:ring-2 focus:ring-red-100';
+    $base = 'w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm text-sf-text shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/20';
+    $baseError = 'w-full rounded-xl border border-red-300 bg-white px-4 py-2.5 text-sm text-sf-text shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-red-400 focus:ring-2 focus:ring-red-100';
+    $icon = 'w-full rounded-xl border border-zinc-300 bg-white py-2.5 pl-10 pr-4 text-sm text-sf-text shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/20';
+    $iconError = 'w-full rounded-xl border border-red-300 bg-white py-2.5 pl-10 pr-4 text-sm text-sf-text shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-red-400 focus:ring-2 focus:ring-red-100';
     $field = fn (string $key, bool $withIcon = false): string => match (true) {
         $withIcon && $errors->has($key) => $iconError,
         $withIcon => $icon,
@@ -32,7 +32,7 @@
 <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-12">
     <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-            <h1 class="text-2xl font-extrabold tracking-tight text-zinc-900 md:text-3xl">{{ __('Checkout') }}</h1>
+            <h1 class="text-2xl font-extrabold tracking-tight text-sf-heading md:text-3xl">{{ __('Checkout') }}</h1>
             <p class="mt-1 text-sm text-zinc-500">{{ __('Fill in your details to place the order.') }}</p>
         </div>
         {{-- Progress: same tracker as the cart page, cart step done. --}}
@@ -50,7 +50,7 @@
             </li>
             <li class="flex items-center gap-2">
                 <span class="flex h-7 w-7 items-center justify-center rounded-full bg-brand text-xs font-bold text-white shadow-sm">2</span>
-                <span class="text-zinc-900">{{ __('Checkout') }}</span>
+                <span class="text-sf-heading">{{ __('Checkout') }}</span>
                 <span class="h-px w-6 bg-zinc-300 sm:w-10"></span>
             </li>
             <li class="flex items-center gap-2">
@@ -67,10 +67,10 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
                 </svg>
             </span>
-            <h2 class="mt-4 text-lg font-semibold text-zinc-800">{{ __('Your cart is empty') }}</h2>
+            <h2 class="mt-4 text-lg font-semibold text-sf-text">{{ __('Your cart is empty') }}</h2>
             <p class="mt-1 text-sm text-zinc-500">{{ __('Add a few products before checking out.') }}</p>
             <a href="{{ route('shop') }}"
-                class="mt-6 inline-block rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-white transition hover:opacity-90">
+                class="mt-6 inline-block rounded-full bg-sf-button px-6 py-2.5 text-sm font-semibold text-sf-button-text transition hover:opacity-90">
                 {{ __('Browse products') }}
             </a>
         </div>
@@ -90,13 +90,13 @@
                     <header class="flex items-center gap-3 border-b border-zinc-100 bg-zinc-50/60 px-5 py-4">
                         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-bold text-white shadow-sm">1</span>
                         <div>
-                            <h2 class="text-sm font-bold uppercase tracking-wide text-zinc-800">{{ __('Contact details') }}</h2>
+                            <h2 class="text-sm font-bold uppercase tracking-wide text-sf-text">{{ __('Contact details') }}</h2>
                             <p class="text-xs text-zinc-500">{{ __('We use these to confirm and deliver your order.') }}</p>
                         </div>
                     </header>
                     <div class="grid gap-5 p-5 sm:grid-cols-2">
                         <div>
-                            <label for="customer_name" class="mb-1.5 block text-sm font-semibold text-zinc-800">{{ __('Full name') }}</label>
+                            <label for="customer_name" class="mb-1.5 block text-sm font-semibold text-sf-text">{{ __('Full name') }}</label>
                             <div class="relative">
                                 <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -109,7 +109,7 @@
                             @error('customer_name') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label for="customer_email" class="mb-1.5 block text-sm font-semibold text-zinc-800">{{ __('Email address') }}</label>
+                            <label for="customer_email" class="mb-1.5 block text-sm font-semibold text-sf-text">{{ __('Email address') }}</label>
                             <div class="relative">
                                 <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -122,7 +122,7 @@
                             @error('customer_email') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                         </div>
                         <div class="sm:col-span-2">
-                            <label for="customer_phone" class="mb-1.5 block text-sm font-semibold text-zinc-800">{{ __('Phone number') }}</label>
+                            <label for="customer_phone" class="mb-1.5 block text-sm font-semibold text-sf-text">{{ __('Phone number') }}</label>
                             <div class="relative">
                                 <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -135,7 +135,7 @@
                             @error('customer_phone') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                         </div>
                         <div class="sm:col-span-2">
-                            <label for="shipping_address" class="mb-1.5 block text-sm font-semibold text-zinc-800">{{ __('Shipping address') }}</label>
+                            <label for="shipping_address" class="mb-1.5 block text-sm font-semibold text-sf-text">{{ __('Shipping address') }}</label>
                             <div class="relative">
                                 <span class="pointer-events-none absolute left-3.5 top-3 text-zinc-400">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -154,7 +154,7 @@
                     <header class="flex items-center gap-3 border-b border-zinc-100 bg-zinc-50/60 px-5 py-4">
                         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-bold text-white shadow-sm">2</span>
                         <div>
-                            <h2 class="text-sm font-bold uppercase tracking-wide text-zinc-800">{{ __('Shipping') }}</h2>
+                            <h2 class="text-sm font-bold uppercase tracking-wide text-sf-text">{{ __('Shipping') }}</h2>
                             <p class="text-xs text-zinc-500">{{ __('Choose a delivery method for your order.') }}</p>
                         </div>
                     </header>
@@ -172,12 +172,12 @@
                                                     </svg>
                                                 </span>
                                                 <span class="min-w-0">
-                                                    <span class="block truncate group-has-[:checked]:text-zinc-900">{{ $method['name'] }}</span>
+                                                    <span class="block truncate group-has-[:checked]:text-sf-heading">{{ $method['name'] }}</span>
                                                 </span>
                                             </span>
                                             <span class="ml-auto flex shrink-0 items-center gap-2.5">
                                                 @if ($method['cost'] > 0)
-                                                    <span class="font-bold text-zinc-900">{{ format_money($method['cost']) }}</span>
+                                                    <span class="font-bold text-sf-heading">{{ format_money($method['cost']) }}</span>
                                                 @else
                                                     <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-600">{{ __('Free') }}</span>
                                                 @endif
@@ -200,7 +200,7 @@
                     <header class="flex items-center gap-3 border-b border-zinc-100 bg-zinc-50/60 px-5 py-4">
                         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-bold text-white shadow-sm">3</span>
                         <div>
-                            <h2 class="text-sm font-bold uppercase tracking-wide text-zinc-800">{{ __('Payment') }}</h2>
+                            <h2 class="text-sm font-bold uppercase tracking-wide text-sf-text">{{ __('Payment') }}</h2>
                             <p class="text-xs text-zinc-500">{{ __('Choose how you would like to pay.') }}</p>
                         </div>
                     </header>
@@ -216,7 +216,7 @@
                                             </svg>
                                         </span>
                                         <span class="min-w-0">
-                                            <span class="block truncate group-has-[:checked]:text-zinc-900">{{ $label }}</span>
+                                            <span class="block truncate group-has-[:checked]:text-sf-heading">{{ $label }}</span>
                                             @if ($code === \App\Support\PaymentMethods::COD)
                                                 <span class="block text-xs font-medium text-zinc-500">{{ __('Pay when your order is delivered.') }}</span>
                                             @endif
@@ -234,7 +234,7 @@
 
                         <div class="space-y-5">
                             <div>
-                                <label for="coupon_code" class="mb-1.5 block text-sm font-semibold text-zinc-800">{{ __('Coupon code') }}</label>
+                                <label for="coupon_code" class="mb-1.5 block text-sm font-semibold text-sf-text">{{ __('Coupon code') }}</label>
                                 <div class="relative">
                                     <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -247,7 +247,7 @@
                                 @error('coupon_code') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                             </div>
                             <div>
-                                <label for="notes" class="mb-1.5 block text-sm font-semibold text-zinc-800">{{ __('Order notes') }} <span class="font-normal text-zinc-400">({{ __('optional') }})</span></label>
+                                <label for="notes" class="mb-1.5 block text-sm font-semibold text-sf-text">{{ __('Order notes') }} <span class="font-normal text-zinc-400">({{ __('optional') }})</span></label>
                                 <div class="relative">
                                     <span class="pointer-events-none absolute left-3.5 top-3 text-zinc-400">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -267,7 +267,7 @@
             <aside class="h-fit overflow-hidden rounded-card border border-zinc-200 bg-white shadow-sm lg:order-2 lg:sticky lg:top-24">
                 <div class="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/60 px-5 py-4">
                     <div class="flex items-center gap-2">
-                        <h2 class="text-base font-bold text-zinc-900">{{ __('Order summary') }}</h2>
+                        <h2 class="text-base font-bold text-sf-heading">{{ __('Order summary') }}</h2>
                         <span class="rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-bold text-brand">{{ trans_choice(':count item|:count items', $count, ['count' => $count]) }}</span>
                     </div>
                     <a href="{{ route('cart') }}" class="text-xs font-semibold text-zinc-500 underline-offset-4 transition hover:text-brand hover:underline">{{ __('Edit cart') }}</a>
@@ -280,13 +280,13 @@
                                 <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}" class="h-14 w-14 shrink-0 rounded-xl border border-zinc-100 object-cover">
                             @endif
                             <div class="min-w-0 flex-1">
-                                <a href="{{ $item['url'] }}" class="line-clamp-1 text-sm font-semibold text-zinc-800 hover:text-brand">{{ $item['name'] }}</a>
+                                <a href="{{ $item['url'] }}" class="line-clamp-1 text-sm font-semibold text-sf-text hover:text-brand">{{ $item['name'] }}</a>
                                 @if ($item['options_label'])
                                     <p class="text-xs text-zinc-500">{{ $item['options_label'] }}</p>
                                 @endif
                                 <p class="mt-0.5 text-xs text-zinc-500">{{ __('Qty: :quantity', ['quantity' => $item['quantity']]) }}</p>
                             </div>
-                            <span class="shrink-0 text-sm font-bold text-zinc-900">{{ $item['line_total_label'] }}</span>
+                            <span class="shrink-0 text-sm font-bold text-sf-heading">{{ $item['line_total_label'] }}</span>
                         </li>
                     @endforeach
                 </ul>
@@ -294,33 +294,33 @@
                 <dl class="space-y-2.5 border-t border-zinc-100 px-5 py-4 text-sm">
                     <div class="flex items-center justify-between">
                         <dt class="text-zinc-500">{{ __('Subtotal') }}</dt>
-                        <dd class="font-semibold text-zinc-900">{{ format_money($subtotal) }}</dd>
+                        <dd class="font-semibold text-sf-heading">{{ format_money($subtotal) }}</dd>
                     </div>
                     @if ($vatEnabled && $vat > 0)
                         <div class="flex items-center justify-between">
                             <dt class="text-zinc-500">{{ $vatLabel }}</dt>
-                            <dd class="font-semibold text-zinc-900">{{ format_money($vat) }}</dd>
+                            <dd class="font-semibold text-sf-heading">{{ format_money($vat) }}</dd>
                         </div>
                     @endif
                     @if ($shippingLabel !== '')
                         <div class="flex items-center justify-between">
                             <dt class="text-zinc-500">{{ __('Shipping') }} <span class="text-xs text-zinc-400">({{ $shippingLabel }})</span></dt>
                             @if ((float) $shipping > 0)
-                                <dd class="font-semibold text-zinc-900">{{ format_money($shipping) }}</dd>
+                                <dd class="font-semibold text-sf-heading">{{ format_money($shipping) }}</dd>
                             @else
                                 <dd class="font-semibold text-emerald-600">{{ __('Free') }}</dd>
                             @endif
                         </div>
                     @endif
                     <div class="flex items-center justify-between rounded-card bg-brand/5 px-3.5 py-3">
-                        <dt class="text-base font-bold text-zinc-900">{{ __('Total') }}</dt>
-                        <dd class="text-xl font-extrabold text-brand">{{ format_money($total) }}</dd>
+                        <dt class="text-base font-bold text-sf-heading">{{ __('Total') }}</dt>
+                        <dd class="text-xl font-extrabold text-sf-price">{{ format_money($total) }}</dd>
                     </div>
                 </dl>
 
                 <div class="px-5 pb-5">
                     <button type="submit" form="checkout-form" wire:loading.attr="disabled" wire:target="placeOrder"
-                        class="flex w-full items-center justify-center gap-2 rounded-full bg-brand px-6 py-4 text-sm font-bold text-white shadow-md shadow-brand/20 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60">
+                        class="flex w-full items-center justify-center gap-2 rounded-full bg-sf-button px-6 py-4 text-sm font-bold text-sf-button-text shadow-md shadow-brand/20 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60">
                         <svg wire:loading wire:target="placeOrder" class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Z"></path>

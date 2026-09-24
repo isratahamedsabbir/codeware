@@ -145,7 +145,7 @@
                     type="button"
                     @click="pickerOpen = true"
                     aria-live="polite"
-                    class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+                    class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-sf-button px-5 py-2.5 text-sm font-semibold text-sf-button-text transition hover:opacity-90"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
@@ -173,7 +173,7 @@
                         @click.outside="pickerOpen = false"
                     >
                         <div class="flex items-start justify-between gap-3">
-                            <h3 class="line-clamp-2 text-base font-bold text-zinc-900">{{ $product->name }}</h3>
+                            <h3 class="line-clamp-2 text-base font-bold text-sf-heading">{{ $product->name }}</h3>
                             <button type="button" @click="pickerOpen = false" aria-label="{{ __('Close') }}"
                                 class="shrink-0 rounded-full p-1.5 text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -186,7 +186,7 @@
                             <div x-data="productVariants({!! $pickerWireData !!})" class="w-full">
                                 <template x-for="(values, attribute) in groups" :key="attribute">
                                     <div class="mt-4">
-                                        <h3 class="mb-2 text-sm font-semibold text-zinc-900" x-text="attribute"></h3>
+                                        <h3 class="mb-2 text-sm font-semibold text-sf-heading" x-text="attribute"></h3>
                                         <div class="flex flex-wrap gap-2">
                                             <template x-for="value in values" :key="value">
                                                 <button type="button" @click="toggle(attribute, value)"
@@ -194,8 +194,8 @@
                                                     :class="!canPick(attribute, value)
                                                         ? 'cursor-not-allowed border-zinc-200 text-zinc-300 line-through'
                                                         : (selection[attribute] === value
-                                                            ? 'border-primary bg-primary/10 text-primary'
-                                                            : 'border-zinc-200 text-zinc-700 hover:border-primary/50')"
+                                                            ? 'border-brand bg-brand/10 text-brand'
+                                                            : 'border-zinc-200 text-zinc-700 hover:border-brand/50')"
                                                     class="rounded-full border px-4 py-2 text-sm font-medium transition"
                                                     x-text="value"></button>
                                             </template>
@@ -206,7 +206,7 @@
                                 <div class="mt-6 flex items-baseline gap-3">
                                     <template x-if="selected">
                                         <div class="flex flex-wrap items-baseline gap-3">
-                                            <span class="text-2xl font-extrabold text-zinc-900" x-text="selected.discount_label || selected.price_label"></span>
+                                            <span class="text-2xl font-extrabold text-sf-heading" x-text="selected.discount_label || selected.price_label"></span>
                                             <span x-show="selected.discount_label" class="text-base text-zinc-400 line-through" x-text="selected.price_label"></span>
                                             <span class="mt-1 w-full text-sm" :class="selected.in_stock ? 'text-emerald-600' : 'text-red-500'" x-text="selected.stock_label"></span>
                                             <template x-if="selected.sku">
@@ -216,7 +216,7 @@
                                     </template>
                                     <template x-if="!selected">
                                         <div class="flex flex-wrap items-baseline gap-3">
-                                            <span class="text-2xl font-extrabold text-zinc-900" x-text="base_discount_label || base_price_label"></span>
+                                            <span class="text-2xl font-extrabold text-sf-heading" x-text="base_discount_label || base_price_label"></span>
                                             <span x-show="base_discount_label" class="text-base text-zinc-400 line-through" x-text="base_price_label"></span>
                                             <span class="mt-1 w-full text-sm text-zinc-500">{{ __('Select options to see stock.') }}</span>
                                         </div>
@@ -231,7 +231,7 @@
                                                 <template x-if="cartQty > 1"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" /></svg></template>
                                             </button>
                                             <span class="flex min-w-0 flex-1 items-center justify-center gap-1 truncate text-sm font-medium text-zinc-600"><span class="tabular-nums font-bold text-brand" x-text="cartQty"></span> {{ __('in cart') }}</span>
-                                            <button type="button" @click="more()" wire:loading.attr="disabled" aria-label="{{ __('Add one more') }}" class="flex w-10 shrink-0 items-center justify-center bg-brand text-white transition !rounded-none hover:opacity-90 disabled:opacity-50">
+                                            <button type="button" @click="more()" wire:loading.attr="disabled" aria-label="{{ __('Add one more') }}" class="flex w-10 shrink-0 items-center justify-center bg-sf-button text-sf-button-text transition !rounded-none hover:opacity-90 disabled:opacity-50">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                                             </button>
                                         </div>
@@ -245,7 +245,7 @@
                                                 class="flex h-11 w-9 items-center justify-center rounded-l-full text-lg font-semibold text-zinc-600 transition hover:text-brand">
                                                 &minus;
                                             </button>
-                                            <span class="w-10 text-center text-sm font-bold text-zinc-900">{{ $quantity }}</span>
+                                            <span class="w-10 text-center text-sm font-bold text-sf-heading">{{ $quantity }}</span>
                                             <button type="button" wire:click="increase" aria-label="{{ __('Increase quantity') }}"
                                                 class="flex h-11 w-9 items-center justify-center rounded-r-full text-lg font-semibold text-zinc-600 transition hover:text-brand">
                                                 +
@@ -289,7 +289,7 @@
         >
             <template x-for="(values, attribute) in groups" :key="attribute">
                 <div class="mt-4">
-                    <h3 class="mb-2 text-sm font-semibold text-zinc-900" x-text="attribute"></h3>
+                    <h3 class="mb-2 text-sm font-semibold text-sf-heading" x-text="attribute"></h3>
                     <div class="flex flex-wrap gap-2">
                         <template x-for="value in values" :key="value">
                             <button type="button" @click="toggle(attribute, value)"
@@ -297,8 +297,8 @@
                                 :class="!canPick(attribute, value)
                                     ? 'cursor-not-allowed border-zinc-200 text-zinc-300 line-through'
                                     : (selection[attribute] === value
-                                        ? 'border-primary bg-primary/10 text-primary'
-                                        : 'border-zinc-200 text-zinc-700 hover:border-primary/50')"
+                                        ? 'border-brand bg-brand/10 text-brand'
+                                        : 'border-zinc-200 text-zinc-700 hover:border-brand/50')"
                                 class="rounded-full border px-4 py-2 text-sm font-medium transition"
                                 x-text="value"></button>
                         </template>
@@ -309,7 +309,7 @@
             <div class="mt-6 flex items-baseline gap-3">
                 <template x-if="selected">
                     <div class="flex flex-wrap items-baseline gap-3">
-                        <span class="text-3xl font-extrabold text-zinc-900" x-text="selected.discount_label || selected.price_label"></span>
+                        <span class="text-3xl font-extrabold text-sf-heading" x-text="selected.discount_label || selected.price_label"></span>
                         <span x-show="selected.discount_label" class="text-lg text-zinc-400 line-through" x-text="selected.price_label"></span>
                         <span class="mt-1 w-full text-sm" :class="selected.in_stock ? 'text-emerald-600' : 'text-red-500'" x-text="selected.stock_label"></span>
                         <template x-if="selected.sku">
@@ -319,7 +319,7 @@
                 </template>
                 <template x-if="!selected">
                     <div class="flex flex-wrap items-baseline gap-3">
-                        <span class="text-3xl font-extrabold text-zinc-900" x-text="base_discount_label || base_price_label"></span>
+                        <span class="text-3xl font-extrabold text-sf-heading" x-text="base_discount_label || base_price_label"></span>
                         <span x-show="base_discount_label" class="text-lg text-zinc-400 line-through" x-text="base_price_label"></span>
                         @if (! $product->is_upcoming)
                             <span class="mt-1 w-full text-sm text-zinc-500">{{ __('Select options to see stock.') }}</span>
@@ -336,7 +336,7 @@
                             <template x-if="cartQty > 1"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" /></svg></template>
                         </button>
                         <span class="flex min-w-0 flex-1 items-center justify-center gap-1 truncate text-sm font-medium text-zinc-600"><span class="tabular-nums font-bold text-brand" x-text="cartQty"></span> {{ __('in cart') }}</span>
-                        <button type="button" @click="more()" wire:loading.attr="disabled" aria-label="{{ __('Add one more') }}" class="flex w-10 shrink-0 items-center justify-center bg-brand text-white transition !rounded-none hover:opacity-90 disabled:opacity-50">
+                        <button type="button" @click="more()" wire:loading.attr="disabled" aria-label="{{ __('Add one more') }}" class="flex w-10 shrink-0 items-center justify-center bg-sf-button text-sf-button-text transition !rounded-none hover:opacity-90 disabled:opacity-50">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                         </button>
                     </div>
@@ -350,7 +350,7 @@
                             class="flex h-11 w-9 items-center justify-center rounded-l-full text-lg font-semibold text-zinc-600 transition hover:text-brand">
                             &minus;
                         </button>
-                        <span class="w-10 text-center text-sm font-bold text-zinc-900">{{ $quantity }}</span>
+                        <span class="w-10 text-center text-sm font-bold text-sf-heading">{{ $quantity }}</span>
                         <button type="button" wire:click="increase" aria-label="{{ __('Increase quantity') }}"
                             class="flex h-11 w-9 items-center justify-center rounded-r-full text-lg font-semibold text-zinc-600 transition hover:text-brand">
                             +
@@ -397,7 +397,7 @@
                     @endif
                 </button>
                 <span class="flex min-w-0 flex-1 items-center justify-center gap-1 truncate text-sm font-medium text-zinc-600"><span class="tabular-nums font-bold text-brand">{{ $inCart }}</span> {{ __('in cart') }}</span>
-                <button type="button" wire:click="increment" wire:loading.attr="disabled" aria-label="{{ __('Add one more') }}" class="flex w-10 shrink-0 items-center justify-center bg-brand text-white transition !rounded-none hover:opacity-90 disabled:opacity-50">
+                <button type="button" wire:click="increment" wire:loading.attr="disabled" aria-label="{{ __('Add one more') }}" class="flex w-10 shrink-0 items-center justify-center bg-sf-button text-sf-button-text transition !rounded-none hover:opacity-90 disabled:opacity-50">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                 </button>
             </div>
@@ -416,7 +416,7 @@
                         class="flex h-11 w-9 items-center justify-center rounded-l-full text-lg font-semibold text-zinc-600 transition hover:text-brand">
                         &minus;
                     </button>
-                    <span class="w-10 text-center text-sm font-bold text-zinc-900">{{ $quantity }}</span>
+                    <span class="w-10 text-center text-sm font-bold text-sf-heading">{{ $quantity }}</span>
                     <button type="button" wire:click="increase" aria-label="{{ __('Increase quantity') }}"
                         class="flex h-11 w-9 items-center justify-center rounded-r-full text-lg font-semibold text-zinc-600 transition hover:text-brand">
                         +
@@ -428,7 +428,7 @@
                 type="button"
                 wire:click="add"
                 aria-live="polite"
-                class="inline-flex flex-1 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 bg-brand"
+                class="inline-flex flex-1 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-sf-button-text transition hover:opacity-90 bg-sf-button"
             >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />

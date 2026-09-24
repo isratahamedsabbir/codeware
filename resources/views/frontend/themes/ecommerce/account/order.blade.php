@@ -4,7 +4,7 @@
     @include('partials.head')
     @include('partials.seo-meta')
 </head>
-<body class="bg-page-bg font-storefront text-zinc-800 antialiased">
+<body class="bg-page-bg font-storefront text-sf-text antialiased">
 
 @include('frontend.themes.ecommerce.partials.header')
 
@@ -23,7 +23,7 @@
     <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h1 class="text-lg font-bold uppercase tracking-wide text-zinc-800 md:text-2xl">{{ __('Order :number', ['number' => $order->order_number]) }}</h1>
+                <h1 class="text-lg font-bold uppercase tracking-wide text-sf-text md:text-2xl">{{ __('Order :number', ['number' => $order->order_number]) }}</h1>
                 <p class="mt-1 text-sm text-gray-600">
                     {{ __('Placed on :date', ['date' => $order->created_at?->toDisplay()]) }}
                 </p>
@@ -54,7 +54,7 @@
                                 @foreach ($order->items as $item)
                                     <tr>
                                         <td class="px-5 py-3.5">
-                                            <span class="font-semibold text-zinc-800">{{ $item->item_name }}</span>
+                                            <span class="font-semibold text-sf-text">{{ $item->item_name }}</span>
                                             @if ($item->product_id)
                                                 <span class="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">{{ __('Product') }}</span>
                                             @else
@@ -63,14 +63,14 @@
                                         </td>
                                         <td class="px-5 py-3.5 text-center text-gray-600">{{ $item->quantity }}</td>
                                         <td class="px-5 py-3.5 text-right text-gray-600">{{ format_money($item->unit_price) }}</td>
-                                        <td class="px-5 py-3.5 text-right font-semibold text-zinc-800">{{ format_money($item->line_total) }}</td>
+                                        <td class="px-5 py-3.5 text-right font-semibold text-sf-text">{{ format_money($item->line_total) }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
                             <tfoot>
                                 <tr class="border-t border-zinc-100">
                                     <th colspan="3" class="px-5 py-3 text-right text-sm font-semibold text-zinc-500">{{ __('Subtotal') }}</th>
-                                    <td class="px-5 py-3 text-right text-sm text-zinc-800">{{ format_money($order->subtotal) }}</td>
+                                    <td class="px-5 py-3 text-right text-sm text-sf-text">{{ format_money($order->subtotal) }}</td>
                                 </tr>
                                 @if ((float) $order->discount > 0)
                                     <tr>
@@ -91,7 +91,7 @@
                                             @endif
                                             {{ \App\Models\Setting::vatLabel() }}
                                         </th>
-                                        <td class="px-5 py-3 text-right text-sm text-zinc-800">{{ format_money($order->vat_amount) }}</td>
+                                        <td class="px-5 py-3 text-right text-sm text-sf-text">{{ format_money($order->vat_amount) }}</td>
                                     </tr>
                                 @endif
                                 @if ((float) $order->shipping_cost > 0)
@@ -102,12 +102,12 @@
                                                 <span class="ml-1 text-xs font-medium text-zinc-400">({{ $order->shipping_method }})</span>
                                             @endif
                                         </th>
-                                        <td class="px-5 py-3 text-right text-sm text-zinc-800">{{ format_money($order->shipping_cost) }}</td>
+                                        <td class="px-5 py-3 text-right text-sm text-sf-text">{{ format_money($order->shipping_cost) }}</td>
                                     </tr>
                                 @endif
                                 <tr class="bg-gray-50">
-                                    <th colspan="3" class="px-5 py-3.5 text-right text-sm font-bold text-zinc-800">{{ __('Total') }}</th>
-                                    <td class="px-5 py-3.5 text-right text-sm font-bold text-brand">{{ format_money($order->total) }}</td>
+                                    <th colspan="3" class="px-5 py-3.5 text-right text-sm font-bold text-sf-text">{{ __('Total') }}</th>
+                                    <td class="px-5 py-3.5 text-right text-sm font-bold text-sf-price">{{ format_money($order->total) }}</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -118,7 +118,7 @@
                     <section class="rounded-card border border-zinc-200 bg-white p-5">
                         <h2 class="text-sm font-bold uppercase tracking-wide text-zinc-500">{{ __('Shipping') }}</h2>
                         @if ($order->shipping_method)
-                            <p class="mt-3 text-sm font-semibold text-zinc-800">{{ $order->shipping_method }}</p>
+                            <p class="mt-3 text-sm font-semibold text-sf-text">{{ $order->shipping_method }}</p>
                             <p class="text-sm text-zinc-500">
                                 {{ (float) $order->shipping_cost > 0 ? format_money($order->shipping_cost) : __('Free') }}
                             </p>
@@ -137,7 +137,7 @@
                         <div class="mt-3 space-y-2 text-sm">
                             <div class="flex items-center justify-between">
                                 <span class="text-gray-600">{{ __('Method') }}</span>
-                                <span class="font-semibold text-zinc-800">{{ ucfirst(str_replace('_', ' ', $order->payment_method)) }}</span>
+                                <span class="font-semibold text-sf-text">{{ ucfirst(str_replace('_', ' ', $order->payment_method)) }}</span>
                             </div>
                             <div class="flex items-center justify-between">
                                 <span class="text-gray-600">{{ __('Status') }}</span>
@@ -158,7 +158,7 @@
                                                 <span class="text-xs text-zinc-400">· {{ $transaction->reference }}</span>
                                             @endif
                                         </span>
-                                        <span class="font-semibold text-zinc-800">{{ format_money($transaction->amount) }}</span>
+                                        <span class="font-semibold text-sf-text">{{ format_money($transaction->amount) }}</span>
                                     </li>
                                 @endforeach
                             </ul>

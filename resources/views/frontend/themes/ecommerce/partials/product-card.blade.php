@@ -48,7 +48,7 @@
             <span class="text-xs uppercase tracking-wide text-zinc-400">{{ $product->brand->name }}</span>
         @endif
 
-        <h3 class="text-[15px] font-medium leading-snug text-zinc-800">
+        <h3 class="text-[15px] font-medium leading-snug text-sf-text">
             <a href="{{ route('products.show', $product->slug) }}" class="line-clamp-2 min-h-[36px] transition-colors hover:text-brand">
                 {{ $product->name }}
             </a>
@@ -56,10 +56,10 @@
 
         <div class="mt-auto flex flex-wrap items-baseline gap-x-2 gap-y-0.5 pt-2">
             @if ($discount)
-                <span class="text-[15px] font-bold text-brand">{{ format_money($discount) }}</span>
+                <span class="text-[15px] font-bold text-sf-price">{{ format_money($discount) }}</span>
                 <span class="text-sm text-gray-400 line-through">{{ format_money($product->price) }}</span>
             @else
-                <span class="text-[15px] font-bold text-brand">{{ format_money($product->price) }}</span>
+                <span class="text-[15px] font-bold text-sf-price">{{ format_money($product->price) }}</span>
             @endif
 
             @if (($sold = $product->soldQuantity()) > 0)

@@ -4,7 +4,7 @@
     @include('partials.head')
     @include('partials.seo-meta')
 </head>
-<body class="bg-white text-zinc-800 antialiased">
+<body class="bg-white text-sf-text antialiased">
 
 @include('frontend.themes.ecommerce.partials.header')
 
@@ -20,19 +20,19 @@
 
 <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
     <header class="mb-8 text-center">
-        <h1 class="text-3xl font-extrabold text-zinc-900 sm:text-4xl">{{ __('Our Blog') }}</h1>
+        <h1 class="text-3xl font-extrabold text-sf-heading sm:text-4xl">{{ __('Our Blog') }}</h1>
         <p class="mx-auto mt-2 max-w-xl text-sm text-zinc-500">{{ __('Guides, news and updates from the team.') }}</p>
     </header>
 
     @if ($categories->isNotEmpty())
         <nav aria-label="{{ __('Blog categories') }}" class="mb-8 flex flex-wrap items-center justify-center gap-2">
             <a href="{{ route('blog') }}"
-                class="rounded-full px-4 py-1.5 text-sm font-semibold transition {{ $activeCategory === '' ? 'bg-primary text-white shadow-sm' : 'bg-zinc-100 text-zinc-600 hover:bg-primary/10 hover:text-primary' }}">
+                class="rounded-full px-4 py-1.5 text-sm font-semibold transition {{ $activeCategory === '' ? 'bg-brand text-white shadow-sm' : 'bg-zinc-100 text-zinc-600 hover:bg-brand/10 hover:text-brand' }}">
                 {{ __('All') }}
             </a>
             @foreach ($categories as $category)
                 <a href="{{ route('blog', ['category' => $category->slug]) }}"
-                    class="rounded-full px-4 py-1.5 text-sm font-semibold transition {{ $activeCategory === $category->slug ? 'bg-primary text-white shadow-sm' : 'bg-zinc-100 text-zinc-600 hover:bg-primary/10 hover:text-primary' }}">
+                    class="rounded-full px-4 py-1.5 text-sm font-semibold transition {{ $activeCategory === $category->slug ? 'bg-brand text-white shadow-sm' : 'bg-zinc-100 text-zinc-600 hover:bg-brand/10 hover:text-brand' }}">
                     {{ $category->name }}
                     <span class="ml-1 text-xs font-normal opacity-70">{{ $category->posts_count }}</span>
                 </a>
@@ -60,19 +60,19 @@
                         <div class="flex flex-1 flex-col p-5">
                             <div class="mb-2 flex flex-wrap items-center gap-2">
                                 @if ($post->category?->page)
-                                    <span class="text-xs font-semibold uppercase tracking-wide text-primary">{{ $post->category->name }}</span>
+                                    <span class="text-xs font-semibold uppercase tracking-wide text-brand">{{ $post->category->name }}</span>
                                 @endif
                                 @if ($post->published_at)
                                     <span class="text-xs text-zinc-400">{{ $post->published_at->toDisplay() }}</span>
                                 @endif
                             </div>
-                            <h2 class="text-lg font-bold text-zinc-900 group-hover:text-primary">{{ $post->title }}</h2>
+                            <h2 class="text-lg font-bold text-sf-heading group-hover:text-brand">{{ $post->title }}</h2>
                             @if (filled($post->description))
                                 <p class="mt-2 line-clamp-3 text-sm leading-relaxed text-zinc-500">{{ $post->description }}</p>
                             @endif
                             <div class="mt-auto flex items-center justify-between pt-4 text-xs text-zinc-400">
                                 <span>{{ __(':min min read', ['min' => $post->reading_time]) }}</span>
-                                <span class="font-semibold text-primary group-hover:underline">{{ __('Read more') }} →</span>
+                                <span class="font-semibold text-brand group-hover:underline">{{ __('Read more') }} →</span>
                             </div>
                         </div>
                     </a>
@@ -84,8 +84,8 @@
         </div>
     @else
         <div class="flex flex-col items-center justify-center rounded-card border border-dashed border-zinc-200 py-24 text-center">
-            <h2 class="text-lg font-semibold text-zinc-900">{{ __('No posts published yet') }}</h2>
-            <a href="{{ route('shop') }}" class="mt-5 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">
+            <h2 class="text-lg font-semibold text-sf-heading">{{ __('No posts published yet') }}</h2>
+            <a href="{{ route('shop') }}" class="mt-5 rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">
                 {{ __('Continue shopping') }}
             </a>
         </div>

@@ -15,7 +15,7 @@
                 </svg>
                 {{ __('Shopping cart') }}
             </p>
-            <h1 class="mt-1 flex items-center gap-3 text-2xl font-extrabold tracking-tight text-zinc-900 md:text-3xl">
+            <h1 class="mt-1 flex items-center gap-3 text-2xl font-extrabold tracking-tight text-sf-heading md:text-3xl">
                 {{ __('My cart') }}
                 @if ($count > 0)
                     <span class="rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-bold tracking-normal text-brand">{{ trans_choice(':count item|:count items', $count, ['count' => $count]) }}</span>
@@ -33,7 +33,7 @@
                         'bg-brand text-white shadow-sm' => $step['state'] === 'current',
                         'border border-zinc-300 bg-white text-zinc-400' => $step['state'] === 'upcoming',
                     ])>{{ $i + 1 }}</span>
-                    <span class="{{ $step['state'] === 'current' ? 'text-zinc-900' : 'text-zinc-400' }}">{{ $step['label'] }}</span>
+                    <span class="{{ $step['state'] === 'current' ? 'text-sf-heading' : 'text-zinc-400' }}">{{ $step['label'] }}</span>
                     @unless ($loop->last)
                         <span class="h-px w-6 bg-zinc-300 sm:w-10"></span>
                     @endunless
@@ -49,10 +49,10 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
                 </svg>
             </span>
-            <h2 class="mt-5 text-lg font-bold text-zinc-900">{{ __('Your cart is empty') }}</h2>
+            <h2 class="mt-5 text-lg font-bold text-sf-heading">{{ __('Your cart is empty') }}</h2>
             <p class="mt-1 text-sm text-zinc-500">{{ __('Add some products from the shop to get started.') }}</p>
             <a href="{{ route('shop') }}"
-                class="mt-6 inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">
+                class="mt-6 inline-flex items-center gap-2 rounded-full bg-sf-button px-6 py-2.5 text-sm font-semibold text-sf-button-text shadow-sm transition hover:opacity-90">
                 {{ __('Browse products') }}
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
@@ -91,7 +91,7 @@
 
                                 <div class="min-w-0">
                                     <div class="flex items-start justify-between gap-3">
-                                        <a href="{{ $item['url'] }}" class="line-clamp-2 text-[15px] font-semibold text-zinc-800 transition-colors hover:text-brand">
+                                        <a href="{{ $item['url'] }}" class="line-clamp-2 text-[15px] font-semibold text-sf-text transition-colors hover:text-brand">
                                             {{ $item['name'] }}
                                         </a>
                                         {{-- Mobile remove --}}
@@ -120,10 +120,10 @@
                             {{-- Price --}}
                             <div class="col-start-2 flex items-baseline gap-2 text-sm md:col-start-auto md:flex-col md:items-end md:gap-0">
                                 @if ($item['discount_label'])
-                                    <span class="font-semibold text-zinc-900">{{ $item['discount_label'] }}</span>
+                                    <span class="font-semibold text-sf-heading">{{ $item['discount_label'] }}</span>
                                     <span class="text-xs text-zinc-400 line-through">{{ $item['unit_price_label'] }}</span>
                                 @else
-                                    <span class="font-semibold text-zinc-900">{{ $item['unit_price_label'] }}</span>
+                                    <span class="font-semibold text-sf-heading">{{ $item['unit_price_label'] }}</span>
                                 @endif
                                 <span class="text-xs text-zinc-400 md:hidden">{{ __('each') }}</span>
                             </div>
@@ -137,7 +137,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
                                         </svg>
                                     </button>
-                                    <span class="w-9 text-center text-sm font-bold tabular-nums text-zinc-900">{{ $item['quantity'] }}</span>
+                                    <span class="w-9 text-center text-sm font-bold tabular-nums text-sf-heading">{{ $item['quantity'] }}</span>
                                     <button type="button" wire:click="increase('{{ $item['key'] }}')" wire:loading.attr="disabled" aria-label="{{ __('Increase quantity') }}"
                                         class="flex h-9 w-9 items-center justify-center rounded-r-full text-zinc-600 transition hover:bg-zinc-50 hover:text-brand disabled:opacity-50">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -145,11 +145,11 @@
                                         </svg>
                                     </button>
                                 </div>
-                                <span class="text-base font-bold text-zinc-900 md:hidden">{{ $item['line_total_label'] }}</span>
+                                <span class="text-base font-bold text-sf-heading md:hidden">{{ $item['line_total_label'] }}</span>
                             </div>
 
                             {{-- Line total (desktop) --}}
-                            <span class="hidden text-right text-[15px] font-bold tabular-nums text-zinc-900 md:block">{{ $item['line_total_label'] }}</span>
+                            <span class="hidden text-right text-[15px] font-bold tabular-nums text-sf-heading md:block">{{ $item['line_total_label'] }}</span>
 
                             {{-- Remove (desktop) --}}
                             <button type="button" wire:click="remove('{{ $item['key'] }}')" aria-label="{{ __('Remove :name', ['name' => $item['name']]) }}" title="{{ __('Remove') }}"
@@ -181,19 +181,19 @@
 
             <aside class="h-fit overflow-hidden rounded-card border border-zinc-200 bg-white shadow-sm lg:sticky lg:top-24">
                 <div class="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/60 px-5 py-4">
-                    <h2 class="text-base font-bold text-zinc-900">{{ __('Order summary') }}</h2>
+                    <h2 class="text-base font-bold text-sf-heading">{{ __('Order summary') }}</h2>
                     <span class="rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-bold text-brand">{{ trans_choice(':count item|:count items', $count, ['count' => $count]) }}</span>
                 </div>
 
                 <dl class="space-y-3 px-5 py-5 text-sm">
                     <div class="flex items-center justify-between">
                         <dt class="text-zinc-500">{{ __('Subtotal') }}</dt>
-                        <dd class="font-semibold tabular-nums text-zinc-900">{{ format_money($subtotal) }}</dd>
+                        <dd class="font-semibold tabular-nums text-sf-heading">{{ format_money($subtotal) }}</dd>
                     </div>
                     @if ($vatEnabled && $vat > 0)
                         <div class="flex items-center justify-between">
                             <dt class="text-zinc-500">{{ $vatLabel }}</dt>
-                            <dd class="font-semibold tabular-nums text-zinc-900">{{ format_money($vat) }}</dd>
+                            <dd class="font-semibold tabular-nums text-sf-heading">{{ format_money($vat) }}</dd>
                         </div>
                     @endif
                     <div class="flex items-center justify-between">
@@ -201,14 +201,14 @@
                         <dd class="text-xs font-medium text-zinc-400">{{ __('Calculated at checkout') }}</dd>
                     </div>
                     <div class="flex items-center justify-between rounded-xl bg-brand/5 px-3.5 py-3">
-                        <dt class="text-base font-bold text-zinc-900">{{ __('Total') }}</dt>
-                        <dd class="text-xl font-extrabold tabular-nums text-brand">{{ format_money($total) }}</dd>
+                        <dt class="text-base font-bold text-sf-heading">{{ __('Total') }}</dt>
+                        <dd class="text-xl font-extrabold tabular-nums text-sf-price">{{ format_money($total) }}</dd>
                     </div>
                 </dl>
 
                 <div class="px-5 pb-5">
                     <a href="{{ route('checkout') }}"
-                        class="flex w-full items-center justify-center gap-2 rounded-full bg-brand px-6 py-3.5 text-sm font-bold text-white shadow-sm transition hover:opacity-90">
+                        class="flex w-full items-center justify-center gap-2 rounded-full bg-sf-button px-6 py-3.5 text-sm font-bold text-sf-button-text shadow-sm transition hover:opacity-90">
                         {{ __('Proceed to checkout') }}
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />

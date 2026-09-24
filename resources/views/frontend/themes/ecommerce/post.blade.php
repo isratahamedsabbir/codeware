@@ -4,7 +4,7 @@
     @include('partials.head')
     @include('partials.seo-meta')
 </head>
-<body class="bg-white text-zinc-800 antialiased">
+<body class="bg-white text-sf-text antialiased">
 
 @include('frontend.themes.ecommerce.partials.header')
 
@@ -22,12 +22,12 @@
     <article>
         @if ($post->category?->page && $post->category->status === 'active')
             <a href="{{ route('blog', ['category' => $post->category->slug]) }}"
-                class="text-xs font-semibold uppercase tracking-wide text-primary hover:underline">
+                class="text-xs font-semibold uppercase tracking-wide text-brand hover:underline">
                 {{ $post->category->name }}
             </a>
         @endif
 
-        <h1 class="mt-2 text-3xl font-extrabold tracking-tight text-zinc-900 sm:text-4xl">{{ $post->title }}</h1>
+        <h1 class="mt-2 text-3xl font-extrabold tracking-tight text-sf-heading sm:text-4xl">{{ $post->title }}</h1>
 
         <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-zinc-500">
             @if ($post->user?->name)
@@ -70,7 +70,7 @@
             <div class="mt-8 flex flex-wrap items-center gap-2">
                 @foreach ($post->tags as $tag)
                     <a href="{{ route('shop.tag', $tag->slug) }}"
-                        class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600 transition hover:bg-primary/10 hover:text-primary">
+                        class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600 transition hover:bg-brand/10 hover:text-brand">
                         #{{ $tag->name }}
                     </a>
                 @endforeach
@@ -82,7 +82,7 @@
         @continue(blank($section->localizedCards()))
 
         <section id="{{ $section->name }}" class="border-t border-zinc-100 py-12">
-            <h2 class="mb-6 text-2xl font-bold text-zinc-900">{{ $section->name }}</h2>
+            <h2 class="mb-6 text-2xl font-bold text-sf-heading">{{ $section->name }}</h2>
             <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($section->localizedCards() as $card)
                     <div class="group overflow-hidden rounded-card border border-zinc-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
@@ -94,7 +94,7 @@
                         @endif
                         <div class="p-4">
                             @if ($card['title'])
-                                <h3 class="font-semibold text-zinc-900">{{ $card['title'] }}</h3>
+                                <h3 class="font-semibold text-sf-heading">{{ $card['title'] }}</h3>
                             @endif
                             @if ($card['description'])
                                 <p class="mt-1.5 text-sm text-zinc-500 line-clamp-2">{{ $card['description'] }}</p>
@@ -108,7 +108,7 @@
 
     @if ($related->isNotEmpty())
         <section class="border-t border-zinc-100 py-12">
-            <h2 class="mb-6 text-2xl font-bold text-zinc-900">{{ __('Related posts') }}</h2>
+            <h2 class="mb-6 text-2xl font-bold text-sf-heading">{{ __('Related posts') }}</h2>
             <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($related as $relatedPost)
                     <a href="{{ route('blog.post', $relatedPost->slug) }}"
@@ -120,7 +120,7 @@
                             </div>
                         @endif
                         <div class="flex flex-1 flex-col p-4">
-                            <h3 class="line-clamp-2 font-semibold text-zinc-900 group-hover:text-primary">{{ $relatedPost->title }}</h3>
+                            <h3 class="line-clamp-2 font-semibold text-sf-heading group-hover:text-brand">{{ $relatedPost->title }}</h3>
                             @if ($relatedPost->published_at)
                                 <span class="mt-2 text-xs text-zinc-400">{{ $relatedPost->published_at->toDisplay() }}</span>
                             @endif

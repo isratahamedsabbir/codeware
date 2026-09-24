@@ -4,7 +4,7 @@
     @include('partials.head')
     @include('partials.seo-meta')
 </head>
-<body class="bg-page-bg font-storefront text-zinc-800 antialiased">
+<body class="bg-page-bg font-storefront text-sf-text antialiased">
 
 @include('frontend.themes.ecommerce.partials.header')
 
@@ -49,14 +49,14 @@
         ];
     }
 
-    $sectionSummary = 'flex cursor-pointer list-none items-center justify-between py-4 text-sm font-bold text-zinc-900 [&::-webkit-details-marker]:hidden';
+    $sectionSummary = 'flex cursor-pointer list-none items-center justify-between py-4 text-sm font-bold text-sf-heading [&::-webkit-details-marker]:hidden';
     $chevron = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-zinc-400 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" /></svg>';
     $pill = fn (bool $on) => 'rounded-full border px-3 py-1.5 text-xs font-medium transition '.($on
         ? 'border-brand bg-brand text-white shadow-sm'
         : 'border-zinc-200 bg-white text-zinc-600 hover:border-brand hover:text-brand');
     $listRow = fn (bool $on) => 'group/row flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition '.($on
         ? 'bg-brand/8 font-semibold text-brand'
-        : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900');
+        : 'text-zinc-600 hover:bg-zinc-50 hover:text-sf-heading');
     $radio = fn (bool $on) => 'flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition '.($on
         ? 'border-brand'
         : 'border-zinc-300 group-hover/row:border-zinc-400');
@@ -71,7 +71,7 @@
 
 <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
     <div class="mb-6">
-        <h1 class="text-2xl font-extrabold tracking-tight text-zinc-900 md:text-3xl">{{ __('Shop') }}</h1>
+        <h1 class="text-2xl font-extrabold tracking-tight text-sf-heading md:text-3xl">{{ __('Shop') }}</h1>
         <p class="mt-1 text-sm text-zinc-500">{{ __('Browse our full collection and narrow it down with the filters.') }}</p>
     </div>
 
@@ -83,7 +83,7 @@
                 @click="filtersOpen = !filtersOpen"
                 :aria-expanded="filtersOpen"
                 aria-controls="shop-filters"
-                class="flex w-full items-center justify-between rounded-card border border-zinc-200 bg-white px-4 py-3 text-sm font-semibold text-zinc-900 shadow-sm transition hover:border-brand"
+                class="flex w-full items-center justify-between rounded-card border border-zinc-200 bg-white px-4 py-3 text-sm font-semibold text-sf-heading shadow-sm transition hover:border-brand"
             >
                 <span class="flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -91,7 +91,7 @@
                     </svg>
                     {{ __('Filters') }}
                     @if ($activeFacetCount > 0)
-                        <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1.5 text-[11px] font-bold text-white">{{ $activeFacetCount }}</span>
+                        <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-sf-button px-1.5 text-[11px] font-bold text-sf-button-text">{{ $activeFacetCount }}</span>
                     @endif
                 </span>
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-zinc-400 transition-transform duration-200" :class="filtersOpen ? '-rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -104,7 +104,7 @@
             <div class="overflow-hidden rounded-card border border-zinc-200 bg-white shadow-sm">
                 {{-- Panel header --}}
                 <div class="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/60 px-5 py-4">
-                    <h2 class="flex items-center gap-2 text-base font-bold text-zinc-900">
+                    <h2 class="flex items-center gap-2 text-base font-bold text-sf-heading">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
                         </svg>
@@ -130,7 +130,7 @@
                             </span>
                             <input type="search" id="shop-search" name="search" value="{{ $filters['search'] }}"
                                 placeholder="{{ __('Search products...') }}"
-                                class="w-full rounded-xl border border-zinc-300 bg-white py-2.5 pl-10 pr-4 text-sm text-zinc-800 shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/20">
+                                class="w-full rounded-xl border border-zinc-300 bg-white py-2.5 pl-10 pr-4 text-sm text-sf-text shadow-sm outline-none transition placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/20">
                         </div>
                     </form>
 
@@ -226,7 +226,7 @@
                                         <span class="pointer-events-none absolute bottom-2 left-3 text-sm text-zinc-500">{{ $currencySymbol }}</span>
                                         <input type="number" min="0" step="1" :value="Math.round(min)"
                                             @change="setMin($event.target.value)" @keydown.enter.prevent="setMin($event.target.value)"
-                                            class="w-full rounded-xl border border-zinc-300 bg-white pb-1.5 pl-7 pr-2 pt-5 text-sm font-semibold text-zinc-800 shadow-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20">
+                                            class="w-full rounded-xl border border-zinc-300 bg-white pb-1.5 pl-7 pr-2 pt-5 text-sm font-semibold text-sf-text shadow-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20">
                                     </label>
                                     <span class="text-zinc-300">&ndash;</span>
                                     <label class="relative w-full">
@@ -234,7 +234,7 @@
                                         <span class="pointer-events-none absolute bottom-2 left-3 text-sm text-zinc-500">{{ $currencySymbol }}</span>
                                         <input type="number" min="0" step="1" :value="Math.round(max)"
                                             @change="setMax($event.target.value)" @keydown.enter.prevent="setMax($event.target.value)"
-                                            class="w-full rounded-xl border border-zinc-300 bg-white pb-1.5 pl-7 pr-2 pt-5 text-sm font-semibold text-zinc-800 shadow-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20">
+                                            class="w-full rounded-xl border border-zinc-300 bg-white pb-1.5 pl-7 pr-2 pt-5 text-sm font-semibold text-sf-text shadow-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20">
                                     </label>
                                 </div>
 
@@ -370,9 +370,9 @@
                     <p class="text-sm text-zinc-500">
                         @if ($products->total() > 0)
                             {!! __('Showing :from–:to of :total products', [
-                                'from' => '<span class="font-semibold text-zinc-900">'.$products->firstItem().'</span>',
-                                'to' => '<span class="font-semibold text-zinc-900">'.$products->lastItem().'</span>',
-                                'total' => '<span class="font-semibold text-zinc-900">'.$products->total().'</span>',
+                                'from' => '<span class="font-semibold text-sf-heading">'.$products->firstItem().'</span>',
+                                'to' => '<span class="font-semibold text-sf-heading">'.$products->lastItem().'</span>',
+                                'total' => '<span class="font-semibold text-sf-heading">'.$products->total().'</span>',
                             ]) !!}
                         @else
                             {{ __(':count products found', ['count' => 0]) }}
@@ -395,7 +395,7 @@
                         <label for="shop-sort" class="text-sm text-zinc-500">{{ __('Sort by') }}</label>
                         <div class="relative">
                             <select id="shop-sort" name="sort" onchange="this.form.submit()"
-                                class="appearance-none rounded-xl border border-zinc-300 bg-white py-2 pl-3.5 pr-9 text-sm font-semibold text-zinc-800 shadow-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20">
+                                class="appearance-none rounded-xl border border-zinc-300 bg-white py-2 pl-3.5 pr-9 text-sm font-semibold text-sf-text shadow-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20">
                                 <option value="" {{ blank($filters['sort']) ? 'selected' : '' }}>{{ __('Default') }}</option>
                                 <option value="newest" {{ $filters['sort'] === 'newest' ? 'selected' : '' }}>{{ __('Newest') }}</option>
                                 <option value="price_asc" {{ $filters['sort'] === 'price_asc' ? 'selected' : '' }}>{{ __('Price: Low to High') }}</option>
@@ -442,9 +442,9 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                         </svg>
                     </span>
-                    <h2 class="text-lg font-bold text-zinc-900">{{ __('No products found') }}</h2>
+                    <h2 class="text-lg font-bold text-sf-heading">{{ __('No products found') }}</h2>
                     <p class="mt-1 max-w-sm text-sm text-zinc-500">{{ __('Try adjusting your search or clearing the filters.') }}</p>
-                    <a href="{{ route('shop') }}" class="mt-5 rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">
+                    <a href="{{ route('shop') }}" class="mt-5 rounded-full bg-sf-button px-6 py-2.5 text-sm font-semibold text-sf-button-text shadow-sm transition hover:opacity-90">
                         {{ __('View all products') }}
                     </a>
                 </div>

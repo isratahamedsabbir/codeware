@@ -39,6 +39,22 @@
     --color-page-bg: #f2f4f8;     /* site-wide storefront page background */
     --color-sale: #c01616;        /* sale badges / errors */
 
+    /* ── Storefront (ecommerce theme) per-area colors — each one can be set
+       on its own from Theme Settings → Colors (overridden at runtime in
+       partials/head.blade.php); the defaults reproduce the stock look. ── */
+    --color-sf-header: var(--color-brand);          /* top header bar */
+    --color-sf-header-text: #ffffff;
+    --color-sf-nav: #ffffff;                        /* menu bar under the header */
+    --color-sf-nav-text: #222222;
+    --color-sf-footer: var(--color-brand);
+    --color-sf-footer-text: #ffffff;
+    --color-sf-footer-bottom: var(--color-brand-ink); /* copyright strip */
+    --color-sf-button: var(--color-brand);          /* primary call-to-action buttons */
+    --color-sf-button-text: #ffffff;
+    --color-sf-price: var(--color-brand);
+    --color-sf-heading: #171717;
+    --color-sf-text: #262626;
+
     /* ── Storefront card corners: every card/panel in the ecommerce theme
        uses `rounded-card` so the whole site shares one radius. ── */
     --radius-card: 0.75rem;

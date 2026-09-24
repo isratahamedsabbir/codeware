@@ -22,7 +22,7 @@
     <nav class="flex flex-col gap-1 rounded-card border border-zinc-200 bg-white p-2.5 md:sticky md:top-20">
         @foreach ($items as $item)
             <a href="{{ $item['href'] }}"
-                class="rounded-md px-3 py-2.5 text-sm font-semibold transition-colors {{ $item['active'] ? 'bg-brand text-white' : 'text-zinc-700 hover:bg-gray-50 hover:text-brand' }}">
+                class="rounded-md px-3 py-2.5 text-sm font-semibold transition-colors {{ $item['active'] ? 'bg-sf-button text-sf-button-text' : 'text-zinc-700 hover:bg-gray-50 hover:text-brand' }}">
                 {{ $item['label'] }}
             </a>
         @endforeach

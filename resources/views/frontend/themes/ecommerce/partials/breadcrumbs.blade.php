@@ -10,7 +10,7 @@
             @endif
             <li>
                 @if (filled($crumb['url'] ?? null) && $index < count($crumbs) - 1)
-                    <a href="{{ $crumb['url'] }}" class="hover:text-primary">{{ $crumb['label'] }}</a>
+                    <a href="{{ $crumb['url'] }}" class="hover:text-brand">{{ $crumb['label'] }}</a>
                 @else
                     <span class="text-zinc-700">{{ $crumb['label'] }}</span>
                 @endif

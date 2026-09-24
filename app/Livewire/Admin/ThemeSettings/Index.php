@@ -27,6 +27,19 @@ class Index extends Component
      */
     public array $settings = [];
 
+    /** Most hero slides the homepage slider takes. */
+    public const MAX_HERO_SLIDES = 6;
+
+    /**
+     * The homepage hero slider's images, in order (a URL per slide, '' for a
+     * slide whose image hasn't been picked yet). Persisted as a JSON list in
+     * `home_hero_slides`; the first one is mirrored into `home_hero_image` so
+     * anything reading the single hero image keeps working.
+     *
+     * @var array<int, string>
+     */
+    public array $heroSlides = [];
+
     public function mount(): void
     {
         $keys = array_merge($this->keys(), $this->scopedThemeKeys());
@@ -39,10 +52,34 @@ class Index extends Component
 
             $this->settings[$key] = $row?->type === 'boolean' ? (bool) $value : (string) $value;
         }
+
+        // Older installs only have the single hero image — it becomes slide 1.
+        $slides = json_decode((string) Setting::get('home_hero_slides', ''), true);
+        $this->heroSlides = is_array($slides) && $slides !== []
+            ? array_values(array_map('strval', $slides))
+            : [(string) ($this->settings['home_hero_image'] ?? '')];
+    }
+
+    public function addHeroSlide(): void
+    {
+        if (count($this->heroSlides) < self::MAX_HERO_SLIDES) {
+            $this->heroSlides[] = '';
+        }
+    }
+
+    public function removeHeroSlide(int $index): void
+    {
+        unset($this->heroSlides[$index]);
+
+        $this->heroSlides = array_values($this->heroSlides) ?: [''];
     }
 
     public function save(): void
     {
+        $slides = array_values(array_filter(array_map(fn ($url) => trim((string) $url), $this->heroSlides)));
+        Setting::set('home_hero_slides', json_encode($slides));
+        $this->settings['home_hero_image'] = $slides[0] ?? '';
+
         foreach ($this->savableKeys() as $key) {
             if (array_key_exists($key, $this->settings)) {
                 Setting::set($key, $this->settings[$key]);
@@ -309,7 +346,19 @@ class Index extends Component
      */
     private function scopedThemeKeys(): array
     {
-        return Setting::where('key', 'like', 'theme\\_%')->pluck('key')->all();
+        // Keys a theme's settings.blade.php declares (bound as settings.theme_*
+        // or listed as 'theme_*' strings) count even before their first save,
+        // so a brand-new field loads blank and persists like any other.
+        $declared = [];
+        foreach (glob(resource_path('views/frontend/themes/*/settings.blade.php')) ?: [] as $file) {
+            preg_match_all('/(?:settings\.|[\'"])(theme_[a-z0-9_]+)/', (string) file_get_contents($file), $matches);
+            array_push($declared, ...$matches[1]);
+        }
+
+        return array_values(array_unique([
+            ...Setting::where('key', 'like', 'theme\\_%')->pluck('key')->all(),
+            ...$declared,
+        ]));
     }
 
     /**

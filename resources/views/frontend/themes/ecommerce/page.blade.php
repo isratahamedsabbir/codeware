@@ -4,7 +4,7 @@
     @include('partials.head')
     @include('partials.seo-meta')
 </head>
-<body class="bg-white text-zinc-800 antialiased">
+<body class="bg-white text-sf-text antialiased">
 
 @include('frontend.themes.ecommerce.partials.header')
 
@@ -17,7 +17,7 @@
 
 <main>
     <section class="mx-auto max-w-3xl px-6 py-12 text-center">
-        <h1 class="text-4xl font-extrabold text-zinc-900">{{ $page->getTranslation('title', 'en', false) }}</h1>
+        <h1 class="text-4xl font-extrabold text-sf-heading">{{ $page->getTranslation('title', 'en', false) }}</h1>
     </section>
 
     @foreach ($sections as $section)
@@ -36,7 +36,7 @@
                             @endif
                             <div class="p-4">
                                 @if ($card['title'])
-                                    <h3 class="font-semibold text-zinc-900">{{ $card['title'] }}</h3>
+                                    <h3 class="font-semibold text-sf-heading">{{ $card['title'] }}</h3>
                                 @endif
                                 @if ($card['description'])
                                     <p class="mt-1.5 text-sm text-zinc-500 line-clamp-2">{{ $card['description'] }}</p>

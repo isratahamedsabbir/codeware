@@ -11,7 +11,7 @@
     @include('partials.head')
     @include('partials.seo-meta')
 </head>
-<body class="bg-page-bg font-storefront text-zinc-800 antialiased">
+<body class="bg-page-bg font-storefront text-sf-text antialiased">
 
 @include('frontend.themes.ecommerce.partials.header')
 
@@ -19,7 +19,7 @@
     <div class="mx-auto flex max-w-7xl justify-center px-4 py-10 sm:px-6 md:py-14">
         <div class="w-full max-w-md">
             <div class="rounded-card border border-zinc-200 bg-white p-6 sm:p-8">
-                <h1 class="text-xl font-bold uppercase tracking-wide text-zinc-800">{{ __('Reset password') }}</h1>
+                <h1 class="text-xl font-bold uppercase tracking-wide text-sf-text">{{ __('Reset password') }}</h1>
                 <p class="mt-1 text-sm text-gray-600">{{ __('Choose a new password for your account.') }}</p>
 
                 @if (session('status'))
@@ -38,7 +38,7 @@
                         </label>
                         <input id="email" name="email" value="{{ request('email') }}" type="email" required
                             autocomplete="email"
-                            class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-800 outline-none transition placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/20">
+                            class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2.5 text-sm text-sf-text outline-none transition placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/20">
                         @error('email')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
@@ -50,7 +50,7 @@
                         </label>
                         <input id="password" name="password" type="password" required
                             autocomplete="new-password" placeholder="{{ __('Password') }}"
-                            class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-800 outline-none transition placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/20">
+                            class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2.5 text-sm text-sf-text outline-none transition placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/20">
                         @error('password')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
@@ -62,14 +62,14 @@
                         </label>
                         <input id="password_confirmation" name="password_confirmation" type="password" required
                             autocomplete="new-password" placeholder="{{ __('Confirm password') }}"
-                            class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-800 outline-none transition placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/20">
+                            class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2.5 text-sm text-sf-text outline-none transition placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/20">
                         @error('password_confirmation')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <button type="submit" data-test="reset-password-button"
-                        class="rounded-full bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90">
+                        class="rounded-full bg-sf-button px-4 py-2.5 text-sm font-semibold text-sf-button-text transition hover:opacity-90">
                         {{ __('Reset password') }}
                     </button>
                 </form>

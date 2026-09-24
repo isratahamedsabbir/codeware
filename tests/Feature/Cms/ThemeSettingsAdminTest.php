@@ -136,24 +136,45 @@ it('saves theme-scoped settings through Setting::set', function () {
         ->and(Setting::where('key', 'theme_portfolio_hero_title')->value('value'))->toBe('Designer');
 });
 
-it('renders the ecommerce theme color pickers', function () {
-    Livewire::test(ThemeSettings::class)
+it('renders a color picker for every storefront area', function () {
+    $component = Livewire::test(ThemeSettings::class)
         ->set('settings.site_theme', 'ecommerce')
-        ->assertSee('Primary Color')
-        ->assertSee('Secondary Color')
-        ->assertSeeHtml('theme_ecommerce_primary_color')
-        ->assertSeeHtml('theme_ecommerce_secondary_color')
-        ->assertSeeHtml('type="color"');
+        ->assertSeeHtml('type="color"')
+        ->assertDontSee('Primary Color')
+        ->assertDontSee('Secondary Color');
+
+    foreach (['header_bg', 'header_text', 'nav_bg', 'nav_text', 'footer_bg', 'footer_text', 'footer_bottom',
+        'button_bg', 'button_text', 'heading', 'text', 'price', 'accent', 'sale', 'page_bg'] as $area) {
+        $component->assertSeeHtml("theme_ecommerce_{$area}_color");
+    }
 });
 
-it('saves the ecommerce theme primary & secondary colors through Setting::set', function () {
+it('saves brand-new per-area colors even before their settings rows exist', function () {
     Livewire::test(ThemeSettings::class)
-        ->set('settings.theme_ecommerce_primary_color', '#c01616')
-        ->set('settings.theme_ecommerce_secondary_color', '#1e7bc4')
+        ->assertSet('settings.theme_ecommerce_header_bg_color', '')
+        ->set('settings.theme_ecommerce_header_bg_color', '#112233')
+        ->set('settings.theme_ecommerce_button_bg_color', '#c01616')
         ->call('save');
 
-    expect(Setting::where('key', 'theme_ecommerce_primary_color')->value('value'))->toBe('#c01616')
-        ->and(Setting::where('key', 'theme_ecommerce_secondary_color')->value('value'))->toBe('#1e7bc4');
+    expect(Setting::where('key', 'theme_ecommerce_header_bg_color')->value('value'))->toBe('#112233')
+        ->and(Setting::where('key', 'theme_ecommerce_button_bg_color')->value('value'))->toBe('#c01616');
+});
+
+it('applies the per-area colors to the storefront and ignores anything that is not a hex color', function () {
+    Setting::set('site_theme', 'ecommerce');
+    Setting::set('theme_ecommerce_primary_color', '#045b30');
+    Setting::set('theme_ecommerce_header_bg_color', '#112233');
+    Setting::set('theme_ecommerce_footer_text_color', '#eeeeee');
+    Setting::set('theme_ecommerce_button_bg_color', 'red; } body { display:none');
+
+    $this->get('/')
+        ->assertOk()
+        ->assertSee('--color-sf-header: #112233;', false)
+        ->assertSee('--color-sf-footer-text: #eeeeee;', false)
+        // The accent falls back to the legacy primary color.
+        ->assertSee('--color-brand: #045b30;', false)
+        ->assertDontSee('red; } body', false)
+        ->assertDontSee('--color-sf-button:', false);
 });
 
 it('loads seeded ecommerce theme colors into the form', function () {
@@ -173,9 +194,16 @@ it('renders the selected theme settings blade when the theme ships one', functio
 
     Livewire::test(ThemeSettings::class)
         ->set('settings.site_theme', 'ecommerce')
-        ->assertSee('Hero Badge')
-        ->assertSee('theme_ecommerce_hero_badge')
-        ->assertSee('Promo Banner 1 Title');
+        // The ecommerce card holds the homepage banner uploads + its colors only.
+        ->assertSee('Homepage banners')
+        ->assertSee('heroSlides.0')
+        ->assertSee('Add slide')
+        ->assertSee('settings.home_promo_banner_2')
+        ->assertSee('theme_ecommerce_header_bg_color')
+        ->assertSee('theme_ecommerce_button_bg_color')
+        ->assertSee('theme_ecommerce_footer_bg_color')
+        ->assertDontSee('Hero Badge')
+        ->assertDontSee('Promo Banner 1 Title');
 });
 
 it('shows the theme settings guide via the info icon on the theme settings card', function () {
@@ -225,6 +253,47 @@ it('loads existing theme settings into the form', function () {
         ->and($component->get('settings.popup_title'))->toBe('Welcome');
 });
 
+it('manages multiple hero slides and mirrors the first into home_hero_image', function () {
+    // An install from before the slider: its single hero image becomes slide 1.
+    Setting::factory()->create(['key' => 'home_hero_image', 'value' => 'media/old.jpg', 'group' => 'frontend', 'type' => 'string']);
+
+    $component = Livewire::test(ThemeSettings::class)
+        ->assertSet('heroSlides', ['media/old.jpg'])
+        ->call('addHeroSlide')
+        ->set('heroSlides.1', 'media/two.jpg')
+        ->call('addHeroSlide')
+        ->set('heroSlides.2', 'media/three.jpg')
+        ->call('removeHeroSlide', 0)
+        ->assertSet('heroSlides', ['media/two.jpg', 'media/three.jpg']);
+
+    foreach (range(1, 10) as $_) {
+        $component->call('addHeroSlide');
+    }
+    expect($component->get('heroSlides'))->toHaveCount(ThemeSettings::MAX_HERO_SLIDES);
+
+    $component->call('save');
+
+    expect(json_decode(Setting::where('key', 'home_hero_slides')->value('value'), true))->toBe(['media/two.jpg', 'media/three.jpg'])
+        ->and(Setting::where('key', 'home_hero_image')->value('value'))->toBe('media/two.jpg');
+
+    Livewire::test(ThemeSettings::class)->assertSet('heroSlides', ['media/two.jpg', 'media/three.jpg']);
+});
+
+it('renders the homepage hero as a slider when several slides are set', function () {
+    Setting::set('site_theme', 'ecommerce');
+    Setting::set('home_hero_slides', json_encode(['/storage/a.jpg', '/storage/b.jpg']));
+
+    $this->get('/')
+        ->assertOk()
+        ->assertSee('/storage/a.jpg')
+        ->assertSee('/storage/b.jpg')
+        ->assertSee('Next slide');
+
+    Setting::set('home_hero_slides', json_encode(['/storage/a.jpg']));
+
+    $this->get('/')->assertOk()->assertSee('/storage/a.jpg')->assertDontSee('Next slide');
+});
+
 it('lists every installed theme folder as a selectable design', function () {
     Livewire::test(ThemeSettings::class)
         ->assertViewHas('themes', fn ($themes) => collect(['default', 'ecommerce', 'portfolio'])->diff(array_keys($themes))->isEmpty());
@@ -238,7 +307,7 @@ it('saves theme settings through Setting::set', function () {
 
     Livewire::test(ThemeSettings::class)
         ->set('settings.site_theme', 'ecommerce')
-        ->set('settings.home_hero_image', 'media/hero.jpg')
+        ->set('heroSlides.0', 'media/hero.jpg')
         ->set('settings.chat_widget_enabled', false)
         ->set('settings.popup_enabled', true)
         ->set('settings.popup_title', 'Welcome to our store')

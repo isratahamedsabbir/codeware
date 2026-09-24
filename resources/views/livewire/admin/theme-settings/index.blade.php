@@ -270,69 +270,19 @@
         </x-admin-section-card>
     @endif
 
-    {{-- ── Homepage ── --}}
-    <x-admin-section-card header-border="border-zinc-100" icon="home" title="Homepage"
-        description="Copy and imagery the homepage of your theme renders on the public site."
-        collapsible :collapsed="true">
-
-        {{-- Laid out exactly like the storefront's top banner row — the hero on
-             the left, the two promo tiles stacked on the right — so it's obvious
-             which upload lands where. Each box keeps a label chip even once an
-             image is set, and the hero headline is edited in place on the hero. --}}
-        @php
-            $bannerChip = 'pointer-events-none absolute left-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-md bg-zinc-900/75 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm backdrop-blur';
-        @endphp
-
-        <div class="grid grid-cols-1 gap-4 lg:h-[26rem] lg:grid-cols-3 lg:grid-rows-2">
-            {{-- Hero --}}
-            <div class="relative lg:col-span-2 lg:row-span-2">
-                <x-media-picker model="settings.home_hero_image" label="Hero banner" size-hint="1920 × 600" preview dropzone drop-height="h-64 lg:h-[26rem]"
-                    only-images mimes="jpg,jpeg,png,gif,webp" :max-size-mb="4" placeholder="Choose from the library" />
-                <span class="{{ $bannerChip }}">
-                    <flux:icon.photo variant="micro" class="size-3.5" />
-                    Hero banner <span class="font-normal text-white/60">· 1920 × 600</span>
-                </span>
-            </div>
-
-            {{-- Promo 1 — "New arrivals" tile --}}
-            <div class="relative">
-                <x-media-picker model="settings.home_promo_banner_1" label="New arrivals" size-hint="1200 × 400" preview dropzone drop-height="h-44 lg:h-[12.5rem]"
-                    only-images mimes="jpg,jpeg,png,gif,webp" :max-size-mb="4" placeholder="Choose from the library" />
-                <span class="{{ $bannerChip }}">
-                    <flux:icon.photo variant="micro" class="size-3.5" />
-                    Promo · New arrivals <span class="font-normal text-white/60">· 1200 × 400</span>
-                </span>
-            </div>
-
-            {{-- Promo 2 — "Best deals" tile --}}
-            <div class="relative">
-                <x-media-picker model="settings.home_promo_banner_2" label="Best deals" size-hint="1200 × 400" preview dropzone drop-height="h-44 lg:h-[12.5rem]"
-                    only-images mimes="jpg,jpeg,png,gif,webp" :max-size-mb="4" placeholder="Choose from the library" />
-                <span class="{{ $bannerChip }}">
-                    <flux:icon.photo variant="micro" class="size-3.5" />
-                    Promo · Best deals <span class="font-normal text-white/60">· 1200 × 400</span>
-                </span>
-            </div>
-        </div>
-    </x-admin-section-card>
-
     {{-- ── Live Chat Widget ───────────────────────────────────────────────── --}}
     <x-admin-section-card header-border="border-zinc-100" icon="chat-bubble-left-right" title="Live Chat Widget"
         description="The support chat bubble on the public site. Visitors verify with an email code before chatting.">
 
-        <div class="flex items-center justify-between gap-3 rounded-lg border border-zinc-100 bg-zinc-50/60 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800/30">
-            <div>
-                <p class="text-sm font-medium text-zinc-800 dark:text-zinc-100">Enable Live Chat</p>
-                <p class="text-xs text-zinc-400">Support bubble on every public page.</p>
-            </div>
-            <label class="relative inline-flex shrink-0 cursor-pointer items-center">
+        <x-slot:actions>
+            <label class="relative inline-flex shrink-0 cursor-pointer items-center" title="Enable Live Chat">
                 <input type="checkbox" wire:model="settings.chat_widget_enabled" class="peer sr-only">
                 <div
                     class="h-5 w-9 rounded-full bg-zinc-300 transition-colors peer-checked:bg-emerald-500 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-500/40 dark:bg-zinc-600"></div>
                 <div
                     class="absolute left-0.5 top-0.5 size-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4"></div>
             </label>
-        </div>
+        </x-slot:actions>
     </x-admin-section-card>
 
     {{-- ── Popup (announcement) ────────────────────────────────────────────── --}}

@@ -4,7 +4,7 @@
     @include('partials.head')
     @include('partials.seo-meta')
 </head>
-<body class="bg-page-bg font-storefront text-zinc-800 antialiased">
+<body class="bg-page-bg font-storefront text-sf-text antialiased">
 
 @include('frontend.themes.ecommerce.partials.header')
 
@@ -48,7 +48,7 @@
                     </svg>
                 </span>
                 <div>
-                    <h1 class="text-2xl font-extrabold tracking-tight text-zinc-900 md:text-3xl">{{ __('Order placed!') }}</h1>
+                    <h1 class="text-2xl font-extrabold tracking-tight text-sf-heading md:text-3xl">{{ __('Order placed!') }}</h1>
                     <p class="mt-1 text-sm text-zinc-500">
                         {{ __('Thank you, :name. Your order has been placed successfully.', ['name' => $order->customer_name]) }}
                     </p>
@@ -81,7 +81,7 @@
                     {{ __('View / print invoice') }}
                 </a>
                 <a href="{{ $invoiceDownloadUrl }}"
-                    class="inline-flex items-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">
+                    class="inline-flex items-center gap-2 rounded-full bg-sf-button px-5 py-2.5 text-sm font-semibold text-sf-button-text shadow-sm transition hover:opacity-90">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
                     </svg>
@@ -95,7 +95,7 @@
         {{-- Items + totals --}}
         <section class="overflow-hidden rounded-card border border-zinc-200 bg-white shadow-sm">
             <header class="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/60 px-5 py-4">
-                <h2 class="text-base font-bold text-zinc-900">{{ __('Order items') }}</h2>
+                <h2 class="text-base font-bold text-sf-heading">{{ __('Order items') }}</h2>
                 <span class="rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-bold text-brand">{{ trans_choice(':count item|:count items', $itemCount, ['count' => $itemCount]) }}</span>
             </header>
 
@@ -113,13 +113,13 @@
                             @endif
                         </span>
                         <div class="min-w-0 flex-1">
-                            <p class="line-clamp-2 text-sm font-semibold text-zinc-800">{{ $item->item_name }}</p>
+                            <p class="line-clamp-2 text-sm font-semibold text-sf-text">{{ $item->item_name }}</p>
                             @if (! empty($item->variations))
                                 <p class="mt-1 inline-flex rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600">{{ \App\Support\Cart::optionsLabel($item->variations) }}</p>
                             @endif
                             <p class="mt-1 text-xs text-zinc-500">{{ format_money($item->unit_price) }} &times; {{ $item->quantity }}</p>
                         </div>
-                        <span class="shrink-0 text-sm font-bold tabular-nums text-zinc-900">{{ format_money($item->line_total) }}</span>
+                        <span class="shrink-0 text-sm font-bold tabular-nums text-sf-heading">{{ format_money($item->line_total) }}</span>
                     </li>
                 @endforeach
             </ul>
@@ -127,7 +127,7 @@
             <dl class="space-y-3 border-t border-zinc-100 px-5 py-5 text-sm">
                 <div class="flex items-center justify-between">
                     <dt class="text-zinc-500">{{ __('Subtotal') }}</dt>
-                    <dd class="font-semibold tabular-nums text-zinc-900">{{ format_money($order->subtotal) }}</dd>
+                    <dd class="font-semibold tabular-nums text-sf-heading">{{ format_money($order->subtotal) }}</dd>
                 </div>
                 @if ((float) $order->discount > 0)
                     <div class="flex items-center justify-between">
@@ -145,7 +145,7 @@
                         <dt class="text-zinc-500">
                             {{ $order->vat_rate !== null ? $order->vat_rate.'% ' : '' }}{{ \App\Models\Setting::vatLabel() }}
                         </dt>
-                        <dd class="font-semibold tabular-nums text-zinc-900">{{ format_money($order->vat_amount) }}</dd>
+                        <dd class="font-semibold tabular-nums text-sf-heading">{{ format_money($order->vat_amount) }}</dd>
                     </div>
                 @endif
                 @if ($order->shipping_method || (float) $order->shipping_cost > 0)
@@ -157,15 +157,15 @@
                             @endif
                         </dt>
                         @if ((float) $order->shipping_cost > 0)
-                            <dd class="font-semibold tabular-nums text-zinc-900">{{ format_money($order->shipping_cost) }}</dd>
+                            <dd class="font-semibold tabular-nums text-sf-heading">{{ format_money($order->shipping_cost) }}</dd>
                         @else
                             <dd class="font-semibold text-emerald-600">{{ __('Free') }}</dd>
                         @endif
                     </div>
                 @endif
                 <div class="flex items-center justify-between rounded-card bg-brand/5 px-4 py-3">
-                    <dt class="text-base font-bold text-zinc-900">{{ __('Total') }}</dt>
-                    <dd class="text-xl font-extrabold tabular-nums text-brand">{{ format_money($order->total) }}</dd>
+                    <dt class="text-base font-bold text-sf-heading">{{ __('Total') }}</dt>
+                    <dd class="text-xl font-extrabold tabular-nums text-sf-price">{{ format_money($order->total) }}</dd>
                 </div>
             </dl>
         </section>
@@ -174,12 +174,12 @@
             {{-- Order details --}}
             <section class="overflow-hidden rounded-card border border-zinc-200 bg-white shadow-sm">
                 <header class="border-b border-zinc-100 bg-zinc-50/60 px-5 py-4">
-                    <h2 class="text-base font-bold text-zinc-900">{{ __('Order details') }}</h2>
+                    <h2 class="text-base font-bold text-sf-heading">{{ __('Order details') }}</h2>
                 </header>
                 <dl class="space-y-3 px-5 py-4 text-sm">
                     <div class="flex items-center justify-between gap-3">
                         <dt class="text-zinc-500">{{ __('Date') }}</dt>
-                        <dd class="font-medium text-zinc-800">{{ $order->created_at?->format('d M Y, h:i A') }}</dd>
+                        <dd class="font-medium text-sf-text">{{ $order->created_at?->format('d M Y, h:i A') }}</dd>
                     </div>
                     <div class="flex items-center justify-between gap-3">
                         <dt class="text-zinc-500">{{ __('Status') }}</dt>
@@ -188,7 +188,7 @@
                     @if ($order->payment_method)
                         <div class="flex items-center justify-between gap-3">
                             <dt class="text-zinc-500">{{ __('Payment') }}</dt>
-                            <dd class="text-right font-medium text-zinc-800">{{ \App\Support\PaymentMethods::label($order->payment_method) }}</dd>
+                            <dd class="text-right font-medium text-sf-text">{{ \App\Support\PaymentMethods::label($order->payment_method) }}</dd>
                         </div>
                     @endif
                     <div class="flex items-center justify-between gap-3">
@@ -201,10 +201,10 @@
             {{-- Delivery --}}
             <section class="overflow-hidden rounded-card border border-zinc-200 bg-white shadow-sm">
                 <header class="border-b border-zinc-100 bg-zinc-50/60 px-5 py-4">
-                    <h2 class="text-base font-bold text-zinc-900">{{ __('Delivery details') }}</h2>
+                    <h2 class="text-base font-bold text-sf-heading">{{ __('Delivery details') }}</h2>
                 </header>
                 <div class="space-y-3 px-5 py-4 text-sm">
-                    <p class="font-semibold text-zinc-900">{{ $order->customer_name }}</p>
+                    <p class="font-semibold text-sf-heading">{{ $order->customer_name }}</p>
                     <p class="flex items-start gap-2 text-zinc-600">
                         <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-4 w-4 shrink-0 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
@@ -235,7 +235,7 @@
             {{-- What happens next --}}
             <section class="overflow-hidden rounded-card border border-zinc-200 bg-white shadow-sm">
                 <header class="border-b border-zinc-100 bg-zinc-50/60 px-5 py-4">
-                    <h2 class="text-base font-bold text-zinc-900">{{ __('What happens next?') }}</h2>
+                    <h2 class="text-base font-bold text-sf-heading">{{ __('What happens next?') }}</h2>
                 </header>
                 <ol class="px-5 py-4">
                     @foreach ($nextSteps as $step)
@@ -257,7 +257,7 @@
                                 @endif
                             </span>
                             <div>
-                                <p class="text-sm font-semibold {{ $step['done'] ? 'text-zinc-900' : 'text-zinc-700' }}">{{ $step['title'] }}</p>
+                                <p class="text-sm font-semibold {{ $step['done'] ? 'text-sf-heading' : 'text-zinc-700' }}">{{ $step['title'] }}</p>
                                 <p class="mt-0.5 text-xs text-zinc-500">{{ $step['text'] }}</p>
                             </div>
                         </li>
@@ -267,7 +267,7 @@
 
             <div class="flex flex-col gap-2.5">
                 <a href="{{ route('shop') }}"
-                    class="flex items-center justify-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:opacity-90">
+                    class="flex items-center justify-center gap-2 rounded-full bg-sf-button px-6 py-3 text-sm font-bold text-sf-button-text shadow-sm transition hover:opacity-90">
                     {{ __('Continue shopping') }}
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
