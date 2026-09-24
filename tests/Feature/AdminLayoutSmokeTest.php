@@ -41,4 +41,5 @@ test('payment gateways page renders gateway credentials', function () {
     $response->assertSee('bKash');
     $response->assertSee('SSLCommerz');
     $response->assertSee('Apple Pay');
+    $response->assertSee('Google Pay');
 });

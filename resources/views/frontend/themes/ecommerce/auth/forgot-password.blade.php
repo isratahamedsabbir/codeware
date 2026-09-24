@@ -18,7 +18,7 @@
 <main>
     <div class="mx-auto flex max-w-7xl justify-center px-4 py-10 sm:px-6 md:py-14">
         <div class="w-full max-w-md">
-            <div class="rounded-xl border border-zinc-200 bg-white p-6 sm:p-8">
+            <div class="rounded-card border border-zinc-200 bg-white p-6 sm:p-8">
                 <h1 class="text-xl font-bold uppercase tracking-wide text-zinc-800">{{ __('Forgot password') }}</h1>
                 <p class="mt-1 text-sm text-gray-600">{{ __('Enter your email to receive a password reset link.') }}</p>
 

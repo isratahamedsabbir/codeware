@@ -3,7 +3,7 @@
         Enter your payment gateway credentials. Credentials are stored privately and never exposed via the public API.
     </flux:text>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+    <div class="columns-1 lg:columns-2 gap-5 [&>*]:mb-5 [&>*]:break-inside-avoid">
 
     @if (isset($gateways['paypal']))
         {{-- PayPal --}}
@@ -154,6 +154,31 @@
             <flux:field>
                 <flux:label>Domain</flux:label>
                 <flux:input wire:model="gateways.applepay.credentials.domain" placeholder="example.com" />
+            </flux:field>
+        </x-admin-section-card>
+    @endif
+
+    @if (isset($gateways['googlepay']))
+        {{-- Google Pay --}}
+        <x-admin-section-card icon="credit-card" title="Google Pay" icon-color="bg-blue-500/10 text-blue-600">
+            <x-slot:actions>
+                <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
+                    <input type="checkbox" wire:model="gateways.googlepay.is_enabled" class="rounded border-zinc-300 text-primary" />
+                    Enable
+                </label>
+            </x-slot:actions>
+
+            <flux:field>
+                <flux:label>Merchant ID</flux:label>
+                <flux:input wire:model="gateways.googlepay.credentials.merchant_id" placeholder="merchant.com.example" />
+            </flux:field>
+            <flux:field>
+                <flux:label>Merchant Name</flux:label>
+                <flux:input wire:model="gateways.googlepay.credentials.merchant_name" />
+            </flux:field>
+            <flux:field>
+                <flux:label>Domain</flux:label>
+                <flux:input wire:model="gateways.googlepay.credentials.domain" placeholder="example.com" />
             </flux:field>
         </x-admin-section-card>
     @endif

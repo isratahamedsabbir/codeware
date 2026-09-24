@@ -167,14 +167,34 @@ class SettingsSeeder extends Seeder
             // ── Theme homepage ── the homepage copy & imagery the theme templates
             // render (site_tagline, home_hero_image, home_promo_banner_1/2). Managed
             // from the dedicated Theme Settings screen under Library & System.
-            ['key' => 'site_tagline',             'value' => '', 'type' => 'textarea', 'group' => 'frontend', 'is_public' => true],
-            ['key' => 'home_hero_image',          'value' => '', 'type' => 'string', 'group' => 'frontend', 'is_public' => true],
-            ['key' => 'home_promo_banner_1',      'value' => '', 'type' => 'string', 'group' => 'frontend', 'is_public' => true],
-            ['key' => 'home_promo_banner_2',      'value' => '', 'type' => 'string', 'group' => 'frontend', 'is_public' => true],
+            // Ships with demo imagery so the homepage looks populated out of the box.
+            ['key' => 'site_tagline',             'value' => 'Premium products for modern living.', 'type' => 'textarea', 'group' => 'frontend', 'is_public' => true],
+            ['key' => 'home_hero_image',          'value' => '/default/hero-bg.svg', 'type' => 'string', 'group' => 'frontend', 'is_public' => true],
+            ['key' => 'home_promo_banner_1',      'value' => '/default/promo-banner-1.svg', 'type' => 'string', 'group' => 'frontend', 'is_public' => true],
+            ['key' => 'home_promo_banner_2',      'value' => '/default/promo-banner-2.svg', 'type' => 'string', 'group' => 'frontend', 'is_public' => true],
+
+            // ── Ecommerce theme colors ── drive the storefront's --color-brand
+            // (primary) and --color-secondary CSS tokens, editable from the
+            // ecommerce theme's own settings panel on the Theme Settings screen.
+            // Group 'frontend' keeps them off the generic Settings groups loop
+            // and the Backend (colors) card — they belong to the theme alone.
+            ['key' => 'theme_ecommerce_primary_color',   'value' => '#045b30', 'type' => 'color', 'group' => 'frontend', 'is_public' => true],
+            ['key' => 'theme_ecommerce_secondary_color', 'value' => '#7cc242', 'type' => 'color', 'group' => 'frontend', 'is_public' => true],
 
             // ── Frontend chat widget ── shows/hides the chat bubble on the
             // public site. See Settings → Theme → Frontend and ChatWidget.
             ['key' => 'chat_widget_enabled',      'value' => '1', 'type' => 'boolean', 'group' => 'frontend', 'is_public' => true],
+
+            // ── Announcement popup ── a one-time popup shown to visitors on
+            // their first visit and hidden forever once dismissed (browser
+            // localStorage). Managed from Theme Settings → Popup. Ships enabled
+            // with demo content so the storefront shows it out of the box.
+            ['key' => 'popup_enabled',        'value' => '1', 'type' => 'boolean', 'group' => 'frontend', 'is_public' => true],
+            ['key' => 'popup_image',          'value' => '/default/popup-bg.svg', 'type' => 'string', 'group' => 'frontend', 'is_public' => true],
+            ['key' => 'popup_title',          'value' => 'Welcome to our store!', 'type' => 'string', 'group' => 'frontend', 'is_public' => true],
+            ['key' => 'popup_description',    'value' => 'Get 10% off your first order — use code WELCOME10 at checkout.', 'type' => 'string', 'group' => 'frontend', 'is_public' => true],
+            ['key' => 'popup_button_label',   'value' => 'Shop Now', 'type' => 'string', 'group' => 'frontend', 'is_public' => true],
+            ['key' => 'popup_button_url',     'value' => '/shop', 'type' => 'string', 'group' => 'frontend', 'is_public' => true],
 
             // ── Editor ──
             ['key' => 'puck_session_minutes',    'value' => '30', 'type' => 'integer', 'group' => 'editor', 'is_public' => false],

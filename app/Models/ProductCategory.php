@@ -24,7 +24,14 @@ class ProductCategory extends Model
 
     public array $translatable = ['name'];
 
-    protected $fillable = ['type', 'parent_id', 'name', 'icon', 'sort_order', 'status'];
+    protected $fillable = ['type', 'parent_id', 'name', 'icon', 'sort_order', 'status', 'featured'];
+
+    protected function casts(): array
+    {
+        return [
+            'featured' => 'boolean',
+        ];
+    }
 
     /**
      * `slug` is a virtual accessor (see below), not a real column — Eloquent

@@ -107,3 +107,15 @@ it('toggles a category\'s status from the index', function () {
 
     expect($category->refresh()->status)->toBe('inactive');
 });
+
+it('toggles a category\'s featured flag from the index', function () {
+    $category = Category::factory()->create(['type' => Category::TYPE_PRODUCT]);
+
+    Livewire::test(CategoriesIndex::class)->call('toggleFeatured', $category->id);
+
+    expect($category->refresh()->featured)->toBeTrue();
+
+    Livewire::test(CategoriesIndex::class)->call('toggleFeatured', $category->id);
+
+    expect($category->refresh()->featured)->toBeFalse();
+});

@@ -65,11 +65,11 @@
                     return;
                 }
 
-                await $wire.call('add', this.selection);
+                await this.$wire.call('add', this.selection);
 
                 // Only a *successful* add (verified via the re-rendered flag,
                 // not just the round-trip) lets the card modal close itself.
-                if ($wire.get('added')) {
+                if (this.$wire.get('added')) {
                     window.dispatchEvent(new CustomEvent('variant-added'));
                 }
             },
@@ -149,6 +149,7 @@
                     straight to the cart without leaving the grid. --}}
                 <div
                     x-show="pickerOpen"
+                    x-cloak
                     x-transition.opacity
                     @cart-item-added.window="pickerOpen = false"
                     @keydown.escape.window="pickerOpen = false"
@@ -157,7 +158,7 @@
                     class="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
                 >
                     <div
-                        class="relative w-full max-w-md rounded-t-2xl bg-white p-6 shadow-2xl sm:rounded-2xl"
+                        class="relative w-full max-w-md rounded-t-card bg-white p-6 shadow-2xl sm:rounded-card"
                         @click.outside="pickerOpen = false"
                     >
                         <div class="flex items-start justify-between gap-3">

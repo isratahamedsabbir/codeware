@@ -7,6 +7,13 @@ use Illuminate\Support\Facades\Cache;
 
 class Themes
 {
+    /**
+     * Request-scoped memo of the cached folder scan — active()/view() are hit
+     * several times a themed page. Keyed by the cache repository instance so
+     * the memo dies with the bootstrap that owns the cache.
+     */
+    private static array $all = [];
+
     public static function path(): string
     {
         return resource_path('views/frontend/themes');
@@ -24,7 +31,9 @@ class Themes
      */
     public static function all(): array
     {
-        return Cache::remember('themes:all', 86400, fn () => self::scan());
+        $key = spl_object_id(Cache::getFacadeRoot());
+
+        return self::$all[$key] ??= Cache::remember('themes:all', 86400, fn () => self::scan());
     }
 
     /**
@@ -50,6 +59,7 @@ class Themes
      */
     public static function forget(): void
     {
+        self::$all = [];
         Cache::forget('themes:all');
     }
 

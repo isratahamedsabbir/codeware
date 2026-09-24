@@ -48,7 +48,10 @@ function makeThemeZip(string $slug, array $files): string
 }
 
 it('renders the theme settings page', function () {
-    Livewire::test(ThemeSettings::class)->assertStatus(200);
+    Livewire::test(ThemeSettings::class)
+        ->assertStatus(200)
+        ->assertSee('Enable Live Chat')
+        ->assertSee('Show Announcement Popup');
 });
 
 it('links the theme builder guide PDF in the install modal', function () {
@@ -133,6 +136,36 @@ it('saves theme-scoped settings through Setting::set', function () {
         ->and(Setting::where('key', 'theme_portfolio_hero_title')->value('value'))->toBe('Designer');
 });
 
+it('renders the ecommerce theme color pickers', function () {
+    Livewire::test(ThemeSettings::class)
+        ->set('settings.site_theme', 'ecommerce')
+        ->assertSee('Primary Color')
+        ->assertSee('Secondary Color')
+        ->assertSeeHtml('theme_ecommerce_primary_color')
+        ->assertSeeHtml('theme_ecommerce_secondary_color')
+        ->assertSeeHtml('type="color"');
+});
+
+it('saves the ecommerce theme primary & secondary colors through Setting::set', function () {
+    Livewire::test(ThemeSettings::class)
+        ->set('settings.theme_ecommerce_primary_color', '#c01616')
+        ->set('settings.theme_ecommerce_secondary_color', '#1e7bc4')
+        ->call('save');
+
+    expect(Setting::where('key', 'theme_ecommerce_primary_color')->value('value'))->toBe('#c01616')
+        ->and(Setting::where('key', 'theme_ecommerce_secondary_color')->value('value'))->toBe('#1e7bc4');
+});
+
+it('loads seeded ecommerce theme colors into the form', function () {
+    Setting::factory()->create(['key' => 'theme_ecommerce_primary_color', 'value' => '#045b30', 'group' => 'frontend', 'type' => 'color']);
+    Setting::factory()->create(['key' => 'theme_ecommerce_secondary_color', 'value' => '#7cc242', 'group' => 'frontend', 'type' => 'color']);
+
+    $component = Livewire::test(ThemeSettings::class);
+
+    expect($component->get('settings.theme_ecommerce_primary_color'))->toBe('#045b30')
+        ->and($component->get('settings.theme_ecommerce_secondary_color'))->toBe('#7cc242');
+});
+
 it('renders the selected theme settings blade when the theme ships one', function () {
     expect(Themes::hasSettings('ecommerce'))->toBeTrue()
         ->and(Themes::hasSettings('default'))->toBeTrue()
@@ -180,12 +213,16 @@ it('loads existing theme settings into the form', function () {
     Setting::factory()->create(['key' => 'site_theme', 'value' => 'ecommerce', 'group' => 'frontend', 'type' => 'select']);
     Setting::factory()->create(['key' => 'site_tagline', 'value' => 'Shop smart', 'group' => 'frontend', 'type' => 'textarea']);
     Setting::factory()->create(['key' => 'chat_widget_enabled', 'value' => '0', 'group' => 'frontend', 'type' => 'boolean']);
+    Setting::factory()->create(['key' => 'popup_enabled', 'value' => '1', 'group' => 'frontend', 'type' => 'boolean']);
+    Setting::factory()->create(['key' => 'popup_title', 'value' => 'Welcome', 'group' => 'frontend', 'type' => 'string']);
 
     $component = Livewire::test(ThemeSettings::class);
 
     expect($component->get('settings.site_theme'))->toBe('ecommerce')
         ->and($component->get('settings.site_tagline'))->toBe('Shop smart')
-        ->and($component->get('settings.chat_widget_enabled'))->toBe(false);
+        ->and($component->get('settings.chat_widget_enabled'))->toBe(false)
+        ->and($component->get('settings.popup_enabled'))->toBe(true)
+        ->and($component->get('settings.popup_title'))->toBe('Welcome');
 });
 
 it('lists every installed theme folder as a selectable design', function () {
@@ -197,16 +234,27 @@ it('saves theme settings through Setting::set', function () {
     Setting::factory()->create(['key' => 'site_theme', 'value' => 'default', 'group' => 'frontend', 'type' => 'select']);
     Setting::factory()->create(['key' => 'home_hero_image', 'value' => '', 'group' => 'frontend', 'type' => 'string']);
     Setting::factory()->create(['key' => 'chat_widget_enabled', 'value' => '1', 'group' => 'frontend', 'type' => 'boolean']);
+    Setting::factory()->create(['key' => 'popup_enabled', 'value' => '0', 'group' => 'frontend', 'type' => 'boolean']);
 
     Livewire::test(ThemeSettings::class)
         ->set('settings.site_theme', 'ecommerce')
         ->set('settings.home_hero_image', 'media/hero.jpg')
         ->set('settings.chat_widget_enabled', false)
+        ->set('settings.popup_enabled', true)
+        ->set('settings.popup_title', 'Welcome to our store')
+        ->set('settings.popup_description', 'Get 10% off.')
+        ->set('settings.popup_button_label', 'Shop Now')
+        ->set('settings.popup_button_url', '/shop')
         ->call('save');
 
     expect(Setting::where('key', 'site_theme')->value('value'))->toBe('ecommerce')
         ->and(Setting::where('key', 'home_hero_image')->value('value'))->toBe('media/hero.jpg')
-        ->and(Setting::where('key', 'chat_widget_enabled')->value('value'))->toBe('0');
+        ->and(Setting::where('key', 'chat_widget_enabled')->value('value'))->toBe('0')
+        ->and(Setting::where('key', 'popup_enabled')->value('value'))->toBe('1')
+        ->and(Setting::where('key', 'popup_title')->value('value'))->toBe('Welcome to our store')
+        ->and(Setting::where('key', 'popup_description')->value('value'))->toBe('Get 10% off.')
+        ->and(Setting::where('key', 'popup_button_label')->value('value'))->toBe('Shop Now')
+        ->and(Setting::where('key', 'popup_button_url')->value('value'))->toBe('/shop');
 });
 
 it('registers a Theme Settings item under Library & System in the admin menu', function () {

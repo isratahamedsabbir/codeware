@@ -12,6 +12,7 @@ use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use App\Models\Setting;
 use App\Models\Tag;
+use App\Support\ContentCache;
 use App\Support\Favorites;
 use App\Support\Frontend;
 use App\Support\Locale;
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
 class FrontendController extends Controller
@@ -128,10 +130,14 @@ class FrontendController extends Controller
                 break;
         }
 
-        $priceBounds = (object) [
-            'min' => (float) Product::active()->min('price') ?: 0,
-            'max' => (float) Product::active()->max('price') ?: 100000,
-        ];
+        [$priceMin, $priceMax] = ContentCache::remember('shop-price-bounds', function () {
+            return [
+                (float) Product::active()->min('price') ?: 0,
+                (float) Product::active()->max('price') ?: 100000,
+            ];
+        });
+
+        $priceBounds = (object) ['min' => $priceMin, 'max' => $priceMax];
 
         return view('frontend.themes.'.Themes::view('shop'), [
             'products' => $query->paginate(Setting::perPage())->withQueryString(),
@@ -461,10 +467,14 @@ class FrontendController extends Controller
             return redirect()->route('shop');
         }
 
-        $order = Order::with('items')->where('order_number', $orderNumber)->firstOrFail();
+        $order = Order::with('items.product')->where('order_number', $orderNumber)->firstOrFail();
 
         return view('frontend.themes.'.Themes::view('order-confirmation'), [
             'order' => $order,
+            // The same permanent signed links the invoice QR code points at, so
+            // the shopper can view/print or download the invoice without an account.
+            'invoiceUrl' => URL::signedRoute('invoices.public.show', ['order' => $order->order_number]),
+            'invoiceDownloadUrl' => URL::signedRoute('invoices.public.download', ['order' => $order->order_number]),
             'page' => null,
             'sections' => collect(),
             'title' => __('Order placed'),
@@ -497,6 +507,7 @@ class FrontendController extends Controller
         $count = fn (Builder $q) => $q->where('products.status', 'active');
 
         return ProductCategory::active()
+            ->with('page')
             ->withCount(['products' => fn ($q) => $q->active()])
             ->with(['children' => function (HasMany $q) use ($count) {
                 $q->active()->with('page')

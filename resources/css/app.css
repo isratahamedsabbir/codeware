@@ -39,6 +39,10 @@
     --color-page-bg: #f2f4f8;     /* site-wide storefront page background */
     --color-sale: #c01616;        /* sale badges / errors */
 
+    /* ── Storefront card corners: every card/panel in the ecommerce theme
+       uses `rounded-card` so the whole site shares one radius. ── */
+    --radius-card: 0.75rem;
+
     /* ── Elevation tint (shared shadow hue) ── */
     --color-shadow-tint: #0f172a;
 

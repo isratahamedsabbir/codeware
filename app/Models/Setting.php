@@ -12,34 +12,80 @@ class Setting extends Model
 
     protected $fillable = ['key', 'value', 'type', 'group', 'is_public'];
 
+    /**
+     * Request-scoped memos so hot paths ($currencySymbol, $siteName, perPage(),
+     * vatRate(), ...) don't re-read the cache store on every call — with a
+     * database-backed cache store, each Cache::rememberForever() is a SELECT.
+     *
+     * Keyed by the cache repository instance (spl_object_id) so the memo dies
+     * with the bootstrap that owns the cache: per PHP-FPM request in
+     * production, per app instance in the test suite.
+     */
+    private static array $version = [];
+
+    private static array $allCache = [];
+
+    /**
+     * The cache repository this bootstrap owns, as a memo key — unique per
+     * PHP-FPM request and per app instance in the test suite.
+     */
+    private static function memoKey(): int
+    {
+        return spl_object_id(Cache::getFacadeRoot());
+    }
+
     public static function get(string $key, mixed $default = null): mixed
     {
-        return Cache::rememberForever(self::cacheKey($key), function () use ($key, $default) {
-            $setting = static::where('key', $key)->first();
+        $settings = self::allCached();
 
-            return $setting ? $setting->value : $default;
-        });
+        return array_key_exists($key, $settings) ? $settings[$key] : $default;
     }
 
     public static function set(string $key, mixed $value): void
     {
         static::updateOrCreate(['key' => $key], ['value' => $value]);
 
-        // Bumping the version orphans every key built from the old version —
+        self::$allCache = [];
+        self::$version = [];
+
+        // Bumping the version orphans the map key built from the old version —
         // including derived caches like the public settings list — without
         // needing cache tagging, which only redis/memcached/array support.
         // Which store is actually used is driven entirely by CACHE_STORE in .env.
-        Cache::forever('settings:cache-version', self::cacheVersion() + 1);
+        // Store the new version in the memo as well — cacheVersion() re-reads
+        // the *old* value into the (just-cleared) memo before this write, so
+        // leave that memo pointing at the value we just persisted.
+        $next = self::cacheVersion() + 1;
+        Cache::forever('settings:cache-version', $next);
+        self::$version[self::memoKey()] = $next;
     }
 
-    private static function cacheKey(string $key): string
+    /**
+     * The whole settings table as a single version-keyed cached map, instead of
+     * one cache entry per key (a database cache store turns each of those into
+     * its own SELECT — the storefront read scads of them, currency_symbol and
+     * friends getting re-read a dozen times a page).
+     *
+     * @return array<string, mixed>
+     */
+    public static function allCached(): array
     {
-        return 'setting:v'.self::cacheVersion().":{$key}";
+        $key = self::memoKey();
+
+        if (! array_key_exists($key, self::$allCache)) {
+            self::$allCache[$key] = Cache::rememberForever('settings:all:v'.self::cacheVersion(), function () {
+                return static::query()->pluck('value', 'key')->all();
+            });
+        }
+
+        return self::$allCache[$key];
     }
 
     public static function cacheVersion(): int
     {
-        return (int) Cache::rememberForever('settings:cache-version', fn () => 1);
+        $key = self::memoKey();
+
+        return self::$version[$key] ??= (int) Cache::rememberForever('settings:cache-version', fn () => 1);
     }
 
     /**

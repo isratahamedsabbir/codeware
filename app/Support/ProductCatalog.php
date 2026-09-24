@@ -59,26 +59,28 @@ class ProductCatalog
      */
     public static function attributeFacets(): array
     {
-        $facets = [];
+        return ContentCache::remember('shop-attribute-facets', function () {
+            $facets = [];
 
-        Product::active()->get(['id', 'variations'])->each(function (Product $product) use (&$facets) {
-            $valuesByAttribute = [];
+            Product::active()->get(['id', 'variations'])->each(function (Product $product) use (&$facets) {
+                $valuesByAttribute = [];
 
-            foreach ($product->visibleVariations() as $row) {
-                foreach ((array) ($row['attributes'] ?? []) as $name => $value) {
-                    if (is_string($name) && $name !== '' && is_string($value)) {
-                        $valuesByAttribute[$name][$value] = true;
+                foreach ($product->visibleVariations() as $row) {
+                    foreach ((array) ($row['attributes'] ?? []) as $name => $value) {
+                        if (is_string($name) && $name !== '' && is_string($value)) {
+                            $valuesByAttribute[$name][$value] = true;
+                        }
                     }
                 }
-            }
 
-            foreach ($valuesByAttribute as $name => $values) {
-                foreach (array_keys($values) as $value) {
-                    $facets[$name][$value] = ($facets[$name][$value] ?? 0) + 1;
+                foreach ($valuesByAttribute as $name => $values) {
+                    foreach (array_keys($values) as $value) {
+                        $facets[$name][$value] = ($facets[$name][$value] ?? 0) + 1;
+                    }
                 }
-            }
-        });
+            });
 
-        return $facets;
+            return $facets;
+        });
     }
 }

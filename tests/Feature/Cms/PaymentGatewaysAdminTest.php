@@ -17,7 +17,7 @@ beforeEach(function () {
 it('seeder creates the default payment gateway rows, disabled by default', function () {
     $this->artisan('db:seed', ['--class' => PaymentGatewaySeeder::class]);
 
-    foreach (['paypal', 'stripe', 'bkash', 'sslcommerz', 'applepay'] as $code) {
+    foreach (['paypal', 'stripe', 'bkash', 'sslcommerz', 'applepay', 'googlepay'] as $code) {
         $gateway = PaymentGateway::where('code', $code)->first();
 
         expect($gateway)->not->toBeNull()
@@ -34,7 +34,8 @@ it('renders the payment gateways screen', function () {
         ->assertSee('Stripe')
         ->assertSee('bKash')
         ->assertSee('SSLCommerz')
-        ->assertSee('Apple Pay');
+        ->assertSee('Apple Pay')
+        ->assertSee('Google Pay');
 });
 
 it('is reachable at its own admin route', function () {

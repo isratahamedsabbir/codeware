@@ -68,6 +68,15 @@ class Index extends Component
         $this->dispatch('notify', message: 'Category status updated');
     }
 
+    public function toggleFeatured(int $id): void
+    {
+        $category = Category::findOrFail($id);
+        $category->update(['featured' => ! $category->featured]);
+
+        AdminActivity::log('updated', "Category: {$category->name} ".($category->featured ? 'featured' : 'unfeatured'));
+        $this->dispatch('notify', message: $category->featured ? 'Category added to homepage' : 'Category removed from homepage');
+    }
+
     public function confirmDelete(int $id): void
     {
         $this->deletingId = $id;

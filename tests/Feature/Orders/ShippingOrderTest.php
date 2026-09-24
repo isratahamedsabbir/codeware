@@ -96,6 +96,23 @@ it('reflects the estimated shipping cost in the live checkout summary', function
         ->assertSee('Shipping');
 });
 
+it('re-prices the checkout summary when the shopper switches shipping method', function () {
+    ShippingMethod::create(['name' => 'Pickup', 'cost' => 0, 'status' => 'active']);
+    $express = ShippingMethod::create(['name' => 'Express', 'cost' => 120, 'status' => 'active']);
+
+    $product = Product::factory()->published()->create(['name' => ['en' => 'Ship Switch', 'bn' => ''], 'sort_order' => 0, 'quantity' => 10, 'price' => 100]);
+    pairPageFor($product, 'product', 'ship-switch', User::factory()->create()->id);
+    Cart::add($product->id, 1);
+
+    Livewire::test(Checkout::class)
+        ->assertSet('shippingLabel', 'Pickup')
+        ->assertSet('total', 100.0)
+        ->set('shipping_method_id', $express->id)
+        ->assertSet('shippingLabel', 'Express')
+        ->assertSet('shipping', 120.0)
+        ->assertSet('total', 220.0);
+});
+
 it('rejects a shipping method that is no longer active on the theme checkout', function () {
     $retired = ShippingMethod::create(['name' => 'Retired', 'cost' => 60, 'status' => 'inactive']);
 
@@ -224,6 +241,24 @@ it('computes shipping on top of the discounted subtotal with a coupon on the API
         ->assertJsonPath('data.shipping_cost', 60)
         // 1000 − 50 discount + 60 shipping = 1010.
         ->assertJsonPath('data.total', 1010);
+});
+
+it('shows the VAT line alongside shipping in the checkout summary when VAT is on', function () {
+    Setting::set('vat_enabled', '1');
+    Setting::set('vat_rate', '15');
+    Setting::set('vat_label', 'VAT');
+
+    ShippingMethod::create(['name' => 'Express', 'cost' => 60, 'status' => 'active']);
+
+    $product = Product::factory()->published()->create(['name' => ['en' => 'Vat Ship', 'bn' => ''], 'sort_order' => 0, 'quantity' => 10, 'price' => 200]);
+    pairPageFor($product, 'product', 'vat-ship', User::factory()->create()->id);
+    Cart::add($product->id, 1);
+
+    // 200 subtotal + 30 VAT (15%) + 60 shipping = 290.
+    Livewire::test(Checkout::class)
+        ->assertSet('vat', 30.0)
+        ->assertSet('total', 290.0)
+        ->assertSeeInOrder(['VAT', format_money(30), 'Shipping', format_money(60)]);
 });
 
 it('includes shipping with VAT on the total when both apply', function () {

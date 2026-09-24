@@ -30,7 +30,7 @@
 
             <div class="flex-1 space-y-6">
                 <div class="grid gap-4 sm:grid-cols-2">
-                    <div class="rounded-lg border border-zinc-200 bg-white p-5">
+                    <div class="rounded-card border border-zinc-200 bg-white p-5">
                         <h2 class="text-sm font-bold uppercase tracking-wide text-zinc-500">{{ __('Profile') }}</h2>
                         <p class="mt-2 text-base font-semibold text-zinc-800">{{ $user->name }}</p>
                         <p class="text-sm text-gray-600">{{ $user->email }}</p>
@@ -40,7 +40,7 @@
                         </a>
                     </div>
 
-                    <div class="rounded-lg border border-zinc-200 bg-white p-5">
+                    <div class="rounded-card border border-zinc-200 bg-white p-5">
                         <h2 class="text-sm font-bold uppercase tracking-wide text-zinc-500">{{ __('Orders') }}</h2>
                         <p class="mt-2 text-3xl font-bold text-zinc-800">{{ $orders->count() }}</p>
                         <p class="text-sm text-gray-600">{{ __('items in your recent orders') }}</p>
@@ -51,7 +51,7 @@
                     </div>
                 </div>
 
-                <section class="rounded-lg border border-zinc-200 bg-white">
+                <section class="rounded-card border border-zinc-200 bg-white">
                     <div class="flex items-center justify-between border-b border-zinc-100 px-5 py-4">
                         <h2 class="text-sm font-bold uppercase tracking-wide text-zinc-500">{{ __('Recent orders') }}</h2>
                         @if ($orders->isNotEmpty())

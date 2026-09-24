@@ -23,7 +23,7 @@
     </style>
 
     @if ($sent)
-        <div class="rounded-2xl border p-8 text-center"
+        <div class="rounded-card border p-8 text-center"
             style="border-color: var(--form-accent, #10b981); background-color: color-mix(in srgb, var(--form-accent, #10b981) 12%, transparent);">
             <h3 class="text-lg font-semibold" style="color: var(--form-text, #065f46)">{{ __('Message sent!') }}</h3>
             <p class="mt-2 text-sm" style="color: var(--form-label, #047857)">{{ __("Thanks for reaching out — we'll get back to you shortly.") }}</p>

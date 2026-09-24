@@ -13,6 +13,16 @@ class Language extends Model
 {
     use HasFactory;
 
+    /**
+     * Request-scoped memo of the cached active-languages rows — activeCached()
+     * is called by the locale switcher, currency selector, footer and more on
+     * every page, and each underlying Cache::rememberForever() is a separate
+     * SELECT against a database-backed cache store. Keyed by the cache
+     * repository instance so the memo dies with the bootstrap that owns it
+     * (per PHP-FPM request, per app instance in tests).
+     */
+    private static array $activeRows = [];
+
     protected $fillable = [
         'code',
         'name',
@@ -87,6 +97,7 @@ class Language extends Model
 
     public function flushCaches(): void
     {
+        self::$activeRows = [];
         Cache::forget('languages:active');
         Translation::flushCache($this->code);
     }
@@ -105,11 +116,15 @@ class Language extends Model
      */
     public static function activeCached()
     {
-        $rows = Cache::rememberForever(
-            'languages:active',
-            fn () => static::query()->active()->ordered()->get()->toArray(),
-        );
+        $key = spl_object_id(Cache::getFacadeRoot());
 
-        return static::hydrate($rows);
+        if (! array_key_exists($key, self::$activeRows)) {
+            self::$activeRows[$key] = Cache::rememberForever(
+                'languages:active',
+                fn () => static::query()->active()->ordered()->get()->toArray(),
+            );
+        }
+
+        return static::hydrate(self::$activeRows[$key]);
     }
 }

@@ -25,3 +25,19 @@
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 @fluxAppearance
 <style>[x-cloak]{display:none!important}</style>
+
+@php
+    // The ecommerce theme's primary/secondary colors (editable from its own
+    // settings panel on the Theme Settings screen). Applied only when that
+    // theme is active, and after the compiled CSS so these :root tokens win
+    // the cascade — same pattern as layouts/admin.blade.php.
+    $storefrontTheme = \App\Support\Themes::active();
+@endphp
+@if ($storefrontTheme === 'ecommerce')
+    <style>
+        :root {
+            --color-brand: {{ \App\Models\Setting::get('theme_ecommerce_primary_color', '#045b30') }};
+            --color-secondary: {{ \App\Models\Setting::get('theme_ecommerce_secondary_color', '#7cc242') }};
+        }
+    </style>
+@endif

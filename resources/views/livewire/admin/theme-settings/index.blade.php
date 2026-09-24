@@ -300,21 +300,68 @@
                         only-images mimes="jpg,jpeg,png,gif,webp" :max-size-mb="4" placeholder="Choose from the library" />
                 </div>
             </div>
+        </div>
+    </x-admin-section-card>
 
-            {{-- Behavior --}}
+    {{-- ── Live Chat Widget ───────────────────────────────────────────────── --}}
+    <x-admin-section-card header-border="border-zinc-100" icon="chat-bubble-left-right" title="Live Chat Widget"
+        description="The support chat bubble on the public site. Visitors verify with an email code before chatting.">
+
+        <div class="flex items-center justify-between gap-3 rounded-lg border border-zinc-100 bg-zinc-50/60 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800/30">
             <div>
-                <div class="flex items-center justify-between gap-3 rounded-lg border border-zinc-100 bg-zinc-50/60 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800/30">
-                    <div>
-                        <p class="text-sm font-medium text-zinc-800 dark:text-zinc-100">Live Chat Widget</p>
-                        <p class="text-xs text-zinc-400">Support bubble on every public page.</p>
+                <p class="text-sm font-medium text-zinc-800 dark:text-zinc-100">Enable Live Chat</p>
+                <p class="text-xs text-zinc-400">Support bubble on every public page.</p>
+            </div>
+            <label class="relative inline-flex shrink-0 cursor-pointer items-center">
+                <input type="checkbox" wire:model="settings.chat_widget_enabled" class="peer sr-only">
+                <div
+                    class="h-5 w-9 rounded-full bg-zinc-300 transition-colors peer-checked:bg-emerald-500 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-500/40 dark:bg-zinc-600"></div>
+                <div
+                    class="absolute left-0.5 top-0.5 size-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4"></div>
+            </label>
+        </div>
+    </x-admin-section-card>
+
+    {{-- ── Popup (announcement) ────────────────────────────────────────────── --}}
+    <x-admin-section-card header-border="border-zinc-100" icon="megaphone" title="Popup"
+        description="A one-time announcement popup for visitors: it appears on their first visit and, once closed, never bothers them again.">
+
+        <x-slot:actions>
+            <label class="relative inline-flex shrink-0 cursor-pointer items-center" title="Show Announcement Popup">
+                <input type="checkbox" wire:model="settings.popup_enabled" class="peer sr-only">
+                <div
+                    class="h-5 w-9 rounded-full bg-zinc-300 transition-colors peer-checked:bg-emerald-500 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-500/40 dark:bg-zinc-600"></div>
+                <div
+                    class="absolute left-0.5 top-0.5 size-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4"></div>
+            </label>
+        </x-slot:actions>
+
+        <div class="space-y-7">
+
+            <div>
+                <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-400">Content</p>
+                <div class="grid grid-cols-1 gap-5">
+                    <x-media-picker model="settings.popup_image" label="Background Image" size-hint="Recommended 800 × 600" preview dropzone drop-height="h-44"
+                        only-images mimes="jpg,jpeg,png,gif,webp" :max-size-mb="4" placeholder="Choose from the library" />
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div class="sm:col-span-2">
+                            <flux:label>Title</flux:label>
+                            <flux:input wire:model="settings.popup_title" placeholder="e.g. Welcome to our store" />
+                        </div>
+                        <div class="sm:col-span-2">
+                            <flux:label>Description</flux:label>
+                            <flux:textarea wire:model="settings.popup_description" class="h-24 resize-none"
+                                placeholder="e.g. Get 10% off your first order with code WELCOME10" />
+                        </div>
+                        <div>
+                            <flux:label>Button Label</flux:label>
+                            <flux:input wire:model="settings.popup_button_label" placeholder="e.g. Shop Now" />
+                        </div>
+                        <div>
+                            <flux:label>Button Link</flux:label>
+                            <flux:input wire:model="settings.popup_button_url" placeholder="e.g. /shop or https://..." />
+                        </div>
                     </div>
-                    <label class="relative inline-flex shrink-0 cursor-pointer items-center">
-                        <input type="checkbox" wire:model="settings.chat_widget_enabled" class="peer sr-only">
-                        <div
-                            class="h-5 w-9 rounded-full bg-zinc-300 transition-colors peer-checked:bg-emerald-500 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-500/40 dark:bg-zinc-600"></div>
-                        <div
-                            class="absolute left-0.5 top-0.5 size-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4"></div>
-                    </label>
                 </div>
             </div>
         </div>

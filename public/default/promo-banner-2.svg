@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400" role="img" aria-label="Best deals promo banner">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1c1917"/>
+      <stop offset="55%" stop-color="#122019"/>
+      <stop offset="100%" stop-color="#0a1f14"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.1" cy="0.9" r="0.9">
+      <stop offset="0%" stop-color="#f7941d" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#f7941d" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="400" fill="url(#bg)"/>
+  <rect width="1200" height="400" fill="url(#glow)"/>
+  <circle cx="240" cy="320" r="180" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="2"/>
+  <path d="M0 340 C 220 280, 420 380, 720 320 S 1020 280, 1200 330 L 1200 400 L 0 400 Z" fill="#ffffff" fill-opacity="0.04"/>
+  <g fill="#f7941d" fill-opacity="0.15">
+    <circle cx="180" cy="120" r="5"/><circle cx="360" cy="170" r="3"/>
+    <circle cx="540" cy="110" r="4"/><circle cx="720" cy="160" r="3"/>
+    <circle cx="900" cy="120" r="5"/><circle cx="1060" cy="170" r="3"/>
+  </g>
+</svg>

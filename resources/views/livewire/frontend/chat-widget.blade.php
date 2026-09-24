@@ -29,7 +29,7 @@
 
     {{-- Panel --}}
     @if ($isOpen)
-        <div class="absolute bottom-[calc(100%+0.75rem)] right-0 w-[22rem] max-w-[90vw] rounded-2xl bg-white shadow-2xl border border-zinc-100 overflow-hidden flex flex-col" style="max-height: 32rem;">
+        <div class="absolute bottom-[calc(100%+0.75rem)] right-0 w-[22rem] max-w-[90vw] rounded-card bg-white shadow-2xl border border-zinc-100 overflow-hidden flex flex-col" style="max-height: 32rem;">
 
             <div class="bg-primary px-4 py-3 text-white shrink-0">
                 <p class="font-semibold text-sm">{{ __('Chat with us') }}</p>

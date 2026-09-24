@@ -32,7 +32,11 @@ class ProductCategorySeeder extends Seeder
                 ?? ProductCategory::create([
                     'name' => ['en' => $cat['en'], 'bn' => $cat['bn']],
                     'sort_order' => $cat['sort_order'],
+                    'featured' => true,
                 ]);
+            if (! $category->featured) {
+                $category->update(['featured' => true]);
+            }
 
             Page::updateOrCreate(
                 ['type' => 'product_category', 'category_id' => $category->id],

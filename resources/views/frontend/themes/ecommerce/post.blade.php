@@ -55,7 +55,7 @@
         </div>
 
         @if ($post->featured_image)
-            <div class="mt-8 overflow-hidden rounded-2xl border border-zinc-100 shadow-sm">
+            <div class="mt-8 overflow-hidden rounded-card border border-zinc-100 shadow-sm">
                 <img src="{{ $post->featured_image }}" alt="{{ $post->title }}" class="aspect-[16/9] w-full object-cover">
             </div>
         @endif
@@ -85,7 +85,7 @@
             <h2 class="mb-6 text-2xl font-bold text-zinc-900">{{ $section->name }}</h2>
             <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($section->localizedCards() as $card)
-                    <div class="group overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+                    <div class="group overflow-hidden rounded-card border border-zinc-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
                         @if ($card['image'])
                             <div class="aspect-[16/10] overflow-hidden bg-zinc-100">
                                 <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}"
@@ -112,7 +112,7 @@
             <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($related as $relatedPost)
                     <a href="{{ route('blog.post', $relatedPost->slug) }}"
-                        class="group flex flex-col overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+                        class="group flex flex-col overflow-hidden rounded-card border border-zinc-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
                         @if ($relatedPost->featured_image)
                             <div class="relative aspect-[16/10] overflow-hidden bg-zinc-100">
                                 <img src="{{ $relatedPost->featured_image }}" alt="{{ $relatedPost->title }}"

@@ -140,3 +140,5 @@
         </div>
     </div>
 </footer>
+
+<livewire:frontend.announce-popup />

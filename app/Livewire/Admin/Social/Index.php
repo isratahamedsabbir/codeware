@@ -4,7 +4,6 @@ namespace App\Livewire\Admin\Social;
 
 use App\Models\SocialLink;
 use App\Support\AdminActivity;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
@@ -92,7 +91,7 @@ class Index extends Component
         }
 
         $this->removedIds = [];
-        Cache::forget('social-links:all');
+        SocialLink::flushCache();
 
         AdminActivity::log('updated', 'Social links updated');
 

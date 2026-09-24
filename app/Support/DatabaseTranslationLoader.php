@@ -15,6 +15,24 @@ use Throwable;
  */
 class DatabaseTranslationLoader implements Loader
 {
+    /**
+     * Request-scoped memo of the distinct translation groups that actually have
+     * rows per locale — lets JSON key lookups (which Laravel re-loads the
+     * loader with the *key* as the group, once per key) skip the cache store
+     * entirely when no admin row could ever match. Keyed by the cache
+     * repository instance so it dies with the bootstrap that owns the cache.
+     */
+    private static array $knownGroups = [];
+
+    /**
+     * Drop the request-scoped group index so a translation write in this
+     * process (admin save, seeder, test) is visible to the next load().
+     */
+    public static function reset(): void
+    {
+        self::$knownGroups = [];
+    }
+
     public function __construct(protected Loader $inner) {}
 
     /**
@@ -73,6 +91,10 @@ class DatabaseTranslationLoader implements Loader
     protected function fromDatabase(string $locale, string $group): array
     {
         try {
+            if (! self::groupHasRows($locale, $group)) {
+                return [];
+            }
+
             return Cache::rememberForever(
                 Translation::cacheKey($locale, $group),
                 fn () => Schema::hasTable('translations')
@@ -89,5 +111,31 @@ class DatabaseTranslationLoader implements Loader
             // app must still boot and translate from files.
             return [];
         }
+    }
+
+    /**
+     * Whether the locale has any stored rows for the group. An unknown group
+     * (every JSON key that falls through to the loader with the key as its
+     * group) is guaranteed to return [] from the query anyway, so skip the
+     * cache lookup and the forever-cached empty array it would leave behind.
+     */
+    private static function groupHasRows(string $locale, string $group): bool
+    {
+        if ($group === '*') {
+            return true;
+        }
+
+        $key = spl_object_id(Cache::getFacadeRoot());
+
+        if (! array_key_exists($locale, self::$knownGroups[$key] ?? [])) {
+            self::$knownGroups[$key][$locale] = Cache::rememberForever(
+                "translations:groups:{$locale}",
+                fn () => Schema::hasTable('translations')
+                    ? Translation::query()->where('locale', $locale)->distinct()->pluck('group')->all()
+                    : [],
+            );
+        }
+
+        return in_array($group, self::$knownGroups[$key][$locale], true);
     }
 }

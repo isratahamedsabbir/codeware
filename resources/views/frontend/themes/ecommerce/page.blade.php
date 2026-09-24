@@ -27,7 +27,7 @@
             <div class="mx-auto max-w-7xl">
                 <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     @foreach ($section->localizedCards() as $card)
-                        <div class="group overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+                        <div class="group overflow-hidden rounded-card border border-zinc-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
                             @if ($card['image'])
                                 <div class="relative aspect-square overflow-hidden bg-zinc-100">
                                     <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}"

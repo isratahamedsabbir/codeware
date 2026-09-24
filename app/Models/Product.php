@@ -161,6 +161,31 @@ class Product extends Model
     }
 
     /**
+     * Line items sold across orders — drives the storefront's "Best sellers"
+     * ranking (see the ecommerce home view).
+     */
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Total units sold on non-cancelled orders. Reuses the eager-loadable
+     * `sold_quantity` aggregate when present (e.g. the homepage best-sellers
+     * query), otherwise falls back to its own query.
+     */
+    public function soldQuantity(): int
+    {
+        if (array_key_exists('sold_quantity', $this->attributes)) {
+            return (int) $this->attributes['sold_quantity'];
+        }
+
+        return (int) $this->orderItems()
+            ->whereHas('order', fn ($q) => $q->where('status', '!=', 'cancelled'))
+            ->sum('quantity');
+    }
+
+    /**
      * A discount price only counts if it's actually cheaper than the regular
      * price — guards against a stale/mistaken discount_price left equal to or
      * above price still showing a "sale" badge.

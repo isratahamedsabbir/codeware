@@ -28,6 +28,9 @@ return new class extends Migration
             $table->string('logo')->nullable();
             $table->string('status', 20)->default('active');
             $table->unsignedSmallInteger('sort_order')->default(0);
+            // Featured product categories surface on the storefront homepage's
+            // "Shop by category" grid (see the ecommerce home view).
+            $table->boolean('featured')->default(false);
             // Brand soft-deletes only — see the ProductBrand model.
             $table->softDeletes();
             $table->timestamps();

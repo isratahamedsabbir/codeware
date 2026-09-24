@@ -62,7 +62,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" />
                             </svg>
                         </summary>
-                        <div class="absolute right-0 top-full z-50 mt-2 w-52 rounded-md border border-zinc-100 bg-white py-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
+                        <div class="absolute right-0 top-full z-50 mt-2 w-52 rounded-card border border-zinc-100 bg-white py-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
                             <p class="border-b border-zinc-100 px-3.5 py-2">
                                 <span class="block truncate text-sm font-bold text-zinc-800">{{ auth()->user()->name }}</span>
                                 <span class="block truncate text-xs text-gray-500">{{ auth()->user()->email }}</span>

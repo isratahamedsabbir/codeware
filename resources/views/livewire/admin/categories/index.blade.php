@@ -86,8 +86,9 @@
                     <col style="width:22%">
                     <col style="width:12%">
                     <col class="hidden lg:table-column" style="width:7%">
-                    <col style="width:12%">
-                    <col class="hidden lg:table-column" style="width:13%">
+                    <col style="width:11%">
+                    <col style="width:10%">
+                    <col class="hidden lg:table-column" style="width:12%">
                     <col style="width:15%">
                 </colgroup>
                 <thead>
@@ -101,6 +102,7 @@
                             {{ $typeFilter === \App\Models\Category::TYPE_PRODUCT ? 'Icon' : 'Posts' }}
                         </th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
+                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Featured</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Created by</th>
                         <th class="sticky right-0 z-10 bg-zinc-50 border-l border-zinc-100 px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -208,6 +210,19 @@
                                 @endif
                             </td>
 
+                            {{-- Featured — toggles whether the category appears in the
+                                 storefront homepage's "Shop by category" grid. --}}
+                            <td class="px-4 py-2">
+                                <button type="button" wire:click="toggleFeatured({{ $category->id }})"
+                                    title="{{ $category->featured ? 'Remove from homepage' : 'Show on homepage' }}"
+                                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium cursor-pointer border transition-colors {{ $category->featured ? 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100' : 'bg-zinc-50 text-zinc-500 border-zinc-200 hover:bg-zinc-100' }}">
+                                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="{{ $category->featured ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.5a.56.56 0 0 1 1.04 0l2.13 5.11 5.52.44c.5.04.7.66.32.97l-4.2 3.6 1.28 5.39a.56.56 0 0 1-.84.61L12 16.96l-4.73 2.86a.56.56 0 0 1-.84-.61l1.28-5.39-4.2-3.6a.56.56 0 0 1 .32-.97l5.52-.44 2.13-5.11Z" />
+                                    </svg>
+                                    {{ $category->featured ? 'Featured' : 'Not featured' }}
+                                </button>
+                            </td>
+
                             {{-- Created by --}}
                             <td class="hidden lg:table-cell px-4 py-2 text-sm text-zinc-500">
                                 {{ $category->creator?->name ?? '—' }}
@@ -228,7 +243,7 @@
 
                         </tr>
                         @if ($viewingId === $category->id)
-                            <x-admin-row-details colspan="9">
+                            <x-admin-row-details colspan="10">
                                 @if ($typeFilter === \App\Models\Category::TYPE_PRODUCT)
                                     <x-admin-row-details.item label="Icon">
                                         @if ($category->icon)
@@ -243,7 +258,7 @@
                         @endif
                     @empty
                         <tr>
-                            <td colspan="9" class="px-6 py-16 text-center">
+                            <td colspan="10" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />

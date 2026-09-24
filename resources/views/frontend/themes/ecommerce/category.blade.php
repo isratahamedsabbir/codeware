@@ -52,7 +52,7 @@
         <section id="{{ $section->name }}" class="mb-10">
             <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach ($section->localizedCards() as $card)
-                    <div class="group overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm">
+                    <div class="group overflow-hidden rounded-card border border-zinc-100 bg-white shadow-sm">
                         @if ($card['image'])
                             <div class="relative aspect-square overflow-hidden bg-zinc-100">
                                 <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}" class="h-full w-full object-cover">
@@ -93,7 +93,7 @@
                 {{ $products->links() }}
             </div>
         @else
-            <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200 py-24 text-center">
+            <div class="flex flex-col items-center justify-center rounded-card border border-dashed border-zinc-200 py-24 text-center">
                 <h2 class="text-lg font-semibold text-zinc-900">{{ __('No products in this category yet') }}</h2>
                 <a href="{{ route('shop') }}" class="mt-5 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">
                     {{ __('View all products') }}

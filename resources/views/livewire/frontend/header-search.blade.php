@@ -27,7 +27,7 @@
 
     @if ($suggestions !== [])
         <div x-show="open" x-transition
-            class="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-md border border-zinc-100 bg-white shadow-[0_8px_24px_rgba(0,0,0,0.12)]">
+            class="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-card border border-zinc-100 bg-white shadow-[0_8px_24px_rgba(0,0,0,0.12)]">
             <ul class="max-h-80 overflow-y-auto py-1">
                 @foreach ($suggestions as $suggestion)
                     <li>

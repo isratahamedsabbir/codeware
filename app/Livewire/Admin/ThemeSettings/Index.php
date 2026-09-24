@@ -289,6 +289,12 @@ class Index extends Component
             'home_hero_image',
             'home_promo_banner_1',
             'home_promo_banner_2',
+            'popup_enabled',
+            'popup_image',
+            'popup_title',
+            'popup_description',
+            'popup_button_label',
+            'popup_button_url',
         ];
     }
 

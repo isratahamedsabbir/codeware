@@ -66,6 +66,16 @@ class PaymentGatewaySeeder extends Seeder
                     'domain' => Setting::get('applepay_domain', ''),
                 ],
             ],
+            [
+                'code' => 'googlepay',
+                'name' => 'Google Pay',
+                'mode' => null,
+                'credentials' => [
+                    'merchant_id' => Setting::get('googlepay_merchant_id', ''),
+                    'merchant_name' => Setting::get('googlepay_merchant_name', ''),
+                    'domain' => Setting::get('googlepay_domain', ''),
+                ],
+            ],
         ];
 
         foreach ($gateways as $index => $gateway) {

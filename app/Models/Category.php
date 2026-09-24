@@ -34,7 +34,14 @@ class Category extends Model
 
     public array $translatable = ['name', 'description'];
 
-    protected $fillable = ['type', 'parent_id', 'name', 'description', 'icon', 'sort_order', 'status'];
+    protected $fillable = ['type', 'parent_id', 'name', 'description', 'icon', 'sort_order', 'status', 'featured'];
+
+    protected function casts(): array
+    {
+        return [
+            'featured' => 'boolean',
+        ];
+    }
 
     /**
      * `slug` is a virtual accessor, not a real column read directly — proxies

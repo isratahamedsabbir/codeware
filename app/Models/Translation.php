@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\DatabaseTranslationLoader;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -45,6 +46,8 @@ class Translation extends Model
      */
     public static function flushCache(?string $locale = null): void
     {
+        DatabaseTranslationLoader::reset();
+
         $locales = $locale
             ? [$locale]
             : static::query()->distinct()->pluck('locale')->all();
@@ -52,6 +55,7 @@ class Translation extends Model
         $groups = static::query()->distinct()->pluck('group')->all();
 
         foreach ($locales as $code) {
+            Cache::forget("translations:groups:{$code}");
             foreach ($groups as $group) {
                 Cache::forget(static::cacheKey($code, $group));
             }

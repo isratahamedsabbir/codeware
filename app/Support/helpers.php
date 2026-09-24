@@ -35,10 +35,14 @@ if (! function_exists('format_money')) {
      * "currency_symbol" setting (settings group "currency"), falling back to
      * ৳, matching the Admin Orders/Reports and ProductLabel views. Trailing
      * ".00" is stripped so whole amounts read cleanly on the storefront.
+     *
+     * Decimals honour the "decimal_places" currency setting (0 = whole numbers);
+     * pass an explicit $decimals to override the site-wide value.
      */
-    function format_money(mixed $amount, int $decimals = 2): string
+    function format_money(mixed $amount, ?int $decimals = null): string
     {
         $symbol = Setting::get('currency_symbol', '৳');
+        $decimals ??= (int) Setting::get('decimal_places', 2);
         $formatted = number_format((float) $amount, $decimals);
 
         if ($decimals > 0) {

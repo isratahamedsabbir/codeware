@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\Cart;
+use Illuminate\Support\Facades\URL;
 use Livewire\Livewire;
 
 use function Pest\Laravel\get;
@@ -158,6 +159,32 @@ it('shows the confirmation page only for the order placed in this session', func
         ->assertSee('Order placed');
 
     get('/order-confirmation/ORD-AAAAAAAA')->assertRedirect(route('shop'));
+});
+
+it('offers a working invoice download on the order confirmation page', function () {
+    $product = Product::factory()->published()->create(['name' => ['en' => 'Invoice Item', 'bn' => ''], 'quantity' => 5, 'price' => 300]);
+    pairPageFor($product, 'product', 'invoice-item', User::factory()->create()->id);
+    Cart::add($product->id, 1);
+
+    Livewire::test(Checkout::class)
+        ->set('customer_name', 'Jane Doe')
+        ->set('customer_email', 'jane@example.com')
+        ->set('customer_phone', '01712345678')
+        ->set('shipping_address', '123 Main St, Dhaka')
+        ->call('placeOrder');
+
+    $order = Order::sole();
+    $downloadUrl = URL::signedRoute('invoices.public.download', ['order' => $order->order_number]);
+
+    get(route('checkout.confirmation', $order->order_number))
+        ->assertOk()
+        ->assertSee('Download invoice (PDF)')
+        ->assertSee($downloadUrl, false)
+        ->assertSee(URL::signedRoute('invoices.public.show', ['order' => $order->order_number]), false);
+
+    get($downloadUrl)
+        ->assertOk()
+        ->assertHeader('content-type', 'application/pdf');
 });
 
 it('blocks checkout while the shop is closed', function () {

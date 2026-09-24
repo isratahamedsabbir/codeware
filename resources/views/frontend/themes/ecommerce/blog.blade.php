@@ -43,7 +43,7 @@
     @if ($posts->isNotEmpty())
         <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             @foreach ($posts as $post)
-                <article class="group flex flex-col overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+                <article class="group flex flex-col overflow-hidden rounded-card border border-zinc-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
                     <a href="{{ route('blog.post', $post->slug) }}" class="flex flex-1 flex-col">
                         <div class="relative aspect-[16/10] overflow-hidden bg-zinc-100">
                             @if ($post->featured_image)
@@ -83,7 +83,7 @@
             {{ $posts->links() }}
         </div>
     @else
-        <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200 py-24 text-center">
+        <div class="flex flex-col items-center justify-center rounded-card border border-dashed border-zinc-200 py-24 text-center">
             <h2 class="text-lg font-semibold text-zinc-900">{{ __('No posts published yet') }}</h2>
             <a href="{{ route('shop') }}" class="mt-5 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">
                 {{ __('Continue shopping') }}

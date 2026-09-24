@@ -35,7 +35,7 @@
             @include('frontend.themes.ecommerce.account.partials.account-nav')
 
             <div class="min-w-0 flex-1 space-y-6">
-                <section class="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+                <section class="overflow-hidden rounded-card border border-zinc-200 bg-white">
                     <div class="border-b border-zinc-100 px-5 py-4">
                         <h2 class="text-sm font-bold uppercase tracking-wide text-zinc-500">{{ __('Order items') }}</h2>
                     </div>
@@ -115,7 +115,7 @@
                 </section>
 
                 <div class="grid gap-6 sm:grid-cols-2">
-                    <section class="rounded-lg border border-zinc-200 bg-white p-5">
+                    <section class="rounded-card border border-zinc-200 bg-white p-5">
                         <h2 class="text-sm font-bold uppercase tracking-wide text-zinc-500">{{ __('Shipping') }}</h2>
                         @if ($order->shipping_method)
                             <p class="mt-3 text-sm font-semibold text-zinc-800">{{ $order->shipping_method }}</p>
@@ -132,7 +132,7 @@
                         @endif
                     </section>
 
-                    <section class="rounded-lg border border-zinc-200 bg-white p-5">
+                    <section class="rounded-card border border-zinc-200 bg-white p-5">
                         <h2 class="text-sm font-bold uppercase tracking-wide text-zinc-500">{{ __('Payment') }}</h2>
                         <div class="mt-3 space-y-2 text-sm">
                             <div class="flex items-center justify-between">
@@ -167,7 +167,7 @@
                 </div>
 
                 @if ($order->notes)
-                    <section class="rounded-lg border border-zinc-200 bg-white p-5">
+                    <section class="rounded-card border border-zinc-200 bg-white p-5">
                         <h2 class="text-sm font-bold uppercase tracking-wide text-zinc-500">{{ __('Notes') }}</h2>
                         <p class="mt-3 text-sm leading-relaxed text-zinc-700">{{ $order->notes }}</p>
                     </section>

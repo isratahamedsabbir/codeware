@@ -325,6 +325,30 @@ it('filters the shop by price range and product type', function () {
         ->assertDontSee('Range Mid');
 });
 
+it('auto-applies the price range and lists every active filter as a removable chip', function () {
+    $brand = ProductBrand::factory()->create(['name' => ['en' => 'Chip Brand', 'bn' => '']]);
+    $tag = Tag::create(['name' => ['en' => 'Chiptag', 'bn' => ''], 'status' => 'active']);
+    $product = storefrontProduct('chip-mid', ['name' => ['en' => 'Chip Mid', 'bn' => ''], 'price' => 50, 'brand_id' => $brand->id]);
+    $product->tags()->attach($tag);
+    storefrontProduct('chip-cheap', ['name' => ['en' => 'Chip Cheap', 'bn' => ''], 'price' => 10]);
+
+    $html = get('/shop?min_price=20&max_price=80&brand=chip_brand&tag=chiptag&type=physical&search=Chip')
+        ->assertOk()
+        ->assertSee('Chip Mid')
+        ->assertDontSee('Chip Cheap')
+        // The price form submits itself — there's no Apply button any more.
+        ->assertDontSee('Apply price')
+        ->assertSee('requestSubmit()', false)
+        ->assertSee('Clear all')
+        ->getContent();
+
+    // Removing the brand chip keeps every other filter in place.
+    expect($html)->toContain('Chip Brand')
+        ->and($html)->toContain('#Chiptag')
+        ->and($html)->toContain('Search: Chip')
+        ->and($html)->toContain(e(url('/shop?min_price=20&max_price=80&tag=chiptag&type=physical&search=Chip')));
+});
+
 it('renders attribute facets and price/type filters in the shop sidebar', function () {
     $product = storefrontProduct('facet-item', ['name' => ['en' => 'Facet Item', 'bn' => '']]);
     $product->variations = [

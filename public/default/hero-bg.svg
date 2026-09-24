@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="600" viewBox="0 0 1920 600" role="img" aria-label="Hero banner background">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#045b30"/>
+      <stop offset="55%" stop-color="#063f22"/>
+      <stop offset="100%" stop-color="#022a16"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="0.15" cy="0.1" r="0.8">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="0.9" cy="0.85" r="0.9">
+      <stop offset="0%" stop-color="#f7941d" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#f7941d" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="600" fill="url(#bg)"/>
+  <rect width="1920" height="600" fill="url(#glow1)"/>
+  <rect width="1920" height="600" fill="url(#glow2)"/>
+  <circle cx="1560" cy="120" r="240" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="2"/>
+  <circle cx="1700" cy="420" r="120" fill="none" stroke="#ffffff" stroke-opacity="0.07" stroke-width="1.5"/>
+  <path d="M0 500 C 340 430, 620 560, 960 500 S 1500 430, 1920 490 L 1920 600 L 0 600 Z" fill="#ffffff" fill-opacity="0.035"/>
+  <g fill="#ffffff" fill-opacity="0.06">
+    <circle cx="180" cy="180" r="4"/><circle cx="320" cy="120" r="3"/>
+    <circle cx="480" cy="200" r="5"/><circle cx="620" cy="140" r="3"/>
+    <circle cx="760" cy="190" r="4"/><circle cx="900" cy="120" r="3"/>
+    <circle cx="1040" cy="200" r="4"/><circle cx="1200" cy="130" r="3"/>
+    <circle cx="1340" cy="190" r="5"/><circle cx="1480" cy="150" r="3"/>
+  </g>
+</svg>

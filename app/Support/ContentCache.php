@@ -14,14 +14,25 @@ use Illuminate\Support\Facades\Cache;
  */
 class ContentCache
 {
+    /**
+     * Request-scoped memo — remember() reads the version counter for every key
+     * it touches, and with a database cache store that's a SELECT per read.
+     * Keyed by the cache repository instance so it dies with the bootstrap
+     * that owns the cache (per PHP-FPM request, per app instance in tests).
+     */
+    private static array $version = [];
+
     public static function version(): int
     {
-        return (int) Cache::rememberForever('content:cache-version', fn () => 1);
+        $key = spl_object_id(Cache::getFacadeRoot());
+
+        return self::$version[$key] ??= (int) Cache::rememberForever('content:cache-version', fn () => 1);
     }
 
     public static function bust(): void
     {
         Cache::forever('content:cache-version', self::version() + 1);
+        self::$version = [];
     }
 
     /**

@@ -29,7 +29,7 @@
             @include('frontend.themes.ecommerce.account.partials.account-nav')
 
             <div class="w-full max-w-xl flex-1">
-                <div class="rounded-lg border border-zinc-200 bg-white p-6">
+                <div class="rounded-card border border-zinc-200 bg-white p-6">
                     <livewire:frontend.account.profile />
                 </div>
             </div>

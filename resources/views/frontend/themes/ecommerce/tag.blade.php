@@ -47,7 +47,7 @@
                 {{ $products->links() }}
             </div>
         @else
-            <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200 py-24 text-center">
+            <div class="flex flex-col items-center justify-center rounded-card border border-dashed border-zinc-200 py-24 text-center">
                 <h2 class="text-lg font-semibold text-zinc-900">{{ __('No products with this tag yet') }}</h2>
                 <a href="{{ route('shop') }}" class="mt-5 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">
                     {{ __('View all products') }}

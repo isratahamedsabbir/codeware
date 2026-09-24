@@ -126,6 +126,16 @@ class Checkout extends Component
     }
 
     /**
+     * Picking a different shipping method re-prices the summary straight away.
+     */
+    public function updatedShippingMethodId(): void
+    {
+        [$this->shippingLabel, $this->shipping] = $this->currentShipping();
+
+        $this->total = round($this->subtotal + $this->vat + (float) $this->shipping, 2);
+    }
+
+    /**
      * The selected method's [label, cost] — [null, 0] when nothing is selected
      * (or no methods are configured at all).
      *

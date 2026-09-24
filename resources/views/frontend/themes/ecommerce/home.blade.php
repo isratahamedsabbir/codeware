@@ -21,6 +21,7 @@
         ->get();
 
     $homeCategories = \App\Models\ProductCategory::active()
+        ->where('featured', true)
         ->with(['page', 'parent'])
         ->withCount(['products' => fn ($q) => $q->active()])
         ->orderBy('sort_order')
@@ -38,6 +39,17 @@
         ->latest()
         ->limit(8)
         ->get();
+
+    // Ranked by total units sold on non-cancelled orders.
+    $bestSellers = \App\Models\Product::active()
+        ->with(['categories.page', 'brand', 'tags', 'page'])
+        ->withSum([
+            'orderItems as sold_quantity' => fn ($q) => $q->whereHas('order', fn ($o) => $o->where('status', '!=', 'cancelled')),
+        ], 'quantity')
+        ->whereHas('orderItems', fn ($q) => $q->whereHas('order', fn ($o) => $o->where('status', '!=', 'cancelled')))
+        ->orderByDesc('sold_quantity')
+        ->limit(8)
+        ->get();
 @endphp
 
 @include('frontend.themes.ecommerce.partials.header')
@@ -45,7 +57,7 @@
 <main>
     <div class="mx-auto w-full max-w-7xl px-4 sm:px-6">
         <section class="mt-6 grid w-full grid-cols-1 gap-4 lg:h-[440px] lg:grid-cols-3">
-            <a href="{{ route('shop') }}" class="relative block h-[300px] overflow-hidden rounded-lg lg:col-span-2 lg:h-full">
+            <a href="{{ route('shop') }}" class="relative block h-[300px] overflow-hidden rounded-card lg:col-span-2 lg:h-full">
                 @if ($heroImage)
                     <img src="{{ $heroImage }}" alt="{{ $siteName }}"
                         class="h-full w-full object-cover">
@@ -77,7 +89,7 @@
                     ['image' => $promoImage1, 'label' => __('New arrivals')],
                     ['image' => $promoImage2, 'label' => __('Best deals')],
                 ] as $promo)
-                    <a href="{{ route('shop') }}" class="relative block h-1/2 overflow-hidden rounded-lg">
+                    <a href="{{ route('shop') }}" class="relative block h-1/2 overflow-hidden rounded-card">
                         @if ($promo['image'])
                             <img src="{{ $promo['image'] }}" alt="{{ $promo['label'] }}" class="h-full w-full object-cover">
                             <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
@@ -103,11 +115,11 @@
                     <a href="{{ route('shop') }}" class="shrink-0 text-sm font-semibold text-brand hover:underline">{{ __('View all') }} →</a>
                 </div>
 
-                <div class="mt-5 rounded-xl bg-gray-100 p-3 md:p-4">
+                <div class="mt-5 rounded-card bg-gray-100 p-3 md:p-4">
                     <div class="grid grid-cols-3 gap-2.5 sm:grid-cols-2 md:grid-cols-5 md:gap-4 lg:grid-cols-6">
                         @foreach ($homeCategories as $category)
                             <a href="{{ route('shop.category', $category->slug) }}"
-                                class="flex h-[104px] flex-col items-center justify-center gap-1.5 rounded-lg bg-white p-2.5 text-center shadow-sm transition hover:shadow-md md:h-[131px] md:p-3">
+                                class="flex h-[104px] flex-col items-center justify-center gap-1.5 rounded-card bg-white p-2.5 text-center shadow-sm transition hover:shadow-md md:h-[131px] md:p-3">
                                 @if ($category->icon)
                                     <img src="{{ $category->icon }}" alt="" class="h-[50px] w-[50px] rounded-lg object-contain">
                                 @else
@@ -143,21 +155,15 @@
         </section>
     @endif
 
-    @if ($homeBrands->isNotEmpty())
+    @if ($bestSellers->isNotEmpty())
         <section class="mx-auto max-w-7xl px-4 pt-10 sm:px-6">
             @include('frontend.themes.ecommerce.partials.section-heading', [
-                'title' => __('Shop by brand'),
+                'title' => __('Best sellers'),
+                'subtitle' => __('Most loved by our customers'),
             ])
-            <div class="grid grid-cols-2 gap-3 md:grid-cols-5 md:gap-4">
-                @foreach ($homeBrands as $brand)
-                    <a href="{{ route('shop.brand', $brand->slug) }}"
-                        class="flex min-h-[64px] items-center justify-center rounded-md bg-white p-4 shadow-sm transition hover:shadow-md {{ $brand->logo ? 'grayscale hover:grayscale-0' : '' }}">
-                        @if ($brand->logo)
-                            <img src="{{ $brand->logo }}" alt="{{ $brand->name }}" class="max-h-12 w-auto object-contain">
-                        @else
-                            <span class="text-center text-sm font-bold uppercase tracking-wide text-zinc-700">{{ $brand->name }}</span>
-                        @endif
-                    </a>
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4 xl:grid-cols-5">
+                @foreach ($bestSellers as $product)
+                    @include('frontend.themes.ecommerce.partials.product-card', ['product' => $product])
                 @endforeach
             </div>
         </section>
@@ -177,6 +183,26 @@
         </section>
     @endif
 
+    @if ($homeBrands->isNotEmpty())
+        <section class="mx-auto max-w-7xl px-4 pt-10 sm:px-6">
+            @include('frontend.themes.ecommerce.partials.section-heading', [
+                'title' => __('Shop by brand'),
+            ])
+            <div class="grid grid-cols-2 gap-3 md:grid-cols-5 md:gap-4">
+                @foreach ($homeBrands as $brand)
+                    <a href="{{ route('shop.brand', $brand->slug) }}"
+                        class="flex min-h-[64px] items-center justify-center rounded-card bg-white p-4 shadow-sm transition hover:shadow-md {{ $brand->logo ? 'grayscale hover:grayscale-0' : '' }}">
+                        @if ($brand->logo)
+                            <img src="{{ $brand->logo }}" alt="{{ $brand->name }}" class="max-h-12 w-auto object-contain">
+                        @else
+                            <span class="text-center text-sm font-bold uppercase tracking-wide text-zinc-700">{{ $brand->name }}</span>
+                        @endif
+                    </a>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
     @foreach ($sections as $section)
         @continue(blank($section->localizedCards()))
 
@@ -184,7 +210,7 @@
             @include('frontend.themes.ecommerce.partials.section-heading', ['title' => $section->name])
             <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4">
                 @foreach ($section->localizedCards() as $card)
-                    <div class="group overflow-hidden rounded-md bg-white shadow-sm transition hover:shadow-md">
+                    <div class="group overflow-hidden rounded-card bg-white shadow-sm transition hover:shadow-md">
                         @if ($card['image'])
                             <div class="relative aspect-[4/3] overflow-hidden bg-zinc-100">
                                 <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}"
