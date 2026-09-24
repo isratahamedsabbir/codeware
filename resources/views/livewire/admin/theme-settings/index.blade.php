@@ -275,32 +275,43 @@
         description="Copy and imagery the homepage of your theme renders on the public site."
         collapsible :collapsed="true">
 
-        <div class="space-y-7">
+        {{-- Laid out exactly like the storefront's top banner row — the hero on
+             the left, the two promo tiles stacked on the right — so it's obvious
+             which upload lands where. Each box keeps a label chip even once an
+             image is set, and the hero headline is edited in place on the hero. --}}
+        @php
+            $bannerChip = 'pointer-events-none absolute left-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-md bg-zinc-900/75 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm backdrop-blur';
+        @endphp
 
+        <div class="grid grid-cols-1 gap-4 lg:h-[26rem] lg:grid-cols-3 lg:grid-rows-2">
             {{-- Hero --}}
-            <div>
-                <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-400">Hero Banner</p>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
-                    <div class="lg:col-span-1">
-                        <flux:textarea wire:model="settings.site_tagline" class="h-44 resize-none"
-                            placeholder="e.g. Your one-stop shop for everything" />
-                    </div>
-                    <div class="lg:col-span-2">
-                        <x-media-picker model="settings.home_hero_image" label="Hero Image" size-hint="1920 × 600" preview dropzone drop-height="h-44"
-                            only-images mimes="jpg,jpeg,png,gif,webp" :max-size-mb="4" placeholder="Choose from the library" />
-                    </div>
-                </div>
+            <div class="relative lg:col-span-2 lg:row-span-2">
+                <x-media-picker model="settings.home_hero_image" label="Hero banner" size-hint="1920 × 600" preview dropzone drop-height="h-64 lg:h-[26rem]"
+                    only-images mimes="jpg,jpeg,png,gif,webp" :max-size-mb="4" placeholder="Choose from the library" />
+                <span class="{{ $bannerChip }}">
+                    <flux:icon.photo variant="micro" class="size-3.5" />
+                    Hero banner <span class="font-normal text-white/60">· 1920 × 600</span>
+                </span>
             </div>
 
-            {{-- Promo Banners --}}
-            <div>
-                <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-400">Promo Banners</p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <x-media-picker model="settings.home_promo_banner_1" label="Promo Banner 1" size-hint="1200 × 400" preview dropzone drop-height="h-40"
-                        only-images mimes="jpg,jpeg,png,gif,webp" :max-size-mb="4" placeholder="Choose from the library" />
-                    <x-media-picker model="settings.home_promo_banner_2" label="Promo Banner 2" size-hint="1200 × 400" preview dropzone drop-height="h-40"
-                        only-images mimes="jpg,jpeg,png,gif,webp" :max-size-mb="4" placeholder="Choose from the library" />
-                </div>
+            {{-- Promo 1 — "New arrivals" tile --}}
+            <div class="relative">
+                <x-media-picker model="settings.home_promo_banner_1" label="New arrivals" size-hint="1200 × 400" preview dropzone drop-height="h-44 lg:h-[12.5rem]"
+                    only-images mimes="jpg,jpeg,png,gif,webp" :max-size-mb="4" placeholder="Choose from the library" />
+                <span class="{{ $bannerChip }}">
+                    <flux:icon.photo variant="micro" class="size-3.5" />
+                    Promo · New arrivals <span class="font-normal text-white/60">· 1200 × 400</span>
+                </span>
+            </div>
+
+            {{-- Promo 2 — "Best deals" tile --}}
+            <div class="relative">
+                <x-media-picker model="settings.home_promo_banner_2" label="Best deals" size-hint="1200 × 400" preview dropzone drop-height="h-44 lg:h-[12.5rem]"
+                    only-images mimes="jpg,jpeg,png,gif,webp" :max-size-mb="4" placeholder="Choose from the library" />
+                <span class="{{ $bannerChip }}">
+                    <flux:icon.photo variant="micro" class="size-3.5" />
+                    Promo · Best deals <span class="font-normal text-white/60">· 1200 × 400</span>
+                </span>
             </div>
         </div>
     </x-admin-section-card>
