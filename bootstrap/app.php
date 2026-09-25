@@ -5,6 +5,7 @@ use App\Http\Middleware\EnsureUserIsNotBlocked;
 use App\Http\Middleware\LogAdminActivity;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RequireFeature;
+use App\Http\Middleware\ScopeSessionCookieToHost;
 use App\Http\Middleware\SetLocale;
 use App\Support\UnauthorizedAccessNotifier;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -58,6 +59,10 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Per-host session cookie name — see the middleware for why host-only
+        // cookies alone weren't enough. Prepended so it runs before StartSession.
+        $middleware->prependToGroup('web', ScopeSessionCookieToHost::class);
+
         // Applies the globally configured locale. Appended to `web` (not `api`) because
         // the public API resolves its locale from the ?locale= query parameter instead.
         $middleware->appendToGroup('web', SetLocale::class);

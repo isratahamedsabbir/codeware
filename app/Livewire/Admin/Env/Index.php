@@ -93,6 +93,9 @@ class Index extends Component
                 // already exist; this only changes which host Laravel routes to
                 // App\Livewire\Vendor\* and where vendor.* URLs point.
                 'VENDOR_URL' => ['label' => 'Vendor Portal URL', 'type' => 'text'],
+                // Delivery Portal subdomain — same idea as VENDOR_URL, for
+                // App\Livewire\Delivery\* (e.g. https://deliveryboy.codeware.test).
+                'DELIVERY_URL' => ['label' => 'Delivery Portal URL', 'type' => 'text'],
                 // 'database'/'file' work on any server with no extra setup; 'redis' is
                 // faster but only picked when the server actually has one — saveEnv()
                 // refuses to save 'redis' here unless it can reach it first.
@@ -142,6 +145,7 @@ class Index extends Component
             'env.APP_URL' => 'required|url',
             'env.FRONTEND_URL' => 'nullable|url',
             'env.VENDOR_URL' => 'nullable|url',
+            'env.DELIVERY_URL' => 'nullable|url',
             'env.CACHE_STORE' => 'required|in:database,file,redis',
             'env.GOOGLE_CLIENT_ID' => 'nullable|string',
             'env.GOOGLE_CLIENT_SECRET' => 'nullable|string',
@@ -219,7 +223,7 @@ class Index extends Component
 
         Artisan::call('config:clear');
 
-        // VENDOR_URL controls which host the Vendor Portal route group binds to
+        // VENDOR_URL/DELIVERY_URL control which host each portal's route group binds to
         // (see bootstrap/app.php) — if routes are ever cached (route:cache, as a
         // production deploy might run), that cache would keep serving the old
         // host until cleared here too.

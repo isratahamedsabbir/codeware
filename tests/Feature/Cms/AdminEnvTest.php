@@ -308,3 +308,27 @@ it('serves the page at /developer-tools and redirects the old /env path there', 
         ->assertStatus(301)
         ->assertRedirect(config('app.admin_url').'/developer-tools');
 });
+
+it('shows the delivery portal url field', function () {
+    $this->get(route('admin.env'))
+        ->assertOk()
+        ->assertSee('Delivery Portal URL')
+        ->assertSee('id="env-field-DELIVERY_URL"', false);
+});
+
+it('saves the delivery portal url', function () {
+    Livewire::test(EnvIndex::class)
+        ->set('env.DELIVERY_URL', 'https://deliveryboy.example.test')
+        ->call('confirmSaveEnv')
+        ->call('saveEnv')
+        ->assertHasNoErrors();
+
+    expect(EnvFile::get('DELIVERY_URL'))->toBe('https://deliveryboy.example.test');
+});
+
+it('rejects an invalid delivery portal url', function () {
+    Livewire::test(EnvIndex::class)
+        ->set('env.DELIVERY_URL', 'not-a-url')
+        ->call('confirmSaveEnv')
+        ->assertHasErrors(['env.DELIVERY_URL']);
+});

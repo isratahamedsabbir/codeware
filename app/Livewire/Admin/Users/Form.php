@@ -71,7 +71,7 @@ class Form extends Component
             $this->userId = $id;
             $this->name = $user->name;
             $this->email = $user->email;
-            $this->selectedRoles = $user->roles->pluck('name')->toArray();
+            $this->selectedRoles = $user->roles->where('status', 'active')->pluck('name')->toArray();
             $this->vendor_ids = $user->vendors->pluck('id')->all();
             $this->signature = $user->signature;
             $this->existingPhotoPath = $user->photo;
@@ -258,7 +258,7 @@ class Form extends Component
     public function render()
     {
         return view('livewire.admin.users.form', [
-            'roles' => Role::withCount('permissions')->orderBy('name')->get(),
+            'roles' => Role::withCount('permissions')->where('status', 'active')->orderBy('name')->get(),
             'vendors' => ProductVendor::orderBy('name')->get(['id', 'name']),
             'documents' => $this->userId
                 ? UserDocument::where('user_id', $this->userId)->latest()->get()

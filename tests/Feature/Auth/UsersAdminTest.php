@@ -59,6 +59,23 @@ it('renders user form for editing', function () {
         ->assertSet('name', 'Editable User');
 });
 
+it('does not show inactive roles in the user form', function () {
+    $this->role->update(['status' => 'inactive']);
+
+    $html = Livewire::test(UsersForm::class)->html();
+
+    expect($html)->not->toContain('manager');
+});
+
+it('does not pre-select a role that has since become inactive', function () {
+    $user = User::factory()->create()->assignRole('manager');
+    $this->role->update(['status' => 'inactive']);
+
+    Livewire::test(UsersForm::class, ['id' => $user->id])
+        ->assertSet('selectedRoles', [])
+        ->assertDontSee('manager');
+});
+
 it('can create a user with a role', function () {
     Livewire::test(UsersForm::class)
         ->set('name', 'New Person')
