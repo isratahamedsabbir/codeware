@@ -51,7 +51,7 @@
             @endif
         </div>
 
-        <input id="profile-photo" type="file" wire:model="photo" accept="image/jpeg,image/png,image/webp" class="sr-only">
+        <input id="profile-photo" type="file" wire:model="photo" accept="image/jpeg,image/png,image/webp,image/avif" class="sr-only">
     </div>
     @error('photo')
         <p class="-mt-2 text-xs text-red-600">{{ $message }}</p>

@@ -14,7 +14,7 @@
             <flux:error name="name" />
         </flux:field>
 
-        <x-media-picker model="logo" label="Vendor Logo" size-hint="Square, 512 × 512" placeholder="Select vendor logo from library" mimes="jpg,jpeg,png,webp,svg" only-images dropzone />
+        <x-media-picker model="logo" label="Vendor Logo" size-hint="Square, 512 × 512" placeholder="Select vendor logo from library" mimes="jpg,jpeg,png,webp,avif,svg" only-images dropzone />
 
         <flux:field>
             <flux:label>Mobile</flux:label>

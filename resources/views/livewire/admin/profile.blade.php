@@ -24,7 +24,7 @@
                 <div class="flex-1 space-y-2">
                     <flux:field>
                         <flux:label>Profile Photo (square, max 2MB, JPG/PNG/WEBP)</flux:label>
-                        <flux:input type="file" wire:model="photo" accept="image/jpeg,image/png,image/webp" />
+                        <flux:input type="file" wire:model="photo" accept="image/jpeg,image/png,image/webp,image/avif" />
                         <flux:error name="photo" />
                     </flux:field>
                     @if ($user->photo)

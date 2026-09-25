@@ -34,7 +34,7 @@
             <flux:error name="type" />
         </flux:field>
 
-        <x-media-picker model="logo" label="Brand Logo" size-hint="Square, 512 × 512" placeholder="Select brand logo from library" mimes="jpg,jpeg,png,webp,svg" only-images dropzone />
+        <x-media-picker model="logo" label="Brand Logo" size-hint="Square, 512 × 512" placeholder="Select brand logo from library" mimes="jpg,jpeg,png,webp,avif,svg" only-images dropzone />
 
         {{-- Footer --}}
         <div class="-mx-6 -mb-6 mt-6 flex items-center gap-3 flex-wrap rounded-b-lg border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-700 dark:bg-zinc-800/40">

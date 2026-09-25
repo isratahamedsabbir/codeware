@@ -382,6 +382,8 @@ class FrontendController extends Controller
 
         abort_unless($post, 404, 'Unknown post.');
 
+        $this->countView($post);
+
         $sections = $post->page ? CmsSection::cachedForPage($post->page->id) : collect();
 
         $related = Post::published()
@@ -404,6 +406,18 @@ class FrontendController extends Controller
             'currentSlug' => $post->page?->slug ?? 'blog',
             'showVendorLogin' => Frontend::showVendorLogin(),
         ]);
+    }
+
+    /**
+     * Counts a post view, but only once per visitor (keyed by session id) per
+     * 30 minutes, so refreshes and bots don't inflate the counter.
+     */
+    private function countView(Post $post): void
+    {
+        if (cache()->add("post.views.{$post->id}.".session()->getId(), true, now()->addMinutes(30))) {
+            $post->views = (int) $post->views + 1;
+            $post->save();
+        }
     }
 
     /**

@@ -6,6 +6,7 @@ use App\Models\Page;
 use App\Models\Setting;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
+use Illuminate\Support\Facades\URL;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
@@ -125,7 +126,7 @@ it('renders the order detail page in the checkout card style with invoice links'
     actingAs($customer)->get("/account/orders/{$order->order_number}")
         ->assertOk()
         ->assertSeeInOrder([$order->order_number, 'Download invoice (PDF)', 'Order items', 'Spearmint Tea', 'Total', 'Delivery details', '12 Road, Dhaka', 'Payment'], false)
-        ->assertSee(\Illuminate\Support\Facades\URL::signedRoute('invoices.public.download', ['order' => $order->order_number]), false);
+        ->assertSee(URL::signedRoute('invoices.public.download', ['order' => $order->order_number]), false);
 });
 
 it('shows an order detail page only to the customer it belongs to', function () {

@@ -12,13 +12,13 @@
     'dropzone' => false,
     'dropHeight' => null,
     'onlyImages' => false,
-    'mimes' => 'jpg,jpeg,png,gif,webp',
+    'mimes' => 'jpg,jpeg,png,gif,webp,avif',
     'maxSizeMb' => 2,
 ])
 
 @php
     $pickerId = $pickerId ?: 'mp-' . preg_replace('/[^a-z0-9]/', '-', strtolower($model));
-    $extLabels = ['jpg' => 'JPG', 'jpeg' => 'JPG', 'png' => 'PNG', 'gif' => 'GIF', 'webp' => 'WEBP', 'ico' => 'ICO', 'svg' => 'SVG'];
+    $extLabels = ['jpg' => 'JPG', 'jpeg' => 'JPG', 'png' => 'PNG', 'gif' => 'GIF', 'webp' => 'WEBP', 'avif' => 'AVIF', 'ico' => 'ICO', 'svg' => 'SVG'];
     $formatLabels = array_values(array_unique(array_map(fn ($e) => $extLabels[$e] ?? strtoupper($e), explode(',', $mimes))));
     $uploadNote = $onlyImages ? 'Max '.$maxSizeMb.'MB · '.implode(', ', $formatLabels) : null;
     $dropHeightClass = $dropHeight ?: ($uploadNote ? 'h-28' : 'h-24');

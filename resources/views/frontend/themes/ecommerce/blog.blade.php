@@ -71,9 +71,26 @@
                             @if (filled($post->description))
                                 <p class="mt-2 line-clamp-3 text-sm leading-relaxed text-zinc-500">{{ $post->description }}</p>
                             @endif
+                            @if ($post->user?->name)
+                                <p class="mt-3 inline-flex items-center gap-1.5 text-xs text-zinc-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.25a8.25 8.25 0 0 1 15 0" />
+                                    </svg>
+                                    {{ $post->user->name }}
+                                </p>
+                            @endif
                             <div class="mt-auto flex items-center justify-between pt-4 text-xs text-zinc-400">
                                 <span>{{ __(':min min read', ['min' => $post->reading_time]) }}</span>
-                                <span class="font-semibold text-brand group-hover:underline">{{ __('Read more') }} →</span>
+                                <span class="inline-flex items-center gap-3">
+                                    <span class="inline-flex items-center gap-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                        </svg>
+                                        {{ $post->views }}
+                                    </span>
+                                    <span class="font-semibold text-brand group-hover:underline">{{ __('Read more') }} →</span>
+                                </span>
                             </div>
                         </div>
                     </a>

@@ -79,6 +79,8 @@
         @endif
     </article>
 
+    <livewire:frontend.post-reactions :post-id="$post->id" :key="'post-reactions-'.$post->id" />
+
     @foreach ($sections as $section)
         @continue(blank($section->localizedCards()))
 
@@ -106,6 +108,10 @@
             </div>
         </section>
     @endforeach
+
+    @if (\App\Support\Features::enabled('comments'))
+        <livewire:frontend.blog-comments :post-id="$post->id" :key="'post-comments-'.$post->id" />
+    @endif
 
     @if ($related->isNotEmpty())
         <section class="border-t border-zinc-100 py-12">

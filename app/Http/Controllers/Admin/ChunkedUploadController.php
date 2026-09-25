@@ -23,7 +23,7 @@ class ChunkedUploadController extends Controller
 {
     use AuthorizesRequests;
 
-    private const DEFAULT_ALLOWED_EXT = 'jpg,jpeg,png,gif,webp,pdf,mp4,mp3,doc,docx,xls,xlsx';
+    private const DEFAULT_ALLOWED_EXT = 'jpg,jpeg,png,gif,webp,avif,pdf,mp4,mp3,doc,docx,xls,xlsx';
 
     // Large-file path has no per-chunk size cap to speak of (chunks are
     // small by construction), but the assembled file still needs a ceiling

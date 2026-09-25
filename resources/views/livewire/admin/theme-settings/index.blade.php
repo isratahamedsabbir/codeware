@@ -294,7 +294,7 @@
                 <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-400">Content</p>
                 <div class="grid grid-cols-1 gap-5">
                     <x-media-picker model="settings.popup_image" label="Background Image" size-hint="Recommended 800 × 600" preview dropzone drop-height="h-44"
-                        only-images mimes="jpg,jpeg,png,gif,webp" :max-size-mb="4" placeholder="Choose from the library" />
+                        only-images mimes="jpg,jpeg,png,gif,webp,avif" :max-size-mb="4" placeholder="Choose from the library" />
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div class="sm:col-span-2">
                             <flux:label>Title</flux:label>

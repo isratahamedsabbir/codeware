@@ -87,7 +87,7 @@
                     </flux:field>
 
                     <x-media-picker model="icon" label="Icon" size-hint="64 × 64, transparent" placeholder="Select icon image from library"
-                        :picker-id="$iconPickerId" mimes="png,webp" :max-size-mb="1" only-images dropzone />
+                        :picker-id="$iconPickerId" mimes="png,webp,avif" :max-size-mb="1" only-images dropzone />
                 </x-admin-section-card>
             </div>
         @endif

@@ -99,7 +99,7 @@ class Profile extends Component
      */
     private function photoRules(): array
     {
-        return ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'];
+        return ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:2048'];
     }
 
     /**

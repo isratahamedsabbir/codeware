@@ -60,10 +60,10 @@ class Product extends Model
         return 'PRD';
     }
 
-    public array $translatable = ['name', 'description'];
+    public array $translatable = ['name', 'description', 'excerpt', 'specifications'];
 
     protected $fillable = [
-        'name', 'description',
+        'name', 'description', 'excerpt', 'specifications',
         'brand_id', 'vendor_id', 'created_by', 'code', 'sku', 'variations',
         'featured_image', 'status', 'product_type', 'price', 'discount_price', 'quantity', 'charge_shipping', 'is_featured',
         'is_upcoming', 'sort_order', 'warranty_months',

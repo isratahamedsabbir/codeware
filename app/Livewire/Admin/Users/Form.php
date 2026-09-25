@@ -96,7 +96,7 @@ class Form extends Component
 
     public function updatedPhoto(): void
     {
-        $this->validate(['photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048']);
+        $this->validate(['photo' => 'nullable|image|mimes:jpg,jpeg,png,webp,avif|max:2048']);
         $this->removePhoto = false;
     }
 
@@ -108,7 +108,7 @@ class Form extends Component
     public function uploadDocuments(): void
     {
         $this->validate([
-            'newDocuments.*' => 'file|max:10240|mimes:pdf,doc,docx,jpg,jpeg,png,webp',
+            'newDocuments.*' => 'file|max:10240|mimes:pdf,doc,docx,jpg,jpeg,png,webp,avif',
         ]);
 
         foreach ($this->newDocuments as $file) {
@@ -157,7 +157,7 @@ class Form extends Component
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->userId)],
             'password' => ['nullable', 'string', 'min:8'],
-            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'max:2048'],
             'vendor_ids' => ['array'],
             'vendor_ids.*' => ['integer', 'exists:product_vendors,id'],
         ]);

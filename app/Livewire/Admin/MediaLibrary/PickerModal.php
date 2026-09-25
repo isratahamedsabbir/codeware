@@ -65,7 +65,7 @@ class PickerModal extends Component
      * is set — varies per field (a favicon accepts ico/png, a loader gif/png/jpg, a
      * photo field jpg/png/webp, ...), set by whichever <x-media-picker mimes="..."> opened us.
      */
-    public string $restrictMimes = 'jpg,jpeg,png,gif,webp';
+    public string $restrictMimes = 'jpg,jpeg,png,gif,webp,avif';
 
     public int $maxSizeKb = 2048;
 
@@ -79,7 +79,7 @@ class PickerModal extends Component
 
     public string $editDescription = '';
 
-    public function openPicker(string $pickerId, bool $onlyImages = false, string $mimes = 'jpg,jpeg,png,gif,webp', int $maxSizeKb = 2048, bool $multiple = false): void
+    public function openPicker(string $pickerId, bool $onlyImages = false, string $mimes = 'jpg,jpeg,png,gif,webp,avif', int $maxSizeKb = 2048, bool $multiple = false): void
     {
         $this->pickerId = $pickerId;
         $this->onlyImages = $onlyImages;
@@ -267,7 +267,7 @@ class PickerModal extends Component
         $this->validate([
             'uploadFiles.*' => $this->onlyImages
                 ? 'file|max:'.$this->maxSizeKb.'|mimes:'.$this->restrictMimes
-                : 'file|max:10240|mimes:jpg,jpeg,png,gif,webp,pdf,mp4,mp3,doc,docx,xls,xlsx',
+                : 'file|max:10240|mimes:jpg,jpeg,png,gif,webp,avif,pdf,mp4,mp3,doc,docx,xls,xlsx',
         ]);
 
         $lastId = null;

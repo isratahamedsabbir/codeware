@@ -60,6 +60,29 @@ it('stamps the watermark onto the uploaded image when enabled', function () {
     imagedestroy($stored);
 });
 
+it('accepts an avif upload and stamps the watermark onto it', function () {
+    Setting::set('watermark_enabled', '1');
+
+    $image = imagecreatetruecolor(200, 200);
+    imagefill($image, 0, 0, imagecolorallocate($image, 255, 0, 0));
+    $path = tempnam(sys_get_temp_dir(), 'avif');
+    imageavif($image, $path);
+    imagedestroy($image);
+    $file = new UploadedFile($path, 'photo.avif', 'image/avif', null, true);
+    $originalBytes = file_get_contents($path);
+
+    $response = $this->actingAs($this->admin)
+        ->postJson('/api/v1/admin/media', ['file' => $file])
+        ->assertCreated();
+
+    $media = MediaLibrary::findOrFail($response->json('data.id'));
+    $storedBytes = Storage::disk('public')->get($media->path);
+
+    expect($media->mime_type)->toBe('image/avif')
+        ->and($media->file_type)->toBe('image')
+        ->and(md5($storedBytes))->not->toBe(md5($originalBytes));
+});
+
 it('does nothing when no watermark image is configured', function () {
     Setting::set('watermark_enabled', '1');
     Setting::set('watermark_image', '');

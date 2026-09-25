@@ -61,6 +61,7 @@ class DatabaseSeeder extends Seeder
         // After OrderSeeder, so the demo rider gets a few orders assigned.
         $this->call(DeliveryBoySeeder::class);
         $this->call(CommentSeeder::class);
+        $this->call(BlogCommentSeeder::class);
         $this->call(CouponSeeder::class);
         $this->call(DiscountSeeder::class);
         $this->call(VoucherSeeder::class);

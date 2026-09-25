@@ -74,10 +74,10 @@
                             :class="dragging ? 'border-blue-500 bg-blue-50' : 'border-slate-300 bg-slate-50'"
                             class="w-full max-w-2xl rounded-2xl border-2 border-dashed p-16 text-center transition-colors cursor-pointer">
                             @php
-                                $extToAccept = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'gif' => 'image/gif', 'webp' => 'image/webp', 'ico' => 'image/x-icon', 'svg' => 'image/svg+xml'];
-                                $extToLabel = ['jpg' => 'JPG', 'jpeg' => 'JPG', 'png' => 'PNG', 'gif' => 'GIF', 'webp' => 'WEBP', 'ico' => 'ICO', 'svg' => 'SVG'];
+                                $extToAccept = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'gif' => 'image/gif', 'webp' => 'image/webp', 'avif' => 'image/avif', 'ico' => 'image/x-icon', 'svg' => 'image/svg+xml'];
+                                $extToLabel = ['jpg' => 'JPG', 'jpeg' => 'JPG', 'png' => 'PNG', 'gif' => 'GIF', 'webp' => 'WEBP', 'avif' => 'AVIF', 'ico' => 'ICO', 'svg' => 'SVG'];
                                 $restrictExts = explode(',', $restrictMimes);
-                                $allowedExtForChunk = $onlyImages ? $restrictMimes : 'jpg,jpeg,png,gif,webp,pdf,mp4,mp3,doc,docx,xls,xlsx';
+                                $allowedExtForChunk = $onlyImages ? $restrictMimes : 'jpg,jpeg,png,gif,webp,avif,pdf,mp4,mp3,doc,docx,xls,xlsx';
                             @endphp
                             <input type="file" wire:key="picker-upload-{{ $uploadIteration }}"
                                 @change="

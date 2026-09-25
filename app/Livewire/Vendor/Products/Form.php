@@ -195,7 +195,7 @@ class Form extends Component
 
     public function updatedFeaturedImage(): void
     {
-        $this->validate(['featuredImage' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048']);
+        $this->validate(['featuredImage' => 'nullable|image|mimes:jpg,jpeg,png,webp,avif|max:2048']);
     }
 
     public function setProductType(string $type): void

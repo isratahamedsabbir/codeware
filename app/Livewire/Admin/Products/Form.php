@@ -111,6 +111,12 @@ class Form extends Component
 
     public array $description = [];
 
+    /** Short summary for the product — rich text via the Details section. */
+    public array $excerpt = [];
+
+    /** Free-form specification list/table — rich text via the Details section. */
+    public array $specifications = [];
+
     public string $featured_image = '';
 
     public string $featuredImagePickerId = '';
@@ -184,7 +190,7 @@ class Form extends Component
         if ($id) {
             $product = Product::findOrFail($id);
             $this->productId = $id;
-            $this->hydrateTranslatable($product, ['name', 'description']);
+            $this->hydrateTranslatable($product, ['name', 'description', 'excerpt', 'specifications']);
             $this->slug = $product->slug ?? '';
             $this->category_ids = $product->categories->pluck('id')->all();
             $this->tag_ids = $product->tags->pluck('id')->all();
@@ -799,6 +805,8 @@ class Form extends Component
         $rules = array_merge($this->getRules(), $this->translatableRules([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'excerpt' => 'nullable|string',
+            'specifications' => 'nullable|string',
         ]));
         $rules['slug'] = [
             'required', 'string', 'max:255',
@@ -845,6 +853,8 @@ class Form extends Component
         $rules = array_merge($this->getRules(), $this->translatableRules([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'excerpt' => 'nullable|string',
+            'specifications' => 'nullable|string',
         ]));
         $rules['slug'] = [
             'required', 'string', 'max:255',
@@ -891,6 +901,8 @@ class Form extends Component
             'warranty_months' => $this->warranty_months !== '' ? $this->warranty_months : null,
             'is_featured' => $this->is_featured,
             'description' => $this->translatablePayload('description') ?: null,
+            'excerpt' => $this->translatablePayload('excerpt') ?: null,
+            'specifications' => $this->translatablePayload('specifications') ?: null,
             'featured_image' => $this->featured_image ?: null,
             'variations' => $this->cleanedVariations(),
         ];
@@ -931,7 +943,6 @@ class Form extends Component
                 'title' => $this->translatablePayload('name'),
                 'slug' => $this->slug,
                 'status' => $product->status,
-                'description' => $this->translatablePayload('description') ?: null,
                 ...$this->seoPagePayload(),
             ]
         );

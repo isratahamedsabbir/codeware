@@ -25,7 +25,7 @@
                 <div class="flex-1 space-y-2">
                     <flux:field>
                         <flux:label>Profile Photo (square, max 2MB, JPG/PNG/WEBP)</flux:label>
-                        <flux:input type="file" wire:model="photo" accept="image/jpeg,image/png,image/webp" />
+                        <flux:input type="file" wire:model="photo" accept="image/jpeg,image/png,image/webp,image/avif" />
                         <flux:error name="photo" />
                     </flux:field>
                     @if ($user->photo)
@@ -161,7 +161,7 @@
             <div class="p-5 space-y-3">
                 <div>
                     <input type="file" wire:model="newDocuments" multiple
-                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,.avif"
                         class="block w-full text-xs text-zinc-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-zinc-100 file:text-zinc-700 hover:file:bg-zinc-200 cursor-pointer">
                     <flux:error name="newDocuments.*" />
                     @if ($newDocuments)

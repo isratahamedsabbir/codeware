@@ -56,7 +56,7 @@
                     <flux:field>
 <flux:label>OG Image</flux:label>
                         <x-media-picker model="og_image" label="" size-hint="1200 × 630" placeholder="Select OG image from library"
-                            :picker-id="$ogImagePickerId" mimes="jpg,jpeg,png,webp" only-images dropzone />
+                            :picker-id="$ogImagePickerId" mimes="jpg,jpeg,png,webp,avif" only-images dropzone />
                     </flux:field>
                 </div>
             </div>
@@ -81,7 +81,7 @@
                     <flux:field>
 <flux:label>Twitter Image</flux:label>
                         <x-media-picker model="twitter_image" label="" size-hint="1200 × 630" placeholder="Select Twitter image from library"
-                            :picker-id="$twitterImagePickerId" mimes="jpg,jpeg,png,webp" only-images dropzone />
+                            :picker-id="$twitterImagePickerId" mimes="jpg,jpeg,png,webp,avif" only-images dropzone />
                     </flux:field>
                 </div>
             </div>

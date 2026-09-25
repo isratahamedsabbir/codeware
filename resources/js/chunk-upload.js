@@ -14,7 +14,7 @@ document.addEventListener('alpine:init', () => {
     window.Alpine.data('mediaChunkUpload', (config = {}) => ({
         thresholdBytes: 10 * 1024 * 1024,
         chunkSizeBytes: 5 * 1024 * 1024,
-        allowedExt: config.allowedExt || 'jpg,jpeg,png,gif,webp,pdf,mp4,mp3,doc,docx,xls,xlsx',
+        allowedExt: config.allowedExt || 'jpg,jpeg,png,gif,webp,avif,pdf,mp4,mp3,doc,docx,xls,xlsx',
         chunkUploads: [],
 
         isLarge(file) {

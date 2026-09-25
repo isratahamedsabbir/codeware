@@ -289,7 +289,7 @@
                     @elseif ($existingFeaturedImage)
                         <img src="{{ $existingFeaturedImage }}" alt="Current image" class="size-16 rounded-lg object-cover border border-zinc-200 shrink-0">
                     @endif
-                    <flux:input type="file" wire:model="featuredImage" accept="image/jpeg,image/png,image/webp" />
+                    <flux:input type="file" wire:model="featuredImage" accept="image/jpeg,image/png,image/webp,image/avif" />
                 </div>
                 <flux:error name="featuredImage" />
             </x-admin-section-card>

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
  */
 class ImageWatermarker
 {
-    private const WATERMARKABLE_MIMES = ['image/jpeg', 'image/png', 'image/webp'];
+    private const WATERMARKABLE_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
 
     public static function applyIfEnabled(string $disk, string $path, string $mimeType): void
     {
@@ -121,6 +121,7 @@ class ImageWatermarker
             'image/jpeg' => @imagecreatefromjpeg($path),
             'image/png' => @imagecreatefrompng($path),
             'image/webp' => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($path) : false,
+            'image/avif' => function_exists('imagecreatefromavif') ? @imagecreatefromavif($path) : false,
             default => false,
         };
 
@@ -140,6 +141,7 @@ class ImageWatermarker
             'image/jpeg' => imagejpeg($image, $path, 90),
             'image/png' => imagepng($image, $path, 6),
             'image/webp' => function_exists('imagewebp') ? imagewebp($image, $path, 90) : null,
+            'image/avif' => function_exists('imageavif') ? imageavif($image, $path, 80) : null,
             default => null,
         };
     }
@@ -149,6 +151,7 @@ class ImageWatermarker
         return match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
             'jpg', 'jpeg' => 'image/jpeg',
             'webp' => 'image/webp',
+            'avif' => 'image/avif',
             default => 'image/png',
         };
     }

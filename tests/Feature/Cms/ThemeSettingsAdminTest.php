@@ -329,7 +329,7 @@ it('renders the homepage hero as a slider with each slide\'s title, description 
 it('links each promo banner to its own URL, falling back to the shop', function () {
     Livewire::test(ThemeSettings::class)
         ->set('settings.site_theme', 'ecommerce')
-        ->assertSee('Promo banners')
+        ->assertSee('Promo tiles')
         ->assertSee('settings.theme_ecommerce_promo_2_link', false)
         ->set('settings.theme_ecommerce_promo_1_link', '/shop?sort=newest')
         ->set('settings.theme_ecommerce_promo_2_link', 'javascript:alert(1)')

@@ -38,7 +38,7 @@ class Profile extends Component
 
     public function updatedPhoto(): void
     {
-        $this->validate(['photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048']);
+        $this->validate(['photo' => 'nullable|image|mimes:jpg,jpeg,png,webp,avif|max:2048']);
     }
 
     public function updateProfile(): void
@@ -47,7 +47,7 @@ class Profile extends Component
 
         $validated = $this->validate([
             'name' => $this->nameRules(),
-            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp,avif|max:2048',
         ]);
 
         $data = ['name' => $validated['name']];

@@ -41,13 +41,6 @@
                                 placeholder="{{ $language->code === $this->primaryLocale ? 'Product name' : 'Product name ('.($language->native_name ?: $language->name).')' }}" />
                             @if ($language->code === $this->primaryLocale)<flux:error name="name.{{ $language->code }}" />@endif
                         </flux:field>
-
-                        <flux:field>
-                            <flux:label>Description<x-field-hint text="Shown in listings and as a fallback description — the full page content is built separately in the page builder." /></flux:label>
-                            <flux:textarea wire:model.live.debounce.400ms="description.{{ $language->code }}" rows="4"
-                                placeholder="{{ $language->code === $this->primaryLocale ? 'Short product summary' : 'Short product summary ('.($language->native_name ?: $language->name).')' }}" />
-                            @if ($language->code === $this->primaryLocale)<flux:error name="description.{{ $language->code }}" />@endif
-                        </flux:field>
                     </x-admin-locale-panel>
                 @endforeach
 
@@ -152,6 +145,41 @@
             </x-admin-locale-tabs>
         </div>
 
+        {{-- Details: Description, Short Description, Specification — rich editors above the Variations --}}
+        <x-admin-section-card icon="document-text" title="Details" icon-color="bg-emerald-500/10 text-emerald-600"
+            description="Rich-text description, short description and specification for this product."
+            collapsible :collapsed="true">
+            <x-admin-locale-tabs>
+                @foreach (\App\Support\Locale::active() as $language)
+                    <x-admin-locale-panel :code="$language->code" class="space-y-3">
+                        <flux:field>
+                            <flux:label>Description</flux:label>
+                            <livewire:jodit-text-editor wire:model="description.{{ $language->code }}"
+                                :options="['height' => 260]" :identifier="'product-description'.$language->code"
+                                wire:key="product-description-{{ $language->code }}" />
+                            @if ($language->code === $this->primaryLocale)<flux:error name="description.{{ $language->code }}" />@endif
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label>Short Description<x-field-hint text="A brief summary — shown in listings and where a shortened product blurb is needed." /></flux:label>
+                            <livewire:jodit-text-editor wire:model="excerpt.{{ $language->code }}"
+                                :options="['height' => 150]" :identifier="'product-excerpt'.$language->code"
+                                wire:key="product-excerpt-{{ $language->code }}" />
+                            @if ($language->code === $this->primaryLocale)<flux:error name="excerpt.{{ $language->code }}" />@endif
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label>Specification<x-field-hint text="Technical details and key specs — e.g. dimensions, material, capacity." /></flux:label>
+                            <livewire:jodit-text-editor wire:model="specifications.{{ $language->code }}"
+                                :options="['height' => 260]" :identifier="'product-specifications'.$language->code"
+                                wire:key="product-specifications-{{ $language->code }}" />
+                            @if ($language->code === $this->primaryLocale)<flux:error name="specifications.{{ $language->code }}" />@endif
+                        </flux:field>
+                    </x-admin-locale-panel>
+                @endforeach
+            </x-admin-locale-tabs>
+        </x-admin-section-card>
+
         {{-- Variations --}}
         <x-admin-section-card icon="adjustments-horizontal" title="Variations" icon-color="bg-violet-500/10 text-violet-600"
             description="Pick which attributes apply to this product, then check the values that matter (e.g. Color: Red, Blue + Size: Small) — a card for every combination appears automatically, each optionally overriding the base price/stock."
@@ -240,7 +268,7 @@
                         {{-- Image — full-width dashed upload area --}}
                         <div class="px-3 pt-3">
                             <x-media-picker model="variations.{{ $i }}.image" label="Variant Image" size-hint="Square"
-                                placeholder="Add variant image" mimes="jpg,jpeg,png,webp" only-images dropzone
+                                placeholder="Add variant image" mimes="jpg,jpeg,png,webp,avif" only-images dropzone
                                 :picker-id="'variation-image-'.$i" />
                         </div>
 
@@ -360,7 +388,7 @@
             <x-admin-section-card icon="photo" title="Thumbnail Image" icon-color="bg-blue-500/10 text-blue-600"
                 body-class="px-4 py-3" description="Shown in the product catalog. Recommended 800×800px.">
                 <x-media-picker model="featured_image" label="" size-hint="Square, 800 × 800" placeholder="Select featured image"
-                    :picker-id="$featuredImagePickerId" mimes="jpg,jpeg,png,webp" only-images dropzone />
+                    :picker-id="$featuredImagePickerId" mimes="jpg,jpeg,png,webp,avif" only-images dropzone />
             </x-admin-section-card>
 
             {{-- Categories --}}
@@ -690,7 +718,7 @@
                         },
                         openPicker() {
                             window.dispatchEvent(new CustomEvent('open-media-picker', {
-                                detail: { pickerId: this.pickerId, onlyImages: true, mimes: 'jpg,jpeg,png,webp', maxSizeKb: 2048, multiple: true },
+                                detail: { pickerId: this.pickerId, onlyImages: true, mimes: 'jpg,jpeg,png,webp,avif', maxSizeKb: 2048, multiple: true },
                             }));
                         },
                     }"

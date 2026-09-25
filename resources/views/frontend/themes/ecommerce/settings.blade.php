@@ -30,36 +30,71 @@
         @endforeach
     </div>
 
-    <div role="tabpanel" x-show="tab === 'banners'" x-data="{ activeSlide: 0 }" class="space-y-5">
-        {{-- ── Hero slider: the selected slide's image on the left (slide strip
-             under it), its title / description / link on the right. Every
-             slide's picker and fields stay mounted (x-show) so each keeps its
-             Livewire binding while you switch slides. ── --}}
-        <section class="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
-            <header class="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 bg-zinc-50/70 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800/50">
-                <div class="flex items-center gap-2.5">
-                    <span class="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <flux:icon.photo variant="mini" class="size-4" />
-                    </span>
-                    <div>
-                        <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Hero slider</p>
-                        <p class="text-[11px] text-zinc-400">{{ count($heroSlides) }} / {{ \App\Livewire\Admin\ThemeSettings\Index::MAX_HERO_SLIDES }} slides · 1920 × 600 recommended</p>
-                    </div>
-                </div>
-                @if (count($heroSlides) < \App\Livewire\Admin\ThemeSettings\Index::MAX_HERO_SLIDES)
-                    <flux:button size="sm" variant="outline" icon="plus" wire:click="addHeroSlide" x-on:click="activeSlide = {{ count($heroSlides) }}">
-                        Add slide
-                    </flux:button>
-                @endif
-            </header>
+    @php
+        $promoTiles = [
+            ['home_promo_banner_1', 'theme_ecommerce_promo_1_link', 'New arrivals', 'Top tile', '/shop?sort=newest'],
+            ['home_promo_banner_2', 'theme_ecommerce_promo_2_link', 'Best deals', 'Bottom tile', '/shop'],
+        ];
+    @endphp
 
-            <div class="grid grid-cols-1 gap-5 p-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
-                {{-- Image + slide strip --}}
-                <div class="min-w-0 space-y-3">
+    {{-- Banners — laid out exactly like the storefront's homepage header: the
+         hero slider on the left, the two promo tiles stacked beside it. Every
+         slide's picker and fields stay mounted (x-show) so each keeps its
+         Livewire binding while you switch slides. `isolate` keeps the
+         z-indexed cards on the images from rising above the sticky page
+         header and save bar. --}}
+    <section role="tabpanel" x-show="tab === 'banners'" x-data="{ activeSlide: 0 }"
+        class="isolate overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-700 dark:bg-zinc-900">
+        <header class="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 px-5 py-4 dark:border-zinc-700">
+            <div class="flex items-center gap-3">
+                <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <flux:icon.rectangle-group variant="mini" class="size-5" />
+                </span>
+                <div>
+                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Homepage banners</p>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Arranged as they appear on the storefront. Click any area to choose an image.</p>
+                </div>
+            </div>
+        </header>
+
+        {{-- ── Canvas: hero (2/3) + promo tiles (1/3) ── --}}
+        <div class="bg-zinc-50/70 p-5 dark:bg-zinc-800/40">
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                {{-- Hero slider --}}
+                <div class="min-w-0 space-y-3 lg:col-span-2">
+                    <div class="flex items-center justify-between">
+                        <p class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                            Hero slider
+                            <span class="rounded-full bg-zinc-200/70 px-2 py-0.5 text-[10px] font-semibold normal-case tracking-normal text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+                                {{ count($heroSlides) }} / {{ \App\Livewire\Admin\ThemeSettings\Index::MAX_HERO_SLIDES }}
+                            </span>
+                        </p>
+                        <span class="text-[11px] text-zinc-400">1920 × 600</span>
+                    </div>
+
+                    {{-- Each slide's text and link sit on the image itself, where
+                         the storefront shows them. The fields are a sibling of
+                         the picker (not inside its button), so typing never
+                         opens the media library. --}}
                     @foreach ($heroSlides as $i => $slide)
-                        <div wire:key="hero-slide-{{ $i }}" x-show="activeSlide === {{ $i }}" @if ($i > 0) x-cloak @endif>
-                            <x-media-picker model="heroSlides.{{ $i }}.image" label="Slide {{ $i + 1 }} image" size-hint="1920 × 600" preview dropzone drop-height="h-56 lg:h-64"
-                                only-images mimes="jpg,jpeg,png,gif,webp" :max-size-mb="4" placeholder="Choose from the library" />
+                        <div wire:key="hero-slide-{{ $i }}" x-show="activeSlide === {{ $i }}" @if ($i > 0) x-cloak @endif class="relative">
+                            <x-media-picker model="heroSlides.{{ $i }}.image" label="Slide {{ $i + 1 }}" size-hint="1920 × 600" preview dropzone drop-height="h-[29rem]"
+                                only-images mimes="jpg,jpeg,png,gif,webp,avif" :max-size-mb="4" placeholder="Choose from the library" />
+                            @if (filled($slide['image']))
+                                <span class="pointer-events-none absolute left-3 top-3 z-10 rounded-md bg-zinc-900/75 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur">
+                                    Slide {{ $i + 1 }}
+                                </span>
+                            @endif
+
+                            <div class="absolute inset-x-4 bottom-4 z-20 space-y-2">
+                                <div class="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_14rem]">
+                                    <flux:input size="sm" wire:model="heroSlides.{{ $i }}.title" placeholder="Title — e.g. Fresh organic tea" maxlength="120" aria-label="Slide {{ $i + 1 }} title" />
+                                    <flux:input size="sm" wire:model="heroSlides.{{ $i }}.link" icon="link" placeholder="/shop" aria-label="Slide {{ $i + 1 }} link"
+                                        title="A page on this site (e.g. /shop?category=tea) or a full https:// address. Blank opens the Shop page." />
+                                </div>
+                                <flux:textarea wire:model="heroSlides.{{ $i }}.description" rows="2" class="resize-none text-sm"
+                                    placeholder="Description — e.g. Hand-picked leaves, delivered fresh to your door." maxlength="300" aria-label="Slide {{ $i + 1 }} description" />
+                            </div>
                         </div>
                     @endforeach
 
@@ -81,75 +116,65 @@
                                 @if (count($heroSlides) > 1)
                                     <button type="button" title="Remove slide {{ $i + 1 }}"
                                         wire:click="removeHeroSlide({{ $i }})"
-                                        x-on:click="activeSlide = Math.max(0, Math.min(activeSlide, {{ count($heroSlides) - 2 }}))"
+                                        x-on:click="activeSlide = Math.max(0, Math.min(activeSlide, $wire.heroSlides.length - 2))"
                                         class="absolute right-0 top-0 hidden size-5 items-center justify-center rounded-full! bg-white text-red-500 shadow ring-1 ring-zinc-200 group-hover/tab:flex dark:bg-zinc-800 dark:ring-zinc-700">
                                         <flux:icon.x-mark variant="micro" class="size-3" />
                                     </button>
                                 @endif
                             </div>
                         @endforeach
+
+                        @if (count($heroSlides) < \App\Livewire\Admin\ThemeSettings\Index::MAX_HERO_SLIDES)
+                            {{-- Switches to the new slide only once the server has added it —
+                                 switching first leaves no slide to show until the response
+                                 lands, and the hero collapses then grows back. The click
+                                 expressions here and on the remove buttons read the count
+                                 from $wire rather than baking it in: an x-on:click whose text
+                                 changes between renders gets rebound by the morph, and the
+                                 button stops working after the first click. --}}
+                            <div wire:key="hero-tab-add" class="shrink-0 pt-1.5 pr-1.5">
+                                <button type="button" title="Add slide" aria-label="Add slide"
+                                    x-on:click="$wire.addHeroSlide().then(() => activeSlide = $wire.heroSlides.length - 1)"
+                                    class="flex h-12 w-20 flex-col items-center justify-center gap-0.5 rounded-lg! border-2 border-dashed border-zinc-300 text-zinc-400 transition hover:border-primary hover:bg-primary/5 hover:text-primary dark:border-zinc-600">
+                                    <flux:icon.plus variant="mini" class="size-4" />
+                                    <span class="text-[10px] font-semibold leading-none">Add</span>
+                                </button>
+                            </div>
+                        @endif
                     </div>
                 </div>
 
-                {{-- The selected slide's text and link --}}
-                <div class="min-w-0">
-                    <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-400">
-                        Slide <span x-text="activeSlide + 1"></span> content <span class="font-normal normal-case tracking-normal">· optional</span>
-                    </p>
-                    @foreach ($heroSlides as $i => $slide)
-                        <div wire:key="hero-content-{{ $i }}" x-show="activeSlide === {{ $i }}" @if ($i > 0) x-cloak @endif class="space-y-4">
-                            <flux:field>
-                                <flux:label>Title</flux:label>
-                                <flux:input wire:model="heroSlides.{{ $i }}.title" placeholder="e.g. Fresh organic tea" maxlength="120" />
-                            </flux:field>
-                            <flux:field>
-                                <flux:label>Description</flux:label>
-                                <flux:textarea wire:model="heroSlides.{{ $i }}.description" rows="3" class="resize-none"
-                                    placeholder="e.g. Hand-picked leaves, delivered fresh to your door." maxlength="300" />
-                            </flux:field>
-                            <flux:field>
-                                <flux:label>Link<x-field-hint text="A page on this site (e.g. /shop?category=tea) or a full https:// address. Blank opens the Shop page." /></flux:label>
-                                <flux:input wire:model="heroSlides.{{ $i }}.link" icon="link" placeholder="/shop" />
-                            </flux:field>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </section>
-
-        {{-- ── Promo banners: the two tiles beside the hero on the homepage. ── --}}
-        <section class="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
-            <header class="flex items-center gap-2.5 border-b border-zinc-100 bg-zinc-50/70 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800/50">
-                <span class="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <flux:icon.rectangle-group variant="mini" class="size-4" />
-                </span>
-                <div>
-                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Promo banners</p>
-                    <p class="text-[11px] text-zinc-400">The two tiles beside the hero · 1200 × 400 recommended</p>
-                </div>
-            </header>
-
-            <div class="grid grid-cols-1 gap-5 p-4 md:grid-cols-2">
-                @foreach ([
-                    ['home_promo_banner_1', 'theme_ecommerce_promo_1_link', 'New arrivals', 'Top tile'],
-                    ['home_promo_banner_2', 'theme_ecommerce_promo_2_link', 'Best deals', 'Bottom tile'],
-                ] as [$imageKey, $linkKey, $promoLabel, $promoPosition])
-                    <div class="min-w-0 space-y-3">
-                        <div class="flex items-center justify-between">
-                            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-200">{{ $promoLabel }}</p>
-                            <span class="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold text-zinc-500 dark:bg-zinc-800">{{ $promoPosition }}</span>
-                        </div>
-                        <x-media-picker model="settings.{{ $imageKey }}" label="{{ $promoLabel }}" size-hint="1200 × 400" preview dropzone drop-height="h-40"
-                            only-images mimes="jpg,jpeg,png,gif,webp" :max-size-mb="4" placeholder="Choose from the library" />
-                        <flux:field>
-                            <flux:label>Link<x-field-hint text="A page on this site (e.g. /shop?sort=newest) or a full https:// address. Blank opens the Shop page." /></flux:label>
-                            <flux:input wire:model="settings.{{ $linkKey }}" icon="link" placeholder="/shop" />
-                        </flux:field>
+                {{-- Promo tiles — stacked beside the hero on desktop, side by
+                     side under it on smaller screens, as on the storefront. --}}
+                <div class="min-w-0 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Promo tiles</p>
+                        <span class="text-[11px] text-zinc-400">1200 × 400</span>
                     </div>
-                @endforeach
+
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                        @foreach ($promoTiles as [$imageKey, $linkKey, $promoLabel, $promoPosition, $example])
+                            <div class="relative min-w-0">
+                                <x-media-picker model="settings.{{ $imageKey }}" label="{{ $promoLabel }}" size-hint="1200 × 400" preview dropzone drop-height="h-[14rem]"
+                                    only-images mimes="jpg,jpeg,png,gif,webp,avif" :max-size-mb="4" placeholder="Choose from the library" />
+                                @if (filled($settings[$imageKey] ?? null))
+                                    <span class="pointer-events-none absolute left-3 top-3 z-10 rounded-md bg-zinc-900/75 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur">
+                                        {{ $promoLabel }} · {{ $promoPosition }}
+                                    </span>
+                                @endif
+
+                                {{-- The tile's link, on the tile (see the hero fields above). --}}
+                                <div class="absolute inset-x-3 bottom-3 z-20">
+                                    <flux:input size="sm" wire:model="settings.{{ $linkKey }}" icon="link" placeholder="{{ $example }}" aria-label="{{ $promoLabel }} link"
+                                        title="A page on this site or a full https:// address. Blank opens the Shop page." />
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
             </div>
-        </section>
-    </div>
+        </div>
+    </section>
 
     {{-- Colors — one per storefront area. Blank means "use the default"
          (partials/head.blade.php turns each set value into the matching

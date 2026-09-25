@@ -42,7 +42,7 @@
                         <flux:label>OG Image</flux:label>
                         <flux:text class="-mt-1! mb-1 block text-[11px] text-zinc-400">1200×630px</flux:text>
                         <x-media-picker model="settings.seo_og_image" label=""
-                            placeholder="Select OG image from library" mimes="jpg,jpeg,png,webp" only-images dropzone />
+                            placeholder="Select OG image from library" mimes="jpg,jpeg,png,webp,avif" only-images dropzone />
                     </flux:field>
                 </div>
             </div>
@@ -80,7 +80,7 @@
                         <flux:label>Twitter Image</flux:label>
                         <flux:text class="-mt-1! mb-1 block text-[11px] text-zinc-400">1200×675px</flux:text>
                         <x-media-picker model="settings.seo_twitter_image" label=""
-                            placeholder="Select Twitter image from library" mimes="jpg,jpeg,png,webp" only-images dropzone />
+                            placeholder="Select Twitter image from library" mimes="jpg,jpeg,png,webp,avif" only-images dropzone />
                     </flux:field>
                 </div>
             </div>
