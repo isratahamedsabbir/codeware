@@ -227,7 +227,7 @@
                 @endif
             >
                 <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
-                    <h1 class="text-3xl font-extrabold tracking-tight text-sf-heading">{{ $product->name }}</h1>
+                    <h1 class="text-2xl font-extrabold tracking-tight text-sf-heading sm:text-3xl">{{ $product->name }}</h1>
 
                     @if ($product->is_upcoming)
                         <span class="inline-flex shrink-0 items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">{{ __('Upcoming') }}</span>
@@ -251,7 +251,7 @@
                 </p>
 
                 <div class="mt-4 flex items-baseline gap-3">
-                    <span class="text-3xl font-extrabold text-sf-price" x-text="discountLabel || priceLabel">{{ $initial['discountLabel'] ?: $initial['priceLabel'] }}</span>
+                    <span class="text-2xl font-extrabold text-sf-price sm:text-3xl" x-text="discountLabel || priceLabel">{{ $initial['discountLabel'] ?: $initial['priceLabel'] }}</span>
                     <span x-show="discountLabel" @unless ($initial['discountLabel']) x-cloak @endunless
                         class="text-lg text-zinc-400 line-through" x-text="priceLabel">{{ $initial['priceLabel'] }}</span>
                     @if ($discountPercent !== null)
@@ -346,8 +346,16 @@
         </div>
     </div>
 
-    @if (filled($product->description) || filled($product->specifications))
-        <section class="mt-14 max-w-3xl">
+    @php($hasProductDetails = filled($product->description) || filled($product->specifications))
+
+    @if ($hasProductDetails || $advertisement)
+    {{-- Details tabs on the left, the sponsored banner beside them on large screens. --}}
+    <div @class([
+        'mt-10 grid items-start gap-8 sm:mt-14 lg:gap-10',
+        'lg:grid-cols-5' => $hasProductDetails && $advertisement,
+    ])>
+    @if ($hasProductDetails)
+        <section @class(['min-w-0', 'lg:col-span-3' => $advertisement, 'max-w-3xl' => ! $advertisement])>
             <div x-data="{ tab: @js($productDetailTab) }">
                 <div class="flex flex-wrap gap-2" role="tablist" aria-label="{{ __('Product details') }}">
                     @if (filled($product->description))
@@ -392,6 +400,46 @@
                 </div>
             </div>
         </section>
+    @endif
+
+    @if ($advertisement)
+        <aside @class(['min-w-0', 'lg:col-span-2 lg:sticky lg:top-24' => $hasProductDetails, 'mx-auto w-full max-w-5xl' => ! $hasProductDetails])>
+            <a href="{{ route('advertisements.click', $advertisement->code) }}" target="_blank"
+                rel="noopener noreferrer nofollow" class="group block overflow-hidden rounded-card border border-zinc-200 bg-white shadow-sm">
+                <span class="relative block">
+                    @if ($advertisement->image)
+                        <img src="{{ $advertisement->image }}" alt="{{ $advertisement->name }}" loading="lazy"
+                            @class([
+                                'w-full object-cover transition duration-500 group-hover:scale-[1.02]',
+                                $hasProductDetails ? 'aspect-[16/9] lg:aspect-[4/3]' : 'aspect-[21/8]',
+                            ]) />
+                    @endif
+                    <span class="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-600 shadow-sm backdrop-blur">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 1 1 0-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 0 1-1.44-4.282m3.102.069a18.03 18.03 0 0 0-.59-4.59c.18-1.964.597-3.88 1.227-5.68M10.34 15.84a18.046 18.046 0 0 0 3.51.659c3.563.06 6.744 1.507 8.505 3.832.15.195.238.434.256.679.04.574-.387 1.108-.96 1.155-2.129.11-4.899.362-7.707.511M7.5 11.999h.01" />
+                        </svg>
+                        {{ __('Sponsored') }}
+                    </span>
+                </span>
+                @if ($advertisement->name || $advertisement->url)
+                    <span class="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 px-5 py-4 sm:px-6">
+                        @if ($advertisement->name)
+                            <span class="text-sm font-semibold text-sf-heading">{{ $advertisement->name }}</span>
+                        @endif
+                        @if ($advertisement->url)
+                            <span class="text-xs font-medium text-sf-primary">
+                                {{ __('Learn more') }} <span aria-hidden="true">→</span>
+                                @if ($host = parse_url($advertisement->url, PHP_URL_HOST))
+                                    <span class="font-normal text-zinc-400">{{ $host }}</span>
+                                @endif
+                            </span>
+                        @endif
+                    </span>
+                @endif
+            </a>
+        </aside>
+    @endif
+    </div>
     @endif
 
     {{-- Reviews: approved ones for everyone; the form only for buyers. --}}

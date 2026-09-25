@@ -42,20 +42,23 @@ class AdminMenuSeeder extends Seeder
 
         $this->standalone('Services', 'wrench-screwdriver', 'admin.services', 9);
 
-        $this->standalone('Orders', 'shopping-bag', 'admin.orders', 10);
+        // Advertisements — banners shown on the storefront (product page aside).
+        $this->standalone('Advertisements', 'megaphone', 'admin.advertisements', 10);
+
+        $this->standalone('Orders', 'shopping-bag', 'admin.orders', 11);
 
         // Vouchers get their own group — the voucher product list with the
         // record of vouchers actually sold.
-        $this->group('Vouchers', 11, [
+        $this->group('Vouchers', 12, [
             ['Gift Vouchers', 'gift', 'admin.vouchers'],
             ['Voucher Sales', 'banknotes', 'admin.voucher-purchases'],
         ]);
 
-        $this->standalone('Coupons', 'ticket', 'admin.coupons', 12);
+        $this->standalone('Coupons', 'ticket', 'admin.coupons', 13);
 
-        $this->standalone('Discounts', 'receipt-percent', 'admin.discounts', 13);
+        $this->standalone('Discounts', 'receipt-percent', 'admin.discounts', 14);
 
-        $this->group('Library & System', 14, [
+        $this->group('Library & System', 15, [
             ['Settings', 'cog-6-tooth', 'admin.settings'],
             ['Theme Settings', 'swatch', 'admin.theme-settings'],
             ['Developer Tools', 'command-line', 'admin.env'],
@@ -70,29 +73,29 @@ class AdminMenuSeeder extends Seeder
             ['Menu', 'bars-3', 'admin.menu'],
         ]);
 
-        $this->standalone('Contacts', 'inbox', 'admin.contacts', 15);
+        $this->standalone('Contacts', 'inbox', 'admin.contacts', 16);
 
-        $this->standalone('Comments', 'chat-bubble-left-right', 'admin.comments', 16);
+        $this->standalone('Comments', 'chat-bubble-left-right', 'admin.comments', 17);
 
-        $this->standalone('Reviews', 'star', 'admin.reviews', 17);
+        $this->standalone('Reviews', 'star', 'admin.reviews', 18);
 
-        $this->standalone('Subscribers', 'envelope-open', 'admin.subscribers', 18);
+        $this->standalone('Subscribers', 'envelope-open', 'admin.subscribers', 19);
 
-        $this->standalone('Pages', 'document', 'admin.pages', 19);
+        $this->standalone('Pages', 'document', 'admin.pages', 20);
 
-        $this->group('Localization', 20, [
+        $this->group('Localization', 21, [
             ['Languages', 'language', 'admin.languages'],
             ['Translations', 'chat-bubble-left-right', 'admin.translations'],
         ]);
 
-        $this->group('Access Control', 21, [
+        $this->group('Access Control', 22, [
             ['Roles', 'shield-check', 'admin.roles'],
             ['Permissions', 'lock-closed', 'admin.permissions'],
             ['Users', 'users', 'admin.users'],
             ['Vendors', 'briefcase', 'admin.product-vendors'],
         ]);
 
-        $this->group('Location', 22, [
+        $this->group('Location', 23, [
             ['Countries', 'flag', 'admin.countries'],
             ['Divisions', 'map', 'admin.divisions'],
             ['Districts (Zilla)', 'building-library', 'admin.districts'],
@@ -100,14 +103,14 @@ class AdminMenuSeeder extends Seeder
             ['Shipping', 'truck', 'admin.shipping-methods'],
         ]);
 
-        $this->group('Advance', 23, [
+        $this->group('Advance', 24, [
             ['Sitemap', 'map', 'admin.advance.sitemap'],
             ['Robots.txt', 'globe-alt', 'admin.advance.robots'],
             ['Backup', 'archive-box', 'admin.advance.backup'],
             ['Password Generator', 'key', 'admin.advance.password-generator'],
         ]);
 
-        $this->standalone('About', 'building-office', 'admin.about', 24);
+        $this->standalone('About', 'building-office', 'admin.about', 25);
     }
 
     protected function standalone(string $label, string $icon, string $routeName, int $sortOrder): void

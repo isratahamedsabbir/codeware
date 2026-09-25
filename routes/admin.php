@@ -193,6 +193,14 @@ Route::middleware(['auth', 'admin', 'activity-log'])->group(function () {
         Route::get('/services/{id}/edit', App\Livewire\Admin\Services\Form::class)->name('services.edit');
     });
 
+    // Advertisements — its own feature toggle; one active banner shows beside
+    // the storefront product description/specifications section.
+    Route::middleware('feature:advertisements')->group(function () {
+        Route::get('/advertisements', App\Livewire\Admin\Advertisements\Index::class)->name('advertisements');
+        Route::get('/advertisements/create', App\Livewire\Admin\Advertisements\Form::class)->name('advertisements.create');
+        Route::get('/advertisements/{id}/edit', App\Livewire\Admin\Advertisements\Form::class)->name('advertisements.edit');
+    });
+
     // System-only screens — Admin/Super Admin only, not Staff (see access-admin-system gate)
     Route::middleware('can:access-admin-system')->group(function () {
         // Contacts (read-only)

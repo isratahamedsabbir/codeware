@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Advertisement;
 use App\Models\CmsSection;
 use App\Models\Order;
 use App\Models\Page;
@@ -14,6 +15,7 @@ use App\Models\Setting;
 use App\Models\Tag;
 use App\Support\ContentCache;
 use App\Support\Favorites;
+use App\Support\Features;
 use App\Support\Frontend;
 use App\Support\Locale;
 use App\Support\ProductCatalog;
@@ -232,7 +234,22 @@ class FrontendController extends Controller
             'menuItems' => Frontend::menuItems(),
             'currentSlug' => $product->slug,
             'showVendorLogin' => Frontend::showVendorLogin(),
+            'advertisement' => Features::enabled('advertisements') ? Advertisement::displayAd() : null,
         ]);
+    }
+
+    /**
+     * Advertisement click count — bumps the counter, then sends the visitor to
+     * the banner's destination URL (homepage when none is set). Never hits an
+     * out-of-window or unknown banner.
+     */
+    public function adClick(string $code)
+    {
+        $advertisement = Advertisement::active()->where('code', $code)->firstOrFail();
+
+        $advertisement->increment('clicks');
+
+        return redirect()->away($advertisement->url ?: url('/'));
     }
 
     /**

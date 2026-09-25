@@ -24,6 +24,13 @@ Route::get('/category/{slug}', [FrontendController::class, 'category'])->name('s
 Route::get('/brand/{slug}', [FrontendController::class, 'brand'])->name('shop.brand');
 Route::get('/tag/{slug}', [FrontendController::class, 'tag'])->name('shop.tag');
 
+// Advertisement click tracking — counts the click, then sends the visitor to
+// the banner's destination URL. Gated by the same feature flag that renders
+// the banner on the product page.
+Route::middleware('feature:advertisements')->group(function () {
+    Route::get('/ad/{code}', [FrontendController::class, 'adClick'])->name('advertisements.click');
+});
+
 // Saved favorites — guests keep a session bag that merges into their account
 // the moment they sign in (see App\Support\Favorites). No auth required.
 Route::get('/favorites', [FrontendController::class, 'favorites'])->name('favorites');

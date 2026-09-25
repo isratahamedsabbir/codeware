@@ -23,6 +23,7 @@ class Features
         'products' => 'Products',
         'brands' => 'Brands',
         'services' => 'Services',
+        'advertisements' => 'Advertisements',
         'orders' => 'Orders & Reports',
         'discounts' => 'Discounts (Products)',
         'vouchers' => 'Gift Vouchers',
