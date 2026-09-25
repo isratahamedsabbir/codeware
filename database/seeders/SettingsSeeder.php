@@ -261,6 +261,12 @@ class SettingsSeeder extends Seeder
             // ── Language switcher (admin panel) ── shows/hides the header language
             // dropdown (see layouts.admin.blade.php). Admin-panel-only, so not public.
             ['key' => 'language_switcher_enabled', 'value' => '1', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
+
+            // ── Additional Data sections (admin panel) ── show/hide the Additional
+            // Data cards on the Product and Blog Post forms (see Product\Form and
+            // Posts\Form). Off hides the editors without touching saved content.
+            ['key' => 'additional_data_products_enabled', 'value' => '1', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
+            ['key' => 'additional_data_posts_enabled', 'value' => '1', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
         ];
 
         foreach ($settings as $setting) {

@@ -84,6 +84,46 @@ it('shows the stock status as a badge beside the product name and no shipping-ch
         ->assertSee('variant-selected', false);
 });
 
+it('renders the additional data (excerpt, description, specifications) on the product page', function () {
+    $product = storefrontProduct('rich-product', [
+        'name' => ['en' => 'Rich Product', 'bn' => ''],
+        'excerpt' => ['en' => '<p>Compact intro line</p>', 'bn' => ''],
+        'description' => ['en' => '<h2>Full story</h2><p>Rich description body</p>', 'bn' => ''],
+        'specifications' => ['en' => '<ul><li>4K display</li><li>64GB storage</li></ul>', 'bn' => ''],
+    ]);
+
+    $html = get('/products/rich-product')->assertOk()->getContent();
+
+    // Rich HTML is rendered raw (Jodit output), not escaped.
+    expect($html)->toContain('<h2>Full story</h2>')
+        ->and($html)->toContain('<ul><li>4K display</li><li>64GB storage</li></ul>');
+
+    // Description and Specifications are tabs; the active one is visible while
+    // the other stays in the DOM behind x-cloak until it's clicked.
+    expect($html)->toContain('role="tablist"')
+        ->and($html)->toContain('tab === \'description\'')
+        ->and($html)->toContain('tab === \'specifications\'');
+
+    get('/products/rich-product')->assertSeeInOrder([
+        'Compact intro line', 'Full story', '4K display',
+    ], false);
+});
+
+it('defaults the product detail tabs to specifications when there is no description', function () {
+    $product = storefrontProduct('specs-only-product', [
+        'name' => ['en' => 'Specs Only Product', 'bn' => ''],
+        'excerpt' => ['en' => '', 'bn' => ''],
+        'description' => ['en' => '', 'bn' => ''],
+        'specifications' => ['en' => '<ul><li>Only specs here</li></ul>', 'bn' => ''],
+    ]);
+
+    $html = get('/products/specs-only-product')->assertOk()->getContent();
+
+    expect($html)->toContain("{ tab: 'specifications' }")
+        ->and($html)->toContain('<li>Only specs here</li>')
+        ->and($html)->not->toContain("tab = 'description'");
+});
+
 it('lists only active products on the shop page', function () {
     $visible = storefrontProduct('visible-product', ['name' => ['en' => 'Visible Product', 'bn' => '']]);
     $hidden = Product::factory()->draft()->create(['name' => ['en' => 'Hidden Product', 'bn' => '']]);

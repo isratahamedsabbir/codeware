@@ -384,6 +384,36 @@ $imageMeta = match ($setting->key) {
                         Turning this off does not change the admin panel's language, only hides the switcher itself.
                     </p>
                 </x-admin-section-card>
+
+                {{-- Additional Data sections — show/hide the rich-editor cards on the
+                     admin Product and Blog Post forms (see Product and Posts forms). --}}
+                <x-admin-section-card header-border="border-zinc-100" icon="document-text" title="Product Additional Data"
+                    description="Shows the Additional Data card on the product form.">
+                    <x-slot:actions>
+                        <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
+                            <input type="checkbox" wire:model="settings.additional_data_products_enabled" class="rounded border-zinc-300 text-primary" />
+                            Enable
+                        </label>
+                    </x-slot:actions>
+
+                    <p class="text-xs text-zinc-400">
+                        Rich editors for the product's description, short description and specification. Off hides the card without touching saved content.
+                    </p>
+                </x-admin-section-card>
+
+                <x-admin-section-card header-border="border-zinc-100" icon="newspaper" title="Blog Post Additional Data"
+                    description="Shows the Additional Data card on the blog post form.">
+                    <x-slot:actions>
+                        <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
+                            <input type="checkbox" wire:model="settings.additional_data_posts_enabled" class="rounded border-zinc-300 text-primary" />
+                            Enable
+                        </label>
+                    </x-slot:actions>
+
+                    <p class="text-xs text-zinc-400">
+                        A rich editor for the post's description. Off hides the card without touching saved content.
+                    </p>
+                </x-admin-section-card>
                 </div>
             </div>
         </div>

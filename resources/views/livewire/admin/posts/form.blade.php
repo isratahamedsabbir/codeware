@@ -42,13 +42,6 @@
                                 placeholder="{{ $language->code === $this->primaryLocale ? 'Post title' : 'Post title ('.($language->native_name ?: $language->name).')' }}" />
                             @if ($language->code === $this->primaryLocale)<flux:error name="title.{{ $language->code }}" />@endif
                         </flux:field>
-
-                        <flux:field>
-                            <flux:label>Description<x-field-hint text="Shown in blog listings and as a fallback description — the full post body is built separately in the page builder." /></flux:label>
-                            <flux:textarea wire:model.live.debounce.400ms="description.{{ $language->code }}" rows="4"
-                                placeholder="{{ $language->code === $this->primaryLocale ? 'Short post summary' : 'Short post summary ('.($language->native_name ?: $language->name).')' }}" />
-                            @if ($language->code === $this->primaryLocale)<flux:error name="description.{{ $language->code }}" />@endif
-                        </flux:field>
                     </x-admin-locale-panel>
                 @endforeach
 
@@ -77,6 +70,27 @@
                     </flux:field>
             </x-admin-locale-tabs>
         </div>
+
+        {{-- Additional Data: Description — rich editor, toggled from Settings → Widgets --}}
+        @if (\App\Models\Setting::postAdditionalDataEnabled())
+            <x-admin-section-card icon="document-text" title="Additional Data" icon-color="bg-emerald-500/10 text-emerald-600"
+                description="Rich-text description shown in blog listings and as a fallback — the full post body is built separately in the page builder."
+                collapsible :collapsed="true">
+                <x-admin-locale-tabs>
+                    @foreach (\App\Support\Locale::active() as $language)
+                        <x-admin-locale-panel :code="$language->code" class="space-y-3">
+                            <flux:field>
+                                <flux:label>Description</flux:label>
+                                <livewire:jodit-text-editor wire:model="description.{{ $language->code }}"
+                                    :options="['height' => 220]" :identifier="'post-description'.$language->code"
+                                    wire:key="post-description-{{ $language->code }}" />
+                                @if ($language->code === $this->primaryLocale)<flux:error name="description.{{ $language->code }}" />@endif
+                            </flux:field>
+                        </x-admin-locale-panel>
+                    @endforeach
+                </x-admin-locale-tabs>
+            </x-admin-section-card>
+        @endif
 
         @include('partials.admin-seo-fields')
 

@@ -145,10 +145,12 @@
             </x-admin-locale-tabs>
         </div>
 
-        {{-- Details: Description, Short Description, Specification — rich editors above the Variations --}}
-        <x-admin-section-card icon="document-text" title="Details" icon-color="bg-emerald-500/10 text-emerald-600"
-            description="Rich-text description, short description and specification for this product."
-            collapsible :collapsed="true">
+        {{-- Additional Data: Description, Short Description, Specification —
+             rich editors above the Variations, toggled from Settings → Widgets --}}
+        @if (\App\Models\Setting::productAdditionalDataEnabled())
+            <x-admin-section-card icon="document-text" title="Additional Data" icon-color="bg-emerald-500/10 text-emerald-600"
+                description="Rich-text description, short description and specification for this product."
+                collapsible :collapsed="true">
             <x-admin-locale-tabs>
                 @foreach (\App\Support\Locale::active() as $language)
                     <x-admin-locale-panel :code="$language->code" class="space-y-3">
@@ -179,6 +181,7 @@
                 @endforeach
             </x-admin-locale-tabs>
         </x-admin-section-card>
+        @endif
 
         {{-- Variations --}}
         <x-admin-section-card icon="adjustments-horizontal" title="Variations" icon-color="bg-violet-500/10 text-violet-600"

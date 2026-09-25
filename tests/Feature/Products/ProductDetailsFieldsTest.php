@@ -2,6 +2,7 @@
 
 use App\Livewire\Admin\Products\Form as ProductForm;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Livewire\Livewire;
@@ -12,14 +13,26 @@ beforeEach(function () {
     $this->actingAs($this->admin);
 });
 
-it('renders the Details section with all three rich-text editors', function () {
+it('renders the Additional Data section above the variations', function () {
     Livewire::test(ProductForm::class)
-        ->assertSee('Details')
-        ->assertSee('Short Description')
-        ->assertSee('Specification')
-        ->assertSeeHtml('wire:model="description.en"')
-        ->assertSeeHtml('wire:model="excerpt.en"')
-        ->assertSeeHtml('wire:model="specifications.en"');
+        ->assertSee('Additional Data')
+        ->assertSee('Rich-text description, short description and specification for this product.');
+});
+
+it('hides the Additional Data section when the setting is off', function () {
+    Setting::set('additional_data_products_enabled', '0');
+    Cache::flush();
+
+    Livewire::test(ProductForm::class)
+        ->assertDontSee('Additional Data');
+});
+
+it('binds the Additional Data editors to the translatable fields', function () {
+    $component = Livewire::test(ProductForm::class)->instance();
+
+    expect($component->description)->toBe([])
+        ->and($component->excerpt)->toBe([])
+        ->and($component->specifications)->toBe([]);
 });
 
 it('persists description, short description and specifications on save', function () {

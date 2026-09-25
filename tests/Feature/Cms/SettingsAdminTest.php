@@ -501,3 +501,33 @@ it('shows the constants usage guide via the info icon on the Constant card', fun
         ->assertSee('/api/v1/settings')
         ->assertSee('File-type constants');
 });
+
+it('renders the Additional Data section toggles on the widgets tab', function () {
+    Setting::factory()->create(['key' => 'additional_data_products_enabled', 'value' => '1', 'group' => 'other', 'type' => 'boolean']);
+    Setting::factory()->create(['key' => 'additional_data_posts_enabled', 'value' => '1', 'group' => 'other', 'type' => 'boolean']);
+
+    Livewire::test(SettingsIndex::class)
+        ->assertSee('Product Additional Data')
+        ->assertSee('Blog Post Additional Data');
+});
+
+it('saves the Additional Data section toggles through the form', function () {
+    Setting::factory()->create(['key' => 'additional_data_products_enabled', 'value' => '1', 'group' => 'other', 'type' => 'boolean']);
+    Setting::factory()->create(['key' => 'additional_data_posts_enabled', 'value' => '1', 'group' => 'other', 'type' => 'boolean']);
+
+    Livewire::test(SettingsIndex::class)
+        ->set('settings.additional_data_products_enabled', false)
+        ->set('settings.additional_data_posts_enabled', false)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(Setting::productAdditionalDataEnabled())->toBeFalse()
+        ->and(Setting::postAdditionalDataEnabled())->toBeFalse();
+});
+
+it('seeder creates the Additional Data section toggles, enabled by default', function () {
+    $this->artisan('db:seed', ['--class' => 'SettingsSeeder']);
+
+    expect(Setting::productAdditionalDataEnabled())->toBeTrue()
+        ->and(Setting::postAdditionalDataEnabled())->toBeTrue();
+});

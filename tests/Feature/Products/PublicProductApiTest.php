@@ -340,6 +340,20 @@ it('public product detail excludes inactive faqs', function () {
     $response->assertJsonPath('data.faq.0.question', 'Visible?');
 });
 
+it('public product detail includes excerpt and specifications', function () {
+    $product = Product::factory()->published()->create([
+        'name' => ['en' => 'Detailed API Product', 'bn' => ''],
+        'excerpt' => ['en' => '<p>Short blurb</p>', 'bn' => ''],
+        'specifications' => ['en' => '<ul><li>4K display</li></ul>', 'bn' => ''],
+    ]);
+    pairPageFor($product, 'product', 'detail-api-product', $this->admin->id);
+
+    $this->getJson("/api/v1/products/{$product->slug}")
+        ->assertOk()
+        ->assertJsonPath('data.excerpt', '<p>Short blurb</p>')
+        ->assertJsonPath('data.specifications', '<ul><li>4K display</li></ul>');
+});
+
 it('public product listing includes puck_data nested under page, never at the top level', function () {
     $puckData = ['root' => ['props' => []], 'content' => []];
     $product = Product::factory()->published()->create();

@@ -24,6 +24,20 @@
     $hasVariations = $visibleVariations->isNotEmpty();
     $baseDiscountLabel = $product->hasDiscount() ? format_money($product->discount_price) : null;
 
+    $discountPercent = (! $hasVariations && $product->hasDiscount() && (float) $product->price > 0)
+        ? (int) round(((float) $product->price - (float) $product->discount_price) / (float) $product->price * 100)
+        : null;
+
+    $rating = null;
+    if (\App\Support\Features::enabled('reviews') && $product->averageRating() !== null) {
+        $rating = [
+            'average' => $product->averageRating(),
+            'count' => $product->approvedReviews()->count(),
+        ];
+    }
+
+    $productDetailTab = filled($product->description) ? 'description' : 'specifications';
+
     $crumbs = [
         ['label' => __('Home'), 'url' => url('/')],
         ['label' => __('Shop'), 'url' => route('shop')],
@@ -240,7 +254,26 @@
                     <span class="text-3xl font-extrabold text-sf-price" x-text="discountLabel || priceLabel">{{ $initial['discountLabel'] ?: $initial['priceLabel'] }}</span>
                     <span x-show="discountLabel" @unless ($initial['discountLabel']) x-cloak @endunless
                         class="text-lg text-zinc-400 line-through" x-text="priceLabel">{{ $initial['priceLabel'] }}</span>
+                    @if ($discountPercent !== null)
+                        <span class="rounded-full bg-brand/10 px-2.5 py-1 text-xs font-bold text-brand">-{{ $discountPercent }}%</span>
+                    @endif
                 </div>
+
+                @if ($rating)
+                    <a href="#reviews" class="mt-3 inline-flex items-center gap-2 text-sm text-zinc-500 transition hover:text-sf-heading">
+                        <span class="flex gap-0.5">
+                            @foreach (range(1, 5) as $i)
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                    class="h-4 w-4 {{ $i <= round($rating['average']) ? 'fill-amber-400 text-amber-400' : 'fill-zinc-200 text-zinc-200' }}"
+                                    stroke="currentColor" stroke-width="1">
+                                    <path stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+                                </svg>
+                            @endforeach
+                        </span>
+                        <span class="font-semibold text-sf-heading">{{ number_format($rating['average'], 1) }}</span>
+                        <span>({{ trans_choice(':count review|:count reviews', $rating['count'], ['count' => $rating['count']]) }})</span>
+                    </a>
+                @endif
             </div>
 
             {{-- The option picker lives inside the add-to-cart component below, so the
@@ -276,10 +309,9 @@
                 />
             </div>
 
-            @if (filled($product->description))
-                <div class="mt-8 border-t border-zinc-100 pt-6">
-                    <h2 class="mb-3 text-lg font-bold text-sf-heading">{{ __('Description') }}</h2>
-                    <div class="whitespace-pre-line leading-relaxed text-zinc-600">{{ $product->description }}</div>
+            @if (filled($product->excerpt))
+                <div class="mt-8 border-t border-zinc-100 pt-6 text-zinc-600">
+                    <div class="rich-text leading-relaxed">{!! $product->excerpt !!}</div>
                 </div>
             @endif
 
@@ -314,13 +346,61 @@
         </div>
     </div>
 
+    @if (filled($product->description) || filled($product->specifications))
+        <section class="mt-14 max-w-3xl">
+            <div x-data="{ tab: @js($productDetailTab) }">
+                <div class="flex flex-wrap gap-2" role="tablist" aria-label="{{ __('Product details') }}">
+                    @if (filled($product->description))
+                        <button type="button" role="tab" aria-selected="true" @click="tab = 'description'"
+                            :aria-selected="tab === 'description'"
+                            :class="tab === 'description' ? 'bg-brand text-white shadow-sm' : 'bg-zinc-100 text-zinc-600 hover:bg-brand/10 hover:text-brand'"
+                            class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                            </svg>
+                            {{ __('Description') }}
+                        </button>
+                    @endif
+
+                    @if (filled($product->specifications))
+                        <button type="button" role="tab" aria-selected="false" @click="tab = 'specifications'"
+                            :aria-selected="tab === 'specifications'"
+                            :class="tab === 'specifications' ? 'bg-brand text-white shadow-sm' : 'bg-zinc-100 text-zinc-600 hover:bg-brand/10 hover:text-brand'"
+                            class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+                            </svg>
+                            {{ __('Specifications') }}
+                        </button>
+                    @endif
+                </div>
+
+                <div class="mt-6 rounded-card border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
+                    @if (filled($product->description))
+                        <div x-show="tab === 'description'" @if ($productDetailTab !== 'description') x-cloak @endif role="tabpanel"
+                            class="rich-text text-base leading-relaxed text-zinc-600">
+                            {!! $product->description !!}
+                        </div>
+                    @endif
+
+                    @if (filled($product->specifications))
+                        <div x-show="tab === 'specifications'" @if ($productDetailTab !== 'specifications') x-cloak @endif role="tabpanel"
+                            class="rich-text text-sm leading-relaxed text-zinc-600">
+                            {!! $product->specifications !!}
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </section>
+    @endif
+
     {{-- Reviews: approved ones for everyone; the form only for buyers. --}}
     @if (\App\Support\Features::enabled('reviews'))
         <livewire:frontend.product-reviews :product-id="$product->id" :key="'product-reviews-'.$product->id" />
     @endif
 
     @if ($product->faqs->where('is_active', true)->isNotEmpty())
-        <section class="mx-auto mt-14 max-w-3xl">
+        <section class="mt-14 max-w-3xl">
             <h2 class="mb-5 text-2xl font-bold text-sf-heading">{{ __('Frequently asked questions') }}</h2>
             <div class="space-y-3">
                 @foreach ($product->faqs->where('is_active', true) as $faq)

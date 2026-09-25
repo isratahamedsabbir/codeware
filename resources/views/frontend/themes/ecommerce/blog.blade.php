@@ -69,7 +69,19 @@
                             </div>
                             <h2 class="text-lg font-bold text-sf-heading group-hover:text-brand">{{ $post->title }}</h2>
                             @if (filled($post->description))
-                                <p class="mt-2 line-clamp-3 text-sm leading-relaxed text-zinc-500">{{ $post->description }}</p>
+                                @php
+                                    $postDescriptionHtml = (string) (is_array($post->description) ? ($post->description[app()->getLocale()] ?? reset($post->description)) : $post->description);
+                                    $postDescriptionText = trim(html_entity_decode(strip_tags($postDescriptionHtml)));
+                                @endphp
+                                @if ($postDescriptionText !== '')
+                                    <div class="rich-text mt-2 text-sm leading-relaxed text-zinc-500">
+                                        @if (\Illuminate\Support\Str::length($postDescriptionText) <= 1000)
+                                            {!! $postDescriptionHtml !!}
+                                        @else
+                                            <p>{{ \Illuminate\Support\Str::limit($postDescriptionText, 1000) }}</p>
+                                        @endif
+                                    </div>
+                                @endif
                             @endif
                             @if ($post->user?->name)
                                 <p class="mt-3 inline-flex items-center gap-1.5 text-xs text-zinc-500">

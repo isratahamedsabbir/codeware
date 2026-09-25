@@ -8,6 +8,7 @@ use App\Models\PostCategory;
 use App\Models\Setting;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
+use Illuminate\Support\Str;
 
 use function Pest\Laravel\get;
 
@@ -61,6 +62,38 @@ it('shows a single published post and hides drafts', function () {
     pairPageFor($hidden, 'post', 'hidden-post', $this->admin->id);
 
     get('/blog/hidden-post')->assertNotFound();
+});
+
+it('renders the post description as rich HTML when it contains markup', function () {
+    storefrontPost('html-post', [
+        'title' => ['en' => 'HTML Post', 'bn' => ''],
+        'description' => ['en' => '<h2>Rich lead</h2><p>Body with <strong>bold</strong>.</p>', 'bn' => ''],
+    ]);
+
+    $html = get('/blog/html-post')->assertOk()->getContent();
+
+    expect($html)->toContain('<h2>Rich lead</h2>')
+        ->and($html)->toContain('<strong>bold</strong>');
+
+    $listing = get('/blog')->assertOk()->getContent();
+
+    expect($listing)->toContain('Rich lead');
+});
+
+it('caps the blog listing description at 1000 characters instead of clamping it', function () {
+    $longText = str_repeat('Word ', 400);
+    storefrontPost('long-post', [
+        'title' => ['en' => 'Long Post', 'bn' => ''],
+        'description' => ['en' => '<p>'.$longText.'</p>', 'bn' => ''],
+    ]);
+
+    $listing = get('/blog')->assertOk()->getContent();
+
+    $plain = trim(html_entity_decode(strip_tags('<p>'.$longText.'</p>')));
+
+    expect($listing)->toContain('Long Post')
+        ->and($listing)->not->toContain($plain)
+        ->and($listing)->toContain(Str::limit($plain, 1000));
 });
 
 it('filters the blog by category', function () {

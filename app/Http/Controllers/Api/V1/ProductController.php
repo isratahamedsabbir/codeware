@@ -138,6 +138,8 @@ class ProductController extends Controller
 
         if ($withDetail) {
             $data['description'] = $product->getTranslation('description', $locale, useFallbackLocale: true);
+            $data['excerpt'] = $product->getTranslation('excerpt', $locale, useFallbackLocale: true);
+            $data['specifications'] = $product->getTranslation('specifications', $locale, useFallbackLocale: true);
             $data['faq'] = $product->faqs->where('is_active', true)->map(fn ($item) => [
                 'question' => $item->question,
                 'answer' => $item->answer,

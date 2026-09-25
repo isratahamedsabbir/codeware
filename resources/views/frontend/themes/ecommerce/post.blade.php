@@ -62,8 +62,8 @@
         @endif
 
         @if (filled($post->description))
-            <div class="mt-8 whitespace-pre-line border-b border-zinc-100 pb-8 text-lg leading-relaxed text-zinc-700">
-                {{ $post->description }}
+            <div class="rich-text mt-8 border-b border-zinc-100 pb-8 text-lg leading-relaxed text-zinc-700">
+                {!! $post->description !!}
             </div>
         @endif
 

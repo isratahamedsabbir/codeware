@@ -138,6 +138,35 @@ class Setting extends Model
     }
 
     /**
+     * Whether the "Additional Data" card shows on the admin product form —
+     * toggled from Settings → Widgets → Product Additional Data.
+     */
+    public static function productAdditionalDataEnabled(): bool
+    {
+        return self::truthy(static::get('additional_data_products_enabled', '1'));
+    }
+
+    /**
+     * Whether the "Additional Data" card shows on the admin blog post form —
+     * toggled from Settings → Widgets → Blog Post Additional Data.
+     */
+    public static function postAdditionalDataEnabled(): bool
+    {
+        return self::truthy(static::get('additional_data_posts_enabled', '1'));
+    }
+
+    /**
+     * Boolean settings live in a plain string column and toggle rows are read
+     * back as the raw strings "1"/"0" (not PHP booleans), so a naive (bool)
+     * cast would treat the string "0" as enabled. Interpret the stored value
+     * instead.
+     */
+    private static function truthy(mixed $value): bool
+    {
+        return $value === true || $value === 1 || $value === '1' || strtolower((string) $value) === 'true';
+    }
+
+    /**
      * VAT percentage applied to orders when vatEnabled() is true — the
      * "VAT Rate" field in Settings → Currency.
      */
