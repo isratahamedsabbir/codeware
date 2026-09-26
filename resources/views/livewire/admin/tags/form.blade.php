@@ -12,7 +12,7 @@
                 @foreach (\App\Support\Locale::translatable() as $language)
                     <x-admin-locale-panel :code="$language->code">
                         <flux:field>
-                            <flux:label>
+                            <flux:label :badge="$language->code">
                                 Name
                                 @if ($language->code === $this->primaryLocale)<span class="text-red-500 ml-0.5">*</span>@endif
                             </flux:label>

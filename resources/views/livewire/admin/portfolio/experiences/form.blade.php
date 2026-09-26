@@ -12,7 +12,7 @@
             @foreach (\App\Support\Locale::translatable() as $language)
                 <x-admin-locale-panel :code="$language->code">
                     <flux:field>
-                        <flux:label>
+                        <flux:label :badge="$language->code">
                             Role
                             @if ($language->code === $this->primaryLocale)<span class="text-red-500 ml-0.5">*</span>@endif
                         </flux:label>
@@ -22,14 +22,14 @@
                     </flux:field>
 
                     <flux:field class="mt-4">
-                        <flux:label>Company</flux:label>
+                        <flux:label :badge="$language->code">Company</flux:label>
                         <flux:input wire:model="company.{{ $language->code }}"
                             placeholder="{{ $language->code === $this->primaryLocale ? 'Company or client name' : 'Company ('.($language->native_name ?: $language->name).')' }}" />
                         <flux:error name="company.{{ $language->code }}" />
                     </flux:field>
 
                     <flux:field class="mt-4">
-                        <flux:label>Description</flux:label>
+                        <flux:label :badge="$language->code">Description</flux:label>
                         <flux:textarea wire:model="description.{{ $language->code }}" rows="4"
                             placeholder="{{ $language->code === $this->primaryLocale ? 'What you did there' : 'Description ('.($language->native_name ?: $language->name).')' }}" />
                         <flux:error name="description.{{ $language->code }}" />

@@ -34,7 +34,7 @@
                 @foreach (\App\Support\Locale::translatable() as $language)
                     <x-admin-locale-panel :code="$language->code" class="space-y-3">
                         <flux:field>
-                            <flux:label>
+                            <flux:label :badge="$language->code">
                                 Title
                                 @if ($language->code === $this->primaryLocale)<span class="text-red-500 ml-0.5">*</span>@endif
                             </flux:label>
@@ -80,7 +80,7 @@
                     @foreach (\App\Support\Locale::translatable() as $language)
                         <x-admin-locale-panel :code="$language->code" class="space-y-3">
                             <flux:field>
-                                <flux:label>Description</flux:label>
+                                <flux:label :badge="$language->code">Description</flux:label>
                                 <livewire:jodit-text-editor wire:model="description.{{ $language->code }}"
                                     :options="['height' => 220]" :identifier="'post-description'.$language->code"
                                     wire:key="post-description-{{ $language->code }}" />

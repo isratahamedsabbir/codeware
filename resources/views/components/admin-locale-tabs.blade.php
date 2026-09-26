@@ -1,14 +1,11 @@
-@props(['locales' => null, 'label' => null])
+@props(['locales' => null])
 @php
     $locales = $locales ?? \App\Support\Locale::translatable();
 
     $first = $locales->first()->code;
 @endphp
 <div x-data="{ locale: '{{ $first }}' }">
-    <div class="flex items-center gap-3 -mx-6 px-6 pb-3 mb-3 border-b border-zinc-200 dark:border-zinc-700 flex-wrap">
-        @if ($label)
-            <span class="text-xs font-medium text-zinc-500">{{ $label }}</span>
-        @endif
+    <div class="-mx-6 px-6 pb-3 mb-3 border-b border-zinc-200 dark:border-zinc-700">
         <div class="flex gap-2 flex-wrap">
             @foreach ($locales as $language)
                 <button type="button"

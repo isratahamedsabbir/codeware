@@ -12,7 +12,7 @@
              is a wasted impression. One strip for the whole section, same as the
              SEO block on the Page form, so a switch moves the meta, Open Graph
              and Twitter copy together instead of one toggle per block. --}}
-        <x-admin-locale-tabs label="Language">
+        <x-admin-locale-tabs>
             @php($locales = \App\Support\Locale::translatable())
 
             <div class="space-y-5">
@@ -24,6 +24,7 @@
                                 'path' => 'settings.seo_meta_title.'.$language->code,
                                 'max' => 60,
                                 'label' => 'Meta Title',
+                                'locale' => $language->code,
                             ])
                             <flux:input wire:model="settings.seo_meta_title.{{ $language->code }}"
                                 placeholder="Title shown in search engine results" />
@@ -33,6 +34,7 @@
                                 'path' => 'settings.seo_meta_description.'.$language->code,
                                 'max' => 160,
                                 'label' => 'Meta Description',
+                                'locale' => $language->code,
                             ])
                             <flux:textarea wire:model="settings.seo_meta_description.{{ $language->code }}" class="h-24"
                                 placeholder="Short summary shown in search engine results" />
@@ -50,6 +52,7 @@
                                         'path' => 'settings.seo_og_title.'.$language->code,
                                         'max' => 70,
                                         'label' => 'OG Title',
+                                        'locale' => $language->code,
                                     ])
                                     <flux:input wire:model="settings.seo_og_title.{{ $language->code }}"
                                         placeholder="Defaults to Meta Title if left blank" />
@@ -59,6 +62,7 @@
                                         'path' => 'settings.seo_og_description.'.$language->code,
                                         'max' => 200,
                                         'label' => 'OG Description',
+                                        'locale' => $language->code,
                                     ])
                                     <flux:textarea wire:model="settings.seo_og_description.{{ $language->code }}" class="h-24"
                                         placeholder="Defaults to Meta Description if left blank" />
@@ -97,6 +101,7 @@
                                             'path' => 'settings.seo_twitter_title.'.$language->code,
                                             'max' => 70,
                                             'label' => 'Twitter Title',
+                                            'locale' => $language->code,
                                         ])
                                         <flux:input wire:model="settings.seo_twitter_title.{{ $language->code }}"
                                             placeholder="Defaults to Meta Title if left blank" />
@@ -106,6 +111,7 @@
                                             'path' => 'settings.seo_twitter_description.'.$language->code,
                                             'max' => 200,
                                             'label' => 'Twitter Description',
+                                            'locale' => $language->code,
                                         ])
                                         <flux:textarea wire:model="settings.seo_twitter_description.{{ $language->code }}" class="h-24"
                                             placeholder="Defaults to Meta Description if left blank" />

@@ -33,7 +33,7 @@
                 @foreach (\App\Support\Locale::translatable() as $language)
                     <x-admin-locale-panel :code="$language->code" class="space-y-3">
                         <flux:field>
-                            <flux:label>
+                            <flux:label :badge="$language->code">
                                 Name
                                 @if ($language->code === $this->primaryLocale)<span class="text-red-500 ml-0.5">*</span>@endif
                             </flux:label>
@@ -155,7 +155,7 @@
                 @foreach (\App\Support\Locale::translatable() as $language)
                     <x-admin-locale-panel :code="$language->code" class="space-y-3">
                         <flux:field>
-                            <flux:label>Description</flux:label>
+                            <flux:label :badge="$language->code">Description</flux:label>
                             <livewire:jodit-text-editor wire:model="description.{{ $language->code }}"
                                 :options="['height' => 260]" :identifier="'product-description'.$language->code"
                                 wire:key="product-description-{{ $language->code }}" />
@@ -163,7 +163,7 @@
                         </flux:field>
 
                         <flux:field>
-                            <flux:label>Short Description<x-field-hint text="A brief summary — shown in listings and where a shortened product blurb is needed." /></flux:label>
+                            <flux:label :badge="$language->code">Short Description<x-field-hint text="A brief summary — shown in listings and where a shortened product blurb is needed." /></flux:label>
                             <livewire:jodit-text-editor wire:model="excerpt.{{ $language->code }}"
                                 :options="['height' => 150]" :identifier="'product-excerpt'.$language->code"
                                 wire:key="product-excerpt-{{ $language->code }}" />
@@ -171,7 +171,7 @@
                         </flux:field>
 
                         <flux:field>
-                            <flux:label>Specification<x-field-hint text="Technical details and key specs — e.g. dimensions, material, capacity." /></flux:label>
+                            <flux:label :badge="$language->code">Specification<x-field-hint text="Technical details and key specs — e.g. dimensions, material, capacity." /></flux:label>
                             <livewire:jodit-text-editor wire:model="specifications.{{ $language->code }}"
                                 :options="['height' => 260]" :identifier="'product-specifications'.$language->code"
                                 wire:key="product-specifications-{{ $language->code }}" />

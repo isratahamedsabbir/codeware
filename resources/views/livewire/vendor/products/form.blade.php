@@ -16,7 +16,7 @@
                     @foreach (\App\Support\Locale::translatable() as $language)
                         <x-admin-locale-panel :code="$language->code" class="space-y-3">
                             <flux:field>
-                                <flux:label>
+                                <flux:label :badge="$language->code">
                                     Name
                                     @if ($language->code === $this->primaryLocale)<span class="text-red-500 ml-0.5">*</span>@endif
                                 </flux:label>
@@ -26,7 +26,7 @@
                             </flux:field>
 
                             <flux:field>
-                                <flux:label>Description</flux:label>
+                                <flux:label :badge="$language->code">Description</flux:label>
                                 <flux:textarea wire:model.live.debounce.400ms="description.{{ $language->code }}" rows="4"
                                     placeholder="{{ $language->code === $this->primaryLocale ? 'Short product summary' : 'Short product summary ('.($language->native_name ?: $language->name).')' }}" />
                                 @if ($language->code === $this->primaryLocale)<flux:error name="description.{{ $language->code }}" />@endif
