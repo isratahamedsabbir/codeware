@@ -339,6 +339,23 @@ class Product extends Model
         return $query->where('is_featured', true);
     }
 
+    /**
+     * Eager-loads the `sold_quantity` aggregate that soldQuantity() reads, so a
+     * grid of product cards costs one subselect on the page query instead of one
+     * SUM per card.
+     *
+     * Every storefront page that renders product-card.blade.php needs this — the
+     * card prints the sold count, and without the aggregate soldQuantity() falls
+     * back to its own order_items query per product. The cancelled-order filter
+     * mirrors soldQuantity()'s own fallback, so the two agree.
+     */
+    public function scopeWithSoldQuantity(Builder $query): Builder
+    {
+        return $query->withSum([
+            'orderItems as sold_quantity' => fn ($q) => $q->whereHas('order', fn ($o) => $o->where('status', '!=', 'cancelled')),
+        ], 'quantity');
+    }
+
     public function scopeUpcoming(Builder $query): Builder
     {
         return $query->where('is_upcoming', true);

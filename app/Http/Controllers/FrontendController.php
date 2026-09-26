@@ -218,12 +218,14 @@ class FrontendController extends Controller
         $related = $product->relatedProducts()
             ->active()
             ->with(['categories', 'brand', 'tags', 'page'])
+            ->withSoldQuantity()
             ->limit(4)
             ->get();
 
         if ($related->isEmpty() && $product->categories->isNotEmpty()) {
             $related = Product::active()
                 ->with(['categories', 'brand', 'tags', 'page'])
+                ->withSoldQuantity()
                 ->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $product->categories->pluck('id')))
                 ->where('id', '!=', $product->id)
                 ->orderBy('sort_order')
@@ -459,6 +461,7 @@ class FrontendController extends Controller
     {
         $products = Favorites::products()
             ->with(['categories.page', 'brand', 'tags', 'page'])
+            ->withSoldQuantity()
             ->orderBy('sort_order')
             ->paginate(Setting::perPage())
             ->withQueryString();
@@ -552,6 +555,7 @@ class FrontendController extends Controller
     {
         return Product::active()
             ->with(['categories.page', 'brand', 'tags', 'page'])
+            ->withSoldQuantity()
             ->orderBy('sort_order');
     }
 

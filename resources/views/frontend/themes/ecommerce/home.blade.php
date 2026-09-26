@@ -22,6 +22,7 @@
     $featured = \App\Models\Product::active()
         ->featured()
         ->with(['categories.page', 'brand', 'tags', 'page'])
+        ->withSoldQuantity()
         ->orderBy('sort_order')
         ->limit(10)
         ->get();
@@ -42,6 +43,7 @@
 
     $newArrivals = \App\Models\Product::active()
         ->with(['categories.page', 'brand', 'tags', 'page'])
+        ->withSoldQuantity()
         ->latest()
         ->limit(8)
         ->get();
@@ -49,9 +51,7 @@
     // Ranked by total units sold on non-cancelled orders.
     $bestSellers = \App\Models\Product::active()
         ->with(['categories.page', 'brand', 'tags', 'page'])
-        ->withSum([
-            'orderItems as sold_quantity' => fn ($q) => $q->whereHas('order', fn ($o) => $o->where('status', '!=', 'cancelled')),
-        ], 'quantity')
+        ->withSoldQuantity()
         ->whereHas('orderItems', fn ($q) => $q->whereHas('order', fn ($o) => $o->where('status', '!=', 'cancelled')))
         ->orderByDesc('sold_quantity')
         ->limit(8)
