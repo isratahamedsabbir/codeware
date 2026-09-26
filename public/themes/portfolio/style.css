@@ -1,75 +1,219 @@
-/* Portfolio theme — self-contained assets, not part of the main app.css bundle. */
+/* Portfolio theme — self-contained assets, not part of the main app.css bundle.
+ *
+ * Everything visual is a token on .theme-portfolio, so the light/dark toggle
+ * (script.js) is one class on <body> and never a second set of rules. Templates
+ * reference the tokens through Tailwind's arbitrary-property syntax
+ * (bg-(--pf-bg), text-(--pf-text-muted)), which resolves to the var() below.
+ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+/* Instrument Sans for text, JetBrains Mono for the labels. Both are loaded here
+   rather than through the app bundle so this theme keeps working when it is
+   zipped out and installed on its own. */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 .theme-portfolio {
-    --pf-bg: #0a0e17;
-    --pf-bg-elevated: #10141f;
-    --pf-border: #1f2937;
-    --pf-text: #e5e7eb;
-    --pf-heading: #ffffff;
-    --pf-text-muted: #94a3b8;
-    --pf-primary: #10b981;
-    --pf-primary-dark: #059669;
-    --pf-grid-line: rgba(148, 163, 184, 0.15);
+    /* Surfaces. The dark ramp is a cool near-black rather than pure #000: pure
+       black kills the elevation cues that separate a card from the page. */
+    --pf-bg: #06080f;
+    --pf-bg-elevated: #0b0f1a;
+    --pf-bg-inset: #080b14;
+
+    /* Hairlines, not borders. A 1px solid line at full strength reads as a box
+       drawn around everything; at low alpha it reads as structure. */
+    --pf-border: rgba(148, 163, 184, 0.13);
+    --pf-border-strong: rgba(148, 163, 184, 0.26);
+
+    --pf-text: #b6c2d4;
+    --pf-heading: #f6f8fc;
+    --pf-text-muted: #77879e;
+
+    /* Indigo with a cyan partner for the gradient. Two stops rather than three:
+       a mid stop is what makes gradient text look muddy at small sizes. */
+    --pf-primary: #6366f1;
+    --pf-primary-bright: #818cf8;
+    --pf-accent: #22d3ee;
+    --pf-primary-dark: #4f46e5;
+    --pf-primary-soft: rgba(99, 102, 241, 0.12);
+
+    --pf-grid-line: rgba(148, 163, 184, 0.07);
+    --pf-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+    --pf-shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.4), 0 24px 48px -20px rgba(0, 0, 0, 0.75);
+
+    --pf-ease: cubic-bezier(0.22, 1, 0.36, 1);
 
     background-color: var(--pf-bg);
     color: var(--pf-text);
-    font-family: 'Inter', system-ui, sans-serif;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'ss01';
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.25s var(--pf-ease), color 0.25s var(--pf-ease);
 }
 
-/* Client-side light mode, toggled by script.js (persisted in localStorage) */
+/* Client-side light mode, toggled by script.js (persisted in localStorage).
+   Kept as a token swap only — no component rule below mentions a colour
+   literal, so there is nothing to keep in sync here. */
 .theme-portfolio.pf-light {
-    --pf-bg: #f8fafc;
-    --pf-bg-elevated: #ffffff;
-    --pf-border: #e2e8f0;
-    --pf-text: #334155;
-    --pf-heading: #0f172a;
+    --pf-bg: #ffffff;
+    --pf-bg-elevated: #f8fafc;
+    --pf-bg-inset: #f1f5f9;
+
+    --pf-border: rgba(15, 23, 42, 0.1);
+    --pf-border-strong: rgba(15, 23, 42, 0.2);
+
+    --pf-text: #475569;
+    --pf-heading: #0b1120;
     --pf-text-muted: #64748b;
-    --pf-primary: #059669;
-    --pf-primary-dark: #047857;
-    --pf-grid-line: rgba(51, 65, 85, 0.08);
+
+    --pf-primary: #4f46e5;
+    --pf-primary-bright: #4338ca;
+    --pf-accent: #0891b2;
+    --pf-primary-dark: #4338ca;
+    --pf-primary-soft: rgba(79, 70, 229, 0.08);
+
+    --pf-grid-line: rgba(15, 23, 42, 0.05);
+    --pf-shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(15, 23, 42, 0.12);
+    --pf-shadow-lift: 0 2px 4px rgba(15, 23, 42, 0.06), 0 24px 48px -20px rgba(15, 23, 42, 0.18);
 }
 
 .theme-portfolio .pf-mono {
     font-family: 'JetBrains Mono', ui-monospace, monospace;
+    /* The mono font is used for small uppercase labels; without this its wider
+       default tracking makes those labels look loosely set next to the sans. */
+    letter-spacing: -0.01em;
 }
 
 .theme-portfolio .pf-heading {
     color: var(--pf-heading);
+    /* Headlines are set tight and balanced rather than ragged-right: a two-word
+       heading broken as "Build" / "Software" reads as a layout accident. */
+    letter-spacing: -0.028em;
+    text-wrap: balance;
 }
 
-/* Gradient hero name */
+.theme-portfolio ::selection {
+    background: var(--pf-primary);
+    color: #ffffff;
+}
+
+.theme-portfolio :focus-visible {
+    outline: 2px solid var(--pf-primary);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
+/* Gradient display text — the name in the hero and the 404 numerals. */
 .theme-portfolio .pf-gradient-text {
-    background: linear-gradient(90deg, #60a5fa, #a78bfa, #f472b6);
+    background: linear-gradient(100deg, var(--pf-primary-bright) 0%, var(--pf-accent) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    /* Without an explicit colour the gradient text is transparent in forced-
+       colours mode too, i.e. invisible. */
+    color: var(--pf-primary-bright);
 }
 
-/* Grid-line backdrop behind the hero, fading toward the edges */
+@media (forced-colors: active) {
+    .theme-portfolio .pf-gradient-text {
+        -webkit-text-fill-color: CanvasText;
+        color: CanvasText;
+    }
+}
+
+/* ── Section scaffolding ─────────────────────────────────────────────── */
+
+/* The grid-line backdrop behind the hero, masked to a soft ellipse so the lines
+   fade out instead of tiling to the edges. */
 .theme-portfolio .pf-grid-bg {
     background-image:
         linear-gradient(to right, var(--pf-grid-line) 1px, transparent 1px),
         linear-gradient(to bottom, var(--pf-grid-line) 1px, transparent 1px);
-    background-size: 56px 56px;
-    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 40%, transparent 90%);
-    mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 40%, transparent 90%);
+    background-size: 64px 64px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black 10%, transparent 75%);
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black 10%, transparent 75%);
 }
 
-/* Soft glow blur behind the hero photo */
+/* The header is fixed, so a #fragment jump would otherwise tuck the section's
+   heading underneath it. */
+.theme-portfolio section[id] {
+    scroll-margin-top: 5.5rem;
+}
+
+/* The small mono "01 / SELECTED WORK" label above each section heading. */
+.theme-portfolio .pf-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--pf-primary);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+}
+
+.theme-portfolio .pf-eyebrow::before {
+    content: '';
+    width: 1.75rem;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--pf-primary));
+}
+
+/* ── Hero ────────────────────────────────────────────────────────────── */
+
+/* The soft light bloom sitting behind the hero portrait. Two radial layers so it
+   keeps a coloured core instead of flattening to a grey disc. */
 .theme-portfolio .pf-glow {
-    background: radial-gradient(closest-side, rgba(96, 165, 250, 0.35), rgba(244, 114, 182, 0.15), transparent);
-    filter: blur(70px);
+    background:
+        radial-gradient(closest-side, color-mix(in srgb, var(--pf-primary) 42%, transparent), transparent 72%),
+        radial-gradient(closest-side at 70% 30%, color-mix(in srgb, var(--pf-accent) 26%, transparent), transparent 70%);
+    filter: blur(60px);
+}
+
+.theme-portfolio .pf-photo-frame {
+    position: relative;
+    border: 1px solid var(--pf-border-strong);
+    background: var(--pf-bg-elevated);
+    box-shadow: var(--pf-shadow-lift);
+}
+
+/* A gradient hairline along the frame's top edge, drawn with a mask so only the
+   1px border area is painted. Cheaper and sharper than nesting a second element. */
+.theme-portfolio .pf-photo-frame::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(140deg, color-mix(in srgb, var(--pf-primary) 70%, transparent), transparent 45%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+/* The monogram shown when no photo is set — initials, not a placeholder
+   silhouette, so an unconfigured hero still looks deliberate. */
+.theme-portfolio .pf-monogram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(120% 100% at 20% 0%, color-mix(in srgb, var(--pf-primary) 26%, transparent), transparent 60%),
+        var(--pf-bg-inset);
+    color: var(--pf-heading);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
 }
 
 /* Blinking cursor used by the typewriter effect (script.js) */
 .theme-portfolio .pf-cursor {
     display: inline-block;
-    width: 3px;
-    margin-left: 2px;
-    background: var(--pf-primary);
+    width: 2px;
+    margin-left: 3px;
+    background: var(--pf-accent);
     animation: pf-blink 1s step-end infinite;
 }
 
@@ -78,83 +222,324 @@
     50%, 100% { opacity: 0; }
 }
 
-/* Badge pill above the hero heading */
+/* Availability pill in the hero. */
 .theme-portfolio .pf-badge {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     border: 1px solid var(--pf-border);
+    border-radius: 999px;
     background: var(--pf-bg-elevated);
     color: var(--pf-text);
 }
 
-/* Hero photo frame + its glow */
-.theme-portfolio .pf-photo-frame {
+/* A small mono chip: the "In Production" tag on a project, a stat label. */
+.theme-portfolio .pf-chip {
+    display: inline-flex;
+    align-items: center;
     border: 1px solid var(--pf-border);
+    border-radius: 999px;
     background: var(--pf-bg-elevated);
+    color: var(--pf-text-muted);
+    white-space: nowrap;
 }
 
-/* Primary / outline hero buttons */
-.theme-portfolio .pf-btn-solid {
+/* Pulsing "available" status dot */
+.theme-portfolio .pf-pulse-dot {
+    position: relative;
     background: var(--pf-primary);
-    color: #06120c;
+}
+
+.theme-portfolio .pf-pulse-dot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: var(--pf-primary);
+    animation: pf-pulse 2.4s var(--pf-ease) infinite;
+}
+
+@keyframes pf-pulse {
+    0% { transform: scale(1); opacity: 0.55; }
+    70%, 100% { transform: scale(3.2); opacity: 0; }
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────── */
+
+.theme-portfolio .pf-btn-solid,
+.theme-portfolio .pf-btn-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    font-weight: 600;
+    transition: transform 0.2s var(--pf-ease), background-color 0.2s var(--pf-ease),
+        border-color 0.2s var(--pf-ease), color 0.2s var(--pf-ease), box-shadow 0.2s var(--pf-ease);
+}
+
+.theme-portfolio .pf-btn-solid {
+    border: 1px solid transparent;
+    background: var(--pf-primary);
+    color: #ffffff;
+    box-shadow: 0 8px 24px -12px color-mix(in srgb, var(--pf-primary) 90%, transparent);
 }
 
 .theme-portfolio .pf-btn-solid:hover {
     background: var(--pf-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 14px 32px -12px color-mix(in srgb, var(--pf-primary) 95%, transparent);
 }
 
 .theme-portfolio .pf-btn-outline {
-    border: 1px solid var(--pf-border);
-    color: var(--pf-text);
+    border: 1px solid var(--pf-border-strong);
     background: transparent;
+    color: var(--pf-heading);
 }
 
 .theme-portfolio .pf-btn-outline:hover {
     border-color: var(--pf-primary);
     color: var(--pf-primary);
+    transform: translateY(-2px);
 }
 
-/* Round monogram social icons */
-.theme-portfolio .pf-social-icon {
-    display: inline-flex;
+.theme-portfolio .pf-btn-solid:active,
+.theme-portfolio .pf-btn-outline:active {
+    transform: translateY(0);
+}
+
+/* ── Cards ───────────────────────────────────────────────────────────── */
+
+.theme-portfolio .pf-card {
+    position: relative;
+    border: 1px solid var(--pf-border);
+    border-radius: 1rem;
+    background: var(--pf-bg-elevated);
+    box-shadow: var(--pf-shadow-card);
+    transition: transform 0.3s var(--pf-ease), border-color 0.3s var(--pf-ease),
+        box-shadow 0.3s var(--pf-ease), background-color 0.3s var(--pf-ease);
+}
+
+.theme-portfolio .pf-card-hover:hover {
+    transform: translateY(-4px);
+    border-color: color-mix(in srgb, var(--pf-primary) 45%, var(--pf-border));
+    box-shadow: var(--pf-shadow-lift);
+}
+
+/* The 2px accent rail that wipes in along the card's top edge on hover. */
+.theme-portfolio .pf-card-rail::after {
+    content: '';
+    position: absolute;
+    inset-inline: 1.25rem;
+    top: -1px;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(to right, var(--pf-primary), var(--pf-accent));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s var(--pf-ease);
+}
+
+.theme-portfolio .pf-card-rail:hover::after {
+    transform: scaleX(1);
+}
+
+/* ── Hero trust strip ────────────────────────────────────────────────── */
+
+.theme-portfolio .pf-stat {
+    position: relative;
+}
+
+.theme-portfolio .pf-stat + .pf-stat::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 15%;
+    height: 70%;
+    width: 1px;
+    background: var(--pf-border);
+}
+
+/* ── "What I do" service cards ───────────────────────────────────────── */
+
+.theme-portfolio .pf-service-icon {
+    display: flex;
     align-items: center;
     justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 999px;
+    width: 2.75rem;
+    height: 2.75rem;
     border: 1px solid var(--pf-border);
+    border-radius: 0.75rem;
+    background: var(--pf-primary-soft);
+    color: var(--pf-primary-bright);
+    font-size: 1.15rem;
+    transition: border-color 0.3s var(--pf-ease), background-color 0.3s var(--pf-ease), transform 0.3s var(--pf-ease);
+}
+
+.theme-portfolio .pf-service:hover .pf-service-icon {
+    border-color: color-mix(in srgb, var(--pf-primary) 50%, transparent);
+    background: color-mix(in srgb, var(--pf-primary) 20%, transparent);
+    transform: scale(1.05) rotate(-4deg);
+}
+
+/* The 01 / 02 / 03 index in the corner of a service card. */
+.theme-portfolio .pf-service-index {
+    position: absolute;
+    top: 1rem;
+    right: 1.25rem;
+    color: var(--pf-border-strong);
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    transition: color 0.3s var(--pf-ease);
+}
+
+.theme-portfolio .pf-service:hover .pf-service-index {
+    color: color-mix(in srgb, var(--pf-primary) 35%, transparent);
+}
+
+/* ── Experience timeline ─────────────────────────────────────────────── */
+
+/* A single continuous rail down the left of the experience list, drawn on the
+   <ol> so it spans every entry including the gaps between them. */
+.theme-portfolio .pf-timeline {
+    position: relative;
+}
+
+.theme-portfolio .pf-timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.4375rem;
+    top: 0.75rem;
+    bottom: 0.75rem;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--pf-primary), var(--pf-border) 30%, var(--pf-border) 70%, transparent);
+}
+
+.theme-portfolio .pf-timeline-item {
+    position: relative;
+    padding-left: 2.25rem;
+}
+
+.theme-portfolio .pf-timeline-dot {
+    position: absolute;
+    left: 0;
+    top: 0.4rem;
+    width: 0.9375rem;
+    height: 0.9375rem;
+    border: 2px solid var(--pf-bg);
+    border-radius: 999px;
+    background: var(--pf-bg-elevated);
+    box-shadow: 0 0 0 1px var(--pf-border-strong);
+    transition: background-color 0.3s var(--pf-ease), box-shadow 0.3s var(--pf-ease);
+}
+
+.theme-portfolio .pf-timeline-item:hover .pf-timeline-dot {
+    background: var(--pf-primary);
+    box-shadow: 0 0 0 1px var(--pf-primary), 0 0 0 5px var(--pf-primary-soft);
+}
+
+/* ── Technology grid ─────────────────────────────────────────────────── */
+
+/* Skill tile: a bordered row, not a centred tile. Left-aligned marks scan
+   faster than a grid of centred ones when there are a dozen of them. */
+.theme-portfolio .pf-skill {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid var(--pf-border);
+    border-radius: 0.75rem;
+    background: var(--pf-bg-elevated);
+    padding: 0.75rem;
+    transition: transform 0.25s var(--pf-ease), border-color 0.25s var(--pf-ease), background-color 0.25s var(--pf-ease);
+}
+
+.theme-portfolio .pf-skill:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--pf-primary) 40%, var(--pf-border));
+    background: color-mix(in srgb, var(--pf-primary) 8%, var(--pf-bg-elevated));
+}
+
+.theme-portfolio .pf-skill-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex-shrink: 0;
+    border-radius: 0.5rem;
+    background: var(--pf-bg-inset);
+    font-size: 1.05rem;
+    transition: background-color 0.25s var(--pf-ease);
+}
+
+.theme-portfolio .pf-skill:hover .pf-skill-mark {
+    background: var(--pf-primary-soft);
+}
+
+/* ── Navigation ──────────────────────────────────────────────────────── */
+
+/* Active/hover state is a filled pill rather than an underline: at 11px
+   uppercase an underline is easy to miss while scrolling, and the nav is the
+   only orientation cue a single-page site has. */
+.theme-portfolio .pf-nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.4rem 0.7rem;
     color: var(--pf-text-muted);
-    transition: color 0.2s ease, border-color 0.2s ease;
+    transition: color 0.2s var(--pf-ease), background-color 0.2s var(--pf-ease);
 }
 
-.theme-portfolio .pf-social-icon:hover {
-    color: var(--pf-primary);
-    border-color: var(--pf-primary);
+.theme-portfolio .pf-nav-link:hover,
+.theme-portfolio .pf-nav-link.is-active {
+    color: var(--pf-heading);
+    background: var(--pf-primary-soft);
 }
 
-/* Light/dark toggle button */
-.theme-portfolio .pf-theme-toggle {
+/* Reading-progress hairline pinned to the very top of the viewport. */
+.theme-portfolio .pf-scroll-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 2px;
+    width: 100%;
+    transform: scaleX(0);
+    transform-origin: left;
+    background: linear-gradient(to right, var(--pf-primary), var(--pf-accent));
+    will-change: transform;
+}
+
+/* Mobile hamburger — the inline nav is md:flex only, and on a single-page layout
+   it's the only way to reach a section. */
+.theme-portfolio .pf-icon-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 2.25rem;
     height: 2.25rem;
-    border-radius: 999px;
+    flex-shrink: 0;
     border: 1px solid var(--pf-border);
+    border-radius: 999px;
     color: var(--pf-text-muted);
-    transition: color 0.2s ease, border-color 0.2s ease;
+    transition: color 0.2s var(--pf-ease), border-color 0.2s var(--pf-ease), background-color 0.2s var(--pf-ease);
 }
 
-.theme-portfolio .pf-theme-toggle:hover {
+.theme-portfolio .pf-icon-button:hover {
     color: var(--pf-primary);
-    border-color: var(--pf-primary);
+    border-color: color-mix(in srgb, var(--pf-primary) 55%, transparent);
+    background: var(--pf-primary-soft);
 }
 
-.theme-portfolio .pf-theme-toggle .pf-icon-moon { display: inline; }
-.theme-portfolio .pf-theme-toggle .pf-icon-sun { display: none; }
-.theme-portfolio.pf-light .pf-theme-toggle .pf-icon-moon { display: none; }
-.theme-portfolio.pf-light .pf-theme-toggle .pf-icon-sun { display: inline; }
+/* The toggle shows the theme you would switch *to*: a moon while dark (tap for
+   light), a sun while light. Both SVGs are always in the DOM so the swap is a
+   display change and costs no reflow. */
+.theme-portfolio .pf-icon-button .pf-icon-moon { display: inline; }
+.theme-portfolio .pf-icon-button .pf-icon-sun { display: none; }
+.theme-portfolio.pf-light .pf-icon-button .pf-icon-moon { display: none; }
+.theme-portfolio.pf-light .pf-icon-button .pf-icon-sun { display: inline; }
 
 /* EN/BN pill */
 .theme-portfolio .pf-lang-pill {
@@ -165,85 +550,18 @@
 }
 
 .theme-portfolio .pf-lang-pill a {
-    padding: 0.3rem 0.7rem;
+    padding: 0.3rem 0.65rem;
     color: var(--pf-text-muted);
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: background-color 0.2s var(--pf-ease), color 0.2s var(--pf-ease);
+}
+
+.theme-portfolio .pf-lang-pill a:hover {
+    color: var(--pf-heading);
 }
 
 .theme-portfolio .pf-lang-pill a.is-active {
     background: var(--pf-primary);
-    color: #06120c;
-}
-
-/* Scoped scrollbar styling */
-.theme-portfolio ::-webkit-scrollbar {
-    width: 10px;
-}
-
-.theme-portfolio ::-webkit-scrollbar-track {
-    background: var(--pf-bg);
-}
-
-.theme-portfolio ::-webkit-scrollbar-thumb {
-    background: var(--pf-border);
-    border-radius: 999px;
-}
-
-.theme-portfolio ::-webkit-scrollbar-thumb:hover {
-    background: var(--pf-primary-dark);
-}
-
-/* Nav link underline-on-hover accent */
-.theme-portfolio .pf-nav-link {
-    position: relative;
-    color: var(--pf-text-muted);
-    transition: color 0.2s ease;
-}
-
-.theme-portfolio .pf-nav-link:hover,
-.theme-portfolio .pf-nav-link.is-active {
-    color: var(--pf-primary);
-}
-
-.theme-portfolio .pf-nav-link::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: -4px;
-    width: 0;
-    height: 1px;
-    background: var(--pf-primary);
-    transition: width 0.2s ease;
-}
-
-.theme-portfolio .pf-nav-link:hover::after,
-.theme-portfolio .pf-nav-link.is-active::after {
-    width: 100%;
-}
-
-/* The header is fixed, so a #fragment jump would otherwise tuck the section's
-   heading underneath it. */
-.theme-portfolio section[id] {
-    scroll-margin-top: 5rem;
-}
-
-/* Mobile hamburger — the inline nav is md:flex only, and on a single-page
-   layout it's the only way to reach a section. */
-.theme-portfolio .pf-nav-toggle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 999px;
-    border: 1px solid var(--pf-border);
-    color: var(--pf-text-muted);
-    transition: color 0.2s ease, border-color 0.2s ease;
-}
-
-.theme-portfolio .pf-nav-toggle:hover {
-    color: var(--pf-primary);
-    border-color: var(--pf-primary);
+    color: #ffffff;
 }
 
 /* Stacked dropdown panel under the header */
@@ -255,13 +573,13 @@
 
 .theme-portfolio .pf-mobile-nav-link {
     display: block;
-    padding: 0.85rem 1.5rem;
+    padding: 0.9rem 1.5rem;
     border-bottom: 1px solid var(--pf-border);
     color: var(--pf-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.1em;
     font-size: 0.75rem;
-    transition: color 0.2s ease, background-color 0.2s ease;
+    transition: color 0.2s var(--pf-ease), background-color 0.2s var(--pf-ease);
 }
 
 .theme-portfolio .pf-mobile-nav-link:hover,
@@ -270,104 +588,146 @@
     background: var(--pf-bg-elevated);
 }
 
-/* Project card hover lift */
-.theme-portfolio .pf-card {
-    background: var(--pf-bg-elevated);
+/* ── Social links ────────────────────────────────────────────────────── */
+
+.theme-portfolio .pf-social-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
     border: 1px solid var(--pf-border);
-    transition: transform 0.25s ease, border-color 0.25s ease;
-}
-
-.theme-portfolio .pf-card:hover {
-    transform: translateY(-4px);
-    border-color: var(--pf-primary-dark);
-}
-
-/* Staggered entrance animation — every section fades + rises in once on load */
-@keyframes pf-fade-up {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.theme-portfolio .pf-animate {
-    animation: pf-fade-up 0.6s ease both;
-}
-
-/* Small tech/skill card used in the Skills grid */
-.theme-portfolio .pf-skill-card {
-    background: var(--pf-bg-elevated);
-    border: 1px solid var(--pf-border);
-    transition: transform 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
-}
-
-.theme-portfolio .pf-skill-card:hover {
-    transform: translateY(-3px);
-    border-color: var(--pf-primary-dark);
-    background: color-mix(in srgb, var(--pf-bg-elevated) 85%, var(--pf-primary) 15%);
-}
-
-/* Segmented tab control (Experience / Education / Certifications) */
-.theme-portfolio .pf-tabs {
-    display: inline-grid;
-    border: 1px solid var(--pf-border);
-    background: var(--pf-bg-elevated);
-    border-radius: 999px;
-    padding: 0.25rem;
-}
-
-.theme-portfolio .pf-tab {
     border-radius: 999px;
     color: var(--pf-text-muted);
-    transition: color 0.2s ease, background-color 0.2s ease;
+    transition: color 0.2s var(--pf-ease), border-color 0.2s var(--pf-ease),
+        background-color 0.2s var(--pf-ease), transform 0.2s var(--pf-ease);
 }
 
-.theme-portfolio .pf-tab.is-active {
-    background: var(--pf-primary);
-    color: #06120c;
+.theme-portfolio .pf-social-icon:hover {
+    color: var(--pf-primary);
+    border-color: color-mix(in srgb, var(--pf-primary) 55%, transparent);
+    background: var(--pf-primary-soft);
+    transform: translateY(-2px);
 }
 
-/* Pulsing "available" status dot */
-.theme-portfolio .pf-pulse-dot {
-    background: var(--pf-primary);
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--pf-primary) 60%, transparent);
-    animation: pf-pulse 2s ease-out infinite;
-}
-
-@keyframes pf-pulse {
-    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--pf-primary) 45%, transparent); }
-    70% { box-shadow: 0 0 0 8px transparent; }
-    100% { box-shadow: 0 0 0 0 transparent; }
-}
-
-/* Connect-with-me link tile */
 .theme-portfolio .pf-connect-tile {
-    background: var(--pf-bg-elevated);
     border: 1px solid var(--pf-border);
-    color: var(--pf-text);
-    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+    background: var(--pf-bg-elevated);
+    transition: transform 0.25s var(--pf-ease), border-color 0.25s var(--pf-ease), background-color 0.25s var(--pf-ease);
 }
 
 .theme-portfolio .pf-connect-tile:hover {
-    transform: translateY(-3px) scale(1.02);
-    border-color: var(--pf-primary-dark);
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--pf-primary) 45%, var(--pf-border));
 }
 
-/* Tech badge chip used on project cards */
-.theme-portfolio .pf-chip {
-    border: 1px solid var(--pf-border);
+.theme-portfolio .pf-connect-icon {
+    background: var(--pf-bg-inset);
     color: var(--pf-text-muted);
-    background: var(--pf-bg-elevated);
+    transition: background-color 0.25s var(--pf-ease), color 0.25s var(--pf-ease);
 }
+
+.theme-portfolio .pf-connect-tile:hover .pf-connect-icon {
+    background: var(--pf-primary-soft);
+    color: var(--pf-primary-bright);
+}
+
+/* ── Contact ─────────────────────────────────────────────────────────── */
 
 /* The shared contact-form component reads --form-* custom properties (with
    light defaults baked into its own view) — redefining them here re-themes
    it to match this page, dark inputs included, with no changes to the
    component itself and no !important fights needed. */
 .theme-portfolio .pf-contact-form {
-    --form-label: var(--pf-text);
+    --form-label: var(--pf-heading);
     --form-border: var(--pf-border);
-    --form-input-bg: var(--pf-bg);
+    --form-input-bg: var(--pf-bg-inset);
     --form-text: var(--pf-text);
     --form-placeholder: var(--pf-text-muted);
     --form-accent: var(--pf-primary);
     --form-accent-hover: var(--pf-primary-dark);
+}
+
+/* ── Motion ──────────────────────────────────────────────────────────── */
+
+/* Scroll-triggered reveal. The hidden state is scoped to .is-reveal-ready,
+   which script.js adds to <body> immediately before it starts observing — so if
+   the script 404s, or IntersectionObserver is missing, the class is never added
+   and every block is simply visible. Nothing here can hide content that the
+   script has not taken responsibility for revealing. */
+.theme-portfolio.is-reveal-ready [data-pf-reveal] {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.7s var(--pf-ease), transform 0.7s var(--pf-ease);
+    transition-delay: var(--pf-reveal-delay, 0ms);
+}
+
+.theme-portfolio.is-reveal-ready [data-pf-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+}
+
+/* The hero's entrance is a load-time animation, not a reveal — it must play
+   before the visitor scrolls, and must not wait on an observer. */
+@keyframes pf-fade-up {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.theme-portfolio .pf-animate {
+    animation: pf-fade-up 0.7s var(--pf-ease) both;
+}
+
+/* Users who ask their OS for less motion get none of it: no entrance
+   animations, no reveals, no pulsing dot, no smooth scrolling. */
+@media (prefers-reduced-motion: reduce) {
+    .theme-portfolio *,
+    .theme-portfolio *::before,
+    .theme-portfolio *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .theme-portfolio [data-pf-reveal] {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* ── Header ──────────────────────────────────────────────────────────── */
+
+/* Past the fold the bar tightens and picks up a stronger backdrop. Without it
+   the fixed bar sits at the same weight over dense content the whole way down,
+   which flattens the hierarchy of a long one-pager. */
+.theme-portfolio .pf-header {
+    transition: padding 0.25s var(--pf-ease), background-color 0.25s var(--pf-ease),
+        border-color 0.25s var(--pf-ease), box-shadow 0.25s var(--pf-ease);
+}
+
+.theme-portfolio .pf-header.is-scrolled {
+    background-color: color-mix(in srgb, var(--pf-bg) 88%, transparent);
+    border-bottom-color: var(--pf-border);
+    box-shadow: 0 1px 24px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Scoped scrollbar ────────────────────────────────────────────────── */
+
+.theme-portfolio ::-webkit-scrollbar {
+    width: 10px;
+}
+
+.theme-portfolio ::-webkit-scrollbar-track {
+    background: var(--pf-bg);
+}
+
+.theme-portfolio ::-webkit-scrollbar-thumb {
+    background: var(--pf-border-strong);
+    border: 3px solid var(--pf-bg);
+    border-radius: 999px;
+}
+
+.theme-portfolio ::-webkit-scrollbar-thumb:hover {
+    background: var(--pf-primary);
 }

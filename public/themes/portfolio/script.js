@@ -51,6 +51,29 @@
         }
     }
 
+    // Runs a callback on scroll at most once per frame. Several features below
+    // all need the scroll position; without this each adds its own listener and
+    // the page pays for three rAF-throttled reads per frame instead of one.
+    var scrollHandlers = [];
+    var scrollQueued = false;
+
+    function onScroll(fn) {
+        scrollHandlers.push(fn);
+    }
+
+    function flushScroll() {
+        scrollQueued = false;
+        for (var i = 0; i < scrollHandlers.length; i++) {
+            scrollHandlers[i]();
+        }
+    }
+
+    window.addEventListener('scroll', function () {
+        if (scrollQueued) return;
+        scrollQueued = true;
+        window.requestAnimationFrame(flushScroll);
+    }, { passive: true });
+
     // Marks the nav link whose section is currently in view. The portfolio is a
     // single page, so a link is never "the current URL" the way it would be on
     // a multi-page site — this is what tells you where you are while scrolling.
@@ -91,18 +114,77 @@
             });
         }
 
-        var queued = false;
-        window.addEventListener('scroll', function () {
-            if (queued) return;
-            queued = true;
-            window.requestAnimationFrame(function () {
-                queued = false;
-                highlight();
-            });
-        }, { passive: true });
-
+        onScroll(highlight);
         window.addEventListener('resize', highlight, { passive: true });
         highlight();
+    }
+
+    // Fades each [data-pf-reveal] block in the first time it enters the viewport.
+    //
+    // The hidden state lives in CSS, so it has to be undone before anything is
+    // observed — hence the .is-reveal-ready class flipped on <body> first. If
+    // this script never runs (or IntersectionObserver is missing) that class is
+    // never added, nothing is ever hidden, and the page is simply static. A
+    // portfolio that renders blank because an animation library 404'd is not a
+    // risk worth taking for a fade.
+    function bindReveal() {
+        var targets = Array.prototype.slice.call(document.querySelectorAll('[data-pf-reveal]'));
+        if (!targets.length) return;
+
+        if (!('IntersectionObserver' in window) || prefersReducedMotion()) {
+            targets.forEach(function (el) { el.classList.add('is-visible'); });
+            return;
+        }
+
+        document.body.classList.add('is-reveal-ready');
+
+        var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+            });
+        }, {
+            // Fire a little before the element's top edge reaches the bottom of
+            // the viewport, so the motion is already underway by the time the
+            // block is properly in view rather than starting on arrival.
+            rootMargin: '0px 0px -12% 0px',
+            threshold: 0.05,
+        });
+
+        targets.forEach(function (el) { observer.observe(el); });
+    }
+
+    // The 2px gradient hairline under the header showing how far down the page
+    // you are. Driven by a transform rather than a width so it stays on the
+    // compositor for the whole scroll.
+    function bindScrollProgress() {
+        var bar = document.querySelector('[data-pf-scroll-progress]');
+        if (!bar) return;
+
+        function update() {
+            var scrollable = document.body.scrollHeight - window.innerHeight;
+            var ratio = scrollable > 0 ? window.scrollY / scrollable : 0;
+            bar.style.transform = 'scaleX(' + Math.min(1, Math.max(0, ratio)) + ')';
+        }
+
+        onScroll(update);
+        window.addEventListener('resize', update, { passive: true });
+        update();
+    }
+
+    // Condenses the header once the page has scrolled off the hero, so the bar
+    // stops competing with the content it sits above.
+    function bindHeaderShrink() {
+        var header = document.querySelector('.pf-header');
+        if (!header) return;
+
+        function update() {
+            header.classList.toggle('is-scrolled', window.scrollY > 24);
+        }
+
+        onScroll(update);
+        update();
     }
 
     function bindThemeToggle() {
@@ -115,11 +197,18 @@
         });
     }
 
+    function prefersReducedMotion() {
+        return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+
     applyStoredTheme();
 
     document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('[data-typewriter]').forEach(typeElement);
         bindThemeToggle();
+        bindReveal();
         bindSectionSpy();
+        bindScrollProgress();
+        bindHeaderShrink();
     });
 })();

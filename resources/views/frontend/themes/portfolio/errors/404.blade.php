@@ -40,35 +40,48 @@
     $siteName = \App\Models\Setting::get('site_name', config('app.name'));
     $siteIcon = \App\Models\Setting::get('site_icon_white') ?: \App\Models\Setting::get('site_icon');
 
-    $socialIcons = [
-        'facebook' => ['abbr' => 'FB', 'label' => 'Facebook'],
-        'twitter' => ['abbr' => 'X', 'label' => 'Twitter'],
-        'instagram' => ['abbr' => 'IG', 'label' => 'Instagram'],
-        'youtube' => ['abbr' => 'YT', 'label' => 'YouTube'],
-        'linkedin' => ['abbr' => 'IN', 'label' => 'LinkedIn'],
-        'tiktok' => ['abbr' => 'TT', 'label' => 'TikTok'],
+    $platformLabels = [
+        'facebook' => 'Facebook',
+        'twitter' => 'X',
+        'instagram' => 'Instagram',
+        'youtube' => 'YouTube',
+        'linkedin' => 'LinkedIn',
+        'tiktok' => 'TikTok',
+        'github' => 'GitHub',
+        'gitlab' => 'GitLab',
+        'behance' => 'Behance',
+        'dribbble' => 'Dribbble',
+        'whatsapp' => 'WhatsApp',
+        'telegram' => 'Telegram',
     ];
-    $socials = collect($socialIcons)
-        ->map(fn ($meta, $platform) => ['url' => \App\Models\SocialLink::url($platform), 'abbr' => $meta['abbr'], 'label' => $meta['label']])
-        ->filter(fn ($social) => filled($social['url']))
+    $socials = collect(array_keys($platformLabels))
+        ->map(fn (string $platform) => [
+            'platform' => $platform,
+            'label' => $platformLabels[$platform],
+            'url' => \App\Models\SocialLink::url($platform),
+        ])
+        ->filter(fn (array $social) => filled($social['url']))
+        ->sortBy(fn (array $social) => array_search($social['platform'], array_keys($platformLabels)))
         ->values();
 @endphp
 
 @include('frontend.themes.portfolio.partials.header')
 
 <main>
-    <section class="pf-grid-bg relative flex min-h-[80vh] items-center overflow-hidden px-6 pt-24">
-        <div class="mx-auto grid max-w-4xl items-center gap-10 text-center md:grid-cols-2 md:text-left">
-            <h1 class="pf-gradient-text pf-mono text-8xl font-bold leading-none">404</h1>
+    <section class="pf-grid-bg relative flex min-h-[80vh] items-center overflow-hidden px-6 pt-32 pb-20">
+        <div class="pf-glow pointer-events-none absolute top-0 left-1/2 h-105 w-105 -translate-x-1/2 rounded-full opacity-50" aria-hidden="true"></div>
+
+        <div class="relative mx-auto grid max-w-4xl items-center gap-12 md:grid-cols-2">
+            <h1 class="pf-gradient-text pf-mono text-8xl leading-none font-bold sm:text-9xl">404</h1>
 
             <div>
-                <span class="pf-badge pf-mono mb-5 inline-flex rounded-full px-4 py-2 text-xs font-medium">
+                <span class="pf-badge pf-mono mb-6 inline-flex px-4 py-2 text-[11px] font-medium tracking-wide">
                     {{ __('Error') }} &middot; {{ __('Not found') }}
                 </span>
                 <h2 class="pf-heading text-2xl font-bold sm:text-3xl">{{ __('Sorry, page not found') }}</h2>
-                <p class="mt-3 text-(--pf-text-muted)">{{ __('This page does not exist. The one-pager below is all there is — try one of its sections.') }}</p>
+                <p class="mt-3 text-sm leading-relaxed text-(--pf-text-muted)">{{ __('This page does not exist. The sections below are all there is — try one of them.') }}</p>
 
-                <a href="{{ url('/') }}" class="pf-btn-solid pf-mono mt-8 inline-flex items-center gap-2 rounded-full px-6 py-3 text-xs font-semibold uppercase tracking-widest">
+                <a href="{{ url('/') }}" class="pf-btn-solid pf-mono mt-8 px-7 py-3 text-xs tracking-wider uppercase">
                     {{ __('Back to homepage') }}
                     <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="9 18 15 12 9 6" />

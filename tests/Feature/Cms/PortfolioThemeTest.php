@@ -18,7 +18,7 @@ it('seeds a portfolio menu of its own, separate from the frontend menu', functio
 
     expect(Menu::where('slug', 'portfolio')->where('name', 'Portfolio')->exists())->toBeTrue()
         ->and(Frontend::portfolioMenuItems()->pluck('label')->all())
-        ->toBe(['Home', 'Projects', 'Experience', 'Technology', 'Contact']);
+        ->toBe(['Home', 'What I Do', 'Projects', 'Experience', 'Technology', 'Testimonials', 'Contact']);
 
     // Nothing seeded for the portfolio may leak into the ecommerce theme's nav.
     expect(MenuItem::where('group', 'portfolio')->exists())->toBeTrue()
@@ -29,7 +29,7 @@ it('is idempotent, so re-seeding neither duplicates items nor orphans the admin 
     $this->seed(PortfolioMenuSeeder::class);
     $this->seed(PortfolioMenuSeeder::class);
 
-    expect(MenuItem::where('group', 'portfolio')->count())->toBe(5)
+    expect(MenuItem::where('group', 'portfolio')->count())->toBe(7)
         ->and(Menu::where('slug', 'portfolio')->count())->toBe(1);
 });
 
@@ -39,7 +39,7 @@ it('keeps admin edits to a seeded item across a re-seed', function () {
 
     $this->seed(PortfolioMenuSeeder::class);
 
-    expect(Frontend::portfolioMenuItems()->pluck('label')->all())->toBe(['Home', 'Work', 'Experience', 'Technology', 'Contact']);
+    expect(Frontend::portfolioMenuItems()->pluck('label')->all())->toBe(['Home', 'What I Do', 'Work', 'Experience', 'Technology', 'Testimonials', 'Contact']);
 });
 
 it('points every seeded anchor at a section the one-pager actually renders', function () {

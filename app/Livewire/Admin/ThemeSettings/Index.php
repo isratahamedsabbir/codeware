@@ -32,6 +32,23 @@ class Index extends Component
     public const MAX_HERO_SLIDES = HeroSlides::MAX;
 
     /**
+     * Row cap for a repeater whose theme declaration omits `:max`. Mirrors the
+     * `max` default on <x-admin-repeatable-fields> — the two must agree, or a
+     * repeater with no declared cap would be refused by the server at a
+     * different number of rows than the button offers.
+     */
+    private const DEFAULT_REPEATER_MAX = 24;
+
+    /**
+     * declaredRepeaterMax() re-reads every theme's settings.blade.php, and a
+     * single save asks for the cap once per repeater, so the parse is memoised
+     * for the lifetime of the request.
+     *
+     * @var array<string, int>|null
+     */
+    private ?array $repeaterMaxes = null;
+
+    /**
      * The homepage hero slider, in order — each slide {image, title,
      * description, link} (see App\Support\HeroSlides). Persisted as a JSON
      * list in `home_hero_slides`; the first image is mirrored into
@@ -40,6 +57,25 @@ class Index extends Component
      * @var array<int, array{image: string, title: string, description: string, link: string}>
      */
     public array $heroSlides = [];
+
+    /**
+     * Repeating theme fields, keyed by their "theme_{slug}_*" setting key.
+     *
+     * Some theme settings are lists rather than single values — the portfolio's
+     * trust stats, service cards, education and certifications. Each is stored as
+     * one JSON setting (see PortfolioProfile) rather than as a table, because
+     * they are copy, not queryable content, and a theme that can be zipped out
+     * cannot bring a migration with it.
+     *
+     * $repeaters is the form-side mirror of those settings: 'theme_portfolio_services'
+     * => [ ['title' => ..., 'description' => ..., 'icon' => ...], ... ]. The keys
+     * are discovered from the active theme's own settings.blade.php (see
+     * declaredRepeaterKeys()), so this component stays theme-agnostic — a theme
+     * that declares no repeaters simply gets an empty array.
+     *
+     * @var array<string, array<int, array<string, string>>>
+     */
+    public array $repeaters = [];
 
     public function mount(): void
     {
@@ -54,9 +90,106 @@ class Index extends Component
             $this->settings[$key] = $row?->type === 'boolean' ? (bool) $value : (string) $value;
         }
 
+        $this->loadRepeaters();
+
         // Older installs (plain image URLs, or only the single hero image) load
         // as image-only slides.
         $this->heroSlides = HeroSlides::stored() ?: [HeroSlides::blank()];
+    }
+
+    /**
+     * Hydrate every declared repeater from its stored JSON, normalised to a list
+     * of flat string maps.
+     *
+     * A setting row is free text, so the value can be a JSON array, a JSON
+     * object, or something a human typed into the database. None of those may
+     * fatal the settings screen, and an unparseable value is treated as "no rows
+     * yet" — which is the same state a brand-new field is in, so the form still
+     * renders and the owner can retype it.
+     *
+     * This screen is deliberately more forgiving than the storefront, which drops
+     * a JSON object outright (see App\Support\PortfolioProfile::rows()). Here a
+     * value that decodes to an object is shown as one editable row, so a bad
+     * write is something the owner can see and delete instead of something that
+     * silently reappears as [] the next time they open the screen.
+     *
+     * @return array<string, array<int, array<string, string>>>
+     */
+    protected function loadRepeaters(): void
+    {
+        $keys = $this->declaredRepeaterKeys();
+        $rows = Setting::whereIn('key', $keys)->pluck('value', 'key');
+
+        foreach ($keys as $key) {
+            $decoded = json_decode((string) $rows->get($key, '[]'), true);
+
+            $this->repeaters[$key] = is_array($decoded)
+                ? collect($decoded)
+                    ->filter(fn ($row) => is_array($row))
+                    ->map(fn (array $row) => collect($row)
+                        ->map(fn ($value) => is_scalar($value) ? (string) $value : '')
+                        ->all())
+                    ->values()
+                    ->all()
+                : [];
+        }
+    }
+
+    /**
+     * Add a blank row to a declared repeater.
+     *
+     * Refuses past the cap as well as hiding the button at it. The button is the
+     * affordance for a person; this is the rule, and a Livewire method is
+     * reachable directly by anything that can talk to the endpoint.
+     *
+     * @param  string  $key  the repeater's setting key
+     * @param  array<int, string>  $fields  the field names a new row starts with
+     */
+    public function addRepeaterRow(string $key, array $fields = ['title']): void
+    {
+        if (! array_key_exists($key, $this->repeaters)) {
+            return;
+        }
+
+        if (count($this->repeaters[$key]) >= $this->repeaterMax($key)) {
+            return;
+        }
+
+        $this->repeaters[$key][] = array_fill_keys($fields, '');
+    }
+
+    public function removeRepeaterRow(string $key, int $index): void
+    {
+        if (! array_key_exists($key, $this->repeaters) || ! array_key_exists($index, $this->repeaters[$key])) {
+            return;
+        }
+
+        unset($this->repeaters[$key][$index]);
+
+        $this->repeaters[$key] = array_values($this->repeaters[$key]);
+    }
+
+    /**
+     * Move a repeater row up or down. Reordering is the whole point of a list
+     * setting — the storefront prints rows in stored order, so "add" alone would
+     * leave the owner unable to put their best project first.
+     */
+    public function moveRepeaterRow(string $key, int $index, string $direction): void
+    {
+        if (! array_key_exists($key, $this->repeaters)) {
+            return;
+        }
+
+        $rows = array_values($this->repeaters[$key]);
+        $target = $direction === 'up' ? $index - 1 : $index + 1;
+
+        if ($index < 0 || $index >= count($rows) || $target < 0 || $target >= count($rows)) {
+            return;
+        }
+
+        [$rows[$index], $rows[$target]] = [$rows[$target], $rows[$index]];
+
+        $this->repeaters[$key] = $rows;
     }
 
     public function addHeroSlide(): void
@@ -96,6 +229,8 @@ class Index extends Component
             }
         }
 
+        $this->saveRepeaters();
+
         AdminActivity::log('updated', 'Theme settings updated');
 
         // A real browser reload, same as Settings\Index::save(), so anything
@@ -107,6 +242,38 @@ class Index extends Component
     public function resetSettings(): void
     {
         $this->mount();
+    }
+
+    /**
+     * Write every declared repeater back to its JSON setting.
+     *
+     * Rows are trimmed and re-indexed, and a row whose fields are all blank is
+     * dropped: the repeater UI always leaves one empty row on screen for the
+     * owner to fill in, and persisting that would put an empty card on the
+     * public page. Trimming on the way in also means a value that used to render
+     * as " Laravel" cannot reach the storefront after a round trip.
+     *
+     * Rows past the declared cap are dropped last. A cap is a layout promise
+     * about how many rows the theme can lay out, so the stored list is truncated
+     * to it even if a hand-crafted request arrived with more — the first rows
+     * win, which is the same rows the reordering UI would have kept at the top.
+     */
+    protected function saveRepeaters(): void
+    {
+        foreach ($this->repeaters as $key => $rows) {
+            $clean = collect($rows)
+                ->map(fn ($row) => collect(is_array($row) ? $row : [])
+                    ->map(fn ($value) => is_scalar($value) ? trim((string) $value) : '')
+                    ->all())
+                ->reject(fn (array $row) => collect($row)->every(fn (string $value) => $value === ''))
+                ->take($this->repeaterMax($key))
+                ->values()
+                ->all();
+
+            // An emptied-out list is stored as [] rather than deleted, so the
+            // storefront's "is this section empty" check and this form agree.
+            Setting::set($key, json_encode($clean));
+        }
     }
 
     /**
@@ -366,10 +533,96 @@ class Index extends Component
             array_push($declared, ...$matches[1]);
         }
 
+        // A repeater's key matches the pattern above too, because the theme names
+        // it the same way. It is a list, not a text field, so it is excluded
+        // here and lives only in $repeaters — otherwise save() would write its
+        // JSON back through the scalar bag as a plain string.
+        $repeaters = $this->declaredRepeaterKeys();
+
         return array_values(array_unique([
-            ...Setting::where('key', 'like', 'theme\\_%')->pluck('key')->all(),
-            ...$declared,
+            ...array_diff(Setting::where('key', 'like', 'theme\\_%')->pluck('key')->all(), $repeaters),
+            ...array_diff($declared, $repeaters),
         ]));
+    }
+
+    /**
+     * Every theme-scoped setting that holds a *list* of rows, discovered the same
+     * way scopedThemeKeys() discovers scalar ones: a theme declares one by
+     * rendering <x-admin-repeatable-fields setting-key="theme_{slug}_*">, and this
+     * screen grows the matching add/remove/reorder UI for it.
+     *
+     * The marker is a distinct attribute rather than a plain `key="theme_..."`
+     * because that is exactly how a *scalar* theme setting is declared, and the
+     * two must not be confused: loading a repeater's key into the scalar
+     * $settings bag would have save() write its raw JSON back as a text value
+     * and wipe the rows. That is why scopedThemeKeys() subtracts these.
+     *
+     * @return array<int, string>
+     */
+    private function declaredRepeaterKeys(): array
+    {
+        $declared = [];
+        foreach (glob(resource_path('views/frontend/themes/*/settings.blade.php')) ?: [] as $file) {
+            preg_match_all('/setting-key=[\'"](theme_[a-z0-9_]+)[\'"]/', (string) file_get_contents($file), $matches);
+            array_push($declared, ...$matches[1]);
+        }
+
+        return array_values(array_unique($declared));
+    }
+
+    /**
+     * The row cap each declared repeater ships with, keyed by setting key.
+     *
+     * A cap is a *layout* decision — the portfolio trust strip is a four-column
+     * grid, so a fifth stat has nowhere to go — and the theme states it once, as
+     * :max on the component. Reading it back from the same declaration keeps the
+     * button that offers the row and the server that refuses it in agreement,
+     * instead of leaving the cap to live only in the blade where a crafted
+     * request walks straight past it.
+     *
+     * Read per-file rather than by scanning the whole file for numbers, so a
+     * `:max` belonging to some other component on the page cannot be mistaken
+     * for this one's.
+     *
+     * @return array<string, int>
+     */
+    private function declaredRepeaterMax(): array
+    {
+        if ($this->repeaterMaxes !== null) {
+            return $this->repeaterMaxes;
+        }
+
+        $maxes = [];
+
+        foreach (glob(resource_path('views/frontend/themes/*/settings.blade.php')) ?: [] as $file) {
+            $source = (string) file_get_contents($file);
+
+            // Each declaration is a single <x-admin-repeatable-fields ... /> tag;
+            // capturing the tag body and reading the two attributes out of it is
+            // what keeps one repeater's :max from bleeding into the next.
+            preg_match_all('/<x-admin-repeatable-fields\b(.*?)\/>/s', $source, $tags);
+
+            foreach ($tags[1] as $tag) {
+                if (! preg_match('/setting-key=[\'"](theme_[a-z0-9_]+)[\'"]/', $tag, $key)) {
+                    continue;
+                }
+
+                if (preg_match('/:max=[\'"](\d+)[\'"]/', $tag, $max)) {
+                    $maxes[$key[1]] = max(1, (int) $max[1]);
+                }
+            }
+        }
+
+        return $this->repeaterMaxes = $maxes;
+    }
+
+    /**
+     * The cap that applies to one repeater, falling back to the component's own
+     * default when a theme omits :max.
+     */
+    private function repeaterMax(string $key): int
+    {
+        return $this->declaredRepeaterMax()[$key] ?? self::DEFAULT_REPEATER_MAX;
     }
 
     /**

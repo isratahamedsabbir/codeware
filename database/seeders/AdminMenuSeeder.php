@@ -83,14 +83,10 @@ class AdminMenuSeeder extends Seeder
 
         $this->standalone('Pages', 'document', 'admin.pages', 20);
 
-        // Portfolio — the three content lists the portfolio theme renders as its
-        // #projects, #experience and #technology sections, so they're grouped
-        // together rather than scattered among the storefront's own modules.
-        $this->group('Portfolio', 21, [
-            ['Projects', 'folder-open', 'admin.portfolio-projects'],
-            ['Experience', 'clock', 'admin.portfolio-experiences'],
-            ['Skills', 'sparkles', 'admin.portfolio-skills'],
-        ]);
+        // No Portfolio group: projects, experience, skills and testimonials are
+        // edited on the Theme Settings screen, which is already in the sidebar
+        // under Library & System. A second group of links to the same data in a
+        // different place is how an owner ends up editing yesterday's version.
 
         $this->group('Localization', 22, [
             ['Languages', 'language', 'admin.languages'],

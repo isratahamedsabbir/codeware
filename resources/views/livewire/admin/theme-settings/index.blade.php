@@ -12,11 +12,11 @@
             'cta'   => 'bg-white text-[#045b30]',
         ],
         'portfolio' => [
-            'bg'    => 'bg-[#0a0e17]',
-            'nav'   => 'bg-[#111827]',
-            'trim'  => 'text-emerald-400',
-            'hero'  => 'from-emerald-500 to-emerald-700',
-            'cta'   => 'bg-emerald-500 text-white',
+            'bg'    => 'bg-[#06080f]',
+            'nav'   => 'bg-[#0b0f1a]',
+            'trim'  => 'text-indigo-400',
+            'hero'  => 'from-indigo-500 to-cyan-400',
+            'cta'   => 'bg-indigo-500 text-white',
         ],
         'default' => [
             'bg'    => 'bg-slate-100',
@@ -112,23 +112,25 @@
                                     @endforeach
                                 </div>
                             @elseif ($slug === 'portfolio')
-                                {{-- Dark portfolio hero --}}
-                                <div class="flex flex-1 flex-col items-center justify-center rounded-md border border-white/5 px-3 text-center">
-                                    <span class="rounded-full bg-emerald-500/15 px-2.5 py-0.5 font-mono text-[8px] font-semibold text-emerald-300 ring-1 ring-emerald-500/30">
-                                        Full Stack Developer
-                                    </span>
-                                    <div class="mt-2 space-y-1">
-                                        <div class="mx-auto h-1.5 w-24 rounded bg-zinc-600"></div>
-                                        <div class="mx-auto h-1.5 w-20 rounded bg-gradient-to-r {{ $preview['hero'] }}"></div>
+                                {{-- Split portfolio hero: copy on the left, portrait on the right,
+                                     with the stat strip peeking below it. --}}
+                                <div class="flex flex-1 items-center gap-2 rounded-md border border-white/5 px-2.5 py-3">
+                                    <div class="flex flex-1 flex-col items-start gap-1.5 text-left">
+                                        <span class="rounded-full bg-indigo-500/15 px-2 py-0.5 font-mono text-[8px] font-semibold text-indigo-300 ring-1 ring-indigo-500/30">
+                                            Available for work
+                                        </span>
+                                        <div class="h-1.5 w-16 rounded bg-zinc-600"></div>
+                                        <div class="h-1.5 w-20 rounded bg-gradient-to-r {{ $preview['hero'] }}"></div>
+                                        <div class="mt-0.5 flex gap-1">
+                                            <span class="rounded-full {{ $preview['cta'] }} px-1.5 py-0.5 text-[7px] font-semibold">Projects</span>
+                                            <span class="rounded-full border border-white/20 px-1.5 py-0.5 text-[7px] font-semibold text-zinc-300">CV</span>
+                                        </div>
                                     </div>
-                                    <div class="mt-3 flex gap-1.5">
-                                        <span class="rounded-full {{ $preview['cta'] }} px-2.5 py-0.5 text-[8px] font-semibold">View Projects</span>
-                                        <span class="rounded-full border border-white/20 px-2.5 py-0.5 text-[8px] font-semibold text-zinc-300">Contact Me</span>
-                                    </div>
+                                    <span class="h-14 w-11 shrink-0 rounded-md border border-white/10 bg-gradient-to-br from-indigo-500/30 to-cyan-400/20"></span>
                                 </div>
-                                <div class="flex justify-center gap-1.5">
-                                    @foreach ([1, 2, 3, 4, 5] as $dot)
-                                        <span class="size-1 rounded-full bg-emerald-400/60"></span>
+                                <div class="flex justify-between gap-1 rounded-md border border-white/5 px-2 py-1.5">
+                                    @foreach (range(1, 4) as $stat)
+                                        <span class="h-1 flex-1 rounded bg-zinc-700"></span>
                                     @endforeach
                                 </div>
                             @else
