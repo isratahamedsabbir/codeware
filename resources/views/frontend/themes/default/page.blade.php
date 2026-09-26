@@ -50,6 +50,11 @@
                             {{ __('Vendor Dashboard') }}
                         </a>
                     @endcan
+                    @can('access-delivery-portal')
+                        <a href="{{ route('delivery.dashboard') }}" class="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50">
+                            {{ __('Delivery Dashboard') }}
+                        </a>
+                    @endcan
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer">
@@ -63,6 +68,11 @@
                     @if ($showVendorLogin ?? false)
                         <a href="{{ route('vendor.login') }}" class="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50">
                             {{ __('Vendor Login') }}
+                        </a>
+                    @endif
+                    @if ($showDeliveryLogin ?? false)
+                        <a href="{{ route('delivery.login') }}" class="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50">
+                            {{ __('Delivery Login') }}
                         </a>
                     @endif
                 @endauth

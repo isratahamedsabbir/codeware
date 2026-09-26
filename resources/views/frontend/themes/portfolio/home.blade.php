@@ -17,6 +17,7 @@
         $pfHeroTitle = \App\Models\Setting::get('theme_portfolio_hero_title', 'Full Stack Developer');
         $pfHeroTagline = \App\Models\Setting::get('theme_portfolio_hero_tagline', 'Building fast, reliable, and scalable web applications with modern tools. Passionate about clean code and thoughtful design.');
         $pfAvailability = \App\Models\Setting::get('theme_portfolio_availability', 'Available for new projects');
+
         $socialIcons = [
             'facebook' => ['abbr' => 'FB', 'label' => 'Facebook'],
             'twitter' => ['abbr' => 'X', 'label' => 'Twitter'],
@@ -30,19 +31,12 @@
             ->filter(fn ($social) => filled($social['url']))
             ->values();
 
-        // Placeholder showcase content — swap these arrays out (or wire them to
-        // CMS sections) once real project/experience/skills data is ready.
-        $projects = [
-            ['icon' => '🚀', 'title' => 'SaaS Starter Platform', 'description' => 'Multi-tenant SaaS boilerplate with subscription billing, team management, and role-based access.', 'tech' => ['Laravel', 'Livewire', 'Stripe', 'Redis'], 'stats' => 'Open Source', 'link' => '#'],
-            ['icon' => '🏨', 'title' => 'Hotel Booking System', 'description' => 'Multi-property booking platform with real-time availability, payments, and guest messaging.', 'tech' => ['Laravel', 'MySQL', 'Stripe', 'Pusher'], 'stats' => 'In Production', 'link' => '#'],
-            ['icon' => '💼', 'title' => 'Freelance Marketplace', 'description' => 'Service marketplace with subscription plans, escrow payments, and a dispute resolution center.', 'tech' => ['Laravel', 'Livewire', 'MySQL'], 'stats' => 'Beta', 'link' => '#'],
-            ['icon' => '⚙️', 'title' => 'Inventory Automation', 'description' => 'Warehouse tracking system with barcode scanning, live dashboards, and predictive restocking alerts.', 'tech' => ['PHP', 'MySQL', 'JavaScript'], 'stats' => 'Internal Tool', 'link' => '#'],
-        ];
-
-        $experience = [
-            ['role' => 'Full Stack Developer', 'company' => 'Your Company', 'period' => '2024 - Present', 'description' => 'Building and maintaining scalable web applications, owning features end-to-end from database design to deployment.'],
-            ['role' => 'Backend Developer', 'company' => 'Previous Company', 'period' => '2022 - 2024', 'description' => 'Designed RESTful APIs and optimized database performance for high-traffic applications.'],
-        ];
+        // Projects, Experience and Technology are admin-managed (Portfolio ▸ Projects /
+        // Experience / Skills at /admin/portfolio) — Education and Certifications are
+        // still placeholder arrays, and the next step is to give them their own screens.
+        $projects = \App\Support\Portfolio::projects();
+        $experience = \App\Support\Portfolio::experiences();
+        $skillGroups = \App\Support\Portfolio::skillGroups();
 
         $education = [
             ['degree' => 'B.Sc. in Computer Science', 'school' => 'Your University', 'period' => '2018 - 2022', 'description' => ''],
@@ -52,67 +46,9 @@
         $certifications = [
             ['title' => 'AWS Certified Developer', 'issuer' => 'Amazon Web Services', 'date' => '2023'],
         ];
-
-        $skillGroups = [
-            ['title' => 'Backend', 'skills' => [
-                ['name' => 'Laravel', 'icon' => '🔴', 'description' => 'Advanced Framework'],
-                ['name' => 'PHP', 'icon' => '🐘', 'description' => 'Modern PHP 8+'],
-                ['name' => 'MySQL', 'icon' => '🗄️', 'description' => 'Database Optimization'],
-                ['name' => 'REST API', 'icon' => '🔌', 'description' => 'Scalable Architecture'],
-                ['name' => 'Redis', 'icon' => '⚡', 'description' => 'Caching & Queues'],
-            ]],
-            ['title' => 'Frontend & Tools', 'skills' => [
-                ['name' => 'Livewire', 'icon' => '💚', 'description' => 'Reactive UI'],
-                ['name' => 'Alpine.js', 'icon' => '🏔️', 'description' => 'Lightweight JS'],
-                ['name' => 'Tailwind CSS', 'icon' => '🎨', 'description' => 'Modern Styling'],
-                ['name' => 'Docker', 'icon' => '🐳', 'description' => 'Containerization'],
-                ['name' => 'Git', 'icon' => '📦', 'description' => 'Version Control'],
-            ]],
-            ['title' => 'DevOps & Cloud', 'skills' => [
-                ['name' => 'AWS', 'icon' => '☁️', 'description' => 'EC2, S3, Deployment'],
-                ['name' => 'VPS Hosting', 'icon' => '🖥️', 'description' => 'Server Management'],
-                ['name' => 'CI/CD', 'icon' => '🔄', 'description' => 'Automated Deployment'],
-                ['name' => 'Linux', 'icon' => '🐧', 'description' => 'Server Administration'],
-            ]],
-        ];
     @endphp
 
-    <header class="fixed inset-x-0 top-0 z-20 border-b border-(--pf-border) bg-(--pf-bg)/80 backdrop-blur-md">
-        <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-            <a href="{{ url('/') }}" class="pf-heading flex items-center gap-2">
-                @if ($siteIcon)
-                    <img src="{{ $siteIcon }}" alt="{{ $siteName }}" class="h-7 w-auto">
-                @endif
-                <span class="text-base font-bold tracking-tight">{{ $siteName }}</span>
-            </a>
-
-            <nav class="hidden items-center gap-8 md:flex">
-                @foreach ($menuItems ?? [] as $menuItem)
-                    <a href="{{ url($menuItem->url) }}"
-                        class="pf-nav-link pf-mono text-xs uppercase tracking-widest {{ url($menuItem->url) === url()->current() ? 'is-active' : '' }}">
-                        {{ $menuItem->label }}
-                    </a>
-                @endforeach
-            </nav>
-
-            <div class="flex items-center gap-3">
-                <div class="pf-lang-pill pf-mono text-xs font-semibold uppercase">
-                    <a href="{{ request()->fullUrlWithQuery(['lang' => 'en']) }}" class="{{ app()->getLocale() === 'en' ? 'is-active' : '' }}">EN</a>
-                    <a href="{{ request()->fullUrlWithQuery(['lang' => 'bn']) }}" class="{{ app()->getLocale() === 'bn' ? 'is-active' : '' }}">BN</a>
-                </div>
-
-                <button type="button" data-pf-theme-toggle aria-label="Toggle light / dark theme" class="pf-theme-toggle">
-                    <svg class="pf-icon-sun h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="4" />
-                        <path stroke-linecap="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32 1.41-1.41" />
-                    </svg>
-                    <svg class="pf-icon-moon h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </header>
+    @include('frontend.themes.portfolio.partials.header')
 
     <main>
         {{-- Hero --}}
@@ -169,26 +105,27 @@
         <section id="projects" class="border-t border-(--pf-border) bg-(--pf-bg-elevated)/40 px-6 py-24">
             <div class="mx-auto max-w-6xl">
                 <div class="mx-auto mb-14 max-w-xl text-center">
-                    <p class="pf-mono mb-3 text-xs text-(--pf-text-muted)">// 01</p>
                     <h2 class="pf-heading text-3xl font-bold tracking-tight sm:text-4xl">Featured Projects</h2>
                     <p class="mt-4 text-(--pf-text-muted)">Selected projects showcasing scalable architecture, clean code, and thoughtful user experience.</p>
                 </div>
 
                 <div class="grid gap-6 sm:grid-cols-2">
-                    @foreach ($projects as $project)
+                    @forelse ($projects as $project)
                         <div class="pf-card group flex flex-col rounded-xl p-6">
                             <div class="flex items-start justify-between gap-3">
-                                <span class="text-3xl">{{ $project['icon'] }}</span>
-                                <span class="pf-chip pf-mono rounded-full px-3 py-1 text-[11px]">{{ $project['stats'] }}</span>
+                                <span class="text-3xl">{{ $project->icon }}</span>
+                                @if ($project->stats)
+                                    <span class="pf-chip pf-mono rounded-full px-3 py-1 text-[11px]">{{ $project->stats }}</span>
+                                @endif
                             </div>
-                            <h3 class="pf-heading mt-4 text-lg font-semibold">{{ $project['title'] }}</h3>
-                            <p class="mt-2 flex-1 text-sm text-(--pf-text-muted)">{{ $project['description'] }}</p>
+                            <h3 class="pf-heading mt-4 text-lg font-semibold">{{ $project->title }}</h3>
+                            <p class="mt-2 flex-1 text-sm text-(--pf-text-muted)">{{ $project->description }}</p>
                             <div class="mt-4 flex flex-wrap gap-2">
-                                @foreach ($project['tech'] as $tech)
+                                @foreach ($project->tech ?? [] as $tech)
                                     <span class="pf-chip pf-mono rounded-full px-2.5 py-1 text-[10px]">{{ $tech }}</span>
                                 @endforeach
                             </div>
-                            <a href="{{ $project['link'] }}" class="pf-mono mt-5 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-(--pf-primary) transition group-hover:gap-2.5">
+                            <a href="{{ $project->link ?: '#' }}" class="pf-mono mt-5 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-(--pf-primary) transition group-hover:gap-2.5">
                                 View Project
                                 <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <line x1="5" y1="12" x2="19" y2="12" />
@@ -196,7 +133,9 @@
                                 </svg>
                             </a>
                         </div>
-                    @endforeach
+                    @empty
+                        <p class="col-span-full text-center text-sm text-(--pf-text-muted)">No projects yet — add them under Portfolio ▸ Projects.</p>
+                    @endforelse
                 </div>
             </div>
         </section>
@@ -205,7 +144,6 @@
         <section id="experience" class="border-t border-(--pf-border) px-6 py-24" x-data="{ tab: 'experience' }">
             <div class="mx-auto max-w-4xl">
                 <div class="mb-12 text-center">
-                    <p class="pf-mono mb-3 text-xs text-(--pf-text-muted)">// 02</p>
                     <h2 class="pf-heading text-3xl font-bold tracking-tight sm:text-4xl">Experience & Education</h2>
                     <p class="mt-4 text-(--pf-text-muted)">My professional journey and qualifications.</p>
                 </div>
@@ -219,15 +157,19 @@
                 </div>
 
                 <div x-show="tab === 'experience'" x-cloak class="space-y-4">
-                    @foreach ($experience as $item)
+                    @forelse ($experience as $item)
                         <div class="pf-card rounded-xl p-6">
                             <div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
-                                <h3 class="pf-heading font-semibold">{{ $item['role'] }} · {{ $item['company'] }}</h3>
-                                <span class="pf-mono text-xs text-(--pf-text-muted)">{{ $item['period'] }}</span>
+                                <h3 class="pf-heading font-semibold">
+                                    {{ $item->role }}@if ($item->company)<span class="text-(--pf-text-muted)"> · {{ $item->company }}</span>@endif
+                                </h3>
+                                <span class="pf-mono text-xs text-(--pf-text-muted)">{{ $item->period }}</span>
                             </div>
-                            <p class="mt-2 text-sm text-(--pf-text-muted)">{{ $item['description'] }}</p>
+                            <p class="mt-2 text-sm text-(--pf-text-muted)">{{ $item->description }}</p>
                         </div>
-                    @endforeach
+                    @empty
+                        <p class="text-center text-sm text-(--pf-text-muted)">No experience yet — add it under Portfolio ▸ Experience.</p>
+                    @endforelse
                 </div>
 
                 <div x-show="tab === 'education'" x-cloak class="space-y-4">
@@ -256,33 +198,34 @@
             </div>
         </section>
 
-        {{-- Skills --}}
-        <section id="skills" class="border-t border-(--pf-border) bg-(--pf-bg-elevated)/40 px-6 py-24">
+        {{-- Technology --}}
+        <section id="technology" class="border-t border-(--pf-border) bg-(--pf-bg-elevated)/40 px-6 py-24">
             <div class="mx-auto max-w-6xl">
                 <div class="mx-auto mb-14 max-w-xl text-center">
-                    <p class="pf-mono mb-3 text-xs text-(--pf-text-muted)">// 03</p>
-                    <h2 class="pf-heading text-3xl font-bold tracking-tight sm:text-4xl">Technical Proficiency</h2>
+                    <h2 class="pf-heading text-3xl font-bold tracking-tight sm:text-4xl">Technology</h2>
                     <p class="mt-4 text-(--pf-text-muted)">A comprehensive toolset for building robust, scalable, and user-centric digital solutions.</p>
                 </div>
 
                 <div class="space-y-12">
-                    @foreach ($skillGroups as $group)
+                    @forelse ($skillGroups as $groupName => $skills)
                         <div>
                             <div class="mb-6 flex items-center gap-4">
-                                <h3 class="pf-heading text-xl font-semibold">{{ $group['title'] }}</h3>
+                                <h3 class="pf-heading text-xl font-semibold">{{ $groupName }}</h3>
                                 <div class="h-px flex-grow bg-(--pf-border)"></div>
                             </div>
                             <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-                                @foreach ($group['skills'] as $skill)
+                                @foreach ($skills as $skill)
                                     <div class="pf-skill-card rounded-xl p-4 text-center">
-                                        <div class="text-3xl">{{ $skill['icon'] }}</div>
-                                        <div class="pf-heading mt-2 text-sm font-semibold">{{ $skill['name'] }}</div>
-                                        <div class="mt-1 text-xs text-(--pf-text-muted)">{{ $skill['description'] }}</div>
+                                        <div class="text-3xl">{{ $skill->icon }}</div>
+                                        <div class="pf-heading mt-2 text-sm font-semibold">{{ $skill->name }}</div>
+                                        <div class="mt-1 text-xs text-(--pf-text-muted)">{{ $skill->description }}</div>
                                     </div>
                                 @endforeach
                             </div>
                         </div>
-                    @endforeach
+                    @empty
+                        <p class="text-center text-sm text-(--pf-text-muted)">No skills yet — add them under Portfolio ▸ Skills.</p>
+                    @endforelse
                 </div>
             </div>
         </section>
@@ -321,7 +264,6 @@
         <section id="contact" class="border-t border-(--pf-border) px-6 py-24">
             <div class="mx-auto max-w-6xl">
                 <div class="mx-auto mb-14 max-w-xl text-center">
-                    <p class="pf-mono mb-3 text-xs text-(--pf-text-muted)">// 04</p>
                     <h2 class="pf-heading text-3xl font-bold tracking-tight sm:text-4xl">Get In Touch</h2>
                     <p class="mt-4 text-(--pf-text-muted)">Have a project in mind? Let's work together to create something amazing.</p>
                 </div>
@@ -402,20 +344,7 @@
         </section>
     </main>
 
-    <footer class="border-t border-(--pf-border) px-6 py-10">
-        <div class="mx-auto flex max-w-6xl flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
-            <p class="pf-mono text-xs text-(--pf-text-muted)">&copy; {{ now()->setTimezone(display_timezone())->year }} {{ $siteName }}. {{ __('All rights reserved.') }}</p>
-            @if ($socials->isNotEmpty())
-                <div class="flex gap-3">
-                    @foreach ($socials as $social)
-                        <a href="{{ $social['url'] }}" target="_blank" rel="noopener" aria-label="{{ $social['abbr'] }}" class="pf-social-icon pf-mono text-[11px] font-bold">
-                            {{ $social['abbr'] }}
-                        </a>
-                    @endforeach
-                </div>
-            @endif
-        </div>
-    </footer>
+    @include('frontend.themes.portfolio.partials.footer')
 
     <livewire:frontend.chat-widget />
 

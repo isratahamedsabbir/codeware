@@ -57,6 +57,10 @@ class SocialAuthController extends Controller
 
         $user = $this->findOrCreateUser($provider, $socialUser);
 
+        if ($user->is_blocked || $user->hasInactiveRole()) {
+            return redirect()->away("{$frontendCallback}?error=account_disabled");
+        }
+
         $token = $user->createToken('customer-api')->plainTextToken;
 
         return redirect()->away("{$frontendCallback}?token={$token}");

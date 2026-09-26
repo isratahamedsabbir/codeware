@@ -28,6 +28,12 @@
                         {{ __('Vendor Login') }}
                     </a>
                 @endif
+                @if ($showDeliveryLogin ?? false)
+                    <a href="{{ route('delivery.login') }}"
+                        class="rounded-md border border-white/20 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10 transition-colors">
+                        {{ __('Delivery Login') }}
+                    </a>
+                @endif
             </div>
         </div>
     </div>

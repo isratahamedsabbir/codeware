@@ -9,10 +9,14 @@ use App\Http\Middleware\ScopeSessionCookieToHost;
 use App\Http\Middleware\SetLocale;
 use App\Support\UnauthorizedAccessNotifier;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\ViewErrorBag;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -67,10 +71,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // the public API resolves its locale from the ?locale= query parameter instead.
         $middleware->appendToGroup('web', SetLocale::class);
 
-        // Blocking a user (Admin → Users) must reach every host — admin, vendor
-        // portal, and the plain site — not just gated admin/vendor routes, so it
-        // lives on `web` rather than as a gate like the roles-status lockout.
+        // Blocking a user (Admin → Users) or deactivating one of their roles
+        // (Admin → Roles) must reach every host — admin, vendor portal,
+        // delivery portal and the plain site — not just gated routes, and the
+        // API too, where the bearer token in use is revoked.
         $middleware->appendToGroup('web', EnsureUserIsNotBlocked::class);
+        $middleware->appendToGroup('api', EnsureUserIsNotBlocked::class.':sanctum');
 
         $middleware->alias([
             'admin' => AdminMiddleware::class,
@@ -122,5 +128,32 @@ return Application::configure(basePath: dirname(__DIR__))
 
             // Still don't want these cluttering logs — just wanted the alert above.
             return false;
+        });
+
+        // A genuine crash — a dead database, a fatal error, a third-party SDK
+        // blowing up — is a plain Throwable, not an HttpException, so the
+        // framework never looks in resources/views/errors and falls back to
+        // Symfony's generic page. Render the branded 500 instead, which is the
+        // whole point of having one: the exact moment it is needed is usually
+        // the moment something is broken.
+        $exceptions->render(function (Throwable $e, $request) {
+            // Everything with a status code of its own already resolves to
+            // resources/views/errors/{code}.blade.php, and these two are turned
+            // into redirects / JSON responses further down the stack.
+            if ($e instanceof HttpExceptionInterface
+                || $e instanceof ValidationException
+                || $e instanceof AuthenticationException) {
+                return null;
+            }
+
+            // Keep the stack trace for developers, keep JSON for API clients.
+            if (config('app.debug') || $request->expectsJson() || $request->wantsJson()) {
+                return null;
+            }
+
+            return response()->view('errors::500', [
+                'errors' => new ViewErrorBag,
+                'exception' => $e,
+            ], 500);
         });
     })->create();

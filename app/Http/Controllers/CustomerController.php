@@ -95,6 +95,7 @@ class CustomerController extends Controller
             'navPages' => Frontend::navPages(),
             'menuItems' => Frontend::menuItems(),
             'showVendorLogin' => Frontend::showVendorLogin(),
+            'showDeliveryLogin' => Frontend::showDeliveryLogin(),
         ];
     }
 }

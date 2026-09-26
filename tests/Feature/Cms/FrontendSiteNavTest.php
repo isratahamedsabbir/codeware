@@ -19,6 +19,12 @@ beforeEach(function () {
     foreach ([['Home', '/', 0], ['About Us', '/about', 1], ['Contact Us', '/contact', 2], ['FAQ', '/faq', 3]] as [$label, $url, $order]) {
         MenuItem::create(['group' => 'frontend', 'label' => $label, 'url' => $url, 'sort_order' => $order, 'is_active' => true]);
     }
+
+    // The portfolio theme reads its own menu, and its items are section anchors
+    // on the one-pager rather than routes (see PortfolioMenuSeeder).
+    foreach ([['Home', '#home', 0], ['Projects', '#projects', 1]] as [$label, $url, $order]) {
+        MenuItem::create(['group' => 'portfolio', 'label' => $label, 'url' => $url, 'sort_order' => $order, 'is_active' => true]);
+    }
 });
 
 it('renders every standalone page across every theme', function () {
@@ -40,17 +46,28 @@ it('drives the default theme nav from the pages list, not the frontend menu', fu
     $this->get('/about')->assertOk()->assertSee('About Us')->assertDontSee('RENAMED');
 });
 
-it('drives the portfolio and ecommerce theme nav from the frontend menu, not the pages list', function () {
+it('drives the ecommerce theme nav from the frontend menu, not the pages list', function () {
     MenuItem::where('label', 'About Us')->update(['label' => 'Renamed Menu Item']);
 
-    foreach (['portfolio', 'ecommerce'] as $theme) {
-        Setting::set('site_theme', $theme);
+    Setting::set('site_theme', 'ecommerce');
 
-        $this->get('/')->assertOk()->assertSee('Renamed Menu Item')->assertDontSee('About Us');
-    }
+    $this->get('/')->assertOk()->assertSee('Renamed Menu Item')->assertDontSee('About Us');
 });
 
-it('reflects a frontend menu change in portfolio/ecommerce without touching the pages list', function () {
+it('drives the portfolio theme nav from the portfolio menu, not the frontend menu', function () {
+    MenuItem::create(['group' => 'portfolio', 'label' => 'Work', 'url' => '#projects', 'sort_order' => 0, 'is_active' => true]);
+    MenuItem::where('group', 'frontend')->update(['label' => 'Renamed Menu Item']);
+
+    Setting::set('site_theme', 'portfolio');
+
+    $this->get('/')
+        ->assertOk()
+        ->assertSee('Work')
+        ->assertSee('data-pf-nav-link="projects"', false)
+        ->assertDontSee('Renamed Menu Item');
+});
+
+it('reflects a frontend menu change in ecommerce without touching the pages list', function () {
     MenuItem::create(['group' => 'frontend', 'label' => 'Extra Link', 'url' => '/faq', 'sort_order' => 99, 'is_active' => true]);
 
     Setting::set('site_theme', 'ecommerce');
@@ -60,17 +77,44 @@ it('reflects a frontend menu change in portfolio/ecommerce without touching the 
     $this->get('/')->assertOk()->assertDontSee('Extra Link');
 });
 
-it('hides an inactive frontend menu item from portfolio/ecommerce nav', function () {
+it('hides an inactive frontend menu item from the ecommerce nav', function () {
     MenuItem::where('label', 'FAQ')->update(['is_active' => false]);
 
-    Setting::set('site_theme', 'portfolio');
+    Setting::set('site_theme', 'ecommerce');
     $this->get('/')->assertOk()->assertDontSee('>FAQ<', false);
 });
 
-it('highlights the current page as active in the frontend menu nav', function () {
+it('hides an inactive portfolio menu item from the portfolio nav', function () {
+    MenuItem::create(['group' => 'portfolio', 'label' => 'Work', 'url' => '#projects', 'sort_order' => 0, 'is_active' => true]);
+    MenuItem::create(['group' => 'portfolio', 'label' => 'Retired', 'url' => '#technology', 'sort_order' => 1, 'is_active' => false]);
+
+    Setting::set('site_theme', 'portfolio');
+    $this->get('/')->assertOk()->assertSee('Work')->assertDontSee('Retired');
+});
+
+it('resolves a portfolio section anchor to the site root so it works from a secondary page too', function () {
     Setting::set('site_theme', 'portfolio');
 
-    $this->get('/contact')->assertOk()->assertSeeInOrder(['Contact Us', 'is-active'], false);
+    $this->get('/about')
+        ->assertOk()
+        ->assertSee('href="'.url('/').'#projects"', false)
+        ->assertSee('data-pf-nav-link="projects"', false);
+});
+
+it('marks a plain path item in the portfolio nav active on its own page, but never an anchor', function () {
+    MenuItem::create(['group' => 'portfolio', 'label' => 'Resume', 'url' => '/about', 'sort_order' => 5, 'is_active' => true]);
+
+    Setting::set('site_theme', 'portfolio');
+
+    $html = $this->get('/about')->assertOk()->getContent();
+
+    // A path item is a real URL, so it can be matched against the current one.
+    // An anchor never can — on a one-pager "where am I" is the scroll spy's job
+    // (see bindSectionSpy() in the theme's script.js), not a server-side class.
+    $linkFor = fn (string $label) => (string) (preg_match('/<a\b[^>]*>\s*'.preg_quote($label, '/').'\s*<\/a>/', $html, $m) ? $m[0] : '');
+
+    expect($linkFor('Resume'))->toContain('is-active')
+        ->and($linkFor('Projects'))->not->toContain('is-active');
 });
 
 it('shows only featured product categories in the storefront shop-by-category grid', function () {

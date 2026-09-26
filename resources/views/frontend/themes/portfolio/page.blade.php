@@ -4,6 +4,7 @@
     @include('partials.head')
     @include('partials.seo-meta')
     <link rel="stylesheet" href="{{ asset('themes/portfolio/style.css') }}">
+    <style>[x-cloak]{display:none!important}</style>
     @include('partials.custom-code-head')
 </head>
 <body class="theme-portfolio antialiased">
@@ -26,42 +27,7 @@
             ->values();
     @endphp
 
-    <header class="fixed inset-x-0 top-0 z-20 border-b border-(--pf-border) bg-(--pf-bg)/80 backdrop-blur-md">
-        <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-            <a href="{{ url('/') }}" class="pf-heading flex items-center gap-2">
-                @if ($siteIcon)
-                    <img src="{{ $siteIcon }}" alt="{{ $siteName }}" class="h-7 w-auto">
-                @endif
-                <span class="text-base font-bold tracking-tight">{{ $siteName }}</span>
-            </a>
-
-            <nav class="hidden items-center gap-8 md:flex">
-                @foreach ($menuItems ?? [] as $menuItem)
-                    <a href="{{ url($menuItem->url) }}"
-                        class="pf-nav-link pf-mono text-xs uppercase tracking-widest {{ url($menuItem->url) === url()->current() ? 'is-active' : '' }}">
-                        {{ $menuItem->label }}
-                    </a>
-                @endforeach
-            </nav>
-
-            <div class="flex items-center gap-3">
-                <div class="pf-lang-pill pf-mono text-xs font-semibold uppercase">
-                    <a href="{{ request()->fullUrlWithQuery(['lang' => 'en']) }}" class="{{ app()->getLocale() === 'en' ? 'is-active' : '' }}">EN</a>
-                    <a href="{{ request()->fullUrlWithQuery(['lang' => 'bn']) }}" class="{{ app()->getLocale() === 'bn' ? 'is-active' : '' }}">BN</a>
-                </div>
-
-                <button type="button" data-pf-theme-toggle aria-label="Toggle light / dark theme" class="pf-theme-toggle">
-                    <svg class="pf-icon-sun h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="4" />
-                        <path stroke-linecap="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32 1.41-1.41" />
-                    </svg>
-                    <svg class="pf-icon-moon h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </header>
+    @include('frontend.themes.portfolio.partials.header')
 
     <main>
         {{-- Hero --}}
@@ -128,20 +94,7 @@
         @endif
     </main>
 
-    <footer class="border-t border-(--pf-border) px-6 py-10">
-        <div class="mx-auto flex max-w-6xl flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
-            <p class="pf-mono text-xs text-(--pf-text-muted)">&copy; {{ now()->setTimezone(display_timezone())->year }} {{ $siteName }}. {{ __('All rights reserved.') }}</p>
-            @if ($socials->isNotEmpty())
-                <div class="flex gap-3">
-                    @foreach ($socials as $social)
-                        <a href="{{ $social['url'] }}" target="_blank" rel="noopener" aria-label="{{ $social['abbr'] }}" class="pf-social-icon pf-mono text-[11px] font-bold">
-                            {{ $social['abbr'] }}
-                        </a>
-                    @endforeach
-                </div>
-            @endif
-        </div>
-    </footer>
+    @include('frontend.themes.portfolio.partials.footer')
 
     <livewire:frontend.chat-widget />
 

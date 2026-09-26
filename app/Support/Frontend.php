@@ -5,13 +5,14 @@ namespace App\Support;
 use App\Models\MenuItem;
 use App\Models\Page;
 use App\Models\ProductVendor;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\Models\Role;
 
 /**
  * Shared, cached building blocks every public page needs (nav pages, the
- * frontend menu, the home page, the vendor-login flag) — used by both
+ * frontend menu, the home page, the vendor/delivery login flags) — used by both
  * FrontendController and CustomerController so the theme's header/footer
  * partials get the same payload from a single source instead of duplicated
  * queries on every request.
@@ -38,13 +39,29 @@ class Frontend
     /**
      * The "Frontend" menu (see FrontendMenuSeeder, and /admin/menu), managed
      * by hand rather than auto-generated from the page list — used as the site
-     * nav by the portfolio and ecommerce themes.
+     * nav by the ecommerce theme. The portfolio theme has a nav of its own,
+     * see portfolioMenuItems().
      *
      * @return Collection<int, MenuItem>
      */
     public static function menuItems(): Collection
     {
         $rows = ContentCache::remember('frontend-menu', fn () => MenuItem::where('group', 'frontend')->where('is_active', true)->orderBy('sort_order')->get()->map->getAttributes()->all());
+
+        return MenuItem::hydrate($rows);
+    }
+
+    /**
+     * The "Portfolio" menu (see PortfolioMenuSeeder) — the portfolio theme's own
+     * nav. Kept apart from menuItems() on purpose: the portfolio is a single
+     * page, so its items are section anchors ("#projects", "#skills", ...) that
+     * only mean anything there, while the ecommerce theme keeps menuItems().
+     *
+     * @return Collection<int, MenuItem>
+     */
+    public static function portfolioMenuItems(): Collection
+    {
+        $rows = ContentCache::remember('portfolio-menu', fn () => MenuItem::where('group', 'portfolio')->where('is_active', true)->orderBy('sort_order')->get()->map->getAttributes()->all());
 
         return MenuItem::hydrate($rows);
     }
@@ -99,5 +116,18 @@ class Frontend
 
             return $vendorRoleActive && ProductVendor::active()->exists();
         });
+    }
+
+    /**
+     * Whether the Delivery Login link should appear — hidden whenever nobody
+     * could actually sign into the delivery portal: no rider left who is
+     * unblocked, holds an active 'delivery_boy' role and none of the
+     * ineligible ones (see User::scopeDeliveryBoys()). Deliberately not
+     * TTL-cached like showVendorLogin(): blocking the last rider has to hide
+     * the link straight away, and a single exists() query is cheap.
+     */
+    public static function showDeliveryLogin(): bool
+    {
+        return once(fn () => User::deliveryBoys()->exists());
     }
 }

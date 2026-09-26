@@ -8,10 +8,12 @@ use App\Livewire\Delivery\Orders\Show;
 use App\Livewire\Delivery\Profile;
 use App\Mail\DeliveryOtpMail;
 use App\Models\Order;
+use App\Models\Setting;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
+use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
@@ -195,4 +197,36 @@ it('lets the rider update their own profile name', function () {
         ->assertHasNoErrors();
 
     expect($this->rider->fresh()->name)->toBe('Renamed Rider');
+});
+
+it('shows the Delivery Login link on the default theme only while a rider can sign in', function () {
+    Setting::set('site_theme', 'default');
+
+    $this->get('/')->assertOk()
+        ->assertSee('Delivery Login')
+        ->assertSee(route('delivery.login'));
+});
+
+it('hides the Delivery Login link as soon as the only rider is blocked', function () {
+    Setting::set('site_theme', 'default');
+
+    $this->rider->forceFill(['is_blocked' => true])->save();
+
+    $this->get('/')->assertOk()->assertDontSee('Delivery Login');
+});
+
+it('hides the Delivery Login link once the delivery_boy role is deactivated', function () {
+    Setting::set('site_theme', 'default');
+
+    Role::where('name', 'delivery_boy')->update(['status' => 'inactive']);
+
+    $this->get('/')->assertOk()->assertDontSee('Delivery Login');
+});
+
+it('hides the Delivery Login link when no user holds the delivery_boy role', function () {
+    Setting::set('site_theme', 'default');
+
+    $this->rider->removeRole('delivery_boy');
+
+    $this->get('/')->assertOk()->assertDontSee('Delivery Login');
 });

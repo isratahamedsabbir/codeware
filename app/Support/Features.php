@@ -29,6 +29,7 @@ class Features
         'vouchers' => 'Gift Vouchers',
         'pages' => 'Pages',
         'cms' => 'CMS',
+        'portfolio' => 'Portfolio (Projects, Experience & Skills)',
         'media-library' => 'Media Library',
         'file-manager' => 'File Manager',
         'chat' => 'Chat',

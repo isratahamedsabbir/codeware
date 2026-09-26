@@ -83,19 +83,28 @@ class AdminMenuSeeder extends Seeder
 
         $this->standalone('Pages', 'document', 'admin.pages', 20);
 
-        $this->group('Localization', 21, [
+        // Portfolio — the three content lists the portfolio theme renders as its
+        // #projects, #experience and #technology sections, so they're grouped
+        // together rather than scattered among the storefront's own modules.
+        $this->group('Portfolio', 21, [
+            ['Projects', 'folder-open', 'admin.portfolio-projects'],
+            ['Experience', 'clock', 'admin.portfolio-experiences'],
+            ['Skills', 'sparkles', 'admin.portfolio-skills'],
+        ]);
+
+        $this->group('Localization', 22, [
             ['Languages', 'language', 'admin.languages'],
             ['Translations', 'chat-bubble-left-right', 'admin.translations'],
         ]);
 
-        $this->group('Access Control', 22, [
+        $this->group('Access Control', 23, [
             ['Roles', 'shield-check', 'admin.roles'],
             ['Permissions', 'lock-closed', 'admin.permissions'],
             ['Users', 'users', 'admin.users'],
             ['Vendors', 'briefcase', 'admin.product-vendors'],
         ]);
 
-        $this->group('Location', 23, [
+        $this->group('Location', 24, [
             ['Countries', 'flag', 'admin.countries'],
             ['Divisions', 'map', 'admin.divisions'],
             ['Districts (Zilla)', 'building-library', 'admin.districts'],
@@ -103,14 +112,14 @@ class AdminMenuSeeder extends Seeder
             ['Shipping', 'truck', 'admin.shipping-methods'],
         ]);
 
-        $this->group('Advance', 24, [
+        $this->group('Advance', 25, [
             ['Sitemap', 'map', 'admin.advance.sitemap'],
             ['Robots.txt', 'globe-alt', 'admin.advance.robots'],
             ['Backup', 'archive-box', 'admin.advance.backup'],
             ['Password Generator', 'key', 'admin.advance.password-generator'],
         ]);
 
-        $this->standalone('About', 'building-office', 'admin.about', 25);
+        $this->standalone('About', 'building-office', 'admin.about', 26);
     }
 
     protected function standalone(string $label, string $icon, string $routeName, int $sortOrder): void

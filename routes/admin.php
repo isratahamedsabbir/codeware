@@ -114,6 +114,23 @@ Route::middleware(['auth', 'admin', 'activity-log'])->group(function () {
         Route::get('/pages/{pageId}/cms/{id}/edit', App\Livewire\Admin\Cms\Form::class)->name('cms.edit');
     });
 
+    // Portfolio — the Projects / Experience / Technology content lists behind the
+    // portfolio theme's three sections, edited as three separate screens so each
+    // one can keep the columns its own cards need.
+    Route::middleware('feature:portfolio')->group(function () {
+        Route::get('/portfolio/projects', App\Livewire\Admin\Portfolio\Projects\Index::class)->name('portfolio-projects');
+        Route::get('/portfolio/projects/create', App\Livewire\Admin\Portfolio\Projects\Form::class)->name('portfolio-projects.create');
+        Route::get('/portfolio/projects/{id}/edit', App\Livewire\Admin\Portfolio\Projects\Form::class)->name('portfolio-projects.edit');
+
+        Route::get('/portfolio/experiences', App\Livewire\Admin\Portfolio\Experiences\Index::class)->name('portfolio-experiences');
+        Route::get('/portfolio/experiences/create', App\Livewire\Admin\Portfolio\Experiences\Form::class)->name('portfolio-experiences.create');
+        Route::get('/portfolio/experiences/{id}/edit', App\Livewire\Admin\Portfolio\Experiences\Form::class)->name('portfolio-experiences.edit');
+
+        Route::get('/portfolio/skills', App\Livewire\Admin\Portfolio\Skills\Index::class)->name('portfolio-skills');
+        Route::get('/portfolio/skills/create', App\Livewire\Admin\Portfolio\Skills\Form::class)->name('portfolio-skills.create');
+        Route::get('/portfolio/skills/{id}/edit', App\Livewire\Admin\Portfolio\Skills\Form::class)->name('portfolio-skills.edit');
+    });
+
     // Media Library (content — Staff included)
     Route::middleware('feature:media-library')->group(function () {
         Route::get('/media-library', App\Livewire\Admin\MediaLibrary\Index::class)->name('media-library');

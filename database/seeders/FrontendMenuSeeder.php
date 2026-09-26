@@ -7,9 +7,11 @@ use App\Models\MenuItem;
 use Illuminate\Database\Seeder;
 
 /**
- * The "Frontend" menu — the site nav rendered by the portfolio and ecommerce
- * themes' header (resources/views/frontend/themes/{portfolio,ecommerce}/*.blade.php).
+ * The "Frontend" menu — the site nav rendered by the ecommerce theme's header
+ * (resources/views/frontend/themes/ecommerce/partials/header.blade.php).
  * Mirrors the standalone pages PageSeeder creates.
+ *
+ * The portfolio theme has a nav of its own, see PortfolioMenuSeeder.
  */
 class FrontendMenuSeeder extends Seeder
 {

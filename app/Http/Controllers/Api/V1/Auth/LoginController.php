@@ -26,6 +26,14 @@ class LoginController extends Controller
             ]);
         }
 
+        // Same lockouts as the web login (FortifyServiceProvider) — a correct
+        // password is not enough for a blocked account or a deactivated role.
+        if ($user->is_blocked || $user->hasInactiveRole()) {
+            throw ValidationException::withMessages([
+                'email' => [$user->is_blocked ? 'Your account has been blocked.' : 'Your account access has been disabled.'],
+            ]);
+        }
+
         $token = $user->createToken('customer-api')->plainTextToken;
 
         return response()->json([

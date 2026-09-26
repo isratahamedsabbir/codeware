@@ -221,6 +221,55 @@
     width: 100%;
 }
 
+/* The header is fixed, so a #fragment jump would otherwise tuck the section's
+   heading underneath it. */
+.theme-portfolio section[id] {
+    scroll-margin-top: 5rem;
+}
+
+/* Mobile hamburger — the inline nav is md:flex only, and on a single-page
+   layout it's the only way to reach a section. */
+.theme-portfolio .pf-nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    border: 1px solid var(--pf-border);
+    color: var(--pf-text-muted);
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-portfolio .pf-nav-toggle:hover {
+    color: var(--pf-primary);
+    border-color: var(--pf-primary);
+}
+
+/* Stacked dropdown panel under the header */
+.theme-portfolio .pf-mobile-nav {
+    background: var(--pf-bg);
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+}
+
+.theme-portfolio .pf-mobile-nav-link {
+    display: block;
+    padding: 0.85rem 1.5rem;
+    border-bottom: 1px solid var(--pf-border);
+    color: var(--pf-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.75rem;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.theme-portfolio .pf-mobile-nav-link:hover,
+.theme-portfolio .pf-mobile-nav-link.is-active {
+    color: var(--pf-primary);
+    background: var(--pf-bg-elevated);
+}
+
 /* Project card hover lift */
 .theme-portfolio .pf-card {
     background: var(--pf-bg-elevated);

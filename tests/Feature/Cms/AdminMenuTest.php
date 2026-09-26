@@ -95,6 +95,17 @@ it('rejects a link that does not start with / or http', function () {
         ->assertHasErrors(['url']);
 });
 
+it('accepts a bare #fragment link for a one-pager nav', function () {
+    Livewire::test(MenuIndex::class)
+        ->call('openCreate')
+        ->set('label', 'Work')
+        ->set('url', '#projects')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(MenuItem::where('label', 'Work')->where('url', '#projects')->exists())->toBeTrue();
+});
+
 it('rejects an unknown icon name', function () {
     Livewire::test(MenuIndex::class)
         ->call('openCreate')

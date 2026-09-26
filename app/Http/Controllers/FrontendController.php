@@ -52,6 +52,7 @@ class FrontendController extends Controller
             'menuItems' => Frontend::menuItems(),
             'currentSlug' => 'home',
             'showVendorLogin' => Frontend::showVendorLogin(),
+            'showDeliveryLogin' => Frontend::showDeliveryLogin(),
         ]);
     }
 
@@ -76,6 +77,7 @@ class FrontendController extends Controller
             'menuItems' => Frontend::menuItems(),
             'currentSlug' => $slug,
             'showVendorLogin' => Frontend::showVendorLogin(),
+            'showDeliveryLogin' => Frontend::showDeliveryLogin(),
         ]);
     }
 
@@ -165,6 +167,7 @@ class FrontendController extends Controller
             'menuItems' => Frontend::menuItems(),
             'currentSlug' => 'shop',
             'showVendorLogin' => Frontend::showVendorLogin(),
+            'showDeliveryLogin' => Frontend::showDeliveryLogin(),
         ]);
     }
 
@@ -234,6 +237,7 @@ class FrontendController extends Controller
             'menuItems' => Frontend::menuItems(),
             'currentSlug' => $product->slug,
             'showVendorLogin' => Frontend::showVendorLogin(),
+            'showDeliveryLogin' => Frontend::showDeliveryLogin(),
             'advertisement' => Features::enabled('advertisements') ? Advertisement::displayAd() : null,
         ]);
     }
@@ -288,6 +292,7 @@ class FrontendController extends Controller
             'menuItems' => Frontend::menuItems(),
             'currentSlug' => $category->slug,
             'showVendorLogin' => Frontend::showVendorLogin(),
+            'showDeliveryLogin' => Frontend::showDeliveryLogin(),
         ]);
     }
 
@@ -317,6 +322,7 @@ class FrontendController extends Controller
             'menuItems' => Frontend::menuItems(),
             'currentSlug' => $brand->slug,
             'showVendorLogin' => Frontend::showVendorLogin(),
+            'showDeliveryLogin' => Frontend::showDeliveryLogin(),
         ]);
     }
 
@@ -346,6 +352,7 @@ class FrontendController extends Controller
             'menuItems' => Frontend::menuItems(),
             'currentSlug' => $tag->slug,
             'showVendorLogin' => Frontend::showVendorLogin(),
+            'showDeliveryLogin' => Frontend::showDeliveryLogin(),
         ]);
     }
 
@@ -382,6 +389,7 @@ class FrontendController extends Controller
             'menuItems' => Frontend::menuItems(),
             'currentSlug' => 'blog',
             'showVendorLogin' => Frontend::showVendorLogin(),
+            'showDeliveryLogin' => Frontend::showDeliveryLogin(),
         ]);
     }
 
@@ -422,6 +430,7 @@ class FrontendController extends Controller
             'menuItems' => Frontend::menuItems(),
             'currentSlug' => $post->page?->slug ?? 'blog',
             'showVendorLogin' => Frontend::showVendorLogin(),
+            'showDeliveryLogin' => Frontend::showDeliveryLogin(),
         ]);
     }
 
@@ -458,6 +467,7 @@ class FrontendController extends Controller
             'menuItems' => Frontend::menuItems(),
             'currentSlug' => 'favorites',
             'showVendorLogin' => Frontend::showVendorLogin(),
+            'showDeliveryLogin' => Frontend::showDeliveryLogin(),
         ]);
     }
 
@@ -476,6 +486,7 @@ class FrontendController extends Controller
             'menuItems' => Frontend::menuItems(),
             'currentSlug' => 'cart',
             'showVendorLogin' => Frontend::showVendorLogin(),
+            'showDeliveryLogin' => Frontend::showDeliveryLogin(),
         ]);
     }
 
@@ -493,6 +504,7 @@ class FrontendController extends Controller
             'menuItems' => Frontend::menuItems(),
             'currentSlug' => 'checkout',
             'showVendorLogin' => Frontend::showVendorLogin(),
+            'showDeliveryLogin' => Frontend::showDeliveryLogin(),
         ]);
     }
 
@@ -522,6 +534,7 @@ class FrontendController extends Controller
             'menuItems' => Frontend::menuItems(),
             'currentSlug' => 'checkout',
             'showVendorLogin' => Frontend::showVendorLogin(),
+            'showDeliveryLogin' => Frontend::showDeliveryLogin(),
         ]);
     }
 

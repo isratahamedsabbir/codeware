@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Roles;
 
 use App\Concerns\HasPerPage;
 use App\Concerns\WithSearch;
+use App\Models\User;
 use App\Support\AdminActivity;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -55,8 +56,8 @@ class Index extends Component
 
     /**
      * Deactivating a role immediately locks out anyone currently holding it —
-     * see the login-time check in FortifyServiceProvider and
-     * Vendor\Auth\Login, and the access-admin/access-vendor-portal gates —
+     * see the login-time checks in FortifyServiceProvider, the Vendor/Delivery
+     * logins and the API login, and EnsureUserIsNotBlocked on every request —
      * and also drops their sessions below, so an already-open tab is kicked
      * out rather than merely blocked on its next gated request. The 'admin'
      * role can never be deactivated, same as it can never be deleted — doing
@@ -87,16 +88,26 @@ class Index extends Component
     /**
      * Force-logs-out every holder of a just-deactivated role by deleting
      * their session rows outright (SESSION_DRIVER=database) — the sessions
-     * table is shared across both hosts, so this reaches a vendor-host
-     * session the same way it reaches an admin-host one.
+     * table is shared across every host, so this reaches a vendor- or
+     * delivery-host session the same way it reaches an admin-host one. Their
+     * API tokens and "remember me" tokens go too, so neither the app nor a
+     * remembered browser can quietly sign them back in once it is re-enabled.
+     * EnsureUserIsNotBlocked is the backstop for any other session driver.
      */
     private function endSessionsForRole(Role $role): void
     {
         $userIds = $role->users()->pluck('users.id');
 
-        if ($userIds->isNotEmpty()) {
-            DB::table('sessions')->whereIn('user_id', $userIds)->delete();
+        if ($userIds->isEmpty()) {
+            return;
         }
+
+        DB::table('sessions')->whereIn('user_id', $userIds)->delete();
+        DB::table('personal_access_tokens')
+            ->where('tokenable_type', (new User)->getMorphClass())
+            ->whereIn('tokenable_id', $userIds)
+            ->delete();
+        DB::table('users')->whereIn('id', $userIds)->update(['remember_token' => null]);
     }
 
     public function render()
