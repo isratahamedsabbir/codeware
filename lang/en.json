@@ -19,6 +19,7 @@
     "Go back": "Go back",
     "Suggested pages": "Suggested pages",
     "Error": "Error",
+    "Error :code": "Error :code",
     "Error reference": "Error reference",
     "Unauthorized": "Unauthorized",
     "You need to sign in before you can view this page.": "You need to sign in before you can view this page.",
@@ -29,6 +30,8 @@
     "My account": "My account",
     "Page not found": "Page not found",
     "We could not find the page you are looking for. It may have been moved, renamed, or removed.": "We could not find the page you are looking for. It may have been moved, renamed, or removed.",
+    "Sorry, page not found": "Sorry, page not found",
+    "The page you requested could not be found.": "The page you requested could not be found.",
     "Your session has expired": "Your session has expired",
     "For your security the page expired because the tab was left open too long. Refresh the page and try again.": "For your security the page expired because the tab was left open too long. Refresh the page and try again.",
     "Too many requests": "Too many requests",
@@ -41,5 +44,9 @@
     "Estimated downtime": "Estimated downtime",
     "Request could not be completed": "Request could not be completed",
     "Something about this request was not valid. Check the address and try again.": "Something about this request was not valid. Check the address and try again.",
-    "We hit an unexpected problem while loading this page. Please try again in a moment.": "We hit an unexpected problem while loading this page. Please try again in a moment."
+    "We hit an unexpected problem while loading this page. Please try again in a moment.": "We hit an unexpected problem while loading this page. Please try again in a moment.",
+    "Not found": "Not found",
+    "Browse the shop": "Browse the shop",
+    "The page you requested could not be found. It may have been moved, renamed, or no longer in stock.": "The page you requested could not be found. It may have been moved, renamed, or no longer in stock.",
+    "This page does not exist. The one-pager below is all there is — try one of its sections.": "This page does not exist. The one-pager below is all there is — try one of its sections."
 }

@@ -19,6 +19,7 @@
     "Go back": "পিছনে যান",
     "Suggested pages": "প্রস্তাবিত পেজ",
     "Error": "এরর",
+    "Error :code": "এরর :code",
     "Error reference": "এরর রেফারেন্স",
     "Unauthorized": "অনুমতিহীন",
     "You need to sign in before you can view this page.": "এই পেজ দেখতে আগে সাইন ইন করতে হবে।",
@@ -29,6 +30,8 @@
     "My account": "আমার অ্যাকাউন্ট",
     "Page not found": "পেজ পাওয়া যায়নি",
     "We could not find the page you are looking for. It may have been moved, renamed, or removed.": "আপনি যে পেজটি খুঁজছেন সেটি আমরা খুঁজে পাইনি। এটি সরানো, নাম বদলানো বা মুছে ফেলা হয়ে থাকতে পারে।",
+    "Sorry, page not found": "দুঃখিত, পেজটি পাওয়া যায়নি",
+    "The page you requested could not be found.": "আপনি যে পেজটি চেয়েছেন সেটি আমরা খুঁজে পাইনি।",
     "Your session has expired": "আপনার সেশনের মেয়াদ শেষ হয়েছে",
     "For your security the page expired because the tab was left open too long. Refresh the page and try again.": "নিরাপত্তার জন্য ট্যাবটি অনেক সময় খোলা থাকায় পেজের মেয়াদ শেষ হয়েছে। পেজটি রিফ্রেশ করে আবার চেষ্টা করুন।",
     "Too many requests": "অতিরিক্ত অনুরোধ",
@@ -42,5 +45,9 @@
     "Request could not be completed": "অনুরোধটি সম্পন্ন করা যায়নি",
     "Something about this request was not valid. Check the address and try again.": "এই অনুরোধের কিছু বিষয় সঠিক ছিল না। ঠিকানাটি দেখে আবার চেষ্টা করুন।",
     "We hit an unexpected problem while loading this page. Please try again in a moment.": "এই পেজ লোড করার সময় একটি অপ্রত্যাশিত সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করুন।",
-    "Link must start with #, /, http:// or https://.": "লিংক #, /, http:// বা https:// দিয়ে শুরু হতে হবে।"
+    "Link must start with #, /, http:// or https://.": "লিংক #, /, http:// বা https:// দিয়ে শুরু হতে হবে।",
+    "Not found": "পাওয়া যায়নি",
+    "Browse the shop": "শপ দেখুন",
+    "The page you requested could not be found. It may have been moved, renamed, or no longer in stock.": "আপনি যে পেজটি চেয়েছেন সেটি আমরা খুঁজে পাইনি। এটি সরানো, নাম বদলানো বা স্টকে না থাকার কারণে হতে পারে।",
+    "This page does not exist. The one-pager below is all there is — try one of its sections.": "এই পেজটি নেই। নিচের একপেজটিই এই সাইটে আছে — এর কোনো সেকশনে দেখুন।"
 }

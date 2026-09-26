@@ -7,80 +7,14 @@
 </head>
 <body class="bg-white text-zinc-800 antialiased">
 
-    @php
-        $siteName = \App\Models\Setting::get('site_name', config('app.name'));
-        $siteIcon = \App\Models\Setting::get('site_icon');
-        $socials = collect([
-            'facebook' => 'Facebook',
-            'twitter' => 'Twitter / X',
-            'instagram' => 'Instagram',
-            'youtube' => 'YouTube',
-            'linkedin' => 'LinkedIn',
-        ])->map(fn ($label, $platform) => ['url' => \App\Models\SocialLink::url($platform), 'label' => $label])
-          ->filter(fn ($social) => filled($social['url']));
-    @endphp
+@include('frontend.themes.default.partials.header', [
+    'navPages' => $navPages ?? [],
+    'currentSlug' => $currentSlug ?? null,
+    'showVendorLogin' => $showVendorLogin ?? false,
+    'showDeliveryLogin' => $showDeliveryLogin ?? false,
+])
 
-    <header class="sticky top-0 z-20 border-b border-zinc-100 bg-white/90 backdrop-blur">
-        <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-            <a href="{{ url('/') }}" class="flex items-center gap-2">
-                @if ($siteIcon)
-                    <img src="{{ $siteIcon }}" alt="{{ $siteName }}" class="h-8 w-auto">
-                @endif
-                <span class="text-lg font-bold text-zinc-900">{{ $siteName }}</span>
-            </a>
-
-            <nav class="hidden items-center gap-6 md:flex">
-                @foreach ($navPages ?? [] as $navPage)
-                    <a href="{{ $navPage->slug === 'home' ? route('home') : route('page', $navPage->slug) }}"
-                        class="text-sm font-medium {{ ($currentSlug ?? null) === $navPage->slug ? 'text-primary' : 'text-zinc-600 hover:text-zinc-900' }}">
-                        {{ $navPage->getTranslation('title', 'en', false) }}
-                    </a>
-                @endforeach
-            </nav>
-
-            <div class="flex items-center gap-2">
-                @auth
-                    @can('access-admin')
-                        <a href="{{ config('app.admin_url') }}" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90">
-                            {{ __('Admin Dashboard') }}
-                        </a>
-                    @endcan
-                    @can('access-vendor-portal')
-                        <a href="{{ route('vendor.dashboard') }}" class="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50">
-                            {{ __('Vendor Dashboard') }}
-                        </a>
-                    @endcan
-                    @can('access-delivery-portal')
-                        <a href="{{ route('delivery.dashboard') }}" class="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50">
-                            {{ __('Delivery Dashboard') }}
-                        </a>
-                    @endcan
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 cursor-pointer">
-                            {{ __('Logout') }}
-                        </button>
-                    </form>
-                @else
-                    <a href="{{ route('login') }}" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90">
-                        {{ __('Admin Login') }}
-                    </a>
-                    @if ($showVendorLogin ?? false)
-                        <a href="{{ route('vendor.login') }}" class="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50">
-                            {{ __('Vendor Login') }}
-                        </a>
-                    @endif
-                    @if ($showDeliveryLogin ?? false)
-                        <a href="{{ route('delivery.login') }}" class="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50">
-                            {{ __('Delivery Login') }}
-                        </a>
-                    @endif
-                @endauth
-            </div>
-        </div>
-    </header>
-
-    <main>
+<main>
         <section class="mx-auto max-w-2xl px-6 py-24 text-center">
             <h1 class="text-3xl font-bold text-zinc-900 sm:text-4xl">{{ $page->getTranslation('title', 'en', false) }}</h1>
         </section>
@@ -116,24 +50,11 @@
         @endif
     </main>
 
-    <footer class="border-t border-zinc-100 bg-zinc-50 px-6 py-10">
-        <div class="mx-auto flex max-w-6xl flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
-            <p class="text-sm text-zinc-500">&copy; {{ now()->setTimezone(display_timezone())->year }} {{ $siteName }}. {{ __('All rights reserved.') }}</p>
-            @if ($socials->isNotEmpty())
-                <div class="flex gap-4">
-                    @foreach ($socials as $social)
-                        <a href="{{ $social['url'] }}" target="_blank" rel="noopener" class="text-sm text-zinc-500 hover:text-primary">
-                            {{ $social['label'] }}
-                        </a>
-                    @endforeach
-                </div>
-            @endif
-        </div>
-    </footer>
+@include('frontend.themes.default.partials.footer')
 
-    <livewire:frontend.chat-widget />
+<livewire:frontend.chat-widget />
 
-    @fluxScripts
+@fluxScripts
 @include('partials.custom-code-body')
 </body>
 </html>

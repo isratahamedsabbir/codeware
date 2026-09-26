@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\EnsureActiveTheme;
 use App\Http\Middleware\EnsureUserIsNotBlocked;
 use App\Http\Middleware\LogAdminActivity;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
@@ -11,6 +12,7 @@ use App\Support\Themes;
 use App\Support\UnauthorizedAccessNotifier;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -85,6 +87,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'activity-log' => LogAdminActivity::class,
             'locale' => SetLocale::class,
             'feature' => RequireFeature::class,
+            'theme' => EnsureActiveTheme::class,
         ]);
 
         // Settings → Env can flip the public site into maintenance mode (see
@@ -113,6 +116,18 @@ return Application::configure(basePath: dirname(__DIR__))
             'logout',
             'two-factor-challenge',
         ]);
+
+        // Ahead of auth on purpose. A theme's routes are gated on the active
+        // theme (see routes/web.php), and "this page isn't part of this site"
+        // has to be the answer a visitor gets — not a redirect to the login page
+        // for an account area that doesn't exist on a portfolio site, and not a
+        // redirect that tells them it does. Middleware without a priority entry
+        // sorts after everything that has one, which would put the guard behind
+        // `auth` and turn every guarded /account request into a 302.
+        $middleware->prependToPriorityList(
+            AuthenticatesRequests::class,
+            EnsureActiveTheme::class,
+        );
     })
     ->withEvents(discover: [
         __DIR__.'/../app/Listeners',
@@ -135,19 +150,19 @@ return Application::configure(basePath: dirname(__DIR__))
         // A genuine crash — a dead database, a fatal error, a third-party SDK
         // blowing up — is a plain Throwable, not an HttpException, so the
         // framework never looks in resources/views/errors and falls back to
-        // Symfony's generic page. Render the branded 500 instead, which is the
-        // whole point of having one: the exact moment it is needed is usually
-        // the moment something is broken.
+        // Symfony's generic page. Render our 500 instead, which is the whole
+        // point of having one: the exact moment it is needed is usually the
+        // moment something is broken.
         $exceptions->render(function (Throwable $e, $request) {
-            // 404 is the one status the active theme gets to answer for itself, so
-            // a portfolio site never serves the ecommerce shop's idea of "not
+            // 404 is the one status the active theme may answer for itself, so a
+            // portfolio site never serves the ecommerce shop's idea of "not
             // found". Themes::errorView() falls back to the shared
-            // resources/views/errors/404.blade.php for a theme that ships no
-            // errors/404.blade.php of its own, and the admin panel, portals and
-            // API are excluded outright — they keep the shared page. Safe to do
-            // here rather than in a respond() hook: ModelNotFoundException (a
-            // page() firstOrFail, an unknown order) has already been mapped to
-            // NotFoundHttpException by the framework before render callbacks run.
+            // resources/views/errors/404.blade.php, which is what every bundled
+            // theme uses today, and the admin panel, portals and API are excluded
+            // outright — they keep the shared page. Safe to do here rather than
+            // in a respond() hook: ModelNotFoundException (a page() firstOrFail,
+            // an unknown order) has already been mapped to NotFoundHttpException
+            // by the framework before render callbacks run.
             if ($e instanceof NotFoundHttpException && Themes::isStorefrontRequest($request)) {
                 return response()->view(Themes::errorView(404), [
                     'errors' => new ViewErrorBag,

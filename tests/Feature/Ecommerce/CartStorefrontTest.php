@@ -19,6 +19,10 @@ use function Pest\Laravel\get;
 beforeEach(function () {
     Setting::set('site_theme', 'ecommerce');
 
+    // Checkout requires a signed-in shopper, so every test here acts as one.
+    // The guest half of the rule is covered by its own test at the bottom.
+    $this->actingAs(User::factory()->create());
+
     Language::create(['code' => 'en', 'name' => 'English', 'native_name' => 'English', 'is_active' => true]);
 
     Page::factory()->published()->create(['title' => ['en' => 'Home', 'bn' => ''], 'slug' => 'home', 'sort_order' => 0]);
@@ -162,6 +166,49 @@ it('renders the cart page route and the checkout page route', function () {
 
     get('/cart')->assertOk()->assertSee('My cart');
     get('/checkout')->assertOk()->assertSee('Checkout');
+});
+
+it('sends a guest from checkout to log in, and the cart stays open to them', function () {
+    $product = cartProduct('guest-checkout', ['name' => ['en' => 'Guest Checkout', 'bn' => '']]);
+    Cart::add($product->id, 1);
+
+    auth()->logout();
+
+    // Only checkout is behind 'auth' — browsing and building a basket never
+    // forces an account, and the session cart survives the detour to log in.
+    get('/cart')->assertOk()->assertSee('My cart');
+
+    get('/checkout')
+        ->assertRedirect(route('login'));
+
+    expect(session('cart'))->not->toBeEmpty();
+});
+
+it('refuses to mount the checkout component for a guest', function () {
+    $product = cartProduct('guest-component', ['name' => ['en' => 'Guest Component', 'bn' => '']]);
+    Cart::add($product->id, 1);
+
+    auth()->logout();
+
+    // The route's 'auth' middleware never runs for a Livewire update, so the
+    // component re-checks for itself — otherwise the form would still place an
+    // order straight from /livewire/update.
+    Livewire::test(Checkout::class)
+        ->assertForbidden();
+
+    expect(Order::count())->toBe(0);
+});
+
+it('prefills the checkout form from the signed-in shopper', function () {
+    $product = cartProduct('prefill-me', ['name' => ['en' => 'Prefill Me', 'bn' => '']]);
+    Cart::add($product->id, 1);
+
+    $user = User::factory()->create(['name' => 'Prefilled Buyer', 'email' => 'prefilled@example.com']);
+    auth()->login($user);
+
+    Livewire::test(Checkout::class)
+        ->assertSet('customer_name', 'Prefilled Buyer')
+        ->assertSet('customer_email', 'prefilled@example.com');
 });
 
 it('places an order from the cart and clears the cart', function () {

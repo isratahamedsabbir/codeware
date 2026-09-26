@@ -278,40 +278,119 @@
             <flux:switch wire:model="settings.chat_widget_enabled" aria-label="Enable Live Chat" title="Enable Live Chat" />
         </x-slot:actions>
 
-        <div x-data="{ fallback: '#1e7bc4' }" class="flex flex-col gap-5 sm:flex-row sm:items-start">
-            <flux:field class="flex-1 max-w-sm">
-                <flux:label>Widget Color</flux:label>
-                <flux:description>Used for the chat bubble, header, buttons and visitor messages. Leave blank to follow the site's primary color.</flux:description>
-                <div class="flex items-center gap-2">
-                    <label class="relative size-10 shrink-0 cursor-pointer overflow-hidden rounded-lg border border-zinc-300 shadow-xs"
-                        :style="'background-color: ' + ($wire.settings.chat_widget_color || fallback)">
-                        <input type="color" class="absolute inset-0 size-full cursor-pointer opacity-0"
-                            :value="$wire.settings.chat_widget_color || fallback"
-                            x-on:input="$wire.settings.chat_widget_color = $event.target.value"
-                            aria-label="Pick widget color" />
-                    </label>
-                    <flux:input wire:model.live.debounce.300ms="settings.chat_widget_color" placeholder="Site primary color" class="flex-1 font-mono" />
-                    <flux:button size="sm" variant="ghost" icon="arrow-uturn-left" x-show="$wire.settings.chat_widget_color"
-                        x-on:click="$wire.settings.chat_widget_color = ''" title="Reset to site primary color" />
+        <div x-data="{
+                fallback: '#1e7bc4',
+                presets: ['#1e7bc4', '#042b49', '#0f766e', '#16a34a', '#7c3aed', '#db2777', '#ea580c', '#18181b'],
+                get color() { return $wire.settings.chat_widget_color || '' },
+                get valid() { return /^#[0-9a-fA-F]{6}$/.test(this.color) },
+                get preview() { return this.valid ? this.color : this.fallback },
+                pick(hex) { $wire.settings.chat_widget_color = hex },
+            }"
+            class="grid grid-cols-1 gap-6 transition-opacity lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]"
+            :class="! $wire.settings.chat_widget_enabled && 'opacity-60'">
+
+            {{-- Controls --}}
+            <div class="space-y-5">
+                <flux:field>
+                    <div class="flex items-center justify-between gap-2">
+                        <flux:label>Widget Color</flux:label>
+                        <span x-show="! color"
+                            class="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-500 dark:bg-zinc-700 dark:text-zinc-300">
+                            <flux:icon.link class="size-3" /> Follows site primary
+                        </span>
+                        <span x-show="color" x-cloak
+                            class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                            <flux:icon.swatch class="size-3" /> Custom
+                        </span>
+                    </div>
+                    <flux:description>Used for the chat bubble, header, buttons and visitor messages. Leave blank to follow the site's primary color.</flux:description>
+
+                    <div class="flex items-center gap-2">
+                        <label class="relative size-10 shrink-0 cursor-pointer overflow-hidden rounded-lg shadow-xs ring-1 ring-black/10 ring-inset transition hover:scale-105"
+                            :style="'background-color: ' + preview" title="Open color picker">
+                            <input type="color" class="absolute inset-0 size-full cursor-pointer opacity-0"
+                                :value="preview"
+                                x-on:input="pick($event.target.value)"
+                                aria-label="Pick widget color" />
+                            <flux:icon.eye-dropper class="pointer-events-none absolute right-0.5 bottom-0.5 size-3 text-white/80 drop-shadow" />
+                        </label>
+                        <flux:input wire:model.live.debounce.300ms="settings.chat_widget_color" placeholder="Site primary color" class="flex-1 font-mono uppercase" />
+                        <flux:button size="sm" variant="ghost" icon="arrow-uturn-left" x-show="color" x-cloak
+                            x-on:click="pick('')" title="Reset to site primary color" />
+                    </div>
+                    <flux:error name="settings.chat_widget_color" />
+                </flux:field>
+
+                <div>
+                    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">Quick picks</p>
+                    <div class="flex flex-wrap gap-2">
+                        <template x-for="hex in presets" :key="hex">
+                            <button type="button" x-on:click="pick(hex)" :title="hex"
+                                class="relative flex size-8 cursor-pointer items-center justify-center rounded-full ring-1 ring-black/10 ring-inset transition hover:scale-110 focus:outline-none"
+                                :class="color.toLowerCase() === hex && 'ring-2 ring-offset-2 ring-zinc-400 dark:ring-offset-zinc-900'"
+                                :style="'background-color: ' + hex">
+                                <flux:icon.check x-show="color.toLowerCase() === hex" class="size-4 text-white" />
+                            </button>
+                        </template>
+                    </div>
                 </div>
-                <flux:error name="settings.chat_widget_color" />
-            </flux:field>
+
+                <div class="flex items-start gap-2.5 rounded-lg border border-zinc-100 bg-zinc-50 p-3 text-xs leading-relaxed text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-400">
+                    <flux:icon.shield-check class="mt-px size-4 shrink-0 text-emerald-500" />
+                    <span>Visitors confirm their email with a one-time code before a conversation starts — this keeps spam out of your inbox.</span>
+                </div>
+            </div>
 
             {{-- Live preview --}}
-            <div class="flex items-end gap-3 rounded-lg border border-zinc-100 bg-zinc-50 p-4"
-                :style="'--preview: ' + (/^#[0-9a-fA-F]{6}$/.test($wire.settings.chat_widget_color || '') ? $wire.settings.chat_widget_color : fallback)">
-                <div class="w-48 overflow-hidden rounded-lg bg-white shadow-sm border border-zinc-100">
-                    <div class="px-3 py-2 text-white" style="background-color: var(--preview)">
-                        <p class="text-xs font-semibold">Chat with us</p>
-                        <p class="text-[10px] text-white/80">We're online — ask us anything.</p>
-                    </div>
-                    <div class="space-y-1.5 p-2.5">
-                        <div class="w-fit max-w-[80%] rounded-xl rounded-bl-sm bg-zinc-100 px-2.5 py-1 text-[10px] text-zinc-700">Hi! How can we help?</div>
-                        <div class="ml-auto w-fit max-w-[80%] rounded-xl rounded-br-sm px-2.5 py-1 text-[10px] text-white" style="background-color: var(--preview)">I have a question</div>
-                    </div>
+            <div class="relative overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900/50"
+                :style="'--preview: ' + preview">
+                {{-- fake browser bar --}}
+                <div class="flex items-center gap-1.5 border-b border-zinc-200 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-800">
+                    <span class="size-2 rounded-full bg-red-400"></span>
+                    <span class="size-2 rounded-full bg-amber-400"></span>
+                    <span class="size-2 rounded-full bg-emerald-400"></span>
+                    <span class="ml-3 h-4 flex-1 rounded bg-zinc-100 dark:bg-zinc-700"></span>
+                    <span class="ml-2 text-[10px] font-semibold uppercase tracking-wide text-zinc-400">Preview</span>
                 </div>
-                <div class="flex size-11 shrink-0 items-center justify-center rounded-full text-white shadow-md" style="background-color: var(--preview)">
-                    <flux:icon.chat-bubble-oval-left class="size-5" />
+
+                <div class="relative h-72 bg-[radial-gradient(circle,rgb(0_0_0/0.06)_1px,transparent_1px)] bg-size-[14px_14px] p-4 dark:bg-[radial-gradient(circle,rgb(255_255_255/0.06)_1px,transparent_1px)]">
+                    {{-- page skeleton --}}
+                    <div class="space-y-2 opacity-70">
+                        <div class="h-3 w-1/3 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+                        <div class="h-2 w-2/3 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+                        <div class="h-2 w-1/2 rounded bg-zinc-200 dark:bg-zinc-700"></div>
+                    </div>
+
+                    {{-- chat window --}}
+                    <div class="absolute right-4 bottom-20 w-60 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl dark:border-zinc-700 dark:bg-zinc-800">
+                        <div class="flex items-center gap-2.5 px-3.5 py-3 text-white" style="background-color: var(--preview)">
+                            <span class="relative flex size-8 items-center justify-center rounded-full bg-white/20">
+                                <flux:icon.chat-bubble-left-right class="size-4" />
+                                <span class="absolute -right-0.5 -bottom-0.5 size-2.5 rounded-full bg-emerald-400 ring-2 ring-white/80"></span>
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-xs font-semibold leading-tight">Chat with us</p>
+                                <p class="truncate text-[10px] text-white/80">We're online — ask us anything.</p>
+                            </div>
+                            <flux:icon.x-mark class="size-3.5 text-white/70" />
+                        </div>
+                        <div class="space-y-2 p-3">
+                            <div class="w-fit max-w-[80%] rounded-2xl rounded-bl-sm bg-zinc-100 px-3 py-1.5 text-[11px] text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200">Hi! How can we help?</div>
+                            <div class="ml-auto w-fit max-w-[80%] rounded-2xl rounded-br-sm px-3 py-1.5 text-[11px] text-white" style="background-color: var(--preview)">I have a question</div>
+                        </div>
+                        <div class="flex items-center gap-2 border-t border-zinc-100 px-3 py-2 dark:border-zinc-700">
+                            <span class="h-6 flex-1 rounded-full bg-zinc-100 px-2.5 text-[10px] leading-6 text-zinc-400 dark:bg-zinc-700">Type a message…</span>
+                            <span class="flex size-6 items-center justify-center rounded-full text-white" style="background-color: var(--preview)">
+                                <flux:icon.paper-airplane class="size-3" />
+                            </span>
+                        </div>
+                    </div>
+
+                    {{-- launcher bubble --}}
+                    <div class="absolute right-4 bottom-4 flex size-12 items-center justify-center rounded-full text-white shadow-lg ring-4 ring-white dark:ring-zinc-900"
+                        style="background-color: var(--preview)">
+                        <flux:icon.chat-bubble-oval-left class="size-5" />
+                    </div>
                 </div>
             </div>
         </div>

@@ -10,9 +10,11 @@ use Illuminate\Http\Request;
 
 /**
  * The customer account area behind a storefront login — dashboard, order
- * history, order detail, and profile editing. An ecommerce-only feature: the
- * routes abort 404 on any other active theme, so a portfolio or default-theme
- * site is never changed by this.
+ * history, order detail, and profile editing. An ecommerce-only feature: these
+ * routes are only registered by routes/web/ecommerce.php, and its 'theme' guard
+ * 404s them unless the ecommerce theme is active, so on any other theme they
+ * never reach this controller. ensureEcommerceTheme() below repeats that check
+ * so the controller is still safe to call directly.
  */
 class CustomerController extends Controller
 {

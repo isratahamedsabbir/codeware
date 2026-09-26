@@ -59,6 +59,53 @@ class Themes
     }
 
     /**
+     * The route name => template map above, exposed so the two things that have
+     * to agree with it can be checked: the theme route files that register those
+     * names, and the fact that every one of them is a page some theme serves.
+     */
+    public static function routeTemplates(): array
+    {
+        return self::ROUTE_TEMPLATES;
+    }
+
+    /**
+     * Where the per-theme route files live — routes/web/{slug}.php, one per theme
+     * folder, mirroring this class's one-template-per-page convention on the
+     * routing side.
+     */
+    public static function routesPath(): string
+    {
+        return base_path('routes/web');
+    }
+
+    /**
+     * Whether a given theme ships a route file at all. A theme without one
+     * simply contributes no routes — the same rule as a template it doesn't
+     * ship — so its public surface is whatever routes/web.php gives every theme.
+     */
+    public static function routeFileExists(string $theme): bool
+    {
+        return is_file(static::routesPath().'/'.$theme.'.php');
+    }
+
+    /**
+     * Every theme's route file that exists, as slug => absolute path. All of them
+     * are registered by routes/web.php; the 'theme:{slug}' middleware each one is
+     * wrapped in is what makes only the active theme's answer (see
+     * App\Http\Middleware\EnsureActiveTheme).
+     *
+     * @return array<string, string>
+     */
+    public static function allRouteFiles(): array
+    {
+        return collect(static::all())
+            ->keys()
+            ->filter(fn (string $slug) => static::routeFileExists($slug))
+            ->mapWithKeys(fn (string $slug) => [$slug => static::routesPath().'/'.$slug.'.php'])
+            ->all();
+    }
+
+    /**
      * Every theme folder under resources/views/frontend/themes, as slug => label.
      *
      * The folder list is a filesystem scan (scandir + is_dir per entry), so it's
@@ -178,7 +225,45 @@ class Themes
      */
     public static function has(string $name): bool
     {
-        return is_file(static::templateFile(static::active(), $name));
+        return static::hasTemplateFor(static::active(), $name);
+    }
+
+    /**
+     * has() for a named theme rather than the active one — the same "does this
+     * theme have this page?" question, asked about a theme other than the one
+     * currently serving. The pairing is the point: a route a theme registers and
+     * a template it doesn't ship would be a page that resolves and then 500s.
+     */
+    public static function hasTemplateFor(string $theme, string $name): bool
+    {
+        return is_file(static::templateFile($theme, $name));
+    }
+
+    /**
+     * The theme template a route name renders through, or null when the route
+     * isn't a themed page - an unnamed alias, a click tracker, a redirect.
+     */
+    public static function templateForRoute(string $name): ?string
+    {
+        return static::ROUTE_TEMPLATES[$name] ?? null;
+    }
+
+    /**
+     * Whether the active theme can serve the page behind a route name.
+     *
+     * The routing-layer half of the rule Themes::view() applies when it looks for
+     * a template: a page the active theme ships no template for is not part of
+     * this site, whether that verdict is reached before the controller runs (see
+     * App\Http\Middleware\EnsureActiveTheme) or after.
+     *
+     * A name ROUTE_TEMPLATES doesn't map is not a themed page at all, so there is
+     * nothing here to answer and it counts as renderable.
+     */
+    public static function activeThemeCanRender(string $name): bool
+    {
+        $template = static::templateForRoute($name);
+
+        return $template === null || static::hasTemplateFor(static::active(), $template);
     }
 
     /**
@@ -210,10 +295,14 @@ class Themes
     /**
      * The error view for a status code in the active theme: its own
      * errors/{code}.blade.php when it ships one, otherwise Laravel's shared
-     * resources/views/errors/{code}.blade.php. Only 404 is expected to be
-     * theme-owned (see the render callback in bootstrap/app.php); every other
-     * status keeps the shared page, which has to stay self-contained because a
-     * 500 is often a dead database.
+     * resources/views/errors/{code}.blade.php.
+     *
+     * Every bundled theme ships its own 404, so a storefront error arrives in
+     * the design the visitor was already browsing. The shared page is what a
+     * theme with no errors/ folder gets — and what the admin panel, the portals
+     * and the API get unconditionally (see bootstrap/app.php), which is why it
+     * has to stay self-contained enough to render with no theme, no assets and
+     * no queries.
      *
      * The shared page is named as a plain dotted path rather than the
      * "errors::404" namespace the framework's own error handler uses: that
@@ -257,6 +346,12 @@ class Themes
      * ours. The menu admin form always saves a plain URL (see
      * Livewire\Admin\Menu\Index::save()), so this is how a menu item is matched
      * back to the route — and therefore the template — behind it.
+     *
+     * Every theme's routes are registered (see allRouteFiles()), so this matches
+     * /shop on a portfolio site too even though that route will 404 there. That
+     * is the point: a link to a page the active theme doesn't serve has to be
+     * recognised as a themed storefront page in order to be dropped, and it
+     * could not be if a non-active theme's routes were missing from the table.
      */
     private static function routeNameFor(?string $url): ?string
     {

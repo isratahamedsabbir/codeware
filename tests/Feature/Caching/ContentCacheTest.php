@@ -69,7 +69,12 @@ it('caches the header categories with their page relation attached', function ()
 });
 
 it('caches the theme folder scan', function () {
-    Cache::forget('themes:all');
+    // Themes::forget() rather than Cache::forget(): all() also memoises the scan
+    // per bootstrap, and routes/web.php asks for the theme list at boot to
+    // register the theme route files — so by the time this test runs the memo is
+    // already warm, and clearing only the cache key would leave all() returning
+    // the memo without ever writing the entry it is meant to be asserting on.
+    Themes::forget();
 
     expect(Themes::all())->toHaveKey('ecommerce')
         ->and(Cache::has('themes:all'))->toBeTrue();

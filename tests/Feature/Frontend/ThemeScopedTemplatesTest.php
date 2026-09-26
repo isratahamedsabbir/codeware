@@ -13,9 +13,7 @@ use Illuminate\Support\Facades\File;
  * page the active theme doesn't have 404s instead of appearing in another
  * theme's design, and the 404 itself comes from the active theme when it ships
  * one, falling back to Laravel's shared error pages when it doesn't.
- */
-
-/**
+ *
  * Builds a real theme folder on disk, cleaned up by the afterEach below. A
  * template is written as a stub that only echoes the title — enough for the
  * route to succeed, and deliberately free of any theme chrome so a failure
@@ -90,68 +88,105 @@ it('renders each theme own home and page templates rather than one shared fallba
     $this->get('/about')->assertNotFound();
 });
 
-it('serves the active theme own 404 when it ships one', function () {
-    Setting::set('site_theme', 'ecommerce');
-    $this->get('/nope-not-a-page')->assertNotFound()
-        ->assertSee("We couldn't find that product")
-        ->assertSee('Browse the shop');
+it('gives every bundled theme its own 404, in that theme own design', function () {
+    // Each theme ships errors/404.blade.php, so a dead URL is answered in the
+    // design the visitor was already browsing rather than in a neutral page
+    // belonging to no theme. Each one is recognisably that theme's.
+    $expected = [
+        'default' => ['rounded-lg bg-primary'],
+        'ecommerce' => ['rounded-card bg-sf-button'],
+        'portfolio' => ['pf-btn-solid'],
+    ];
 
-    Setting::set('site_theme', 'portfolio');
-    $this->get('/nope-not-a-page')->assertNotFound()
-        ->assertSee('Nothing here')
-        ->assertSee('Selected work');
-});
-
-it('gives every installed theme its own 404 rather than leaving one to the fallback', function () {
-    // A theme without errors/404.blade.php is a gap, not a design decision: the
-    // shared page is the safety net, not where a shipped theme should end up.
-    foreach (array_keys(Themes::all()) as $slug) {
+    foreach ($expected as $slug => $needles) {
         Setting::set('site_theme', $slug);
 
         expect(Themes::errorView(404))->toBe("frontend.themes.{$slug}.errors.404");
+
+        $response = $this->get('/nope-not-a-page')->assertNotFound();
+
+        $response->assertSee('404');
+        $response->assertSee(__('Sorry, page not found'));
+
+        foreach ($needles as $needle) {
+            $response->assertSee($needle, escape: false);
+        }
+
+        // Never another theme's design, and never indexed.
+        foreach (array_diff(array_keys($expected), [$slug]) as $other) {
+            foreach ($expected[$other] as $needle) {
+                $response->assertDontSee($needle, escape: false);
+            }
+        }
+
+        $response->assertSee('noindex, nofollow', escape: false);
     }
-
-    // The default theme owns one too, in its own accent, and points back at the
-    // site's own pages rather than the shop or portfolio sections.
-    Setting::set('site_theme', 'default');
-    Themes::forget();
-
-    $this->get('/nope-not-a-page')
-        ->assertNotFound()
-        ->assertSee('Page not found')
-        // Its own brand, not the ecommerce accent the shell falls back to.
-        ->assertSee('#1e7bc4')
-        ->assertSee('About')
-        ->assertDontSee("We couldn't find that product");
 });
 
 it("falls back to Laravel's shared 404 for a theme that ships no error page", function () {
+    // A theme's own 404 is opt-in per theme, not a requirement for the storefront
+    // to work: without an errors/ folder it gets the shared, self-contained
+    // resources/views/errors/404.blade.php instead.
     installBareTheme('bare', ['home', 'page']);
 
     Setting::set('site_theme', 'bare');
     Themes::forget();
 
+    expect(Themes::errorView(404))->toBe('errors.404');
+
+    $response = $this->get('/nope-not-a-page')
+        ->assertNotFound()
+        ->assertSee('404')
+        ->assertSee(__('Sorry, page not found'))
+        ->assertSee('href="'.config('app.url').'"', escape: false);
+
+    // The shared page is deliberately bare: none of the bundled themes' chrome,
+    // because it is the one page that has to render when the theme's own views,
+    // the asset pipeline or the database are what is down.
+    $response->assertDontSee('rounded-card bg-sf-button', escape: false)
+        ->assertDontSee('pf-btn-solid', escape: false);
+});
+
+it('lets a theme answer 404 for itself by shipping an errors/404.blade.php', function () {
+    // The shared page is the default, not a dead end: a theme that wants its own
+    // 404 drops in one file and the storefront starts serving it, with no
+    // controller or handler change.
+    installBareTheme('bare', ['home', 'page']);
+    File::ensureDirectoryExists(Themes::path().'/bare/errors');
+    File::put(Themes::path().'/bare/errors/404.blade.php', '<p>bare theme not found</p>');
+
+    Setting::set('site_theme', 'bare');
+    Themes::forget();
+
+    expect(Themes::errorView(404))->toBe('frontend.themes.bare.errors.404');
+
     $this->get('/nope-not-a-page')
         ->assertNotFound()
-        ->assertSee('Page not found')
-        ->assertSee('We could not find the page you are looking for');
+        ->assertSee('bare theme not found');
+
+    // And it is still scoped to the storefront — the admin host keeps the shared
+    // page, so a theme can't hijack the panel's error pages.
+    $this->get('http://'.config('app.admin_host').'/nope-not-a-page')
+        ->assertNotFound()
+        ->assertDontSee('bare theme not found');
 });
 
 it('keeps the shared error pages for the admin panel and the API', function () {
     Setting::set('site_theme', 'ecommerce');
 
-    // The API answers in JSON, never with a themed storefront page.
+    // The API answers in JSON, never with an HTML error page.
     $this->getJson('/api/v1/nope')->assertNotFound()->assertHeader('content-type', 'application/json');
 
-    // A request on the admin host keeps the shared 404 too, rather than the
-    // storefront's — the panel is a separate site, not this theme.
+    // A request on the admin host bypasses the storefront 404 branch entirely,
+    // so a theme can never end up answering for the panel. The page is the same
+    // one, reached the framework's own way rather than Themes::errorView().
     $adminHost = config('app.admin_host');
     expect($adminHost)->not->toBe(request()->getHost());
 
     $this->get('http://'.$adminHost.'/nope-not-a-page')
         ->assertNotFound()
-        ->assertSee('Page not found')
-        ->assertDontSee("We couldn't find that product");
+        ->assertSee('404')
+        ->assertSee('href="'.config('app.url').'"', escape: false);
 });
 
 it('drops a nav link the active theme cannot render, and keeps it on a theme that can', function () {

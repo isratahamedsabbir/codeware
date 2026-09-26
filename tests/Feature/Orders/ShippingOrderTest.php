@@ -18,6 +18,9 @@ beforeEach(function () {
     Setting::set('vat_enabled', '0');
     Setting::set('vat_rate', '0');
 
+    // Checkout requires a signed-in shopper.
+    $this->actingAs(User::factory()->create());
+
     Language::create(['code' => 'en', 'name' => 'English', 'native_name' => 'English', 'is_active' => true]);
 
     Page::factory()->published()->create(['title' => ['en' => 'Home', 'bn' => ''], 'slug' => 'home', 'sort_order' => 0]);
