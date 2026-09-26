@@ -7,6 +7,7 @@ use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RequireFeature;
 use App\Http\Middleware\ScopeSessionCookieToHost;
 use App\Http\Middleware\SetLocale;
+use App\Support\Themes;
 use App\Support\UnauthorizedAccessNotifier;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ViewErrorBag;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -137,6 +139,22 @@ return Application::configure(basePath: dirname(__DIR__))
         // whole point of having one: the exact moment it is needed is usually
         // the moment something is broken.
         $exceptions->render(function (Throwable $e, $request) {
+            // 404 is the one status the active theme gets to answer for itself, so
+            // a portfolio site never serves the ecommerce shop's idea of "not
+            // found". Themes::errorView() falls back to the shared
+            // resources/views/errors/404.blade.php for a theme that ships no
+            // errors/404.blade.php of its own, and the admin panel, portals and
+            // API are excluded outright — they keep the shared page. Safe to do
+            // here rather than in a respond() hook: ModelNotFoundException (a
+            // page() firstOrFail, an unknown order) has already been mapped to
+            // NotFoundHttpException by the framework before render callbacks run.
+            if ($e instanceof NotFoundHttpException && Themes::isStorefrontRequest($request)) {
+                return response()->view(Themes::errorView(404), [
+                    'errors' => new ViewErrorBag,
+                    'exception' => $e,
+                ], 404);
+            }
+
             // Everything with a status code of its own already resolves to
             // resources/views/errors/{code}.blade.php, and these two are turned
             // into redirects / JSON responses further down the stack.

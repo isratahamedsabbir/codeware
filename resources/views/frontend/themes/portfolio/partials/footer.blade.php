@@ -1,6 +1,7 @@
 {{--
-    Portfolio theme footer — shared by home.blade.php and page.blade.php so the
-    two can't drift apart.
+    Portfolio theme footer — owned by the one-pager (home.blade.php), which is
+    the only page this theme ships. Kept as a partial so the markup lives in one
+    place rather than inline in the one view that uses it.
 
     Expects $siteName and $socials from the including view. $socials is a list of
     ['abbr' => 'FB', 'url' => '...'] entries (already filtered down to the

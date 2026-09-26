@@ -418,3 +418,30 @@ it('links a menu item to a published page the storefront serves', function () {
 
     expect($item->url)->toBe('/about');
 });
+
+it('deletes a non-admin menu along with its items', function () {
+    Menu::create(['slug' => 'footer', 'name' => 'Footer Menu']);
+    MenuItem::factory()->create(['group' => 'footer', 'label' => 'Footer Link']);
+    $adminItem = MenuItem::factory()->create(['label' => 'Reports']);
+
+    Livewire::test(MenuIndex::class)
+        ->call('selectMenu', 'footer')
+        ->assertSeeHtml('confirmDeleteMenu')
+        ->call('deleteMenu')
+        ->assertSet('activeGroup', MenuItem::GROUP_ADMIN_SIDEBAR);
+
+    expect(Menu::where('slug', 'footer')->exists())->toBeFalse()
+        ->and(MenuItem::where('group', 'footer')->exists())->toBeFalse()
+        ->and($adminItem->fresh())->not->toBeNull();
+});
+
+it('never deletes the admin menu', function () {
+    $item = MenuItem::factory()->create(['label' => 'Reports']);
+
+    Livewire::test(MenuIndex::class)
+        ->assertDontSeeHtml('confirmDeleteMenu')
+        ->call('deleteMenu');
+
+    expect(Menu::where('slug', MenuItem::GROUP_ADMIN_SIDEBAR)->exists())->toBeTrue()
+        ->and($item->fresh())->not->toBeNull();
+});

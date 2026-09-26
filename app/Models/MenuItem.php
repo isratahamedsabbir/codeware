@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Concerns\CachesContent;
 use App\Support\Features;
+use App\Support\Themes;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -283,10 +284,23 @@ class MenuItem extends Model
     }
 
     /**
-     * `menuCached()` filtered down to what the current user is actually allowed to
-     * open — used for the live sidebar. Filtering happens per-request rather than
-     * inside the cached query, since the underlying cache is shared across all users
-     * regardless of their tier (Super Admin / Admin / Staff).
+     * Whether the active theme ships a template for this item's target page —
+     * the storefront counterpart to isVisibleToCurrentUser(). Now that
+     * templates are theme-exclusive (see Themes::view()), a nav link to a page
+     * the active theme has no template for would 404 on click, so it's dropped
+     * from the nav rather than advertised. Anything the router doesn't recognise
+     * as a themed storefront page is kept (see Themes::canRenderLink()).
+     */
+    public function isRenderableByCurrentTheme(): bool
+    {
+        return Themes::canRenderLink($this->route_name, $this->url);
+    }
+
+    /**
+     * `menuCached()` filtered down to what the current user is actually allowed
+     * to open — used for the live sidebar. Filtering happens per-request rather
+     * than inside the cached query, since the underlying cache is shared across
+     * all users regardless of their tier (Super Admin / Admin / Staff).
      *
      * @return Collection<int, self>
      */

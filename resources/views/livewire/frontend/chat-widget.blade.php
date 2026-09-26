@@ -10,6 +10,8 @@
     }"
     x-on:chat-widget-verified.window="localStorage.setItem('chat-widget-token', $event.detail.token)"
     class="fixed bottom-5 right-5 z-50"
+    {{-- Re-pointing --color-primary scopes the admin-chosen color to every bg-primary/text-primary inside the widget. --}}
+    @if ($widgetColor) style="--color-primary: {{ $widgetColor }}" @endif
 >
     {{-- Bubble button --}}
     <button type="button" wire:click="toggle"

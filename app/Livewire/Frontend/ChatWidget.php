@@ -223,6 +223,11 @@ class ChatWidget extends Component
             return '<div></div>';
         }
 
-        return view('livewire.frontend.chat-widget');
+        // Blank (or anything but a clean hex) falls back to the theme's own primary color.
+        $color = (string) Setting::get('chat_widget_color', '');
+
+        return view('livewire.frontend.chat-widget', [
+            'widgetColor' => preg_match('/^#[0-9a-fA-F]{6}$/', $color) ? $color : null,
+        ]);
     }
 }

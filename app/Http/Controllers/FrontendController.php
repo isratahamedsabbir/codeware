@@ -32,19 +32,18 @@ class FrontendController extends Controller
 {
     /**
      * The public site root — renders the admin-selected theme's homepage,
-     * populated with the "home" page's CMS sections.
+     * populated with the "home" page's CMS sections. 404s if the active theme
+     * ships no home template (see Themes::viewOrFail()).
      */
     public function home()
     {
-        $theme = Themes::active();
-
         $homePage = Frontend::homePage();
 
         $sections = $homePage
             ? CmsSection::cachedForPage($homePage->id)
             : collect();
 
-        return view("frontend.themes.{$theme}.home", [
+        return view(Themes::viewOrFail('home'), [
             'page' => $homePage,
             'sections' => $sections,
             'title' => $homePage?->seo_title ?: (Setting::get('seo_meta_title') ?: Setting::get('site_name')),
@@ -59,17 +58,19 @@ class FrontendController extends Controller
     /**
      * Any other standalone page (About, Contact, FAQ, ...) — same rendering as
      * home(), just scoped to the requested page's own CMS sections instead of
-     * the "home" page's. Same view (`page.blade.php`) across every theme.
+     * the "home" page's.
+     *
+     * Each theme supplies its own page.blade.php, and a theme that ships none
+     * simply has no standalone pages: /about 404s rather than being rendered in
+     * some other theme's design (see Themes::view()).
      */
     public function page(string $slug)
     {
-        $theme = Themes::active();
-
         $page = Page::where('slug', $slug)->where('type', 'page')->where('status', 'active')->firstOrFail();
 
         $sections = CmsSection::cachedForPage($page->id);
 
-        return view("frontend.themes.{$theme}.page", [
+        return view(Themes::viewOrFail('page'), [
             'page' => $page,
             'sections' => $sections,
             'title' => $page->seo_title ?: $page->getTranslation('title', 'en', false),
@@ -84,9 +85,9 @@ class FrontendController extends Controller
     /**
      * The storefront catalog — every active product, facet-filterable by
      * category/brand/tag, free-text search, and sort order, all via query
-     * params so the facets are just plain links. Rendered through the active
-     * theme's shop template when it ships one, otherwise the ecommerce
-     * theme's (see Themes::view()).
+     * params so the facets are just plain links. Rendered by the active theme's
+     * own shop template, and 404s on a theme that ships none (see
+     * Themes::view()).
      */
     public function shop(Request $request)
     {
@@ -143,7 +144,7 @@ class FrontendController extends Controller
 
         $priceBounds = (object) ['min' => $priceMin, 'max' => $priceMax];
 
-        return view('frontend.themes.'.Themes::view('shop'), [
+        return view(Themes::viewOrFail('shop'), [
             'products' => $query->paginate(Setting::perPage())->withQueryString(),
             'categories' => $this->shopCategories(),
             'brands' => $this->shopBrands(),
@@ -227,7 +228,7 @@ class FrontendController extends Controller
                 ->get();
         }
 
-        return view('frontend.themes.'.Themes::view('product'), [
+        return view(Themes::viewOrFail('product'), [
             'product' => $product,
             'related' => $related,
             'sections' => $product->page ? CmsSection::cachedForPage($product->page->id) : collect(),
@@ -281,7 +282,7 @@ class FrontendController extends Controller
             ->orderBy('sort_order')
             ->get();
 
-        return view('frontend.themes.'.Themes::view('category'), [
+        return view(Themes::viewOrFail('category'), [
             'category' => $category,
             'children' => $children,
             'products' => $products,
@@ -312,7 +313,7 @@ class FrontendController extends Controller
             ->paginate(Setting::perPage())
             ->withQueryString();
 
-        return view('frontend.themes.'.Themes::view('brand'), [
+        return view(Themes::viewOrFail('brand'), [
             'brand' => $brand,
             'products' => $products,
             'sections' => collect(),
@@ -342,7 +343,7 @@ class FrontendController extends Controller
             ->paginate(Setting::perPage())
             ->withQueryString();
 
-        return view('frontend.themes.'.Themes::view('tag'), [
+        return view(Themes::viewOrFail('tag'), [
             'tag' => $tag,
             'products' => $products,
             'sections' => collect(),
@@ -359,7 +360,8 @@ class FrontendController extends Controller
     /**
      * The blog feed — every published post, newest first, optionally narrowed
      * to a category via ?category (category links come from the category's
-     * paired Page slug). Rendered through the active theme's blog template.
+     * paired Page slug). Rendered by the active theme's own blog template, and
+     * 404s on a theme that ships none.
      */
     public function blog(Request $request)
     {
@@ -379,7 +381,7 @@ class FrontendController extends Controller
             ->get()
             ->filter(fn (PostCategory $category) => $category->page !== null);
 
-        return view('frontend.themes.'.Themes::view('blog'), [
+        return view(Themes::viewOrFail('blog'), [
             'posts' => $posts->paginate(Setting::perPage())->withQueryString(),
             'categories' => $categories,
             'page' => null,
@@ -420,7 +422,7 @@ class FrontendController extends Controller
             ->limit(3)
             ->get();
 
-        return view('frontend.themes.'.Themes::view('post'), [
+        return view(Themes::viewOrFail('post'), [
             'post' => $post,
             'related' => $related,
             'sections' => $sections,
@@ -458,7 +460,7 @@ class FrontendController extends Controller
             ->paginate(Setting::perPage())
             ->withQueryString();
 
-        return view('frontend.themes.'.Themes::view('favorites'), [
+        return view(Themes::viewOrFail('favorites'), [
             'products' => $products,
             'page' => null,
             'sections' => collect(),
@@ -478,7 +480,7 @@ class FrontendController extends Controller
      */
     public function cart()
     {
-        return view('frontend.themes.'.Themes::view('cart'), [
+        return view(Themes::viewOrFail('cart'), [
             'page' => null,
             'sections' => collect(),
             'title' => __('My cart'),
@@ -496,7 +498,7 @@ class FrontendController extends Controller
      */
     public function checkout()
     {
-        return view('frontend.themes.'.Themes::view('checkout'), [
+        return view(Themes::viewOrFail('checkout'), [
             'page' => null,
             'sections' => collect(),
             'title' => __('Checkout'),
@@ -521,7 +523,7 @@ class FrontendController extends Controller
 
         $order = Order::with('items.product')->where('order_number', $orderNumber)->firstOrFail();
 
-        return view('frontend.themes.'.Themes::view('order-confirmation'), [
+        return view(Themes::viewOrFail('order-confirmation'), [
             'order' => $order,
             // The same permanent signed links the invoice QR code points at, so
             // the shopper can view/print or download the invoice without an account.

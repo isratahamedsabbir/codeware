@@ -26,7 +26,7 @@ class CustomerController extends Controller
             ->limit(5)
             ->get();
 
-        return view('frontend.themes.'.Themes::view('account.dashboard'), $this->viewData([
+        return view(Themes::viewOrFail('account.dashboard'), $this->viewData([
             'orders' => $orders,
             'currentSlug' => 'account',
         ]));
@@ -42,7 +42,7 @@ class CustomerController extends Controller
             ->paginate(Setting::perPage())
             ->withQueryString();
 
-        return view('frontend.themes.'.Themes::view('account.orders'), $this->viewData([
+        return view(Themes::viewOrFail('account.orders'), $this->viewData([
             'orders' => $orders,
             'currentSlug' => 'account',
         ]));
@@ -58,7 +58,7 @@ class CustomerController extends Controller
 
         $order->load(['items.product', 'transactions']);
 
-        return view('frontend.themes.'.Themes::view('account.order'), $this->viewData([
+        return view(Themes::viewOrFail('account.order'), $this->viewData([
             'order' => $order,
             'currentSlug' => 'account',
         ]));
@@ -68,7 +68,7 @@ class CustomerController extends Controller
     {
         $this->ensureEcommerceTheme();
 
-        return view('frontend.themes.'.Themes::view('account.profile'), $this->viewData([
+        return view(Themes::viewOrFail('account.profile'), $this->viewData([
             'currentSlug' => 'account',
         ]));
     }

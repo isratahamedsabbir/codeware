@@ -27,13 +27,20 @@ class Frontend
      * Every standalone page (Home, About, Contact, FAQ, ...), in the admin's
      * chosen order — used as the site nav by the "default" theme.
      *
+     * All of them render through the one page.blade.php of whichever theme is
+     * active, so the theme either has standalone pages or has none: a theme
+     * without that template 404s every one of these links, and the nav is
+     * emptied rather than pointing the visitor at a dead end.
+     *
      * @return Collection<int, Page>
      */
     public static function navPages(): Collection
     {
         $rows = ContentCache::remember('nav-pages', fn () => Page::ofType('page')->published()->orderBy('sort_order')->get()->map->getAttributes()->all());
 
-        return Page::hydrate($rows);
+        $pages = Page::hydrate($rows);
+
+        return Themes::has('page') ? $pages : $pages->take(0);
     }
 
     /**
@@ -46,9 +53,7 @@ class Frontend
      */
     public static function menuItems(): Collection
     {
-        $rows = ContentCache::remember('frontend-menu', fn () => MenuItem::where('group', 'frontend')->where('is_active', true)->orderBy('sort_order')->get()->map->getAttributes()->all());
-
-        return MenuItem::hydrate($rows);
+        return static::renderableByTheme(static::menuCached('frontend-menu', 'frontend'));
     }
 
     /**
@@ -61,9 +66,7 @@ class Frontend
      */
     public static function portfolioMenuItems(): Collection
     {
-        $rows = ContentCache::remember('portfolio-menu', fn () => MenuItem::where('group', 'portfolio')->where('is_active', true)->orderBy('sort_order')->get()->map->getAttributes()->all());
-
-        return MenuItem::hydrate($rows);
+        return static::renderableByTheme(static::menuCached('portfolio-menu', 'portfolio'));
     }
 
     /**
@@ -74,9 +77,7 @@ class Frontend
      */
     public static function informationMenu(): Collection
     {
-        $rows = ContentCache::remember('information-menu', fn () => MenuItem::where('group', 'information')->where('is_active', true)->orderBy('sort_order')->get()->map->getAttributes()->all());
-
-        return MenuItem::hydrate($rows);
+        return static::renderableByTheme(static::menuCached('information-menu', 'information'));
     }
 
     /**
@@ -87,9 +88,34 @@ class Frontend
      */
     public static function quickLinks(): Collection
     {
-        $rows = ContentCache::remember('quick-links', fn () => MenuItem::where('group', 'quick-links')->where('is_active', true)->orderBy('sort_order')->get()->map->getAttributes()->all());
+        return static::renderableByTheme(static::menuCached('quick-links', 'quick-links'));
+    }
+
+    /**
+     * One storefront menu, read from the shared content cache as plain attribute
+     * arrays and rehydrated on every read.
+     *
+     * @return Collection<int, MenuItem>
+     */
+    private static function menuCached(string $cacheKey, string $group): Collection
+    {
+        $rows = ContentCache::remember($cacheKey, fn () => MenuItem::where('group', $group)->where('is_active', true)->orderBy('sort_order')->get()->map->getAttributes()->all());
 
         return MenuItem::hydrate($rows);
+    }
+
+    /**
+     * Drops the links the active theme can't render, so switching themes never
+     * leaves a nav pointing into a page that theme doesn't have. Filtering
+     * happens on the rehydrated collection rather than inside the cached query
+     * because it depends on the active theme, which is per-request.
+     *
+     * @param  Collection<int, MenuItem>  $items
+     * @return Collection<int, MenuItem>
+     */
+    private static function renderableByTheme(Collection $items): Collection
+    {
+        return $items->filter->isRenderableByCurrentTheme()->values();
     }
 
     /**

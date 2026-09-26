@@ -27,13 +27,27 @@ beforeEach(function () {
     }
 });
 
-it('renders every standalone page across every theme', function () {
-    foreach (['default', 'ecommerce', 'portfolio'] as $theme) {
+it('renders every standalone page on the themes that ship a page template', function () {
+    foreach (['default', 'ecommerce'] as $theme) {
         Setting::set('site_theme', $theme);
 
         foreach (['/', '/about', '/contact', '/faq'] as $path) {
             $this->get($path)->assertOk();
         }
+    }
+});
+
+it('404s every standalone page on the portfolio theme, which is a one-pager', function () {
+    // The portfolio is a single page: its contact is the #contact section on the
+    // one-pager, not a /contact page. It ships no page.blade.php, so the rows
+    // below exist in the database but have nowhere to render on this theme —
+    // which is exactly the 404 the theme-scoping rule is for.
+    Setting::set('site_theme', 'portfolio');
+
+    $this->get('/')->assertOk();
+
+    foreach (['/about', '/contact', '/faq'] as $path) {
+        $this->get($path)->assertNotFound();
     }
 });
 
@@ -92,29 +106,34 @@ it('hides an inactive portfolio menu item from the portfolio nav', function () {
     $this->get('/')->assertOk()->assertSee('Work')->assertDontSee('Retired');
 });
 
-it('resolves a portfolio section anchor to the site root so it works from a secondary page too', function () {
+it('resolves a portfolio section anchor to the site root', function () {
     Setting::set('site_theme', 'portfolio');
 
-    $this->get('/about')
+    // Anchored to the root rather than left as a bare "#projects", which would
+    // resolve against whatever page you happened to be on and find nothing.
+    $this->get('/')
         ->assertOk()
         ->assertSee('href="'.url('/').'#projects"', false)
         ->assertSee('data-pf-nav-link="projects"', false);
 });
 
-it('marks a plain path item in the portfolio nav active on its own page, but never an anchor', function () {
+it('drops a portfolio nav path item the one-pager theme cannot render', function () {
     MenuItem::create(['group' => 'portfolio', 'label' => 'Resume', 'url' => '/about', 'sort_order' => 5, 'is_active' => true]);
 
     Setting::set('site_theme', 'portfolio');
 
-    $html = $this->get('/about')->assertOk()->getContent();
+    $html = $this->get('/')->assertOk()->getContent();
 
-    // A path item is a real URL, so it can be matched against the current one.
-    // An anchor never can — on a one-pager "where am I" is the scroll spy's job
-    // (see bindSectionSpy() in the theme's script.js), not a server-side class.
+    // /about is a published page, but this theme ships no page.blade.php, so a
+    // nav link to it would be a dead end — it goes instead of being advertised.
+    expect($html)->not->toContain('Resume');
+
+    // An anchor can never be marked active server-side either: on a one-pager
+    // "where am I" is the scroll spy's job (see bindSectionSpy() in the theme's
+    // script.js), not a class on the link.
     $linkFor = fn (string $label) => (string) (preg_match('/<a\b[^>]*>\s*'.preg_quote($label, '/').'\s*<\/a>/', $html, $m) ? $m[0] : '');
 
-    expect($linkFor('Resume'))->toContain('is-active')
-        ->and($linkFor('Projects'))->not->toContain('is-active');
+    expect($linkFor('Projects'))->not->toContain('is-active');
 });
 
 it('shows only featured product categories in the storefront shop-by-category grid', function () {

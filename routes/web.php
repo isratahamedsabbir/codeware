@@ -14,10 +14,11 @@ Route::get('/', [FrontendController::class, 'home'])->name('home');
 // keeps the homepage's own hero styling instead of the generic page layout.
 Route::get('/home', [FrontendController::class, 'home']);
 
-// E-commerce storefront — only reachable through the ecommerce theme's
-// templates (or any theme that provides its own shop/product templates via
-// Themes::view()). Category slugs live on each category's paired Page;
-// brand/tag slugs are derived from the primary-locale name.
+// E-commerce storefront — each of these renders through the active theme's own
+// template, and 404s on a theme that ships none (see Themes::view()), so a
+// portfolio site never borrows the shop's pages. Category slugs live on each
+// category's paired Page; brand/tag slugs are derived from the primary-locale
+// name.
 Route::get('/shop', [FrontendController::class, 'shop'])->name('shop');
 Route::get('/products/{slug}', [FrontendController::class, 'product'])->name('products.show');
 Route::get('/category/{slug}', [FrontendController::class, 'category'])->name('shop.category');

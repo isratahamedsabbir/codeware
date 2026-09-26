@@ -369,15 +369,24 @@ it('prepends category and brand dropdowns to the ecommerce header menu', functio
         ->assertSeeInOrder(['Categories', 'Brands', 'Home']);
 });
 
-it('falls back to the ecommerce storefront templates when the active theme ships none', function () {
-    Setting::set('site_theme', 'default');
+it('serves its own storefront templates and keeps them to itself', function () {
+    Setting::set('site_theme', 'ecommerce');
 
-    $product = storefrontProduct('fallback-product', ['name' => ['en' => 'Fallback Product', 'bn' => '']]);
+    $product = storefrontProduct('scoped-product', ['name' => ['en' => 'Scoped Product', 'bn' => '']]);
 
     get('/shop')->assertOk()->assertSee('Shop');
-    get('/products/fallback-product')->assertOk()->assertSee('Fallback Product');
+    get('/products/scoped-product')->assertOk()->assertSee('Scoped Product');
     get('/category/unknown')->assertNotFound();
     get('/products/unknown')->assertNotFound();
+
+    // The shop is ecommerce's own, not something every theme borrows: a theme
+    // with no shop template of its own 404s rather than falling back to these
+    // pages. See Themes::view() and the theme-scoping coverage in
+    // Tests\Feature\Frontend\ThemeScopedTemplatesTest.
+    Setting::set('site_theme', 'default');
+
+    get('/shop')->assertNotFound();
+    get('/products/scoped-product')->assertNotFound();
 });
 
 it('filters the shop by a selected attribute combination value', function () {

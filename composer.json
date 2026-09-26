@@ -22,6 +22,7 @@
         "livewire/flux": "^2.12.0",
         "livewire/livewire": "^4.1",
         "mantix/livewire-jodit-text-editor": "*",
+        "nwidart/laravel-modules": "*",
         "picqer/php-barcode-generator": "*",
         "predis/predis": "*",
         "spatie/laravel-permission": "*",

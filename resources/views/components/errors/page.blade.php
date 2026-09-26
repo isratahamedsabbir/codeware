@@ -20,6 +20,7 @@
     'back' => true,
     'links' => [],
     'reference' => null,
+    'brand' => null,
 ])
 
 @php
@@ -28,7 +29,6 @@
     $siteName = config('app.name', 'Codeware');
     $favicon = '/favicon/favicon.ico';
     $logo = asset('default/logo.png');
-    $brand = '#045b30';
 
     try {
         $siteName = \App\Models\Setting::get('site_name') ?: $siteName;
@@ -38,15 +38,26 @@
         // Keep the defaults.
     }
 
-    try {
-        $hex = \App\Models\Setting::get('theme_ecommerce_accent_color')
-            ?: \App\Models\Setting::get('theme_ecommerce_primary_color');
-        if (is_string($hex) && preg_match('/^#[0-9a-fA-F]{3,8}$/', trim($hex))) {
-            $brand = trim($hex);
+    // A theme's own error page passes its accent through, so a themed 404 reads
+    // as that theme (see frontend/themes/*/errors/404.blade.php); without one we
+    // fall back to the ecommerce brand colours, and failing that to a hardcoded
+    // accent. Deliberately still a Setting read, never a themed partial: this
+    // shell has to render when the theme's own views are what's broken.
+    if (! is_string($brand) || ! preg_match('/^#[0-9a-fA-F]{3,8}$/', trim($brand))) {
+        $brand = null;
+
+        try {
+            $hex = \App\Models\Setting::get('theme_ecommerce_accent_color')
+                ?: \App\Models\Setting::get('theme_ecommerce_primary_color');
+            if (is_string($hex) && preg_match('/^#[0-9a-fA-F]{3,8}$/', trim($hex))) {
+                $brand = trim($hex);
+            }
+        } catch (\Throwable) {
+            // Keep the default accent.
         }
-    } catch (\Throwable) {
-        // Keep the default accent.
     }
+
+    $brand = $brand ?: '#045b30';
 
     $links = array_values(array_filter($links, fn ($l) => filled($l['href'] ?? null)));
     $isServerError = (int) $code >= 500;

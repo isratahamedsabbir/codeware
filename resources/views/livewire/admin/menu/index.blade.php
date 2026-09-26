@@ -7,10 +7,29 @@
         <div class="flex items-center gap-3 shrink-0 flex-wrap">
             <div class="inline-flex items-center gap-1 p-1 rounded-xl bg-zinc-100">
                 @foreach ($menus as $menu)
-                    <button type="button" wire:click="selectMenu('{{ $menu->slug }}')"
-                        class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer {{ $activeGroup === $menu->slug ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-800' }}">
-                        {{ $menu->name }}
-                    </button>
+                    @php
+                        $isActive = $activeGroup === $menu->slug;
+                        $isAdminMenu = $menu->slug === \App\Models\MenuItem::GROUP_ADMIN_SIDEBAR;
+                    @endphp
+                    <div wire:key="menu-tab-{{ $menu->slug }}"
+                        class="inline-flex items-center rounded-lg transition-all duration-150 {{ $isActive ? 'bg-white shadow-sm' : 'hover:bg-white/60' }}">
+                        <button type="button" wire:click="selectMenu('{{ $menu->slug }}')"
+                            class="inline-flex items-center gap-1.5 py-1.5 text-sm font-medium cursor-pointer transition-colors duration-150 {{ $isActive && ! $isAdminMenu ? 'pl-4 pr-1.5' : 'px-4' }} {{ $isActive ? 'text-zinc-900' : 'text-zinc-500 hover:text-zinc-800' }}">
+                            @if ($isAdminMenu)
+                                <flux:icon.lock-closed class="size-3.5 {{ $isActive ? 'text-zinc-400' : 'text-zinc-400/70' }}" />
+                            @endif
+                            {{ $menu->name }}
+                        </button>
+                        @if ($isActive && ! $isAdminMenu)
+                            <flux:tooltip :content="__('Delete menu')" position="bottom">
+                                <button type="button" wire:click="confirmDeleteMenu"
+                                    aria-label="{{ __('Delete menu') }}"
+                                    class="mr-1.5 inline-flex items-center justify-center size-5 rounded-md text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors duration-150 cursor-pointer">
+                                    <flux:icon.x-mark class="size-3.5" />
+                                </button>
+                            </flux:tooltip>
+                        @endif
+                    </div>
                 @endforeach
                 <button type="button" wire:click="openNewMenu"
                     class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium text-zinc-500 hover:text-zinc-800 hover:bg-white/70 transition-all duration-150 cursor-pointer">
@@ -398,7 +417,47 @@
         </div>
     </flux:modal>
 
-    {{-- Delete Modal --}}
+    {{-- Delete Menu Modal --}}
+    <flux:modal name="menu-delete" class="md:w-96"
+        x-on:open-modal.window="if ($event.detail.name === 'menu-delete') $flux.modal('menu-delete').show()"
+        x-on:close-modal.window="if ($event.detail.name === 'menu-delete') $flux.modal('menu-delete').close()">
+        <div class="space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                    </svg>
+                </div>
+                <div class="min-w-0">
+                    <flux:heading>{{ __('Delete menu?') }}</flux:heading>
+                    @if ($activeMenu)
+                        <p class="text-sm font-medium text-zinc-700 truncate">{{ $activeMenu->name }}</p>
+                    @endif
+                </div>
+            </div>
+            @if ($activeItemCount > 0)
+                <div class="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                    <flux:icon.exclamation-triangle class="size-4 shrink-0 mt-0.5" />
+                    <span>{{ trans_choice('This menu has :count item, which will also be deleted.|This menu has :count items, which will also be deleted.', $activeItemCount, ['count' => $activeItemCount]) }}</span>
+                </div>
+            @endif
+            <flux:text class="text-sm text-zinc-500">
+                {{ __('This action cannot be undone.') }}
+            </flux:text>
+            <div class="flex gap-2 pt-1">
+                <button wire:click="deleteMenu"
+                    class="inline-flex h-8 items-center gap-2 px-4 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors border-none cursor-pointer">
+                    {{ __('Delete') }}
+                </button>
+                <flux:modal.close>
+                    <flux:button variant="ghost" size="sm">{{ __('Cancel') }}</flux:button>
+                </flux:modal.close>
+            </div>
+        </div>
+    </flux:modal>
+
+    {{-- Delete Item Modal --}}
     <flux:modal name="menu-item-delete" class="md:w-96"
         x-on:open-modal.window="if ($event.detail.name === 'menu-item-delete') $flux.modal('menu-item-delete').show()"
         x-on:close-modal.window="if ($event.detail.name === 'menu-item-delete') $flux.modal('menu-item-delete').close()">

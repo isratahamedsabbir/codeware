@@ -8,6 +8,7 @@ use App\Models\Page;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use App\Support\AdminActivity;
+use App\Support\ContentCache;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Validate;
@@ -88,6 +89,40 @@ class Index extends Component
 
         $this->dispatch('close-modal', name: 'new-menu-form');
         $this->dispatch('notify', message: __('Menu created successfully'));
+    }
+
+    public function confirmDeleteMenu(): void
+    {
+        if ($this->activeGroup === MenuItem::GROUP_ADMIN_SIDEBAR) {
+            return;
+        }
+
+        $this->dispatch('open-modal', name: 'menu-delete');
+    }
+
+    public function deleteMenu(): void
+    {
+        // The admin sidebar drives the admin panel's own navigation — it can never be removed.
+        if ($this->activeGroup === MenuItem::GROUP_ADMIN_SIDEBAR) {
+            $this->dispatch('close-modal', name: 'menu-delete');
+
+            return;
+        }
+
+        $menu = Menu::where('slug', $this->activeGroup)->firstOrFail();
+
+        // Query-builder delete() skips model events, so bust both caches explicitly.
+        MenuItem::where('group', $menu->slug)->delete();
+        $menu->delete();
+        MenuItem::flushCache();
+        ContentCache::bust();
+
+        AdminActivity::log('deleted', "Menu: {$menu->name}");
+
+        $this->activeGroup = MenuItem::GROUP_ADMIN_SIDEBAR;
+
+        $this->dispatch('close-modal', name: 'menu-delete');
+        $this->dispatch('notify', message: __('Menu deleted successfully'));
     }
 
     public function openCreate(?int $parentId = null): void
@@ -367,9 +402,13 @@ class Index extends Component
 
         $pages = Page::ofType('page')->published()->whereIn('slug', self::PAGE_ROUTE_SLUGS)->orderBy('sort_order')->get();
 
+        $activeMenu = $menus->firstWhere('slug', $this->activeGroup);
+
         return view('livewire.admin.menu.index', [
             'topLevel' => $topLevel,
             'menus' => $menus,
+            'activeMenu' => $activeMenu,
+            'activeItemCount' => $this->activeGroup === MenuItem::GROUP_ADMIN_SIDEBAR ? 0 : $items->count(),
             'groups' => $groups,
             'brands' => $brands,
             'categories' => $categories,

@@ -75,6 +75,13 @@ class Index extends Component
 
     public function save(): void
     {
+        $this->settings['chat_widget_color'] = strtolower(trim((string) ($this->settings['chat_widget_color'] ?? '')));
+
+        $this->validate(
+            ['settings.chat_widget_color' => ['nullable', 'regex:/^#[0-9a-f]{6}$/']],
+            ['settings.chat_widget_color.regex' => __('Enter a hex color like #1e7bc4.')],
+        );
+
         // A slide without an image isn't shown, so it isn't kept either.
         $slides = array_values(array_filter(
             array_map(HeroSlides::normalize(...), $this->heroSlides),
@@ -325,6 +332,7 @@ class Index extends Component
         return [
             'site_theme',
             'chat_widget_enabled',
+            'chat_widget_color',
             'site_tagline',
             'home_hero_image',
             'home_promo_banner_1',

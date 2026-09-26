@@ -1,6 +1,6 @@
 {{--
-    Portfolio theme header — the single-page nav, shared by home.blade.php and
-    page.blade.php.
+    Portfolio theme header — the single-page nav, owned by home.blade.php, the
+    one page this theme ships.
 
     Expects $siteName and $siteIcon from the including view. The nav itself is
     resolved here from the portfolio-specific menu (see PortfolioMenuSeeder)
@@ -10,9 +10,9 @@
     their own menu means switching themes never reshuffles either one.
 
     A bare "#fragment" is anchored to the site root rather than left as-is:
-    url('#skills') returns the fragment unchanged, which on a secondary page
-    like /about would resolve to /about#skills and find nothing. Prefixing the
-    root keeps the link landing on the one-pager's section from anywhere.
+    url('#skills') returns the fragment unchanged, so a relative href would
+    resolve against whatever page it was rendered on. Prefixing the root keeps
+    the link landing on the one-pager's section.
 --}}
 @php
     $currentUrl = url()->current();

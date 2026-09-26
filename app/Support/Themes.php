@@ -3,10 +3,49 @@
 namespace App\Support;
 
 use App\Models\Setting;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Themes
 {
+    /**
+     * Every storefront route name mapped to the template its page renders
+     * through — the mirror image of the `view(Themes::viewOrFail(...))` call in
+     * each FrontendController/CustomerController method. Two things depend on
+     * this staying in sync: the 404 a missing template produces, and
+     * canRenderLink(), which drops a nav/menu link pointing at a page the
+     * active theme ships no template for rather than leaving a dead end.
+     *
+     * Deliberately keyed by route *name*, not URL, and resolved from a
+     * MenuItem's stored URL at runtime (see routeNameFor()) rather than parsed
+     * by hand here — the menu admin form stores plain URLs, so the router is
+     * the only thing that knows which route a stored URL means.
+     *
+     * A name absent from this map isn't a themed storefront page at all (the
+     * customer login, /admin's legacy bounce, an API path) and is always kept.
+     */
+    private const ROUTE_TEMPLATES = [
+        'home' => 'home',
+        'page' => 'page',
+        'shop' => 'shop',
+        'products.show' => 'product',
+        'shop.category' => 'category',
+        'shop.brand' => 'brand',
+        'shop.tag' => 'tag',
+        'favorites' => 'favorites',
+        'blog' => 'blog',
+        'blog.post' => 'post',
+        'cart' => 'cart',
+        'checkout' => 'checkout',
+        'checkout.confirmation' => 'order-confirmation',
+        'account.dashboard' => 'account/dashboard',
+        'account.orders' => 'account/orders',
+        'account.orders.show' => 'account/order',
+        'account.profile' => 'account/profile',
+    ];
+
     /**
      * Request-scoped memo of the cached folder scan — active()/view() are hit
      * several times a themed page. Keyed by the cache repository instance so
@@ -130,24 +169,143 @@ class Themes
     }
 
     /**
-     * The dotted view path that should render a given storefront view — the
-     * active theme's when it ships that view itself, otherwise the "ecommerce"
-     * theme's version (which every theme falls back to for the product/shop
-     * pages). Returns e.g. "ecommerce.shop" for callers to build
-     * "frontend.themes.ecommerce.shop" from.
+     * Whether the active theme ships its own copy of a storefront template.
      *
-     * Used by the storefront routes only; home()/page() keep rendering the
-     * active theme's own templates directly, so a "portfolio" or "default"
-     * site's home/about/contact pages are untouched by this.
+     * This is the single definition of "does this theme have this page?" —
+     * nothing else is ever consulted, which is what makes a theme self-contained
+     * (see view()). A dotted name is read as directories, so 'account.orders'
+     * means account/orders.blade.php.
      */
-    public static function view(string $name): string
+    public static function has(string $name): bool
     {
-        $theme = self::active();
+        return is_file(static::templateFile(static::active(), $name));
+    }
 
-        if (is_file(self::path().'/'.$theme.'/'.$name.'.blade.php')) {
-            return $theme.'.'.$name;
+    /**
+     * The dotted view path the active theme renders a storefront template from,
+     * or null when the theme ships no such template.
+     *
+     * Themes are strictly self-contained: there is deliberately no fallback to
+     * any other theme (not to "ecommerce", not to "default"). A page the active
+     * theme has no template for does not exist on that site — it 404s — rather
+     * than silently appearing in a design the admin never selected.
+     */
+    public static function view(string $name): ?string
+    {
+        return static::has($name) ? 'frontend.themes.'.static::active().'.'.$name : null;
+    }
+
+    /**
+     * view() for the storefront routes: the active theme's template, or a 404
+     * when the theme has none. Every public page goes through here rather than
+     * reaching for Themes::active() and interpolating a view name itself, so a
+     * theme missing a template degrades to "not found" instead of a 500 from an
+     * unresolvable view.
+     */
+    public static function viewOrFail(string $name): string
+    {
+        return static::view($name) ?? abort(404, 'The "'.static::active()."\" theme has no \"{$name}\" template.");
+    }
+
+    /**
+     * The error view for a status code in the active theme: its own
+     * errors/{code}.blade.php when it ships one, otherwise Laravel's shared
+     * resources/views/errors/{code}.blade.php. Only 404 is expected to be
+     * theme-owned (see the render callback in bootstrap/app.php); every other
+     * status keeps the shared page, which has to stay self-contained because a
+     * 500 is often a dead database.
+     *
+     * The shared page is named as a plain dotted path rather than the
+     * "errors::404" namespace the framework's own error handler uses: that
+     * namespace is never registered with the view finder here, so it only
+     * resolves through the handler's private path search, not through view().
+     */
+    public static function errorView(int $code): string
+    {
+        $theme = static::active();
+
+        return is_file(static::templateFile($theme, "errors/{$code}"))
+            ? "frontend.themes.{$theme}.errors.{$code}"
+            : "errors.{$code}";
+    }
+
+    /**
+     * Whether a menu/nav link points at a page the active theme can actually
+     * render — the "no dead links" half of theme scoping. With templates
+     * theme-exclusive, a link to a page this theme has no template for would
+     * 404 on click, so it is dropped from the nav instead of being advertised.
+     *
+     * Anything that isn't one of the themed storefront routes is always kept:
+     * an external link, a "#section" same-page anchor, a hand-typed path the
+     * router doesn't recognise, or a route with no template mapping (the
+     * customer login, /admin's legacy bounce). Those are not this theme's
+     * responsibility to judge.
+     */
+    public static function canRenderLink(?string $routeName, ?string $url): bool
+    {
+        $routeName ??= static::routeNameFor($url);
+
+        if ($routeName === null || ! array_key_exists($routeName, self::ROUTE_TEMPLATES)) {
+            return true;
         }
 
-        return is_file(self::path().'/ecommerce/'.$name.'.blade.php') ? 'ecommerce.'.$name : $theme.'.'.$name;
+        return static::has(self::ROUTE_TEMPLATES[$routeName]);
+    }
+
+    /**
+     * Which route a stored menu URL points at, or null when it isn't one of
+     * ours. The menu admin form always saves a plain URL (see
+     * Livewire\Admin\Menu\Index::save()), so this is how a menu item is matched
+     * back to the route — and therefore the template — behind it.
+     */
+    private static function routeNameFor(?string $url): ?string
+    {
+        // A bare "#fragment" (see PortfolioMenuSeeder), an absolute URL, or
+        // anything that isn't a root-relative path isn't ours to resolve.
+        if (! is_string($url) || ! str_starts_with($url, '/')) {
+            return null;
+        }
+
+        try {
+            return Route::getRoutes()->match(Request::create($url, 'GET'))->getName();
+        } catch (NotFoundHttpException) {
+            return null;
+        }
+    }
+
+    /**
+     * Whether a request belongs to the public storefront, as opposed to the
+     * admin panel, the vendor/delivery portals or the API. Each of those has
+     * its own host (see bootstrap/app.php) or its own JSON contract and must
+     * keep the shared error pages rather than the active theme's storefront 404.
+     */
+    public static function isStorefrontRequest(Request $request): bool
+    {
+        if ($request->expectsJson() || $request->is('api', 'api/*', 'livewire', 'livewire/*')) {
+            return false;
+        }
+
+        $host = $request->getHost();
+
+        foreach (['admin_host', 'vendor_host', 'delivery_host'] as $key) {
+            $panelHost = config('app.'.$key);
+
+            if (is_string($panelHost) && $panelHost !== '' && $panelHost === $host) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * A theme template's path on disk. A dotted name is read as directories, so
+     * 'account.orders' means account/orders.blade.php — a plain concatenation
+     * would look for a file literally named "account.orders.blade.php", which no
+     * theme can ship, and quietly send every nested template to the fallback.
+     */
+    private static function templateFile(string $theme, string $name): string
+    {
+        return static::path().'/'.$theme.'/'.str_replace('.', '/', $name).'.blade.php';
     }
 }

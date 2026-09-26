@@ -4,6 +4,7 @@ use App\Livewire\Frontend\HeaderSearch;
 use App\Models\Language;
 use App\Models\Page;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -72,6 +73,10 @@ it('never suggests inactive products', function () {
 
 it('renders the desktop search form on the storefront', function () {
     headerSearchProduct('shop-item', ['name' => ['en' => 'Shop Item', 'bn' => '']]);
+
+    // The header search is part of the ecommerce theme's shop chrome, and the
+    // shop only exists on a theme that ships it (see Themes::view()).
+    Setting::set('site_theme', 'ecommerce');
 
     get('/shop')
         ->assertOk()

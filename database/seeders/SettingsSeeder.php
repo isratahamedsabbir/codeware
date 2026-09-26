@@ -184,6 +184,8 @@ class SettingsSeeder extends Seeder
             // ── Frontend chat widget ── shows/hides the chat bubble on the
             // public site. See Settings → Theme → Frontend and ChatWidget.
             ['key' => 'chat_widget_enabled',      'value' => '1', 'type' => 'boolean', 'group' => 'frontend', 'is_public' => true],
+            // Blank = follow the site's primary color.
+            ['key' => 'chat_widget_color',        'value' => '', 'type' => 'color', 'group' => 'frontend', 'is_public' => true],
 
             // ── Announcement popup ── a one-time popup shown to visitors on
             // their first visit and hidden forever once dismissed (browser

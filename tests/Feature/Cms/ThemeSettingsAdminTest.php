@@ -487,3 +487,32 @@ it('rejects a zip containing path-traversal entries', function () {
 
     expect(is_dir(Themes::path().'/retro'))->toBeFalse();
 });
+
+it('saves the live chat widget color', function () {
+    Livewire::test(ThemeSettings::class)
+        ->set('settings.chat_widget_color', ' #FF5500 ')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(Setting::where('key', 'chat_widget_color')->value('value'))->toBe('#ff5500');
+});
+
+it('allows a blank live chat widget color to fall back to the site primary color', function () {
+    Setting::set('chat_widget_color', '#ff5500');
+
+    Livewire::test(ThemeSettings::class)
+        ->set('settings.chat_widget_color', '')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(Setting::where('key', 'chat_widget_color')->value('value'))->toBe('');
+});
+
+it('rejects an invalid live chat widget color', function () {
+    Livewire::test(ThemeSettings::class)
+        ->set('settings.chat_widget_color', 'red; background:url(x)')
+        ->call('save')
+        ->assertHasErrors(['settings.chat_widget_color']);
+
+    expect(Setting::where('key', 'chat_widget_color')->value('value'))->toBeNull();
+});

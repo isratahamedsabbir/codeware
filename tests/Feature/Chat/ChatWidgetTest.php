@@ -174,3 +174,17 @@ it('sends a message as the guest and broadcasts it to the admin', function () {
 
     Event::assertDispatched(MessageSent::class, fn ($event) => $event->message->id === $message->id);
 });
+
+it('applies the chat widget color from settings to the widget', function () {
+    Setting::set('chat_widget_enabled', true);
+    Setting::set('chat_widget_color', '#ff5500');
+
+    Livewire::test(ChatWidget::class)->assertSeeHtml('--color-primary: #ff5500');
+});
+
+it('keeps the site primary color when no chat widget color is set', function () {
+    Setting::set('chat_widget_enabled', true);
+    Setting::set('chat_widget_color', '');
+
+    Livewire::test(ChatWidget::class)->assertDontSeeHtml('--color-primary:');
+});
