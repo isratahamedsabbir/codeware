@@ -1,65 +1,79 @@
 {{--
-    Global SEO fallback chain: per-page fields (when $page is in scope) win,
-    then the admin/seo "Global SEO" settings, then sensible defaults. See
-    App\Concerns\HasSeoFields for the per-page fields and Livewire\Admin\Seo\Index
-    for the global settings this reads.
+    Everything a page says about itself to a search engine.
+
+    A thin printer over App\Support\Seo\SeoResolver: the fallback chain
+    (per-page field -> global "Global SEO" setting -> default) and every decision
+    about canonical URLs, robots directives, og:type and hreflang alternates
+    lives in SeoResolver, so this file only decides how the answers are written
+    out. Both partials.head (for the <title>) and this partial resolve the same
+    request, and SeoResolver memoises per request so they always agree.
+
+    A route that renders no themed template has no Page and no RouteSeo profile,
+    so it gets the neutral defaults here — which is the right answer for the
+    signed invoice and voucher links, whose views are the same on every theme.
 --}}
 @php
-    $seoPage = $page ?? null;
+    $seo = \App\Support\Seo\SeoResolver::resolve(request(), $page ?? null, $title ?? null);
+    $robots = $seo->robotsContent();
 
-    $seoDescription = $seoPage?->seo_description ?: \App\Models\Setting::get('seo_meta_description');
-
-    $ogTitle = $seoPage?->og_title ?: (\App\Models\Setting::get('seo_og_title') ?: ($title ?? null));
-    $ogDescription = $seoPage?->og_description ?: (\App\Models\Setting::get('seo_og_description') ?: $seoDescription);
-    $ogImage = $seoPage?->og_image ?: \App\Models\Setting::get('seo_og_image');
-
-    $twitterTitle = $seoPage?->twitter_title ?: (\App\Models\Setting::get('seo_twitter_title') ?: $ogTitle);
-    $twitterDescription = $seoPage?->twitter_description ?: (\App\Models\Setting::get('seo_twitter_description') ?: $ogDescription);
-    $twitterImage = $seoPage?->twitter_image ?: (\App\Models\Setting::get('seo_twitter_image') ?: $ogImage);
-
-    $noIndex = (bool) ($seoPage?->no_index ?? false);
-    $noFollow = (bool) ($seoPage?->no_follow ?? false);
-
-    $canonicalBase = $seoPage?->canonical_base;
-    $canonicalSlug = $seoPage?->canonical_slug;
-    $canonicalUrl = $canonicalBase && $canonicalSlug
-        ? rtrim($canonicalBase, '/').'/'.ltrim($canonicalSlug, '/')
-        : url()->current();
+    // schema.org structured data: the same page described as *what it is*
+    // rather than what it is called, which is the only format a product price
+    // or an article date can be read out of. Built from the same SeoData as
+    // everything below, so the two can never describe different pages, and
+    // skipped entirely on a noindex page where it could not be read anyway.
+    $document = \App\Support\Seo\Schema::document($seo, $page ?? null);
 @endphp
 
-@if ($noIndex || $noFollow)
-    <meta name="robots" content="{{ $noIndex ? 'noindex' : 'index' }}, {{ $noFollow ? 'nofollow' : 'follow' }}">
+@if ($robots)
+    <meta name="robots" content="{{ $robots }}">
 @endif
 
-@if (filled($seoDescription))
-    <meta name="description" content="{{ $seoDescription }}">
+@if ($seo->description)
+    <meta name="description" content="{{ $seo->description }}">
 @endif
 
-<link rel="canonical" href="{{ $canonicalUrl }}">
+<link rel="canonical" href="{{ $seo->canonical }}">
 
-<meta property="og:type" content="website">
-<meta property="og:url" content="{{ url()->current() }}">
-<meta property="og:site_name" content="{{ \App\Models\Setting::get('site_name', config('app.name')) }}">
-@if (filled($ogTitle))
-    <meta property="og:title" content="{{ $ogTitle }}">
+{{--
+    hreflang alternates, one per active language, plus x-default. Only worth
+    emitting on a page that is genuinely translated into more than one language —
+    a single-locale site should not tell a crawler these are all translations of
+    each other. SeoResolver decides; see LocalizedUrl for why a real per-locale
+    URL is required before these mean anything.
+--}}
+@foreach ($seo->alternates as $alternate)
+    <link rel="alternate" hreflang="{{ $alternate['hreflang'] }}" href="{{ $alternate['href'] }}">
+@endforeach
+
+<meta property="og:type" content="{{ $seo->ogType }}">
+<meta property="og:url" content="{{ $seo->ogUrl }}">
+<meta property="og:site_name" content="{{ $seo->siteName }}">
+<meta property="og:locale" content="{{ str_replace('-', '_', $seo->locale) }}">
+@if ($seo->ogTitle)
+    <meta property="og:title" content="{{ $seo->ogTitle }}">
 @endif
-@if (filled($ogDescription))
-    <meta property="og:description" content="{{ $ogDescription }}">
+@if ($seo->ogDescription)
+    <meta property="og:description" content="{{ $seo->ogDescription }}">
 @endif
-@if (filled($ogImage))
-    <meta property="og:image" content="{{ $ogImage }}">
+@if ($seo->ogImage)
+    <meta property="og:image" content="{{ $seo->ogImage }}">
+    <meta property="og:image:alt" content="{{ $seo->ogImageAlt }}">
 @endif
 
-<meta name="twitter:card" content="{{ \App\Models\Setting::get('seo_twitter_card', 'summary_large_image') }}">
-@if (filled(\App\Models\Setting::get('seo_twitter_site')))
-    <meta name="twitter:site" content="{{ \App\Models\Setting::get('seo_twitter_site') }}">
+<meta name="twitter:card" content="{{ $seo->twitterCard }}">
+@if ($seo->twitterSite)
+    <meta name="twitter:site" content="{{ $seo->twitterSite }}">
 @endif
-@if (filled($twitterTitle))
-    <meta name="twitter:title" content="{{ $twitterTitle }}">
+@if ($seo->twitterTitle)
+    <meta name="twitter:title" content="{{ $seo->twitterTitle }}">
 @endif
-@if (filled($twitterDescription))
-    <meta name="twitter:description" content="{{ $twitterDescription }}">
+@if ($seo->twitterDescription)
+    <meta name="twitter:description" content="{{ $seo->twitterDescription }}">
 @endif
-@if (filled($twitterImage))
-    <meta name="twitter:image" content="{{ $twitterImage }}">
+@if ($seo->twitterImage)
+    <meta name="twitter:image" content="{{ $seo->twitterImage }}">
+@endif
+
+@if ($document)
+    <script type="application/ld+json">{!! $document !!}</script>
 @endif

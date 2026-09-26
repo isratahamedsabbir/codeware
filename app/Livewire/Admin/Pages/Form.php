@@ -222,7 +222,7 @@ class Form extends Component
 
         $rules = array_merge($this->getRules(), $this->translatableRules([
             'title' => 'required|string|max:255',
-        ]));
+        ]), $this->translatableRules(self::seoTranslatableFields()));
         $rules['slug'] = $entityTable
             ? ['required', 'string', 'max:255']
             : ['required', 'string', 'max:255', ...Slug::uniqueRules($this->pageId)];

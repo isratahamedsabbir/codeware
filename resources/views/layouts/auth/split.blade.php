@@ -9,6 +9,17 @@
     @if (filled($description ?? null))
         <meta name="description" content="{{ $description }}">
     @endif
+    {{--
+        The full meta block — canonical, og:*, twitter:*, hreflang. Opt-in
+        rather than unconditional because most pages using this layout are the
+        login/register screens, which are noindex and want no canonical of their
+        own; the "default" theme's home page is the one caller that is a real,
+        indexable page of the site and so needs the same head the storefront
+        themes get from their own templates.
+    --}}
+    @if ($seoMeta ?? false)
+        @include('partials.seo-meta')
+    @endif
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">

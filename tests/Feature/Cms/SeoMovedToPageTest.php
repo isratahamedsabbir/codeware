@@ -13,10 +13,15 @@ use Livewire\Livewire;
 
 // SEO fields (seo_title, seo_description, og_image, ...) were moved off products/posts
 // entirely — the paired `pages` row (Product::page()/Post::page()) is the only place they
-// live in storage. These fields are single-language (not translatable) — meta data doesn't
-// need a per-locale value. The product/post/category admin forms load and save these fields
+// live in storage. The product/post/category admin forms load and save these fields
 // via App\Concerns\HasSeoFields, writing straight onto the paired Page — there's no separate
 // copy on the entity itself, so there's nothing for the two sides to drift out of sync on.
+//
+// The text half of that section (seo_title, seo_description, og_*, twitter_*) is
+// translatable, one value per locale: the Bengali version of a product is served
+// to Bengali searchers, and a meta title left in English there is a wasted
+// impression. The images and the canonical parts stay single-valued — a URL has
+// nothing to translate.
 
 it('no longer has seo columns on products or posts', function () {
     expect(Schema::hasColumn('products', 'seo_title'))->toBeFalse()
@@ -45,8 +50,8 @@ it('loads seo fields from the paired page on the product admin form', function (
 
     Livewire::test(ProductForm::class, ['id' => $product->id])
         ->assertSet('pageId', Page::where(['type' => 'product', 'product_id' => $product->id])->value('id'))
-        ->assertSet('seo_title', 'Page SEO Title')
-        ->assertSet('seo_description', 'Page SEO Description')
+        ->assertSet('seo_title.en', 'Page SEO Title')
+        ->assertSet('seo_description.en', 'Page SEO Description')
         ->assertSet('og_image', '/og.png');
 });
 
@@ -63,7 +68,7 @@ it('saves edited seo fields from the product admin form onto the paired page', f
     ]);
 
     Livewire::test(ProductForm::class, ['id' => $product->id])
-        ->set('seo_title', 'New SEO Title')
+        ->set('seo_title.en', 'New SEO Title')
         ->call('save');
 
     $page = Page::where(['type' => 'product', 'product_id' => $product->id])->firstOrFail();
@@ -90,6 +95,93 @@ it('saving a product leaves its page\'s seo fields untouched when the admin didn
     expect($page->seo_title)->toBe('Existing SEO Title');
 });
 
+// --- The SEO copy is per-locale ---
+
+it('stores a separate seo title per locale and reads back the right one', function () {
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
+    $this->actingAs($admin);
+
+    $product = Product::factory()->create();
+    Page::create([
+        'type' => 'product', 'product_id' => $product->id, 'user_id' => $admin->id,
+        'title' => ['en' => 'Title', 'bn' => 'টাইটেল'], 'status' => 'active',
+    ]);
+
+    Livewire::test(ProductForm::class, ['id' => $product->id])
+        ->set('seo_title.en', 'A fine product')
+        ->set('seo_title.bn', 'একটি ভালো পণ্য')
+        ->set('seo_description.bn', 'ভালো মানের পণ্য।')
+        ->call('save');
+
+    $page = Page::where(['type' => 'product', 'product_id' => $product->id])->firstOrFail();
+
+    // Key order in the json payload is not part of the contract, hence toEqual
+    // rather than toBe here.
+    expect($page->getTranslations('seo_title'))->toEqual([
+        'en' => 'A fine product',
+        'bn' => 'একটি ভালো পণ্য',
+    ])->and($page->getTranslations('seo_description'))->toEqual(['bn' => 'ভালো মানের পণ্য।']);
+
+    // Reading is locale-scoped, so each language gets the copy written for it.
+    expect($page->getTranslation('seo_title', 'en'))->toBe('A fine product')
+        ->and($page->getTranslation('seo_title', 'bn'))->toBe('একটি ভালো পণ্য');
+});
+
+it('falls back to the primary locale until a translation is written', function () {
+    // A half-translated catalogue is the normal state of a real one, and an
+    // empty Bengali meta title would otherwise ship as a blank <title>.
+    $page = Page::create([
+        'type' => 'page', 'user_id' => User::factory()->create()->id,
+        'title' => ['en' => 'About us', 'bn' => 'আমাদের সম্পর্কে'],
+        'seo_title' => ['en' => 'About Codeware'],
+    ]);
+
+    expect($page->getTranslation('seo_title', 'en', false))->toBe('About Codeware')
+        ->and($page->getTranslation('seo_title', 'bn', false))->toBeEmpty()
+        ->and($page->getTranslation('seo_title', 'bn'))->toBe('About Codeware');
+});
+
+it('writes NULL, not empty json, when every locale is cleared', function () {
+    // spatie stores a cleared translatable field as `[]` or `{"en":null}`. A
+    // `whereNull()` on seo_title, or an admin screen asking whether this page
+    // was ever given a meta title, both need a real NULL to mean anything.
+    $page = Page::create([
+        'type' => 'page', 'user_id' => User::factory()->create()->id,
+        'title' => ['en' => 'About us'],
+        'seo_title' => ['en' => 'About Codeware'],
+    ]);
+
+    $page->update(['seo_title' => ['en' => '', 'bn' => '']]);
+    $page->refresh();
+
+    expect($page->getRawOriginal('seo_title'))->toBeNull()
+        ->and(Page::whereNull('seo_title')->whereKey($page->id)->exists())->toBeTrue()
+        ->and($page->seo_title)->toBeNull();
+});
+
+it('keeps a translation the admin left alone when saving another locale', function () {
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
+    $this->actingAs($admin);
+
+    $product = Product::factory()->create();
+    Page::create([
+        'type' => 'product', 'product_id' => $product->id, 'user_id' => $admin->id,
+        'title' => ['en' => 'Title'], 'status' => 'active',
+        'seo_title' => ['en' => 'English title', 'bn' => 'বাংলা শিরোনাম'],
+    ]);
+
+    Livewire::test(ProductForm::class, ['id' => $product->id])
+        ->set('seo_title.en', 'Corrected English title')
+        ->call('save');
+
+    $page = Page::where(['type' => 'product', 'product_id' => $product->id])->firstOrFail();
+
+    expect($page->getTranslation('seo_title', 'en'))->toBe('Corrected English title')
+        ->and($page->getTranslation('seo_title', 'bn'))->toBe('বাংলা শিরোনাম');
+});
+
 it('loads seo fields from the paired page on the post admin form', function () {
     $this->seed(RolePermissionSeeder::class);
     $admin = User::factory()->admin()->create();
@@ -106,8 +198,8 @@ it('loads seo fields from the paired page on the post admin form', function () {
 
     Livewire::test(PostForm::class, ['id' => $post->id])
         ->assertSet('pageId', Page::where(['type' => 'post', 'post_id' => $post->id])->value('id'))
-        ->assertSet('seo_title', 'Post Page SEO Title')
-        ->assertSet('seo_description', 'Post Page SEO Description')
+        ->assertSet('seo_title.en', 'Post Page SEO Title')
+        ->assertSet('seo_description.en', 'Post Page SEO Description')
         ->assertSet('og_image', '/post-og.png');
 });
 
@@ -124,7 +216,7 @@ it('saves edited seo fields from the post admin form onto the paired page', func
     ]);
 
     Livewire::test(PostForm::class, ['id' => $post->id])
-        ->set('seo_title', 'New Post SEO Title')
+        ->set('seo_title.en', 'New Post SEO Title')
         ->call('save');
 
     $page = Page::where(['type' => 'post', 'post_id' => $post->id])->firstOrFail();

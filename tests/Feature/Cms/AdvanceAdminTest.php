@@ -6,16 +6,19 @@ use App\Livewire\Admin\Advance\Sitemap;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\Setting;
 use App\Models\User;
+use App\Support\Seo\SeoResolver;
 use Database\Seeders\RolePermissionSeeder;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    $this->sitemapPath = public_path('sitemap.xml');
-    $this->robotsPath = public_path('robots.txt');
-    $this->robotsBackup = File::exists($this->robotsPath) ? File::get($this->robotsPath) : null;
-    $this->sitemapBackup = File::exists($this->sitemapPath) ? File::get($this->sitemapPath) : null;
+    // The ecommerce theme, because the sitemap only advertises what the active
+    // theme can actually serve — under the default theme /products/widget is a
+    // 404 and is correctly absent.
+    Setting::set('site_theme', 'ecommerce');
+    SeoResolver::flush();
 
     $this->seed(RolePermissionSeeder::class);
 
@@ -25,17 +28,7 @@ beforeEach(function () {
 });
 
 afterEach(function () {
-    if ($this->robotsBackup !== null) {
-        File::put($this->robotsPath, $this->robotsBackup);
-    } elseif (File::exists($this->robotsPath)) {
-        File::delete($this->robotsPath);
-    }
-
-    if ($this->sitemapBackup !== null) {
-        File::put($this->sitemapPath, $this->sitemapBackup);
-    } elseif (File::exists($this->sitemapPath)) {
-        File::delete($this->sitemapPath);
-    }
+    Cache::flush();
 });
 
 it('lets an admin view the sitemap and robots.txt tools', function () {
@@ -59,7 +52,7 @@ it('blocks staff from the advance routes', function () {
     $this->get(route('admin.advance.backup'))->assertForbidden();
 });
 
-it('generates a sitemap.xml from published content', function () {
+it('shows the sitemap an admin is looking at, built from published content', function () {
     $this->actingAs($this->admin);
 
     Page::factory()->create(['type' => 'page', 'status' => 'active', 'no_index' => false, 'slug' => 'about-us']);
@@ -69,24 +62,35 @@ it('generates a sitemap.xml from published content', function () {
     $product->categories()->attach($category);
     pairPageFor($product, 'product', 'widget', $this->admin->id);
 
-    Livewire::test(Sitemap::class)->call('generate');
-
-    expect(File::exists($this->sitemapPath))->toBeTrue();
-
-    $xml = File::get($this->sitemapPath);
-    expect($xml)->toContain('/about-us')
-        ->toContain('/products/widget')
-        ->toContain('/products/category/gadgets');
+    // There is no Generate step to invoke any more: the file this screen used to
+    // write is now built per request, so the screen is a window onto the same
+    // bytes a crawler gets rather than a button that has to be pressed.
+    Livewire::test(Sitemap::class)
+        ->assertOk()
+        ->assertSee('about-us')
+        ->assertSee('/products/widget')
+        // /products/category/{slug} is not a route this application has; the old
+        // sitemap listed it anyway, so a crawler was sent to a 404 by the site's
+        // own inventory file.
+        ->assertSee('/category/gadgets')
+        ->assertDontSee('/products/category/gadgets');
 });
 
-it('saves robots.txt content through the form', function () {
+it('saves robots.txt rules through the form, and serves them with the sitemap line', function () {
     $this->actingAs($this->admin);
 
     Livewire::test(Robots::class)
-        ->set('content', "User-agent: *\nDisallow: /admin\n")
-        ->call('save');
+        ->set('content', "User-agent: *\nDisallow: /admin")
+        ->call('save')
+        ->assertHasNoErrors();
 
-    expect(File::get($this->robotsPath))->toBe("User-agent: *\nDisallow: /admin\n");
+    expect(Setting::get('seo_robots_txt'))->toBe("User-agent: *\nDisallow: /admin");
+
+    // The stored rules are what a crawler reads, plus the Sitemap: line the
+    // controller appends — which no save can lose.
+    expect($this->get('/robots.txt')->assertOk()->getContent())
+        ->toContain("User-agent: *\nDisallow: /admin")
+        ->toContain('Sitemap: '.url('/sitemap.xml'));
 });
 
 it('downloads a zip containing the database dump and the storage files', function () {

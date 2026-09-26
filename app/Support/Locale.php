@@ -96,6 +96,41 @@ class Locale
         return static::active()->pluck('code')->all();
     }
 
+    /**
+     * The languages an admin form offers a language tab for on a translatable
+     * field — the same set the tab strip itself draws, so the tabs and the
+     * fields under them always agree.
+     *
+     * active(), except that a site with no languages configured yet still gets
+     * one tab, for the primary locale. Before an admin has ever visited
+     * /admin/languages the languages table is empty, and a translatable field
+     * with no tab to bind to has nowhere to write its value at all — the form
+     * would save an empty string for the primary language every time.
+     *
+     * Not for anything that picks a locale to *store*: this can hand back a
+     * placeholder with no Language row behind it, so a select listing what the
+     * site actually supports (app_locale) must keep reading active().
+     *
+     * @return Collection<int, Language>
+     */
+    public static function translatable(): Collection
+    {
+        $active = static::active();
+
+        if ($active->isNotEmpty()) {
+            return $active;
+        }
+
+        $primary = static::primary();
+
+        return collect([(object) [
+            'code' => $primary,
+            'name' => strtoupper($primary),
+            'native_name' => null,
+            'flag' => null,
+        ]]);
+    }
+
     public static function isSupported(string $code): bool
     {
         return in_array($code, static::codes(), true);

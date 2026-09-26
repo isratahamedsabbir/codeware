@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Locale;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
@@ -11,6 +12,95 @@ class Setting extends Model
     use HasFactory;
 
     protected $fillable = ['key', 'value', 'type', 'group', 'is_public'];
+
+    /**
+     * Settings that hold one value per language, stored as a JSON
+     * `{code: value}` map in the same `value` column.
+     *
+     * A Setting row has no model instance to hang a translatable cast off — it
+     * is read as a raw key=>value map out of the cache, once per request, for
+     * every consumer — so the per-language values live inside the column
+     * instead, and translations()/translated() decode them on the way out.
+     *
+     * The global SEO copy is per-language for the same reason it is on a Page:
+     * a Bengali visitor is served a Bengali page, and an English meta
+     * description on it is a wasted impression.
+     */
+    public const TRANSLATABLE = [
+        'seo_meta_title',
+        'seo_meta_description',
+        'seo_og_title',
+        'seo_og_description',
+        'seo_twitter_title',
+        'seo_twitter_description',
+    ];
+
+    public static function isTranslatable(string $key): bool
+    {
+        return in_array($key, self::TRANSLATABLE, true);
+    }
+
+    /**
+     * The per-locale values of a translatable setting, given its stored value.
+     *
+     * Accepts a plain string as well as the JSON map, because the settings
+     * seeded and saved before these became per-language hold a bare string:
+     * that string belongs to the primary locale, so existing copy keeps
+     * rendering after the change instead of silently going blank.
+     *
+     * @return array<string, string>
+     */
+    public static function translations(mixed $raw): array
+    {
+        if (is_array($raw)) {
+            return array_map(fn ($value) => (string) $value, $raw);
+        }
+
+        if (! is_string($raw) || trim($raw) === '') {
+            return [];
+        }
+
+        $decoded = json_decode($raw, true);
+
+        if (! is_array($decoded)) {
+            return [Locale::primary() => $raw];
+        }
+
+        return array_map(fn ($value) => (string) $value, $decoded);
+    }
+
+    /**
+     * One locale's value out of a translatable setting's stored value, falling
+     * back to the primary locale when the requested one was left empty — the
+     * same fallback the translatable columns on the models use, so a page that
+     * only translated its title still unfurls with a usable description.
+     */
+    public static function translate(mixed $raw, ?string $locale = null): ?string
+    {
+        $translations = self::translations($raw);
+
+        if ($translations === []) {
+            return null;
+        }
+
+        // An unfilled translation has to fall through to the primary one, so
+        // this tests for content rather than for the key being there at all.
+        foreach ([$locale ?? Locale::current(), Locale::primary()] as $candidate) {
+            if (filled($translations[$candidate] ?? null)) {
+                return (string) $translations[$candidate];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * translate() for a stored setting rather than a raw column value.
+     */
+    public static function translated(string $key, ?string $locale = null): ?string
+    {
+        return self::translate(self::get($key), $locale);
+    }
 
     /**
      * Request-scoped memos so hot paths ($currencySymbol, $siteName, perPage(),

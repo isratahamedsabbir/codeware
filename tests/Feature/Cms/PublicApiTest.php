@@ -177,6 +177,24 @@ it('decodes seo_canonical_urls into an array within the seo group', function () 
         ->assertJsonPath('data.seo.seo_canonical_urls', ['/old-path' => '/new-path']);
 });
 
+it('returns the per-language global seo copy for the requested locale, not the stored map', function () {
+    Language::create(['code' => 'en', 'name' => 'English', 'native_name' => 'English', 'is_active' => true, 'is_default' => true]);
+    Language::create(['code' => 'bn', 'name' => 'Bengali', 'native_name' => 'বাংলা', 'is_active' => true]);
+    Setting::factory()->create([
+        'key' => 'seo_meta_title',
+        'value' => json_encode(['en' => 'Codeware | Home', 'bn' => 'কোডওয়্যার | হোম']),
+        'group' => 'seo', 'is_public' => true,
+    ]);
+
+    $this->getJson('/api/v1/settings/public')
+        ->assertOk()
+        ->assertJsonPath('data.seo.seo_meta_title', 'Codeware | Home');
+
+    $this->getJson('/api/v1/settings/public?locale=bn')
+        ->assertOk()
+        ->assertJsonPath('data.seo.seo_meta_title', 'কোডওয়্যার | হোম');
+});
+
 it('decodes constants into a flat key => value map', function () {
     Setting::set('constants', json_encode([
         ['key' => 'support_email', 'type' => 'textarea', 'value' => 'support@example.com'],

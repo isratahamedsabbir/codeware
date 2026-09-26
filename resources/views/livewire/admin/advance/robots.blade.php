@@ -26,5 +26,12 @@
                 Reset to Default
             </flux:button>
         </div>
+
+        <p class="text-xs text-zinc-500 dark:text-zinc-400">
+            The <span class="font-mono">Sitemap:</span> line is added when the file
+            is served and is not editable here, so it cannot be lost to a careless
+            save or pointed at a host that isn't this site. It currently resolves to
+            <a href="{{ $sitemapUrl }}" target="_blank" class="hover:underline break-all">{{ $sitemapUrl }}</a>.
+        </p>
     </x-admin-section-card>
 </div>

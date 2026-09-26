@@ -17,7 +17,18 @@ class Page extends Model
 {
     use CachesContent, HasCreator, HasFactory, HasTranslations;
 
-    public array $translatable = ['title', 'content', 'description'];
+    /**
+     * The SEO copy is per-locale alongside the content it describes, so a
+     * translated page can carry a translated meta title and description instead
+     * of advertising itself in English on every locale. og_image / twitter_image
+     * / canonical_base / canonical_slug are deliberately absent: a URL has one
+     * spelling, and translating it would only produce hreflang pointing nowhere.
+     */
+    public array $translatable = [
+        'title', 'content', 'description',
+        'seo_title', 'seo_description', 'og_title', 'og_description',
+        'twitter_title', 'twitter_description',
+    ];
 
     protected $fillable = [
         'user_id', 'title', 'slug', 'content', 'description', 'puck_data', 'status',
@@ -45,6 +56,8 @@ class Page extends Model
             } else {
                 $page->slug = Slug::lower($page->slug);
             }
+
+            $page->collapseEmptySeoTranslations();
         });
 
         static::updating(function (Page $page) {
@@ -56,6 +69,36 @@ class Page extends Model
                 ]);
             }
         });
+    }
+
+    /**
+     * Turns a translatable SEO attribute that is empty in every locale back into
+     * a real NULL.
+     *
+     * spatie/laravel-translatable writes a cleared field as `[]` or
+     * `{"en":null}` — json that is present but says nothing. That is a different
+     * thing from NULL to `whereNull()`, to a `$page->seo_title` null check, and
+     * to an admin screen asking whether this page was ever given a meta title.
+     * These columns were plain strings until SEO became translatable, and the
+     * rest of the application (and its tests) still expects the old shape for
+     * "unset", so the storage normalisation belongs here rather than in each of
+     * the four admin forms that write these fields.
+     */
+    protected function collapseEmptySeoTranslations(): void
+    {
+        foreach (['seo_title', 'seo_description', 'og_title', 'og_description', 'twitter_title', 'twitter_description'] as $field) {
+            $raw = $this->attributes[$field] ?? null;
+
+            if (! is_string($raw) || $raw === '') {
+                continue;
+            }
+
+            $decoded = json_decode($raw, true);
+
+            if (! is_array($decoded) || array_filter($decoded, 'filled') === []) {
+                $this->attributes[$field] = null;
+            }
+        }
     }
 
     public function user(): BelongsTo

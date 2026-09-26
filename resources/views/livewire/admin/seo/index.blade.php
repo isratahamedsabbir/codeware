@@ -6,41 +6,78 @@
         description="What search engines show in results, and what appears when your site is shared on social media."
         collapsible :collapsed="true">
 
+        {{-- These are the fallbacks every page without its own SEO copy inherits,
+             and they are read in the reader's language: a Bengali visitor is
+             served a Bengali page, so an English meta description underneath it
+             is a wasted impression. Same locale tabs as the SEO block on the
+             Page form, for the same reason. --}}
+
         {{-- Meta tags --}}
         <div class="lg:col-span-2 min-w-0">
-            <div class="space-y-4">
-                <flux:field>
-                    @include('partials.seo-char-counter', ['field' => 'seo_meta_title', 'max' => 60, 'label' => 'Meta Title'])
-                    <flux:input wire:model="settings.seo_meta_title"
-                        placeholder="Title shown in search engine results" />
-                </flux:field>
-                <flux:field>
-                    @include('partials.seo-char-counter', ['field' => 'seo_meta_description', 'max' => 160, 'label' => 'Meta Description'])
-                    <flux:textarea wire:model="settings.seo_meta_description" class="h-24"
-                        placeholder="Short summary shown in search engine results" />
-                </flux:field>
-            </div>
+            <x-admin-locale-tabs>
+                @foreach (\App\Support\Locale::translatable() as $language)
+                    <x-admin-locale-panel :code="$language->code">
+                        <div class="space-y-4">
+                            <flux:field>
+                                @include('partials.seo-char-counter', [
+                                    'path' => 'settings.seo_meta_title.'.$language->code,
+                                    'max' => 60,
+                                    'label' => 'Meta Title',
+                                ])
+                                <flux:input wire:model="settings.seo_meta_title.{{ $language->code }}"
+                                    placeholder="Title shown in search engine results" />
+                            </flux:field>
+                            <flux:field>
+                                @include('partials.seo-char-counter', [
+                                    'path' => 'settings.seo_meta_description.'.$language->code,
+                                    'max' => 160,
+                                    'label' => 'Meta Description',
+                                ])
+                                <flux:textarea wire:model="settings.seo_meta_description.{{ $language->code }}" class="h-24"
+                                    placeholder="Short summary shown in search engine results" />
+                            </flux:field>
+                        </div>
+                    </x-admin-locale-panel>
+                @endforeach
+            </x-admin-locale-tabs>
         </div>
 
         {{-- Open Graph --}}
         <div class="lg:col-span-2 min-w-0">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-7 gap-y-4">
-                <div class="space-y-4 min-w-0">
-                    <flux:field>
-                        @include('partials.seo-char-counter', ['field' => 'seo_og_title', 'max' => 70, 'label' => 'OG Title'])
-                        <flux:input wire:model="settings.seo_og_title"
-                            placeholder="Defaults to Meta Title if left blank" />
-                    </flux:field>
-                    <flux:field>
-                        @include('partials.seo-char-counter', ['field' => 'seo_og_description', 'max' => 200, 'label' => 'OG Description'])
-                        <flux:textarea wire:model="settings.seo_og_description" class="h-24"
-                            placeholder="Defaults to Meta Description if left blank" />
-                    </flux:field>
-                </div>
+                <x-admin-locale-tabs>
+                    @foreach (\App\Support\Locale::translatable() as $language)
+                        <x-admin-locale-panel :code="$language->code">
+                            <div class="space-y-4 min-w-0">
+                                <flux:field>
+                                    @include('partials.seo-char-counter', [
+                                        'path' => 'settings.seo_og_title.'.$language->code,
+                                        'max' => 70,
+                                        'label' => 'OG Title',
+                                    ])
+                                    <flux:input wire:model="settings.seo_og_title.{{ $language->code }}"
+                                        placeholder="Defaults to Meta Title if left blank" />
+                                </flux:field>
+                                <flux:field>
+                                    @include('partials.seo-char-counter', [
+                                        'path' => 'settings.seo_og_description.'.$language->code,
+                                        'max' => 200,
+                                        'label' => 'OG Description',
+                                    ])
+                                    <flux:textarea wire:model="settings.seo_og_description.{{ $language->code }}" class="h-24"
+                                        placeholder="Defaults to Meta Description if left blank" />
+                                </flux:field>
+                            </div>
+                        </x-admin-locale-panel>
+                    @endforeach
+                </x-admin-locale-tabs>
                 <div class="min-w-0">
                     <flux:field>
                         <flux:label>OG Image</flux:label>
                         <flux:text class="-mt-1! mb-1 block text-[11px] text-zinc-400">1200×630px</flux:text>
+                        {{-- Not translated: one image has one URL, and pointing the
+                             Bengali card at a different file would just be a second
+                             image to keep uploaded. --}}
                         <x-media-picker model="settings.seo_og_image" label=""
                             placeholder="Select OG image from library" mimes="jpg,jpeg,png,webp,avif" only-images dropzone />
                     </flux:field>
@@ -64,16 +101,32 @@
                         <flux:label>Twitter @username</flux:label>
                         <flux:input wire:model="settings.seo_twitter_site" placeholder="@yoursite" />
                     </flux:field>
-                    <flux:field>
-                        @include('partials.seo-char-counter', ['field' => 'seo_twitter_title', 'max' => 70, 'label' => 'Twitter Title'])
-                        <flux:input wire:model="settings.seo_twitter_title"
-                            placeholder="Defaults to Meta Title if left blank" />
-                    </flux:field>
-                    <flux:field>
-                        @include('partials.seo-char-counter', ['field' => 'seo_twitter_description', 'max' => 200, 'label' => 'Twitter Description'])
-                        <flux:textarea wire:model="settings.seo_twitter_description" class="h-24"
-                            placeholder="Defaults to Meta Description if left blank" />
-                    </flux:field>
+                    <x-admin-locale-tabs>
+                        @foreach (\App\Support\Locale::translatable() as $language)
+                            <x-admin-locale-panel :code="$language->code">
+                                <div class="space-y-4 min-w-0">
+                                    <flux:field>
+                                        @include('partials.seo-char-counter', [
+                                            'path' => 'settings.seo_twitter_title.'.$language->code,
+                                            'max' => 70,
+                                            'label' => 'Twitter Title',
+                                        ])
+                                        <flux:input wire:model="settings.seo_twitter_title.{{ $language->code }}"
+                                            placeholder="Defaults to Meta Title if left blank" />
+                                    </flux:field>
+                                    <flux:field>
+                                        @include('partials.seo-char-counter', [
+                                            'path' => 'settings.seo_twitter_description.'.$language->code,
+                                            'max' => 200,
+                                            'label' => 'Twitter Description',
+                                        ])
+                                        <flux:textarea wire:model="settings.seo_twitter_description.{{ $language->code }}" class="h-24"
+                                            placeholder="Defaults to Meta Description if left blank" />
+                                    </flux:field>
+                                </div>
+                            </x-admin-locale-panel>
+                        @endforeach
+                    </x-admin-locale-tabs>
                 </div>
                 <div class="min-w-0">
                     <flux:field>

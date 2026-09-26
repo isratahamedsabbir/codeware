@@ -14,6 +14,8 @@
  */
 
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\RobotsController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\VoucherController;
 use App\Models\Setting;
@@ -63,6 +65,19 @@ Route::get('/test-private-channel', [TestController::class, 'testPrivateChannel'
 Route::get('/test-public-channel', [TestController::class, 'testPublicChannel']);
 
 require __DIR__.'/settings.php';
+
+// Crawler-facing files, served from the application's own idea of its address
+// (Seo\Url) rather than from a file dropped in public/ by hand. The static files
+// that used to sit there are gone on purpose: the web server answers
+// /robots.txt and /sitemap.xml off disk before Laravel is ever reached, so a
+// stale copy in public/ would quietly win over these routes.
+//
+// Registered here rather than in a theme's route file, because the sitemap
+// describes the site rather than one theme's presentation of it and has to
+// keep answering when the active theme is a portfolio with no product or blog
+// templates at all.
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+Route::get('/robots.txt', RobotsController::class)->name('robots');
 
 // Every theme's storefront routes, one file per theme — but only the pages the
 // active theme can actually serve answer. The 'theme' guard each file is wrapped

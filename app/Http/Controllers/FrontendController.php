@@ -46,7 +46,10 @@ class FrontendController extends Controller
         return view(Themes::viewOrFail('home'), [
             'page' => $homePage,
             'sections' => $sections,
-            'title' => $homePage?->seo_title ?: (Setting::get('seo_meta_title') ?: Setting::get('site_name')),
+            // The page name only. The site root's <title> is the Global SEO title
+            // (or the home page's own seo_title), which SeoResolver picks and
+            // deliberately does not run through the "%s | Site Name" template.
+            'title' => $homePage?->title,
             'navPages' => Frontend::navPages(),
             'menuItems' => Frontend::menuItems(),
             'currentSlug' => 'home',
@@ -162,7 +165,7 @@ class FrontendController extends Controller
                 'max_price' => is_numeric($request->query('max_price')) ? $request->query('max_price') : '',
                 'type' => (string) $request->query('type', ''),
             ],
-            'title' => Setting::get('seo_meta_title') ?: Setting::get('site_name'),
+            'title' => __('Shop'),
             'page' => null,
             'navPages' => Frontend::navPages(),
             'menuItems' => Frontend::menuItems(),

@@ -145,6 +145,22 @@ class SettingsSeeder extends Seeder
             ['key' => 'vat_label',              'value' => 'VAT', 'type' => 'string', 'group' => 'currency', 'is_public' => true],
 
             // ── SEO ──
+            // The one address this site is served from. Blank means "whatever the
+            // request used", which is fine for a local install and wrong for a
+            // real one: fill it in and every canonical, hreflang alternate and
+            // sitemap URL is built on it, and (with SEO_FORCE_HTTPS /
+            // SEO_CANONICAL_HOST_REDIRECT) visitors are sent to it too.
+            ['key' => 'seo_site_url',              'value' => '', 'type' => 'string', 'group' => 'seo', 'is_public' => true],
+            // The robots.txt rules, written by Admin -> Advance -> Robots.txt and
+            // served by App\Http\Controllers\RobotsController. Blank means no
+            // stored rules, which the controller reads as "no opinion" rather
+            // than as an empty file — a blank textarea is not a deindex. The
+            // Sitemap: line is appended at response time and deliberately not
+            // editable here.
+            ['key' => 'seo_robots_txt',            'value' => '', 'type' => 'textarea', 'group' => 'seo', 'is_public' => true],
+            // How a page title is assembled from its name: %s is the page name.
+            // A page that sets its own SEO title skips the template entirely.
+            ['key' => 'seo_title_template',        'value' => '', 'type' => 'string', 'group' => 'seo', 'is_public' => true],
             ['key' => 'seo_meta_title',           'value' => '', 'type' => 'string', 'group' => 'seo', 'is_public' => true],
             ['key' => 'seo_meta_description',     'value' => '', 'type' => 'textarea', 'group' => 'seo', 'is_public' => true],
             ['key' => 'seo_og_title',             'value' => '', 'type' => 'string', 'group' => 'seo', 'is_public' => true],
@@ -155,6 +171,15 @@ class SettingsSeeder extends Seeder
             ['key' => 'seo_twitter_title',         'value' => '', 'type' => 'string', 'group' => 'seo', 'is_public' => true],
             ['key' => 'seo_twitter_description',   'value' => '', 'type' => 'textarea', 'group' => 'seo', 'is_public' => true],
             ['key' => 'seo_twitter_image',         'value' => '', 'type' => 'string', 'group' => 'seo', 'is_public' => true],
+            // Site-verification codes and the other head-level tags that have no
+            // page-level equivalent, so they belong to the site rather than a Page.
+            ['key' => 'seo_google_verification',    'value' => '', 'type' => 'string', 'group' => 'seo', 'is_public' => true],
+            ['key' => 'seo_bing_verification',      'value' => '', 'type' => 'string', 'group' => 'seo', 'is_public' => true],
+            ['key' => 'seo_facebook_verification',  'value' => '', 'type' => 'string', 'group' => 'seo', 'is_public' => true],
+            ['key' => 'seo_theme_color',            'value' => '', 'type' => 'string', 'group' => 'seo', 'is_public' => true],
+            // The robots directives that are site-wide rather than per-page:
+            // noarchive, max-snippet:-1, max-image-preview:large, ...
+            ['key' => 'seo_robots_extra',           'value' => '', 'type' => 'string', 'group' => 'seo', 'is_public' => true],
 
             // ── Localization ──
             ['key' => 'app_locale',               'value' => 'en', 'type' => 'string', 'group' => 'localization', 'is_public' => true],

@@ -1,5 +1,6 @@
+{{-- $path is the full wire:model path when the field is nested per locale (settings.seo_meta_title.en); $field is the flat key it is built from. --}}
 @php
-    $inputId = 'settings.'.$field;
+    $inputId = $path ?? 'settings.'.$field;
 @endphp
 <div class="flex items-center justify-between">
     <flux:label>{{ $label }}</flux:label>

@@ -5,6 +5,7 @@ use App\Http\Middleware\EnsureActiveTheme;
 use App\Http\Middleware\EnsureUserIsNotBlocked;
 use App\Http\Middleware\LogAdminActivity;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
+use App\Http\Middleware\RedirectToCanonicalHost;
 use App\Http\Middleware\RequireFeature;
 use App\Http\Middleware\ScopeSessionCookieToHost;
 use App\Http\Middleware\SetLocale;
@@ -75,6 +76,13 @@ return Application::configure(basePath: dirname(__DIR__))
         // the public API resolves its locale from the ?locale= query parameter instead.
         $middleware->appendToGroup('web', SetLocale::class);
 
+        // Unifies http/https and www/non-www onto the one address the site claims
+        // (the `seo_site_url` setting), so the canonical URLs Seo\Url builds are
+        // true of the site and not only of its <link> tags. Inert while that
+        // setting is blank. Prepended to `web` so the 301 happens before a
+        // session cookie is issued for a host the visitor is about to leave.
+        $middleware->prependToGroup('web', RedirectToCanonicalHost::class);
+
         // Blocking a user (Admin → Users) or deactivating one of their roles
         // (Admin → Roles) must reach every host — admin, vendor portal,
         // delivery portal and the plain site — not just gated routes, and the
@@ -89,7 +97,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'feature' => RequireFeature::class,
             'theme' => EnsureActiveTheme::class,
         ]);
-
         // Settings → Env can flip the public site into maintenance mode (see
         // Livewire\Admin\Settings\Index::enableMaintenanceMode()) — the admin panel
         // and login stay reachable regardless, so turning it on can never lock the

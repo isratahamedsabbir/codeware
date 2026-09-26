@@ -1,14 +1,6 @@
 @props(['locales' => null])
 @php
-    $locales = $locales ?? \App\Support\Locale::active();
-
-    // Before an admin has ever visited /admin/languages the languages table
-    // is empty — fall back to a single tab for the primary locale so the
-    // form still has somewhere to bind its translatable fields.
-    if ($locales->isEmpty()) {
-        $primary = \App\Support\Locale::primary();
-        $locales = collect([(object) ['code' => $primary, 'name' => strtoupper($primary), 'native_name' => null, 'flag' => null]]);
-    }
+    $locales = $locales ?? \App\Support\Locale::translatable();
 
     $first = $locales->first()->code;
 @endphp

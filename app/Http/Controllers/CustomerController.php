@@ -91,7 +91,7 @@ class CustomerController extends Controller
     private function viewData(array $data = []): array
     {
         return $data + [
-            'title' => Setting::get('seo_meta_title') ?: Setting::get('site_name'),
+            'title' => Setting::translated('seo_meta_title') ?: Setting::get('site_name'),
             'page' => null,
             'sections' => collect(),
             'navPages' => Frontend::navPages(),

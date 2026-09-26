@@ -85,7 +85,7 @@ it('caches the public settings payload and refreshes it when a setting is saved'
 
     $this->getJson('/api/v1/settings/public')->assertJsonPath('data.general.site_name', 'Cached Site');
 
-    expect(Cache::has('settings:public:v'.Setting::cacheVersion()))->toBeTrue();
+    expect(Cache::has('settings:public:'.Locale::default().':v'.Setting::cacheVersion()))->toBeTrue();
 
     Setting::set('site_name', 'Updated Site');
 

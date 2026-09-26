@@ -186,7 +186,7 @@ class Form extends Component
         $rules = array_merge($this->getRules(), $this->translatableRules([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-        ]));
+        ]), $this->translatableRules(self::seoTranslatableFields()));
         $rules['slug'] = [
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
@@ -216,7 +216,7 @@ class Form extends Component
         $rules = array_merge($this->getRules(), $this->translatableRules([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-        ]));
+        ]), $this->translatableRules(self::seoTranslatableFields()));
         $rules['slug'] = [
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),

@@ -9,7 +9,7 @@
     <div class="w-full bg-white rounded-[5px] shadow-sm p-6">
 
             <x-admin-locale-tabs>
-                @foreach (\App\Support\Locale::active() as $language)
+                @foreach (\App\Support\Locale::translatable() as $language)
                     <x-admin-locale-panel :code="$language->code">
                         <flux:field>
                             <flux:label>

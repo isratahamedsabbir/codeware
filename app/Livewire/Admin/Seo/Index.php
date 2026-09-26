@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Seo;
 
 use App\Models\Setting;
 use App\Support\AdminActivity;
+use App\Support\Locale;
 use Livewire\Component;
 
 class Index extends Component
@@ -16,7 +17,12 @@ class Index extends Component
     public function mount(): void
     {
         foreach (Setting::where('group', 'seo')->get() as $setting) {
-            $this->settings[$setting->key] = $setting->value ?? '';
+            $this->settings[$setting->key] = Setting::isTranslatable($setting->key)
+                ? array_replace(
+                    array_fill_keys(Locale::translatable()->pluck('code')->all(), ''),
+                    Setting::translations($setting->value)
+                )
+                : ($setting->value ?? '');
         }
 
         $this->canonicalUrls = json_decode(Setting::get('seo_canonical_urls', '[]') ?: '[]', true) ?: [];
@@ -44,7 +50,10 @@ class Index extends Component
     public function save(): void
     {
         foreach ($this->settings as $key => $value) {
-            Setting::set($key, $value);
+            Setting::set(
+                $key,
+                Setting::isTranslatable($key) ? json_encode((object) $value) : $value
+            );
         }
 
         $urls = array_values(array_filter($this->canonicalUrls, fn ($url) => trim($url) !== ''));

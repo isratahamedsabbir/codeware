@@ -807,7 +807,7 @@ class Form extends Component
             'description' => 'nullable|string',
             'excerpt' => 'nullable|string',
             'specifications' => 'nullable|string',
-        ]));
+        ]), $this->translatableRules(self::seoTranslatableFields()));
         $rules['slug'] = [
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
@@ -855,7 +855,7 @@ class Form extends Component
             'description' => 'nullable|string',
             'excerpt' => 'nullable|string',
             'specifications' => 'nullable|string',
-        ]));
+        ]), $this->translatableRules(self::seoTranslatableFields()));
         $rules['slug'] = [
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
