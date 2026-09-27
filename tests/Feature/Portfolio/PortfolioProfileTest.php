@@ -2,6 +2,7 @@
 
 use App\Livewire\Admin\ThemeSettings\Index as ThemeSettings;
 use App\Models\Page;
+use App\Models\Service;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\PortfolioProfile;
@@ -116,9 +117,13 @@ it('drops a stat that is missing either half, because half a stat is noise', fun
 });
 
 it('renders the services, education and certifications the admin entered', function () {
-    setRepeater('theme_portfolio_services', [
-        ['title' => 'Laravel Application Development', 'icon' => '🛠️', 'description' => 'Admin panels and REST APIs.'],
+    // Services come from the Service model, not from a settings repeater: a
+    // bookable thing has to be a row a booking can point a foreign key at.
+    Service::factory()->published()->create([
+        'name' => ['en' => 'Laravel Application Development', 'bn' => ''],
+        'description' => ['en' => 'Admin panels and REST APIs.', 'bn' => ''],
     ]);
+
     setRepeater('theme_portfolio_education', [
         ['title' => 'B.Sc. in Computer Science', 'period' => '2018 - 2022', 'description' => 'Example University'],
     ]);
@@ -135,6 +140,47 @@ it('renders the services, education and certifications the admin entered', funct
         ->assertSee('2018 - 2022')
         ->assertSee('AWS Certified Developer')
         ->assertSee('Amazon Web Services');
+});
+
+it('shows only active services, so the page never offers something the admin retired', function () {
+    Service::factory()->published()->create([
+        'name' => ['en' => 'Published Work', 'bn' => ''],
+    ]);
+    Service::factory()->draft()->create([
+        'name' => ['en' => 'Retired Work', 'bn' => ''],
+    ]);
+
+    $html = $this->get('/')->assertOk()->getContent();
+
+    expect($html)->toContain('Published Work')
+        ->and($html)->not->toContain('Retired Work');
+});
+
+it('offers a booking form on every service card', function () {
+    Service::factory()->published()->create([
+        'name' => ['en' => 'Bookable Thing', 'bn' => ''],
+    ]);
+
+    $html = $this->get('/')->assertOk()->getContent();
+
+    // The form is a Livewire child carrying the service id, so a booking can
+    // never be recorded against a different service than the one on the card.
+    expect($html)->toContain('frontend.book-service')
+        ->and($html)->toContain('Request This');
+});
+
+it('prints no price line for a service priced at zero rather than a free-sounding 0.00', function () {
+    // services.price is NOT NULL DEFAULT 0. A card reading "0.00" says the work
+    // is free, or that the page is broken - neither is what a 0 means.
+    Service::factory()->published()->create([
+        'name' => ['en' => 'Ask Me Pricing', 'bn' => ''],
+        'price' => 0,
+    ]);
+
+    $html = $this->get('/')->assertOk()->getContent();
+
+    expect($html)->toContain('Ask Me Pricing')
+        ->and($html)->not->toContain('0.00');
 });
 
 it('hides a section entirely rather than printing a heading over nothing', function () {
@@ -155,12 +201,10 @@ it('hides a section entirely rather than printing a heading over nothing', funct
 it('survives a hand-edited or corrupt repeater value without fataling the page', function () {
     // Each of these is a value an operator could leave in the settings table.
     Setting::set('theme_portfolio_stats', 'not json at all');
-    Setting::set('theme_portfolio_services', '{"title":"An object, not a list"}');
     Setting::set('theme_portfolio_education', '["Just a string", 42, null]');
     Setting::set('theme_portfolio_certifications', '');
 
     expect(PortfolioProfile::stats())->toBeEmpty()
-        ->and(PortfolioProfile::services())->toBeEmpty()
         // A bare string still becomes a titled row rather than being discarded.
         ->and(PortfolioProfile::education()->pluck('degree')->all())->toBe(['Just a string'])
         ->and(PortfolioProfile::certifications())->toBeEmpty();
@@ -169,14 +213,13 @@ it('survives a hand-edited or corrupt repeater value without fataling the page',
 });
 
 it('trims stored values, so a stray space never reaches the page', function () {
-    setRepeater('theme_portfolio_services', [
-        ['title' => '  Laravel  ', 'icon' => '', 'description' => "  Ships on Friday.\n"],
+    setRepeater('theme_portfolio_education', [
+        ['title' => '  B.Sc. Computer Science  ', 'period' => '', 'description' => ''],
     ]);
 
-    $service = PortfolioProfile::services()->first();
+    $row = PortfolioProfile::education()->first();
 
-    expect($service['title'])->toBe('Laravel')
-        ->and($service['description'])->toBe('Ships on Friday.');
+    expect($row['degree'])->toBe('B.Sc. Computer Science');
 });
 
 it('round-trips a repeater through the admin screen and out to the page', function () {
@@ -185,43 +228,43 @@ it('round-trips a repeater through the admin screen and out to the page', functi
 
     Livewire::test(ThemeSettings::class)
         ->set('settings.site_theme', 'portfolio')
-        ->call('addRepeaterRow', 'theme_portfolio_services', ['title', 'icon', 'description'])
-        ->set('repeaters.theme_portfolio_services.0.title', 'Laravel Application Development')
-        ->set('repeaters.theme_portfolio_services.0.description', 'Admin panels and REST APIs.')
+        ->call('addRepeaterRow', 'theme_portfolio_education', ['title', 'period', 'description'])
+        ->set('repeaters.theme_portfolio_education.0.title', 'B.Sc. in Computer Science')
+        ->set('repeaters.theme_portfolio_education.0.description', 'Example University')
         ->call('save')
         ->assertHasNoErrors();
 
-    expect(json_decode(Setting::where('key', 'theme_portfolio_services')->value('value'), true))
-        ->toBe([['title' => 'Laravel Application Development', 'icon' => '', 'description' => 'Admin panels and REST APIs.']]);
+    expect(json_decode(Setting::where('key', 'theme_portfolio_education')->value('value'), true))
+        ->toBe([['title' => 'B.Sc. in Computer Science', 'period' => '', 'description' => 'Example University']]);
 
     $this->get('/')
         ->assertOk()
-        ->assertSee('Laravel Application Development')
-        ->assertSee('Admin panels and REST APIs.');
+        ->assertSee('B.Sc. in Computer Science')
+        ->assertSee('Example University');
 });
 
 it('reorders, and never persists, a blank repeater row', function () {
     $this->seed(RolePermissionSeeder::class);
     $this->actingAs(User::factory()->admin()->create());
 
-    Setting::set('theme_portfolio_services', json_encode([
-        ['title' => 'Second', 'icon' => '', 'description' => ''],
-        ['title' => 'First', 'icon' => '', 'description' => ''],
-    ]));
+    setRepeater('theme_portfolio_education', [
+        ['title' => 'Second', 'period' => '', 'description' => ''],
+        ['title' => 'First', 'period' => '', 'description' => ''],
+    ]);
 
     Livewire::test(ThemeSettings::class)
         ->set('settings.site_theme', 'portfolio')
-        ->call('addRepeaterRow', 'theme_portfolio_services', ['title', 'icon', 'description'])
+        ->call('addRepeaterRow', 'theme_portfolio_education', ['title', 'period', 'description'])
         // The empty row the UI leaves on screen.
-        ->call('moveRepeaterRow', 'theme_portfolio_services', 2, 'up')
-        ->set('repeaters.theme_portfolio_services.1.title', '  Moved to the top  ')
+        ->call('moveRepeaterRow', 'theme_portfolio_education', 2, 'up')
+        ->set('repeaters.theme_portfolio_education.1.title', '  Moved to the top  ')
         ->call('save');
 
-    expect(json_decode(Setting::where('key', 'theme_portfolio_services')->value('value'), true))
+    expect(json_decode(Setting::where('key', 'theme_portfolio_education')->value('value'), true))
         ->toBe([
-            ['title' => 'Second', 'icon' => '', 'description' => ''],
-            ['title' => 'Moved to the top', 'icon' => '', 'description' => ''],
-            ['title' => 'First', 'icon' => '', 'description' => ''],
+            ['title' => 'Second', 'period' => '', 'description' => ''],
+            ['title' => 'Moved to the top', 'period' => '', 'description' => ''],
+            ['title' => 'First', 'period' => '', 'description' => ''],
         ]);
 });
 

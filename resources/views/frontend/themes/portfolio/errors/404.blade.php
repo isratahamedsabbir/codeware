@@ -40,29 +40,9 @@
     $siteName = \App\Models\Setting::get('site_name', config('app.name'));
     $siteIcon = \App\Models\Setting::get('site_icon_white') ?: \App\Models\Setting::get('site_icon');
 
-    $platformLabels = [
-        'facebook' => 'Facebook',
-        'twitter' => 'X',
-        'instagram' => 'Instagram',
-        'youtube' => 'YouTube',
-        'linkedin' => 'LinkedIn',
-        'tiktok' => 'TikTok',
-        'github' => 'GitHub',
-        'gitlab' => 'GitLab',
-        'behance' => 'Behance',
-        'dribbble' => 'Dribbble',
-        'whatsapp' => 'WhatsApp',
-        'telegram' => 'Telegram',
-    ];
-    $socials = collect(array_keys($platformLabels))
-        ->map(fn (string $platform) => [
-            'platform' => $platform,
-            'label' => $platformLabels[$platform],
-            'url' => \App\Models\SocialLink::url($platform),
-        ])
-        ->filter(fn (array $social) => filled($social['url']))
-        ->sortBy(fn (array $social) => array_search($social['platform'], array_keys($platformLabels)))
-        ->values();
+    // Read by the shared header and footer partials - see
+    // App\Support\PortfolioSocials.
+    $socials = \App\Support\PortfolioSocials::all();
 @endphp
 
 @include('frontend.themes.portfolio.partials.header')

@@ -44,11 +44,14 @@
 @endpush
 
 <div class="space-y-5" x-data="{ showThemeGuide: false }" x-on:open-theme-install.window="$wire.openInstallModal()">
-
-    {{-- ── Site Design ── --}}
+    {{-- ── Site Design ──
+         The preview grid, and the only place the theme is picked: each card is a
+         radio bound to the same `settings.site_theme` the storefront reads, so
+         choosing here is choosing the live site, not a separate "editing" state.
+         Kept expanded because it holds that selector. --}}
     <x-admin-section-card header-border="border-zinc-100" icon="swatch" title="Site Design"
-        description="The design shown to visitors on the public site. Pick a theme card — changes apply once you save."
-        collapsible :collapsed="true">
+        description="Preview each installed theme, read what it ships with, and pick the one to use — changes apply once you save."
+        collapsible :collapsed="false">
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             @foreach ($themes as $slug => $label)
@@ -272,9 +275,20 @@
         </x-admin-section-card>
     @endif
 
-    {{-- ── Live Chat Widget ───────────────────────────────────────────────── --}}
+    {{-- ── Live Chat Widget ───────────────────────────────────────────────
+         Collapsed on open, like Popup: the colour picker and its mockup are a
+         niche setting, and this page already carries the theme picker, the
+         selected theme's own sections, then Popup. An always-open chat block in
+         the middle of that pushes the theme's settings below the fold for
+         anyone who came here to edit the theme.
+
+         The enable switch stays in the header, so whether chat is on is still
+         readable without expanding anything — this folds the controls, not the
+         state. The card component puts @click.stop on the actions slot, so
+         flipping that switch does not also fold the card it sits in. --}}
     <x-admin-section-card header-border="border-zinc-100" icon="chat-bubble-left-right" title="Live Chat Widget"
-        description="The support chat bubble on the public site. Visitors verify with an email code before chatting.">
+        description="The support chat bubble on the public site. Visitors verify with an email code before chatting."
+        collapsible :collapsed="true">
 
         <x-slot:actions>
             <flux:switch wire:model="settings.chat_widget_enabled" aria-label="Enable Live Chat" title="Enable Live Chat" />

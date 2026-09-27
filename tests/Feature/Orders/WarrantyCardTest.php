@@ -3,7 +3,6 @@
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
-use App\Models\Service;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
 
@@ -56,14 +55,14 @@ it('404s the admin warranty download for an order with nothing under warranty', 
     $this->actingAs($this->admin)->get(route('admin.orders.warranty', $order))->assertNotFound();
 });
 
-it('ignores a service line item even when a same-order product has no warranty', function () {
-    $product = Product::factory()->create(['warranty_months' => null]);
-    $service = Service::factory()->create();
+it('ignores a line whose product was deleted, even when a same-order product has a warranty', function () {
+    $warranted = Product::factory()->create(['warranty_months' => 12]);
     $order = Order::factory()->create();
-    OrderItem::factory()->for($order)->create(['product_id' => $product->id]);
-    OrderItem::factory()->forService()->for($order)->create(['service_id' => $service->id]);
+    OrderItem::factory()->for($order)->create(['product_id' => $warranted->id]);
+    // product_id is nullOnDelete, so this is what a deleted product leaves behind.
+    OrderItem::factory()->for($order)->create(['product_id' => null]);
 
-    $this->actingAs($this->admin)->get(route('admin.orders.warranty', $order))->assertNotFound();
+    $this->actingAs($this->admin)->get(route('admin.orders.warranty', $order))->assertOk();
 });
 
 it('downloads the warranty card from the public API with a matching order number and email', function () {

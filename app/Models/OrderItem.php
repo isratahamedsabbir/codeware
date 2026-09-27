@@ -6,14 +6,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * One product line on an order.
+ *
+ * There is no type discriminator: an order is always products. A service is
+ * requested through a Booking (App\Models\Booking), never bought through the
+ * cart, so there is no second kind of line for this table to hold.
+ */
 class OrderItem extends Model
 {
     use HasFactory;
 
-    public const TYPES = ['product', 'service'];
-
     protected $fillable = [
-        'order_id', 'product_id', 'service_id', 'type', 'item_name', 'sku', 'unit_price', 'quantity', 'line_total', 'variations',
+        'order_id', 'product_id', 'item_name', 'sku', 'unit_price', 'quantity', 'line_total', 'variations',
     ];
 
     protected function casts(): array
@@ -31,13 +36,12 @@ class OrderItem extends Model
         return $this->belongsTo(Order::class);
     }
 
+    /**
+     * Null once the product is deleted — the line stays on the receipt with its
+     * snapshotted name, sku and price, so the sale is still readable.
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
-    }
-
-    public function service(): BelongsTo
-    {
-        return $this->belongsTo(Service::class);
     }
 }

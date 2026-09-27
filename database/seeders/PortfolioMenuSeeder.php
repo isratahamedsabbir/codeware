@@ -11,10 +11,18 @@ use Illuminate\Database\Seeder;
  * (resources/views/frontend/themes/portfolio/home.blade.php), kept separate
  * from the shared "Frontend" menu so switching themes doesn't reshuffle either.
  *
- * The portfolio theme is a single page, so every item is a section anchor
- * ("#projects", "#skills", ...) rather than a route. The theme's header
- * prefixes the site root to a bare fragment, so a link still lands on the
- * right section when visited from a secondary page like /about.
+ * The portfolio theme is a single page, so almost every item is a section anchor
+ * ("#projects", "#skills", ...) rather than a route. The theme's header prefixes
+ * the site root to a bare fragment, so a link still lands on the right section
+ * when visited from a secondary page like /blog.
+ *
+ * The one exception is the blog, which is a real page of its own and therefore a
+ * real path. It is stored as "/blog" rather than as a fragment so the header
+ * treats it as an ordinary link: it does not get the site-root prefix, and
+ * `is_active` on the current URL marks it while a visitor is reading a post.
+ * The theme 404-guards /blog on itself (see routes/web/portfolio.php), so the
+ * nav item is dropped rather than left as a dead link on a site whose blog
+ * feature is off.
  *
  * The seeded ids match the section ids in home.blade.php; the admin can add
  * more at /admin/menu (CMS-authored sections included, whose ids are their
@@ -30,6 +38,7 @@ class PortfolioMenuSeeder extends Seeder
         ['label' => 'Technology', 'url' => '#technology'],
         ['label' => 'Testimonials', 'url' => '#testimonials'],
         ['label' => 'Contact', 'url' => '#contact'],
+        ['label' => 'Blog', 'url' => '/blog'],
     ];
 
     public function run(): void

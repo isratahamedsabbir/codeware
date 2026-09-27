@@ -18,7 +18,6 @@ class ShippingMethodSeeder extends Seeder
             ['name' => 'Outside Dhaka (Standard)', 'cost' => 120, 'status' => 'active'],
             ['name' => 'Express Delivery', 'cost' => 250, 'status' => 'active'],
             ['name' => 'Store Pickup', 'cost' => 0, 'status' => 'active'],
-            ['name' => 'Free Shipping', 'cost' => 0, 'status' => 'inactive'],
         ];
 
         foreach ($methods as $method) {

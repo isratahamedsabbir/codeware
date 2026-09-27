@@ -8,27 +8,35 @@
     storefront area, with a live preview.
 --}}
 {{-- Tabs: one section at a time. Both stay mounted (x-show) so every media
-     picker keeps its Livewire binding; the last tab is remembered per browser. --}}
+     picker keeps its Livewire binding; the last tab is remembered per browser.
+
+     The wire:key is load-bearing. This partial and portfolio/settings.blade.php
+     are swapped into one slot by a plain @include, and both roots are an
+     unkeyed <div x-data="{ tab, open }">. Unkeyed, Livewire morphs one into the
+     other in place and Alpine keeps whichever x-data it parsed first — arriving
+     from portfolio leaves `tab` at 'profile', which matches neither 'banners'
+     nor 'colors', so this screen comes up looking empty and only the tab you
+     click afterwards appears. Keying on the slug forces a real replacement. --}}
 <div
+    wire:key="theme-settings-{{ $themeSlug }}"
     x-data="{
         tab: (() => { try { return localStorage.getItem('theme-ecommerce-tab') || 'banners' } catch (e) { return 'banners' } })(),
         open(name) { this.tab = name; try { localStorage.setItem('theme-ecommerce-tab', name) } catch (e) {} },
     }"
-    class="space-y-5"
+    class="grid gap-5 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-6"
 >
-    <div role="tablist" class="flex gap-1 border-b border-zinc-200 dark:border-zinc-700">
-        @foreach (['banners' => ['Banners', 'photo'], 'colors' => ['Colors', 'swatch']] as $tabKey => [$tabLabel, $tabIcon])
-            <button type="button" role="tab" @click="open('{{ $tabKey }}')"
-                :aria-selected="tab === '{{ $tabKey }}'"
-                :class="tab === '{{ $tabKey }}'
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:hover:text-zinc-200'"
-                class="-mb-px inline-flex items-center gap-2 rounded-none! border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors">
-                <flux:icon :name="$tabIcon" variant="mini" class="size-4" />
-                {{ $tabLabel }}
-            </button>
-        @endforeach
-    </div>
+    {{-- The sections are a menu, not a tab strip: a strip at the top of a form
+         this long scrolls out of reach, this holds its place beside the form.
+         `lg:top-14` clears the 56px sticky admin header. --}}
+    <x-admin-settings-nav class="lg:sticky lg:top-14 lg:self-start" :tabs="[
+        'banners' => ['Banners', 'photo'],
+        'colors' => ['Colors', 'swatch'],
+    ]" />
+
+    {{-- Both panels stay mounted (x-show, not x-if) so every media picker keeps
+         its Livewire binding. `x-cloak` on the column stops them all flashing
+         at once before Alpine boots and picks the active one. --}}
+    <div class="min-w-0 space-y-5" x-cloak>
 
     @php
         $promoTiles = [
@@ -341,5 +349,6 @@
                 </div>
             </aside>
         </div>
+    </div>
     </div>
 </div>

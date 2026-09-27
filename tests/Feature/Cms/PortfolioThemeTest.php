@@ -18,7 +18,7 @@ it('seeds a portfolio menu of its own, separate from the frontend menu', functio
 
     expect(Menu::where('slug', 'portfolio')->where('name', 'Portfolio')->exists())->toBeTrue()
         ->and(Frontend::portfolioMenuItems()->pluck('label')->all())
-        ->toBe(['Home', 'What I Do', 'Projects', 'Experience', 'Technology', 'Testimonials', 'Contact']);
+        ->toBe(['Home', 'What I Do', 'Projects', 'Experience', 'Technology', 'Testimonials', 'Contact', 'Blog']);
 
     // Nothing seeded for the portfolio may leak into the ecommerce theme's nav.
     expect(MenuItem::where('group', 'portfolio')->exists())->toBeTrue()
@@ -29,7 +29,7 @@ it('is idempotent, so re-seeding neither duplicates items nor orphans the admin 
     $this->seed(PortfolioMenuSeeder::class);
     $this->seed(PortfolioMenuSeeder::class);
 
-    expect(MenuItem::where('group', 'portfolio')->count())->toBe(7)
+    expect(MenuItem::where('group', 'portfolio')->count())->toBe(8)
         ->and(Menu::where('slug', 'portfolio')->count())->toBe(1);
 });
 
@@ -39,7 +39,7 @@ it('keeps admin edits to a seeded item across a re-seed', function () {
 
     $this->seed(PortfolioMenuSeeder::class);
 
-    expect(Frontend::portfolioMenuItems()->pluck('label')->all())->toBe(['Home', 'What I Do', 'Work', 'Experience', 'Technology', 'Testimonials', 'Contact']);
+    expect(Frontend::portfolioMenuItems()->pluck('label')->all())->toBe(['Home', 'What I Do', 'Work', 'Experience', 'Technology', 'Testimonials', 'Contact', 'Blog']);
 });
 
 it('points every seeded anchor at a section the one-pager actually renders', function () {
@@ -48,9 +48,30 @@ it('points every seeded anchor at a section the one-pager actually renders', fun
     $html = $this->get('/')->assertOk()->getContent();
 
     foreach (Frontend::portfolioMenuItems() as $item) {
-        expect($item->url)->toStartWith('#')
-            ->and($html)->toContain('id="'.substr($item->url, 1).'"');
+        // Anchors only. The Blog item is a real path, not a section on this
+        // page, and is asserted separately below — the id="<path>" shape does
+        // not describe it.
+        if (! str_starts_with((string) $item->url, '#')) {
+            continue;
+        }
+
+        expect($html)->toContain('id="'.substr($item->url, 1).'"');
     }
+});
+
+it('links the blog from the nav as a real page rather than a section anchor', function () {
+    $this->seed(PortfolioMenuSeeder::class);
+
+    $blog = Frontend::portfolioMenuItems()->firstWhere('url', '/blog');
+
+    // A fragment would be anchored to the one-pager, so from /blog it would land
+    // the visitor back on the homepage rather than anywhere near a post.
+    expect($blog)->not->toBeNull()
+        ->and($blog->url)->toBe('/blog');
+
+    $this->get('/')
+        ->assertOk()
+        ->assertSee('href="'.url('/blog').'"', false);
 });
 
 it('renders the nav as section anchors wired to the scroll spy', function () {

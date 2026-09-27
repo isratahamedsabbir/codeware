@@ -24,7 +24,7 @@ class WarrantyPdfService
         $order->loadMissing('items.product');
 
         return $order->items
-            ->filter(fn ($item) => $item->type === 'product' && $item->product?->hasWarranty())
+            ->filter(fn ($item) => $item->product?->hasWarranty())
             ->values();
     }
 

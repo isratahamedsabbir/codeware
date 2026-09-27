@@ -207,6 +207,115 @@ it('renders the selected theme settings blade when the theme ships one', functio
         ->assertDontSee('Promo Banner 1 Title');
 });
 
+it('navigates a theme\'s settings sections by menu beside the form, not a tab strip above it', function () {
+    // A strip at the top of a form this long scrolls out of reach before you
+    // have read half of it; the menu holds its place in the left column. Both
+    // directions are asserted because the two are interchangeable in the markup
+    // — only one of them is the layout this screen is supposed to have.
+    $expectMenu = function (string $slug, int $sections) {
+        $html = Livewire::test(ThemeSettings::class)
+            ->set('settings.site_theme', $slug)
+            ->html();
+
+        // Exactly one *vertical* tablist, one entry per section, each wired to
+        // the same state the panels read, and it sits in the sticky sidebar
+        // column. Scoped to the vertical orientation on purpose: the only other
+        // tablist on the page is gone, but counting role="tab" unscoped would
+        // quietly pass again if one were ever reintroduced for a different job.
+        expect(substr_count($html, 'aria-orientation="vertical"'))->toBe(1)
+            ->and(substr_count($html, "open('"))->toBe($sections)
+            ->and($html)->toContain('lg:grid-cols-[15rem_minmax(0,1fr)]')
+            ->and($html)->toContain('lg:sticky lg:top-14 lg:self-start');
+
+        expect(substr_count($html, 'role="tablist" aria-orientation="vertical"'))->toBe(1);
+
+        // The underline strip is gone: it styled itself with a bottom border
+        // hung off the tablist.
+        expect($html)->not->toContain('border-b-2 px-4 py-2.5');
+    };
+
+    $expectMenu('portfolio', 6);
+    $expectMenu('ecommerce', 2);
+});
+
+it('picks the theme from the Site Design grid, open on arrival and on the live theme', function () {
+    // The switcher tab strip is gone — the Site Design cards are the one
+    // selector — so that card has to be open on arrival, and every installed
+    // theme needs a radio bound to the setting the storefront reads. `default`
+    // counts: a theme shipping no settings form of its own still has to be
+    // reachable.
+    Setting::set('site_theme', 'portfolio');
+
+    $html = Livewire::test(ThemeSettings::class)->html();
+
+    expect($html)->toContain('x-data="{ open: true }"');
+
+    foreach (['default', 'ecommerce', 'portfolio'] as $slug) {
+        expect($html)->toContain('value="'.$slug.'"');
+    }
+
+    expect(substr_count($html, 'wire:model.live="settings.site_theme"'))->toBe(3)
+        ->and($html)->not->toContain('aria-label="Theme"');
+});
+
+it('moves the selection when a theme card is picked', function () {
+    // The card is the selector, so a pick has to reach the same setting the
+    // storefront reads — otherwise the marked card, the live badge and the form
+    // underneath would drift apart.
+    Setting::set('site_theme', 'portfolio');
+
+    Livewire::test(ThemeSettings::class)
+        ->call('$set', 'settings.site_theme', 'ecommerce')
+        ->assertSet('settings.site_theme', 'ecommerce');
+
+    $html = Livewire::test(ThemeSettings::class)
+        ->set('settings.site_theme', 'ecommerce')
+        ->html();
+
+    // The ecommerce settings form is what came up.
+    expect($html)->toContain('theme_ecommerce_accent_color')
+        ->and($html)->not->toContain('theme_portfolio_projects')
+        ->and(substr_count($html, 'x-show="$wire.settings.site_theme'))->toBe(3);
+});
+
+it('keys each theme settings panel by slug so switching themes cannot leave a stale Alpine scope', function () {
+    // Regression. All three theme settings partials are swapped into one slot by
+    // a plain @include, and portfolio and ecommerce both rooted themselves in an
+    // unkeyed <div x-data="{ tab, open }"> — same tag, same shape. Livewire
+    // therefore morphed one into the other in place instead of replacing it, and
+    // Alpine kept whichever scope it parsed first. Arriving from portfolio left
+    // `tab` at 'profile' against ecommerce's 'banners' / 'colors' panels, so
+    // Theme Settings came up looking empty, and clicking Colors then appeared to
+    // work only because the stale open() happened to set the same property —
+    // which is why Banners stayed hidden and the bug read as two faults.
+    //
+    // A per-slug wire:key makes the node unique, so Livewire is forced to
+    // replace it and Alpine re-initialises with the incoming theme's scope.
+    foreach (['default', 'portfolio', 'ecommerce'] as $slug) {
+        $html = Livewire::test(ThemeSettings::class)
+            ->set('settings.site_theme', $slug)
+            ->html();
+
+        expect($html)->toContain('wire:key="theme-settings-'.$slug.'"');
+    }
+
+    // The key has to be the only thing telling the two nodes apart, and it has to
+    // vary by slug: an unkeyed root, or a constant key, collapses the two scopes
+    // back into one and the bug returns just as quietly.
+    $portfolio = Livewire::test(ThemeSettings::class)
+        ->set('settings.site_theme', 'portfolio')
+        ->html();
+
+    $ecommerce = Livewire::test(ThemeSettings::class)
+        ->set('settings.site_theme', 'ecommerce')
+        ->html();
+
+    expect($portfolio)->toContain("localStorage.getItem('theme-portfolio-tab')")
+        ->and($ecommerce)->toContain("localStorage.getItem('theme-ecommerce-tab')")
+        ->and($portfolio)->not->toContain('wire:key="theme-settings-ecommerce"')
+        ->and($ecommerce)->not->toContain('wire:key="theme-settings-portfolio"');
+});
+
 it('shows the theme settings guide via the info icon on the theme settings card', function () {
     Livewire::test(ThemeSettings::class)
         ->set('settings.site_theme', 'ecommerce')

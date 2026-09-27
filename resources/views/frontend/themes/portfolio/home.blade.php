@@ -21,13 +21,41 @@
         // to edit the portfolio and one place for it to go wrong.
         $profile = \App\Support\PortfolioProfile::hero();
         $stats = \App\Support\PortfolioProfile::stats();
-        $services = \App\Support\PortfolioProfile::services();
         $projects = \App\Support\PortfolioProfile::projects();
         $experience = \App\Support\PortfolioProfile::experiences();
         $skillGroups = \App\Support\PortfolioProfile::skillGroups();
         $testimonials = \App\Support\PortfolioProfile::testimonials();
         $education = \App\Support\PortfolioProfile::education();
         $certifications = \App\Support\PortfolioProfile::certifications();
+
+        // Services are the exception to the settings-driven rule: they come from
+        // the Service model and its admin CRUD screen, not from a settings
+        // repeater. A service is something bookable and priced, so it has to
+        // exist as a real record a booking can point at — a JSON list in the
+        // settings table cannot be referenced by a foreign key. The old
+        // theme_portfolio_services repeater is gone rather than left as a second
+        // source; see PortfolioProfile::services().
+        //
+        // Sorted the way the admin list is, so the storefront order and the order
+        // they are edited in are the same order. Only active services reach the
+        // page: a booking form for a service the site will not otherwise admit to
+        // offering is a way to collect a request nobody can act on.
+        $services = \App\Models\Service::active()
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
+        // The blog teaser before the footer. Posts are read from the same Post
+        // model the admin's Posts CRUD writes, exactly as the ecommerce theme's
+        // blog page does — the two themes show the same content differently, and
+        // there is one set of posts behind both.
+        $latestPosts = \App\Models\Post::published()
+            ->with('page')
+            ->whereHas('page')
+            ->orderByDesc('published_at')
+            ->orderByDesc('id')
+            ->limit(3)
+            ->get();
 
         $contactEmail = $profile['email'];
 
@@ -36,34 +64,10 @@
         // layout, so both are resolved once here rather than re-queried mid-markup.
         $contactBlock = \App\Support\PageBlocks::for('contact');
 
-        $platformLabels = [
-            'facebook' => 'Facebook',
-            'twitter' => 'X',
-            'instagram' => 'Instagram',
-            'youtube' => 'YouTube',
-            'linkedin' => 'LinkedIn',
-            'tiktok' => 'TikTok',
-            'github' => 'GitHub',
-            'gitlab' => 'GitLab',
-            'behance' => 'Behance',
-            'dribbble' => 'Dribbble',
-            'whatsapp' => 'WhatsApp',
-            'telegram' => 'Telegram',
-        ];
-        $socials = collect(array_keys($platformLabels))
-            ->map(fn (string $platform) => [
-                'platform' => $platform,
-                'label' => $platformLabels[$platform],
-                'url' => \App\Models\SocialLink::url($platform),
-            ])
-            // An admin-added platform this theme has no mark for still gets a
-            // tile: SocialLink::url() is the only gate, the icon partial falls
-            // back to an initial. Keyed on platform so the admin's own sort_order
-            // (fetched per platform) drives the order.
-            ->filter(fn (array $social) => filled($social['url']))
-            ->sortBy(fn (array $social) => array_search($social['platform'], array_keys($platformLabels)))
-            ->values();
-
+        // Read by the shared header and footer partials, and by the contact
+        // column below. One method rather than a list rebuilt per view - see
+        // App\Support\PortfolioSocials.
+        $socials = \App\Support\PortfolioSocials::all();
         // The right-hand contact column, split by what is actually in it: a
         // "Contact information" card with nothing but social tiles under it is a
         // card with a heading and no rows. Both empty means the column is not
@@ -204,8 +208,7 @@
                      dead link. The heading and the cards do not: a public page
                      that says "Services I can help with" over nothing advertises
                      a gap, and a visitor cannot tell the difference between that
-                     and a portfolio that is merely unfinished. Seeded content (see
-                     PortfolioContentSeeder) means this branch is rare. --}}
+                     and a portfolio that is merely unfinished. --}}
                 @if ($services->isNotEmpty())
                     <div data-pf-reveal class="max-w-2xl">
                         <span class="pf-eyebrow pf-mono">01 &mdash; What I do</span>
@@ -213,18 +216,60 @@
                         <p class="mt-4 text-(--pf-text-muted)">The kinds of problems I take on, and what you get back.</p>
                     </div>
 
+                    {{-- One card per active Service row, each with its own booking
+                         form folded away behind a toggle. The form is a Livewire
+                         child rather than one shared form above the grid, because
+                         the form has to know which service it is booking — an id
+                         set from the card, re-checked against the active services
+                         on submit. Alpine only owns the open/closed state; the
+                         submission and every validation message are Livewire's,
+                         so nothing about a booking depends on client state. --}}
                     <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach ($services as $index => $service)
                             <div data-pf-reveal class="pf-card pf-service pf-card-hover relative rounded-2xl p-6"
-                                style="--pf-reveal-delay: {{ $index * 70 }}ms">
+                                style="--pf-reveal-delay: {{ $index * 70 }}ms"
+                                x-data="{ open: false }">
                                 <span class="pf-mono pf-service-index" aria-hidden="true">{{ str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) }}</span>
 
-                                <span class="pf-service-icon" aria-hidden="true">{{ $service['icon'] ?: '◆' }}</span>
-
-                                <h3 class="pf-heading mt-5 text-base font-semibold">{{ $service['title'] }}</h3>
-                                @if ($service['description'])
-                                    <p class="mt-2.5 text-sm leading-relaxed text-(--pf-text-muted)">{{ $service['description'] }}</p>
+                                {{-- A featured image is optional on the Service record,
+                                     so the icon is the fallback rather than an image
+                                     placeholder frame — a card showing a broken or
+                                     empty picture reads as an unfinished card. --}}
+                                @if (filled($service->featured_image))
+                                    <img src="{{ $service->featured_image }}" alt="{{ $service->name }}"
+                                        class="pf-service-icon mb-4 h-12 w-12 rounded-xl object-cover" loading="lazy" decoding="async">
+                                @else
+                                    <span class="pf-service-icon" aria-hidden="true">&#9670;</span>
                                 @endif
+
+                                <h3 class="pf-heading mt-5 text-base font-semibold">{{ $service->name }}</h3>
+                                @if (filled($service->description))
+                                    <p class="mt-2.5 text-sm leading-relaxed text-(--pf-text-muted)">{{ $service->description }}</p>
+                                @endif
+
+                                {{-- Only worth a price line when one is actually set:
+                                     services.price defaults to 0.00, and printing
+                                     "0.00" on a page reads as "free" or as a bug
+                                     rather than as "ask me". --}}
+                                @if ((float) $service->price > 0)
+                                    <p class="pf-mono mt-4 text-sm font-semibold text-(--pf-primary)">
+                                        {{ number_format((float) $service->price, 2) }}
+                                    </p>
+                                @endif
+
+                                <button type="button" class="pf-btn pf-btn-primary mt-5 w-full"
+                                    x-on:click="open = ! open"
+                                    x-bind:aria-expanded="open ? 'true' : 'false'">
+                                    <span x-show="! open">{{ __('Request This') }}</span>
+                                    <span x-show="open" x-cloak>{{ __('Close') }}</span>
+                                </button>
+
+                                {{-- x-cloak so the folded form does not flash open
+                                     before Alpine boots, the same reason the settings
+                                     screens cloak their panel columns. --}}
+                                <div class="mt-5 border-t border-(--pf-border) pt-5" x-show="open" x-cloak>
+                                    <livewire:frontend.book-service :service-id="$service->id" :key="'book-service-'.$service->id" />
+                                </div>
                             </div>
                         @endforeach
                     </div>
@@ -244,38 +289,77 @@
 
                     <div class="mt-14 grid gap-5 sm:grid-cols-2">
                     @foreach ($projects as $index => $project)
-                        <div data-pf-reveal class="pf-card pf-card-hover pf-card-rail group flex flex-col rounded-2xl p-6"
+                        <div data-pf-reveal class="pf-card pf-card-hover pf-card-rail group flex flex-col overflow-hidden rounded-2xl"
                             style="--pf-reveal-delay: {{ ($index % 2) * 90 }}ms">
-                            <div class="flex items-start justify-between gap-3">
-                                <span class="pf-skill-mark text-2xl" aria-hidden="true">{{ $project['icon'] ?: '◆' }}</span>
-                                @if ($project['stats'])
-                                    <span class="pf-chip pf-mono px-3 py-1 text-[10px]">{{ $project['stats'] }}</span>
-                                @endif
-                            </div>
-
-                            <h3 class="pf-heading mt-5 text-lg font-semibold">{{ $project['title'] }}</h3>
-                            @if ($project['description'])
-                                <p class="mt-2.5 flex-1 text-sm leading-relaxed text-(--pf-text-muted)">{{ $project['description'] }}</p>
-                            @endif
-
-                            @if (filled($project['tech']))
-                                <div class="mt-5 flex flex-wrap gap-1.5">
-                                    @foreach ($project['tech'] as $tech)
-                                        <span class="pf-chip pf-mono px-2.5 py-1 text-[10px]">{{ $tech }}</span>
-                                    @endforeach
+                            {{-- A screenshot is the single strongest thing a project
+                                 card can carry, so it goes first and full-bleed. A
+                                 project without one is not given an empty frame —
+                                 the body just closes up, because a card showing a
+                                 placeholder reads as an unfinished card. --}}
+                            @if (filled($project['image']))
+                                <div class="pf-shot border-b border-(--pf-border)">
+                                    <img src="{{ $project['image'] }}" alt="{{ $project['title'] }}"
+                                        class="h-full w-full object-cover" loading="lazy" decoding="async">
                                 </div>
                             @endif
 
-                            @if (filled($project['link']))
-                                <a href="{{ $project['link'] }}" target="_blank" rel="noopener"
-                                    class="pf-mono mt-6 inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-wider text-(--pf-primary) uppercase">
-                                    View project
-                                    <svg class="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <line x1="5" y1="12" x2="19" y2="12" />
-                                        <polyline points="12 5 19 12 12 19" />
-                                    </svg>
-                                </a>
-                            @endif
+                            {{-- p-6 only when there is a shot; a shot already
+                                 provides the top spacing, and doubling it looks
+                                 like a mistake. --}}
+                            <div class="{{ filled($project['image']) ? 'p-6' : 'p-6 pt-6' }} flex flex-1 flex-col">
+                                <div class="flex items-start justify-between gap-3">
+                                    @if (! filled($project['image']))
+                                        <span class="pf-skill-mark text-2xl" aria-hidden="true">{{ $project['icon'] ?: '◆' }}</span>
+                                    @elseif (filled($project['icon']))
+                                        <span class="pf-skill-mark text-2xl" aria-hidden="true">{{ $project['icon'] }}</span>
+                                    @endif
+                                    @if ($project['stats'])
+                                        <span class="pf-chip pf-mono px-3 py-1 text-[10px]">{{ $project['stats'] }}</span>
+                                    @endif
+                                </div>
+
+                                <h3 class="pf-heading mt-5 text-lg font-semibold">{{ $project['title'] }}</h3>
+                                @if ($project['description'])
+                                    <p class="mt-2.5 flex-1 text-sm leading-relaxed text-(--pf-text-muted)">{{ $project['description'] }}</p>
+                                @endif
+
+                                @if (filled($project['tech']))
+                                    <div class="mt-5 flex flex-wrap gap-1.5">
+                                        @foreach ($project['tech'] as $tech)
+                                            <span class="pf-chip pf-mono px-2.5 py-1 text-[10px]">{{ $tech }}</span>
+                                        @endforeach
+                                    </div>
+                                @endif
+
+                                {{-- Live site and source are separate links because a
+                                     reviewer asks two different questions: does it run,
+                                     and can I read how it was built. Showing one and
+                                     hiding the other answers neither on its own. --}}
+                                @if (filled($project['link']) || filled($project['repo']))
+                                    <div class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2">
+                                        @if (filled($project['link']))
+                                            <a href="{{ $project['link'] }}" target="_blank" rel="noopener"
+                                                class="pf-mono inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-wider text-(--pf-primary) uppercase">
+                                                Live site
+                                                <svg class="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                                    <polyline points="12 5 19 12 12 19" />
+                                                </svg>
+                                            </a>
+                                        @endif
+
+                                        @if (filled($project['repo']))
+                                            <a href="{{ $project['repo'] }}" target="_blank" rel="noopener"
+                                                class="pf-mono inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-wider text-(--pf-text-muted) uppercase transition-colors hover:text-(--pf-primary)">
+                                                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                                    <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55v-2.15c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.18 1.83 1.18 3.09 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .3.21.67.8.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z" />
+                                                </svg>
+                                                Code
+                                            </a>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
                         </div>
                     @endforeach
                     </div>
@@ -591,8 +675,14 @@
                                 @endif
 
                                 @if ($socials->isNotEmpty())
+                                    {{-- Its own card rather than more rows inside the
+                                         "Contact information" card above: the social
+                                         links are somewhere else entirely (GitHub, Dribbble,
+                                         LinkedIn), and folding them in under an email address
+                                         reads as though they were contact details too. --}}
                                     <div class="pf-card rounded-2xl p-6">
-                                        <h3 class="pf-heading mb-5 text-sm font-semibold">Find me online</h3>
+                                        <h3 class="pf-heading mb-1 text-sm font-semibold">Connect With Me</h3>
+                                        <p class="pf-mono mb-5 text-[10px] text-(--pf-text-muted)">Elsewhere on the web</p>
                                         @include('frontend.themes.portfolio.partials.social-links', ['variant' => 'tiles'])
                                     </div>
                                 @endif
@@ -602,6 +692,79 @@
                 @endif
             </div>
         </section>
+
+        {{-- Writing, last on the page and directly above the footer. It reads as
+             the natural thing to do next after "Get in touch" — the same order a
+             visitor moves in — and a blog buried mid-page under six earlier
+             sections is a section nobody scrolls to.
+
+             The whole section is conditional, unlike #services above. Nothing
+             links to this anchor, so an empty blog has nothing to dead-end: the
+             heading "Writing" over zero posts is exactly the gap-advertising the
+             services section avoids, and a portfolio owner who has not written
+             anything should not be shown an empty shelf for it. --}}
+        @if ($latestPosts->isNotEmpty())
+            <section id="writing" class="border-t border-(--pf-border) bg-(--pf-bg-elevated)/40 px-6 py-24">
+                <div class="mx-auto max-w-6xl">
+                    <div data-pf-reveal class="max-w-2xl">
+                        <span class="pf-eyebrow pf-mono">07 &mdash; Writing</span>
+                        <h2 class="pf-heading mt-5 text-3xl font-bold sm:text-4xl">Notes from the work</h2>
+                        <p class="mt-4 text-(--pf-text-muted)">Things worth writing down while building them.</p>
+                    </div>
+
+                    <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                        @foreach ($latestPosts as $index => $post)
+                            {{-- A post's slug lives on its paired Page, not on the Post
+                                 row — same arrangement as products, and why
+                                 FrontendController::post() resolves by
+                                 $post->page->slug. Post::slug() is that accessor,
+                                 so the link below is the post's real URL. The query
+                                 requires a page, so it is never null here. Title,
+                                 description and featured_image are the Post's own
+                                 columns; only the slug is borrowed. --}}
+                            <a data-pf-reveal href="{{ route('blog.post', $post->slug) }}"
+                                class="pf-card pf-card-hover pf-card-rail group flex flex-col rounded-2xl p-6"
+                                style="--pf-reveal-delay: {{ $index * 70 }}ms">
+                                @if (filled($post->featured_image))
+                                    <img src="{{ $post->featured_image }}" alt="{{ $post->title }}"
+                                        class="mb-5 h-40 w-full rounded-xl object-cover" loading="lazy" decoding="async">
+                                @endif
+
+                                <p class="pf-mono text-[11px] text-(--pf-text-muted)">
+                                    <time datetime="{{ $post->published_at?->toDateString() }}">
+                                        {{ $post->published_at?->toDisplay() }}
+                                    </time>
+                                </p>
+
+                                <h3 class="pf-heading mt-3 text-base font-semibold group-hover:text-(--pf-primary)">
+                                    {{ $post->title }}
+                                </h3>
+
+                                @if (filled($post->description))
+                                    {{-- The teaser is plain text on purpose: description is
+                                         stored as rich HTML for the post page, and a
+                                         stripped-down preview of a formatted block
+                                         tends to arrive mid-tag. Clamped, not escaped
+                                         away, so links inside it still work. --}}
+                                    <div class="pf-prose mt-2.5 line-clamp-3 text-sm leading-relaxed text-(--pf-text-muted)">
+                                        {!! $post->description !!}
+                                    </div>
+                                @endif
+                            </a>
+                        @endforeach
+                    </div>
+
+                    {{-- The three above are a sample, not the archive — so the link
+                         out is not optional decoration but the only route to the
+                         rest. --}}
+                    <div class="mt-12">
+                        <a href="{{ route('blog') }}" class="pf-btn pf-btn-outline">
+                            {{ __('Read the blog') }}
+                        </a>
+                    </div>
+                </div>
+            </section>
+        @endif
     </main>
 
     @include('frontend.themes.portfolio.partials.footer')

@@ -112,17 +112,14 @@ Route::middleware('feature:vouchers')->group(function () {
 });
 
 Route::middleware('feature:orders')->group(function () {
+    // Products only — an order is always something physical. A service is
+    // requested through a Booking (App\Livewire\Frontend\BookService on the
+    // storefront, read at Admin → Bookings), never bought through the cart.
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
-    // Type-specific counterparts to the mixed /orders endpoint above — for a
-    // checkout flow that only ever deals in one type, so each item is just an
-    // id + quantity (no per-item product_id/service_id discriminator to fill
-    // in). /orders itself still accepts (and is required for) a mixed cart.
-    Route::post('/orders/products', [OrderController::class, 'storeProducts'])->name('orders.store.products');
-    Route::post('/orders/services', [OrderController::class, 'storeServices'])->name('orders.store.services');
     Route::get('/orders/{orderNumber}', [OrderController::class, 'show'])->name('orders.show');
     // Same auth story as the show() route above — order number + the
     // customer's own email, no login — downloads the PDF warranty card for
-    // whichever of this order's product items carry a warranty.
+    // whichever of this order's products carry a warranty.
     Route::get('/orders/{orderNumber}/warranty', [WarrantyController::class, 'publicDownload'])->name('orders.warranty');
 
     // Session-backed shopping cart (see App\Support\Cart). Uses StartSession so

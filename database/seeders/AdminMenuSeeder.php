@@ -22,30 +22,52 @@ class AdminMenuSeeder extends Seeder
 
         $this->standalone('Chat', 'chat-bubble-left-right', 'admin.chat', 3);
 
-        // Categories and Tags are shared by Products and Blog (pick a type
-        // when creating), so they live on their own rather than nested
-        // under either — each has its own feature toggle, see routes/admin.php's
-        // feature:categories and feature:tags groups.
-        $this->standalone('Categories', 'squares-2x2', 'admin.categories', 4);
-
-        $this->standalone('Tags', 'tag', 'admin.tags', 5);
-
-        $this->standalone('Brands', 'building-storefront', 'admin.product-brands', 6);
-
-        // Posts, Products and Services are listed one after another, right after Brands.
-        $this->standalone('Posts', 'document-text', 'admin.posts', 7);
-
-        $this->group('Products', 8, [
-            ['Products', 'cube', 'admin.products'],
-            ['Attributes', 'adjustments-horizontal', 'admin.product-attributes'],
+        // "Accessories" holds everything that shapes a product rather than being
+        // one: the taxonomy trio (Categories, Tags, Brands) that classifies it,
+        // the Advertisements that decide where it gets seen, and the price levers
+        // (Coupons, Discounts) that change what it costs. All six are supporting
+        // vocabulary of the catalogue, not content types of their own, so they
+        // read as one section instead of six loose top-level links. Each still has
+        // its own feature toggle, see routes/admin.php's feature:categories,
+        // feature:tags, feature:brands, feature:advertisements, feature:orders
+        // and feature:discounts groups — turning one off empties just that link,
+        // not the whole group.
+        $this->group('Accessories', 4, [
+            ['Categories', 'squares-2x2', 'admin.categories'],
+            ['Tags', 'tag', 'admin.tags'],
+            ['Brands', 'building-storefront', 'admin.product-brands'],
+            ['Advertisements', 'megaphone', 'admin.advertisements'],
+            ['Coupons', 'ticket', 'admin.coupons'],
+            ['Discounts', 'receipt-percent', 'admin.discounts'],
         ]);
 
-        $this->standalone('Services', 'wrench-screwdriver', 'admin.services', 9);
+        // Posts, Products and Services are listed one after another, right after
+        // the Accessories group.
+        $this->standalone('Posts', 'document-text', 'admin.posts', 7);
 
-        // Advertisements — banners shown on the storefront (product page aside).
-        $this->standalone('Advertisements', 'megaphone', 'admin.advertisements', 10);
+        // Orders lives inside this group rather than beside it. An order is a
+        // basket of these products - order_items point at products - so an
+        // "Orders" link floating in the top level next to a "Products" group
+        // splits one subject across two places in the sidebar.
+        //
+        // Attributes first, then the products themselves, then their orders:
+        // the catalogue is defined before the things being sold, and the things
+        // being sold before what came out of them.
+        $this->group('Products', 8, [
+            ['Attributes', 'adjustments-horizontal', 'admin.product-attributes'],
+            ['Products', 'cube', 'admin.products'],
+            ['Orders', 'shopping-bag', 'admin.orders'],
+        ]);
 
-        $this->standalone('Orders', 'shopping-bag', 'admin.orders', 11);
+        // One "Service" group, with the Bookings inbox the storefront form
+        // generates. Nested rather than as two siblings because a booking only
+        // exists because of a service - the inbox belongs under the thing that
+        // produces it. Both sit behind the same feature:services toggle (see
+        // routes/admin.php), so a site with services off gets neither.
+        $this->group('Service', 9, [
+            ['Services', 'wrench-screwdriver', 'admin.services'],
+            ['Bookings', 'inbox', 'admin.bookings'],
+        ]);
 
         // Vouchers get their own group — the voucher product list with the
         // record of vouchers actually sold.
@@ -53,10 +75,6 @@ class AdminMenuSeeder extends Seeder
             ['Gift Vouchers', 'gift', 'admin.vouchers'],
             ['Voucher Sales', 'banknotes', 'admin.voucher-purchases'],
         ]);
-
-        $this->standalone('Coupons', 'ticket', 'admin.coupons', 13);
-
-        $this->standalone('Discounts', 'receipt-percent', 'admin.discounts', 14);
 
         $this->group('Library & System', 15, [
             ['Settings', 'cog-6-tooth', 'admin.settings'],
@@ -73,13 +91,21 @@ class AdminMenuSeeder extends Seeder
             ['Menu', 'bars-3', 'admin.menu'],
         ]);
 
-        $this->standalone('Contacts', 'inbox', 'admin.contacts', 16);
-
-        $this->standalone('Comments', 'chat-bubble-left-right', 'admin.comments', 17);
-
-        $this->standalone('Reviews', 'star', 'admin.reviews', 18);
-
-        $this->standalone('Subscribers', 'envelope-open', 'admin.subscribers', 19);
+        // The four inbound inboxes - contact form submissions, comments on
+        // content, product reviews and newsletter signups - grouped as "Client
+        // Queries" rather than sitting as four loose top-level links. All four
+        // are somebody else talking to the site owner, not a content type of
+        // their own, so they read as one section. Each still has its own feature
+        // toggle, see routes/admin.php's feature:contacts, feature:comments,
+        // feature:reviews and feature:newsletter groups - turning one off empties
+        // just that link, and only once the last one is off does the whole group
+        // drop (an empty group is never rendered).
+        $this->group('Client Queries', 16, [
+            ['Contacts', 'inbox', 'admin.contacts'],
+            ['Comments', 'chat-bubble-left-right', 'admin.comments'],
+            ['Reviews', 'star', 'admin.reviews'],
+            ['Subscribers', 'envelope-open', 'admin.subscribers'],
+        ]);
 
         $this->standalone('Pages', 'document', 'admin.pages', 20);
 

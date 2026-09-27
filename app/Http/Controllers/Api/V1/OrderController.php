@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
-use App\Models\Service;
 use App\Models\Setting;
 use App\Models\ShippingMethod;
 use App\Models\Transaction;
@@ -18,89 +17,48 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * Placing an order. Products only — a service is booked (App\Models\Booking,
+ * see POST /api/v1/bookings), never bought, so every line on an order is a
+ * product and there is no per-item type to send or receive.
+ */
 class OrderController extends Controller
 {
     public function store(Request $request): JsonResponse
     {
         abort_unless((bool) Setting::get('shop_enabled', true), 503, 'The shop is currently closed for new orders.');
 
-        $rawItems = collect($request->input('items', []));
-
-        // Delivery only matters when the cart has something physical in it —
-        // a non-empty, product-free cart (services only) needs no address.
-        // An empty/missing items list falls back to "required" so the plain
-        // required-field validation error still surfaces below.
-        $shippingRequired = $rawItems->isEmpty()
-            || $rawItems->contains(fn ($item) => ! empty($item['product_id'] ?? null));
-
         $validated = $request->validate([
             'customer_name' => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'required|string|max:30',
-            'shipping_address' => ($shippingRequired ? 'required' : 'nullable').'|string|max:2000',
+            'shipping_address' => 'required|string|max:2000',
             'shipping_method_id' => ['nullable', 'integer', Rule::exists('shipping_methods', 'id')->where('status', 'active')],
             'payment_method' => ['required', 'string', Rule::in(array_keys(PaymentMethods::available()))],
             'notes' => 'nullable|string|max:1000',
             'coupon_code' => 'nullable|string|max:50',
             'items' => 'required|array|min:1',
-            'items.*' => [
-                function (string $attribute, mixed $value, \Closure $fail) {
-                    $hasProduct = ! empty($value['product_id'] ?? null);
-                    $hasService = ! empty($value['service_id'] ?? null);
-
-                    if ($hasProduct === $hasService) {
-                        $fail('Each item must have exactly one of product_id or service_id.');
-                    }
-                },
-            ],
             'items.*.product_id' => [
-                'nullable',
+                'required',
                 'integer',
                 Rule::exists('products', 'id')->where('status', 'active')->where('is_upcoming', false),
-            ],
-            'items.*.service_id' => [
-                'nullable',
-                'integer',
-                Rule::exists('services', 'id')->where('status', 'active'),
             ],
             'items.*.quantity' => 'required|integer|min:1|max:1000',
         ]);
 
-        $products = Product::whereIn('id', collect($validated['items'])->pluck('product_id')->filter())
+        $products = Product::whereIn('id', collect($validated['items'])->pluck('product_id'))
             ->get()
             ->keyBy('id');
 
-        $services = Service::whereIn('id', collect($validated['items'])->pluck('service_id')->filter())
-            ->get()
-            ->keyBy('id');
-
-        $lines = collect($validated['items'])->map(function (array $item) use ($products, $services) {
+        $lines = collect($validated['items'])->map(function (array $item) use ($products) {
+            $product = $products->get($item['product_id']);
             $quantity = (int) $item['quantity'];
-
-            if (! empty($item['product_id'] ?? null)) {
-                $product = $products->get($item['product_id']);
-                $unitPrice = (float) $product->price;
-
-                return [
-                    'product_id' => $product->id,
-                    'service_id' => null,
-                    'type' => 'product',
-                    'item_name' => $product->getTranslation('name', 'en', false),
-                    'sku' => $product->sku,
-                    'unit_price' => $unitPrice,
-                    'quantity' => $quantity,
-                    'line_total' => round($unitPrice * $quantity, 2),
-                ];
-            }
-
-            $service = $services->get($item['service_id']);
-            $unitPrice = (float) $service->price;
+            $unitPrice = (float) $product->price;
 
             return [
-                'product_id' => null,
-                'service_id' => $service->id,
-                'type' => 'service',
-                'item_name' => $service->getTranslation('name', 'en', false),
+                'product_id' => $product->id,
+                'item_name' => $product->getTranslation('name', 'en', false),
+                'sku' => $product->sku,
                 'unit_price' => $unitPrice,
                 'quantity' => $quantity,
                 'line_total' => round($unitPrice * $quantity, 2),
@@ -116,95 +74,7 @@ class OrderController extends Controller
         $vat = Setting::vatFor($taxable);
         $vatRate = Setting::vatEnabled() ? Setting::vatRate() : null;
 
-        [$shippingMethod, $shippingCost] = $this->shippingSnapshot($validated['shipping_method_id'] ?? null, $lines);
-        $total = round($taxable + $vat + $shippingCost, 2);
-
-        $order = $this->persistOrder($validated, $lines, $subtotal, $couponCode, $discount, $vat, $vatRate, $shippingMethod, $shippingCost, $total, $currency);
-
-        return response()->json([
-            'data' => $this->formatOrder($order->load('items')),
-        ], 201);
-    }
-
-    /**
-     * Product-only counterpart to store() — for a checkout flow that never
-     * deals in services, so each item is just a product_id + quantity (no
-     * per-item type discriminator to fill in). Same validation, coupon and
-     * persistence pipeline as the mixed endpoint, restricted to one type.
-     */
-    public function storeProducts(Request $request): JsonResponse
-    {
-        return $this->storeSingleType($request, 'product');
-    }
-
-    /**
-     * Service-only counterpart to store() — see storeProducts(). A service
-     * cart never needs a shipping address.
-     */
-    public function storeServices(Request $request): JsonResponse
-    {
-        return $this->storeSingleType($request, 'service');
-    }
-
-    private function storeSingleType(Request $request, string $type): JsonResponse
-    {
-        abort_unless((bool) Setting::get('shop_enabled', true), 503, 'The shop is currently closed for new orders.');
-
-        $isProduct = $type === 'product';
-        $idField = $isProduct ? 'product_id' : 'service_id';
-
-        $validated = $request->validate([
-            'customer_name' => 'required|string|max:255',
-            'customer_email' => 'required|email|max:255',
-            'customer_phone' => 'required|string|max:30',
-            'shipping_address' => ($isProduct ? 'required' : 'nullable').'|string|max:2000',
-            'shipping_method_id' => ['nullable', 'integer', Rule::exists('shipping_methods', 'id')->where('status', 'active')],
-            'payment_method' => ['required', 'string', Rule::in(array_keys(PaymentMethods::available()))],
-            'notes' => 'nullable|string|max:1000',
-            'coupon_code' => 'nullable|string|max:50',
-            'items' => 'required|array|min:1',
-            'items.*.'.$idField => [
-                'required',
-                'integer',
-                $isProduct
-                    ? Rule::exists('products', 'id')->where('status', 'active')->where('is_upcoming', false)
-                    : Rule::exists('services', 'id')->where('status', 'active'),
-            ],
-            'items.*.quantity' => 'required|integer|min:1|max:1000',
-        ]);
-
-        $ids = collect($validated['items'])->pluck($idField)->filter();
-        $catalog = $isProduct
-            ? Product::whereIn('id', $ids)->get()->keyBy('id')
-            : Service::whereIn('id', $ids)->get()->keyBy('id');
-
-        $lines = collect($validated['items'])->map(function (array $item) use ($catalog, $idField, $isProduct) {
-            $model = $catalog->get($item[$idField]);
-            $quantity = (int) $item['quantity'];
-            $unitPrice = (float) $model->price;
-
-            return [
-                'product_id' => $isProduct ? $model->id : null,
-                'service_id' => $isProduct ? null : $model->id,
-                'type' => $isProduct ? 'product' : 'service',
-                'item_name' => $model->getTranslation('name', 'en', false),
-                'sku' => $isProduct ? $model->sku : null,
-                'unit_price' => $unitPrice,
-                'quantity' => $quantity,
-                'line_total' => round($unitPrice * $quantity, 2),
-            ];
-        });
-
-        $subtotal = round($lines->sum('line_total'), 2);
-        $currency = (string) Setting::get('currency_code', 'BDT');
-
-        [$couponCode, $discount] = $this->applyCoupon($validated['coupon_code'] ?? null, $subtotal, $lines, $isProduct ? $catalog : collect());
-
-        $taxable = round($subtotal - $discount, 2);
-        $vat = Setting::vatFor($taxable);
-        $vatRate = Setting::vatEnabled() ? Setting::vatRate() : null;
-
-        [$shippingMethod, $shippingCost] = $this->shippingSnapshot($validated['shipping_method_id'] ?? null, $lines);
+        [$shippingMethod, $shippingCost] = $this->shippingSnapshot($validated['shipping_method_id'] ?? null);
         $total = round($taxable + $vat + $shippingCost, 2);
 
         $order = $this->persistOrder($validated, $lines, $subtotal, $couponCode, $discount, $vat, $vatRate, $shippingMethod, $shippingCost, $total, $currency);
@@ -216,10 +86,7 @@ class OrderController extends Controller
 
     /**
      * Validates a coupon_code against the cart and returns [code, discount] —
-     * code is '' when none was given. Shared by store() and storeSingleType();
-     * $products only matters for the product-restriction checks, which are
-     * naturally no-ops when $lines has no product-type entries (a service
-     * cart), so passing an empty collection there is safe.
+     * code is '' when none was given.
      *
      * @return array{0: string, 1: float}
      */
@@ -239,8 +106,7 @@ class OrderController extends Controller
             ]);
         }
 
-        $hasDiscountedItem = $lines->contains(fn (array $line) => $line['type'] === 'product'
-            && ($product = $products->get($line['product_id'])) !== null
+        $hasDiscountedItem = $lines->contains(fn (array $line) => ($product = $products->get($line['product_id'])) !== null
             && $product->hasDiscount());
 
         if ($hasDiscountedItem) {
@@ -249,8 +115,7 @@ class OrderController extends Controller
             ]);
         }
 
-        $hasUncoveredItem = $lines->contains(fn (array $line) => $line['type'] === 'product'
-            && ! $coupon->appliesToProduct($line['product_id']));
+        $hasUncoveredItem = $lines->contains(fn (array $line) => ! $coupon->appliesToProduct($line['product_id']));
 
         if ($hasUncoveredItem) {
             throw ValidationException::withMessages([
@@ -263,17 +128,14 @@ class OrderController extends Controller
 
     /**
      * Resolves an active shipping method's name + cost for the order snapshot.
-     * The cost comes from the table, never the client. Shipping only applies to
-     * a cart that has something physical in it — a service-only cart (nothing
-     * to deliver) always carries no shipping fee, regardless of the id sent.
+     * The cost comes from the table, never the client. Null/0.00 when the
+     * customer picks no method.
      *
      * @return array{0: ?string, 1: float}
      */
-    private function shippingSnapshot(?int $shippingMethodId, Collection $lines): array
+    private function shippingSnapshot(?int $shippingMethodId): array
     {
-        $hasProduct = $lines->contains(fn (array $line) => $line['type'] === 'product');
-
-        if ($shippingMethodId === null || ! $hasProduct) {
+        if ($shippingMethodId === null) {
             return [null, 0.0];
         }
 
@@ -365,7 +227,6 @@ class OrderController extends Controller
             'created_at' => $order->created_at?->toIso8601String(),
             'created_at_display' => $order->created_at?->toDisplay(),
             'items' => $order->items->map(fn ($item) => [
-                'type' => $item->type,
                 'item_name' => $item->item_name,
                 'sku' => $item->sku,
                 'variations' => $item->variations ?: null,

@@ -29,9 +29,13 @@
     'emptyHint' => null,
     /**
      * The fields one row is made of, in order. Each entry is
-     * ['name' => 'title', 'label' => 'Title', 'placeholder' => null, 'type' => 'text|textarea', 'rows' => 3].
+     * ['name' => 'title', 'label' => 'Title', 'placeholder' => null, 'type' => 'text|textarea|media', 'rows' => 3].
      * The first field is the row's identity: a row left blank there is dropped on
      * save, so it must be the field a person is most likely to fill in.
+     *
+     * `type => 'media'` renders an upload picker bound to this row's own field,
+     * so a list can carry a picture per entry (a project screenshot) rather
+     * than only text. It always spans the full row width.
      */
     'fields' => [['name' => 'title', 'label' => 'Title']],
     'addLabel' => 'Add row',
@@ -105,16 +109,29 @@
                     @foreach ($fields as $field)
                         @php
                             $name = $field['name'];
-                            $wide = ($field['type'] ?? 'text') === 'textarea' || ($field['wide'] ?? false);
+                            $type = $field['type'] ?? 'text';
+                            $wide = $type === 'textarea' || $type === 'media' || ($field['wide'] ?? false);
                         @endphp
 
                         <div class="{{ $wide ? 'sm:col-span-2' : '' }}">
                             <flux:label>{{ $field['label'] }}</flux:label>
 
-                            @if (($field['type'] ?? 'text') === 'textarea')
+                            @if ($type === 'textarea')
                                 <flux:textarea wire:model="repeaters.{{ $settingKey }}.{{ $i }}.{{ $name }}"
                                     class="h-20 resize-none"
                                     placeholder="{{ $field['placeholder'] ?? '' }}" />
+                            @elseif ($type === 'media')
+                                {{-- The picker is bound to this row's own field, so a list
+                                     can carry a picture per entry. Its default 2MB
+                                     ceiling is right for a screenshot; a theme that
+                                     wants more passes :maxSizeMb on the field. --}}
+                                <x-media-picker
+                                    model="repeaters.{{ $settingKey }}.{{ $i }}.{{ $name }}"
+                                    label="{{ $field['pickerLabel'] ?? $field['label'] }}"
+                                    @if (! empty($field['sizeHint'])) size-hint="{{ $field['sizeHint'] }}" @endif
+                                    :only-images="$field['onlyImages'] ?? true"
+                                    :maxSizeMb="$field['maxSizeMb'] ?? 2"
+                                    compact />
                             @else
                                 <flux:input wire:model="repeaters.{{ $settingKey }}.{{ $i }}.{{ $name }}"
                                     placeholder="{{ $field['placeholder'] ?? '' }}" />

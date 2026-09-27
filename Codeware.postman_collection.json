@@ -28,7 +28,6 @@
 		{ "key": "device_id", "value": "test-device-1", "type": "string" },
 		{ "key": "notification_id", "value": "", "type": "string" },
 		{ "key": "service_slug", "value": "", "type": "string" },
-		{ "key": "service_id", "value": "", "type": "string" },
 		{ "key": "voucher_slug", "value": "", "type": "string" },
 		{ "key": "voucher_id", "value": "", "type": "string" },
 		{ "key": "comment_id", "value": "", "type": "string" },
@@ -738,58 +737,6 @@
 									"options": { "raw": { "language": "json" } }
 								},
 								"url": "{{base_url}}/orders"
-							}
-						},
-						{
-							"name": "Create Order (Products Only)",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"if (pm.response.code === 201) {",
-											"    const body = pm.response.json();",
-											"    pm.collectionVariables.set('order_number', body.data.order_number);",
-											"}"
-										]
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [{ "key": "Content-Type", "value": "application/json" }],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"customer_name\": \"John Doe\",\n    \"customer_email\": \"{{order_email}}\",\n    \"customer_phone\": \"+8801700000000\",\n    \"shipping_address\": \"123 Main Street, Dhaka\",\n    \"payment_method\": \"cod\",\n    \"items\": [\n        { \"product_id\": {{product_id}}, \"quantity\": 1 }\n    ]\n}",
-									"options": { "raw": { "language": "json" } }
-								},
-								"url": "{{base_url}}/orders/products"
-							}
-						},
-						{
-							"name": "Create Order (Services Only)",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"if (pm.response.code === 201) {",
-											"    const body = pm.response.json();",
-											"    pm.collectionVariables.set('order_number', body.data.order_number);",
-											"}"
-										]
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [{ "key": "Content-Type", "value": "application/json" }],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"customer_name\": \"John Doe\",\n    \"customer_email\": \"{{order_email}}\",\n    \"customer_phone\": \"+8801700000000\",\n    \"payment_method\": \"cod\",\n    \"items\": [\n        { \"service_id\": {{service_id}}, \"quantity\": 1 }\n    ]\n}",
-									"options": { "raw": { "language": "json" } }
-								},
-								"url": "{{base_url}}/orders/services"
 							}
 						},
 						{

@@ -71,6 +71,61 @@ it('drops a blank segment from a tech stack, so a trailing comma is not an empty
     expect(PortfolioProfile::projects()->first()['tech'])->toBe(['Laravel', 'MySQL']);
 });
 
+it('shows a project screenshot and both links, because a reviewer asks two questions', function () {
+    setRows('theme_portfolio_projects', [
+        [
+            'title' => 'Order Platform',
+            'description' => 'Stock control for three branches.',
+            'icon' => '📦',
+            'tech' => 'Laravel',
+            'stats' => 'In production',
+            'link' => 'https://example.com/app',
+            'repo' => 'https://github.com/sabbir/order-platform',
+            'image' => '/storage/media/order-platform.png',
+        ],
+    ]);
+
+    $html = $this->get('/')->assertOk()->getContent();
+
+    // The screenshot leads the card, the live site and the source are separate
+    // affordances — "does it run" and "can I read how it was built" are not the
+    // same question, and one link cannot answer both.
+    expect($html)->toContain('src="/storage/media/order-platform.png"')
+        ->and($html)->toContain('href="https://example.com/app"')
+        ->and($html)->toContain('href="https://github.com/sabbir/order-platform"')
+        ->and($html)->toContain('Live site')
+        ->and($html)->toContain('Code');
+});
+
+it('draws no empty screenshot frame and no dead link on a project with neither', function () {
+    setRows('theme_portfolio_projects', [
+        ['title' => 'No assets', 'description' => 'Nothing uploaded.', 'icon' => '', 'tech' => '', 'stats' => '', 'link' => '', 'repo' => '', 'image' => ''],
+    ]);
+
+    $html = $this->get('/')->assertOk()->getContent();
+
+    // A card showing an empty image well, or a "Live site" link with nowhere to
+    // go, reads as an unfinished page. The card closes up instead.
+    expect($html)->toContain('No assets')
+        ->and($html)->not->toContain('pf-shot')
+        ->and($html)->not->toContain('Live site')
+        ->and($html)->not->toContain('>Code<');
+});
+
+it('opens light, and only adds the dark class when asked', function () {
+    // A portfolio gets read on a phone, in daylight, and screenshotted into an
+    // application tracker. A near-black page is a dark rectangle in all three,
+    // so light is the base and dark has to be opted into.
+    $html = $this->get('/')->assertOk()->getContent();
+
+    expect($html)->toContain('class="theme-portfolio antialiased"')
+        ->and($html)->not->toContain('pf-light')
+        ->and($html)->not->toContain('pf-dark');
+
+    // The toggle is still there, and it now flips the other class.
+    expect($html)->toContain('data-pf-theme-toggle', false);
+});
+
 it('renders the work timeline, and no company line for a role that had no company', function () {
     setRows('theme_portfolio_experiences', [
         ['role' => 'Backend Developer', 'company' => 'Acme Ltd', 'period' => '2022 - 2024', 'description' => 'Owned the billing service.'],
@@ -342,13 +397,17 @@ it('shows every declared portfolio list on one admin screen, and no separate CRU
     $this->actingAs(User::factory()->admin()->create());
     $this->seed(PortfolioContentSeeder::class);
 
-    // All eight sections, one page, one save button. The bindings prove the
-    // declaration reached the screen: a repeater is only editable if its rows
-    // are bound, so a missing setting-key here means an owner who cannot edit
-    // the section at all.
+    // All the settings-driven sections, one page, one save button. The bindings
+    // prove the declaration reached the screen: a repeater is only editable if
+    // its rows are bound, so a missing setting-key here means an owner who
+    // cannot edit the section at all.
     // Selecting the theme is what renders its form, and it reloads the repeaters
     // from the stored values — so it has to happen before the assertions below,
     // not between them.
+    //
+    // Services are absent and that is correct: they moved to the Service model
+    // and its own CRUD screen, since a bookable service has to be a row a
+    // booking can point a foreign key at. Asserted further down.
     $component = Livewire::test(Index::class)
         ->set('settings.site_theme', 'portfolio');
 
@@ -358,7 +417,6 @@ it('shows every declared portfolio list on one admin screen, and no separate CRU
         'theme_portfolio_skills' => 'name',
         'theme_portfolio_testimonials' => 'quote',
         'theme_portfolio_stats' => 'value',
-        'theme_portfolio_services' => 'title',
         'theme_portfolio_education' => 'title',
         'theme_portfolio_certifications' => 'title',
     ] as $key => $field) {

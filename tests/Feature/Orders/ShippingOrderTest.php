@@ -6,7 +6,6 @@ use App\Models\Language;
 use App\Models\Order;
 use App\Models\Page;
 use App\Models\Product;
-use App\Models\Service;
 use App\Models\Setting;
 use App\Models\ShippingMethod;
 use App\Models\Transaction;
@@ -203,18 +202,17 @@ it('rejects an inactive or unknown shipping method on the order API', function (
     expect(Order::count())->toBe(0);
 });
 
-it('never charges shipping on a service-only order, even when an id is sent', function () {
-    $method = ShippingMethod::create(['name' => 'Express Delivery', 'cost' => 250, 'status' => 'active']);
-    $service = Service::factory()->published()->create(['price' => 800]);
+it('charges no shipping when the customer picks no method', function () {
+    $product = Product::factory()->published()->create(['price' => 800]);
 
     $this->postJson('/api/v1/orders', [
         'customer_name' => 'Jane Doe',
         'customer_email' => 'jane@example.com',
         'customer_phone' => '01712345678',
-        'shipping_method_id' => $method->id,
+        'shipping_address' => '123 Main St, Dhaka',
         'payment_method' => 'cod',
         'items' => [
-            ['service_id' => $service->id, 'quantity' => 1],
+            ['product_id' => $product->id, 'quantity' => 1],
         ],
     ])->assertCreated()
         ->assertJsonPath('data.shipping_method', null)

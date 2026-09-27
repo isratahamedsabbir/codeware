@@ -19,9 +19,11 @@ return new class extends Migration
             $table->string('customer_name');
             $table->string('customer_email');
             $table->string('customer_phone');
-            // Nullable — a service-only order (nothing to deliver) can omit it;
-            // still required whenever the cart contains a physical product
-            // (see OrderController::store()'s conditional validation rule).
+            // An order is always something physical, so an address is always
+            // required (see OrderController::store()'s validation rules). Kept
+            // nullable at the column level only so the delivery rider's "edit
+            // address" flow and a COD order placed by phone have somewhere to
+            // put nothing yet.
             $table->text('shipping_address')->nullable();
             // Fulfillment progress — separate from payment_status below, since an
             // order can be e.g. "processing" while payment is still "pending" (COD).
@@ -42,7 +44,8 @@ return new class extends Migration
             // Shipping snapshot — the chosen delivery method's name and cost at
             // order time. Snapshotted (no FK) like vat_amount/vat_rate, so a
             // method's later rename, price change or deletion never rewrites an
-            // order's history. 0.00 on orders with nothing physical to deliver.
+            // order's history. Null/0.00 only when the customer picks no method
+            // (e.g. Store Pickup, or a cart that is collected in person).
             $table->string('shipping_method')->nullable();
             $table->decimal('shipping_cost', 10, 2)->default(0);
             $table->decimal('total', 10, 2);

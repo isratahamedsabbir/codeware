@@ -74,11 +74,22 @@ it('404s a page whose route belongs to another theme, without running its contro
 
     $this->get('/cart')->assertNotFound();
     $this->get('/account')->assertNotFound();
-    $this->get('/blog')->assertNotFound();
 
     // The portfolio ships no page template, so it registers no standalone-page
     // route; /about belongs to the other two themes and is a 404 here too.
     $this->get('/about')->assertNotFound();
+});
+
+it('404s the blog on a theme that ships no blog template', function () {
+    // /blog is registered by every theme that owns the route name, and the 'theme'
+    // guard decides which may answer. Two themes ship blog + post templates and
+    // one does not, so the route being registered is not what makes it a 404 - the
+    // template is. This is the same guard as the shop test above, and it is the
+    // half that a second theme claiming an existing route name can quietly break.
+    Setting::set('site_theme', 'default');
+
+    $this->get('/blog')->assertNotFound();
+    $this->get('/blog/anything-at-all')->assertNotFound();
 });
 
 it('404s a shop page on the default theme, in the default theme own design', function () {

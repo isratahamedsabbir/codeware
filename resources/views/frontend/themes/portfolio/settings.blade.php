@@ -26,33 +26,42 @@
     these empty is a valid state: a smaller finished portfolio beats a
     half-filled one that advertises the gaps.
 --}}
+{{-- The wire:key is load-bearing, not decoration. This partial and
+     ecommerce/settings.blade.php are swapped into the same slot on the Theme
+     Settings screen by a plain @include, and both root elements are an
+     unkeyed <div x-data="{ tab, open }"> with the same tag. Without a key,
+     Livewire morphs one into the other in place, and Alpine keeps the x-data
+     object it parsed first — so after switching to ecommerce, this scope is
+     still driving the page: `tab` is 'profile', which matches neither of
+     ecommerce's 'banners' / 'colors' panels, so Theme Settings looks empty, and
+     clicking Colors then reveals only Colors because the stale open() happens to
+     set the same property. Keying on the slug makes the node unique, so
+     Livewire replaces it and Alpine re-initialises with the right scope. --}}
 <div
+    wire:key="theme-settings-{{ $themeSlug }}"
     x-data="{
         tab: (() => { try { return localStorage.getItem('theme-portfolio-tab') || 'profile' } catch (e) { return 'profile' } })(),
         open(name) { this.tab = name; try { localStorage.setItem('theme-portfolio-tab', name) } catch (e) {} },
     }"
-    class="space-y-5"
+    class="grid gap-5 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-6"
 >
-    <div role="tablist" class="flex gap-1 border-b border-zinc-200 dark:border-zinc-700">
-        @foreach ([
-            'profile' => ['Profile', 'user-circle'],
-            'sections' => ['Sections', 'squares-2x2'],
-            'work' => ['Projects & experience', 'briefcase'],
-            'skills' => ['Skills', 'sparkles'],
-            'testimonials' => ['Testimonials', 'chat-bubble-left-right'],
-            'credentials' => ['Credentials', 'academic-cap'],
-        ] as $tabKey => [$tabLabel, $tabIcon])
-            <button type="button" role="tab" @click="open('{{ $tabKey }}')"
-                :aria-selected="tab === '{{ $tabKey }}'"
-                :class="tab === '{{ $tabKey }}'
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:hover:text-zinc-200'"
-                class="-mb-px inline-flex items-center gap-2 rounded-none! border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors">
-                <flux:icon :name="$tabIcon" variant="mini" class="size-4" />
-                {{ $tabLabel }}
-            </button>
-        @endforeach
-    </div>
+    {{-- The sections are a menu, not a tab strip: a strip at the top of a form
+         this long scrolls out of reach, this holds its place beside the form.
+         `lg:top-14` clears the 56px sticky admin header. --}}
+    <x-admin-settings-nav class="lg:sticky lg:top-14 lg:self-start" :tabs="[
+        'profile' => ['Profile', 'user-circle'],
+        'sections' => ['Sections', 'squares-2x2'],
+        'work' => ['Projects & experience', 'briefcase'],
+        'skills' => ['Skills', 'sparkles'],
+        'testimonials' => ['Testimonials', 'chat-bubble-left-right'],
+        'credentials' => ['Credentials', 'academic-cap'],
+    ]" />
+
+    {{-- `x-cloak` on the whole column: panels stay mounted (x-show, not x-if) so
+         the media pickers keep their Livewire bindings, which means every panel
+         is in the DOM at once and would otherwise all flash before Alpine boots. --}}
+    <div class="min-w-0 space-y-5" x-cloak>
+
 
     {{-- ══ Profile ═══════════════════════════════════════════════════════ --}}
     {{-- Both panels stay mounted (x-show) so the media picker keeps its Livewire
@@ -134,8 +143,8 @@
                     <flux:icon.chart-bar variant="mini" class="size-5" />
                 </span>
                 <div>
-                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Hero stats &amp; services</p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">The numbers under the hero, and what a visitor can hire you for.</p>
+                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Hero stats</p>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">The numbers under the hero.</p>
                 </div>
             </div>
         </header>
@@ -155,24 +164,21 @@
                     ['name' => 'label', 'label' => 'Label', 'placeholder' => 'Years experience'],
                 ]" />
 
-            <div class="border-t border-zinc-100 pt-6 dark:border-zinc-700">
-                <x-admin-repeatable-fields
-                    :repeaters="$repeaters"
-                    setting-key="theme_portfolio_services"
-                    label="What I do"
-                    hint="Two to four reads best; three fills a desktop row exactly."
-                    empty-title="No services yet"
-                    empty-hint="The whole section stays hidden until you add one."
-                    add-label="Add service"
-                    :max="9"
-                    :fields="[
-                        ['name' => 'title', 'label' => 'Title', 'placeholder' => 'Laravel Application Development'],
-                        ['name' => 'icon', 'label' => 'Icon', 'placeholder' => '⚙️'],
-                        ['name' => 'description', 'label' => 'Description', 'type' => 'textarea', 'placeholder' => 'What the client gets, in one or two lines.'],
-                    ]" />
-            </div>
+            {{-- Services used to be a second repeater on this screen, right under
+                 the stats. They are not any more: a service is something bookable,
+                 so it has to be a real Service row that a booking can point a
+                 foreign key at — and that is edited under Services in the admin.
+                 Left in place, the two were about to disagree, with a service
+                 edited in one place and not the other. So the repeater and
+                 PortfolioProfile::services() were removed rather than kept as a
+                 second source. "What I do" on the storefront now renders the
+                 active Service rows and hands each one a booking form. --}}
+            <p class="text-sm text-zinc-500 dark:text-zinc-400">
+                {{ __('Services are managed under Services in the admin menu, not here.') }}
+            </p>
         </div>
     </section>
+
 
     {{-- ══ Work ════════════════════════════════════════════════════════════ --}}
     {{-- Projects and Experience. Both used to be table-backed with their own
@@ -204,11 +210,13 @@
                 :max="12"
                 :fields="[
                     ['name' => 'title', 'label' => 'Project name', 'placeholder' => 'Hotel Booking System'],
+                    ['name' => 'image', 'label' => 'Screenshot', 'type' => 'media', 'pickerLabel' => 'Project screenshot', 'sizeHint' => 'A 16:10 screenshot, roughly 1280×800'],
                     ['name' => 'icon', 'label' => 'Icon', 'placeholder' => '🏨'],
-                    ['name' => 'description', 'label' => 'Description', 'type' => 'textarea', 'placeholder' => 'What it does and what you built.'],
+                    ['name' => 'description', 'label' => 'What it does', 'type' => 'textarea', 'placeholder' => 'The problem it solved, and your part in it.'],
                     ['name' => 'tech', 'label' => 'Tech stack', 'placeholder' => 'Laravel, MySQL, Stripe'],
                     ['name' => 'stats', 'label' => 'Badge', 'placeholder' => '12 clients'],
-                    ['name' => 'link', 'label' => 'Link', 'placeholder' => 'https://example.com'],
+                    ['name' => 'link', 'label' => 'Live site', 'placeholder' => 'https://example.com'],
+                    ['name' => 'repo', 'label' => 'Source code', 'placeholder' => 'https://github.com/you/project'],
                 ]" />
 
             <div class="border-t border-zinc-100 pt-6 dark:border-zinc-700">
@@ -342,4 +350,6 @@
                 ]" />
         </div>
     </section>
+    </div>
 </div>
+

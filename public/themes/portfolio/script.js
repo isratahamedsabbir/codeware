@@ -42,12 +42,16 @@
         })();
     }
 
+    // Light is the default, so dark is the class that has to be added. The
+    // stored value is read as-is and anything that is not "dark" leaves the page
+    // light, which also means a value written by an older version of this
+    // script ("light") still lands on the light default rather than inverting.
     function applyStoredTheme() {
         var stored = null;
         try { stored = localStorage.getItem(STORAGE_KEY); } catch (e) {}
 
-        if (stored === 'light') {
-            document.body.classList.add('pf-light');
+        if (stored === 'dark') {
+            document.body.classList.add('pf-dark');
         }
     }
 
@@ -192,8 +196,8 @@
         if (!toggle) return;
 
         toggle.addEventListener('click', function () {
-            var isLight = document.body.classList.toggle('pf-light');
-            try { localStorage.setItem(STORAGE_KEY, isLight ? 'light' : 'dark'); } catch (e) {}
+            var isDark = document.body.classList.toggle('pf-dark');
+            try { localStorage.setItem(STORAGE_KEY, isDark ? 'dark' : 'light'); } catch (e) {}
         });
     }
 

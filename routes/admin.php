@@ -196,6 +196,14 @@ Route::middleware(['auth', 'admin', 'activity-log'])->group(function () {
         Route::get('/services/export', [ServiceExportController::class, 'export'])->name('services.export');
         Route::get('/services/create', App\Livewire\Admin\Services\Form::class)->name('services.create');
         Route::get('/services/{id}/edit', App\Livewire\Admin\Services\Form::class)->name('services.edit');
+
+        // Bookings — the requests sent from a service card on the storefront.
+        // Behind the same toggle as Services on purpose: a site with the Services
+        // feature off has no service cards, so it cannot receive a booking, and an
+        // empty inbox behind a dead-end nav item is just a broken link. No create
+        // route, because a booking is a visitor's message rather than authored
+        // content — see App\Livewire\Admin\Bookings\Index.
+        Route::get('/bookings', App\Livewire\Admin\Bookings\Index::class)->name('bookings');
     });
 
     // Advertisements — its own feature toggle; one active banner shows beside

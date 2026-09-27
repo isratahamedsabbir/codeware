@@ -189,10 +189,12 @@
                     @php
                         $groupIcon = [
                             'Products' => 'cube',
+                            'Accessories' => 'puzzle-piece',
                             'Sales' => 'shopping-bag',
                             'Blog' => 'pencil-square',
                             'Library & System' => 'folder',
                             'Inquiries' => 'inbox',
+                            'Client Queries' => 'chat-bubble-left-right',
                             'Content' => 'document-text',
                             'Localization' => 'language',
                             'Access Control' => 'shield-check',

@@ -12,14 +12,94 @@
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 .theme-portfolio {
+    /* Light is the base, not the opt-in. A portfolio is read on a phone, in
+       daylight, and often printed or screenshotted into an application tracker;
+       a near-black page turns all three into a dark rectangle. Dark mode is
+       still one class away (see .pf-dark below) for anyone who wants it.
+
+    /* Surfaces: the page and its cards are both pure white, and a card is
+       separated by --pf-shadow-card plus a hairline rather than by a fill
+       difference. That is deliberate — a grey page behind white cards makes
+       screenshots of the work themselves look grey, and photographs pasted into
+       a project card are the main thing being judged here. The inset surface
+       exists for the things that are genuinely recessed (chips, tiles, hover
+       fills), where a fill change is the point. */
+    --pf-bg: #ffffff;
+    --pf-bg-elevated: #ffffff;
+    --pf-bg-inset: #f8fafc;
+
+    /* Hairlines, not borders. A 1px solid line at full strength reads as a box
+       drawn around everything; at low alpha it reads as structure. */
+    --pf-border: rgba(15, 23, 42, 0.1);
+    --pf-border-strong: rgba(15, 23, 42, 0.2);
+
+    --pf-text: #475569;
+    --pf-heading: #0b1120;
+    --pf-text-muted: #64748b;
+
+    /* One accent, not a spectrum. Indigo carries links, focus and active
+       states; the teal partner is only ever a second gradient stop, never a
+       second "brand colour" competing for the same job. */
+    --pf-primary: #4f46e5;
+    --pf-primary-bright: #4338ca;
+    --pf-accent: #0891b2;
+    --pf-primary-dark: #4338ca;
+    --pf-primary-soft: rgba(79, 70, 229, 0.08);
+
+    --pf-grid-line: rgba(15, 23, 42, 0.05);
+    --pf-shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(15, 23, 42, 0.12);
+    --pf-shadow-lift: 0 2px 4px rgba(15, 23, 42, 0.06), 0 24px 48px -20px rgba(15, 23, 42, 0.18);
+
+    --pf-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+    background-color: var(--pf-bg);
+    color: var(--pf-text);
+    font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'ss01';
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.25s var(--pf-ease), color 0.25s var(--pf-ease);
+}
+
+/* ── Beat the admin's global dark-mode background ───────────────────────────
+   resources/css/app.css ships this for the admin panel:
+
+       html.dark body { background-color: var(--color-body-bg) !important; }
+
+   @fluxAppearance is inlined by resources/views/partials/head.blade.php, which
+   the public storefront includes too, so "dark" lands on <html> here whenever
+   the visitor's OS asks for dark — not because this theme asked for it. That
+   rule is !important and so outranks the background-color on .theme-portfolio
+   above, which is how a light portfolio still rendered as a near-black page.
+
+   Re-asserting it here fixes the page without touching the admin panel: the
+   colour is still --pf-bg, so this theme's own dark mode (.pf-dark, which
+   redefines --pf-bg) keeps working exactly as before. Two classes beat one. */
+html.dark body.theme-portfolio {
+    background-color: var(--pf-bg) !important;
+}
+
+/* Same trap, one step in: app.css also sets color-scheme: dark on :root.dark,
+   which turns native form controls, scrollbars and the canvas behind the page
+   dark while this theme is still painting a light page. The theme owns its own
+   scheme, so it states it back. */
+html.dark body.theme-portfolio {
+    color-scheme: light;
+}
+
+html.dark body.theme-portfolio.pf-dark {
+    color-scheme: dark;
+}
+
+/* Client-side dark mode, toggled by script.js (persisted in localStorage).
+   Kept as a token swap only — no component rule below mentions a colour
+   literal, so there is nothing to keep in sync here. */
+.theme-portfolio.pf-dark {
     /* Surfaces. The dark ramp is a cool near-black rather than pure #000: pure
        black kills the elevation cues that separate a card from the page. */
     --pf-bg: #06080f;
     --pf-bg-elevated: #0b0f1a;
     --pf-bg-inset: #080b14;
 
-    /* Hairlines, not borders. A 1px solid line at full strength reads as a box
-       drawn around everything; at low alpha it reads as structure. */
     --pf-border: rgba(148, 163, 184, 0.13);
     --pf-border-strong: rgba(148, 163, 184, 0.26);
 
@@ -38,41 +118,6 @@
     --pf-grid-line: rgba(148, 163, 184, 0.07);
     --pf-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
     --pf-shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.4), 0 24px 48px -20px rgba(0, 0, 0, 0.75);
-
-    --pf-ease: cubic-bezier(0.22, 1, 0.36, 1);
-
-    background-color: var(--pf-bg);
-    color: var(--pf-text);
-    font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
-    font-feature-settings: 'cv02', 'cv03', 'cv04', 'ss01';
-    -webkit-font-smoothing: antialiased;
-    transition: background-color 0.25s var(--pf-ease), color 0.25s var(--pf-ease);
-}
-
-/* Client-side light mode, toggled by script.js (persisted in localStorage).
-   Kept as a token swap only — no component rule below mentions a colour
-   literal, so there is nothing to keep in sync here. */
-.theme-portfolio.pf-light {
-    --pf-bg: #ffffff;
-    --pf-bg-elevated: #f8fafc;
-    --pf-bg-inset: #f1f5f9;
-
-    --pf-border: rgba(15, 23, 42, 0.1);
-    --pf-border-strong: rgba(15, 23, 42, 0.2);
-
-    --pf-text: #475569;
-    --pf-heading: #0b1120;
-    --pf-text-muted: #64748b;
-
-    --pf-primary: #4f46e5;
-    --pf-primary-bright: #4338ca;
-    --pf-accent: #0891b2;
-    --pf-primary-dark: #4338ca;
-    --pf-primary-soft: rgba(79, 70, 229, 0.08);
-
-    --pf-grid-line: rgba(15, 23, 42, 0.05);
-    --pf-shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(15, 23, 42, 0.12);
-    --pf-shadow-lift: 0 2px 4px rgba(15, 23, 42, 0.06), 0 24px 48px -20px rgba(15, 23, 42, 0.18);
 }
 
 .theme-portfolio .pf-mono {
@@ -160,12 +205,22 @@
 /* ── Hero ────────────────────────────────────────────────────────────── */
 
 /* The soft light bloom sitting behind the hero portrait. Two radial layers so it
-   keeps a coloured core instead of flattening to a grey disc. */
+   keeps a coloured core instead of flattening to a grey disc.
+
+   On a light page the same 42%-strength bloom that reads as a glow on near-black
+   reads as a bruise, so the light default drops it to a tint you notice only if
+   you look for it; the dark page keeps the original strength. */
 .theme-portfolio .pf-glow {
+    background:
+        radial-gradient(closest-side, color-mix(in srgb, var(--pf-primary) 8%, transparent), transparent 70%),
+        radial-gradient(closest-side at 70% 30%, color-mix(in srgb, var(--pf-accent) 6%, transparent), transparent 70%);
+    filter: blur(60px);
+}
+
+.theme-portfolio.pf-dark .pf-glow {
     background:
         radial-gradient(closest-side, color-mix(in srgb, var(--pf-primary) 42%, transparent), transparent 72%),
         radial-gradient(closest-side at 70% 30%, color-mix(in srgb, var(--pf-accent) 26%, transparent), transparent 70%);
-    filter: blur(60px);
 }
 
 .theme-portfolio .pf-photo-frame {
@@ -222,26 +277,37 @@
     50%, 100% { opacity: 0; }
 }
 
-/* Availability pill in the hero. */
+/* Availability pill in the hero.
+   On the light page --pf-bg-elevated is white, the same as the page behind it, so
+   a pill filled with it would be nothing but a border. The inset surface gives
+   it something to sit on. */
 .theme-portfolio .pf-badge {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     border: 1px solid var(--pf-border);
     border-radius: 999px;
-    background: var(--pf-bg-elevated);
+    background: var(--pf-bg-inset);
     color: var(--pf-text);
 }
 
-/* A small mono chip: the "In Production" tag on a project, a stat label. */
+/* A small mono chip: the "In Production" tag on a project, a stat label, a tech
+   stack entry. Inset rather than elevated for the same reason as the pill: a
+   white chip on a white card reads as an accidental gap, a grey one reads as a
+   tag. In dark mode elevated is the darker surface and reads correctly on its
+   own, which is why this is one rule rather than two. */
 .theme-portfolio .pf-chip {
     display: inline-flex;
     align-items: center;
     border: 1px solid var(--pf-border);
     border-radius: 999px;
-    background: var(--pf-bg-elevated);
+    background: var(--pf-bg-inset);
     color: var(--pf-text-muted);
     white-space: nowrap;
+}
+
+.theme-portfolio.pf-dark .pf-chip {
+    background: var(--pf-bg-elevated);
 }
 
 /* Pulsing "available" status dot */
@@ -342,6 +408,18 @@
 
 .theme-portfolio .pf-card-rail:hover::after {
     transform: scaleX(1);
+}
+
+/* The screenshot well at the top of a project card.
+   16:10 with object-fit: cover, so a screenshot taken at any common laptop
+   ratio is cropped rather than letterboxed — a project card with grey bars down
+   its sides looks like a broken embed. The inset surface behind it means a
+   transparent PNG (a logo mockup, a wireframe) still reads as an image rather
+   than as a hole in the card. */
+.theme-portfolio .pf-shot {
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: var(--pf-bg-inset);
 }
 
 /* ── Hero trust strip ────────────────────────────────────────────────── */
@@ -533,13 +611,13 @@
     background: var(--pf-primary-soft);
 }
 
-/* The toggle shows the theme you would switch *to*: a moon while dark (tap for
-   light), a sun while light. Both SVGs are always in the DOM so the swap is a
-   display change and costs no reflow. */
-.theme-portfolio .pf-icon-button .pf-icon-moon { display: inline; }
-.theme-portfolio .pf-icon-button .pf-icon-sun { display: none; }
-.theme-portfolio.pf-light .pf-icon-button .pf-icon-moon { display: none; }
-.theme-portfolio.pf-light .pf-icon-button .pf-icon-sun { display: inline; }
+/* The toggle shows the theme you would switch *to*: a sun while light (tap for
+   dark), a moon while dark. Both SVGs are always in the DOM so the swap is a
+   display change and costs no reflow. Light is the base, so the sun leads. */
+.theme-portfolio .pf-icon-button .pf-icon-sun { display: inline; }
+.theme-portfolio .pf-icon-button .pf-icon-moon { display: none; }
+.theme-portfolio.pf-dark .pf-icon-button .pf-icon-sun { display: none; }
+.theme-portfolio.pf-dark .pf-icon-button .pf-icon-moon { display: inline; }
 
 /* EN/BN pill */
 .theme-portfolio .pf-lang-pill {
@@ -585,7 +663,11 @@
 .theme-portfolio .pf-mobile-nav-link:hover,
 .theme-portfolio .pf-mobile-nav-link.is-active {
     color: var(--pf-primary);
-    background: var(--pf-bg-elevated);
+    /* The dropdown panel behind this list is the page's own background, so
+       filling the row with --pf-bg-elevated (which is that same white in light
+       mode) makes the row silently change nothing. The inset surface is the one
+       grey that differs from the panel in either theme. */
+    background: var(--pf-bg-inset);
 }
 
 /* ── Social links ────────────────────────────────────────────────────── */
@@ -709,6 +791,15 @@
 .theme-portfolio .pf-header.is-scrolled {
     background-color: color-mix(in srgb, var(--pf-bg) 88%, transparent);
     border-bottom-color: var(--pf-border);
+    /* The shadow is the header's only separator once the bar turns translucent,
+       so it has to be strong enough to read on a white page but not so strong
+       that it looks like a second bar. A 0.5-alpha smudge is invisible against a
+       dark page and turns to grey dirt on a light one, hence one value per
+       theme rather than one compromise for both. */
+    box-shadow: 0 1px 20px -14px rgba(15, 23, 42, 0.28);
+}
+
+.theme-portfolio.pf-dark .pf-header.is-scrolled {
     box-shadow: 0 1px 24px -12px rgba(0, 0, 0, 0.5);
 }
 

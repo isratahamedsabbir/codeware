@@ -88,9 +88,6 @@
                                 <div class="min-w-0 flex-1">
                                     <p class="line-clamp-2 text-sm font-semibold text-sf-heading">
                                         {{ $item->item_name }}
-                                        @unless ($item->product_id)
-                                            <span class="ml-1 rounded-full bg-zinc-100 px-2 py-0.5 align-middle text-[10px] font-semibold uppercase tracking-wide text-zinc-500">{{ __('Service') }}</span>
-                                        @endunless
                                     </p>
                                     @if (! empty($item->variations))
                                         <p class="mt-1 inline-flex rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600">{{ \App\Support\Cart::optionsLabel($item->variations) }}</p>

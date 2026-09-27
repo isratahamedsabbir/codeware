@@ -423,8 +423,7 @@ it('places an order with a variant line snapshotted with options and combo price
     expect($order->items)->toHaveCount(1);
     $item = $order->items->first();
 
-    expect($item->type)->toBe('product')
-        ->and($item->product_id)->toBe($product->id)
+    expect($item->product_id)->toBe($product->id)
         ->and(collect($item->variations)->sortKeys()->all())->toBe(['Color' => 'Red', 'Size' => 'M'])
         ->and((float) $item->unit_price)->toBe(22.0)
         ->and((float) $item->line_total)->toBe(36.0)

@@ -13,6 +13,7 @@ use App\Models\Transaction;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 
@@ -100,23 +101,19 @@ it('searches orders by order number or customer', function () {
         ->assertDontSee('Someone Else');
 });
 
-it('labels an order as Product, Service, or Mixed based on its line items', function () {
-    $productOrder = Order::factory()->has(OrderItem::factory(), 'items')->create(['customer_name' => 'Product Buyer']);
-    $serviceOrder = Order::factory()->has(OrderItem::factory()->forService(), 'items')->create(['customer_name' => 'Service Buyer']);
-    $mixedOrder = Order::factory()
-        ->has(OrderItem::factory(), 'items')
-        ->has(OrderItem::factory()->forService(), 'items')
-        ->create(['customer_name' => 'Mixed Buyer']);
+it('has no type column, because an order is always products', function () {
+    Order::factory()->has(OrderItem::factory(), 'items')->create(['customer_name' => 'Product Buyer']);
 
-    $component = Livewire::test(OrdersIndex::class);
+    Livewire::test(OrdersIndex::class)
+        ->assertSee('Product Buyer')
+        ->assertDontSee('Mixed')
+        ->assertDontSee('Service');
 
-    $component->assertSeeInOrder(['Product Buyer', 'Product'])
-        ->assertSeeInOrder(['Service Buyer', 'Service'])
-        ->assertSeeInOrder(['Mixed Buyer', 'Mixed']);
-
-    expect($productOrder->items->sole()->type)->toBe('product')
-        ->and($serviceOrder->items->sole()->type)->toBe('service')
-        ->and($mixedOrder->items()->pluck('type')->sort()->values()->all())->toBe(['product', 'service']);
+    // A service request is a booking, not an order — so nothing on the orders
+    // table records a service, and no order line carries a type discriminator.
+    expect(Schema::hasColumn('orders', 'type'))->toBeFalse()
+        ->and(Schema::hasColumn('order_items', 'type'))->toBeFalse()
+        ->and(Schema::hasColumn('order_items', 'service_id'))->toBeFalse();
 });
 
 it('shows order details with items and transactions', function () {

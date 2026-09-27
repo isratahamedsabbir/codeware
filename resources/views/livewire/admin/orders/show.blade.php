@@ -9,7 +9,7 @@
             Print Address
         </flux:button>
 
-        @if ($order->items->contains(fn ($item) => $item->type === 'product' && $item->product?->hasWarranty()))
+        @if ($order->items->contains(fn ($item) => $item->product?->hasWarranty()))
             <flux:button variant="outline" size="sm" icon="shield-check" href="{{ route('admin.orders.warranty', $order) }}" target="_blank">
                 Warranty Card
             </flux:button>
@@ -70,14 +70,9 @@
                                     @if ($item->sku)
                                         <span class="block text-xs font-mono text-zinc-400">{{ $item->sku }}</span>
                                     @endif
-                                    @if ($item->type === 'service')
-                                        <span class="text-xs text-zinc-400">(service)</span>
-                                    @endif
-                                    @if ($item->type === 'product' && ! $item->product)
+                                    @unless ($item->product)
                                         <span class="text-xs text-zinc-400">(product removed)</span>
-                                    @elseif ($item->type === 'service' && ! $item->service)
-                                        <span class="text-xs text-zinc-400">(service removed)</span>
-                                    @endif
+                                    @endunless
                                 </td>
                                 <td class="px-6 py-3 text-sm text-zinc-600 text-right">{{ number_format((float) $item->unit_price, 2) }}</td>
                                 <td class="px-6 py-3 text-sm text-zinc-600 text-right">{{ $item->quantity }}</td>

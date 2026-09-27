@@ -85,6 +85,11 @@ class MenuItem extends Model
         'admin.product-brands' => 'brands',
         'admin.product-vendors' => 'products',
         'admin.services' => 'services',
+        // A booking only exists because of a service, and its route sits behind the
+        // same feature:services middleware - so it has to be gated here too. Without
+        // this line the Bookings link survives the toggle, which keeps the Services
+        // group non-empty (an empty group is dropped) and advertises a page that 404s.
+        'admin.bookings' => 'services',
         'admin.advertisements' => 'advertisements',
         'admin.pages' => 'pages',
         'admin.cms' => 'cms',

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Service;
 use App\Models\Setting;
 use Illuminate\Database\Seeder;
 
@@ -24,6 +25,7 @@ class PortfolioContentSeeder extends Seeder
     public function run(): void
     {
         $this->seedProfile();
+        $this->seedServices();
         $this->seedProjects();
         $this->seedExperiences();
         $this->seedSkills();
@@ -65,13 +67,20 @@ class PortfolioContentSeeder extends Seeder
         $this->seedScalar('theme_portfolio_location', 'Dhaka, Bangladesh');
         $this->seedScalar('theme_portfolio_availability', 'Available for new projects');
 
-        // Ships with the repository, so the hero has a real portrait to load and
-        // the monogram fallback does not mask a broken path. Point this at an
-        // uploaded photo (Admin → Theme Settings → Profile) before going live.
-        $this->seedScalar('theme_portfolio_photo', '/default/profile.jpg');
+        // Deliberately blank. The obvious thing to seed here is a stock portrait
+        // borrowed from another theme, and that is exactly the problem: the hero
+        // then shows a stranger's face at full size to whoever opens the page.
+        // Blank renders the theme's initials monogram instead, which reads as a
+        // deliberate choice rather than a missing file. Upload a real portrait in
+        // Admin → Theme Settings → Profile and it takes over.
+        $this->seedScalar('theme_portfolio_photo', '');
 
-        // See the class docblock: a dead link until a real CV is uploaded.
-        $this->seedScalar('theme_portfolio_resume_url', '/resume.pdf');
+        // Also deliberately blank, for a sharper version of the same reason: a
+        // CV link that 404s is worse than no CV link, because the one thing it
+        // costs is the recruiter's first impression. This button is the single
+        // highest-value thing on the page to fill in — set the URL once the PDF is
+        // uploaded and the button appears by itself. See the class docblock.
+        $this->seedScalar('theme_portfolio_resume_url', '');
         $this->seedScalar('theme_portfolio_resume_label', 'Download CV');
 
         $this->seedSetting('theme_portfolio_stats', [
@@ -80,25 +89,12 @@ class PortfolioContentSeeder extends Seeder
             ['value' => '3', 'label' => 'CMS & store migrations'],
         ]);
 
-        // Three cards is what fills a desktop row exactly; the theme's settings
-        // screen caps this at nine for anyone who wants more.
-        $this->seedSetting('theme_portfolio_services', [
-            [
-                'title' => 'Laravel Application Development',
-                'icon' => '⚙️',
-                'description' => 'Admin panels, REST APIs and queued jobs — built to survive being extended by the next developer.',
-            ],
-            [
-                'title' => 'Storefronts & Interfaces',
-                'icon' => '🖥️',
-                'description' => 'Livewire for server-driven screens, or a React storefront talking to the same Laravel API.',
-            ],
-            [
-                'title' => 'WordPress & WooCommerce',
-                'icon' => '📝',
-                'description' => 'Custom themes, plugin work, and store builds or migrations that keep the data they already have.',
-            ],
-        ]);
+        // Services are not seeded here any more. They used to be a
+        // theme_portfolio_services repeater, but a service is something a visitor
+        // can book, so it has to be a real Service row a booking can point a
+        // foreign key at — and that is edited under Admin → Services. See
+        // seedServices() below for the rows that make a fresh install look
+        // finished without a second place to maintain them.
 
         $this->seedSetting('theme_portfolio_education', [
             [
@@ -177,43 +173,114 @@ class PortfolioContentSeeder extends Seeder
         return is_array($decoded) ? $decoded !== [] : true;
     }
 
+    /**
+     * The "What I do" services, as real Service rows.
+     *
+     * These were a theme_portfolio_services repeater until the storefront gained
+     * booking. A bookable thing has to be a row a booking can point a foreign key
+     * at, which a JSON list in the settings table cannot be, so the list moved to
+     * the Service model and its own admin CRUD screen (Admin → Services).
+     *
+     * Only written when the table is empty. Unlike the settings repeaters, a
+     * service is a real record with a slug, so "does one already exist" is a
+     * question the database can answer directly — and the answer has to be
+     * consulted, because re-running this seeder against a site whose owner has
+     * written their own services must not overwrite them with demo copy. That is
+     * the same promise the other seed methods here make, and it is why the guard
+     * is on the table rather than on any one key.
+     *
+     * price is left at 0 on all three, which the storefront reads as "no price
+     * shown" rather than printing a free service nobody offered. featured_image is
+     * left null for the same reason the project screenshots are: an image that is
+     * not a real picture of the real work is worse than no image.
+     */
+    private function seedServices(): void
+    {
+        if (Service::withTrashed()->exists()) {
+            return;
+        }
+
+        $services = [
+            [
+                'name' => 'Laravel Application Development',
+                'description' => 'Admin panels, REST APIs and queued jobs — built to survive being extended by the next developer.',
+            ],
+            [
+                'name' => 'Storefronts & Interfaces',
+                'description' => 'Livewire for server-driven screens, or a React storefront talking to the same Laravel API.',
+            ],
+            [
+                'name' => 'WordPress & WooCommerce',
+                'description' => 'Custom themes, plugin work, and store builds or migrations that keep the data they already have.',
+            ],
+        ];
+
+        foreach ($services as $index => $service) {
+            // Both locales, the way the translatable factories do it: the en value
+            // is the real one and bn is deliberately empty rather than machine
+            // translated, so the storefront falls back to en instead of showing
+            // copy nobody wrote.
+            Service::create([
+                'name' => ['en' => $service['name'], 'bn' => ''],
+                'description' => ['en' => $service['description'], 'bn' => ''],
+                'status' => 'active',
+                'sort_order' => $index,
+            ]);
+        }
+    }
+
     private function seedProjects(): void
     {
         // `tech` is one comma-separated field rather than a nested list: a
         // repeater row is flat (the admin hydrates every value to a scalar), and
         // App\Support\PortfolioProfile::splitList() splits it back into chips.
+        //
+        // `image`, `link` and `repo` are deliberately blank. A screenshot has to
+        // be a real screen of the real app and a link has to resolve, so seeding
+        // placeholders here would put a broken image or a dead URL on a page
+        // meant to be read by a hiring manager. Blank is honest: the card renders
+        // without the image and the card's links disappear entirely. Upload the
+        // shots and paste the URLs from Admin → Theme Settings.
         $this->seedSetting('theme_portfolio_projects', [
             [
-                'title' => 'SaaS Starter Platform',
-                'description' => 'Multi-tenant SaaS boilerplate with subscription billing, team management, and role-based access.',
-                'icon' => '🚀',
-                'tech' => 'Laravel, Livewire, Stripe, Redis',
-                'stats' => 'Open Source',
+                'title' => 'Order & Inventory Platform',
+                'description' => 'Stock control for a three-branch retailer, replacing a shared spreadsheet that was the single point of failure. Every sale decrements stock inside a transaction, and a low-stock threshold is what drives reordering — not a weekly report someone had to remember to run.',
+                'icon' => '📦',
+                'tech' => 'Laravel 11, Livewire 3, MySQL, Redis',
+                'stats' => 'In production',
                 'link' => '',
+                'repo' => '',
+                'image' => '',
             ],
             [
-                'title' => 'Hotel Booking System',
-                'description' => 'Multi-property booking platform with real-time availability, payments, and guest messaging.',
-                'icon' => '🏨',
-                'tech' => 'Laravel, MySQL, Stripe, Pusher',
-                'stats' => 'In Production',
+                'title' => 'Clinic Booking & Records',
+                'description' => 'Appointment scheduling, patient history and printable prescription PDFs for a two-doctor practice. The scheduling screen is built around the one question that actually matters — who is free in this half-hour — so double-booking is impossible rather than merely discouraged.',
+                'icon' => '🩺',
+                'tech' => 'Laravel, MySQL, dompdf, Alpine.js',
+                'stats' => 'In production',
                 'link' => '',
+                'repo' => '',
+                'image' => '',
             ],
             [
-                'title' => 'Storefront & Admin Split',
-                'description' => 'React storefront talking to a Laravel REST API, with a WordPress blog on the same domain.',
+                'title' => 'Headless Storefront on a Laravel API',
+                'description' => 'A Next.js catalog and cart in front of a Laravel REST API, with token auth and the order pipeline kept server-side. Moving the storefront off the theme was what let the same catalogue data serve the site, a POS and a marketplace feed without three copies of the truth.',
                 'icon' => '⚛️',
-                'tech' => 'React, Laravel, MySQL, WordPress',
-                'stats' => 'In Production',
+                'tech' => 'Next.js 15, Laravel, Sanctum, Tailwind',
+                'stats' => 'In production',
                 'link' => '',
+                'repo' => '',
+                'image' => '',
             ],
             [
-                'title' => 'Freelance Marketplace',
-                'description' => 'Service marketplace with subscription plans, escrow payments, and a dispute resolution center.',
-                'icon' => '💼',
-                'tech' => 'Laravel, Livewire, MySQL',
-                'stats' => 'Beta',
+                'title' => 'WooCommerce Store Rescue',
+                'description' => 'A slow, plugin-heavy store brought back to a usable load time by object caching, query cleanup and a rebuilt checkout — with the order history migrated across intact. The brief was a performance problem; the thing that actually unlocked the fix was tracing where the slow requests were coming from rather than guessing at plugins.',
+                'icon' => '🛒',
+                'tech' => 'WordPress, WooCommerce, Redis, Cloudflare',
+                'stats' => 'In production',
                 'link' => '',
+                'repo' => '',
+                'image' => '',
             ],
         ]);
     }
@@ -229,14 +296,20 @@ class PortfolioContentSeeder extends Seeder
             [
                 'role' => 'Full Stack Developer',
                 'company' => '',
-                'period' => '2024 - Present',
-                'description' => 'Building and maintaining web applications end to end, from database design through to deployment.',
+                'period' => '2023 — Present',
+                'description' => 'Taking Laravel applications from schema to deployment and maintaining them afterwards. Most of the week is spent on the unglamorous half of the job: reading a slow query, untangling a requirement that changed halfway through, and writing the migration that makes the next change boring.',
             ],
             [
                 'role' => 'Backend Developer',
                 'company' => '',
-                'period' => '2022 - 2024',
-                'description' => 'Designed RESTful APIs and tuned database queries for traffic that outgrew the first design.',
+                'period' => '2021 — 2023',
+                'description' => 'Built the REST APIs and admin panels other teams depended on. Learned to treat a database index and a clear error message as features, because both are what a user experiences when something goes wrong at 2am.',
+            ],
+            [
+                'role' => 'WordPress & WooCommerce Developer',
+                'company' => '',
+                'period' => '2020 — 2021',
+                'description' => 'Store builds, plugin work and migrations for small retailers — usually taking a site that had grown one plugin at a time and giving it a shape it could keep growing in.',
             ],
         ]);
     }
@@ -269,30 +342,34 @@ class PortfolioContentSeeder extends Seeder
      *
      * Seeded for the same reason as the education rows: it is the only way to see
      * the section and its repeater working before trusting it with a real quote.
-     * The names here are not clients, so the owner has to replace every row
-     * before this page is public — which the settings screen says out loud on
-     * the field itself.
+     *
+     * Every attribution here is a fill-in-the-blank slot, not a citation: the
+     * names and companies read as obviously unfinished on purpose. A seeded row
+     * saying "Sample Client, Founder, Example Ltd" is one an owner might leave
+     * in place by accident, and a page asserting praise from a person who never
+     * said it is the one mistake on a portfolio that actually costs you a job.
+     * Delete these rows in Admin → Theme Settings before this page goes anywhere.
      */
     private function seedTestimonials(): void
     {
         $this->seedSetting('theme_portfolio_testimonials', [
             [
-                'quote' => 'Took a half-finished Laravel app and turned it into something we could actually sell. The handover doc alone was worth it.',
-                'name' => 'Sample Client',
-                'role' => 'Founder, Example Ltd',
+                'quote' => 'Replace this with a real quote: what the client said about the work, in their own words. One or two sentences is plenty.',
+                'name' => 'Client name',
+                'role' => 'Their role, Company',
                 'rating' => '5',
             ],
             [
-                'quote' => 'Clear communication, no surprises in the estimates, and the handover included everything our next developer needed.',
-                'name' => 'Sample Client',
-                'role' => 'Product Lead, Example Co',
+                'quote' => 'Replace this with a second real quote. The most convincing ones name a specific problem and what changed after you fixed it.',
+                'name' => 'Client name',
+                'role' => 'Their role, Company',
                 'rating' => '5',
             ],
             [
-                'quote' => 'Rebuilt our store without losing a single order. Went live on a Friday and rolled back twice by Monday, unprompted.',
-                'name' => 'Sample Client',
-                'role' => 'Owner, Example Store',
-                'rating' => '4',
+                'quote' => 'Replace this with a third real quote, or delete this row entirely — three is a number, one honest one is better than three thin ones.',
+                'name' => 'Client name',
+                'role' => 'Their role, Company',
+                'rating' => '',
             ],
         ]);
     }

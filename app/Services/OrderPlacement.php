@@ -66,9 +66,7 @@ class OrderPlacement
             $discountPrice = $isVariant ? $product->variationDiscount($attributes) : ($product->hasDiscount() ? (float) $product->discount_price : null);
 
             return [
-                'type' => 'product',
                 'product_id' => $product->id,
-                'service_id' => null,
                 'item_name' => $product->getTranslation('name', 'en', false),
                 // The combination's own sku when the product uses options,
                 // else the base product sku — either way the receipt records

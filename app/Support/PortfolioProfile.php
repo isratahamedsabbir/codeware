@@ -103,22 +103,6 @@ class PortfolioProfile
     }
 
     /**
-     * "What I do" — the service cards under the hero.
-     *
-     * @return Collection<int, array{title: string, description: string, icon: string}>
-     */
-    public static function services(): Collection
-    {
-        return static::rows('theme_portfolio_services', 'title')
-            ->map(fn (array $row) => [
-                'title' => $row['title'],
-                'description' => $row['description'] ?? '',
-                'icon' => $row['icon'] ?? '',
-            ])
-            ->values();
-    }
-
-    /**
      * Education, as {degree, school, period}.
      *
      * @return Collection<int, array{degree: string, school: string, period: string}>
@@ -151,14 +135,20 @@ class PortfolioProfile
     }
 
     /**
-     * The project rail, as {title, description, icon, tech, stats, link}.
+     * The project rail, as {title, description, icon, tech, stats, link, repo,
+     * image}.
      *
      * `tech` is the one list inside a list. A repeater row is flat — the admin
      * screen hydrates every value to a scalar string — so the owner types the
      * stack as one comma-separated line and it is split back into chips here,
      * rather than the field being a nested repeater the form cannot render.
      *
-     * @return Collection<int, array{title: string, description: string, icon: string, tech: array<int, string>, stats: string, link: string}>
+     * `image` is a screenshot the owner uploads; blank means the card shows no
+     * image at all rather than a placeholder box, because a card with an empty
+     * frame in it looks worse than a card without one. Same reasoning as an
+     * empty section staying hidden.
+     *
+     * @return Collection<int, array{title: string, description: string, icon: string, tech: array<int, string>, stats: string, link: string, repo: string, image: string}>
      */
     public static function projects(): Collection
     {
@@ -170,6 +160,8 @@ class PortfolioProfile
                 'tech' => static::splitList($row['tech'] ?? ''),
                 'stats' => $row['stats'] ?? '',
                 'link' => $row['link'] ?? '',
+                'repo' => $row['repo'] ?? '',
+                'image' => $row['image'] ?? '',
             ])
             ->values();
     }
