@@ -181,6 +181,16 @@ Route::middleware(['auth', 'admin', 'activity-log'])->group(function () {
         Route::get('/product-vendors/{id}/edit', App\Livewire\Admin\ProductVendors\Form::class)->name('product-vendors.edit');
     });
 
+    // Types — the product/post split that Categories, Tags and Brands each pick
+    // one of. Listed first in the Accessories group because the other three are
+    // meaningless without it, and behind its own toggle so a deployment that
+    // has no taxonomy at all can drop the vocabulary along with it.
+    Route::middleware('feature:types')->group(function () {
+        Route::get('/types', App\Livewire\Admin\Types\Index::class)->name('types');
+        Route::get('/types/create', App\Livewire\Admin\Types\Form::class)->name('types.create');
+        Route::get('/types/{id}/edit', App\Livewire\Admin\Types\Form::class)->name('types.edit');
+    });
+
     // Brands — its own feature toggle, separate from Products; also its own
     // top-level sidebar item rather than nested under Products (see AdminMenuSeeder).
     Route::middleware('feature:brands')->group(function () {

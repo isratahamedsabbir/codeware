@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Categories;
 
 use App\Concerns\HasBulkSelection;
 use App\Models\Category;
+use App\Models\Type;
 use App\Support\AdminActivity;
 use App\Support\PageCascade;
 use Illuminate\Support\Str;
@@ -17,21 +18,26 @@ class Index extends Component
     public string $search = '';
 
     /**
-     * Which pool is shown — Product or Post categories. Defaults to Product
-     * (the more commonly managed one). Deliberately not "both at once": the
-     * two pools have unrelated parent_id trees, so mixing them in one
-     * flat/indented list would misrepresent the hierarchy. #[Url] so the
-     * Form's "back to list" redirect (?type=...) lands back on the same pool
-     * it was creating/editing in.
+     * Which pool is shown — the product one or the post one. Deliberately not
+     * "both at once": the two pools have unrelated parent_id trees, so mixing
+     * them in one flat/indented list would misrepresent the hierarchy. The
+     * query-string key is `type` (rather than Livewire's default `typeFilter`)
+     * so the Form's "back to list" redirect lands on the same pool it was
+     * creating/editing in.
      */
-    #[Url]
-    public string $typeFilter = Category::TYPE_PRODUCT;
+    #[Url(as: 'type')]
+    public ?int $typeFilter = null;
 
     public string $statusFilter = '';
 
     public ?int $deletingId = null;
 
     public ?int $viewingId = null;
+
+    public function mount(): void
+    {
+        $this->typeFilter ??= Type::idFor(Type::PRODUCT) ?? Type::idFor(Type::POST);
+    }
 
     public function updatedTypeFilter(): void
     {
@@ -52,7 +58,7 @@ class Index extends Component
     public function reorder(array $order): void
     {
         foreach ($order as $sortOrder => $categoryId) {
-            Category::where('id', $categoryId)->where('type', $this->typeFilter)->update(['sort_order' => $sortOrder]);
+            Category::where('id', $categoryId)->where('type_id', $this->typeFilter)->update(['sort_order' => $sortOrder]);
         }
     }
 
@@ -125,9 +131,9 @@ class Index extends Component
     public function render()
     {
         $all = Category::query()
-            ->where('type', $this->typeFilter)
+            ->where('type_id', $this->typeFilter)
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
-            ->with(['page', 'creator'])
+            ->with(['page', 'type', 'creator'])
             ->withCount(['products', 'posts'])
             ->orderBy('sort_order')
             ->orderBy('id')
@@ -144,6 +150,8 @@ class Index extends Component
 
         return view('livewire.admin.categories.index', [
             'categories' => $tree,
+            'types' => Type::selectOptions(),
+            'currentType' => $this->typeFilter ? Type::find($this->typeFilter) : null,
         ])->layout('layouts.admin', ['title' => 'Categories', 'hidePageHeading' => true]);
     }
 }

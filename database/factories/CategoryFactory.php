@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Category;
+use App\Models\Type;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CategoryFactory extends Factory
@@ -12,7 +12,7 @@ class CategoryFactory extends Factory
         $name = fake()->unique()->words(2, true);
 
         return [
-            'type' => Category::TYPE_PRODUCT,
+            'type_id' => Type::idFor(Type::PRODUCT),
             'parent_id' => null,
             'name' => ['en' => ucfirst($name), 'bn' => ucfirst($name)],
             'description' => null,
@@ -34,11 +34,11 @@ class CategoryFactory extends Factory
 
     public function product(): static
     {
-        return $this->state(['type' => Category::TYPE_PRODUCT]);
+        return $this->state(['type_id' => Type::idFor(Type::PRODUCT)]);
     }
 
     public function post(): static
     {
-        return $this->state(['type' => Category::TYPE_POST]);
+        return $this->state(['type_id' => Type::idFor(Type::POST)]);
     }
 }

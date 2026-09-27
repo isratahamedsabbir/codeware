@@ -8,12 +8,13 @@ use App\Models\Page;
 use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\Tag;
+use App\Models\Type;
 use App\Support\AdminActivity;
 use App\Support\Locale;
 use App\Support\PuckEditor;
 use App\Support\Slug;
+use App\Support\Taxonomy;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -44,7 +45,7 @@ class Form extends Component
      */
     public ?bool $slugAvailable = null;
 
-    #[Validate('nullable|integer|exists:categories,id,type,post_category')]
+    #[Validate('nullable|integer')]
     public ?int $category_id = null;
 
     #[Validate('nullable|array')]
@@ -128,11 +129,11 @@ class Form extends Component
     #[Computed]
     public function tags()
     {
-        return Tag::where(fn ($q) => $q->whereIn('type', [Tag::TYPE_PRODUCT, Tag::TYPE_POST])->orWhereNull('type'))->orderBy('id')->get();
+        return Tag::whereIn('type_id', Type::subquery(Type::POST))->orderBy('id')->get();
     }
 
     /**
-     * Creates a tag right from the form (type = post) and selects it — the
+     * Creates a tag right from the form (in the post pool) and selects it — the
      * admin doesn't need to leave the post to build up its tag list.
      */
     public function createTag(): void
@@ -147,14 +148,17 @@ class Form extends Component
 
         $this->newTagName = '';
 
-        // Reuse by name across the whole tag pool: name is unique per locale
-        // (see Tags\Form), so a post tag can't share a name with a product tag.
-        $tag = Tag::where('name->'.Locale::primary(), $name)->first();
+        // Reuse by name within the post pool only. Name is unique per locale per
+        // kind, but the pool is part of what a tag is, so a post tag can't
+        // adopt a product tag that happens to share the string.
+        $tag = Tag::where('name->'.Locale::primary(), $name)
+            ->whereIn('type_id', Type::subquery(Type::POST))
+            ->first();
 
         if (! $tag) {
             $tag = Tag::create([
                 'name' => [Locale::primary() => $name],
-                'type' => Tag::TYPE_POST,
+                'type_id' => Type::idFor(Type::POST),
                 'status' => 'active',
             ]);
             $this->dispatch('notify', message: 'Tag created successfully');
@@ -191,7 +195,8 @@ class Form extends Component
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
         ];
-        $rules['tag_ids.*'] = [Rule::exists('categories', 'id')->where(fn ($q) => $q->whereIn('type', Tag::TYPES)->orWhereNull('type'))];
+        $rules['category_id'] = Taxonomy::nullableRule(PostCategory::class);
+        $rules['tag_ids.*'] = Taxonomy::eachRule(Tag::class, Type::POST);
 
         $this->validate($rules);
 
@@ -221,7 +226,8 @@ class Form extends Component
             'required', 'string', 'max:255',
             ...Slug::uniqueRules($this->pageId),
         ];
-        $rules['tag_ids.*'] = [Rule::exists('categories', 'id')->where(fn ($q) => $q->whereIn('type', Tag::TYPES)->orWhereNull('type'))];
+        $rules['category_id'] = Taxonomy::nullableRule(PostCategory::class);
+        $rules['tag_ids.*'] = Taxonomy::eachRule(Tag::class, Type::POST);
 
         $this->validate($rules);
 

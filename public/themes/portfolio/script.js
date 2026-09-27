@@ -145,8 +145,16 @@
         var observer = new IntersectionObserver(function (entries) {
             entries.forEach(function (entry) {
                 if (!entry.isIntersecting) return;
-                entry.target.classList.add('is-visible');
-                observer.unobserve(entry.target);
+                var el = entry.target;
+                el.classList.add('is-visible');
+                observer.unobserve(el);
+
+                // Hand the element back to its own hover transitions once the
+                // fade has finished. A timer rather than transitionend: that
+                // event fires once per property and from children too, and is
+                // never fired at all for an element that is display:none.
+                var delay = parseFloat(getComputedStyle(el).transitionDelay) || 0;
+                setTimeout(function () { el.classList.add('is-revealed'); }, 950 + delay * 1000);
             });
         }, {
             // Fire a little before the element's top edge reaches the bottom of

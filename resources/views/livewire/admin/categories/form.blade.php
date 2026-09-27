@@ -2,7 +2,7 @@
 
     @push('page-header-actions')
         <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left"
-            href="{{ route('admin.categories', ['type' => $type]) }}" wire:navigate>
+            href="{{ route('admin.categories', ['type' => $typeId]) }}" wire:navigate>
             Back
         </flux:button>
     @endpush
@@ -25,7 +25,7 @@
                             @if ($language->code === $this->primaryLocale)<flux:error name="name.{{ $language->code }}" />@endif
                         </flux:field>
 
-                        @if ($type === \App\Models\Category::TYPE_POST)
+                        @if (! $this->isProductPool)
                             <flux:field class="mt-4">
                                 <flux:label :badge="$language->code">Description</flux:label>
                                 <flux:textarea wire:model="description.{{ $language->code }}" rows="3"
@@ -49,16 +49,17 @@
                     </flux:field>
                 </x-admin-locale-tabs>
 
-            {{-- Type — locked to whichever pool this category opened from; only
-                 meaningful to change while creating (see Form::updatedType()). --}}
+            {{-- Type — preselected to whichever pool this category opened from;
+                 only meaningful to change while creating (see Form::updatedTypeId()). --}}
             <div class="mt-4" wire:key="category-type-panel">
                 <flux:field>
-                    <flux:label>Type<x-field-hint text="Product categories show on the Product form, post categories on the Post form" /></flux:label>
-                    <flux:select wire:model="type">
-                        <flux:select.option value="{{ \App\Models\Category::TYPE_PRODUCT }}">Product</flux:select.option>
-                        <flux:select.option value="{{ \App\Models\Category::TYPE_POST }}">Post</flux:select.option>
+                    <flux:label>Type<span class="text-red-500 ml-0.5">*</span><x-field-hint text="Product categories show on the Product form, post categories on the Post form. Manage the list of types under Accessories → Types" /></flux:label>
+                    <flux:select wire:model="typeId" placeholder="Select a type">
+                        @foreach ($this->typeOptions as $typeOption)
+                            <flux:select.option value="{{ $typeOption->id }}">{{ $typeOption->getTranslation('name', $this->primaryLocale, false) ?: $typeOption->getTranslation('name', 'en', false) }}</flux:select.option>
+                        @endforeach
                     </flux:select>
-                    <flux:error name="type" />
+                    <flux:error name="typeId" />
                 </flux:field>
             </div>
         </div>
@@ -71,7 +72,7 @@
         </div>
 
         {{-- ── SIDEBAR — product categories only ── --}}
-        @if ($type === \App\Models\Category::TYPE_PRODUCT)
+        @if ($this->isProductPool)
             <div class="w-[320px] shrink-0 space-y-4">
                 <x-admin-section-card icon="swatch" title="Category Settings" body-class="px-4 py-4 space-y-4"
                     description="Icon and parent category.">

@@ -59,9 +59,9 @@
             class="px-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 bg-white appearance-none pr-8 min-w-[140px] transition-all"
             style="background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 10px center">
             <option value="">All types</option>
-            <option value="post">Post</option>
-            <option value="product">Product</option>
-            <option value="shared">Both</option>
+            @foreach ($types as $type)
+                <option value="{{ $type->id }}">{{ $type->getTranslation('name', 'en', false) ?: $type->getTranslation('name', 'bn', false) }}</option>
+            @endforeach
         </select>
         {{-- Search --}}
         <div class="relative max-w-xs ml-auto">
@@ -134,12 +134,12 @@
 
                             {{-- Type --}}
                             <td class="px-4 py-2">
-                                @if ($tag->type === \App\Models\Tag::TYPE_POST)
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600 border border-indigo-200">Post</span>
-                                @elseif ($tag->type === \App\Models\Tag::TYPE_PRODUCT)
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-600 border border-amber-200">Product</span>
+                                @if ($tag->type)
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600 border border-indigo-200">
+                                        <x-truncate :text="$tag->type->getTranslation('name', 'en', false) ?: $tag->type->getTranslation('name', 'bn', false)" />
+                                    </span>
                                 @else
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500 border border-zinc-200">Both</span>
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500 border border-zinc-200">Unassigned</span>
                                 @endif
                             </td>
 

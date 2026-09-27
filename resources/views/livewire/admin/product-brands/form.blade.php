@@ -25,13 +25,13 @@
         </x-admin-locale-tabs>
 
         <flux:field>
-            <flux:label>Type<x-field-hint text="Product brands appear in the Product form's brand dropdown, post brands on the Post form, Shared shows on both" /></flux:label>
-            <flux:select wire:model="type">
-                <flux:select.option value="{{ \App\Models\ProductBrand::TYPE_PRODUCT }}">Product</flux:select.option>
-                <flux:select.option value="{{ \App\Models\ProductBrand::TYPE_POST }}">Post</flux:select.option>
-                <flux:select.option value="">Shared (both)</flux:select.option>
+            <flux:label>Type<span class="text-red-500 ml-0.5">*</span><x-field-hint text="Product brands appear in the Product form's brand dropdown, post brands on the Post form. Manage the list of types under Accessories → Types" /></flux:label>
+            <flux:select wire:model="typeId" placeholder="Select a type">
+                @foreach ($this->typeOptions as $type)
+                    <flux:select.option value="{{ $type->id }}">{{ $type->getTranslation('name', $this->primaryLocale, false) ?: $type->getTranslation('name', 'en', false) }}</flux:select.option>
+                @endforeach
             </flux:select>
-            <flux:error name="type" />
+            <flux:error name="typeId" />
         </flux:field>
 
         <x-media-picker model="logo" label="Brand Logo" size-hint="Square, 512 × 512" placeholder="Select brand logo from library" mimes="jpg,jpeg,png,webp,avif,svg" only-images dropzone />

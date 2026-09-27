@@ -37,7 +37,7 @@
          transform on a 2px bar, so it never triggers layout. --}}
     <div data-pf-scroll-progress class="pf-scroll-progress" aria-hidden="true"></div>
 
-    <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+    <div class="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-3.5">
         <a href="{{ url('/') }}" class="pf-heading flex items-center gap-2.5">
             @if ($siteIcon)
                 <img src="{{ $siteIcon }}" alt="{{ $siteName }}" class="h-7 w-auto">
@@ -46,17 +46,21 @@
         </a>
 
         @if ($portfolioMenu->isNotEmpty())
-            <nav class="hidden items-center gap-1 md:flex">
+            {{-- Shown/hidden by style.css (.pf-nav-desktop), not a Tailwind md:/lg:
+                 utility: this theme's unlayered stylesheet outranks Tailwind's
+                 layered utilities, which is how the hamburger used to leak onto
+                 desktop. --}}
+            <nav class="pf-nav-desktop" aria-label="Primary">
                 @foreach ($portfolioMenu as $item)
                     <a href="{{ $item['href'] }}" @if ($item['section']) data-pf-nav-link="{{ $item['section'] }}" @endif
-                        class="pf-nav-link pf-mono text-[11px] font-medium tracking-wider uppercase {{ $item['is_active'] ? 'is-active' : '' }}">
+                        class="pf-nav-link {{ $item['is_active'] ? 'is-active' : '' }}">
                         {{ $item['label'] }}
                     </a>
                 @endforeach
             </nav>
         @endif
 
-        <div class="flex items-center gap-2.5">
+        <div class="flex shrink-0 items-center gap-2">
             <div class="pf-lang-pill pf-mono text-[11px] font-semibold uppercase">
                 <a href="{{ request()->fullUrlWithQuery(['lang' => 'en']) }}" class="{{ app()->getLocale() === 'en' ? 'is-active' : '' }}">EN</a>
                 <a href="{{ request()->fullUrlWithQuery(['lang' => 'bn']) }}" class="{{ app()->getLocale() === 'bn' ? 'is-active' : '' }}">BN</a>
@@ -74,7 +78,7 @@
 
             @if ($portfolioMenu->isNotEmpty())
                 <button type="button" x-on:click="open = !open" x-bind:aria-expanded="open ? 'true' : 'false'"
-                    aria-controls="pf-mobile-nav" aria-label="Menu" class="pf-icon-button md:hidden">
+                    aria-controls="pf-mobile-nav" aria-label="Menu" class="pf-icon-button pf-menu-toggle">
                     <svg x-show="! open" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="3" y1="6" x2="21" y2="6" />
                         <line x1="3" y1="12" x2="21" y2="12" />
@@ -89,14 +93,15 @@
         </div>
     </div>
 
-    {{-- The same nav, stacked — the inline one above is md:flex only, and on a
+    {{-- The same nav, stacked — the inline one above is desktop-only, and on a
          single-page layout a phone needs it to reach any section but the first. --}}
     @if ($portfolioMenu->isNotEmpty())
         <nav id="pf-mobile-nav" x-show="open" x-cloak x-on:click="open = false"
-            class="pf-mobile-nav border-t border-(--pf-border) md:hidden">
+            x-transition.opacity.duration.150ms
+            class="pf-mobile-nav border-t border-(--pf-border)">
             @foreach ($portfolioMenu as $item)
                 <a href="{{ $item['href'] }}" @if ($item['section']) data-pf-nav-link="{{ $item['section'] }}" @endif
-                    class="pf-mobile-nav-link pf-mono {{ $item['is_active'] ? 'is-active' : '' }}">
+                    class="pf-mobile-nav-link {{ $item['is_active'] ? 'is-active' : '' }}">
                     {{ $item['label'] }}
                 </a>
             @endforeach

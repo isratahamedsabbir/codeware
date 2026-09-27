@@ -14,6 +14,7 @@ use App\Models\PostCategory;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\Tag;
+use App\Models\Type;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Livewire\Exceptions\PublicPropertyNotFoundException;
@@ -53,7 +54,7 @@ it('toggles a post category status and its paired page from the list', function 
     $category = PostCategory::factory()->create(['status' => 'inactive']);
     $page = Page::create(['user_id' => $this->admin->id, 'category_id' => $category->id, 'type' => 'post_category', 'title' => $category->name, 'status' => 'inactive']);
 
-    Livewire::test(CategoriesIndex::class)->set('typeFilter', 'post_category')->call('toggleStatus', $category->id);
+    Livewire::test(CategoriesIndex::class)->set('typeFilter', Type::idFor(Type::POST))->call('toggleStatus', $category->id);
 
     expect($category->fresh()->status)->toBe('active')
         ->and($page->fresh()->status)->toBe('active');

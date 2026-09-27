@@ -6,6 +6,7 @@ use App\Concerns\HasBulkSelection;
 use App\Concerns\HasPerPage;
 use App\Concerns\WithSearch;
 use App\Models\Tag;
+use App\Models\Type;
 use App\Support\AdminActivity;
 use Illuminate\Support\Str;
 use Livewire\Component;
@@ -17,6 +18,11 @@ class Index extends Component
 
     public string $statusFilter = '';
 
+    /**
+     * Empty means "every type" — the tag list is not split by pool the way the
+     * category list is, so the filter is a plain narrowing rather than the tab
+     * that picks what you're looking at.
+     */
     public string $typeFilter = '';
 
     public ?int $deletingId = null;
@@ -88,12 +94,13 @@ class Index extends Component
     public function render()
     {
         return view('livewire.admin.tags.index', [
+            'types' => Type::selectOptions(),
             'tags' => Tag::query()
+                ->with('type')
                 ->when($this->search, fn ($q) => $q->where('name->en', 'like', "%{$this->search}%")
                     ->orWhere('name->bn', 'like', "%{$this->search}%"))
                 ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
-                ->when($this->typeFilter === 'shared', fn ($q) => $q->where(fn ($q) => $q->whereNull('type')->orWhere('type', Tag::TYPE_LEGACY)))
-                ->when($this->typeFilter !== '' && $this->typeFilter !== 'shared', fn ($q) => $q->where('type', $this->typeFilter))
+                ->when($this->typeFilter !== '', fn ($q) => $q->where('type_id', $this->typeFilter))
                 ->withCount('posts')
                 ->orderBy('id')
                 ->paginate($this->perPage),

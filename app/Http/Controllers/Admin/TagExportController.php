@@ -20,6 +20,7 @@ class TagExportController extends Controller
         $ids = array_map('intval', (array) $request->query('ids', []));
 
         $tags = Tag::query()
+            ->with('type')
             ->whereIn('id', $ids)
             ->orderBy('id')
             ->get();
@@ -32,11 +33,12 @@ class TagExportController extends Controller
             // A UTF-8 BOM so Excel doesn't mangle non-Latin (e.g. Bengali) text.
             fwrite($handle, "\xEF\xBB\xBF");
 
-            fputcsv($handle, ['ID', 'Name (EN)', 'Name (BN)', 'Status', 'Created At']);
+            fputcsv($handle, ['ID', 'Type', 'Name (EN)', 'Name (BN)', 'Status', 'Created At']);
 
             foreach ($tags as $tag) {
                 fputcsv($handle, [
                     $tag->id,
+                    $tag->type?->getTranslation('name', 'en', false) ?: $tag->type?->getTranslation('name', 'bn', false),
                     $tag->getTranslation('name', 'en', false),
                     $tag->getTranslation('name', 'bn', false),
                     $tag->status,

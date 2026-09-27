@@ -7,6 +7,9 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Support\PortfolioProfile;
 use Database\Seeders\RolePermissionSeeder;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Livewire\Livewire;
 
 /**
@@ -284,4 +287,83 @@ it('removes a repeater row without disturbing its neighbours', function () {
 
     expect(json_decode(Setting::where('key', 'theme_portfolio_certifications')->value('value'), true))
         ->toBe([['title' => 'Keep me', 'period' => '2023', 'description' => 'Issuer A']]);
+});
+
+it('uploads the hero photo directly and deletes the one it replaces', function () {
+    Storage::fake('public');
+    $this->seed(RolePermissionSeeder::class);
+    $this->actingAs(User::factory()->admin()->create());
+
+    Livewire::test(ThemeSettings::class)
+        ->set('settings.site_theme', 'portfolio')
+        ->set('uploads.theme_portfolio_photo', UploadedFile::fake()->image('first.jpg'))
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $first = Setting::where('key', 'theme_portfolio_photo')->value('value');
+    $firstPath = Str::after($first, '/storage/');
+    Storage::disk('public')->assertExists($firstPath);
+
+    Livewire::test(ThemeSettings::class)
+        ->set('settings.site_theme', 'portfolio')
+        ->set('uploads.theme_portfolio_photo', UploadedFile::fake()->image('second.png'))
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $second = Setting::where('key', 'theme_portfolio_photo')->value('value');
+
+    expect($second)->not->toBe($first)->toContain('theme-uploads/theme-portfolio-photo/');
+    Storage::disk('public')->assertMissing($firstPath);
+    Storage::disk('public')->assertExists(Str::after($second, '/storage/'));
+});
+
+it('accepts only a pdf for the résumé and replaces the previous one', function () {
+    Storage::fake('public');
+    $this->seed(RolePermissionSeeder::class);
+    $this->actingAs(User::factory()->admin()->create());
+
+    Livewire::test(ThemeSettings::class)
+        ->set('settings.site_theme', 'portfolio')
+        ->set('uploads.theme_portfolio_resume_url', UploadedFile::fake()->image('cv.jpg'))
+        ->assertHasErrors(['uploads.theme_portfolio_resume_url']);
+
+    Livewire::test(ThemeSettings::class)
+        ->set('settings.site_theme', 'portfolio')
+        ->set('uploads.theme_portfolio_resume_url', UploadedFile::fake()->create('old-cv.pdf', 100, 'application/pdf'))
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $oldPath = Str::after(Setting::where('key', 'theme_portfolio_resume_url')->value('value'), '/storage/');
+
+    Livewire::test(ThemeSettings::class)
+        ->set('settings.site_theme', 'portfolio')
+        ->set('uploads.theme_portfolio_resume_url', UploadedFile::fake()->create('new-cv.pdf', 100, 'application/pdf'))
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $new = Setting::where('key', 'theme_portfolio_resume_url')->value('value');
+
+    expect($new)->toEndWith('.pdf')->toContain('new-cv');
+    Storage::disk('public')->assertMissing($oldPath);
+});
+
+it('deletes the uploaded file when the field is cleared and saved', function () {
+    Storage::fake('public');
+    $this->seed(RolePermissionSeeder::class);
+    $this->actingAs(User::factory()->admin()->create());
+
+    Livewire::test(ThemeSettings::class)
+        ->set('settings.site_theme', 'portfolio')
+        ->set('uploads.theme_portfolio_resume_url', UploadedFile::fake()->create('cv.pdf', 100, 'application/pdf'))
+        ->call('save');
+
+    $path = Str::after(Setting::where('key', 'theme_portfolio_resume_url')->value('value'), '/storage/');
+
+    Livewire::test(ThemeSettings::class)
+        ->set('settings.site_theme', 'portfolio')
+        ->call('clearThemeUpload', 'theme_portfolio_resume_url')
+        ->call('save');
+
+    expect(Setting::where('key', 'theme_portfolio_resume_url')->value('value'))->toBe('');
+    Storage::disk('public')->assertMissing($path);
 });

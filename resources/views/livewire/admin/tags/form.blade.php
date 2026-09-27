@@ -24,13 +24,13 @@
                 @endforeach
 
                 <flux:field>
-                    <flux:label>Type<x-field-hint text="Post tags show on the Post form, product tags on the Product form, Shared shows on both" /></flux:label>
-                    <flux:select wire:model="type">
-                        <flux:select.option value="post">Post</flux:select.option>
-                        <flux:select.option value="product">Product</flux:select.option>
-                        <flux:select.option value="">Shared (both)</flux:select.option>
+                    <flux:label>Type<span class="text-red-500 ml-0.5">*</span><x-field-hint text="Post tags show on the Post form, product tags on the Product form. Manage the list of types under Accessories → Types" /></flux:label>
+                    <flux:select wire:model="typeId" placeholder="Select a type">
+                        @foreach ($this->typeOptions as $type)
+                            <flux:select.option value="{{ $type->id }}">{{ $type->getTranslation('name', $this->primaryLocale, false) ?: $type->getTranslation('name', 'en', false) }}</flux:select.option>
+                        @endforeach
                     </flux:select>
-                    <flux:error name="type" />
+                    <flux:error name="typeId" />
                 </flux:field>
             </x-admin-locale-tabs>
 

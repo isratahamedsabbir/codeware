@@ -196,13 +196,20 @@
             @endif
         </section>
 
-        {{-- What I do — the section that tells a visitor what they can hire you
+        {{-- Services — the section that tells a visitor what they can hire you
              for before they read a single project. Rendered unconditionally
              because the nav links to #services: a nav item whose target is
              absent is a dead link. Projects, Experience and Technology take the
              same approach. --}}
         <section id="services" class="border-t border-(--pf-border) px-6 py-24">
-            <div class="mx-auto max-w-6xl">
+            {{-- `active` is the id of the service whose request popup is open, or
+                 null. One piece of state for the whole section rather than one
+                 per card, so opening a second popup closes the first, and the
+                 page scroll lock has a single owner. --}}
+            <div class="mx-auto max-w-6xl"
+                x-data="{ active: null }"
+                x-effect="document.documentElement.style.overflow = active !== null ? 'hidden' : ''"
+                x-on:keydown.escape.window="active = null">
                 {{-- The <section> above stays even when the list is empty, because
                      the nav links to #services and a nav item with no target is a
                      dead link. The heading and the cards do not: a public page
@@ -211,24 +218,24 @@
                      and a portfolio that is merely unfinished. --}}
                 @if ($services->isNotEmpty())
                     <div data-pf-reveal class="max-w-2xl">
-                        <span class="pf-eyebrow pf-mono">01 &mdash; What I do</span>
+                        <span class="pf-eyebrow pf-mono">01 &mdash; Services</span>
                         <h2 class="pf-heading mt-5 text-3xl font-bold sm:text-4xl">Services I can help with</h2>
                         <p class="mt-4 text-(--pf-text-muted)">The kinds of problems I take on, and what you get back.</p>
                     </div>
 
-                    {{-- One card per active Service row, each with its own booking
-                         form folded away behind a toggle. The form is a Livewire
-                         child rather than one shared form above the grid, because
-                         the form has to know which service it is booking — an id
-                         set from the card, re-checked against the active services
-                         on submit. Alpine only owns the open/closed state; the
-                         submission and every validation message are Livewire's,
-                         so nothing about a booking depends on client state. --}}
+                    {{-- One card per active Service row. "Request This" opens a popup
+                         holding that service's booking form. The form is a
+                         Livewire child per service rather than one shared form,
+                         because it has to know which service it is booking — an
+                         id set from the card, re-checked against the active
+                         services on submit. Alpine only owns which popup is open;
+                         the submission and every validation message are
+                         Livewire's, so nothing about a booking depends on client
+                         state. --}}
                     <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach ($services as $index => $service)
-                            <div data-pf-reveal class="pf-card pf-service pf-card-hover relative rounded-2xl p-6"
-                                style="--pf-reveal-delay: {{ $index * 70 }}ms"
-                                x-data="{ open: false }">
+                            <div data-pf-reveal class="pf-card pf-service pf-card-hover relative flex flex-col rounded-2xl p-6"
+                                style="--pf-reveal-delay: {{ $index * 70 }}ms">
                                 <span class="pf-mono pf-service-index" aria-hidden="true">{{ str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) }}</span>
 
                                 {{-- A featured image is optional on the Service record,
@@ -257,28 +264,65 @@
                                     </p>
                                 @endif
 
-                                <button type="button" class="pf-btn pf-btn-primary mt-5 w-full"
-                                    x-on:click="open = ! open"
-                                    x-bind:aria-expanded="open ? 'true' : 'false'">
-                                    <span x-show="! open">{{ __('Request This') }}</span>
-                                    <span x-show="open" x-cloak>{{ __('Close') }}</span>
-                                </button>
-
-                                {{-- x-cloak so the folded form does not flash open
-                                     before Alpine boots, the same reason the settings
-                                     screens cloak their panel columns. --}}
-                                <div class="mt-5 border-t border-(--pf-border) pt-5" x-show="open" x-cloak>
-                                    <livewire:frontend.book-service :service-id="$service->id" :key="'book-service-'.$service->id" />
+                                {{-- mt-auto pins the button to the card's foot, so a
+                                     row of cards with descriptions of different
+                                     lengths still lines its buttons up. --}}
+                                <div class="mt-auto pt-6">
+                                    <button type="button" class="pf-btn pf-btn-primary w-full"
+                                        x-on:click="active = {{ $service->id }}"
+                                        aria-haspopup="dialog">
+                                        {{ __('Request This') }}
+                                        <svg class="pf-btn-arrow h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                            <line x1="5" y1="12" x2="19" y2="12" />
+                                            <polyline points="12 5 19 12 12 19" />
+                                        </svg>
+                                    </button>
                                 </div>
                             </div>
                         @endforeach
                     </div>
+
+                    {{-- The popups sit outside the grid rather than inside each
+                         card: the cards carry reveal/hover transforms, and a
+                         transformed ancestor turns position: fixed into
+                         "fixed to the card", which would trap the overlay inside
+                         it. x-cloak so none of them flash open before Alpine
+                         boots. --}}
+                    @foreach ($services as $service)
+                        <div class="pf-modal" x-show="active === {{ $service->id }}" x-cloak
+                            x-transition.opacity.duration.200ms
+                            role="dialog" aria-modal="true" aria-labelledby="pf-modal-title-{{ $service->id }}">
+                            <div class="pf-modal-backdrop" x-on:click="active = null" aria-hidden="true"></div>
+
+                            <div class="pf-modal-panel pf-contact-form"
+                                x-show="active === {{ $service->id }}"
+                                x-transition:enter="pf-modal-enter" x-transition:enter-start="pf-modal-from" x-transition:enter-end="pf-modal-to"
+                                x-trap="active === {{ $service->id }}">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div>
+                                        <span class="pf-eyebrow pf-mono">{{ __('Service request') }}</span>
+                                        <h3 id="pf-modal-title-{{ $service->id }}" class="pf-heading mt-3 text-xl font-semibold">{{ $service->name }}</h3>
+                                    </div>
+                                    <button type="button" class="pf-modal-close" x-on:click="active = null" aria-label="{{ __('Close') }}">
+                                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                            <line x1="18" y1="6" x2="6" y2="18" />
+                                            <line x1="6" y1="6" x2="18" y2="18" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <div class="mt-5">
+                                    <livewire:frontend.book-service :service-id="$service->id" :key="'book-service-'.$service->id" />
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
                 @endif
             </div>
         </section>
 
         {{-- Projects --}}
-        <section id="projects" class="border-t border-(--pf-border) bg-(--pf-bg-elevated)/40 px-6 py-24">
+        <section id="projects" class="border-t border-(--pf-border) pf-section-alt px-6 py-24">
             <div class="mx-auto max-w-6xl">
                 @if ($projects->isNotEmpty())
                     <div data-pf-reveal class="max-w-2xl">
@@ -395,6 +439,7 @@
                             <div data-pf-reveal>
                         <h3 class="pf-mono mb-7 text-[11px] font-semibold tracking-wider text-(--pf-text-muted) uppercase">Work experience</h3>
 
+                        <div class="pf-timeline">
                         @foreach ($experience as $index => $item)
                             <div class="pf-timeline-item {{ $index < $experience->count() - 1 ? 'pb-9' : '' }}">
                                 <span class="pf-timeline-dot" aria-hidden="true"></span>
@@ -418,6 +463,7 @@
                                 </div>
                             </div>
                         @endforeach
+                        </div>
                             </div>
                         @endif
 
@@ -475,7 +521,7 @@
         </section>
 
         {{-- Technology --}}
-        <section id="technology" class="border-t border-(--pf-border) bg-(--pf-bg-elevated)/40 px-6 py-24">
+        <section id="technology" class="border-t border-(--pf-border) pf-section-alt px-6 py-24">
             <div class="mx-auto max-w-6xl">
                 @if ($skillGroups->isNotEmpty())
                     <div data-pf-reveal class="max-w-2xl">
@@ -493,8 +539,8 @@
                             </div>
 
                             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                @foreach ($skills as $skill)
-                                    <div class="pf-skill">
+                                @foreach ($skills as $skillIndex => $skill)
+                                    <div data-pf-reveal class="pf-skill" style="--pf-reveal-delay: {{ ($skillIndex % 3) * 60 }}ms">
                                         <span class="pf-skill-mark" aria-hidden="true">{{ $skill['icon'] ?: '◆' }}</span>
                                         <span class="min-w-0">
                                             <span class="pf-heading block text-sm font-semibold">{{ $skill['name'] }}</span>
@@ -528,7 +574,7 @@
                     <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach ($testimonials as $index => $testimonial)
                             <figure data-pf-reveal
-                                class="pf-card pf-card-hover flex flex-col rounded-2xl p-6"
+                                class="pf-card pf-card-hover pf-testimonial flex flex-col rounded-2xl p-6"
                                 style="--pf-reveal-delay: {{ ($index % 3) * 90 }}ms">
                                 {{-- Stars only when a rating was actually given: an
                                      empty rating row would read as a broken widget,
@@ -704,7 +750,7 @@
              services section avoids, and a portfolio owner who has not written
              anything should not be shown an empty shelf for it. --}}
         @if ($latestPosts->isNotEmpty())
-            <section id="writing" class="border-t border-(--pf-border) bg-(--pf-bg-elevated)/40 px-6 py-24">
+            <section id="writing" class="border-t border-(--pf-border) pf-section-alt px-6 py-24">
                 <div class="mx-auto max-w-6xl">
                     <div data-pf-reveal class="max-w-2xl">
                         <span class="pf-eyebrow pf-mono">07 &mdash; Writing</span>

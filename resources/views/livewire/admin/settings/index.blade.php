@@ -230,11 +230,6 @@ $imageMeta = match ($setting->key) {
         {{-- Custom Code tab --}}
         <div x-show="tab === 'custom-code'">
             <div class="max-w-[1600px] space-y-5">
-                <div class="rounded-lg bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 text-sm dark:bg-amber-950 dark:border-amber-800 dark:text-amber-300">
-                    <strong>{{ __('Careful') }}:</strong>
-                    {{ __('This code runs as-is on every visitor\'s browser (e.g. analytics or pixel scripts). Only paste code from sources you trust.') }}
-                </div>
-
                 <x-admin-section-card header-border="border-zinc-100" icon="code-bracket" title="Head Code"
                     description="Injected into <head>, before it closes — meta tags, verification tags, analytics.">
                     <flux:field>

@@ -4,8 +4,11 @@ namespace App\Livewire\Admin\ProductBrands;
 
 use App\Concerns\HasTranslatableFields;
 use App\Models\ProductBrand;
+use App\Models\Type;
 use App\Support\AdminActivity;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
@@ -20,24 +23,29 @@ class Form extends Component
     public string $logo = '';
 
     /**
-     * Which pool the brand belongs to — same post/product split as Tag. Only
-     * product brands appear in the Product form's brand dropdown today; post
-     * brands are tracked for parity and show up in the Brand list/filter.
-     * Empty string is the "Shared (both)" option — persisted as a real null,
-     * see save() below.
+     * Which pool the brand belongs to — the same post/product split as Tag.
+     * Required, with no "shared (both)" option: a brand in neither pool was
+     * never really a brand, so every row now picks exactly one (see the
+     * add_type_id_to_categories migration). Only product brands appear in the
+     * Product form's brand dropdown today; post brands are tracked for parity
+     * and show up in the Brand list/filter.
      */
-    #[Validate('nullable|in:post_brand,product_brand')]
-    public string $type = ProductBrand::TYPE_PRODUCT;
+    #[Validate('required|integer|exists:types,id')]
+    public ?int $typeId = null;
 
     public function mount(?int $id = null): void
     {
-        if ($id) {
-            $brand = ProductBrand::findOrFail($id);
-            $this->brandId = $id;
-            $this->hydrateTranslatable($brand, ['name']);
-            $this->logo = $brand->logo ?? '';
-            $this->type = $brand->type ?? '';
+        if (! $id) {
+            $this->typeId = $this->defaultTypeId();
+
+            return;
         }
+
+        $brand = ProductBrand::findOrFail($id);
+        $this->brandId = $id;
+        $this->hydrateTranslatable($brand, ['name']);
+        $this->logo = $brand->logo ?? '';
+        $this->typeId = $brand->type_id;
     }
 
     public function save(): void
@@ -46,11 +54,11 @@ class Form extends Component
             'name' => 'required|string|max:255',
         ]));
 
-        // Uniqueness is enforced against brand rows only (post_brand/product_brand);
-        // the column is the JSON path, so the primary locale's value is what's
+        // Uniqueness is enforced against brand rows only (kind = brand); the
+        // column is the JSON path, so the primary locale's value is what's
         // compared — a tag or category sharing the string is fine.
         $rules['name.'.$this->primaryLocale][] = Rule::unique('categories', 'name->'.$this->primaryLocale)
-            ->where(fn ($q) => $q->whereIn('type', ProductBrand::TYPES)->orWhereNull('type'))
+            ->where(fn ($q) => $q->where('kind', ProductBrand::KIND))
             ->ignore($this->brandId);
 
         $this->validate($rules);
@@ -58,7 +66,7 @@ class Form extends Component
         $data = [
             'name' => $this->translatablePayload('name'),
             'logo' => $this->logo ?: null,
-            'type' => $this->type !== '' ? $this->type : null,
+            'type_id' => $this->typeId,
         ];
 
         $creating = $this->brandId === null;
@@ -81,6 +89,24 @@ class Form extends Component
         );
 
         $this->redirect(route('admin.product-brands'), navigate: true);
+    }
+
+    /**
+     * @return Collection<int, Type>
+     */
+    #[Computed]
+    public function typeOptions()
+    {
+        return Type::selectOptions();
+    }
+
+    /**
+     * Preselect the product pool, same default the form used before types were a
+     * table — a brand added from the Brands list is overwhelmingly a product one.
+     */
+    private function defaultTypeId(): ?int
+    {
+        return Type::idFor(Type::PRODUCT) ?? Type::idFor(Type::POST);
     }
 
     public function render()

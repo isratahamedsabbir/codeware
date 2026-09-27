@@ -60,7 +60,9 @@ it('admin can update post content via api', function () {
 
 it('admin can attach tags to a post when creating via api', function () {
     Sanctum::actingAs($this->admin);
-    $tags = Tag::factory()->count(2)->create();
+    // A tag belongs to exactly one pool, and the post API only accepts the post
+    // pool's — same as the Livewire Post form's picker.
+    $tags = Tag::factory()->post()->count(2)->create();
 
     $response = $this->postJson('/api/v1/admin/posts', [
         'title' => ['en' => 'Tagged Post', 'bn' => ''],

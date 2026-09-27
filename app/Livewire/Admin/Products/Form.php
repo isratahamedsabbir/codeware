@@ -13,10 +13,12 @@ use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use App\Models\ProductVendor;
 use App\Models\Tag;
+use App\Models\Type;
 use App\Support\AdminActivity;
 use App\Support\Locale;
 use App\Support\PuckEditor;
 use App\Support\Slug;
+use App\Support\Taxonomy;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
@@ -77,7 +79,7 @@ class Form extends Component
     #[Validate('nullable|string|max:255')]
     public string $newTagName = '';
 
-    #[Validate('nullable|integer|exists:categories,id,type,product_brand')]
+    #[Validate('nullable|integer')]
     public string $brand_id = '';
 
     #[Validate('nullable|integer|exists:product_vendors,id')]
@@ -645,7 +647,7 @@ class Form extends Component
     #[Computed]
     public function tags()
     {
-        return Tag::where(fn ($q) => $q->whereIn('type', [Tag::TYPE_PRODUCT, Tag::TYPE_POST])->orWhereNull('type'))->orderBy('id')->get();
+        return Tag::whereIn('type_id', Type::subquery(Type::PRODUCT))->orderBy('id')->get();
     }
 
     /**
@@ -683,14 +685,18 @@ class Form extends Component
 
         $this->newTagName = '';
 
-        // Reuse by name across the whole tag pool: name is unique per locale
-        // (see Tags\Form), so a product tag can't share a name with a post tag.
-        $tag = Tag::where('name->'.Locale::primary(), $name)->first();
+        // Reuse by name within the product pool only. Name is unique per locale
+        // per kind, but the pool is part of what a tag is, so a product tag
+        // can't adopt a post tag that happens to share the string — that would
+        // silently move the tag onto this product.
+        $tag = Tag::where('name->'.Locale::primary(), $name)
+            ->whereIn('type_id', Type::subquery(Type::PRODUCT))
+            ->first();
 
         if (! $tag) {
             $tag = Tag::create([
                 'name' => [Locale::primary() => $name],
-                'type' => Tag::TYPE_PRODUCT,
+                'type_id' => Type::idFor(Type::PRODUCT),
                 'status' => 'active',
             ]);
             $this->dispatch('notify', message: 'Tag created successfully');
@@ -710,7 +716,7 @@ class Form extends Component
     #[Computed]
     public function productBrands()
     {
-        return ProductBrand::where(fn ($q) => $q->where('type', ProductBrand::TYPE_PRODUCT)->orWhereNull('type'))->orderBy('sort_order')->orderBy('name->en')->get();
+        return ProductBrand::whereIn('type_id', Type::subquery(Type::PRODUCT))->orderBy('sort_order')->orderBy('name->en')->get();
     }
 
     #[Computed]
@@ -823,16 +829,15 @@ class Form extends Component
         $rules['variations.*.note'] = 'nullable|string|max:2000';
         $rules['variations.*.sku'] = $this->variationSkuRules();
         $rules['faqs.*.question'] = 'nullable|string|max:255';
+        $rules['brand_id'] = Taxonomy::nullableRule(ProductBrand::class);
         $rules['category_ids'] = 'array';
-        $rules['category_ids.*'] = 'integer|exists:categories,id,type,product_category';
-        $rules['tag_ids.*'] = [Rule::exists('categories', 'id')->where(fn ($q) => $q->whereIn('type', Tag::TYPES)->orWhereNull('type'))];
+        $rules['category_ids.*'] = Taxonomy::eachRule(ProductCategory::class);
+        $rules['tag_ids.*'] = Taxonomy::eachRule(Tag::class, Type::PRODUCT);
         $rules['related_product_ids.*'] = ['integer', Rule::exists('products', 'id')];
 
         $this->validate($rules);
 
         $this->persistProduct();
-
-        $this->dispatch('notify', message: $this->productId ? 'Product updated successfully' : 'Product created successfully');
 
         $token = PuckEditor::token(auth()->user(), "puck-builder-{$this->pageId}");
 
@@ -871,9 +876,10 @@ class Form extends Component
         $rules['variations.*.note'] = 'nullable|string|max:2000';
         $rules['variations.*.sku'] = $this->variationSkuRules();
         $rules['faqs.*.question'] = 'nullable|string|max:255';
+        $rules['brand_id'] = Taxonomy::nullableRule(ProductBrand::class);
         $rules['category_ids'] = 'array';
-        $rules['category_ids.*'] = 'integer|exists:categories,id,type,product_category';
-        $rules['tag_ids.*'] = [Rule::exists('categories', 'id')->where(fn ($q) => $q->whereIn('type', Tag::TYPES)->orWhereNull('type'))];
+        $rules['category_ids.*'] = Taxonomy::eachRule(ProductCategory::class);
+        $rules['tag_ids.*'] = Taxonomy::eachRule(Tag::class, Type::PRODUCT);
         $rules['related_product_ids.*'] = ['integer', Rule::exists('products', 'id')];
 
         $this->validate($rules);

@@ -22,9 +22,19 @@ class ProductCategory extends Model
 
     protected $table = 'categories';
 
+    public const KIND = Category::KIND_CATEGORY;
+
+    /**
+     * This model is the product pool's categories and nothing else, so every
+     * query it makes is locked to that pool — see the global scope below. The
+     * one place that needs the id (its own creating() default) resolves it
+     * through Type::idFor().
+     */
+    public const TYPE = Type::PRODUCT;
+
     public array $translatable = ['name'];
 
-    protected $fillable = ['type', 'parent_id', 'name', 'icon', 'sort_order', 'status', 'featured'];
+    protected $fillable = ['kind', 'type_id', 'parent_id', 'name', 'icon', 'sort_order', 'status', 'featured'];
 
     protected function casts(): array
     {
@@ -48,12 +58,17 @@ class ProductCategory extends Model
 
     protected static function booted(): void
     {
+        static::addGlobalScope('kind', function (Builder $builder) {
+            $builder->where('kind', self::KIND);
+        });
+
         static::addGlobalScope('type', function (Builder $builder) {
-            $builder->where('type', 'product_category');
+            $builder->whereIn('type_id', Type::subquery(self::TYPE));
         });
 
         static::creating(function (ProductCategory $category) {
-            $category->type = 'product_category';
+            $category->kind = self::KIND;
+            $category->type_id ??= Type::idFor(self::TYPE);
         });
     }
 

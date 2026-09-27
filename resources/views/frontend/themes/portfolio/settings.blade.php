@@ -40,7 +40,7 @@
 <div
     wire:key="theme-settings-{{ $themeSlug }}"
     x-data="{
-        tab: (() => { try { return localStorage.getItem('theme-portfolio-tab') || 'profile' } catch (e) { return 'profile' } })(),
+        tab: (() => { try { const saved = localStorage.getItem('theme-portfolio-tab') || 'profile'; return saved === 'work' ? 'projects' : saved } catch (e) { return 'profile' } })(),
         open(name) { this.tab = name; try { localStorage.setItem('theme-portfolio-tab', name) } catch (e) {} },
     }"
     class="grid gap-5 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-6"
@@ -51,7 +51,8 @@
     <x-admin-settings-nav class="lg:sticky lg:top-14 lg:self-start" :tabs="[
         'profile' => ['Profile', 'user-circle'],
         'sections' => ['Sections', 'squares-2x2'],
-        'work' => ['Projects & experience', 'briefcase'],
+        'projects' => ['Projects', 'folder'],
+        'experience' => ['Experience', 'briefcase'],
         'skills' => ['Skills', 'sparkles'],
         'testimonials' => ['Testimonials', 'chat-bubble-left-right'],
         'credentials' => ['Credentials', 'academic-cap'],
@@ -80,17 +81,27 @@
             </div>
         </header>
 
-        <div class="grid grid-cols-1 gap-6 p-5 lg:grid-cols-[1fr_15rem]">
-            <div class="space-y-5">
-                <flux:field>
-                    <flux:label>Display Name<x-field-hint text="Leave blank to use the site name from Settings." /></flux:label>
-                    <flux:input wire:model="settings.theme_portfolio_name" placeholder="e.g. Sabbir Hossain" />
-                </flux:field>
+        {{-- Direct uploads rather than Media Library pickers: a new file
+             replaces the old one and the old file is deleted on save
+             (see App\Livewire\Admin\ThemeSettings\Index::saveUploads()). --}}
+        <div class="grid grid-cols-1 items-start gap-6 p-5 lg:grid-cols-[15rem_minmax(0,1fr)]">
+            <x-admin-theme-upload upload-key="theme_portfolio_photo" type="image" label="Hero Photo"
+                hint="Without a photo the hero shows your initials on a tinted panel, so the page still reads as finished."
+                size-hint="Portrait, roughly 4:5"
+                :value="$settings['theme_portfolio_photo'] ?? ''" :pending="$uploads['theme_portfolio_photo'] ?? null" />
 
-                <flux:field>
-                    <flux:label>Role<x-field-hint text="The line under your name — 'Full Stack Developer', 'Laravel & React Engineer'." /></flux:label>
-                    <flux:input wire:model="settings.theme_portfolio_hero_title" placeholder="Full Stack Developer" />
-                </flux:field>
+            <div class="space-y-5">
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                    <flux:field>
+                        <flux:label>Display Name<x-field-hint text="Leave blank to use the site name from Settings." /></flux:label>
+                        <flux:input wire:model="settings.theme_portfolio_name" placeholder="e.g. Sabbir Hossain" />
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>Role<x-field-hint text="The line under your name — 'Full Stack Developer', 'Laravel & React Engineer'." /></flux:label>
+                        <flux:input wire:model="settings.theme_portfolio_hero_title" placeholder="Full Stack Developer" />
+                    </flux:field>
+                </div>
 
                 <flux:field>
                     <flux:label>Tagline<x-field-hint text="One or two sentences on what you build." /></flux:label>
@@ -109,21 +120,11 @@
                         <flux:input wire:model="settings.theme_portfolio_availability" placeholder="Available for new projects" />
                     </flux:field>
                 </div>
-            </div>
 
-            <div class="space-y-4">
-                <x-media-picker model="settings.theme_portfolio_photo" label="Hero Photo"
-                    size-hint="A portrait, roughly 4:5" only-images />
-
-                <p class="text-[11px] leading-relaxed text-zinc-400">
-                    Without a photo the hero shows your initials on a tinted panel, so the page still reads as finished.
-                </p>
-
-                <div class="space-y-4 border-t border-zinc-100 pt-4 dark:border-zinc-700">
-                    <flux:field>
-                        <flux:label>Résumé URL<x-field-hint text="Blank hides the download button." /></flux:label>
-                        <flux:input wire:model="settings.theme_portfolio_resume_url" placeholder="https://…/resume.pdf" />
-                    </flux:field>
+                <div class="grid grid-cols-1 items-start gap-5 border-t border-zinc-100 pt-5 sm:grid-cols-2 dark:border-zinc-700">
+                    <x-admin-theme-upload upload-key="theme_portfolio_resume_url" type="pdf" label="Résumé (PDF)"
+                        hint="No file hides the download button."
+                        :value="$settings['theme_portfolio_resume_url'] ?? ''" :pending="$uploads['theme_portfolio_resume_url'] ?? null" />
 
                     <flux:field>
                         <flux:label>Résumé Button Label</flux:label>
@@ -159,6 +160,7 @@
                 empty-hint="The strip is hidden until you add at least one."
                 add-label="Add stat"
                 :max="4"
+                :columns="2"
                 :fields="[
                     ['name' => 'value', 'label' => 'Value', 'placeholder' => '5+'],
                     ['name' => 'label', 'label' => 'Label', 'placeholder' => 'Years experience'],
@@ -180,20 +182,20 @@
     </section>
 
 
-    {{-- ══ Work ════════════════════════════════════════════════════════════ --}}
-    {{-- Projects and Experience. Both used to be table-backed with their own
+    {{-- ══ Projects ════════════════════════════════════════════════════════ --}}
+    {{-- Projects and Experience both used to be table-backed with their own
          CRUD screens; they are lists here so the whole portfolio is edited in
          one place. --}}
-    <section role="tabpanel" x-show="tab === 'work'"
+    <section role="tabpanel" x-show="tab === 'projects'"
         class="isolate overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-700 dark:bg-zinc-900">
         <header class="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 px-5 py-4 dark:border-zinc-700">
             <div class="flex items-center gap-3">
                 <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <flux:icon.briefcase variant="mini" class="size-5" />
+                    <flux:icon.folder variant="mini" class="size-5" />
                 </span>
                 <div>
-                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Projects &amp; experience</p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">The work you want to be asked about, and where you did it. The storefront shows them in the order given — put your strongest project first.</p>
+                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Projects</p>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">The work you want to be asked about. The storefront shows them in the order given — put your strongest project first.</p>
                 </div>
             </div>
         </header>
@@ -208,34 +210,52 @@
                 empty-hint="The whole section stays hidden until you add one."
                 add-label="Add project"
                 :max="12"
+                :columns="2"
                 :fields="[
-                    ['name' => 'title', 'label' => 'Project name', 'placeholder' => 'Hotel Booking System'],
+                    ['name' => 'title', 'label' => 'Project name', 'placeholder' => 'Hotel Booking System', 'wide' => true],
                     ['name' => 'image', 'label' => 'Screenshot', 'type' => 'media', 'pickerLabel' => 'Project screenshot', 'sizeHint' => 'A 16:10 screenshot, roughly 1280×800'],
-                    ['name' => 'icon', 'label' => 'Icon', 'placeholder' => '🏨'],
+                    ['name' => 'icon', 'label' => 'Icon', 'placeholder' => '🏨', 'wide' => true],
                     ['name' => 'description', 'label' => 'What it does', 'type' => 'textarea', 'placeholder' => 'The problem it solved, and your part in it.'],
-                    ['name' => 'tech', 'label' => 'Tech stack', 'placeholder' => 'Laravel, MySQL, Stripe'],
-                    ['name' => 'stats', 'label' => 'Badge', 'placeholder' => '12 clients'],
-                    ['name' => 'link', 'label' => 'Live site', 'placeholder' => 'https://example.com'],
-                    ['name' => 'repo', 'label' => 'Source code', 'placeholder' => 'https://github.com/you/project'],
+                    ['name' => 'tech', 'label' => 'Tech stack', 'placeholder' => 'Laravel, MySQL, Stripe', 'wide' => true],
+                    ['name' => 'stats', 'label' => 'Badge', 'placeholder' => '12 clients', 'wide' => true],
+                    ['name' => 'link', 'label' => 'Live site', 'placeholder' => 'https://example.com', 'wide' => true],
+                    ['name' => 'repo', 'label' => 'Source code', 'placeholder' => 'https://github.com/you/project', 'wide' => true],
                 ]" />
+        </div>
+    </section>
 
-            <div class="border-t border-zinc-100 pt-6 dark:border-zinc-700">
-                <x-admin-repeatable-fields
-                    :repeaters="$repeaters"
-                    setting-key="theme_portfolio_experiences"
-                    label="Experience"
-                    hint="Leave the company blank for freelance or contract work — the company line simply disappears, so an empty value is not a gap on the page."
-                    empty-title="No experience yet"
-                    empty-hint="The timeline stays hidden until you add one."
-                    add-label="Add role"
-                    :max="12"
-                    :fields="[
-                        ['name' => 'role', 'label' => 'Role', 'placeholder' => 'Backend Developer'],
-                        ['name' => 'company', 'label' => 'Company', 'placeholder' => 'Company name (optional)'],
-                        ['name' => 'period', 'label' => 'Period', 'placeholder' => '2022 — 2024'],
-                        ['name' => 'description', 'label' => 'Description', 'type' => 'textarea', 'placeholder' => 'What you owned, and what it changed.'],
-                    ]" />
+    {{-- ══ Experience ══════════════════════════════════════════════════════ --}}
+    <section role="tabpanel" x-show="tab === 'experience'"
+        class="isolate overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-700 dark:bg-zinc-900">
+        <header class="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 px-5 py-4 dark:border-zinc-700">
+            <div class="flex items-center gap-3">
+                <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <flux:icon.briefcase variant="mini" class="size-5" />
+                </span>
+                <div>
+                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Experience</p>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Where you did the work, shown as a timeline in the order given.</p>
+                </div>
             </div>
+        </header>
+
+        <div class="space-y-8 p-5">
+            <x-admin-repeatable-fields
+                :repeaters="$repeaters"
+                setting-key="theme_portfolio_experiences"
+                label="Experience"
+                hint="Leave the company blank for freelance or contract work — the company line simply disappears, so an empty value is not a gap on the page."
+                empty-title="No experience yet"
+                empty-hint="The timeline stays hidden until you add one."
+                add-label="Add role"
+                :max="12"
+                :columns="2"
+                :fields="[
+                    ['name' => 'role', 'label' => 'Role', 'placeholder' => 'Backend Developer', 'wide' => true],
+                    ['name' => 'company', 'label' => 'Company', 'placeholder' => 'Company name (optional)', 'wide' => true],
+                    ['name' => 'period', 'label' => 'Period', 'placeholder' => '2022 — 2024', 'wide' => true],
+                    ['name' => 'description', 'label' => 'Description', 'type' => 'textarea', 'placeholder' => 'What you owned, and what it changed.'],
+                ]" />
         </div>
     </section>
 
@@ -264,6 +284,7 @@
                 empty-hint="The whole section stays hidden until you add one."
                 add-label="Add skill"
                 :max="40"
+                :columns="2"
                 :fields="[
                     ['name' => 'name', 'label' => 'Skill', 'placeholder' => 'Laravel'],
                     ['name' => 'group', 'label' => 'Group', 'placeholder' => 'Backend'],
@@ -298,11 +319,12 @@
                 empty-hint="The section stays hidden until you add one."
                 add-label="Add testimonial"
                 :max="12"
+                :columns="2"
                 :fields="[
                     ['name' => 'quote', 'label' => 'Quote', 'type' => 'textarea', 'placeholder' => 'What they said about the work.'],
-                    ['name' => 'name', 'label' => 'Name', 'placeholder' => 'Client name'],
-                    ['name' => 'role', 'label' => 'Role / company', 'placeholder' => 'Founder, Acme Ltd'],
-                    ['name' => 'rating', 'label' => 'Rating (1-5)', 'placeholder' => '5'],
+                    ['name' => 'name', 'label' => 'Name', 'placeholder' => 'Client name', 'wide' => true],
+                    ['name' => 'role', 'label' => 'Role / company', 'placeholder' => 'Founder, Acme Ltd', 'wide' => true],
+                    ['name' => 'rating', 'label' => 'Rating (1-5)', 'placeholder' => '5', 'wide' => true],
                 ]" />
         </div>
     </section>
@@ -331,9 +353,9 @@
                 add-label="Add qualification"
                 :max="8"
                 :fields="[
-                    ['name' => 'title', 'label' => 'Degree / Qualification', 'placeholder' => 'B.Sc. in Computer Science'],
-                    ['name' => 'period', 'label' => 'Period', 'placeholder' => '2018 — 2022'],
-                    ['name' => 'description', 'label' => 'Institution', 'placeholder' => 'University name'],
+                    ['name' => 'title', 'label' => 'Degree / Qualification', 'placeholder' => 'B.Sc. in Computer Science', 'wide' => true],
+                    ['name' => 'period', 'label' => 'Period', 'placeholder' => '2018 — 2022', 'wide' => true],
+                    ['name' => 'description', 'label' => 'Institution', 'placeholder' => 'University name', 'wide' => true],
                 ]" />
 
             <x-admin-repeatable-fields
@@ -344,9 +366,9 @@
                 add-label="Add certification"
                 :max="12"
                 :fields="[
-                    ['name' => 'title', 'label' => 'Certification', 'placeholder' => 'AWS Certified Developer'],
-                    ['name' => 'period', 'label' => 'Year', 'placeholder' => '2024'],
-                    ['name' => 'description', 'label' => 'Issuer', 'placeholder' => 'Amazon Web Services'],
+                    ['name' => 'title', 'label' => 'Certification', 'placeholder' => 'AWS Certified Developer', 'wide' => true],
+                    ['name' => 'period', 'label' => 'Year', 'placeholder' => '2024', 'wide' => true],
+                    ['name' => 'description', 'label' => 'Issuer', 'placeholder' => 'Amazon Web Services', 'wide' => true],
                 ]" />
         </div>
     </section>

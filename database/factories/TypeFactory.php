@@ -5,17 +5,19 @@ namespace Database\Factories;
 use App\Models\Type;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class PostCategoryFactory extends Factory
+/**
+ * @extends Factory<Type>
+ */
+class TypeFactory extends Factory
 {
     public function definition(): array
     {
         $name = fake()->unique()->words(2, true);
 
         return [
-            'name' => ['en' => ucwords($name), 'bn' => ucwords($name)],
-            'type_id' => Type::idFor(Type::POST),
-            'description' => ['en' => fake()->sentence(), 'bn' => fake()->sentence()],
+            'name' => ['en' => ucfirst($name), 'bn' => ucfirst($name)],
             'status' => 'active',
+            'sort_order' => 0,
         ];
     }
 
@@ -24,7 +26,7 @@ class PostCategoryFactory extends Factory
         return $this->state(['status' => 'active']);
     }
 
-    public function draft(): static
+    public function inactive(): static
     {
         return $this->state(['status' => 'inactive']);
     }

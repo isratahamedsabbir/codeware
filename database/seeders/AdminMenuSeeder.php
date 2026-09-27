@@ -23,16 +23,22 @@ class AdminMenuSeeder extends Seeder
         $this->standalone('Chat', 'chat-bubble-left-right', 'admin.chat', 3);
 
         // "Accessories" holds everything that shapes a product rather than being
-        // one: the taxonomy trio (Categories, Tags, Brands) that classifies it,
-        // the Advertisements that decide where it gets seen, and the price levers
-        // (Coupons, Discounts) that change what it costs. All six are supporting
-        // vocabulary of the catalogue, not content types of their own, so they
-        // read as one section instead of six loose top-level links. Each still has
-        // its own feature toggle, see routes/admin.php's feature:categories,
-        // feature:tags, feature:brands, feature:advertisements, feature:orders
-        // and feature:discounts groups — turning one off empties just that link,
-        // not the whole group.
+        // one: the taxonomy quartet (Types, Categories, Tags, Brands) that
+        // classifies it, the Advertisements that decide where it gets seen, and
+        // the price levers (Coupons, Discounts) that change what it costs. All
+        // are supporting vocabulary of the catalogue, not content types of their
+        // own, so they read as one section instead of loose top-level links. Each
+        // still has its own feature toggle, see routes/admin.php's
+        // feature:types, feature:categories, feature:tags, feature:brands,
+        // feature:advertisements, feature:orders and feature:discounts groups -
+        // turning one off empties just that link, not the whole group.
+        //
+        // Types leads the group because it is the one the other three are built
+        // on: a category, tag and brand all pick exactly one of the rows it
+        // lists, so you can't make sense of the three below until you know what
+        // the vocabulary is.
         $this->group('Accessories', 4, [
+            ['Types', 'tag', 'admin.types'],
             ['Categories', 'squares-2x2', 'admin.categories'],
             ['Tags', 'tag', 'admin.tags'],
             ['Brands', 'building-storefront', 'admin.product-brands'],

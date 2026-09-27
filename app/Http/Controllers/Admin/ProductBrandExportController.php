@@ -20,6 +20,7 @@ class ProductBrandExportController extends Controller
         $ids = array_map('intval', (array) $request->query('ids', []));
 
         $brands = ProductBrand::query()
+            ->with('type')
             ->whereIn('id', $ids)
             ->orderBy('sort_order')
             ->orderBy('name->en')
@@ -33,11 +34,12 @@ class ProductBrandExportController extends Controller
             // A UTF-8 BOM so Excel doesn't mangle non-Latin (e.g. Bengali) text.
             fwrite($handle, "\xEF\xBB\xBF");
 
-            fputcsv($handle, ['ID', 'Name (EN)', 'Name (BN)', 'Status', 'Created At']);
+            fputcsv($handle, ['ID', 'Type', 'Name (EN)', 'Name (BN)', 'Status', 'Created At']);
 
             foreach ($brands as $brand) {
                 fputcsv($handle, [
                     $brand->id,
+                    $brand->type?->getTranslation('name', 'en', false) ?: $brand->type?->getTranslation('name', 'bn', false),
                     $brand->getTranslation('name', 'en', false),
                     $brand->getTranslation('name', 'bn', false),
                     $brand->status,

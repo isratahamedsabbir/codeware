@@ -9,7 +9,9 @@ use App\Models\ProductAttribute;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use App\Models\ProductVendor;
+use App\Models\Type;
 use App\Support\Slug;
+use App\Support\Taxonomy;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -59,7 +61,7 @@ class Form extends Component
     /** @var array<int, int> */
     public array $category_ids = [];
 
-    #[Validate('nullable|integer|exists:categories,id,type,product_brand')]
+    #[Validate('nullable|integer')]
     public string $brand_id = '';
 
     #[Validate('required|integer')]
@@ -184,7 +186,7 @@ class Form extends Component
     #[Computed]
     public function productBrands()
     {
-        return ProductBrand::where(fn ($q) => $q->where('type', ProductBrand::TYPE_PRODUCT)->orWhereNull('type'))->orderBy('sort_order')->orderBy('name->en')->get();
+        return ProductBrand::whereIn('type_id', Type::subquery(Type::PRODUCT))->orderBy('sort_order')->orderBy('name->en')->get();
     }
 
     #[Computed]
@@ -359,14 +361,14 @@ class Form extends Component
             'nullable', 'string', 'max:100',
             $this->productId ? 'unique:products,sku,'.$this->productId : 'unique:products,sku',
         ];
-        $rules['brand_id'] = 'nullable|integer|exists:categories,id,type,product_brand';
+        $rules['brand_id'] = Taxonomy::nullableRule(ProductBrand::class);
         $rules['vendor_id'] = ['required', 'integer', 'in:'.implode(',', $vendorIds)];
         $rules['product_type'] = 'required|in:physical,digital';
         $rules['price'] = 'required|numeric|min:0';
         $rules['discount_price'] = 'nullable|numeric|min:0|lt:price';
         $rules['quantity'] = 'nullable|integer|min:0';
         $rules['category_ids'] = 'array';
-        $rules['category_ids.*'] = 'integer|exists:categories,id,type,product_category';
+        $rules['category_ids.*'] = Taxonomy::eachRule(ProductCategory::class);
         $rules['variations.*.price'] = 'nullable|numeric|min:0';
         $rules['variations.*.discount_price'] = 'nullable|numeric|min:0|lt:variations.*.price';
         $rules['variations.*.quantity'] = 'nullable|integer|min:0|lte:quantity';

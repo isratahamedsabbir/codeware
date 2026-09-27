@@ -7,6 +7,8 @@ use App\Support\AdminActivity;
 use App\Support\HeroSlides;
 use App\Support\Themes;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
@@ -76,6 +78,19 @@ class Index extends Component
      * @var array<string, array<int, array<string, string>>>
      */
     public array $repeaters = [];
+
+    /**
+     * Pending direct uploads, keyed by their "theme_{slug}_*" setting key — the
+     * fields a theme declares with <x-admin-theme-upload upload-key="..." />
+     * (see declaredUploads()). The file is only stored on save(), where it
+     * replaces the setting's value and the previously uploaded file is deleted.
+     *
+     * @var array<string, TemporaryUploadedFile|null>
+     */
+    public array $uploads = [];
+
+    /** Where direct theme uploads live on the public disk. */
+    private const UPLOAD_DIR = 'theme-uploads';
 
     public function mount(): void
     {
@@ -192,6 +207,36 @@ class Index extends Component
         $this->repeaters[$key] = $rows;
     }
 
+    /**
+     * Validate a direct upload as soon as it lands, so a wrong file type is
+     * reported next to the field rather than only on save.
+     */
+    public function updatedUploads(mixed $value, string $key): void
+    {
+        if (! array_key_exists($key, $this->declaredUploads())) {
+            unset($this->uploads[$key]);
+
+            return;
+        }
+
+        $this->validateOnly('uploads.'.$key, $this->uploadRules());
+    }
+
+    /**
+     * Clear a direct-upload field. The stored file itself is deleted on save,
+     * so closing the page without saving leaves the live site untouched.
+     */
+    public function clearThemeUpload(string $key): void
+    {
+        if (! array_key_exists($key, $this->declaredUploads())) {
+            return;
+        }
+
+        unset($this->uploads[$key]);
+        $this->settings[$key] = '';
+        $this->resetErrorBag('uploads.'.$key);
+    }
+
     public function addHeroSlide(): void
     {
         if (count($this->heroSlides) < self::MAX_HERO_SLIDES) {
@@ -215,6 +260,8 @@ class Index extends Component
             ['settings.chat_widget_color.regex' => __('Enter a hex color like #1e7bc4.')],
         );
 
+        $this->validate($this->uploadRules());
+
         // A slide without an image isn't shown, so it isn't kept either.
         $slides = array_values(array_filter(
             array_map(HeroSlides::normalize(...), $this->heroSlides),
@@ -222,6 +269,8 @@ class Index extends Component
         ));
         Setting::set('home_hero_slides', json_encode($slides));
         $this->settings['home_hero_image'] = $slides[0]['image'] ?? '';
+
+        $this->saveUploads();
 
         foreach ($this->savableKeys() as $key) {
             if (array_key_exists($key, $this->settings)) {
@@ -274,6 +323,98 @@ class Index extends Component
             // storefront's "is this section empty" check and this form agree.
             Setting::set($key, json_encode($clean));
         }
+    }
+
+    /**
+     * Store every pending direct upload and delete the file it replaces.
+     *
+     * The old file is only deleted when it is one this screen uploaded (it
+     * lives under UPLOAD_DIR) — a value that points into the Media Library or
+     * at an external URL is left alone, since other content may use it.
+     */
+    protected function saveUploads(): void
+    {
+        $disk = Storage::disk('public');
+
+        foreach ($this->declaredUploads() as $key => $type) {
+            $old = (string) Setting::get($key, '');
+            $file = $this->uploads[$key] ?? null;
+
+            if ($file instanceof TemporaryUploadedFile) {
+                $base = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) ?: $type;
+                $name = Str::limit($base, 60, '').'-'.Str::lower(Str::random(6)).'.'.strtolower($file->getClientOriginalExtension());
+                $path = $file->storeAs(self::UPLOAD_DIR.'/'.str_replace('_', '-', $key), $name, 'public');
+
+                $this->settings[$key] = $disk->url($path);
+            }
+
+            $new = (string) ($this->settings[$key] ?? '');
+            $oldPath = $this->managedUploadPath($old);
+
+            if ($oldPath !== null && $new !== $old) {
+                $disk->delete($oldPath);
+            }
+        }
+
+        $this->uploads = [];
+    }
+
+    /**
+     * The public-disk path of a URL this screen uploaded, or null for anything
+     * else (Media Library files, external links, blank).
+     */
+    private function managedUploadPath(string $url): ?string
+    {
+        $marker = '/storage/'.self::UPLOAD_DIR.'/';
+        $position = strpos($url, $marker);
+
+        if ($position === false) {
+            return null;
+        }
+
+        $path = substr($url, $position + strlen('/storage/'));
+
+        return str_contains($path, '..') ? null : $path;
+    }
+
+    /**
+     * Validation rules for every declared direct upload, by its type.
+     *
+     * @return array<string, array<int, string>>
+     */
+    private function uploadRules(): array
+    {
+        return collect($this->declaredUploads())
+            ->mapWithKeys(fn (string $type, string $key) => ['uploads.'.$key => $type === 'pdf'
+                ? ['nullable', 'file', 'mimes:pdf', 'max:10240']
+                : ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096']])
+            ->all();
+    }
+
+    /**
+     * Direct-upload fields the theme settings files declare, as key => type
+     * ("image" or "pdf"). Read from <x-admin-theme-upload upload-key="..."
+     * type="..." /> the same way repeaters are discovered.
+     *
+     * @return array<string, string>
+     */
+    private function declaredUploads(): array
+    {
+        $uploads = [];
+
+        foreach (glob(resource_path('views/frontend/themes/*/settings.blade.php')) ?: [] as $file) {
+            preg_match_all('/<x-admin-theme-upload\b(.*?)\/>/s', (string) file_get_contents($file), $tags);
+
+            foreach ($tags[1] as $tag) {
+                if (! preg_match('/upload-key=[\'"](theme_[a-z0-9_]+)[\'"]/', $tag, $key)) {
+                    continue;
+                }
+
+                $uploads[$key[1]] = preg_match('/\btype=[\'"]pdf[\'"]/', $tag) ? 'pdf' : 'image';
+            }
+        }
+
+        return $uploads;
     }
 
     /**

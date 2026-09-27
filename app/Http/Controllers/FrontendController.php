@@ -13,6 +13,7 @@ use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use App\Models\Setting;
 use App\Models\Tag;
+use App\Models\Type;
 use App\Support\ContentCache;
 use App\Support\Favorites;
 use App\Support\Features;
@@ -581,7 +582,11 @@ class FrontendController extends Controller
 
     private function shopBrands(): Collection
     {
-        return ProductBrand::active()
+        // A brand belongs to exactly one type now, so the shop facets are the
+        // product pool only — a post-pool brand would otherwise show up here as
+        // a filter that leads to an empty product list.
+        return ProductBrand::whereIn('type_id', Type::subquery(Type::PRODUCT))
+            ->active()
             ->withCount(['products' => fn ($q) => $q->active()])
             ->orderBy('sort_order')
             ->get();
@@ -589,7 +594,10 @@ class FrontendController extends Controller
 
     private function shopTags(): Collection
     {
-        return Tag::where('status', 'active')->orderBy('sort_order')->get();
+        return Tag::whereIn('type_id', Type::subquery(Type::PRODUCT))
+            ->where('status', 'active')
+            ->orderBy('sort_order')
+            ->get();
     }
 
     /**
@@ -598,7 +606,7 @@ class FrontendController extends Controller
      */
     private function resolveBrand(string $slug): ?ProductBrand
     {
-        return ProductBrand::active()->get()
+        return ProductBrand::whereIn('type_id', Type::subquery(Type::PRODUCT))->active()->get()
             ->first(fn (ProductBrand $brand) => $this->taxonomyKey($brand) === Str::slug($slug, '-'));
     }
 
@@ -607,7 +615,9 @@ class FrontendController extends Controller
      */
     private function resolveTag(string $slug): ?Tag
     {
-        return Tag::where('status', 'active')->get()
+        return Tag::whereIn('type_id', Type::subquery(Type::PRODUCT))
+            ->where('status', 'active')
+            ->get()
             ->first(fn (Tag $tag) => $this->taxonomyKey($tag) === Str::slug($slug, '-'));
     }
 

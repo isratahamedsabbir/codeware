@@ -140,20 +140,18 @@ it('shows only featured product categories in the storefront shop-by-category gr
     Setting::set('site_theme', 'ecommerce');
 
     $featured = Category::factory()->create([
-        'type' => Category::TYPE_PRODUCT,
         'name' => ['en' => 'Mustard Oil', 'bn' => ''],
         'status' => 'active',
         'featured' => true,
     ]);
     $plain = Category::factory()->create([
-        'type' => Category::TYPE_PRODUCT,
         'name' => ['en' => 'Plain Category', 'bn' => ''],
         'status' => 'active',
         'featured' => false,
     ]);
 
-    Page::factory()->published()->create(['type' => Category::TYPE_PRODUCT, 'category_id' => $featured->id, 'title' => ['en' => 'Mustard Oil', 'bn' => ''], 'slug' => 'mustard-oil']);
-    Page::factory()->published()->create(['type' => Category::TYPE_PRODUCT, 'category_id' => $plain->id, 'title' => ['en' => 'Plain Category', 'bn' => ''], 'slug' => 'plain-category']);
+    Page::factory()->published()->create(['type' => 'product_category', 'category_id' => $featured->id, 'title' => ['en' => 'Mustard Oil', 'bn' => ''], 'slug' => 'mustard-oil']);
+    Page::factory()->published()->create(['type' => 'product_category', 'category_id' => $plain->id, 'title' => ['en' => 'Plain Category', 'bn' => ''], 'slug' => 'plain-category']);
 
     $html = $this->get('/')->assertOk()->assertSee('Shop by category')->getContent();
 

@@ -13,15 +13,16 @@ class CategoryExportController extends Controller
      * Streams the given category ids as CSV — triggered by the "Export" button
      * in the bulk-selection toolbar on the Categories screen (see
      * Livewire\Admin\Categories\Index::$selectedIds), so this always exports
-     * an explicit selection rather than the whole table. Ids can span both
-     * types (Product/Post categories share one table), so Type is included.
+     * an explicit selection rather than the whole table. Ids can span more than
+     * one type (every pool's categories share one table), so the Type column
+     * is included.
      */
     public function export(Request $request): StreamedResponse
     {
         $ids = array_map('intval', (array) $request->query('ids', []));
 
         $categories = Category::query()
-            ->with('creator')
+            ->with(['type', 'creator'])
             ->whereIn('id', $ids)
             ->orderBy('sort_order')
             ->orderBy('id')
@@ -40,7 +41,7 @@ class CategoryExportController extends Controller
             foreach ($categories as $category) {
                 fputcsv($handle, [
                     $category->id,
-                    $category->type === Category::TYPE_PRODUCT ? 'Product' : 'Post',
+                    $category->type?->getTranslation('name', 'en', false) ?: $category->type?->getTranslation('name', 'bn', false),
                     $category->getTranslation('name', 'en', false),
                     $category->getTranslation('name', 'bn', false),
                     $category->slug,

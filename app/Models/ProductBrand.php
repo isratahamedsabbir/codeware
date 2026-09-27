@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
@@ -19,26 +20,21 @@ class ProductBrand extends Model
     use CachesContent, HasCreator, HasFactory, HasTranslations, SoftDeletes;
 
     // Lives in the unified taxonomy table alongside PostCategory /
-    // ProductCategory / Tag — this type distinguishes brand rows.
+    // ProductCategory / Tag — the `kind` column sets this apart from those rows.
     //
-    // Brands are split into post/product pools exactly like tags, but with
-    // their own type values (post_brand / product_brand): the tag global
-    // scope matches plain 'post'/'product', so reusing those strings here
-    // would make brand rows leak into every Tag query.
+    // Unlike the two category models, a brand is NOT locked to one pool: the
+    // admin Brand screen manages both and filters by `type_id`, while the
+    // pickers that need a single pool (the Product and Vendor product forms)
+    // narrow with Type::subquery() themselves. So there is no TYPE constant here
+    // — which is also what tells App\Support\Taxonomy not to add a pool
+    // constraint to a rule built from this model.
     protected $table = 'categories';
 
-    public const TYPE_POST = 'post_brand';
-
-    public const TYPE_PRODUCT = 'product_brand';
-
-    public const TYPES = [self::TYPE_POST, self::TYPE_PRODUCT];
-
-    // A null type means the brand is shared across both pools, same as a null
-    // Tag — for rows created without picking a pool (e.g. via the API).
+    public const KIND = Category::KIND_BRAND;
 
     public array $translatable = ['name'];
 
-    protected $fillable = ['type', 'name', 'logo', 'status', 'sort_order'];
+    protected $fillable = ['kind', 'type_id', 'name', 'logo', 'status', 'sort_order'];
 
     protected $casts = [
         'sort_order' => 'integer',
@@ -66,20 +62,27 @@ class ProductBrand extends Model
 
     protected static function booted(): void
     {
-        static::addGlobalScope('type', function (Builder $builder) {
-            $builder->where(fn (Builder $q) => $q->whereIn('type', self::TYPES)->orWhereNull('type'));
+        static::addGlobalScope('kind', function (Builder $builder) {
+            $builder->where('kind', self::KIND);
         });
 
         static::creating(function (ProductBrand $brand) {
-            // A type left out entirely defaults to the product pool, same as
-            // before. A type explicitly set to null is left alone — that's the
-            // shared-pool state, not an unset one.
-            if (! array_key_exists('type', $brand->getAttributes())) {
-                $brand->type = self::TYPE_PRODUCT;
-            } elseif ($brand->type === '') {
-                $brand->type = self::TYPE_PRODUCT;
-            }
+            $brand->kind = self::KIND;
+
+            // See Tag::creating() — a brand's pool is a choice rather than a
+            // property of the model, and type_id is NOT NULL, so an explicit
+            // create() with no pool falls back to Product.
+            $brand->type_id ??= Type::idFor(Type::PRODUCT);
         });
+    }
+
+    /**
+     * The content pool this brand belongs to — which is what decides whether it
+     * appears in the Product form's brand dropdown or the Post form's.
+     */
+    public function type(): BelongsTo
+    {
+        return $this->belongsTo(Type::class, 'type_id');
     }
 
     public function products(): HasMany

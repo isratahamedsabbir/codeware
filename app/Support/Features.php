@@ -16,6 +16,7 @@ class Features
     public const ALL = [
         'env' => 'Env (App, Maintenance & API Settings)',
         'blog' => 'Blog (Posts)',
+        'types' => 'Types (the product/post split behind Categories, Tags & Brands)',
         'categories' => 'Categories (shared by Blog and Products)',
         'tags' => 'Tags (shared by Blog and Products)',
         'access-control' => 'Access Control (Roles, Permissions, Users)',

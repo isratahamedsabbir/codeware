@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Str;
 use Spatie\Translatable\HasTranslations;
@@ -17,28 +18,22 @@ class Tag extends Model
     use CachesContent, HasFactory, HasTranslations;
 
     // Lives in the unified taxonomy table alongside PostCategory /
-    // ProductCategory / ProductBrand — the discriminator column still sets this
-    // apart from those rows, but tags themselves are now further split into
-    // pools: created from the Post form (post), the Product form (product), or
-    // legacy rows that predate the split (tag) and stay visible in both pools.
+    // ProductCategory / ProductBrand — the `kind` column is what sets this apart
+    // from those rows.
+    //
+    // Like ProductBrand, a tag is not locked to one pool: the admin Tags screen
+    // manages both and filters by `type_id`. The post/product split used to also
+    // carry a third "legacy" pool for rows predating it, plus a null "shared
+    // across both" state for rows created without picking a pool — both are gone,
+    // since a type is now a row an admin picks and every tag belongs to exactly
+    // one of them.
     protected $table = 'categories';
 
-    public const TYPE_POST = 'post';
-
-    public const TYPE_PRODUCT = 'product';
-
-    // Legacy rows created before tags were typed. Kept in the global scope (and
-    // both form pickers) so existing data keeps working — see ProductTagsTest.
-    public const TYPE_LEGACY = 'tag';
-
-    public const TYPES = [self::TYPE_LEGACY, self::TYPE_POST, self::TYPE_PRODUCT];
-
-    // A null type is the modern equivalent of TYPE_LEGACY — shared across both
-    // pools — for rows created without picking a pool (e.g. via the API).
+    public const KIND = Category::KIND_TAG;
 
     public array $translatable = ['name'];
 
-    protected $fillable = ['name', 'status', 'type'];
+    protected $fillable = ['kind', 'type_id', 'name', 'status'];
 
     /**
      * `slug` is a virtual accessor derived from the primary-locale name —
@@ -62,21 +57,29 @@ class Tag extends Model
 
     protected static function booted(): void
     {
-        static::addGlobalScope('type', function (Builder $builder) {
-            $builder->where(fn (Builder $q) => $q->whereIn('type', self::TYPES)->orWhereNull('type'));
+        static::addGlobalScope('kind', function (Builder $builder) {
+            $builder->where('kind', self::KIND);
         });
 
-        static::saving(function (Tag $tag) {
-            // Types flow in from the caller (inline creation on the Post/Product
-            // forms, or the Tags admin form). A type left out entirely (or
-            // blanked from a form select) still defaults to the legacy pool so
-            // factories/seeders written before the split work. A type explicitly
-            // set to null is left alone — that's the shared-pool state, not an
-            // unset one.
-            if (! array_key_exists('type', $tag->getAttributes()) || $tag->type === '') {
-                $tag->type = self::TYPE_LEGACY;
-            }
+        static::creating(function (Tag $tag) {
+            $tag->kind = self::KIND;
+
+            // A tag's pool is a choice, not a property of the model, so the admin
+            // form and the inline "create tag" inputs both set type_id explicitly.
+            // This is the fallback for a create() that doesn't (a seeder, a test,
+            // an API caller) — type_id is NOT NULL, and Product is the same default
+            // the migration gave every legacy row.
+            $tag->type_id ??= Type::idFor(Type::PRODUCT);
         });
+    }
+
+    /**
+     * The content pool this tag belongs to — which is what decides whether it
+     * appears on the Post form's tag picker or the Product form's.
+     */
+    public function type(): BelongsTo
+    {
+        return $this->belongsTo(Type::class, 'type_id');
     }
 
     /**

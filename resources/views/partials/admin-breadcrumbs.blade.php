@@ -14,6 +14,7 @@
         'orders'             => ['Sales', 'admin.orders'],
         'coupons'            => ['Accessories', 'admin.categories'],
         'discounts'          => ['Accessories', 'admin.categories'],
+        'types'              => ['Accessories', 'admin.types'],
         'categories'         => ['Accessories', 'admin.categories'],
         'tags'               => ['Accessories', 'admin.categories'],
         'product-brands'     => ['Accessories', 'admin.categories'],

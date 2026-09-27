@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Concerns\CachesContent;
 use App\Concerns\HasCreator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,26 +16,63 @@ use Illuminate\Support\Collection;
 use Spatie\Translatable\HasTranslations;
 
 /**
- * The unscoped, both-types view of the `categories` table — backs the single
- * shared admin screen (App\Livewire\Admin\Categories) where an admin manages
- * Product and Post categories side by side, picking a type at creation time.
- * Everywhere else in the app (Product's category picker, Post's category
+ * The pool-agnostic view of category rows in the shared taxonomy table — backs
+ * the single shared admin screen (App\Livewire\Admin\Categories) where an admin
+ * manages Product and Post categories side by side, picking a type at creation
+ * time. Everywhere else in the app (Product's category picker, Post's category
  * dropdown, public APIs) keeps using the type-locked ProductCategory /
- * PostCategory models, exactly as before — this model is admin-CRUD-only.
+ * PostCategory models — this model is admin-CRUD-only.
+ *
+ * `categories` is one table with two discriminator columns, and this is the
+ * model that owns both vocabularies: `kind` says which kind of taxonomy row
+ * this is (Category / ProductCategory / PostCategory all share KIND_CATEGORY),
+ * and `type_id` says which content pool it belongs to (see App\Models\Type).
  */
 class Category extends Model
 {
     use CachesContent, HasCreator, HasFactory, HasTranslations;
 
-    public const TYPE_PRODUCT = 'product_category';
+    /**
+     * The three kinds of row the shared taxonomy table holds. Structural rather
+     * than admin-managed, unlike the pool (`type_id`) — this is what keeps
+     * ProductCategory::query(), ProductBrand::query() and Tag::query() from
+     * each returning every row in the table.
+     */
+    public const KIND_CATEGORY = 'category';
 
-    public const TYPE_POST = 'post_category';
+    public const KIND_TAG = 'tag';
 
-    public const TYPES = [self::TYPE_PRODUCT, self::TYPE_POST];
+    public const KIND_BRAND = 'brand';
+
+    public const KINDS = [self::KIND_CATEGORY, self::KIND_TAG, self::KIND_BRAND];
+
+    public const KIND = self::KIND_CATEGORY;
 
     public array $translatable = ['name', 'description'];
 
-    protected $fillable = ['type', 'parent_id', 'name', 'description', 'icon', 'sort_order', 'status', 'featured'];
+    protected $fillable = ['kind', 'type_id', 'parent_id', 'name', 'description', 'icon', 'sort_order', 'status', 'featured'];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope('kind', function (Builder $builder) {
+            $builder->where('kind', self::KIND_CATEGORY);
+        });
+
+        static::creating(function (Category $category) {
+            $category->kind = self::KIND_CATEGORY;
+
+            // type_id is NOT NULL — every row belongs to exactly one pool and
+            // there is no "unassigned" state. A brand or a tag is not tied to one
+            // pool by definition (its TYPE-less model has a Type dropdown instead),
+            // so a create() that doesn't name one falls back to Product, which is
+            // the same default the migration gave every legacy row. The pool-locked
+            // subclasses (ProductCategory / PostCategory) declare their own TYPE and
+            // set type_id in their own creating() hook, which runs after this one.
+            if (! defined($category::class.'::TYPE')) {
+                $category->type_id ??= Type::idFor(Type::PRODUCT);
+            }
+        });
+    }
 
     protected function casts(): array
     {
@@ -56,14 +94,25 @@ class Category extends Model
     }
 
     /**
-     * Deliberately NOT constrained by `->where('type', $this->type)` — unlike
-     * ProductCategory/PostCategory's static-string version of this same
-     * relation, a dynamic `$this->type` here breaks eager loading
-     * (`Category::with('page')`): Eloquent builds the relation's base query
-     * once from a template instance, so `$this->type` resolves to null there,
-     * silently matching zero pages for every row. category_id alone already
-     * uniquely identifies the one paired page (each id belongs to exactly one
-     * category, whose type never disagrees with its own page's type).
+     * The content pool this category belongs to — which is what decides whether
+     * it shows up on the storefront or in the blog. Unscoped by pool, like
+     * everything else here: the type-locked views are ProductCategory and
+     * PostCategory.
+     */
+    public function type(): BelongsTo
+    {
+        return $this->belongsTo(Type::class, 'type_id');
+    }
+
+    /**
+     * Deliberately NOT constrained by the row's own pool — unlike
+     * ProductCategory/PostCategory's static version of this same relation, a
+     * dynamic constraint here breaks eager loading (`Category::with('page')`):
+     * Eloquent builds the relation's base query once from a template instance,
+     * so the constraint resolves to null there, silently matching zero pages for
+     * every row. category_id alone already uniquely identifies the one paired
+     * page (each id belongs to exactly one category), and the Categories form
+     * rewrites that page's `type` whenever the pool changes — see its save().
      */
     public function page(): HasOne
     {

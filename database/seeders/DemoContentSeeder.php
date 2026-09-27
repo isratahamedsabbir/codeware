@@ -156,7 +156,11 @@ class DemoContentSeeder extends Seeder
             description: $category->description,
         ));
 
-        $tags = Tag::factory()->count(6)->published()->create();
+        // Post-pool tags, deliberately created as their own rows rather than
+        // sharing the product pool: a tag belongs to exactly one type now (see
+        // the add_type_id_to_categories migration), so the Post form's tag
+        // picker — which only offers post-pool tags — has something to show.
+        $tags = Tag::factory()->count(6)->published()->post()->create();
 
         $posts = Post::factory()
             ->count(10)

@@ -32,7 +32,7 @@ class PortfolioMenuSeeder extends Seeder
 {
     private const ITEMS = [
         ['label' => 'Home', 'url' => '#home'],
-        ['label' => 'What I Do', 'url' => '#services'],
+        ['label' => 'Services', 'url' => '#services'],
         ['label' => 'Projects', 'url' => '#projects'],
         ['label' => 'Experience', 'url' => '#experience'],
         ['label' => 'Technology', 'url' => '#technology'],

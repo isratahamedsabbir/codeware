@@ -58,13 +58,16 @@
                 </div>
             @endif
 
-            {{-- Where to find me --}}
-            <div>
-                <h2 class="pf-mono text-[10px] font-semibold tracking-wider text-(--pf-text-muted) uppercase">Elsewhere</h2>
-                <div class="mt-4">
-                    @include('frontend.themes.portfolio.partials.social-links', ['variant' => 'row'])
+            {{-- Where to find me. Dropped whole with no links saved: a heading
+                 over an empty row reads as a broken footer. --}}
+            @if ($socials->isNotEmpty())
+                <div>
+                    <h2 class="pf-mono text-[10px] font-semibold tracking-wider text-(--pf-text-muted) uppercase">Elsewhere</h2>
+                    <div class="mt-4">
+                        @include('frontend.themes.portfolio.partials.social-links', ['variant' => 'row'])
+                    </div>
                 </div>
-            </div>
+            @endif
         </div>
 
         <div class="mt-14 flex flex-col items-center gap-4 border-t border-(--pf-border) pt-7 sm:flex-row sm:justify-between">

@@ -7,6 +7,7 @@ use App\Models\MenuItem;
 use App\Models\Page;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
+use App\Models\Type;
 use App\Support\AdminActivity;
 use App\Support\ContentCache;
 use Illuminate\Support\Facades\Route;
@@ -391,8 +392,14 @@ class Index extends Component
 
         // Link-target pickers for the create/edit modal: brands, categories that
         // have a landing page (their slug lives on the paired Page), and the
-        // published pages the storefront `page` route actually serves.
-        $brands = ProductBrand::active()->orderBy('sort_order')->orderBy('id')->get();
+        // published pages the storefront `page` route actually serves. A menu
+        // item resolves against a storefront URL, so only the product pool's
+        // brands belong in the picker.
+        $brands = ProductBrand::whereIn('type_id', Type::subquery(Type::PRODUCT))
+            ->active()
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
 
         $categories = ProductCategory::tree(
             ProductCategory::active()->with('page')->orderBy('sort_order')

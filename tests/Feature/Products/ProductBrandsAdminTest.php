@@ -4,6 +4,7 @@ use App\Livewire\Admin\ProductBrands\Form as ProductBrandForm;
 use App\Livewire\Admin\ProductBrands\Index as ProductBrandIndex;
 use App\Models\Product;
 use App\Models\ProductBrand;
+use App\Models\Type;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Livewire\Livewire;
@@ -30,21 +31,27 @@ it('renders the product brands index with existing brands', function () {
         ->assertSee('Acme');
 });
 
-it('shows a "Both" badge for a shared (null-type) brand on the index, never mislabeled as Product', function () {
-    ProductBrand::factory()->create(['name' => ['en' => 'Acme', 'bn' => ''], 'type' => null]);
+it('shows each brand under its own type on the index, with no shared bucket', function () {
+    ProductBrand::factory()->create(['name' => ['en' => 'Acme', 'bn' => '']]);
+    ProductBrand::factory()->post()->create(['name' => ['en' => 'Post Brand', 'bn' => '']]);
 
     $html = Livewire::test(ProductBrandIndex::class)->html();
 
-    expect($html)->toContain('Both');
+    expect($html)->toContain('Acme')
+        ->and($html)->toContain('Post Brand')
+        ->and($html)->not->toContain('Both')
+        ->and($html)->not->toContain('Shared');
 });
 
-it('filters the index to shared (null-type) brands only', function () {
-    ProductBrand::factory()->create(['name' => ['en' => 'Shared Co', 'bn' => ''], 'type' => null]);
-    ProductBrand::factory()->create(['name' => ['en' => 'Product Only', 'bn' => ''], 'type' => ProductBrand::TYPE_PRODUCT]);
+it('filters the index to a single type', function () {
+    $this->postTypeId = Type::idFor(Type::POST);
+
+    ProductBrand::factory()->create(['name' => ['en' => 'Product Only', 'bn' => '']]);
+    ProductBrand::factory()->post()->create(['name' => ['en' => 'Post Only', 'bn' => '']]);
 
     Livewire::test(ProductBrandIndex::class)
-        ->set('typeFilter', 'shared')
-        ->assertSee('Shared Co')
+        ->set('typeFilter', (string) $this->postTypeId)
+        ->assertSee('Post Only')
         ->assertDontSee('Product Only');
 });
 
@@ -70,21 +77,37 @@ it('creates a brand, active by default', function () {
         ->and($brand->status)->toBe('active');
 });
 
-it('can create a shared (null-type) brand by picking the Shared option from the form', function () {
+it('defaults a new brand to the product type', function () {
+    Livewire::test(ProductBrandForm::class)
+        ->assertSet('typeId', Type::idFor(Type::PRODUCT));
+});
+
+it('requires a type, since every brand now belongs to exactly one pool', function () {
     Livewire::test(ProductBrandForm::class)
         ->set('name.en', 'Acme')
-        ->set('type', '')
+        ->set('typeId', null)
+        ->call('save')
+        ->assertHasErrors('typeId');
+});
+
+it('can create a post-type brand from the form', function () {
+    $postTypeId = Type::idFor(Type::POST);
+
+    Livewire::test(ProductBrandForm::class)
+        ->set('name.en', 'Acme')
+        ->set('typeId', $postTypeId)
         ->call('save')
         ->assertHasNoErrors();
 
-    expect(ProductBrand::sole()->type)->toBeNull();
+    expect(ProductBrand::sole()->type_id)->toBe($postTypeId);
 });
 
-it('loads an existing shared (null-type) brand with the Shared option selected', function () {
-    $brand = ProductBrand::factory()->create(['name' => ['en' => 'Acme', 'bn' => ''], 'type' => null]);
+it('loads an existing brand with its own type selected', function () {
+    $postTypeId = Type::idFor(Type::POST);
+    $brand = ProductBrand::factory()->post()->create(['name' => ['en' => 'Acme', 'bn' => '']]);
 
     Livewire::test(ProductBrandForm::class, ['id' => $brand->id])
-        ->assertSet('type', '');
+        ->assertSet('typeId', $postTypeId);
 });
 
 it('rejects a duplicate brand name', function () {

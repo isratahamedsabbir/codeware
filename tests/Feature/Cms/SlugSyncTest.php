@@ -9,6 +9,7 @@ use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\Type;
 use App\Models\User;
 use App\Support\Slug;
 use Database\Seeders\RolePermissionSeeder;
@@ -57,7 +58,7 @@ it('live-types slugs for posts, product categories, and post categories the same
         ->assertSet('slug', 'home-appliances');
 
     Livewire::test(CategoryForm::class)
-        ->set('type', 'post_category')
+        ->set('typeId', Type::idFor(Type::POST))
         ->set('name.en', 'Company News')
         ->assertSet('slug', 'company-news');
 
@@ -90,7 +91,7 @@ it('rejects a product slug that collides with an existing page slug from a diffe
 
 it('rejects a product category slug that collides with a post category, since categories are now globally unique', function () {
     Livewire::test(CategoryForm::class)
-        ->set('type', 'post_category')
+        ->set('typeId', Type::idFor(Type::POST))
         ->set('name.en', 'Shared Category')
         ->call('save');
 
@@ -120,7 +121,7 @@ it('locks the slug field for a linked page and ignores any edit attempt on save,
 
 it('locks the slug field for a linked page and ignores any edit attempt on save, keeping the post category authoritative', function () {
     Livewire::test(CategoryForm::class)
-        ->set('type', 'post_category')
+        ->set('typeId', Type::idFor(Type::POST))
         ->set('name.en', 'Original Category')
         ->call('save');
 
@@ -213,7 +214,7 @@ it('checks slug availability the same way for posts, categories, and pages', fun
         ->assertSet('slugAvailable', true);
 
     Livewire::test(CategoryForm::class)
-        ->set('type', 'post_category')
+        ->set('typeId', Type::idFor(Type::POST))
         ->set('name.en', 'Another Fresh Category')
         ->assertSet('slugAvailable', true);
 

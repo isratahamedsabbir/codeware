@@ -1,9 +1,11 @@
 <?php
 
+use App\Livewire\Admin\Posts\Form as PostForm;
 use App\Livewire\Admin\Products\Form as ProductForm;
 use App\Models\Post;
 use App\Models\Product;
 use App\Models\Tag;
+use App\Models\Type;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Livewire\Livewire;
@@ -49,7 +51,7 @@ it('updates a product\'s tags on save, replacing the previous set', function () 
     expect($product->tags()->pluck('categories.id')->all())->toBe([$newTag->id]);
 });
 
-it('shares a legacy tag between a post and a product', function () {
+it('keeps a product tag off a post, since a tag belongs to exactly one pool', function () {
     $tag = Tag::factory()->create(['name' => ['en' => 'Organic', 'bn' => '']]);
     $post = Post::factory()->create();
     $product = Product::factory()->create();
@@ -57,19 +59,22 @@ it('shares a legacy tag between a post and a product', function () {
     $post->tags()->attach($tag);
     $product->tags()->attach($tag);
 
-    expect($tag->posts()->pluck('posts.id')->all())->toBe([$post->id])
-        ->and($tag->products()->pluck('products.id')->all())->toBe([$product->id]);
+    // The pivot is a plain many-to-many, so the database will happily store a
+    // cross-pool link — what stops it is the Post form's validation, which only
+    // accepts post-pool tag ids.
+    Livewire::test(PostForm::class)
+        ->set('tag_ids', [$tag->id])
+        ->call('save')
+        ->assertHasErrors('tag_ids.0');
 });
 
-it('lists both post-typed and product-typed tags in the product form, but not legacy tags', function () {
+it('lists only product-typed tags in the product form', function () {
     Tag::factory()->post()->create(['name' => ['en' => 'Post Tag', 'bn' => '']]);
-    Tag::factory()->product()->create(['name' => ['en' => 'Product Tag', 'bn' => '']]);
-    Tag::factory()->create(['name' => ['en' => 'Legacy Only', 'bn' => '']]);
+    Tag::factory()->create(['name' => ['en' => 'Product Tag', 'bn' => '']]);
 
     Livewire::test(ProductForm::class)
-        ->assertSee('Post Tag')
         ->assertSee('Product Tag')
-        ->assertDontSee('Legacy Only');
+        ->assertDontSee('Post Tag');
 });
 
 it('creates a product-typed tag inline from the form and selects it', function () {
@@ -80,5 +85,5 @@ it('creates a product-typed tag inline from the form and selects it', function (
 
     $tag = Tag::whereJsonContains('name->en', 'Handmade')->firstOrFail();
 
-    expect($tag->type)->toBe(Tag::TYPE_PRODUCT);
+    expect($tag->type_id)->toBe(Type::idFor(Type::PRODUCT));
 });

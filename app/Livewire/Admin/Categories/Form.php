@@ -6,9 +6,12 @@ use App\Concerns\HasSeoFields;
 use App\Concerns\HasTranslatableFields;
 use App\Models\Category;
 use App\Models\Page;
+use App\Models\ProductCategory;
+use App\Models\Type;
 use App\Support\AdminActivity;
 use App\Support\Locale;
 use App\Support\Slug;
+use App\Support\Taxonomy;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
@@ -23,8 +26,13 @@ class Form extends Component
 
     public ?int $pageId = null;
 
-    #[Validate('required|in:product_category,post_category')]
-    public string $type = Category::TYPE_PRODUCT;
+    /**
+     * Which content pool this category belongs to — a row in the shared taxonomy
+     * table that every category, brand and tag picks from (see App\Models\Type).
+     * Required: a category in no pool has no storefront or blog page to appear on.
+     */
+    #[Validate('required|integer|exists:types,id')]
+    public ?int $typeId = null;
 
     public array $name = [];
 
@@ -58,28 +66,32 @@ class Form extends Component
         $this->iconPickerId = 'icon-picker-'.Str::uuid()->toString();
 
         // Preselects the type when arriving from the Categories index's
-        // "New category" button (which links here with ?type=... for
-        // whichever pool was showing) — a plain query string, not a route
-        // parameter, so it's read directly rather than via a mount() arg.
+        // "New category" button (which links here with ?type=<id> for whichever
+        // pool was showing) — a plain query string, not a route parameter, so
+        // it's read directly rather than via a mount() arg.
         $queryType = request()->query('type');
-        if (is_string($queryType) && in_array($queryType, Category::TYPES, true)) {
-            $this->type = $queryType;
+        if (is_string($queryType) && ctype_digit($queryType) && Type::whereKey($queryType)->exists()) {
+            $this->typeId = (int) $queryType;
         }
 
-        if ($id) {
-            $category = Category::findOrFail($id);
-            $this->categoryId = $id;
-            $this->type = $category->type;
-            $this->parentId = $category->parent_id;
-            $this->hydrateTranslatable($category, ['name', 'description']);
-            $this->slug = $category->slug ?? '';
-            $this->icon = $category->icon ?? null;
+        if (! $id) {
+            $this->typeId ??= $this->defaultTypeId();
 
-            $this->pageId = $category->page?->id;
-            $this->hydrateSeoFieldsFromPage($category->page);
-
-            $this->checkSlugAvailability();
+            return;
         }
+
+        $category = Category::findOrFail($id);
+        $this->categoryId = $id;
+        $this->typeId = $category->type_id;
+        $this->parentId = $category->parent_id;
+        $this->hydrateTranslatable($category, ['name', 'description']);
+        $this->slug = $category->slug ?? '';
+        $this->icon = $category->icon ?? null;
+
+        $this->pageId = $category->page?->id;
+        $this->hydrateSeoFieldsFromPage($category->page);
+
+        $this->checkSlugAvailability();
     }
 
     /**
@@ -122,7 +134,7 @@ class Form extends Component
      * Switching type while creating clears the other type's parent — a
      * product category's parent can't sensibly become a post category's.
      */
-    public function updatedType(): void
+    public function updatedTypeId(): void
     {
         $this->parentId = null;
     }
@@ -130,6 +142,37 @@ class Form extends Component
     private function checkSlugAvailability(): void
     {
         $this->slugAvailable = Slug::isAvailable($this->slug, $this->pageId);
+    }
+
+    /**
+     * @return Collection<int, Type>
+     */
+    #[Computed]
+    public function typeOptions()
+    {
+        return Type::selectOptions();
+    }
+
+    /**
+     * The pool the admin picked, as a model — the form branches on it (parents
+     * and an icon for product categories, a description for post categories) and
+     * save() reads the paired Page's own `type` off it.
+     */
+    #[Computed]
+    public function selectedType(): ?Type
+    {
+        return $this->typeId ? Type::find($this->typeId) : null;
+    }
+
+    /**
+     * Product categories carry a parent tree and an icon; post categories are a
+     * flat list with a description instead. Same split as before, keyed off the
+     * selected pool rather than a hardcoded string on the form.
+     */
+    #[Computed]
+    public function isProductPool(): bool
+    {
+        return $this->selectedType()?->slug === Type::PRODUCT;
     }
 
     /**
@@ -143,11 +186,11 @@ class Form extends Component
     #[Computed]
     public function parentOptions(): array
     {
-        if ($this->type !== Category::TYPE_PRODUCT) {
+        if (! $this->isProductPool) {
             return [];
         }
 
-        $all = Category::where('type', Category::TYPE_PRODUCT)->orderBy('sort_order')->get();
+        $all = $this->productCategories();
 
         $excluded = [];
         if ($this->categoryId) {
@@ -164,6 +207,14 @@ class Form extends Component
             ])
             ->values()
             ->all();
+    }
+
+    /**
+     * @return Collection<int, Category>
+     */
+    private function productCategories(): Collection
+    {
+        return Category::where('type_id', $this->typeId)->orderBy('sort_order')->get();
     }
 
     /**
@@ -196,16 +247,16 @@ class Form extends Component
             ...Slug::uniqueRules($this->pageId),
         ];
 
-        if ($this->type === Category::TYPE_PRODUCT) {
-            $rules['parentId'] = ['nullable', 'integer', 'exists:categories,id,type,product_category'];
+        if ($this->isProductPool) {
+            $rules['parentId'] = Taxonomy::nullableRule(ProductCategory::class);
         }
 
         $this->validate($rules);
 
-        if ($this->type === Category::TYPE_PRODUCT && $this->parentId && $this->categoryId) {
+        if ($this->isProductPool && $this->parentId && $this->categoryId) {
             $invalidParents = [
                 $this->categoryId,
-                ...$this->descendantIds($this->categoryId, Category::where('type', Category::TYPE_PRODUCT)->orderBy('sort_order')->get()),
+                ...$this->descendantIds($this->categoryId, $this->productCategories()),
             ];
 
             if (in_array($this->parentId, $invalidParents, true)) {
@@ -218,11 +269,11 @@ class Form extends Component
         $creating = $this->categoryId === null;
 
         $data = [
-            'type' => $this->type,
+            'type_id' => $this->typeId,
             'name' => $this->translatablePayload('name'),
-            'description' => $this->type === Category::TYPE_POST ? ($this->translatablePayload('description') ?: null) : null,
-            'icon' => $this->type === Category::TYPE_PRODUCT ? ($this->icon ?: null) : null,
-            'parent_id' => $this->type === Category::TYPE_PRODUCT ? $this->parentId : null,
+            'description' => $this->isProductPool ? null : ($this->translatablePayload('description') ?: null),
+            'icon' => $this->isProductPool ? ($this->icon ?: null) : null,
+            'parent_id' => $this->isProductPool ? $this->parentId : null,
         ];
 
         if ($this->categoryId) {
@@ -238,14 +289,20 @@ class Form extends Component
             $this->dispatch('notify', message: 'Category created successfully');
         }
 
+        // Keyed on category_id alone, not on the page's type as well: the admin
+        // can move a category between pools, and the one page paired with a
+        // category is identified by that category, so the pool is something to
+        // write rather than something to match on. Otherwise changing pools
+        // would orphan the existing page and quietly start a second one.
         $page = Page::updateOrCreate(
-            ['type' => $this->type, 'category_id' => $category->id],
+            ['category_id' => $category->id],
             [
+                'type' => $this->selectedType?->pageType(),
                 'user_id' => auth()->id(),
                 'title' => $this->translatablePayload('name'),
                 'slug' => $this->slug,
                 'status' => $category->status,
-                'description' => $this->type === Category::TYPE_POST ? ($this->translatablePayload('description') ?: null) : null,
+                'description' => $this->isProductPool ? null : ($this->translatablePayload('description') ?: null),
                 ...$this->seoPagePayload(),
             ]
         );
@@ -256,7 +313,12 @@ class Form extends Component
             "Category: {$this->primaryValue('name')}",
         );
 
-        $this->redirect(route('admin.categories', ['type' => $this->type]), navigate: true);
+        $this->redirect(route('admin.categories', ['type' => $this->typeId]), navigate: true);
+    }
+
+    private function defaultTypeId(): ?int
+    {
+        return Type::idFor(Type::PRODUCT) ?? Type::idFor(Type::POST);
     }
 
     public function render()

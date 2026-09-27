@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Type;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ProductCategoryFactory extends Factory
@@ -12,6 +13,7 @@ class ProductCategoryFactory extends Factory
 
         return [
             'name' => ['en' => ucfirst($name), 'bn' => ucfirst($name)],
+            'type_id' => Type::idFor(Type::PRODUCT),
             'icon' => null,
             'sort_order' => 0,
             'status' => 'active',

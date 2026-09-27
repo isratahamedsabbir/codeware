@@ -5,6 +5,7 @@ use App\Livewire\Admin\Posts\Index as PostsIndex;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\Tag;
+use App\Models\Type;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Livewire\Livewire;
@@ -47,18 +48,26 @@ it('creates a post-typed tag inline from the form and selects it', function () {
 
     $tag = Tag::whereJsonContains('name->en', 'Announcement')->firstOrFail();
 
-    expect($tag->type)->toBe(Tag::TYPE_POST);
+    expect($tag->type_id)->toBe(Type::idFor(Type::POST));
 });
 
-it('lists both post-typed and product-typed tags in the post form, but not legacy tags', function () {
+it('lists only post-typed tags in the post form', function () {
     Tag::factory()->post()->create(['name' => ['en' => 'Post Tag', 'bn' => '']]);
-    Tag::factory()->product()->create(['name' => ['en' => 'Product Tag', 'bn' => '']]);
-    Tag::factory()->create(['name' => ['en' => 'Legacy Only', 'bn' => '']]);
+    Tag::factory()->create(['name' => ['en' => 'Product Tag', 'bn' => '']]);
 
     Livewire::test(PostsForm::class)
         ->assertSee('Post Tag')
-        ->assertSee('Product Tag')
-        ->assertDontSee('Legacy Only');
+        ->assertDontSee('Product Tag');
+});
+
+it('rejects a product-pool tag id on a post', function () {
+    $productTag = Tag::factory()->create(['name' => ['en' => 'Product Tag', 'bn' => '']]);
+
+    Livewire::test(PostsForm::class)
+        ->set('title.en', 'Something')
+        ->set('tag_ids', [$productTag->id])
+        ->call('save')
+        ->assertHasErrors('tag_ids.0');
 });
 
 it('can filter posts by status', function () {

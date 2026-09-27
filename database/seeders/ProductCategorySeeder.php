@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Page;
 use App\Models\ProductCategory;
+use App\Models\Type;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -31,6 +32,7 @@ class ProductCategorySeeder extends Seeder
             $category = ProductCategory::where('name->en', $cat['en'])->first()
                 ?? ProductCategory::create([
                     'name' => ['en' => $cat['en'], 'bn' => $cat['bn']],
+                    'type_id' => Type::idFor(Type::PRODUCT),
                     'sort_order' => $cat['sort_order'],
                     'featured' => true,
                 ]);

@@ -17,9 +17,19 @@ class PostCategory extends Model
 
     protected $table = 'categories';
 
+    public const KIND = Category::KIND_CATEGORY;
+
+    /**
+     * This model is the post pool's categories and nothing else, so every query
+     * it makes is locked to that pool — see the global scope below. The one place
+     * that needs the id (its own creating() default) resolves it through
+     * Type::idFor().
+     */
+    public const TYPE = Type::POST;
+
     public array $translatable = ['name', 'description'];
 
-    protected $fillable = ['type', 'name', 'description', 'sort_order', 'status'];
+    protected $fillable = ['kind', 'type_id', 'name', 'description', 'sort_order', 'status'];
 
     /**
      * `slug` is a virtual accessor (see below), not a real column — Eloquent
@@ -36,12 +46,17 @@ class PostCategory extends Model
 
     protected static function booted(): void
     {
+        static::addGlobalScope('kind', function (Builder $builder) {
+            $builder->where('kind', self::KIND);
+        });
+
         static::addGlobalScope('type', function (Builder $builder) {
-            $builder->where('type', 'post_category');
+            $builder->whereIn('type_id', Type::subquery(self::TYPE));
         });
 
         static::creating(function (PostCategory $category) {
-            $category->type = 'post_category';
+            $category->kind = self::KIND;
+            $category->type_id ??= Type::idFor(self::TYPE);
         });
     }
 

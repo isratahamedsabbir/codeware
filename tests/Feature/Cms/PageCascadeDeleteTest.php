@@ -9,6 +9,7 @@ use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\Type;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Laravel\Sanctum\Sanctum;
@@ -84,7 +85,7 @@ it('deleting a post category via Livewire permanently deletes its paired page', 
     [$category, $page] = createPageCascadeTestPair('post_category');
 
     Livewire::test(CategoriesIndex::class)
-        ->set('typeFilter', 'post_category')
+        ->set('typeFilter', Type::idFor(Type::POST))
         ->call('confirmDelete', $category->id)->call('delete');
 
     expect(PostCategory::find($category->id))->toBeNull()

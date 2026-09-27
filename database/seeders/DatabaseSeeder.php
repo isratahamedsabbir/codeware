@@ -43,6 +43,11 @@ class DatabaseSeeder extends Seeder
         $this->call(LanguageSeeder::class);
         $this->call(BangladeshLocationSeeder::class);
         $this->call(AdminMenuSeeder::class);
+        // Types before anything that has to pick one — ProductCategorySeeder,
+        // ProductBrandSeeder and the tag/category rows the demo data creates all
+        // resolve their type by slug (Type::idFor), so they need these two rows
+        // to already exist.
+        $this->call(TypeSeeder::class);
         $this->call(ProductCategorySeeder::class);
         $this->call(ProductBrandSeeder::class);
         $this->call(ProductAttributeSeeder::class);

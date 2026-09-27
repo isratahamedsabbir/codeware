@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\Post;
+use App\Models\PostCategory;
 use App\Models\Tag;
+use App\Models\Type;
 use App\Support\PageCascade;
 use App\Support\Slug;
+use App\Support\Taxonomy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -94,7 +97,7 @@ class PostController extends Controller
             'status' => 'sometimes|in:active,inactive',
             'puck_data' => 'nullable|array',
             'tag_ids' => 'sometimes|array',
-            'tag_ids.*' => [Rule::exists('categories', 'id')->where(fn ($q) => $q->whereIn('type', Tag::TYPES)->orWhereNull('type'))],
+            'tag_ids.*' => Taxonomy::eachRule(Tag::class, Type::POST),
         ]);
 
         $validated['user_id'] = $request->user()->id;
@@ -144,10 +147,10 @@ class PostController extends Controller
             'status' => 'sometimes|in:active,inactive',
             'featured_image' => 'sometimes|nullable|string',
             'puck_data' => 'sometimes|nullable|array',
-            'category_id' => 'sometimes|nullable|exists:categories,id,type,post_category',
+            'category_id' => array_merge(['sometimes'], Taxonomy::nullableRule(PostCategory::class)),
             'slug' => ['sometimes', 'string', ...Slug::uniqueRules($post->page?->id)],
             'tag_ids' => 'sometimes|array',
-            'tag_ids.*' => [Rule::exists('categories', 'id')->where(fn ($q) => $q->whereIn('type', Tag::TYPES)->orWhereNull('type'))],
+            'tag_ids.*' => Taxonomy::eachRule(Tag::class, Type::POST),
         ]);
 
         // SEO fields, OG image, and the puck-builder content all live on the paired

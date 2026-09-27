@@ -40,6 +40,13 @@
     'fields' => [['name' => 'title', 'label' => 'Title']],
     'addLabel' => 'Add row',
     'max' => 24,
+    /**
+     * How many row cards sit side by side from md up — 2 suits short rows
+     * such as the hero stats' value/label pair. Rows with a textarea or a
+     * picture read better at the default full width. In two-column mode a
+     * card's own fields stack, so each input gets the card's full width.
+     */
+    'columns' => 1,
 ])
 
 <div class="space-y-3">
@@ -69,7 +76,7 @@
             </p>
         </div>
     @else
-    <div class="space-y-2.5">
+    <div class="{{ $columns === 2 && $count > 0 ? 'grid gap-2.5 md:grid-cols-2' : 'space-y-2.5' }}">
         @forelse ($rows as $i => $row)
             <div wire:key="repeater-{{ $settingKey }}-{{ $i }}"
                 class="group rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800/40">
@@ -105,7 +112,7 @@
                     </div>
                 </div>
 
-                <div class="grid gap-3 sm:grid-cols-2">
+                <div class="grid gap-3 {{ $columns === 2 ? '' : 'sm:grid-cols-2' }}">
                     @foreach ($fields as $field)
                         @php
                             $name = $field['name'];

@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\Product;
+use App\Models\ProductBrand;
+use App\Models\ProductCategory;
 use App\Support\PageCascade;
 use App\Support\Slug;
+use App\Support\Taxonomy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -59,11 +62,11 @@ class ProductController extends Controller
             'name.en' => 'required|string|max:255',
             'name.bn' => 'nullable|string|max:255',
             'slug' => ['nullable', 'string', ...Slug::uniqueRules(null)],
-            'brand_id' => 'nullable|integer|exists:categories,id,type,product_brand',
+            'brand_id' => Taxonomy::nullableRule(ProductBrand::class),
             'vendor_id' => 'nullable|integer|exists:product_vendors,id',
             'sku' => 'nullable|string|max:100|unique:products,sku',
             'category_ids' => 'nullable|array',
-            'category_ids.*' => 'integer|exists:categories,id,type,product_category',
+            'category_ids.*' => Taxonomy::eachRule(ProductCategory::class),
             'description' => 'nullable|array',
             'description.en' => 'nullable|string',
             'description.bn' => 'nullable|string',
@@ -146,11 +149,11 @@ class ProductController extends Controller
             'name.en' => 'required_with:name|string|max:255',
             'name.bn' => 'nullable|string|max:255',
             'slug' => ['nullable', 'string', ...Slug::uniqueRules($product->page?->id)],
-            'brand_id' => 'sometimes|nullable|integer|exists:categories,id,type,product_brand',
+            'brand_id' => array_merge(['sometimes'], Taxonomy::nullableRule(ProductBrand::class)),
             'vendor_id' => 'sometimes|nullable|integer|exists:product_vendors,id',
             'sku' => ['sometimes', 'nullable', 'string', 'max:100', Rule::unique('products', 'sku')->ignore($product->id)],
             'category_ids' => 'sometimes|nullable|array',
-            'category_ids.*' => 'integer|exists:categories,id,type,product_category',
+            'category_ids.*' => Taxonomy::eachRule(ProductCategory::class),
             'description' => 'sometimes|nullable|array',
             'description.en' => 'nullable|string',
             'description.bn' => 'nullable|string',

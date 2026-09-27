@@ -3,6 +3,7 @@
 use App\Livewire\Admin\Tags\Form as TagsForm;
 use App\Livewire\Admin\Tags\Index as TagsIndex;
 use App\Models\Tag;
+use App\Models\Type;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Livewire\Livewire;
@@ -11,6 +12,8 @@ beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
     $this->admin = User::factory()->admin()->create();
     $this->actingAs($this->admin);
+    $this->productTypeId = Type::idFor(Type::PRODUCT);
+    $this->postTypeId = Type::idFor(Type::POST);
 });
 
 it('renders tags index component', function () {
@@ -18,25 +21,25 @@ it('renders tags index component', function () {
         ->assertStatus(200);
 });
 
-it('shows a "Both" badge, not "Legacy", for a shared (null or legacy-typed) tag on the index', function () {
-    Tag::factory()->create(['name' => ['en' => 'Null Pool', 'bn' => ''], 'type' => null]);
-    Tag::factory()->create(['name' => ['en' => 'Old Pool', 'bn' => ''], 'type' => Tag::TYPE_LEGACY]);
+it('shows each tag under its own type on the index, with no shared/legacy bucket', function () {
+    Tag::factory()->create(['name' => ['en' => 'Product Tag', 'bn' => '']]);
+    Tag::factory()->post()->create(['name' => ['en' => 'Post Tag', 'bn' => '']]);
 
     $html = Livewire::test(TagsIndex::class)->html();
 
-    expect($html)->toContain('Both')
+    expect($html)->toContain('Product Tag')
+        ->and($html)->toContain('Post Tag')
+        ->and($html)->not->toContain('Both')
         ->and($html)->not->toContain('Legacy');
 });
 
-it('filters the index to shared tags only, covering both null and legacy-typed rows', function () {
-    Tag::factory()->create(['name' => ['en' => 'Null Pool', 'bn' => ''], 'type' => null]);
-    Tag::factory()->create(['name' => ['en' => 'Old Pool', 'bn' => ''], 'type' => Tag::TYPE_LEGACY]);
-    Tag::factory()->create(['name' => ['en' => 'Product Only', 'bn' => ''], 'type' => Tag::TYPE_PRODUCT]);
+it('filters the index to a single type', function () {
+    Tag::factory()->create(['name' => ['en' => 'Product Only', 'bn' => '']]);
+    Tag::factory()->post()->create(['name' => ['en' => 'Post Only', 'bn' => '']]);
 
     Livewire::test(TagsIndex::class)
-        ->set('typeFilter', 'shared')
-        ->assertSee('Null Pool')
-        ->assertSee('Old Pool')
+        ->set('typeFilter', (string) $this->postTypeId)
+        ->assertSee('Post Only')
         ->assertDontSee('Product Only');
 });
 
@@ -54,48 +57,43 @@ it('can create a tag', function () {
     expect(Tag::whereJsonContains('name->en', 'News')->exists())->toBeTrue();
 });
 
+it('defaults a new tag to the post pool, as the tags list did before types were a table', function () {
+    Livewire::test(TagsForm::class)
+        ->assertSet('typeId', $this->postTypeId);
+});
+
 it('can create a product-type tag from the tags form', function () {
     Livewire::test(TagsForm::class)
         ->set('name.en', 'Gadget')
-        ->set('type', Tag::TYPE_PRODUCT)
+        ->set('typeId', $this->productTypeId)
         ->call('save');
 
-    expect(Tag::whereJsonContains('name->en', 'Gadget')->firstOrFail()->type)->toBe(Tag::TYPE_PRODUCT);
+    expect(Tag::whereJsonContains('name->en', 'Gadget')->firstOrFail()->type_id)->toBe($this->productTypeId);
 });
 
-it('can create a shared (null-type) tag by picking the Shared option from the tags form', function () {
+it('can create a post-type tag from the tags form', function () {
     Livewire::test(TagsForm::class)
         ->set('name.en', 'Seasonal')
-        ->set('type', '')
+        ->set('typeId', $this->postTypeId)
         ->call('save')
         ->assertHasNoErrors();
 
-    expect(Tag::whereJsonContains('name->en', 'Seasonal')->firstOrFail()->type)->toBeNull();
+    expect(Tag::whereJsonContains('name->en', 'Seasonal')->firstOrFail()->type_id)->toBe($this->postTypeId);
 });
 
-it('loads an existing shared (null-type) tag with the Shared option selected', function () {
-    $tag = Tag::factory()->create(['name' => ['en' => 'Seasonal', 'bn' => ''], 'type' => null]);
-
-    Livewire::test(TagsForm::class, ['id' => $tag->id])
-        ->assertSet('type', '');
-});
-
-it('loads a legacy-typed tag with the Shared option selected, no separate Legacy option offered', function () {
-    $tag = Tag::factory()->create(['name' => ['en' => 'Old Stock', 'bn' => ''], 'type' => Tag::TYPE_LEGACY]);
-
-    Livewire::test(TagsForm::class, ['id' => $tag->id])
-        ->assertSet('type', '')
-        ->assertDontSee('Legacy');
-});
-
-it('migrates a legacy-typed tag to a real null type once resaved from the form', function () {
-    $tag = Tag::factory()->create(['name' => ['en' => 'Old Stock', 'bn' => ''], 'type' => Tag::TYPE_LEGACY]);
-
-    Livewire::test(TagsForm::class, ['id' => $tag->id])
+it('requires a type, since every tag now belongs to exactly one pool', function () {
+    Livewire::test(TagsForm::class)
+        ->set('name.en', 'Typeless')
+        ->set('typeId', null)
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasErrors('typeId');
+});
 
-    expect($tag->refresh()->type)->toBeNull();
+it('loads an existing tag with its own type selected', function () {
+    $tag = Tag::factory()->post()->create(['name' => ['en' => 'Seasonal', 'bn' => '']]);
+
+    Livewire::test(TagsForm::class, ['id' => $tag->id])
+        ->assertSet('typeId', $this->postTypeId);
 });
 
 it('rejects a duplicate tag name', function () {
@@ -122,6 +120,16 @@ it('can edit a tag', function () {
         ->call('save');
 
     expect($tag->refresh()->getTranslation('name', 'en', false))->toBe('Updated');
+});
+
+it('can move a tag to the other pool from the form', function () {
+    $tag = Tag::factory()->create(['name' => ['en' => 'Movable', 'bn' => '']]);
+
+    Livewire::test(TagsForm::class, ['id' => $tag->id])
+        ->set('typeId', $this->postTypeId)
+        ->call('save');
+
+    expect($tag->refresh()->type_id)->toBe($this->postTypeId);
 });
 
 it('can delete a tag', function () {

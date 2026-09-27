@@ -31,13 +31,14 @@
 
     {{-- Header --}}
     <div class="flex items-center gap-3 p-4 flex-wrap">
-        {{-- Product / Post switcher — the two pools have unrelated parent_id
-             trees, so they're shown one at a time rather than mixed. --}}
+        {{-- Type switcher — the pools have unrelated parent_id trees, so they're
+             shown one at a time rather than mixed. --}}
         <select wire:model.live="typeFilter"
             class="px-3 py-2 text-sm border border-zinc-200 rounded-lg outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 bg-white appearance-none pr-8 min-w-[140px] transition-all"
             style="background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 10px center">
-            <option value="{{ \App\Models\Category::TYPE_PRODUCT }}">Product</option>
-            <option value="{{ \App\Models\Category::TYPE_POST }}">Post</option>
+            @foreach ($types as $type)
+                <option value="{{ $type->id }}">{{ $type->getTranslation('name', 'en', false) ?: $type->getTranslation('name', 'bn', false) }}</option>
+            @endforeach
         </select>
 
         <select wire:model.live="statusFilter"
@@ -99,7 +100,7 @@
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Name</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Type</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">
-                            {{ $typeFilter === \App\Models\Category::TYPE_PRODUCT ? 'Icon' : 'Posts' }}
+                            {{ $currentType?->slug === \App\Models\Type::PRODUCT ? 'Icon' : 'Posts' }}
                         </th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Featured</th>
@@ -169,16 +170,14 @@
 
                             {{-- Type --}}
                             <td class="px-4 py-2">
-                                @if ($category->type === \App\Models\Category::TYPE_POST)
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600 border border-indigo-200">Post</span>
-                                @else
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-600 border border-amber-200">Product</span>
-                                @endif
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600 border border-indigo-200">
+                                    <x-truncate :text="$category->type?->getTranslation('name', 'en', false) ?: $category->type?->getTranslation('name', 'bn', false)" />
+                                </span>
                             </td>
 
                             {{-- Icon (product) / Post count (post) --}}
                             <td class="hidden lg:table-cell px-4 py-2">
-                                @if ($typeFilter === \App\Models\Category::TYPE_PRODUCT)
+                                @if ($currentType?->slug === \App\Models\Type::PRODUCT)
                                     @if ($category->icon)
                                         <img src="{{ $category->icon }}" alt="Icon"
                                             class="w-8 h-8 rounded-lg object-cover border border-zinc-100" />
@@ -244,7 +243,7 @@
                         </tr>
                         @if ($viewingId === $category->id)
                             <x-admin-row-details colspan="10">
-                                @if ($typeFilter === \App\Models\Category::TYPE_PRODUCT)
+                                @if ($currentType?->slug === \App\Models\Type::PRODUCT)
                                     <x-admin-row-details.item label="Icon">
                                         @if ($category->icon)
                                             <img src="{{ $category->icon }}" alt="Icon" class="w-8 h-8 rounded-lg object-cover border border-zinc-100 ml-auto">
