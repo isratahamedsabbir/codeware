@@ -9,8 +9,8 @@
 
     <div class="flex gap-5 items-start">
         {{-- ── MAIN ── --}}
-        <div class="flex-1 min-w-0 space-y-4">
-        <div class="bg-white rounded-[5px] shadow-sm p-6">
+        <div class="flex-1 min-w-0 space-y-5">
+        <x-admin-section-card variant="postbox" persist-key="category-details" title="Category Details" :collapsed="false" body-class="p-3">
 
             <x-admin-locale-tabs>
                 @foreach (\App\Support\Locale::translatable() as $language)
@@ -62,9 +62,9 @@
                     <flux:error name="typeId" />
                 </flux:field>
             </div>
-        </div>
+        </x-admin-section-card>
 
-        @include('partials.admin-seo-fields')
+        @include('partials.admin-seo-fields', ['seoCardVariant' => 'postbox', 'seoPersistKey' => 'category-seo'])
 
         <div class="flex items-center gap-3 flex-wrap">
             <x-admin-save-button :label="$categoryId ? 'Update Category' : 'Create Category'" />
@@ -73,9 +73,9 @@
 
         {{-- ── SIDEBAR — product categories only ── --}}
         @if ($this->isProductPool)
-            <div class="w-[320px] shrink-0 space-y-4">
-                <x-admin-section-card icon="swatch" title="Category Settings" body-class="px-4 py-4 space-y-4"
-                    description="Icon and parent category.">
+            <div class="w-[320px] shrink-0 space-y-5">
+                <x-admin-section-card variant="postbox" persist-key="category-settings" title="Category Settings" :collapsed="false"
+                    body-class="p-3 space-y-4" description="Icon and parent category.">
                     <flux:field>
                         <flux:label>Parent category<x-field-hint text="Leave as top-level, or nest this under an existing category to make it a subcategory." /></flux:label>
                         <flux:select wire:model="parentId">

@@ -26,8 +26,8 @@
     <div class="flex gap-5 items-start">
 
         {{-- ── MAIN ── --}}
-        <div class="flex-1 min-w-0 space-y-4">
-        <div class="bg-white rounded-[5px] shadow-sm p-6">
+        <div class="flex-1 min-w-0 space-y-5">
+        <x-admin-section-card variant="postbox" persist-key="product-details" title="Product Details" :collapsed="false">
 
             <x-admin-locale-tabs>
                 @foreach (\App\Support\Locale::translatable() as $language)
@@ -143,14 +143,14 @@
                 </div>
 
             </x-admin-locale-tabs>
-        </div>
+        </x-admin-section-card>
 
         {{-- Additional Data: Description, Short Description, Specification —
              rich editors above the Variations, toggled from Settings → Widgets --}}
         @if (\App\Models\Setting::productAdditionalDataEnabled())
-            <x-admin-section-card icon="document-text" title="Additional Data" icon-color="bg-emerald-500/10 text-emerald-600"
+            <x-admin-section-card variant="postbox" persist-key="product-additional-data" title="Additional Data"
                 description="Rich-text description, short description and specification for this product."
-                collapsible :collapsed="true">
+                :collapsed="true">
             <x-admin-locale-tabs>
                 @foreach (\App\Support\Locale::translatable() as $language)
                     <x-admin-locale-panel :code="$language->code" class="space-y-3">
@@ -184,9 +184,9 @@
         @endif
 
         {{-- Variations --}}
-        <x-admin-section-card icon="adjustments-horizontal" title="Variations" icon-color="bg-violet-500/10 text-violet-600"
+        <x-admin-section-card variant="postbox" persist-key="product-variations" title="Variations"
             description="Pick which attributes apply to this product, then check the values that matter (e.g. Color: Red, Blue + Size: Small) — a card for every combination appears automatically, each optionally overriding the base price/stock."
-            collapsible :collapsed="true">
+            :collapsed="true">
 
             {{-- Which attributes apply to this product --}}
             <div class="rounded-xl border border-zinc-200 bg-zinc-50/70 p-4 mb-3">
@@ -330,9 +330,9 @@
         </x-admin-section-card>
 
         {{-- FAQ --}}
-        <x-admin-section-card icon="question-mark-circle" title="FAQ" icon-color="bg-sky-500/10 text-sky-600"
+        <x-admin-section-card variant="postbox" persist-key="product-faq" title="FAQ"
             description="Product-specific questions and answers, shown in a FAQ section on the product page."
-            collapsible :collapsed="true">
+            :collapsed="true">
 
             <div class="space-y-3">
                 @forelse ($faqs as $i => $row)
@@ -377,7 +377,7 @@
             </flux:button>
         </x-admin-section-card>
 
-        @include('partials.admin-seo-fields')
+        @include('partials.admin-seo-fields', ['seoCardVariant' => 'postbox', 'seoPersistKey' => 'product-seo'])
 
         <div class="flex items-center gap-3 flex-wrap">
             <x-admin-save-button :label="$productId ? 'Update Product' : 'Create Product'" />
@@ -385,18 +385,18 @@
         </div>
 
         {{-- ── SIDEBAR ── --}}
-        <div class="w-[320px] shrink-0 space-y-3">
+        <div class="w-[320px] shrink-0 space-y-5">
 
             {{-- Featured Image --}}
-            <x-admin-section-card icon="photo" title="Thumbnail Image" icon-color="bg-blue-500/10 text-blue-600"
-                body-class="px-4 py-3" description="Shown in the product catalog. Recommended 800×800px.">
+            <x-admin-section-card variant="postbox" persist-key="product-thumbnail" title="Thumbnail Image"
+                description="Shown in the product catalog. Recommended 800×800px." :collapsed="false">
                 <x-media-picker model="featured_image" label="" size-hint="Square, 800 × 800" placeholder="Select featured image"
                     :picker-id="$featuredImagePickerId" mimes="jpg,jpeg,png,webp,avif" only-images dropzone />
             </x-admin-section-card>
 
             {{-- Categories --}}
-            <x-admin-section-card icon="tag" title="Categories" icon-color="bg-amber-500/10 text-amber-600"
-                body-class="px-4 py-3" description="A product can belong to more than one category.">
+            <x-admin-section-card variant="postbox" persist-key="product-categories" title="Categories"
+                description="A product can belong to more than one category." :collapsed="false">
                 <div
                     x-data="{
                         selectedIds: @entangle('category_ids'),
@@ -462,9 +462,8 @@
             </x-admin-section-card>
 
             {{-- Brand --}}
-            <x-admin-section-card icon="star" title="Brand" icon-color="bg-yellow-500/10 text-yellow-600"
-                body-class="px-4 py-3" description="Optional — which brand this product belongs to."
-                collapsible :collapsed="true">
+            <x-admin-section-card variant="postbox" persist-key="product-brand" title="Brand"
+                description="Optional — which brand this product belongs to." :collapsed="true">
                 <select wire:model="brand_id" class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
                     <option value="">No brand</option>
                     @foreach ($this->productBrands as $brand)
@@ -482,9 +481,8 @@
             </x-admin-section-card>
 
             {{-- Vendor --}}
-            <x-admin-section-card icon="briefcase" title="Vendor" icon-color="bg-sky-500/10 text-sky-600"
-                body-class="px-4 py-3" description="Optional — which vendor supplies this product."
-                collapsible :collapsed="true">
+            <x-admin-section-card variant="postbox" persist-key="product-vendor" title="Vendor"
+                description="Optional — which vendor supplies this product." :collapsed="true">
                 <select wire:model="vendor_id" class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
                     <option value="">No vendor</option>
                     @foreach ($this->productVendors as $vendor)
@@ -502,9 +500,8 @@
             </x-admin-section-card>
 
             {{-- Tags — product-typed and post-typed pools, no legacy (App\Models\Tag) --}}
-            <x-admin-section-card icon="hashtag" title="Tags" icon-color="bg-rose-500/10 text-rose-600"
-                body-class="px-4 py-3" description="Label this product for filtering and search."
-                collapsible :collapsed="true">
+            <x-admin-section-card variant="postbox" persist-key="product-tags" title="Tags"
+                description="Label this product for filtering and search." :collapsed="true">
                 <div
                     x-data="{
                         tagIds: @entangle('tag_ids'),
@@ -597,11 +594,8 @@
             </x-admin-section-card>
 
             {{-- Related Products — tag-style search picker over every other product --}}
-            <x-admin-section-card icon="square-2-stack" title="Related Products"
-                icon-color="bg-teal-500/10 text-teal-600"
-                body-class="px-4 py-3"
-                description="Products shown alongside this one — pick them the same way as tags."
-                collapsible :collapsed="true">
+            <x-admin-section-card variant="postbox" persist-key="product-related" title="Related Products"
+                description="Products shown alongside this one — pick them the same way as tags." :collapsed="true">
                 <div
                     x-data="{
                         relatedIds: @entangle('related_product_ids'),
@@ -690,9 +684,8 @@
             </x-admin-section-card>
 
             {{-- Gallery --}}
-            <x-admin-section-card icon="squares-2x2" title="Gallery" icon-color="bg-indigo-500/10 text-indigo-600"
-                body-class="px-4 py-3" description="Extra product photos, shown on the product page. Drag to reorder."
-                collapsible :collapsed="true">
+            <x-admin-section-card variant="postbox" persist-key="product-gallery" title="Gallery"
+                description="Extra product photos, shown on the product page. Drag to reorder." :collapsed="true">
                 <div
                     x-data="{
                         pickerId: @js($galleryPickerId),

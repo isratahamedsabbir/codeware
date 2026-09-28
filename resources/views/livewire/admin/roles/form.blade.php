@@ -6,10 +6,10 @@
         </flux:button>
     @endpush
 
-    <div class="space-y-4">
+    <div class="space-y-5">
 
         {{-- ── ROLE NAME ── --}}
-        <div class="bg-white rounded-[5px] shadow-sm p-6">
+        <x-admin-section-card variant="postbox" persist-key="role-details" title="Role Details" :collapsed="false" body-class="p-3">
             <div class="space-y-5">
                 <flux:field>
                     <flux:label>Role name <span class="text-red-500 ml-0.5">*</span><x-field-hint text='Saved in lowercase, e.g. <span class="font-mono">Content Manager</span> becomes <span class="font-mono">content-manager</span>' /></flux:label>
@@ -23,11 +23,11 @@
                     </div>
                 @endif
             </div>
-        </div>
+        </x-admin-section-card>
 
         {{-- ── PERMISSIONS ── --}}
-        <x-admin-section-card icon="key" title="Permissions" icon-color="bg-indigo-500/10 text-indigo-600"
-            body-class="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <x-admin-section-card variant="postbox" persist-key="role-permissions" title="Permissions" :collapsed="false"
+            body-class="p-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             <x-slot:actions>
                 <span class="text-xs text-zinc-500">{{ count($selectedPermissions) }} selected</span>
             </x-slot:actions>

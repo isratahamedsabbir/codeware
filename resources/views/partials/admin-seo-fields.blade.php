@@ -1,5 +1,8 @@
+{{-- $seoCardVariant / $seoPersistKey let a form opt into the WordPress-style postbox card. --}}
 <x-admin-section-card icon="magnifying-glass" title="Search Engine (SEO) Settings"
-    icon-color="bg-sky-500/10 text-sky-600" body-class="px-6 py-5"
+    icon-color="bg-sky-500/10 text-sky-600"
+    :variant="$seoCardVariant ?? 'default'" :persist-key="$seoPersistKey ?? null"
+    :body-class="($seoCardVariant ?? 'default') === 'postbox' ? 'p-3 space-y-3' : 'px-6 py-5'"
     description="Meta tags and indexing controls." collapsible :collapsed="true">
 
     {{-- One switch for the whole section. The meta, Open Graph and Twitter copy

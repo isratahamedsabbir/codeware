@@ -6,7 +6,7 @@
         </flux:button>
     @endpush
 
-    <div class="w-full max-w-[1100px] bg-white rounded-[5px] shadow-sm p-6">
+    <x-admin-section-card variant="postbox" title="Advertisement Details" :collapsible="false" class="w-full max-w-[1100px]" body-class="p-3">
 
         <div class="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-8">
 
@@ -65,9 +65,9 @@
         </div>
 
         {{-- Footer --}}
-        <div class="-mx-6 -mb-6 mt-6 flex items-center gap-3 flex-wrap rounded-b-lg border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+        <div class="-mx-3 -mb-3 mt-4 flex items-center gap-3 flex-wrap rounded-b-[3px] border-t border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-700 dark:bg-zinc-800/40">
             <x-admin-save-button :label="$advertisementId ? 'Update Advertisement' : 'Create Advertisement'" />
         </div>
 
-    </div>
+    </x-admin-section-card>
 </div>

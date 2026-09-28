@@ -85,6 +85,8 @@
             --color-secondary: {{ $adminSecondaryColor }};
             --color-accent: {{ $adminPrimaryColor }};
             --color-accent-content: {{ $adminPrimaryColor }};
+            /* Admin-only typeface — overrides the global --font-sans from app.css. */
+            --font-sans: 'Segoe UI', ui-sans-serif, system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
     </style>
 </head>

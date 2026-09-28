@@ -14,7 +14,7 @@
     <div class="flex gap-5 items-start">
 
         {{-- ── MAIN ── --}}
-        <div class="flex-1 min-w-0 bg-white rounded-[5px] shadow-sm p-6">
+        <x-admin-section-card variant="postbox" title="User Details" :collapsible="false" class="flex-1 min-w-0" body-class="p-3">
 
             {{-- Profile photo --}}
             <div class="flex items-center gap-5 mb-5">
@@ -94,21 +94,20 @@
             </div>
 
             {{-- Footer --}}
-            <div class="-mx-6 -mb-6 mt-6 flex items-center gap-3 flex-wrap rounded-b-lg border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+            <div class="-mx-3 -mb-3 mt-4 flex items-center gap-3 flex-wrap rounded-b-[3px] border-t border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-700 dark:bg-zinc-800/40">
                 <x-admin-save-button :label="$userId ? 'Update User' : 'Create User'" />
             </div>
 
-        </div>
+        </x-admin-section-card>
 
         {{-- ── SIDEBAR ── --}}
-        <div class="w-[320px] shrink-0 space-y-4">
+        <div class="w-[320px] shrink-0 space-y-5">
 
             {{-- Delivery Portal — shown once the delivery_boy role (left) is
                  selected, the same way Vendor Access follows the vendor role. --}}
             @if (in_array(\App\Models\User::DELIVERY_ROLE, $selectedRoles))
                 @php $deliveryConflict = array_intersect(\App\Models\User::DELIVERY_INELIGIBLE_ROLES, $selectedRoles) !== []; @endphp
-                <x-admin-section-card icon="truck" title="Delivery Portal" icon-color="bg-emerald-500/10 text-emerald-600"
-                    body-class="px-4 py-3">
+                <x-admin-section-card variant="postbox" persist-key="user-delivery" title="Delivery Portal" :collapsed="false">
                     @if ($deliveryConflict)
                         <p class="text-xs text-red-600">A delivery boy can't also be admin, staff or vendor — untick that role.</p>
                     @else
@@ -124,8 +123,8 @@
                  selected; see Form::save(), which clears any assignment made here
                  if that role isn't checked when saved. --}}
             @if (in_array('vendor', $selectedRoles))
-                <x-admin-section-card icon="building-storefront" title="Vendor Access" icon-color="bg-amber-500/10 text-amber-600"
-                    body-class="px-4 py-3" description="Vendors this user can log in and see in the Vendor Portal.">
+                <x-admin-section-card variant="postbox" persist-key="user-vendor-access" title="Vendor Access" :collapsed="false"
+                    description="Vendors this user can log in and see in the Vendor Portal.">
                     <flux:checkbox.group wire:model="vendor_ids" class="flex-col items-stretch gap-0.5 max-h-56 overflow-y-auto">
                         @forelse ($vendors as $vendor)
                             <div class="rounded-md py-1 px-1 hover:bg-zinc-50 transition-colors">
@@ -140,8 +139,8 @@
             @endif
 
             {{-- Signature --}}
-            <x-admin-section-card icon="pencil" title="Signature" icon-color="bg-indigo-500/10 text-indigo-600"
-                body-class="px-4 py-3" description="Draw or upload a signature image.">
+            <x-admin-section-card variant="postbox" persist-key="user-signature" title="Signature" :collapsed="false"
+                description="Draw or upload a signature image.">
                 <div class="space-y-2"
                     x-data="{
                         drawing: false,
@@ -230,8 +229,8 @@
             </x-admin-section-card>
 
             {{-- Documents --}}
-            <x-admin-section-card icon="document-text" title="Documents" icon-color="bg-cyan-500/10 text-cyan-600"
-                body-class="px-4 py-3" description="ID, contract, certificate — PDF, DOC, or image files.">
+            <x-admin-section-card variant="postbox" persist-key="user-documents" title="Documents" :collapsed="false"
+                description="ID, contract, certificate — PDF, DOC, or image files.">
                 @if ($userId)
                     <div class="space-y-3">
                         <div>

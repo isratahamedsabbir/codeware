@@ -6,7 +6,7 @@
         </flux:button>
     @endpush
 
-    <div class="w-full max-w-2xl bg-white rounded-[5px] shadow-sm p-6 space-y-3">
+    <x-admin-section-card variant="postbox" title="Division Details" :collapsible="false" class="w-full max-w-2xl">
 
         <flux:field>
             <flux:label>Country <span class="text-red-500 ml-0.5">*</span></flux:label>
@@ -26,7 +26,7 @@
         </flux:field>
 
         {{-- Footer --}}
-        <div class="-mx-6 -mb-6 mt-6 flex items-center gap-3 flex-wrap rounded-b-lg border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+        <div class="-mx-3 -mb-3 mt-4 flex items-center gap-3 flex-wrap rounded-b-[3px] border-t border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-700 dark:bg-zinc-800/40">
             <button wire:click="save" wire:loading.attr="disabled" wire:target="save"
                 class="admin-btn-save inline-flex items-center gap-2 px-5 h-8 text-sm font-medium rounded-lg text-white disabled:opacity-60 transition-colors">
                 <svg wire:loading.remove wire:target="save" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -43,5 +43,5 @@
             </button>
         </div>
 
-    </div>
+    </x-admin-section-card>
 </div>
