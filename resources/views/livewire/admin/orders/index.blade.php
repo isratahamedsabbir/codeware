@@ -108,9 +108,8 @@
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Customer</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Items</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Total</th>
-                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Payment</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
-                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Referred By</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Ref</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Placed</th>
                         <th class="sticky right-0 z-10 bg-zinc-50 border-l border-zinc-100 px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -151,29 +150,29 @@
                             </td>
                             <td class="hidden lg:table-cell px-4 py-2 text-sm text-zinc-600">{{ $order->items_count }}</td>
                             <td class="px-4 py-2 text-sm font-medium text-zinc-900">{{ number_format((float) $order->total, 2) }} {{ $order->currency }}</td>
-                            <td class="hidden lg:table-cell px-4 py-2">
-                                <div class="text-xs text-zinc-600">{{ \App\Support\PaymentMethods::label($order->payment_method) }}</div>
-                                <span class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10.5px] font-medium
-                                    {{ match ($order->payment_status) {
-                                        'paid' => 'bg-green-50 text-green-700',
-                                        'failed' => 'bg-rose-50 text-rose-700',
-                                        'refunded' => 'bg-zinc-100 text-zinc-600',
-                                        default => 'bg-amber-50 text-amber-700',
-                                    } }}">
-                                    {{ ucfirst($order->payment_status) }}
-                                </span>
-                            </td>
                             <td class="px-4 py-2">
-                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-medium
-                                    {{ match ($order->status) {
-                                        'delivered' => 'bg-green-50 text-green-700',
-                                        'cancelled' => 'bg-rose-50 text-rose-700',
-                                        'shipped' => 'bg-indigo-50 text-indigo-700',
-                                        'processing' => 'bg-cyan-50 text-cyan-700',
-                                        default => 'bg-amber-50 text-amber-700',
-                                    } }}">
-                                    {{ ucfirst($order->status) }}
-                                </span>
+                                <div class="hidden lg:block text-[10.5px] text-zinc-500 mb-1">{{ \App\Support\PaymentMethods::label($order->payment_method) }}</div>
+                                <div class="flex flex-wrap items-center gap-1">
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-medium
+                                        {{ match ($order->payment_status) {
+                                            'paid' => 'bg-green-50 text-green-700',
+                                            'failed' => 'bg-rose-50 text-rose-700',
+                                            'refunded' => 'bg-zinc-100 text-zinc-600',
+                                            default => 'bg-amber-50 text-amber-700',
+                                        } }}">
+                                        {{ ucfirst($order->payment_status) }}
+                                    </span>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-medium
+                                        {{ match ($order->status) {
+                                            'delivered' => 'bg-green-50 text-green-700',
+                                            'cancelled' => 'bg-rose-50 text-rose-700',
+                                            'shipped' => 'bg-indigo-50 text-indigo-700',
+                                            'processing' => 'bg-cyan-50 text-cyan-700',
+                                            default => 'bg-amber-50 text-amber-700',
+                                        } }}">
+                                        {{ ucfirst($order->status) }}
+                                    </span>
+                                </div>
                             </td>
                             <td class="hidden lg:table-cell px-4 py-2">
                                 {{-- Who sent this buyer here. Em-dash rather than an
@@ -223,7 +222,7 @@
                             </td>
                         </tr>
                         @if ($viewingId === $order->id)
-                            <x-admin-row-details colspan="10">
+                            <x-admin-row-details colspan="9">
                                 <x-admin-row-details.item label="Items">{{ $order->items_count }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Payment method">{{ \App\Support\PaymentMethods::label($order->payment_method) }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Payment status">{{ ucfirst($order->payment_status) }}</x-admin-row-details.item>
@@ -241,7 +240,7 @@
                         @endif
                     @empty
                         <tr>
-                            <td colspan="10" class="px-6 py-16 text-center">
+                            <td colspan="9" class="px-6 py-16 text-center">
                                 <flux:icon.shopping-bag class="w-10 h-10 text-zinc-200 mx-auto mb-3" />
                                 <p class="text-sm text-zinc-600">No orders found.</p>
                             </td>
