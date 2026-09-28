@@ -30,6 +30,7 @@ class Order extends Model
         'currency', 'subtotal', 'coupon_code', 'discount', 'vat_amount', 'vat_rate',
         'shipping_method', 'shipping_cost', 'total', 'notes',
         'delivery_boy_id', 'delivered_at',
+        'ref',
     ];
 
     protected function casts(): array
@@ -92,6 +93,19 @@ class Order extends Model
     public function deliveryBoy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'delivery_boy_id');
+    }
+
+    /**
+     * The account whose referral link this order arrived through, or null for
+     * every order placed without one. Distinct from user(): that is who bought,
+     * this is who sent them. Set by App\Services\OrderPlacement from the visitor's
+     * captured ?ref= (see App\Support\Referral), and nulled by the FK if that
+     * account is ever deleted — so `referrer` is null then, while `ref` keeps
+     * the id of the account that is gone.
+     */
+    public function referrer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'ref');
     }
 
     /**

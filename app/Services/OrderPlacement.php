@@ -9,6 +9,7 @@ use App\Models\Setting;
 use App\Models\ShippingMethod;
 use App\Models\Transaction;
 use App\Support\Cart;
+use App\Support\Referral;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -96,9 +97,18 @@ class OrderPlacement
 
         $total = round($taxable + $vat + $shippingCost, 2);
 
-        return DB::transaction(function () use ($customer, $lines, $subtotal, $couponCode, $discount, $vat, $vatRate, $shippingMethod, $shippingCost, $total, $currency) {
+        $buyerId = auth()->id();
+
+        // Read before the transaction and only cleared after it commits, rather
+        // than consumed as part of the write: a failure anywhere below rolls the
+        // order back, and the shopper is about to retry it — dropping the
+        // attribution on that retry would lose the referral permanently.
+        $referrerId = Referral::idFor($buyerId);
+
+        $order = DB::transaction(function () use ($customer, $lines, $subtotal, $couponCode, $discount, $vat, $vatRate, $shippingMethod, $shippingCost, $total, $currency, $buyerId, $referrerId) {
             $order = Order::create([
-                'user_id' => auth()->id(),
+                'user_id' => $buyerId,
+                'ref' => $referrerId,
                 'customer_name' => $customer['customer_name'],
                 'customer_email' => $customer['customer_email'],
                 'customer_phone' => $customer['customer_phone'],
@@ -131,6 +141,12 @@ class OrderPlacement
 
             return $order;
         });
+
+        // The link has done its job. A second order placed in the same session
+        // is the buyer's own, not their referrer's.
+        Referral::forget();
+
+        return $order;
     }
 
     /**

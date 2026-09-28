@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\CaptureReferral;
 use App\Http\Middleware\EnsureActiveTheme;
 use App\Http\Middleware\EnsureUserIsNotBlocked;
 use App\Http\Middleware\LogAdminActivity;
@@ -96,6 +97,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'locale' => SetLocale::class,
             'feature' => RequireFeature::class,
             'theme' => EnsureActiveTheme::class,
+            'referral' => CaptureReferral::class,
         ]);
         // Settings → Env can flip the public site into maintenance mode (see
         // Livewire\Admin\Settings\Index::enableMaintenanceMode()) — the admin panel

@@ -51,6 +51,23 @@
                 @endif
             </div>
 
+            {{-- Who sent this buyer here. Its own card rather than a fourth field
+                 in the grid above, because it is absent on most orders and reads
+                 as one more thing the customer typed. --}}
+            @if ($order->referrer)
+                <x-admin-section-card icon="user-plus" title="Referred By" icon-color="bg-indigo-500/10 text-indigo-600">
+                    <p class="text-sm text-zinc-800">
+                        <span class="font-medium">{{ $order->referrer->name }}</span>
+                        @if ($order->referrer->email)
+                            <span class="block text-xs text-zinc-500">{{ $order->referrer->email }}</span>
+                        @endif
+                        <x-copy-text :text="$order->referrer->code" class="mt-1 font-mono text-xs text-indigo-600 inline-block">
+                            {{ $order->referrer->code }}
+                        </x-copy-text>
+                    </p>
+                </x-admin-section-card>
+            @endif
+
             {{-- Items --}}
             <x-admin-section-card icon="shopping-bag" title="Items" body-class="">
                 <table class="w-full divide-y divide-gray-200">

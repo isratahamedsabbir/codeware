@@ -231,6 +231,9 @@ class Index extends Component
         return view('livewire.admin.orders.index', [
             'orders' => $this->filteredQuery()
                 ->withCount('items')
+                // One extra query for the whole page beats a lazy load per row —
+                // and the referrer is the only reason this table needs the join.
+                ->with('referrer:id,name,code')
                 ->latest()
                 ->paginate($this->perPage),
         ])->layout('layouts.admin', ['title' => 'Orders', 'hidePageHeading' => true]);

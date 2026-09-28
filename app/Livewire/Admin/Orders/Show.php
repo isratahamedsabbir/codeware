@@ -93,7 +93,7 @@ class Show extends Component
 
     public function render()
     {
-        $order = Order::with(['items.product', 'transactions', 'deliveryBoy'])->findOrFail($this->orderId);
+        $order = Order::with(['items.product', 'transactions', 'deliveryBoy', 'referrer'])->findOrFail($this->orderId);
 
         return view('livewire.admin.orders.show', [
             'order' => $order,

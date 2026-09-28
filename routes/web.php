@@ -92,6 +92,14 @@ Route::get('/robots.txt', RobotsController::class)->name('robots');
 // inherits this file's own `web` middleware group (applied by withRouting in
 // bootstrap/app.php), so a theme's routes are session-cookie scoped,
 // locale-resolved and block-checked like any other web route.
+//
+// 'referral' runs here rather than inside a theme's own route file so the
+// ?ref= on a shared link is captured the moment it's opened, whichever page of
+// the store that happens to be — the product page the link points at, or the
+// home/shop/category page a visitor reaches it from. Only the shop ever reads
+// it back (App\Services\OrderPlacement); on a theme with no cart it just sits
+// in the session. It has to be part of this group, not a per-theme addition,
+// because the loop is what already decides which theme owns the request.
 foreach (Themes::allRouteFiles() as $slug => $file) {
-    Route::middleware('theme')->group($file);
+    Route::middleware(['theme', 'referral'])->group($file);
 }

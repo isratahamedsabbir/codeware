@@ -21,11 +21,23 @@
     Every network except the clipboard button is a plain <a href>, so sharing
     still works with no JavaScript. Only the popups need scripting, and they
     degrade to ordinary navigation when it is absent.
+
+    The one thing this partial adds to the page's own identity is the ?ref= tag
+    on the shared URL, and only for a signed-in customer: the referrer's own
+    USR- code rides along, so the order it eventually produces is attributed to
+    whoever sent the buyer (App\Support\Referral). A guest's links are the bare
+    canonical — there is no account to credit, and inventing a ref for them
+    would attribute their order to nobody while still paying the cost of the
+    parameter on every share.
 --}}
 @php
     $share = \App\Support\Seo\SeoResolver::resolve(request(), $page ?? null, $title ?? null);
 
-    $shareUrl = $share->canonical;
+    // Tagging happens before anything else reads $shareUrl, so the social hrefs
+    // and the clipboard button below are all working from the same tagged URL —
+    // two variables holding "the same" link is how the copy button ends up
+    // quietly dropping the ref the share buttons carry.
+    $shareUrl = \App\Support\Referral::shareUrl($share->canonical);
 
     // 90 characters is roughly where WhatsApp and Telegram stop rendering the
     // preview cleanly, and a title that long is a bad <title> anyway.

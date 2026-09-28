@@ -110,6 +110,7 @@
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Total</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Payment</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
+                        <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Referred By</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Placed</th>
                         <th class="sticky right-0 z-10 bg-zinc-50 border-l border-zinc-100 px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -174,6 +175,21 @@
                                     {{ ucfirst($order->status) }}
                                 </span>
                             </td>
+                            <td class="hidden lg:table-cell px-4 py-2">
+                                {{-- Who sent this buyer here. Em-dash rather than an
+                                     empty cell, so a column of un-referred orders
+                                     doesn't read as missing data. --}}
+                                @if ($order->referrer)
+                                    <div class="text-[12.5px] text-zinc-800 leading-[1.15]"><x-truncate :text="$order->referrer->name" /></div>
+                                    <div class="leading-none">
+                                        <x-copy-text :text="$order->referrer->code" class="font-mono text-[10.5px] text-indigo-600 font-medium tracking-wide block leading-none">
+                                            <x-truncate :text="$order->referrer->code" />
+                                        </x-copy-text>
+                                    </div>
+                                @else
+                                    <span class="text-zinc-400">—</span>
+                                @endif
+                            </td>
                             <td class="hidden lg:table-cell px-4 py-2 text-xs text-zinc-500">{{ $order->created_at->toDisplay() }}</td>
                             <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-100 border-l border-zinc-100 px-4 py-2">
                                 <div class="flex items-center justify-center gap-1.5">
@@ -207,16 +223,25 @@
                             </td>
                         </tr>
                         @if ($viewingId === $order->id)
-                            <x-admin-row-details colspan="9">
+                            <x-admin-row-details colspan="10">
                                 <x-admin-row-details.item label="Items">{{ $order->items_count }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Payment method">{{ \App\Support\PaymentMethods::label($order->payment_method) }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Payment status">{{ ucfirst($order->payment_status) }}</x-admin-row-details.item>
+                                {{-- Repeat of the column above, for the small screens that
+                                     hide it. --}}
+                                <x-admin-row-details.item label="Referred by">
+                                    @if ($order->referrer)
+                                        {{ $order->referrer->name }} ({{ $order->referrer->code }})
+                                    @else
+                                        —
+                                    @endif
+                                </x-admin-row-details.item>
                                 <x-admin-row-details.item label="Placed">{{ $order->created_at->toDisplay() }}</x-admin-row-details.item>
                             </x-admin-row-details>
                         @endif
                     @empty
                         <tr>
-                            <td colspan="9" class="px-6 py-16 text-center">
+                            <td colspan="10" class="px-6 py-16 text-center">
                                 <flux:icon.shopping-bag class="w-10 h-10 text-zinc-200 mx-auto mb-3" />
                                 <p class="text-sm text-zinc-600">No orders found.</p>
                             </td>
