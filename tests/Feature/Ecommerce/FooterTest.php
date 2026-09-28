@@ -5,7 +5,6 @@ use App\Models\MenuItem;
 use App\Models\Page;
 use App\Models\Setting;
 use App\Models\User;
-use Database\Seeders\InformationMenuSeeder;
 use Database\Seeders\QuickLinksMenuSeeder;
 use Database\Seeders\RolePermissionSeeder;
 
@@ -20,20 +19,6 @@ beforeEach(function () {
     Language::create(['code' => 'en', 'name' => 'English', 'native_name' => 'English', 'is_active' => true]);
 
     Page::factory()->published()->create(['title' => ['en' => 'Home', 'bn' => ''], 'slug' => 'home', 'sort_order' => 0]);
-});
-
-it('renders the information menu links in the footer', function () {
-    $this->seed(InformationMenuSeeder::class);
-
-    get('/shop')
-        ->assertOk()
-        ->assertSee('Information')
-        ->assertSee('About Us', false)
-        ->assertSee('Contact Us', false)
-        ->assertSee('FAQ', false)
-        ->assertSee('/about')
-        ->assertSee('/contact')
-        ->assertSee('/faq');
 });
 
 it('renders the quick links menu in the footer', function () {

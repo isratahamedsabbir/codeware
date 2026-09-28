@@ -198,13 +198,12 @@ class SettingsSeeder extends Seeder
             ['key' => 'home_promo_banner_1',      'value' => '/default/promo-banner-1.svg', 'type' => 'string', 'group' => 'frontend', 'is_public' => true],
             ['key' => 'home_promo_banner_2',      'value' => '/default/promo-banner-2.svg', 'type' => 'string', 'group' => 'frontend', 'is_public' => true],
 
-            // ── Ecommerce theme colors ── drive the storefront's --color-brand
-            // (primary) and --color-secondary CSS tokens, editable from the
-            // ecommerce theme's own settings panel on the Theme Settings screen.
-            // Group 'frontend' keeps them off the generic Settings groups loop
-            // and the Backend (colors) card — they belong to the theme alone.
-            ['key' => 'theme_ecommerce_primary_color',   'value' => '#045b30', 'type' => 'color', 'group' => 'frontend', 'is_public' => true],
-            ['key' => 'theme_ecommerce_secondary_color', 'value' => '#7cc242', 'type' => 'color', 'group' => 'frontend', 'is_public' => true],
+            // ── Ecommerce theme colors ── are NOT seeded here. They belong to
+            // the ecommerce theme, and a theme's own settings live in the
+            // theme.json inside its folder (see App\Support\ThemeSettings),
+            // which ships with the theme. The two values the table used to carry
+            // are in resources/views/frontend/themes/ecommerce/theme.json,
+            // where the storefront's fallbacks have always assumed they'd be.
 
             // ── Frontend chat widget ── shows/hides the chat bubble on the
             // public site. See Settings → Theme → Frontend and ChatWidget.

@@ -56,7 +56,6 @@ class DatabaseSeeder extends Seeder
         $this->call(FrontendMenuSeeder::class);
         $this->call(PortfolioMenuSeeder::class);
         $this->call(PortfolioContentSeeder::class);
-        $this->call(InformationMenuSeeder::class);
         $this->call(QuickLinksMenuSeeder::class);
         $this->call(EmailTemplatesSeeder::class);
         $this->call(NotificationsSeeder::class);

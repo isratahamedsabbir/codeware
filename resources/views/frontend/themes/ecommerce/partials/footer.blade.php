@@ -5,7 +5,6 @@
     $contactPhone = \App\Models\Setting::get('contact_phone');
     $contactEmail = \App\Models\Setting::get('contact_email');
 
-    $informationMenu = \App\Support\Frontend::informationMenu();
     $quickLinks = \App\Support\Frontend::quickLinks();
 
     $socials = collect([
@@ -27,21 +26,7 @@
 @endphp
 
 <footer class="mt-16 bg-sf-footer text-sf-footer-text">
-    @if (\App\Support\Features::enabled('newsletter'))
-        <div class="border-b border-sf-footer-text/10">
-            <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-8 sm:flex-row sm:gap-8 sm:px-6">
-                <div class="text-center sm:text-left">
-                    <h2 class="text-lg font-bold text-sf-footer-text">{{ __('Subscribe to our newsletter') }}</h2>
-                    <p class="mt-1 text-sm text-sf-footer-text/70">{{ __('Get updates on new products and exclusive offers.') }}</p>
-                </div>
-                <div class="w-full sm:w-auto sm:min-w-[26rem]">
-                    <livewire:frontend.newsletter-subscribe :key="'footer-newsletter'" />
-                </div>
-            </div>
-        </div>
-    @endif
-
-    <div class="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-10 sm:grid-cols-2 md:grid-cols-4 sm:px-6">
+    <div class="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-10 sm:grid-cols-2 md:grid-cols-3 sm:px-6">
         <div>
             <a href="{{ url('/') }}" class="flex items-center gap-2">
                 @if (\App\Models\Setting::get('site_icon'))
@@ -67,19 +52,6 @@
                 </ul>
             @else
                 <p class="text-sm text-sf-footer-text/70">{{ __('The quick links will appear here once they are published.') }}</p>
-            @endif
-        </div>
-
-        <div>
-            <h3 class="mb-3 text-lg font-semibold text-sf-footer-text">{{ __('Information') }}</h3>
-            @if ($informationMenu->isNotEmpty())
-                <ul class="space-y-2 text-sm">
-                    @foreach ($informationMenu as $menuItem)
-                        <li><a href="{{ url($menuItem->url) }}" class="font-medium text-sf-footer-text/80 hover:underline hover:text-sf-footer-text">{{ $menuItem->label }}</a></li>
-                    @endforeach
-                </ul>
-            @else
-                <p class="text-sm text-sf-footer-text/70">{{ __('The information pages will appear here once they are published.') }}</p>
             @endif
         </div>
 
@@ -127,7 +99,25 @@
                     @endif
                 </div>
             @endif
-            <p class="mt-3 text-sm text-sf-footer-text/70">{{ __('We\'re always happy to hear from you.') }}</p>
+            {{-- The newsletter box gets its own small heading, the same way the
+                 other three footer columns each open on one — without it, the
+                 box read as a stray field bolted under "Connect with us" rather
+                 than a distinct thing you can do. --}}
+            @if (\App\Support\Features::enabled('newsletter'))
+                <div class="mt-5 border-t border-sf-footer-text/10 pt-5">
+                    <h3 class="mb-2 text-sm font-semibold text-sf-footer-text">{{ __('Newsletter') }}</h3>
+                    <p class="mb-3 text-sm text-sf-footer-text/70">{{ __('We\'re always happy to hear from you.') }}</p>
+
+                    {{-- Three columns instead of four (since the Information
+                         column was retired) leave this one wide enough for the
+                         component's own default sm:flex-row, so the field and
+                         button now sit in one compact row instead of stacked
+                         full-width pills. --}}
+                    <livewire:frontend.newsletter-subscribe :key="'footer-newsletter'" />
+                </div>
+            @else
+                <p class="mt-3 text-sm text-sf-footer-text/70">{{ __('We\'re always happy to hear from you.') }}</p>
+            @endif
         </div>
     </div>
 

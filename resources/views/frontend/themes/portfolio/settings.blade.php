@@ -3,18 +3,21 @@
 
     Theme Settings) via wire:model="settings.theme_{slug}_*".
 
-    Everything on this one-pager is edited from this screen. Projects,
-    Experience, Skills and Testimonials used to have their own tables and admin
-    CRUD screens; they are ordinary lists here now, so the whole portfolio is one
-    place with one save button rather than four places an owner has to find.
+    Everything on this one-pager is edited from this screen, and every value here
+    lives in this theme's own theme.json beside this file rather than in the
+    database — so the folder can be zipped up and handed to someone else with its
+    content still in it. Projects, Experience, Skills and Testimonials used to
+    have their own tables and admin CRUD screens; they are ordinary lists here
+    now, so the whole portfolio is one place with one save button rather than four
+    places an owner has to find.
 
     Scalar fields persist through the component's generic $settings bag. List
-    fields (stats, services, projects, experience, skills, testimonials,
-    education, certifications) bind to the separate $repeaters bag instead, each
-    stored as one JSON setting. The theme settings component discovers them by
-    parsing this file for `setting-key="theme_*"` (which is also where it reads
-    each one's `:max` from, so the add button and the save-time cap agree) and
-    grows the add/remove/reorder UI for each. See
+    fields (stats, projects, experience, skills, testimonials, education,
+    certifications) bind to the separate $repeaters bag instead, each stored as
+    one array in this theme's theme.json. The theme settings component
+    discovers them by parsing this file for `setting-key="theme_*"` (which is also
+    where it reads each one's `:max` from, so the add button and the save-time cap
+    agree) and grows the add/remove/reorder UI for each. See
     App\Livewire\Admin\ThemeSettings\Index.
 
     Read back by the one-pager through App\Support\PortfolioProfile, e.g.

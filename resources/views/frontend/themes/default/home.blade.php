@@ -1,7 +1,19 @@
-<x-layouts::auth :title="$title ?? null" :noindex="false" :custom-code="true" :seo-meta="true">
+{{--
+    The default theme is a way in, not a page: Admin / Vendor / Delivery login
+    links and an owner-written intro, and nothing a search engine has any reason
+    to keep. So it asks the auth layout for noindex + nofollow, and does not ask
+    for the seo-meta block at all — a canonical URL and a set of og: tags on a
+    page we are telling crawlers to drop is a sitemap entry and a social preview
+    for a login screen. Themes::isIndexable() reads the same answer off this
+    theme's theme.json for the sitemap, so the page and the sitemap cannot
+    disagree about whether / is worth listing.
+--}}
+<x-layouts::auth :title="$title ?? null" :noindex="true" :custom-code="true">
     @php
-        $introHeading = \App\Models\Setting::get('theme_default_intro_heading');
-        $introText = \App\Models\Setting::get('theme_default_intro_text');
+        // The intro block is this theme's own settings, read from the theme.json
+        // beside this file. See default/settings.blade.php for the admin side.
+        $introHeading = \App\Support\ThemeSettings::text('default', 'theme_default_intro_heading');
+        $introText = \App\Support\ThemeSettings::text('default', 'theme_default_intro_text');
     @endphp
 
     <div class="flex flex-col items-center gap-8 text-center">

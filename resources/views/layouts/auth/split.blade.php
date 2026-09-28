@@ -10,12 +10,15 @@
         <meta name="description" content="{{ $description }}">
     @endif
     {{--
-        The full meta block — canonical, og:*, twitter:*, hreflang. Opt-in
-        rather than unconditional because most pages using this layout are the
-        login/register screens, which are noindex and want no canonical of their
-        own; the "default" theme's home page is the one caller that is a real,
-        indexable page of the site and so needs the same head the storefront
-        themes get from their own templates.
+        The full meta block — canonical, og:*, twitter:*, hreflang.
+
+        No caller asks for it any more. It was opt-in because most pages on this
+        layout are login/register screens, which are noindex and want no
+        canonical of their own, and the one exception was the "default" theme's
+        home page, which used to be the site's real indexable front door. It is
+        a login screen too now, and says so, so the block is only here for a
+        future page on this layout that genuinely is indexable — which is the
+        one case where the canonical and the og: tags are worth having.
     --}}
     @if ($seoMeta ?? false)
         @include('partials.seo-meta')

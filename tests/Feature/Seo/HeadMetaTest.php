@@ -242,9 +242,9 @@ it('falls back to the primary language copy when a translation was left blank', 
 | than a fallback below a templated page name — appending "| Site Name" to a
 | title the admin typed for the whole site just repeats the site name at them.
 | And it has to be true of every theme, not the storefront one: the "default"
-| theme renders through the auth layout, which used to emit a <title> and
-| nothing else, so its home page shipped with no description, no og:*, no
-| twitter:* and no canonical at all.
+| theme renders through the auth layout, so it is the one theme whose head is
+| not written by this resolver's own partial — and it is a screen of login
+| links, so it sends noindex,nofollow and carries a <title> and nothing else.
 |
 */
 
@@ -274,13 +274,33 @@ function homeHead(string $theme): array
 it('uses the global seo title verbatim on the home page, in every theme', function (string $theme) {
     Setting::set('site_name', 'Codeware');
     Setting::set('seo_title_template', '%s | Codeware');
-    Setting::set('seo_meta_title', 'Codeware — the whole site in one line');
+    Setting::set('seo_meta_title', 'Codeware - the whole site in one line');
     Setting::set('seo_og_title', 'Codeware unfurls like this');
     Setting::set('seo_twitter_title', 'Codeware on Twitter');
     Setting::set('seo_meta_description', 'One description for the whole site.');
 
-    expect(homeHead($theme))->toBe([
-        'title' => 'Codeware — the whole site in one line',
+    $head = homeHead($theme);
+
+    expect($head['title'])->toBe('Codeware - the whole site in one line');
+
+    // The "default" theme is a screen of login links and says noindex,nofollow,
+    // so it carries a title and nothing else — a canonical URL and a social
+    // preview for a login page is a sitemap entry and a card for something
+    // nobody should be finding. Every storefront theme still has the full head.
+    if ($theme === 'default') {
+        expect($head)->toBe([
+            'title' => 'Codeware - the whole site in one line',
+            'description' => null,
+            'og' => null,
+            'twitter' => null,
+            'canonical' => null,
+        ]);
+
+        return;
+    }
+
+    expect($head)->toBe([
+        'title' => 'Codeware - the whole site in one line',
         'description' => 'One description for the whole site.',
         'og' => 'Codeware unfurls like this',
         'twitter' => 'Codeware on Twitter',

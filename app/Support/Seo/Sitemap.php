@@ -74,8 +74,16 @@ final class Sitemap
      */
     public static function entries(): array
     {
+        // The home page is listed only while the active theme wants to be
+        // indexed. A sitemap is a list of pages worth crawling, so offering the
+        // one page the site has told crawlers to drop in its <head> — at
+        // priority 1.0, as the first entry — is the site contradicting itself
+        // in the two places a crawler looks, and the "default" theme's login
+        // screen is exactly that case. Themes::isIndexable() is the same answer
+        // the theme's own home.blade.php passes to the layout, so the two
+        // cannot drift apart.
         $entries = array_merge(
-            [self::entry(Url::url('/'), null, 'home')],
+            Themes::isIndexable() ? [self::entry(Url::url('/'), null, 'home')] : [],
             self::listing(Url::url('shop'), 'shop'),
             self::listing(Url::url('blog'), 'blog'),
             self::pages(),
@@ -132,6 +140,12 @@ final class Sitemap
     private static function fingerprint(): string
     {
         $parts = [Themes::active(), Url::origin()];
+
+        // The active theme's indexability, not just its slug: it decides whether
+        // the home page is in the list at all, and it is a key in a file an owner
+        // can edit by hand. Without it, turning it on and waiting out the cache
+        // day is the only way to find out.
+        $parts[] = Themes::isIndexable() ? 'indexable' : 'noindex';
 
         foreach ([Page::class, Product::class, Post::class, ProductCategory::class] as $model) {
             $parts[] = $model::count();

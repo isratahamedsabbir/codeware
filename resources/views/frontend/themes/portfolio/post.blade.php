@@ -9,6 +9,8 @@
 </head>
 <body class="theme-portfolio antialiased">
 
+    @include('frontend.themes.portfolio.partials.loader')
+
     @php
         // Read by the shared header and footer partials - see the one-pager.
         $siteName = \App\Models\Setting::get('site_name', config('app.name'));

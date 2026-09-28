@@ -1,7 +1,8 @@
 {{--
     Ecommerce theme settings — bound to the Theme Settings screen (Admin →
-    Theme Settings) via wire:model="settings.*". Values persist to the settings
-    table and are read by ecommerce/home.blade.php and partials/head.blade.php.
+    Theme Settings) via wire:model="settings.*". Values persist to this theme's
+    own theme.json beside this file and are read by ecommerce/home.blade.php
+    and partials/head.blade.php through App\Support\ThemeSettings.
 
     Banners tab: the hero slider (each slide's image, title, description and
     link) and the two promo tiles with their links. Colors tab: one color per
@@ -190,7 +191,7 @@
          the current values live, before saving. --}}
     @php
         // [key, label, default, hint] — keys are written out in full so the
-        // Theme Settings component discovers them (see scopedThemeKeys()).
+        // Theme Settings component discovers them (see declaredScalarKeys()).
         $colorGroups = [
             'Header' => ['icon' => 'bars-3-bottom-left', 'fields' => [
                 ['theme_ecommerce_header_bg_color', 'Background', '#045b30', 'Logo, search and account bar'],

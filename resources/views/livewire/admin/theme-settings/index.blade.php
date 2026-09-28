@@ -180,10 +180,21 @@
                                 @endif
                             </p>
                         </div>
-                        <span x-show="$wire.settings.site_theme === '{{ $slug }}'" x-cloak
-                            class="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow">
-                            <flux:icon.check class="size-3.5" />
-                        </span>
+                        @if (! $themeCards[$slug]['hasRoutes'])
+                            {{-- On the card as well as in the panel below, because
+                                 the radio right next to it is what picks the
+                                 theme, and this is the last screen before the
+                                 site stops resolving. --}}
+                            <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400"
+                                title="This theme ships no routes/web/{{ $slug }}.php, so it has no pages of its own. Selecting it will 404 the whole site.">
+                                <flux:icon.exclamation-triangle class="size-3.5" />
+                            </span>
+                        @else
+                            <span x-show="$wire.settings.site_theme === '{{ $slug }}'" x-cloak
+                                class="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow">
+                                <flux:icon.check class="size-3.5" />
+                            </span>
+                        @endif
                     </div>
                 </label>
             @endforeach
@@ -191,7 +202,6 @@
 
         {{-- Selected theme's own settings (read from the theme folder's theme.json) --}}
         @php
-            $selectedSlug = $settings['site_theme'] ?? $activeTheme;
             $selectedCard = $themeCards[$selectedSlug] ?? null;
         @endphp
 
@@ -227,6 +237,32 @@
                     </p>
                 @endif
 
+                {{-- A theme is templates plus the routes that point at them. Pick
+                     one with no routes/web/{slug}.php and the storefront resolves
+                     no URL at all — every page, the homepage included, is a 404,
+                     and the cause is a file that is not in the theme folder an
+                     owner would go looking in. --}}
+                @unless ($selectedCard['hasRoutes'])
+                    <div class="mt-4 flex flex-wrap items-start gap-4 rounded-lg border border-amber-200 bg-amber-50/70 p-4 dark:border-amber-500/30 dark:bg-amber-500/10">
+                        <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400">
+                            <flux:icon.exclamation-triangle class="size-5" />
+                        </span>
+
+                        <div class="min-w-0 flex-1 text-sm leading-relaxed text-amber-800 dark:text-amber-200">
+                            <p class="font-semibold">This theme ships no route file, so it has no pages of its own.</p>
+                            <p class="mt-1 text-xs text-amber-700/90 dark:text-amber-300/80">
+                                Selecting it will make every public page — the homepage included — return a
+                                404. Its templates are only ever reached through a route, and a theme's
+                                routes live outside the theme folder, in this one file:
+                            </p>
+
+                            <p class="mt-2 break-all font-mono text-[11px] text-amber-700/80 dark:text-amber-300/70">
+                                {{ $selectedCard['routeFile'] }}
+                            </p>
+                        </div>
+                    </div>
+                @endunless
+
                 <div class="mt-4 flex flex-wrap items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
                     <span class="flex items-center gap-1.5">
                         <flux:icon.document-text class="size-3.5 text-zinc-400" />
@@ -258,16 +294,85 @@
     {{-- ── Theme's own settings ──────────────────────────────────────────────
          If the selected theme ships a settings.blade.php at its root, render it
          inline (its fields bind to settings.theme_{slug}_* keys, which this
-         component hydrates on mount and persists on save). --}}
+         component hydrates from the theme's own theme.json on mount and writes
+         back to it on save).
+
+         The fields and the file are deliberately separate things. The form is
+         declared by the theme's settings.blade.php, so it renders whether or not
+         the theme has a theme.json - and when the file is missing, that is what
+         this card has to say out loud, because otherwise the owner edits a form
+         full of blank fields, presses Save, and concludes the panel threw their
+         settings away rather than that there was nowhere to put them. --}}
+
     @if ($selectedHasSettings)
         <x-admin-section-card header-border="border-zinc-100" icon="adjustments-horizontal" title="Theme Settings"
-            description="Settings the selected theme ({{ $selectedSlug }}) defines itself — saved under the theme_{{ $selectedSlug }}_ prefix.">
+            description="Everything the {{ $selectedSlug }} theme defines for itself. Stored in its own {{ \App\Support\ThemeSettings::FILE }} inside the theme folder, not in the database.">
             <x-slot:titleActions>
                 <button type="button" @click="showThemeGuide = true" title="How theme settings work"
                     class="flex size-5 items-center justify-center text-zinc-400 transition-colors hover:text-primary cursor-pointer">
                     <flux:icon.information-circle class="size-4" />
                 </button>
             </x-slot:titleActions>
+
+            {{-- Right of the header: the file's state, and the button that puts
+                 it back. A theme is a folder that can be re-downloaded, replaced
+                 or checked out from an older branch, and the file goes with it —
+                 so this is a state the owner reaches in the ordinary course of
+                 managing themes, not a corruption to report. --}}
+            <x-slot:actions>
+                @if ($settingsFileExists)
+                    <span class="hidden items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 font-mono text-[11px] font-medium text-emerald-700 ring-1 ring-emerald-200 sm:inline-flex dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/30"
+                        title="{{ $settingsFilePath }}">
+                        <flux:icon.document-text class="size-3.5" />
+                        {{ $settingsFileCount }} {{ Str::plural('value', $settingsFileCount) }}
+                    </span>
+                @else
+                    <flux:button variant="primary" size="sm" icon="plus" wire:click="createSettingsFile"
+                        wire:loading.attr="disabled">
+                        <span wire:loading.remove>Create {{ \App\Support\ThemeSettings::FILE }}</span>
+                        <span wire:loading>Creating…</span>
+                    </flux:button>
+                @endif
+            </x-slot:actions>
+
+            @error('settingsFile')
+                <p class="mb-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50/70 p-3 text-xs font-medium text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400">
+                    <flux:icon.exclamation-triangle class="mt-px size-4 shrink-0" />
+                    {{ $message }}
+                </p>
+            @enderror
+
+            @unless ($settingsFileExists)
+                <div class="mb-5 flex flex-wrap items-start gap-4 rounded-lg border border-amber-200 bg-amber-50/70 p-4 dark:border-amber-500/30 dark:bg-amber-500/10">
+                    <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400">
+                        <flux:icon.document-plus class="size-5" />
+                    </span>
+
+                    <div class="min-w-0 flex-1 text-sm leading-relaxed text-amber-800 dark:text-amber-200">
+                        <p class="font-semibold">This theme has no {{ \App\Support\ThemeSettings::FILE }} file.</p>
+                        <p class="mt-1 text-xs text-amber-700/90 dark:text-amber-300/80">
+                            Its name and its settings both live in a
+                            <code class="rounded bg-amber-100/70 px-1 py-0.5 font-mono text-[10px] dark:bg-amber-500/15">{{ \App\Support\ThemeSettings::FILE }}</code>
+                            inside the theme folder, which means that file can be lost
+                            along with the folder - a re-uploaded theme, an older checkout,
+                            a deploy that shipped templates but not content. The fields below
+                            still render, but there is nowhere to save them until it is back.
+                            Create it and they will be written there on the next save.
+                        </p>
+
+                        <p class="mt-2 break-all font-mono text-[11px] text-amber-700/80 dark:text-amber-300/70">
+                            {{ $settingsFilePath ?? resource_path('views/frontend/themes/'.$selectedSlug.'/'.App\Support\ThemeSettings::FILE) }}
+                        </p>
+                    </div>
+
+                    <flux:button variant="primary" size="sm" icon="plus" wire:click="createSettingsFile"
+                        wire:loading.attr="disabled" class="shrink-0">
+                        <span wire:loading.remove>Create {{ \App\Support\ThemeSettings::FILE }}</span>
+                        <span wire:loading>Creating…</span>
+                    </flux:button>
+                </div>
+            @endunless
+
             @include('frontend.themes.'.$selectedSlug.'.settings', [
                 'themeSlug' => $selectedSlug,
                 'settings' => $settings,
@@ -480,6 +585,19 @@
                         etc. The folder name becomes the theme's name, and it shows up in the picker above immediately after installing.
                     </p>
 
+                    <p class="-mt-2 flex items-start gap-2 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+                        <flux:icon.information-circle class="mt-px size-4 shrink-0 text-zinc-400" />
+                        <span>
+                            A theme that ships no
+                            <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[10px] text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">{{ \App\Support\ThemeSettings::FILE }}</code>
+                            gets one created for it on the spot, seeded with every field it declares — so
+                            you can install a theme and go straight to filling it in. One
+                            <em>cannot</em> come from inside the zip: a theme's routes live in
+                            <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[10px] text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">routes/web/&lt;slug&gt;.php</code>,
+                            so add that file next to your theme folder before installing.
+                        </span>
+                    </p>
+
                     <a href="{{ asset('docs/theme-builder-guide.pdf') }}" target="_blank"
                         class="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50/70 p-4 transition-colors hover:border-emerald-300 hover:bg-emerald-50 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:hover:border-emerald-500/50">
                         <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400">
@@ -561,23 +679,58 @@
 
                 <div class="rounded-lg border border-zinc-200 bg-zinc-50/70 p-4 dark:border-zinc-700 dark:bg-zinc-800/40">
                     <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">2. Read it in your theme views</p>
-                    <pre class="overflow-x-auto rounded-md bg-zinc-900 p-3 font-mono text-[11px] leading-relaxed text-zinc-100"><code>{{-- inside home.blade.php --}}
-@php($badge = \App\Models\Setting::get('theme_first_one_hero_badge'))
-@if ($badge) &lt;span&gt;{{ $badge }}&lt;/span&gt; @endif</code></pre>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                        One helper, no slug to repeat — it reads the active theme's own file.
+                        In <code class="font-mono text-[10px]">home.blade.php</code>:
+                    </p>
+                    {{-- The verbatim wrapper is not decoration: this sample is
+                         itself Blade, so written plainly the conditionals and
+                         loops in it would compile and run, and the guide would
+                         show a theme template with its loops already evaluated.
+                         Deliberately no at-signs in this comment — Blade compiles
+                         directives before it strips comments. --}}
+                    <pre class="mt-2 overflow-x-auto rounded-md bg-zinc-900 p-3 font-mono text-[11px] leading-relaxed text-zinc-100"><code>@verbatim
+@if ($badge = theme_setting('hero_badge'))
+    &lt;span&gt;{{ $badge }}&lt;/span&gt;
+@endif
+
+@foreach (theme_rows('projects') as $project)
+    &lt;h3&gt;{{ $project['title'] }}&lt;/h3&gt;
+@endforeach
+@endverbatim</code></pre>
+                    <p class="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                        Also available: <code class="font-mono text-[10px]">theme_json()</code>,
+                        <code class="font-mono text-[10px]">theme_name()</code>,
+                        <code class="font-mono text-[10px]">theme_color()</code>,
+                        <code class="font-mono text-[10px]">theme_setting_key()</code>.
+                        Pass a theme slug as the last argument to read a specific theme's file.
+                    </p>
                 </div>
 
                 <div class="rounded-lg border border-zinc-200 bg-zinc-50/70 p-4 dark:border-zinc-700 dark:bg-zinc-800/40">
-                    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">3. Stored in the database</p>
+                    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">3. Stored in the theme's own file</p>
                     <p class="text-xs text-zinc-500 dark:text-zinc-400">
-                        Values persist in the
-                        <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[10px] text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">settings</code>
-                        table under the
+                        Values are written to a
+                        <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[10px] text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">{{ \App\Support\ThemeSettings::FILE }}</code>
+                        in the theme's own folder, keyed by
                         <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[10px] text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">theme_&lt;slug&gt;_*</code>
-                        key format and survive theme switching — each theme keeps its own values. Values are read with
-                        <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[10px] text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">Setting::get()</code>
-                        and written via
-                        <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[10px] text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">Setting::set()</code>.
+                        — so a theme carries its content with it and never touches the database.
+                        A newly installed theme gets one of these created for it automatically; the
+                        Create button above this panel puts it back if it ever goes missing.
                     </p>
+                </div>
+
+                <div class="rounded-lg border border-zinc-200 bg-zinc-50/70 p-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+                    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">4. Ship a route file too</p>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                        A theme's templates are only reachable through its routes, and those live
+                        outside the theme folder. Without one, selecting the theme 404s the whole
+                        site — the picker flags this above.
+                    </p>
+                    <pre class="mt-2 overflow-x-auto rounded-md bg-zinc-900 p-3 font-mono text-[11px] leading-relaxed text-zinc-100"><code><span class="text-zinc-500">// routes/web/first_one.php</span>
+Route::get('/', fn () =&gt; view(
+    \App\Support\Themes::viewOrFail('home')
+))-&gt;name('home');</code></pre>
                 </div>
 
                 <p class="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50/70 p-4 text-xs text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300">

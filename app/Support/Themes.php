@@ -150,12 +150,18 @@ class Themes
     }
 
     /**
-     * A theme's own settings, read from a theme.json manifest file at the
-     * folder's root. A manifest is optional — when a theme ships none, the
-     * slug-derived label, no author and version "1.0.0" are returned instead,
-     * so every theme (installed or built-in) has a well-formed manifest.
+     * A theme's own manifest — its name, description, version, author and tags —
+     * read from the theme.json at the folder's root. A manifest is optional: when
+     * a theme ships none, the slug-derived label, no author and version "1.0.0"
+     * are returned instead, so every theme (installed or built-in) has a
+     * well-formed manifest.
      *
-     * @return array{name: string, description: string, version: string, author: string, tags: array<int, string>}
+     * That same file is where a theme keeps its settings (see
+     * App\Support\ThemeSettings), so the fields picked out here are a handful of
+     * keys out of a larger file and everything else in it is none of this
+     * method's business.
+     *
+     * @return array{name: string, description: string, version: string, author: string, tags: array<int, string>, no_index: bool}
      */
     public static function manifest(string $slug): array
     {
@@ -165,6 +171,7 @@ class Themes
             'version' => '1.0.0',
             'author' => '',
             'tags' => [],
+            'no_index' => false,
         ];
 
         $file = self::path().'/'.$slug.'/theme.json';
@@ -185,7 +192,27 @@ class Themes
             'version' => is_string($data['version'] ?? null) && $data['version'] !== '' ? $data['version'] : $defaults['version'],
             'author' => is_string($data['author'] ?? null) ? $data['author'] : '',
             'tags' => collect($data['tags'] ?? [])->filter(fn ($tag) => is_string($tag) && $tag !== '')->values()->all(),
+            // Only a literal true opts out. A theme that omits the key, or
+            // spells it as a JSON string or the number 1, is saying nothing and
+            // so is indexable — the reading that keeps a typo from quietly
+            // unlisting a storefront.
+            'no_index' => ($data['no_index'] ?? null) === true,
         ];
+    }
+
+    /**
+     * Whether the active theme wants search engines to keep what it renders.
+     *
+     * The flag lives in the theme's own theme.json next to its name and version,
+     * because it is a property of the theme and not of a page: switching themes
+     * has to be able to change the answer without anyone remembering to go and
+     * edit a meta tag. The "default" theme is the case that matters — it is a
+     * screen of login links, so it sends noindex,nofollow and is kept out of the
+     * sitemap (see Seo\Sitemap), and it needs those two to be the same answer.
+     */
+    public static function isIndexable(?string $slug = null): bool
+    {
+        return ! self::manifest($slug ?? self::active())['no_index'];
     }
 
     /**

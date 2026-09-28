@@ -9,6 +9,7 @@ use App\Models\Page;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\ThemeSettings;
 
 beforeEach(function () {
     Page::factory()->published()->create(['title' => ['en' => 'Home', 'bn' => ''], 'slug' => 'home', 'sort_order' => 0]);
@@ -165,8 +166,10 @@ it('shows only featured product categories in the storefront shop-by-category gr
 
 it('applies the ecommerce theme primary & secondary colors to the storefront', function () {
     Setting::set('site_theme', 'ecommerce');
-    Setting::set('theme_ecommerce_primary_color', '#c01616');
-    Setting::set('theme_ecommerce_secondary_color', '#1e7bc4');
+    ThemeSettings::merge('ecommerce', [
+        'theme_ecommerce_primary_color' => '#c01616',
+        'theme_ecommerce_secondary_color' => '#1e7bc4',
+    ]);
 
     $this->get('/')
         ->assertOk()

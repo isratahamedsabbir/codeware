@@ -70,17 +70,6 @@ class Frontend
     }
 
     /**
-     * The "Information" menu (see InformationMenuSeeder) — the About/Contact/FAQ
-     * links rendered by the footer's Information column.
-     *
-     * @return Collection<int, MenuItem>
-     */
-    public static function informationMenu(): Collection
-    {
-        return static::renderableByTheme(static::menuCached('information-menu', 'information'));
-    }
-
-    /**
      * The "Quick Links" menu (see QuickLinksMenuSeeder) — the Home/Shop/shortcut
      * links rendered by the footer's Quick Links column.
      *

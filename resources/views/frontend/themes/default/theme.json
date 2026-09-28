@@ -3,5 +3,11 @@
     "description": "The minimal built-in theme: a landing page with Admin / Vendor / Delivery login links and standard content pages. Ships with no extra stylesheet and relies on the site's global CSS.",
     "version": "1.0.0",
     "author": "Codeware",
-    "tags": ["landing", "minimal"]
+    "tags": [
+        "landing",
+        "minimal"
+    ],
+    "no_index": true,
+    "theme_default_intro_heading": "",
+    "theme_default_intro_text": ""
 }

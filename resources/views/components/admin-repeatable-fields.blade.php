@@ -12,7 +12,8 @@
      */
     'repeaters' => null,
     /**
-     * The "theme_{slug}_*" setting key this list is stored under.
+     * The "theme_{slug}_*" key this list is stored under, in that theme's
+     * theme.json.
      *
      * Named settingKey rather than a bare `key` on purpose: this attribute *is*
      * the declaration that turns a theme setting into a list, and it has to be
@@ -20,7 +21,7 @@
      * App\Livewire\Admin\ThemeSettings\Index::declaredRepeaterKeys(), which
      * greps themes' settings.blade.php for `setting-key="theme_..."`. A plain
      * `key="..."` is indistinguishable from a text field's binding, so the
-     * admin would load it as a scalar and clobber the JSON.
+     * admin would load it as a scalar and clobber the rows.
      */
     'settingKey',
     'label',
@@ -72,7 +73,8 @@
                 This list needs <code class="font-mono">:repeaters=&quot;$repeaters&quot;</code> on its
                 <code class="font-mono">&lt;x-admin-repeatable-fields&gt;</code> tag, or it cannot
                 read its rows. Nothing has been lost — the saved content is still in
-                <code class="font-mono">{{ $settingKey }}</code>.
+                <code class="font-mono">{{ $settingKey }}</code> in this theme's
+                <code class="font-mono">theme.json</code>.
             </p>
         </div>
     @else

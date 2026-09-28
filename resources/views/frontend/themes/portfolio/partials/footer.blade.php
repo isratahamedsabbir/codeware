@@ -11,6 +11,10 @@
     Three columns rather than one centred line: a single copyright string with a
     row of icons is the least informative thing a site can end on, while the
     section anchors and the stack summary give a visitor somewhere to go next.
+
+    The newsletter sits under the social icons rather than in a band of its own:
+    both are the same offer — stay in touch — so one column that says so once
+    beats a full-width strip arguing with the grid for attention.
 --}}
 @php
     $footerSections = \App\Support\Frontend::portfolioMenuItems()
@@ -20,7 +24,7 @@
 
 <footer class="border-t border-(--pf-border) px-6 pt-16 pb-8">
     <div class="mx-auto max-w-6xl">
-        <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr]">
+        <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1.1fr]">
             {{-- Who this is --}}
             <div>
                 <a href="{{ url('/') }}" class="pf-heading flex items-center gap-2.5">
@@ -39,7 +43,7 @@
                  way back to it. Same list the header uses. --}}
             @if ($footerSections->isNotEmpty())
                 <div>
-                    <h2 class="pf-mono text-[10px] font-semibold tracking-wider text-(--pf-text-muted) uppercase">Sections</h2>
+                    <h2 class="pf-mono text-[10px] font-semibold tracking-wider text-(--pf-text-muted) uppercase">{{ __('Quick Links') }}</h2>
                     <ul class="mt-4 space-y-2.5">
                         @foreach ($footerSections as $item)
                             <li>
@@ -58,14 +62,33 @@
                 </div>
             @endif
 
-            {{-- Where to find me. Dropped whole with no links saved: a heading
-                 over an empty row reads as a broken footer. --}}
-            @if ($socials->isNotEmpty())
+            {{-- Where to find me, and how to keep hearing from me. Two guards,
+                 not one: each block drops out on its own when it has nothing
+                 to say, and the column survives either — a portfolio with no
+                 social links saved should still be able to collect
+                 subscribers, and one with no newsletter feature switched on
+                 should still show where to find the owner. --}}
+            @if ($socials->isNotEmpty() || \App\Support\Features::enabled('newsletter'))
                 <div>
-                    <h2 class="pf-mono text-[10px] font-semibold tracking-wider text-(--pf-text-muted) uppercase">Elsewhere</h2>
-                    <div class="mt-4">
-                        @include('frontend.themes.portfolio.partials.social-links', ['variant' => 'row'])
-                    </div>
+                    @if ($socials->isNotEmpty())
+                        <h2 class="pf-mono text-[10px] font-semibold tracking-wider text-(--pf-text-muted) uppercase">Elsewhere</h2>
+                        <div class="mt-4">
+                            @include('frontend.themes.portfolio.partials.social-links', ['variant' => 'row'])
+                        </div>
+                    @endif
+
+                    {{-- Gated on the same feature switch as the ecommerce theme's
+                         copy of this box, so turning Newsletter off in Settings →
+                         Features removes both rather than leaving one theme
+                         still collecting addresses. --}}
+                    @if (\App\Support\Features::enabled('newsletter'))
+                        <div class="pf-newsletter {{ $socials->isNotEmpty() ? 'mt-9 border-t border-(--pf-border) pt-8' : '' }}">
+                            <h2 class="pf-mono text-[10px] font-semibold tracking-wider text-(--pf-text-muted) uppercase">{{ __('Newsletter') }}</h2>
+                            <div class="mt-4">
+                                <livewire:frontend.newsletter-subscribe :key="'footer-newsletter'" />
+                            </div>
+                        </div>
+                    @endif
                 </div>
             @endif
         </div>

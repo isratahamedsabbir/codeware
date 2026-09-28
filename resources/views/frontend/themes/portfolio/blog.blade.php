@@ -9,6 +9,8 @@
 </head>
 <body class="theme-portfolio antialiased">
 
+    @include('frontend.themes.portfolio.partials.loader')
+
     @php
         // The header and footer partials are shared with the one-pager and both
         // read these, so they are resolved here rather than in each partial.

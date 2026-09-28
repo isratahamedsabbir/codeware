@@ -8,16 +8,18 @@ use Illuminate\Support\Collection;
 /**
  * Read side of the portfolio theme's content — everything the one-pager shows.
  *
- * All of it is settings-driven. Projects, Experience and Skills used to have
- * admin screens, models and a table each; testimonials did not exist at all.
- * That split was a trap for the owner: the one-pager's sections were edited from
- * two different places, one of which was a separate CRUD screen reachable only
- * from its own sidebar entry, and the sections that most affect whether a visitor
+ * All of it comes from the portfolio theme's own theme.json (see
+ * App\Support\ThemeSettings). Projects, Experience and Skills used to have admin
+ * screens, models and a table each; testimonials did not exist at all. That split
+ * was a trap for the owner: the one-pager's sections were edited from two
+ * different places, one of which was a separate CRUD screen reachable only from
+ * its own sidebar entry, and the sections that most affect whether a visitor
  * hires you were the ones with no screen at all until this refactor.
  *
  * They are ordinary key/value lists now, edited from Admin → Theme Settings next
- * to the hero copy, so they belong in the settings table rather than in a
- * migration each.
+ * to the hero copy, so they belong in the theme's own file rather than in a
+ * migration each: a theme that can be zipped out of resources/views cannot bring
+ * a migration with it, and its content has to travel in the folder.
  *
  * Two rules make every field safe to leave blank, which is the state every fresh
  * install is in:
@@ -30,12 +32,19 @@ use Illuminate\Support\Collection;
  *     whole section rather than rendering a heading over nothing. An empty
  *     "Education" heading is worse than no heading: it advertises a gap.
  *
- * Nothing here is cached. Every read is a Cache::rememberForever() behind
- * Setting::get() already, and a portfolio page is one request — an extra layer
- * would only add a second thing to invalidate.
+ * Nothing here is cached. Every read is one already-parsed theme.json, and a
+ * portfolio page is one request — an extra layer would only add a second thing
+ * to invalidate.
  */
 class PortfolioProfile
 {
+    /**
+     * The theme whose theme.json this class reads. The class is the portfolio
+     * theme's content layer and nothing else, so the slug is a constant rather
+     * than a parameter threaded through every method.
+     */
+    private const SLUG = 'portfolio';
+
     /**
      * The hero, as the one-pager needs it. `photo` is null when unset (draw a
      * monogram) rather than a placeholder URL; `monogram` is precomputed because
@@ -60,11 +69,11 @@ class PortfolioProfile
      */
     public static function hero(): array
     {
-        $name = trim((string) Setting::get('theme_portfolio_name', '')) ?: Setting::get('site_name', config('app.name'));
+        $name = ThemeSettings::text(self::SLUG, 'theme_portfolio_name') ?: (string) Setting::get('site_name', config('app.name'));
         $email = trim((string) Setting::get('contact_email', '')) ?: null;
 
         return [
-            'name' => (string) $name,
+            'name' => $name,
             // hero_title / hero_tagline are the keys this theme shipped with, kept
             // as-is: renaming them would silently drop the copy an existing
             // install already has saved and fall back to the defaults below.
@@ -74,7 +83,7 @@ class PortfolioProfile
             'location' => self::text('theme_portfolio_location'),
             'email' => $email,
             'photo' => self::text('theme_portfolio_photo'),
-            'monogram' => static::monogram((string) $name),
+            'monogram' => static::monogram($name),
             'resume_url' => self::text('theme_portfolio_resume_url'),
             'resume_label' => self::text('theme_portfolio_resume_label', 'Download CV'),
         ];
@@ -274,11 +283,11 @@ class PortfolioProfile
     /**
      * The rows of a repeating theme field, as stored.
      *
-     * The admin writes these as a JSON array of objects (one per repeated field
-     * group on the theme settings screen). Every field is optional, so this
-     * normalises rather than assumes: a hand-edited or half-migrated value can
-     * be an object instead of a list, a list of strings instead of objects, or
-     * plain invalid JSON, and none of those may fatal a public page.
+     * ThemeSettings::rows() has already normalised the file's JSON into flat
+     * string maps; this adds the one rule that is the storefront's business
+     * rather than the store's — a row that is missing its own identity is not a
+     * row. A hand-edited or half-pasted value can also be a list of bare strings
+     * or a JSON object instead of a list, and neither may fatal a public page.
      *
      * A JSON *object* is rejected outright rather than read as a one-row list.
      * `{"title": "Freelance"}` is what a hand edit that forgot the outer
@@ -291,41 +300,7 @@ class PortfolioProfile
      */
     private static function rows(string $key, string $identity): Collection
     {
-        $raw = trim((string) Setting::get($key, ''));
-
-        if ($raw === '') {
-            return collect();
-        }
-
-        $decoded = json_decode($raw, true);
-
-        if (! is_array($decoded) || ! array_is_list($decoded)) {
-            return collect();
-        }
-
-        return collect($decoded)
-            ->map(function ($row) use ($identity) {
-                if (is_string($row)) {
-                    $row = [$identity => $row];
-                }
-
-                if (! is_array($row)) {
-                    return null;
-                }
-
-                $normalised = [];
-
-                foreach ($row as $field => $value) {
-                    if (! is_string($field)) {
-                        continue;
-                    }
-
-                    $normalised[$field] = is_scalar($value) ? trim((string) $value) : '';
-                }
-
-                return $normalised;
-            })
-            ->filter()
+        return collect(ThemeSettings::rows(self::SLUG, $key, $identity))
             // The identity field is the row's own claim — a stat without a value,
             // a service without a title. A row with only its supporting fields
             // filled in has nothing to show, so it is not a row.
@@ -334,12 +309,12 @@ class PortfolioProfile
     }
 
     /**
-     * A trimmed string setting, or null when it holds nothing — so a template can
-     * use @if rather than checking for ''.
+     * A trimmed string from the theme's theme.json, or the given default when
+     * it holds nothing — so a template can use @if rather than checking for ''.
      */
     private static function text(string $key, ?string $default = null): ?string
     {
-        $value = trim((string) Setting::get($key, ''));
+        $value = ThemeSettings::text(self::SLUG, $key);
 
         if ($value !== '') {
             return $value;

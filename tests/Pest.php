@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Page;
+use App\Support\Themes;
+use App\Support\ThemeSettings;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -13,17 +15,37 @@ use Tests\TestCase;
 |
 | The closure you provide to your test functions is always bound to a specific PHPUnit test
 | case class. By default, that class is "PHPUnit\Framework\TestCase". Of course, you may
-| need to change it using the "pest()" function to bind a different classes or traits.
+| need to change it using the pest() function to bind a different classes or traits.
 |
 */
 
 // Setting/CmsSection cache under the test env's CACHE_STORE=array override,
 // which isn't covered by RefreshDatabase's transaction rollback, so entries
 // would otherwise leak between tests. Flush around every test.
+//
+// A theme's settings live in a theme.json file in its theme folder
+// (App\Support\ThemeSettings), which a database rollback cannot put back
+// either — so those files are snapshotted and restored around every test too.
+// Without it, a test that seeds portfolio projects would put them on disk for
+// every test that ran after it, and the suite would leave the repository's own
+// theme files rewritten. Cache::flush() runs either side so a restored file is
+// not served from a memo written before the restore.
+//
+// The snapshot is held in a by-reference closure variable rather than a property
+// on the test case: a dynamic property is deprecated on PHP 8.2+, and a test
+// suite is the last place to be emitting deprecations.
+$snapshot = null;
+
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
-    ->beforeEach(fn () => Cache::flush())
-    ->afterEach(fn () => Cache::flush())
+    ->beforeEach(function () use (&$snapshot) {
+        Cache::flush();
+        $snapshot = themeSettingsSnapshot();
+    })
+    ->afterEach(function () use (&$snapshot) {
+        themeSettingsRestore($snapshot ?? []);
+        Cache::flush();
+    })
     ->in('Feature');
 
 /*
@@ -75,4 +97,54 @@ function pairPageFor(Model $entity, string $type, string $slug, int $userId): Pa
         'slug' => $slug,
         'status' => 'active',
     ]);
+}
+
+/**
+ * Every installed theme's theme.json, as slug => raw file contents, or
+ * `missing` for a theme that has no file.
+ *
+ * Read with the filesystem rather than through ThemeSettings::all(), because
+ * the point is to capture the file as it is on disk — including a test that
+ * replaced it with something unparseable, which the app-level reader would
+ * quietly reduce to an empty map.
+ *
+ * @return array<string, string|null>
+ */
+function themeSettingsSnapshot(): array
+{
+    return collect(Themes::all())
+        ->mapWithKeys(function (string $label, string $slug): array {
+            $file = ThemeSettings::file($slug);
+
+            return [$slug => $file !== null && is_file($file) ? (string) file_get_contents($file) : null];
+        })
+        ->all();
+}
+
+/**
+ * Put every theme's theme.json back the way themeSettingsSnapshot() found
+ * it, so one test's theme content cannot reach the next one and the repository's
+ * own files are left exactly as they were.
+ *
+ * @param  array<string, string|null>  $snapshot
+ */
+function themeSettingsRestore(array $snapshot): void
+{
+    foreach ($snapshot as $slug => $contents) {
+        $file = ThemeSettings::file($slug);
+
+        if ($file === null) {
+            continue;
+        }
+
+        if ($contents === null) {
+            ThemeSettings::delete($slug);
+
+            continue;
+        }
+
+        file_put_contents($file, $contents);
+    }
+
+    ThemeSettings::forget();
 }

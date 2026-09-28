@@ -1,11 +1,12 @@
 <?php
 
-use App\Livewire\Admin\ThemeSettings\Index as ThemeSettings;
+use App\Livewire\Admin\ThemeSettings\Index as ThemeSettingsScreen;
 use App\Models\Page;
 use App\Models\Service;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\PortfolioProfile;
+use App\Support\ThemeSettings;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -25,13 +26,14 @@ beforeEach(function () {
 });
 
 /**
- * Store a repeater's rows the way the admin screen does: one JSON setting.
+ * Store a repeater's rows the way the admin screen does: as a list in the
+ * theme's own theme.json, not as a JSON string in a table row.
  *
  * @param  array<int, array<string, string>>  $rows
  */
 function setRepeater(string $key, array $rows): void
 {
-    Setting::set($key, json_encode($rows));
+    ThemeSettings::merge('portfolio', [$key => $rows]);
 }
 
 it('falls back to a monogram instead of a placeholder photo, so no stock silhouette ships', function () {
@@ -49,18 +51,20 @@ it('falls back to a monogram instead of a placeholder photo, so no stock silhoue
 });
 
 it('derives the monogram from the first two words of the name', function () {
-    Setting::set('theme_portfolio_name', 'Sabbir Hossain');
+    ThemeSettings::merge('portfolio', ['theme_portfolio_name' => 'Sabbir Hossain']);
 
     expect(PortfolioProfile::hero()['monogram'])->toBe('SH');
 
-    Setting::set('theme_portfolio_name', '  Ada  Lovelace  ');
+    ThemeSettings::merge('portfolio', ['theme_portfolio_name' => '  Ada  Lovelace  ']);
 
     expect(PortfolioProfile::hero()['monogram'])->toBe('AL');
 });
 
 it('uses the uploaded photo when one is set, and drops the monogram', function () {
-    Setting::set('theme_portfolio_name', 'Ada Lovelace');
-    Setting::set('theme_portfolio_photo', '/storage/portraits/ada.jpg');
+    ThemeSettings::merge('portfolio', [
+        'theme_portfolio_name' => 'Ada Lovelace',
+        'theme_portfolio_photo' => '/storage/portraits/ada.jpg',
+    ]);
 
     $hero = PortfolioProfile::hero();
 
@@ -76,8 +80,10 @@ it('uses the uploaded photo when one is set, and drops the monogram', function (
 it('keeps the shipped hero title and tagline keys working', function () {
     // These are the keys this theme already saved copy under; renaming them
     // would silently drop an existing install's text.
-    Setting::set('theme_portfolio_hero_title', 'Backend & Platform Engineer');
-    Setting::set('theme_portfolio_hero_tagline', 'APIs, queues and the databases behind them.');
+    ThemeSettings::merge('portfolio', [
+        'theme_portfolio_hero_title' => 'Backend & Platform Engineer',
+        'theme_portfolio_hero_tagline' => 'APIs, queues and the databases behind them.',
+    ]);
 
     $hero = PortfolioProfile::hero();
 
@@ -187,6 +193,13 @@ it('prints no price line for a service priced at zero rather than a free-soundin
 });
 
 it('hides a section entirely rather than printing a heading over nothing', function () {
+    // Set empty rather than assuming the file is: a real installer's
+    // theme.json is full of their own content, and a test that passed only
+    // because the repository's file happened to ship blank would stop passing
+    // the moment they typed into it.
+    setRepeater('theme_portfolio_education', []);
+    setRepeater('theme_portfolio_certifications', []);
+
     // The default state of every fresh install: no education, no certifications.
     expect(PortfolioProfile::education())->toBeEmpty()
         ->and(PortfolioProfile::certifications())->toBeEmpty();
@@ -202,10 +215,13 @@ it('hides a section entirely rather than printing a heading over nothing', funct
 });
 
 it('survives a hand-edited or corrupt repeater value without fataling the page', function () {
-    // Each of these is a value an operator could leave in the settings table.
-    Setting::set('theme_portfolio_stats', 'not json at all');
-    Setting::set('theme_portfolio_education', '["Just a string", 42, null]');
-    Setting::set('theme_portfolio_certifications', '');
+    // Each of these is a value an operator could leave in the theme's
+    // theme.json by hand — a non-array where a list belongs, and a blank.
+    ThemeSettings::merge('portfolio', [
+        'theme_portfolio_stats' => 'not json at all',
+        'theme_portfolio_education' => '["Just a string", 42, null]',
+        'theme_portfolio_certifications' => '',
+    ]);
 
     expect(PortfolioProfile::stats())->toBeEmpty()
         // A bare string still becomes a titled row rather than being discarded.
@@ -226,10 +242,12 @@ it('trims stored values, so a stray space never reaches the page', function () {
 });
 
 it('round-trips a repeater through the admin screen and out to the page', function () {
+    setRepeater('theme_portfolio_education', []);
+
     $this->seed(RolePermissionSeeder::class);
     $this->actingAs(User::factory()->admin()->create());
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'portfolio')
         ->call('addRepeaterRow', 'theme_portfolio_education', ['title', 'period', 'description'])
         ->set('repeaters.theme_portfolio_education.0.title', 'B.Sc. in Computer Science')
@@ -237,7 +255,7 @@ it('round-trips a repeater through the admin screen and out to the page', functi
         ->call('save')
         ->assertHasNoErrors();
 
-    expect(json_decode(Setting::where('key', 'theme_portfolio_education')->value('value'), true))
+    expect(ThemeSettings::rows('portfolio', 'theme_portfolio_education'))
         ->toBe([['title' => 'B.Sc. in Computer Science', 'period' => '', 'description' => 'Example University']]);
 
     $this->get('/')
@@ -255,7 +273,7 @@ it('reorders, and never persists, a blank repeater row', function () {
         ['title' => 'First', 'period' => '', 'description' => ''],
     ]);
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'portfolio')
         ->call('addRepeaterRow', 'theme_portfolio_education', ['title', 'period', 'description'])
         // The empty row the UI leaves on screen.
@@ -263,29 +281,30 @@ it('reorders, and never persists, a blank repeater row', function () {
         ->set('repeaters.theme_portfolio_education.1.title', '  Moved to the top  ')
         ->call('save');
 
-    expect(json_decode(Setting::where('key', 'theme_portfolio_education')->value('value'), true))
+    expect(ThemeSettings::rows('portfolio', 'theme_portfolio_education'))
         ->toBe([
             ['title' => 'Second', 'period' => '', 'description' => ''],
             ['title' => 'Moved to the top', 'period' => '', 'description' => ''],
             ['title' => 'First', 'period' => '', 'description' => ''],
         ]);
+
 });
 
 it('removes a repeater row without disturbing its neighbours', function () {
     $this->seed(RolePermissionSeeder::class);
     $this->actingAs(User::factory()->admin()->create());
 
-    Setting::set('theme_portfolio_certifications', json_encode([
+    setRepeater('theme_portfolio_certifications', [
         ['title' => 'Keep me', 'period' => '2023', 'description' => 'Issuer A'],
         ['title' => 'Remove me', 'period' => '2024', 'description' => 'Issuer B'],
-    ]));
+    ]);
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'portfolio')
         ->call('removeRepeaterRow', 'theme_portfolio_certifications', 1)
         ->call('save');
 
-    expect(json_decode(Setting::where('key', 'theme_portfolio_certifications')->value('value'), true))
+    expect(ThemeSettings::rows('portfolio', 'theme_portfolio_certifications'))
         ->toBe([['title' => 'Keep me', 'period' => '2023', 'description' => 'Issuer A']]);
 });
 
@@ -294,23 +313,24 @@ it('uploads the hero photo directly and deletes the one it replaces', function (
     $this->seed(RolePermissionSeeder::class);
     $this->actingAs(User::factory()->admin()->create());
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'portfolio')
         ->set('uploads.theme_portfolio_photo', UploadedFile::fake()->image('first.jpg'))
         ->call('save')
         ->assertHasNoErrors();
 
-    $first = Setting::where('key', 'theme_portfolio_photo')->value('value');
+    $first = ThemeSettings::text('portfolio', 'theme_portfolio_photo');
     $firstPath = Str::after($first, '/storage/');
+
     Storage::disk('public')->assertExists($firstPath);
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'portfolio')
         ->set('uploads.theme_portfolio_photo', UploadedFile::fake()->image('second.png'))
         ->call('save')
         ->assertHasNoErrors();
 
-    $second = Setting::where('key', 'theme_portfolio_photo')->value('value');
+    $second = ThemeSettings::text('portfolio', 'theme_portfolio_photo');
 
     expect($second)->not->toBe($first)->toContain('theme-uploads/theme-portfolio-photo/');
     Storage::disk('public')->assertMissing($firstPath);
@@ -322,26 +342,26 @@ it('accepts only a pdf for the résumé and replaces the previous one', function
     $this->seed(RolePermissionSeeder::class);
     $this->actingAs(User::factory()->admin()->create());
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'portfolio')
         ->set('uploads.theme_portfolio_resume_url', UploadedFile::fake()->image('cv.jpg'))
         ->assertHasErrors(['uploads.theme_portfolio_resume_url']);
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'portfolio')
         ->set('uploads.theme_portfolio_resume_url', UploadedFile::fake()->create('old-cv.pdf', 100, 'application/pdf'))
         ->call('save')
         ->assertHasNoErrors();
 
-    $oldPath = Str::after(Setting::where('key', 'theme_portfolio_resume_url')->value('value'), '/storage/');
+    $oldPath = Str::after(ThemeSettings::text('portfolio', 'theme_portfolio_resume_url'), '/storage/');
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'portfolio')
         ->set('uploads.theme_portfolio_resume_url', UploadedFile::fake()->create('new-cv.pdf', 100, 'application/pdf'))
         ->call('save')
         ->assertHasNoErrors();
 
-    $new = Setting::where('key', 'theme_portfolio_resume_url')->value('value');
+    $new = ThemeSettings::text('portfolio', 'theme_portfolio_resume_url');
 
     expect($new)->toEndWith('.pdf')->toContain('new-cv');
     Storage::disk('public')->assertMissing($oldPath);
@@ -352,18 +372,18 @@ it('deletes the uploaded file when the field is cleared and saved', function () 
     $this->seed(RolePermissionSeeder::class);
     $this->actingAs(User::factory()->admin()->create());
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'portfolio')
         ->set('uploads.theme_portfolio_resume_url', UploadedFile::fake()->create('cv.pdf', 100, 'application/pdf'))
         ->call('save');
 
-    $path = Str::after(Setting::where('key', 'theme_portfolio_resume_url')->value('value'), '/storage/');
+    $path = Str::after(ThemeSettings::text('portfolio', 'theme_portfolio_resume_url'), '/storage/');
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'portfolio')
         ->call('clearThemeUpload', 'theme_portfolio_resume_url')
         ->call('save');
 
-    expect(Setting::where('key', 'theme_portfolio_resume_url')->value('value'))->toBe('');
+    expect(ThemeSettings::text('portfolio', 'theme_portfolio_resume_url'))->toBe('');
     Storage::disk('public')->assertMissing($path);
 });

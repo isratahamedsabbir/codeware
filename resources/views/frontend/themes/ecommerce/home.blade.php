@@ -16,8 +16,9 @@
     $promoImage2 = \App\Models\Setting::get('home_promo_banner_2');
 
     // Promo tile links (Theme Settings): a site path or an http(s) URL —
-    // anything else (blank, javascript:, …) falls back to the Shop page.
-    $promoLink = fn (string $key): string => \App\Support\HeroSlides::safeUrl(\App\Models\Setting::get($key));
+    // anything else (blank, javascript:, …) falls back to the Shop page. Read
+    // from the ecommerce theme's own theme.json.
+    $promoLink = fn (string $key): string => \App\Support\HeroSlides::safeUrl(\App\Support\ThemeSettings::text('ecommerce', $key));
 
     $featured = \App\Models\Product::active()
         ->featured()
@@ -148,7 +149,6 @@
                             <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-secondary to-brand">
                             </div>
                         @endif
-                        <span class="absolute inset-x-0 bottom-0 p-4 text-lg font-bold uppercase text-white">{{ $promo['label'] }}</span>
                     </a>
                 @endforeach
             </div>

@@ -1,10 +1,11 @@
 <?php
 
-use App\Livewire\Admin\ThemeSettings\Index as ThemeSettings;
+use App\Livewire\Admin\ThemeSettings\Index as ThemeSettingsScreen;
 use App\Models\MenuItem;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\Themes;
+use App\Support\ThemeSettings;
 use Database\Seeders\AdminMenuSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Http\UploadedFile;
@@ -48,7 +49,7 @@ function makeThemeZip(string $slug, array $files): string
 }
 
 it('renders the theme settings page', function () {
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->assertStatus(200)
         ->assertSee('Enable Live Chat')
         ->assertSee('Show Announcement Popup');
@@ -57,14 +58,14 @@ it('renders the theme settings page', function () {
 it('links the theme builder guide PDF in the install modal', function () {
     expect(is_file(public_path('docs/theme-builder-guide.pdf')))->toBeTrue();
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->assertSet('showInstallModal', true)
         ->assertSeeHtml('docs/theme-builder-guide.pdf');
 });
 
 it('supplies each theme manifest (name, version, author, tags) to the picker', function () {
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->assertViewHas('themeCards', function (array $cards): bool {
             $ecommerce = $cards['ecommerce'];
 
@@ -81,7 +82,7 @@ it('falls back to slug-derived manifest fields when a theme has no theme.json', 
     // other tests) must still yield a well-formed manifest.
     $zip = makeThemeZip('retro', ['home.blade.php' => 'retro home']);
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents($zip)))
         ->call('installTheme')
@@ -100,7 +101,7 @@ it('treats a malformed theme.json as if it were missing', function () {
         'theme.json' => '{ not valid json ;;',
     ]);
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents($zip)))
         ->call('installTheme')
@@ -112,32 +113,206 @@ it('treats a malformed theme.json as if it were missing', function () {
 });
 
 it('renders the selected theme settings panel below the picker', function () {
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'ecommerce')
         ->assertSeeHtml('Ecommerce')
         ->assertSeeHtml('v1.0.0');
 });
 
-it('loads theme-scoped settings stored under the theme_ prefix', function () {
-    Setting::factory()->create(['key' => 'theme_ecommerce_hero_badge', 'value' => 'New season', 'group' => 'theme', 'type' => 'string']);
+it('loads theme-scoped values out of the theme\'s own theme.json', function () {
+    // A theme's settings live in its own theme.json, not the settings table,
+    // so this is written straight to the file. A DB row under the same key would
+    // prove nothing — nothing on the save path reads one.
+    ThemeSettings::merge('ecommerce', ['theme_ecommerce_accent_color' => '#c01616']);
 
-    $component = Livewire::test(ThemeSettings::class);
+    $component = Livewire::test(ThemeSettingsScreen::class);
 
-    expect($component->get('settings.theme_ecommerce_hero_badge'))->toBe('New season');
+    expect($component->get('settings.theme_ecommerce_accent_color'))->toBe('#c01616');
 });
 
-it('saves theme-scoped settings through Setting::set', function () {
-    Livewire::test(ThemeSettings::class)
-        ->set('settings.theme_ecommerce_hero_badge', 'Summer sale')
+it('loads a blank value for a declared field the file has never had a key for', function () {
+    ThemeSettings::merge('ecommerce', ['theme_ecommerce_accent_color' => '#c01616']);
+
+    $component = Livewire::test(ThemeSettingsScreen::class);
+
+    // header_bg_color is declared by ecommerce/settings.blade.php but absent from
+    // the file, so it has to come up blank rather than missing from the bag.
+    expect($component->get('settings.theme_ecommerce_header_bg_color'))->toBe('');
+});
+
+it('saves each theme\'s values into that theme\'s own theme.json', function () {
+    Livewire::test(ThemeSettingsScreen::class)
+        ->set('settings.theme_ecommerce_accent_color', '#c01616')
         ->set('settings.theme_portfolio_hero_title', 'Designer')
         ->call('save');
 
-    expect(Setting::where('key', 'theme_ecommerce_hero_badge')->value('value'))->toBe('Summer sale')
-        ->and(Setting::where('key', 'theme_portfolio_hero_title')->value('value'))->toBe('Designer');
+    expect(ThemeSettings::text('ecommerce', 'theme_ecommerce_accent_color'))->toBe('#c01616')
+        ->and(ThemeSettings::text('portfolio', 'theme_portfolio_hero_title'))->toBe('Designer')
+        // And nowhere near the other theme's file, nor the settings table.
+        ->and(ThemeSettings::text('portfolio', 'theme_ecommerce_accent_color'))->toBe('')
+        ->and(ThemeSettings::text('ecommerce', 'theme_portfolio_hero_title'))->toBe('')
+        ->and(Setting::where('key', 'like', 'theme\_%')->count())->toBe(0);
+});
+
+it('stores repeater rows in the theme\'s theme.json as a JSON list', function () {
+    // An empty list to start from, rather than whatever the file happens to
+    // hold: this file belongs to whoever installed the theme, and a test that
+    // only passed while it was empty would be testing the repository's copy.
+    ThemeSettings::merge('portfolio', ['theme_portfolio_projects' => []]);
+
+    Livewire::test(ThemeSettingsScreen::class)
+        ->set('settings.site_theme', 'portfolio')
+        ->call('addRepeaterRow', 'theme_portfolio_projects', ['title', 'description'])
+        ->set('repeaters.theme_portfolio_projects.0.title', 'Laravel 12 migration tool')
+        ->set('repeaters.theme_portfolio_projects.0.description', 'Rewrites schema files.')
+        // A blank row is what the repeater UI always leaves on screen; it must
+        // not become an empty project card on the public page.
+        ->call('addRepeaterRow', 'theme_portfolio_projects', ['title', 'description'])
+        ->call('save');
+
+    expect(ThemeSettings::rows('portfolio', 'theme_portfolio_projects'))
+        ->toBe([['title' => 'Laravel 12 migration tool', 'description' => 'Rewrites schema files.']]);
+
+    // A real array in the file, not a JSON string inside one.
+    expect(json_decode((string) file_get_contents(ThemeSettings::file('portfolio')), true)['theme_portfolio_projects'])
+        ->toBeArray()
+        ->not->toBeString();
+});
+
+it('warns instead of writing when a theme\'s theme.json is missing', function () {
+    ThemeSettings::delete('ecommerce');
+
+    $component = Livewire::test(ThemeSettingsScreen::class)
+        ->set('settings.site_theme', 'ecommerce')
+        // The card says which file is missing and puts the button next to it, so
+        // a save that cannot write is explained where the fields are, not only
+        // in a flash that goes away on reload.
+        ->assertSee('This theme has no theme.json file.')
+        ->assertSee(ThemeSettings::file('ecommerce'), escape: false)
+        ->assertSee('Create theme.json')
+        ->set('settings.theme_ecommerce_accent_color', '#c01616')
+        ->call('save');
+
+    // Nothing was invented, and nothing fell back to the settings table either.
+    expect(ThemeSettings::exists('ecommerce'))->toBeFalse()
+        ->and(Setting::where('key', 'theme_ecommerce_accent_color')->exists())->toBeFalse()
+        ->and($component->html())->toContain('Create theme.json');
+});
+
+it('leaves keys the settings screen does not declare alone when saving', function () {
+    // A theme.json is a theme's own file, and a theme author may well put
+    // something in it the admin form knows nothing about. Merging the form's
+    // values in has to leave that untouched — a save is not a rewrite.
+    ThemeSettings::merge('ecommerce', ['theme_ecommerce_author_note' => 'Hand-edited.']);
+
+    Livewire::test(ThemeSettingsScreen::class)
+        ->set('settings.theme_ecommerce_accent_color', '#c01616')
+        ->call('save');
+
+    expect(ThemeSettings::text('ecommerce', 'theme_ecommerce_author_note'))->toBe('Hand-edited.')
+        ->and(ThemeSettings::text('ecommerce', 'theme_ecommerce_accent_color'))->toBe('#c01616');
+});
+
+it('creates the selected theme\'s theme.json seeded with every field it declares', function () {
+    ThemeSettings::delete('ecommerce');
+
+    Livewire::test(ThemeSettingsScreen::class)
+        ->set('settings.site_theme', 'ecommerce')
+        ->assertSee('Create theme.json')
+        ->call('createSettingsFile')
+        ->assertHasNoErrors();
+
+    $written = json_decode((string) file_get_contents(ThemeSettings::file('ecommerce')), true);
+
+    // The point of the button: the theme's fields have somewhere to go again.
+    expect(ThemeSettings::exists('ecommerce'))->toBeTrue()
+        // A readable statement of what this theme can be configured with, not a
+        // bare {} — the file is also what a theme author reads to find the keys.
+        ->and($written)->toHaveKey('theme_ecommerce_accent_color', '')
+        ->and($written)->toHaveKey('theme_ecommerce_promo_1_link', '')
+        ->and(array_values($written))->not->toContain(null);
+
+    // And the form now saves into it.
+    Livewire::test(ThemeSettingsScreen::class)
+        ->set('settings.site_theme', 'ecommerce')
+        ->set('settings.theme_ecommerce_accent_color', '#c01616')
+        ->call('save');
+
+    expect(ThemeSettings::text('ecommerce', 'theme_ecommerce_accent_color'))->toBe('#c01616');
+});
+
+it('seeds an empty list for each repeater a theme declares', function () {
+    ThemeSettings::delete('portfolio');
+
+    Livewire::test(ThemeSettingsScreen::class)
+        ->set('settings.site_theme', 'portfolio')
+        ->call('createSettingsFile');
+
+    $written = json_decode((string) file_get_contents(ThemeSettings::file('portfolio')), true);
+
+    expect($written)->toHaveKey('theme_portfolio_projects', [])
+        ->and($written)->toHaveKey('theme_portfolio_stats', [])
+        ->and($written)->toHaveKey('theme_portfolio_name', '');
+});
+
+it('refuses to create a theme.json that is already there', function () {
+    ThemeSettings::merge('ecommerce', ['theme_ecommerce_accent_color' => '#c01616']);
+
+    // The button is not even offered for a theme that has its file, and calling
+    // the action anyway is a no-op: this is the recovery path for a missing file,
+    // not a reset, and a create that overwrote would be one click from wiping a
+    // finished theme's content.
+    Livewire::test(ThemeSettingsScreen::class)
+        ->set('settings.site_theme', 'ecommerce')
+        ->assertDontSee('Create theme.json')
+        ->call('createSettingsFile')
+        ->assertSet('settings.theme_ecommerce_accent_color', '#c01616');
+
+    expect(ThemeSettings::text('ecommerce', 'theme_ecommerce_accent_color'))->toBe('#c01616');
+});
+
+it('offers no theme.json button for a theme that declares no settings form', function () {
+    // A theme with no settings.blade.php has no fields to write, and its settings
+    // card is not rendered at all — so there is nothing to create a file for.
+    $zip = makeThemeZip('retro', ['home.blade.php' => 'retro home']);
+
+    Livewire::test(ThemeSettingsScreen::class)
+        ->call('openInstallModal')
+        ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents($zip)))
+        ->call('installTheme')
+        ->set('settings.site_theme', 'retro');
+
+    Livewire::test(ThemeSettingsScreen::class)
+        ->set('settings.site_theme', 'retro')
+        ->assertDontSee('Create theme.json')
+        ->assertDontSee('Theme Settings</h');
+
+    // And calling the action anyway does not leave a stray file behind: it is
+    // reachable directly by anything that can talk to the Livewire endpoint.
+    Livewire::test(ThemeSettingsScreen::class)
+        ->set('settings.site_theme', 'retro')
+        ->call('createSettingsFile')
+        ->assertHasNoErrors();
+
+    expect(ThemeSettings::exists('retro'))->toBeFalse();
+});
+
+it('does not create a theme.json for a theme that is not installed', function () {
+    Livewire::test(ThemeSettingsScreen::class)
+        ->set('settings.site_theme', 'not-installed')
+        ->call('createSettingsFile')
+        ->assertHasNoErrors();
+
+    // The pick falls back to the live theme, so the action acted on that — and
+    // found its file already there, rather than inventing one for a slug that
+    // has no folder on disk.
+    expect(ThemeSettings::exists('default'))->toBeTrue()
+        ->and(ThemeSettings::file('not-installed'))->not->toBeFalse()
+        ->and(ThemeSettings::exists('not-installed'))->toBeFalse();
 });
 
 it('renders a color picker for every storefront area', function () {
-    $component = Livewire::test(ThemeSettings::class)
+    $component = Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'ecommerce')
         ->assertSeeHtml('type="color"')
         ->assertDontSee('Primary Color')
@@ -149,23 +324,25 @@ it('renders a color picker for every storefront area', function () {
     }
 });
 
-it('saves brand-new per-area colors even before their settings rows exist', function () {
-    Livewire::test(ThemeSettings::class)
+it('saves brand-new per-area colors even before they are in the file', function () {
+    Livewire::test(ThemeSettingsScreen::class)
         ->assertSet('settings.theme_ecommerce_header_bg_color', '')
         ->set('settings.theme_ecommerce_header_bg_color', '#112233')
         ->set('settings.theme_ecommerce_button_bg_color', '#c01616')
         ->call('save');
 
-    expect(Setting::where('key', 'theme_ecommerce_header_bg_color')->value('value'))->toBe('#112233')
-        ->and(Setting::where('key', 'theme_ecommerce_button_bg_color')->value('value'))->toBe('#c01616');
+    expect(ThemeSettings::text('ecommerce', 'theme_ecommerce_header_bg_color'))->toBe('#112233')
+        ->and(ThemeSettings::text('ecommerce', 'theme_ecommerce_button_bg_color'))->toBe('#c01616');
 });
 
 it('applies the per-area colors to the storefront and ignores anything that is not a hex color', function () {
     Setting::set('site_theme', 'ecommerce');
-    Setting::set('theme_ecommerce_primary_color', '#045b30');
-    Setting::set('theme_ecommerce_header_bg_color', '#112233');
-    Setting::set('theme_ecommerce_footer_text_color', '#eeeeee');
-    Setting::set('theme_ecommerce_button_bg_color', 'red; } body { display:none');
+    ThemeSettings::merge('ecommerce', [
+        'theme_ecommerce_primary_color' => '#045b30',
+        'theme_ecommerce_header_bg_color' => '#112233',
+        'theme_ecommerce_footer_text_color' => '#eeeeee',
+        'theme_ecommerce_button_bg_color' => 'red; } body { display:none',
+    ]);
 
     $this->get('/')
         ->assertOk()
@@ -177,14 +354,20 @@ it('applies the per-area colors to the storefront and ignores anything that is n
         ->assertDontSee('--color-sf-button:', false);
 });
 
-it('loads seeded ecommerce theme colors into the form', function () {
-    Setting::factory()->create(['key' => 'theme_ecommerce_primary_color', 'value' => '#045b30', 'group' => 'frontend', 'type' => 'color']);
-    Setting::factory()->create(['key' => 'theme_ecommerce_secondary_color', 'value' => '#7cc242', 'group' => 'frontend', 'type' => 'color']);
+it('loads the ecommerce theme colors the file holds into the form', function () {
+    ThemeSettings::merge('ecommerce', [
+        'theme_ecommerce_primary_color' => '#045b30',
+        'theme_ecommerce_secondary_color' => '#7cc242',
+    ]);
 
-    $component = Livewire::test(ThemeSettings::class);
+    $component = Livewire::test(ThemeSettingsScreen::class);
 
+    // The form only shows what ecommerce/settings.blade.php declares, and the
+    // legacy primary is in there (the colour preview falls back to it) while the
+    // secondary is not — it is read on the storefront, not edited here. Both
+    // values still survive a save, because a save merges rather than rewrites.
     expect($component->get('settings.theme_ecommerce_primary_color'))->toBe('#045b30')
-        ->and($component->get('settings.theme_ecommerce_secondary_color'))->toBe('#7cc242');
+        ->and(ThemeSettings::text('ecommerce', 'theme_ecommerce_secondary_color'))->toBe('#7cc242');
 });
 
 it('renders the selected theme settings blade when the theme ships one', function () {
@@ -192,7 +375,7 @@ it('renders the selected theme settings blade when the theme ships one', functio
         ->and(Themes::hasSettings('default'))->toBeTrue()
         ->and(Themes::hasSettings('portfolio'))->toBeTrue();
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'ecommerce')
         // The ecommerce card holds the homepage banner uploads + its colors only.
         ->assertSee('Banners')
@@ -213,7 +396,7 @@ it('navigates a theme\'s settings sections by menu beside the form, not a tab st
     // directions are asserted because the two are interchangeable in the markup
     // — only one of them is the layout this screen is supposed to have.
     $expectMenu = function (string $slug, int $sections) {
-        $html = Livewire::test(ThemeSettings::class)
+        $html = Livewire::test(ThemeSettingsScreen::class)
             ->set('settings.site_theme', $slug)
             ->html();
 
@@ -234,7 +417,10 @@ it('navigates a theme\'s settings sections by menu beside the form, not a tab st
         expect($html)->not->toContain('border-b-2 px-4 py-2.5');
     };
 
-    $expectMenu('portfolio', 6);
+    // The portfolio theme's seven sections; the count is asserted because a
+    // section added to the theme without a nav entry is a section the owner
+    // cannot reach.
+    $expectMenu('portfolio', 7);
     $expectMenu('ecommerce', 2);
 });
 
@@ -246,7 +432,7 @@ it('picks the theme from the Site Design grid, open on arrival and on the live t
     // reachable.
     Setting::set('site_theme', 'portfolio');
 
-    $html = Livewire::test(ThemeSettings::class)->html();
+    $html = Livewire::test(ThemeSettingsScreen::class)->html();
 
     expect($html)->toContain('x-data="{ open: true }"');
 
@@ -264,11 +450,11 @@ it('moves the selection when a theme card is picked', function () {
     // underneath would drift apart.
     Setting::set('site_theme', 'portfolio');
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->call('$set', 'settings.site_theme', 'ecommerce')
         ->assertSet('settings.site_theme', 'ecommerce');
 
-    $html = Livewire::test(ThemeSettings::class)
+    $html = Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'ecommerce')
         ->html();
 
@@ -292,7 +478,7 @@ it('keys each theme settings panel by slug so switching themes cannot leave a st
     // A per-slug wire:key makes the node unique, so Livewire is forced to
     // replace it and Alpine re-initialises with the incoming theme's scope.
     foreach (['default', 'portfolio', 'ecommerce'] as $slug) {
-        $html = Livewire::test(ThemeSettings::class)
+        $html = Livewire::test(ThemeSettingsScreen::class)
             ->set('settings.site_theme', $slug)
             ->html();
 
@@ -302,11 +488,11 @@ it('keys each theme settings panel by slug so switching themes cannot leave a st
     // The key has to be the only thing telling the two nodes apart, and it has to
     // vary by slug: an unkeyed root, or a constant key, collapses the two scopes
     // back into one and the bug returns just as quietly.
-    $portfolio = Livewire::test(ThemeSettings::class)
+    $portfolio = Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'portfolio')
         ->html();
 
-    $ecommerce = Livewire::test(ThemeSettings::class)
+    $ecommerce = Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'ecommerce')
         ->html();
 
@@ -317,19 +503,29 @@ it('keys each theme settings panel by slug so switching themes cannot leave a st
 });
 
 it('shows the theme settings guide via the info icon on the theme settings card', function () {
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'ecommerce')
         ->assertSee('How theme settings work')
         ->assertSee('Theme Settings Guide')
         ->assertSee('settings.blade.php')
         ->assertSee('Theme Builder Guide PDF')
-        ->assertSee('Setting::get()');
+        ->assertSee('theme.json')
+        ->assertSeeHtml("theme_setting('hero_badge')")
+        ->assertSeeHtml("theme_rows('projects')")
+        // The sample is Blade, so it has to reach the reader as text. Written
+        // plainly, the conditionals and loops in it compile and run and the
+        // guide shows a theme template with its loops already evaluated.
+        // assertSeeHtml, not assertSee: these are literal quotes in a code
+        // sample, and assertSee would escape them before looking.
+        ->assertSeeHtml("@if (\$badge = theme_setting('hero_badge'))")
+        ->assertSeeHtml("@foreach (theme_rows('projects') as \$project)")
+        ->assertSeeHtml('@endforeach');
 });
 
 it('omits the theme settings card when the selected theme has none', function () {
     $zip = makeThemeZip('retro', ['home.blade.php' => 'retro home']);
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents($zip)))
         ->call('installTheme')
@@ -337,7 +533,7 @@ it('omits the theme settings card when the selected theme has none', function ()
 
     expect(Themes::hasSettings('retro'))->toBeFalse();
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'retro')
         ->assertDontSee('Theme Settings</h')
         ->assertDontSee('theme_retro_');
@@ -354,7 +550,7 @@ it('loads existing theme settings into the form', function () {
     Setting::factory()->create(['key' => 'popup_enabled', 'value' => '1', 'group' => 'frontend', 'type' => 'boolean']);
     Setting::factory()->create(['key' => 'popup_title', 'value' => 'Welcome', 'group' => 'frontend', 'type' => 'string']);
 
-    $component = Livewire::test(ThemeSettings::class);
+    $component = Livewire::test(ThemeSettingsScreen::class);
 
     expect($component->get('settings.site_theme'))->toBe('ecommerce')
         ->and($component->get('settings.site_tagline'))->toBe('Shop smart')
@@ -369,7 +565,7 @@ it('manages multiple hero slides and mirrors the first image into home_hero_imag
 
     $slide = fn (string $image, string $title = '', string $description = '', string $link = '') => compact('image', 'title', 'description', 'link');
 
-    $component = Livewire::test(ThemeSettings::class)
+    $component = Livewire::test(ThemeSettingsScreen::class)
         ->assertSet('heroSlides', [$slide('media/old.jpg')])
         ->call('addHeroSlide')
         ->set('heroSlides.1.image', 'media/two.jpg')
@@ -387,7 +583,7 @@ it('manages multiple hero slides and mirrors the first image into home_hero_imag
     foreach (range(1, 10) as $_) {
         $component->call('addHeroSlide');
     }
-    expect($component->get('heroSlides'))->toHaveCount(ThemeSettings::MAX_HERO_SLIDES);
+    expect($component->get('heroSlides'))->toHaveCount(ThemeSettingsScreen::MAX_HERO_SLIDES);
 
     // The blank slides (no image) are dropped on save.
     $component->call('save');
@@ -399,13 +595,13 @@ it('manages multiple hero slides and mirrors the first image into home_hero_imag
     expect(json_decode(Setting::where('key', 'home_hero_slides')->value('value'), true))->toBe($saved)
         ->and(Setting::where('key', 'home_hero_image')->value('value'))->toBe('media/two.jpg');
 
-    Livewire::test(ThemeSettings::class)->assertSet('heroSlides', $saved);
+    Livewire::test(ThemeSettingsScreen::class)->assertSet('heroSlides', $saved);
 });
 
 it('still reads hero slides saved as plain image URLs', function () {
     Setting::set('home_hero_slides', json_encode(['media/a.jpg', 'media/b.jpg']));
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->assertSet('heroSlides.0.image', 'media/a.jpg')
         ->assertSet('heroSlides.1.image', 'media/b.jpg')
         ->assertSet('heroSlides.1.title', '');
@@ -436,7 +632,7 @@ it('renders the homepage hero as a slider with each slide\'s title, description 
 });
 
 it('links each promo banner to its own URL, falling back to the shop', function () {
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'ecommerce')
         ->assertSee('Promo tiles')
         ->assertSee('settings.theme_ecommerce_promo_2_link', false)
@@ -444,7 +640,7 @@ it('links each promo banner to its own URL, falling back to the shop', function 
         ->set('settings.theme_ecommerce_promo_2_link', 'javascript:alert(1)')
         ->call('save');
 
-    expect(Setting::where('key', 'theme_ecommerce_promo_1_link')->value('value'))->toBe('/shop?sort=newest');
+    expect(ThemeSettings::text('ecommerce', 'theme_ecommerce_promo_1_link'))->toBe('/shop?sort=newest');
 
     $this->get('/')
         ->assertOk()
@@ -455,17 +651,19 @@ it('links each promo banner to its own URL, falling back to the shop', function 
 });
 
 it('lists every installed theme folder as a selectable design', function () {
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->assertViewHas('themes', fn ($themes) => collect(['default', 'ecommerce', 'portfolio'])->diff(array_keys($themes))->isEmpty());
 });
 
-it('saves theme settings through Setting::set', function () {
+it('saves the site-wide settings through Setting::set', function () {
+    // The other half of the split: these are the site's own settings, not a
+    // theme's, so they stay in the settings table whichever theme is live.
     Setting::factory()->create(['key' => 'site_theme', 'value' => 'default', 'group' => 'frontend', 'type' => 'select']);
     Setting::factory()->create(['key' => 'home_hero_image', 'value' => '', 'group' => 'frontend', 'type' => 'string']);
     Setting::factory()->create(['key' => 'chat_widget_enabled', 'value' => '1', 'group' => 'frontend', 'type' => 'boolean']);
     Setting::factory()->create(['key' => 'popup_enabled', 'value' => '0', 'group' => 'frontend', 'type' => 'boolean']);
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'ecommerce')
         ->set('heroSlides.0.image', 'media/hero.jpg')
         ->set('settings.chat_widget_enabled', false)
@@ -499,7 +697,7 @@ it('registers a Theme Settings item under Library & System in the admin menu', f
 });
 
 it('opens the install theme modal', function () {
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->assertSet('showInstallModal', true)
         ->call('closeInstallModal')
@@ -513,7 +711,7 @@ it('installs a theme from a zip into the themes directory', function () {
         'partials/head.blade.php' => 'retro head',
     ]);
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents($zip)))
         ->call('installTheme')
@@ -531,7 +729,7 @@ it('turns a spaced theme folder name into a slugged theme folder', function () {
         'home.blade.php' => 'cool home',
     ]);
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('my-cool-store.zip', file_get_contents($zip)))
         ->call('installTheme')
@@ -541,7 +739,7 @@ it('turns a spaced theme folder name into a slugged theme folder', function () {
 });
 
 it('rejects a file that is not a valid zip theme package', function () {
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->create('theme.zip', 256))
         ->call('installTheme')
@@ -562,7 +760,7 @@ it('rejects a zip that does not contain exactly one root theme folder', function
     }
     $wrap->close();
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('two-themes.zip', file_get_contents($merged)))
         ->call('installTheme')
@@ -572,7 +770,7 @@ it('rejects a zip that does not contain exactly one root theme folder', function
 it('does not overwrite an already-installed theme', function () {
     $zip = makeThemeZip('default', ['home.blade.php' => 'evil home']);
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('default.zip', file_get_contents($zip)))
         ->call('installTheme')
@@ -588,7 +786,7 @@ it('rejects a zip containing path-traversal entries', function () {
     $zip->addFromString('retro/../../evil.txt', 'pwn');
     $zip->close();
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('bad.zip', file_get_contents($path)))
         ->call('installTheme')
@@ -598,7 +796,7 @@ it('rejects a zip containing path-traversal entries', function () {
 });
 
 it('saves the live chat widget color', function () {
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.chat_widget_color', ' #FF5500 ')
         ->call('save')
         ->assertHasNoErrors();
@@ -609,7 +807,7 @@ it('saves the live chat widget color', function () {
 it('allows a blank live chat widget color to fall back to the site primary color', function () {
     Setting::set('chat_widget_color', '#ff5500');
 
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.chat_widget_color', '')
         ->call('save')
         ->assertHasNoErrors();
@@ -618,10 +816,122 @@ it('allows a blank live chat widget color to fall back to the site primary color
 });
 
 it('rejects an invalid live chat widget color', function () {
-    Livewire::test(ThemeSettings::class)
+    Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.chat_widget_color', 'red; background:url(x)')
         ->call('save')
         ->assertHasErrors(['settings.chat_widget_color']);
 
     expect(Setting::where('key', 'chat_widget_color')->value('value'))->toBeNull();
+});
+
+it('gives an installed theme a theme.json so it is never half-configured', function () {
+    $zip = makeThemeZip('retro', [
+        'home.blade.php' => 'retro home',
+        // No theme.json in the zip: the case this exists for. A zipped theme
+        // built from templates alone installs perfectly and then looks broken —
+        // the form renders, every field is blank, and Save has nowhere to put
+        // them, which reads as "the panel lost my settings".
+        'settings.blade.php' => <<<'BLADE'
+            <x-admin.text key="theme_retro_tagline" label="Tagline" />
+            <x-admin-repeatable-fields setting-key="theme_retro_projects" :max="3" label="Projects">
+                <x-admin.text key="title" label="Title" />
+            </x-admin-repeatable-fields>
+        BLADE,
+    ]);
+
+    Livewire::test(ThemeSettingsScreen::class)
+        ->call('openInstallModal')
+        ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents($zip)))
+        ->call('installTheme')
+        ->assertHasNoErrors();
+
+    expect(ThemeSettings::exists('retro'))->toBeTrue()
+        ->and(ThemeSettings::text('retro', 'theme_retro_tagline'))->toBe('')
+        ->and(ThemeSettings::rows('retro', 'theme_retro_projects'))->toBe([])
+        // Every declared field is present-and-blank, not absent: the file says
+        // what this theme can be configured with, which is the same thing a
+        // theme author opens it to find out. A repeater is a list, not a string
+        // — seeding it as '' is what save() would then write its rows back over.
+        ->and(ThemeSettings::all('retro'))->toHaveKey('theme_retro_tagline', '')
+        ->and(ThemeSettings::all('retro'))->toHaveKey('theme_retro_projects', [])
+        // A well-formed manifest, not a settings map wearing a manifest's name.
+        ->and(Themes::manifest('retro'))->toHaveKeys(['name', 'version', 'author', 'tags']);
+});
+
+it('leaves a theme that ships its own theme.json exactly as it was', function () {
+    $shipped = json_encode([
+        'name' => 'Retro Studio',
+        'version' => '2.1.0',
+        'theme_retro_tagline' => 'Ships its own.',
+    ], JSON_PRETTY_PRINT);
+
+    $zip = makeThemeZip('retro', [
+        'home.blade.php' => 'retro home',
+        'settings.blade.php' => '<x-admin.text key="theme_retro_tagline" label="Tagline" />',
+        'theme.json' => $shipped,
+    ]);
+
+    Livewire::test(ThemeSettingsScreen::class)
+        ->call('openInstallModal')
+        ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents($zip)))
+        ->call('installTheme')
+        ->assertHasNoErrors();
+
+    // Seeding must not be a silent reset: a theme re-uploaded to be updated
+    // carries the content the owner filled in, and installing it is not allowed
+    // to blank that back out.
+    expect(ThemeSettings::text('retro', 'theme_retro_tagline'))->toBe('Ships its own.')
+        ->and(Themes::manifest('retro')['name'])->toBe('Retro Studio')
+        ->and(Themes::manifest('retro')['version'])->toBe('2.1.0');
+});
+
+it('gives no theme.json to a theme that declares no settings form', function () {
+    // Seeding is for a theme that has fields needing somewhere to live. A theme
+    // with no settings.blade.php has none, so a manifest-only file would hold
+    // nothing the theme could ever write — and offering "Create theme.json" on
+    // a screen with no fields would be worse than useless.
+    $zip = makeThemeZip('retro', ['home.blade.php' => 'retro home']);
+
+    Livewire::test(ThemeSettingsScreen::class)
+        ->call('openInstallModal')
+        ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents($zip)))
+        ->call('installTheme')
+        ->assertHasNoErrors();
+
+    expect(ThemeSettings::exists('retro'))->toBeFalse();
+});
+
+it('flags a theme that ships no routes file, because selecting it 404s the site', function () {
+    Livewire::test(ThemeSettingsScreen::class)
+        ->call('openInstallModal')
+        ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents(makeThemeZip('retro', [
+            'home.blade.php' => 'retro home',
+        ]))))
+        ->call('installTheme');
+
+    $card = null;
+
+    Livewire::test(ThemeSettingsScreen::class)
+        ->assertViewHas('themeCards', function (array $cards) use (&$card): bool {
+            $card = $cards['retro'] ?? null;
+
+            return is_array($card);
+        });
+
+    expect($card['hasRoutes'])->toBeFalse()
+        ->and(str_replace('/', DIRECTORY_SEPARATOR, $card['routeFile']))
+        ->toEndWith('routes'.DIRECTORY_SEPARATOR.'web'.DIRECTORY_SEPARATOR.'retro.php');
+
+    // And the warning is actually on the screen, next to the radio that picks
+    // the theme — this is the last screen before the site stops resolving.
+    Livewire::test(ThemeSettingsScreen::class)
+        ->set('settings.site_theme', 'retro')
+        ->assertSee('retro.php');
+});
+
+it('does not flag a theme that ships a routes file', function () {
+    expect(Themes::routeFileExists('portfolio'))->toBeTrue();
+
+    Livewire::test(ThemeSettingsScreen::class)
+        ->assertViewHas('themeCards', fn (array $cards): bool => $cards['portfolio']['hasRoutes'] === true);
 });

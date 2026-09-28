@@ -6,6 +6,7 @@ use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\HeroSlides;
 use App\Support\Themes;
+use App\Support\ThemeSettings;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -23,10 +24,17 @@ class Index extends Component
     public $themeZip = null;
 
     /**
-     * The settings this screen owns: the active site design (site_theme) plus
-     * the homepage copy & imagery the theme templates render. Boolean values
-     * are stored as the string "0"/"1" (no cast on the Setting model), so they
-     * are cast to real booleans here — see Settings\Index::loadSettings().
+     * The site-wide settings this screen owns: the active site design
+     * (site_theme), the chat widget, the announcement popup and the homepage
+     * copy & imagery the theme templates render. Boolean values are stored as
+     * the string "0"/"1" (no cast on the Setting model), so they are cast to
+     * real booleans here — see Settings\Index::loadSettings().
+     *
+     * A theme's *own* settings are not in here for the database's sake but only
+     * because the form binds them: every theme_{slug}_* key in this bag is
+     * routed to that theme's theme.json on save (see saveThemeValues()). They
+     * are not settings-table rows, and nothing outside this screen reads them
+     * from one.
      */
     public array $settings = [];
 
@@ -51,6 +59,15 @@ class Index extends Component
     private ?array $repeaterMaxes = null;
 
     /**
+     * settingsDeclarations() reads every theme's settings.blade.php, and each
+     * discovery method below greps the same few files, so the raw sources are
+     * memoised for the lifetime of the request.
+     *
+     * @var array<int, string>|null
+     */
+    private ?array $declarations = null;
+
+    /**
      * The homepage hero slider, in order — each slide {image, title,
      * description, link} (see App\Support\HeroSlides). Persisted as a JSON
      * list in `home_hero_slides`; the first image is mirrored into
@@ -61,15 +78,16 @@ class Index extends Component
     public array $heroSlides = [];
 
     /**
-     * Repeating theme fields, keyed by their "theme_{slug}_*" setting key.
+     * Repeating theme fields, keyed by their "theme_{slug}_*" key.
      *
      * Some theme settings are lists rather than single values — the portfolio's
-     * trust stats, service cards, education and certifications. Each is stored as
-     * one JSON setting (see PortfolioProfile) rather than as a table, because
-     * they are copy, not queryable content, and a theme that can be zipped out
-     * cannot bring a migration with it.
+     * trust stats, project cards, experience entries, education and
+     * certifications. Each is stored as one entry in that theme's theme.json
+     * (see App\Support\ThemeSettings) rather than as a table, because they are
+     * copy, not queryable content, and a theme that can be zipped out cannot
+     * bring a migration with it.
      *
-     * $repeaters is the form-side mirror of those settings: 'theme_portfolio_services'
+     * $repeaters is the form-side mirror of those: 'theme_portfolio_projects'
      * => [ ['title' => ..., 'description' => ..., 'icon' => ...], ... ]. The keys
      * are discovered from the active theme's own settings.blade.php (see
      * declaredRepeaterKeys()), so this component stays theme-agnostic — a theme
@@ -80,10 +98,11 @@ class Index extends Component
     public array $repeaters = [];
 
     /**
-     * Pending direct uploads, keyed by their "theme_{slug}_*" setting key — the
+     * Pending direct uploads, keyed by their "theme_{slug}_*" key — the
      * fields a theme declares with <x-admin-theme-upload upload-key="..." />
      * (see declaredUploads()). The file is only stored on save(), where it
-     * replaces the setting's value and the previously uploaded file is deleted.
+     * replaces the value in the theme's theme.json and the previously
+     * uploaded file is deleted.
      *
      * @var array<string, TemporaryUploadedFile|null>
      */
@@ -94,18 +113,16 @@ class Index extends Component
 
     public function mount(): void
     {
-        $keys = array_merge($this->keys(), $this->scopedThemeKeys());
+        $rows = Setting::whereIn('key', $this->keys())->get()->keyBy('key');
 
-        $rows = Setting::whereIn('key', $keys)->get()->keyBy('key');
-
-        foreach ($keys as $key) {
+        foreach ($this->keys() as $key) {
             $row = $rows->get($key);
             $value = $row?->value ?? '';
 
             $this->settings[$key] = $row?->type === 'boolean' ? (bool) $value : (string) $value;
         }
 
-        $this->loadRepeaters();
+        $this->loadThemeValues();
 
         // Older installs (plain image URLs, or only the single hero image) load
         // as image-only slides.
@@ -113,14 +130,64 @@ class Index extends Component
     }
 
     /**
-     * Hydrate every declared repeater from its stored JSON, normalised to a list
-     * of flat string maps.
+     * Hydrate every declared theme field from the theme's own theme.json.
      *
-     * A setting row is free text, so the value can be a JSON array, a JSON
-     * object, or something a human typed into the database. None of those may
-     * fatal the settings screen, and an unparseable value is treated as "no rows
-     * yet" — which is the same state a brand-new field is in, so the form still
-     * renders and the owner can retype it.
+     * Every installed theme is read, not just the selected one. The theme picker
+     * is a live radio bound to settings.site_theme, so switching themes swaps
+     * which settings.blade.php is included without a page load, and the values
+     * that partial binds to have to already be in the bags by then. Each theme
+     * reads only the keys its own file declares, so the themes cannot collide
+     * even though they share one form.
+     */
+    protected function loadThemeValues(): void
+    {
+        $stored = $this->storedThemeValues();
+
+        foreach ($this->declaredScalarKeys() as $key) {
+            $value = $stored[$key] ?? null;
+
+            $this->settings[$key] = is_scalar($value) ? (string) $value : '';
+        }
+
+        foreach ($this->declaredRepeaterKeys() as $key) {
+            $this->repeaters[$key] = $this->normaliseRows($stored[$key] ?? null);
+        }
+    }
+
+    /**
+     * Every declared theme value, flattened out of each installed theme's
+     * theme.json into one key => value map.
+     *
+     * Flat because the keys are already namespaced by the `theme_{slug}_`
+     * prefix every theme declares its fields under, and the form bag is a single
+     * flat array. Which theme each key came from is recovered on save by
+     * themeSlugFor().
+     *
+     * @return array<string, mixed>
+     */
+    private function storedThemeValues(): array
+    {
+        $values = [];
+
+        foreach (array_keys(Themes::all()) as $slug) {
+            foreach (ThemeSettings::all($slug) as $key => $value) {
+                $values[$key] = $value;
+            }
+        }
+
+        return $values;
+    }
+
+    /**
+     * A stored list value as the flat list of string maps the repeater UI edits,
+     * or an empty list when there is nothing usable there.
+     *
+     * A theme.json is free to be hand-edited, so the value can be a JSON
+     * array, a JSON list that has been pasted in as a *string*, or something
+     * that is not JSON at all. None of those may fatal the settings screen, and
+     * an unparseable value is treated as "no rows yet" — which is the same state
+     * a brand-new field is in, so the form still renders and the owner can retype
+     * it.
      *
      * This screen is deliberately more forgiving than the storefront, which drops
      * a JSON object outright (see App\Support\PortfolioProfile::rows()). Here a
@@ -128,26 +195,25 @@ class Index extends Component
      * write is something the owner can see and delete instead of something that
      * silently reappears as [] the next time they open the screen.
      *
-     * @return array<string, array<int, array<string, string>>>
+     * @return array<int, array<string, string>>
      */
-    protected function loadRepeaters(): void
+    private function normaliseRows(mixed $raw): array
     {
-        $keys = $this->declaredRepeaterKeys();
-        $rows = Setting::whereIn('key', $keys)->pluck('value', 'key');
-
-        foreach ($keys as $key) {
-            $decoded = json_decode((string) $rows->get($key, '[]'), true);
-
-            $this->repeaters[$key] = is_array($decoded)
-                ? collect($decoded)
-                    ->filter(fn ($row) => is_array($row))
-                    ->map(fn (array $row) => collect($row)
-                        ->map(fn ($value) => is_scalar($value) ? (string) $value : '')
-                        ->all())
-                    ->values()
-                    ->all()
-                : [];
+        if (is_string($raw)) {
+            $raw = json_decode(trim($raw), true);
         }
+
+        if (! is_array($raw)) {
+            return [];
+        }
+
+        return collect($raw)
+            ->filter(fn ($row) => is_array($row))
+            ->map(fn (array $row) => collect($row)
+                ->map(fn ($value) => is_scalar($value) ? (string) $value : '')
+                ->all())
+            ->values()
+            ->all();
     }
 
     /**
@@ -272,29 +338,80 @@ class Index extends Component
 
         $this->saveUploads();
 
-        foreach ($this->savableKeys() as $key) {
+        // The theme files, before the site-wide rows: if one of them cannot be
+        // written the owner needs to hear about that even though the rest of the
+        // screen saved, so the failure is carried into the flash below.
+        $skipped = $this->saveThemeValues();
+
+        foreach ($this->keys() as $key) {
             if (array_key_exists($key, $this->settings)) {
                 Setting::set($key, $this->settings[$key]);
             }
         }
 
-        $this->saveRepeaters();
-
         AdminActivity::log('updated', 'Theme settings updated');
 
         // A real browser reload, same as Settings\Index::save(), so anything
         // rendered from Setting::get() (e.g. the active theme) re-reads fresh.
-        session()->flash('success', 'Theme settings saved.');
+        session()->flash('success', $skipped === []
+            ? 'Theme settings saved.'
+            : 'Theme settings saved, but the '.implode(', ', $skipped).' theme has no theme.json file, so its own fields were not written. Create the file to store them.');
+
         $this->js('window.location.reload()');
     }
 
-    public function resetSettings(): void
+    /**
+     * Write every declared theme field back into the theme's own theme.json.
+     *
+     * One file per theme, and every key routed by the `theme_{slug}_` prefix the
+     * theme's settings.blade.php already declares it under (see
+     * themeSlugFor()), so a save can never write one theme's values into another
+     * theme's file.
+     *
+     * Only themes that already have a file are written. A theme whose
+     * theme.json is missing has nowhere to save to, and quietly creating one
+     * here would take that decision away from the owner — the Theme Settings card
+     * says so and offers the button instead. Those themes come back as the list
+     * of slugs whose fields were not written, which the caller turns into a
+     * warning next to the success message.
+     *
+     * @return array<int, string>
+     */
+    protected function saveThemeValues(): array
     {
-        $this->mount();
+        $scalars = $this->declaredScalarKeys();
+        $repeaters = $this->declaredRepeaterKeys();
+        $skipped = [];
+
+        foreach (array_keys(Themes::all()) as $slug) {
+            $values = [];
+
+            foreach ($scalars as $key) {
+                if ($this->themeSlugFor($key) === $slug && array_key_exists($key, $this->settings)) {
+                    $values[$key] = (string) $this->settings[$key];
+                }
+            }
+
+            foreach ($repeaters as $key) {
+                if ($this->themeSlugFor($key) === $slug && array_key_exists($key, $this->repeaters)) {
+                    $values[$key] = $this->cleanRepeaterRows($key, $this->repeaters[$key]);
+                }
+            }
+
+            if ($values === []) {
+                continue;
+            }
+
+            if (! ThemeSettings::exists($slug) || ! ThemeSettings::merge($slug, $values)) {
+                $skipped[] = $slug;
+            }
+        }
+
+        return $skipped;
     }
 
     /**
-     * Write every declared repeater back to its JSON setting.
+     * One repeater's rows, ready to be stored.
      *
      * Rows are trimmed and re-indexed, and a row whose fields are all blank is
      * dropped: the repeater UI always leaves one empty row on screen for the
@@ -306,23 +423,25 @@ class Index extends Component
      * about how many rows the theme can lay out, so the stored list is truncated
      * to it even if a hand-crafted request arrived with more — the first rows
      * win, which is the same rows the reordering UI would have kept at the top.
+     *
+     * @param  array<int, array<string, mixed>>  $rows
+     * @return array<int, array<string, string>>
      */
-    protected function saveRepeaters(): void
+    private function cleanRepeaterRows(string $key, array $rows): array
     {
-        foreach ($this->repeaters as $key => $rows) {
-            $clean = collect($rows)
-                ->map(fn ($row) => collect(is_array($row) ? $row : [])
-                    ->map(fn ($value) => is_scalar($value) ? trim((string) $value) : '')
-                    ->all())
-                ->reject(fn (array $row) => collect($row)->every(fn (string $value) => $value === ''))
-                ->take($this->repeaterMax($key))
-                ->values()
-                ->all();
+        return collect($rows)
+            ->map(fn ($row) => collect(is_array($row) ? $row : [])
+                ->map(fn ($value) => is_scalar($value) ? trim((string) $value) : '')
+                ->all())
+            ->reject(fn (array $row) => collect($row)->every(fn (string $value) => $value === ''))
+            ->take($this->repeaterMax($key))
+            ->values()
+            ->all();
+    }
 
-            // An emptied-out list is stored as [] rather than deleted, so the
-            // storefront's "is this section empty" check and this form agree.
-            Setting::set($key, json_encode($clean));
-        }
+    public function resetSettings(): void
+    {
+        $this->mount();
     }
 
     /**
@@ -337,7 +456,8 @@ class Index extends Component
         $disk = Storage::disk('public');
 
         foreach ($this->declaredUploads() as $key => $type) {
-            $old = (string) Setting::get($key, '');
+            $slug = $this->themeSlugFor($key);
+            $old = ThemeSettings::text($slug, $key);
             $file = $this->uploads[$key] ?? null;
 
             if ($file instanceof TemporaryUploadedFile) {
@@ -402,8 +522,8 @@ class Index extends Component
     {
         $uploads = [];
 
-        foreach (glob(resource_path('views/frontend/themes/*/settings.blade.php')) ?: [] as $file) {
-            preg_match_all('/<x-admin-theme-upload\b(.*?)\/>/s', (string) file_get_contents($file), $tags);
+        foreach ($this->settingsDeclarations() as $source) {
+            preg_match_all('/<x-admin-theme-upload\b(.*?)\/>/s', $source, $tags);
 
             foreach ($tags[1] as $tag) {
                 if (! preg_match('/upload-key=[\'"](theme_[a-z0-9_]+)[\'"]/', $tag, $key)) {
@@ -415,6 +535,93 @@ class Index extends Component
         }
 
         return $uploads;
+    }
+
+    /**
+     * The blank theme.json a theme should start life with: every field the theme
+     * declares in its own settings.blade.php, each at its empty default, so the
+     * new file is also a readable statement of what the theme can be configured
+     * with rather than a bare `{}`.
+     *
+     * Uploads are in here alongside scalars and repeaters. They are strings in
+     * the file like any other field, and a declared upload field missing from the
+     * file is the same present-and-blank confusion as a declared text field
+     * missing from it — the form renders, the value has nowhere to live, and the
+     * owner concludes the upload was thrown away.
+     *
+     * Keys are attributed to a theme by prefix, longest slug first, so a theme
+     * whose slug is a prefix of another's ("shop" and "shop_plus") cannot claim
+     * its neighbour's fields.
+     *
+     * @return array<string, mixed>
+     */
+    private function themeFileSkeleton(string $slug): array
+    {
+        $skeleton = [];
+
+        foreach ($this->declaredScalarKeys() as $key) {
+            if ($this->themeSlugFor($key) === $slug) {
+                $skeleton[$key] = '';
+            }
+        }
+
+        foreach ($this->declaredRepeaterKeys() as $key) {
+            if ($this->themeSlugFor($key) === $slug) {
+                $skeleton[$key] = [];
+            }
+        }
+
+        foreach (array_keys($this->declaredUploads()) as $key) {
+            if ($this->themeSlugFor($key) === $slug) {
+                $skeleton[$key] = '';
+            }
+        }
+
+        return $skeleton;
+    }
+
+    /**
+     * (Re)create the selected theme's theme.json, seeded with every field it
+     * declares. The button on the right of the Theme Settings card.
+     *
+     * The file is part of the theme folder, so it goes missing in entirely
+     * ordinary ways: a deploy that ships templates but not content, a theme
+     * re-uploaded from an older zip, a `git checkout` of a branch that predates
+     * it, an owner tidying up. Without this the form above still renders — it is
+     * declared by the theme's settings.blade.php, not by the file — but every
+     * field is blank and Save quietly has nowhere to put them, which reads as
+     * "the admin panel lost my settings" rather than as a missing file.
+     *
+     * Refuses to touch a file that is already there. This is the recovery path,
+     * not a reset: a create that overwrote would be one click away from wiping a
+     * finished theme's content, and it says so rather than appearing to succeed.
+     */
+    public function createSettingsFile(): void
+    {
+        $slug = $this->selectedSlug();
+
+        if ($slug === '' || ! Themes::hasSettings($slug)) {
+            return;
+        }
+
+        if (ThemeSettings::exists($slug)) {
+            session()->flash('success', "The \"{$slug}\" theme already has a theme.json file — nothing to create.");
+
+            return;
+        }
+
+        if (! ThemeSettings::create($slug, $this->themeFileSkeleton($slug))) {
+            $this->addError('settingsFile', 'Could not write '.Themes::path()."/{$slug}/".ThemeSettings::FILE.'. Check that the theme folder is writable.');
+
+            return;
+        }
+
+        $this->loadThemeValues();
+
+        AdminActivity::log('created', "theme.json created for the \"{$slug}\" theme");
+
+        session()->flash('success', 'Created '.ThemeSettings::FILE." for the \"{$slug}\" theme. Add your values below and save.");
+        $this->js('window.location.reload()');
     }
 
     /**
@@ -510,12 +717,74 @@ class Index extends Component
         File::deleteDirectory($temp);
         Themes::forget();
 
+        // The theme is on disk now, and so is its settings.blade.php if it ships
+        // one — so the declaration scan has to read the files again. It is
+        // memoised for the request, and an earlier call on this screen would
+        // otherwise leave a new theme's own fields invisible to the skeleton
+        // below.
+        $this->declarations = null;
+        $this->repeaterMaxes = null;
+
+        $seeded = $this->seedInstalledThemeFile($slug);
+
         AdminActivity::log('created', "Theme \"{$slug}\" installed");
 
         // A real reload so the new theme card appears in the picker.
         $this->showInstallModal = false;
-        session()->flash('success', "Theme \"{$slug}\" installed.");
+        session()->flash(match ($seeded) {
+            'created' => 'success',
+            // The theme is installed either way — this is an optional file, and
+            // failing the install over it would be the wrong trade — but saying
+            // "installed" and nothing else would leave the owner to find out why
+            // the fields render blank. This says what to do about it instead.
+            'failed' => 'error',
+            default => 'success',
+        }, match ($seeded) {
+            'created' => "Theme \"{$slug}\" installed. Created its ".ThemeSettings::FILE.' with every field it declares — fill them in below.',
+            'failed' => "Theme \"{$slug}\" installed, but its ".ThemeSettings::FILE.' could not be written (check that the theme folder is writable). Select it and use "Create '.ThemeSettings::FILE.'".',
+            default => "Theme \"{$slug}\" installed.",
+        });
         $this->js('window.location.reload()');
+    }
+
+    /**
+     * Give a freshly installed theme the theme.json it should have shipped with,
+     * seeded with every field its settings.blade.php declares.
+     *
+     * Installing a theme used to leave the owner one more thing to do: pick the
+     * new theme on the screen, notice the amber panel saying it has no
+     * theme.json, and click Create. That is a five-step install ending in a
+     * manual recovery step, and it is the step a new theme author is least
+     * likely to know about — the theme looked installed, and the fields that do
+     * render save to nowhere until you go looking for why. Doing it here means
+     * "install a theme, pick it, edit it" is the whole story.
+     *
+     * A theme that ships its own theme.json is left completely alone, manifest
+     * and content both — the file is the theme author's, and this only fills a
+     * gap. A theme that fails to get one is still installed; the amber panel and
+     * its Create button are already the right answer for that, and swallowing
+     * the install to report a permissions problem on an optional file would be
+     * the wrong trade.
+     *
+     * @return 'created'|'skipped'|'failed'
+     */
+    private function seedInstalledThemeFile(string $slug): string
+    {
+        if (ThemeSettings::exists($slug)) {
+            return 'skipped';
+        }
+
+        // A theme that ships no settings.blade.php declares no fields, so there
+        // is nothing to seed it with: the file would be a manifest and nothing
+        // else, holding no value the theme could ever write. Not creating it is
+        // also the honest answer — a theme with no settings form is not a theme
+        // that has lost its settings file, and saying it was would put a "Create
+        // theme.json" button on a screen that has no fields to fill in.
+        if (! Themes::hasSettings($slug)) {
+            return 'skipped';
+        }
+
+        return ThemeSettings::create($slug, $this->themeFileSkeleton($slug)) ? 'created' : 'failed';
     }
 
     /**
@@ -600,7 +869,7 @@ class Index extends Component
     public function render()
     {
         $themes = Themes::all();
-        $selectedSlug = $this->settings['site_theme'] ?? Themes::active();
+        $selectedSlug = $this->selectedSlug();
 
         $themeCards = collect($themes)
             ->mapWithKeys(function (string $label, string $slug): array {
@@ -615,6 +884,14 @@ class Index extends Component
                     'shop' => is_file($base.'/shop.blade.php'),
                     'manifest' => Themes::manifest($slug),
                     'hasSettings' => Themes::hasSettings($slug),
+                    // A theme with templates but no routes/web/{slug}.php
+                    // registers no storefront URLs at all, so picking it gives a
+                    // site that 404s on every page — including the homepage.
+                    // The theme is installed perfectly correctly; it is just
+                    // missing the one file that says "this is my home page", and
+                    // nothing on the picker would otherwise say so.
+                    'hasRoutes' => Themes::routeFileExists($slug),
+                    'routeFile' => Themes::routesPath().'/'.$slug.'.php',
                 ]];
             })
             ->all();
@@ -625,13 +902,22 @@ class Index extends Component
             'activeTheme' => Themes::active(),
             'selectedSlug' => $selectedSlug,
             'selectedHasSettings' => Themes::hasSettings($selectedSlug),
+            // What the "Create theme.json" button acts on, and whether the
+            // Theme Settings card has to explain a missing file.
+            'settingsFilePath' => ThemeSettings::file($selectedSlug),
+            'settingsFileExists' => ThemeSettings::exists($selectedSlug),
+            'settingsFileCount' => count(ThemeSettings::settings($selectedSlug)),
         ])->layout('layouts.admin', ['title' => 'Theme Settings']);
     }
 
     /**
-     * The exact keys this screen controls. Kept in sync with the field widgets
-     * in the blade view; the homepage image keys are read by the storefront
-     * home template (see resources/views/frontend/themes/ecommerce/home.blade.php).
+     * The site-wide settings keys this screen owns. Kept in sync with the field
+     * widgets in the blade view; the homepage image keys are read by the
+     * storefront home template (see
+     * resources/views/frontend/themes/ecommerce/home.blade.php).
+     *
+     * Deliberately no `theme_*` key: those belong to a theme's own
+     * theme.json, not to this table (see saveThemeValues()).
      *
      * @return array<int, string>
      */
@@ -655,56 +941,75 @@ class Index extends Component
     }
 
     /**
-     * Every theme-scoped setting this screen persists — i.e. any stored
-     * settings key using the "theme_{slug}_..." prefix that a theme's own
-     * settings.blade.php reads/writes. Hydrated into the form on mount and
-     * saved back on save(), so each theme's fields live under its own prefix
-     * and can never collide with another theme's (or the core keys above).
+     * Every theme's own settings.blade.php, read once per request.
+     *
+     * The three discovery methods below all grep the same handful of files, and
+     * a single save asks for each of them, so the reads are memoised rather than
+     * repeated.
      *
      * @return array<int, string>
      */
-    private function scopedThemeKeys(): array
+    private function settingsDeclarations(): array
     {
-        // Keys a theme's settings.blade.php declares (bound as settings.theme_*
-        // or listed as 'theme_*' strings) count even before their first save,
-        // so a brand-new field loads blank and persists like any other.
+        return $this->declarations ??= collect(
+            glob(resource_path('views/frontend/themes/*/settings.blade.php')) ?: []
+        )
+            ->map(fn (string $file) => (string) file_get_contents($file))
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Every single-value theme field a theme's own settings.blade.php declares —
+     * i.e. any key using the "theme_{slug}_..." prefix, bound as
+     * `wire:model="settings.theme_*"`. Hydrated into the form on mount and written
+     * back to that theme's theme.json on save, so each theme's fields live
+     * under its own prefix and can never collide with another theme's (or the
+     * core keys above).
+     *
+     * Discovered from the blade rather than from the settings files, which is what
+     * makes a brand-new field load blank and persist like any other: a field is
+     * configured because the theme declares it, not because something already
+     * happens to be stored under its name.
+     *
+     * @return array<int, string>
+     */
+    private function declaredScalarKeys(): array
+    {
         $declared = [];
-        foreach (glob(resource_path('views/frontend/themes/*/settings.blade.php')) ?: [] as $file) {
-            preg_match_all('/(?:settings\.|[\'"])(theme_[a-z0-9_]+)/', (string) file_get_contents($file), $matches);
+
+        foreach ($this->settingsDeclarations() as $source) {
+            preg_match_all('/(?:settings\.|[\'"])(theme_[a-z0-9_]+)/', $source, $matches);
             array_push($declared, ...$matches[1]);
         }
 
         // A repeater's key matches the pattern above too, because the theme names
-        // it the same way. It is a list, not a text field, so it is excluded
-        // here and lives only in $repeaters — otherwise save() would write its
-        // JSON back through the scalar bag as a plain string.
-        $repeaters = $this->declaredRepeaterKeys();
-
-        return array_values(array_unique([
-            ...array_diff(Setting::where('key', 'like', 'theme\\_%')->pluck('key')->all(), $repeaters),
-            ...array_diff($declared, $repeaters),
-        ]));
+        // it the same way. It is a list, not a text field, so it is excluded here
+        // and lives only in $repeaters — otherwise the form would bind one list
+        // twice and save would write it back as a string.
+        return array_values(array_unique(array_diff($declared, $this->declaredRepeaterKeys())));
     }
 
     /**
-     * Every theme-scoped setting that holds a *list* of rows, discovered the same
-     * way scopedThemeKeys() discovers scalar ones: a theme declares one by
+     * Every theme field that holds a *list* of rows, discovered the same way
+     * declaredScalarKeys() discovers scalar ones: a theme declares one by
      * rendering <x-admin-repeatable-fields setting-key="theme_{slug}_*">, and this
      * screen grows the matching add/remove/reorder UI for it.
      *
      * The marker is a distinct attribute rather than a plain `key="theme_..."`
      * because that is exactly how a *scalar* theme setting is declared, and the
      * two must not be confused: loading a repeater's key into the scalar
-     * $settings bag would have save() write its raw JSON back as a text value
-     * and wipe the rows. That is why scopedThemeKeys() subtracts these.
+     * $settings bag would have save() write its rows back through the text bag
+     * and wipe them. That is why declaredScalarKeys() subtracts these.
      *
      * @return array<int, string>
      */
     private function declaredRepeaterKeys(): array
     {
         $declared = [];
-        foreach (glob(resource_path('views/frontend/themes/*/settings.blade.php')) ?: [] as $file) {
-            preg_match_all('/setting-key=[\'"](theme_[a-z0-9_]+)[\'"]/', (string) file_get_contents($file), $matches);
+
+        foreach ($this->settingsDeclarations() as $source) {
+            preg_match_all('/setting-key=[\'"](theme_[a-z0-9_]+)[\'"]/', $source, $matches);
             array_push($declared, ...$matches[1]);
         }
 
@@ -735,9 +1040,7 @@ class Index extends Component
 
         $maxes = [];
 
-        foreach (glob(resource_path('views/frontend/themes/*/settings.blade.php')) ?: [] as $file) {
-            $source = (string) file_get_contents($file);
-
+        foreach ($this->settingsDeclarations() as $source) {
             // Each declaration is a single <x-admin-repeatable-fields ... /> tag;
             // capturing the tag body and reading the two attributes out of it is
             // what keeps one repeater's :max from bleeding into the next.
@@ -767,20 +1070,40 @@ class Index extends Component
     }
 
     /**
-     * What save() writes: the core keys plus every theme-scoped key currently
-     * held in the form (the selected theme's settings.blade.php is the only
-     * thing that populates theme_* fields, so those are the only scoped keys
-     * the admin can ever change on this screen).
+     * Which installed theme a `theme_{slug}_*` key belongs to — the one question
+     * that decides which theme.json a value is written to.
      *
-     * @return array<int, string>
+     * Slugs may contain underscores, so `theme_a_b_c` could in principle belong to
+     * a theme `a` or to a theme `a_b`; the longest matching slug wins, which is
+     * the only reading that cannot hand a field to a theme that never declared
+     * it. A key matching no installed theme returns an empty string, and the
+     * caller skips it — a theme whose folder has been deleted is not somewhere
+     * to write its values.
      */
-    private function savableKeys(): array
+    private function themeSlugFor(string $key): string
     {
-        $scoped = array_values(array_filter(
-            array_keys($this->settings),
-            fn (string $key) => str_starts_with($key, 'theme_')
-        ));
+        $slug = '';
 
-        return array_values(array_unique([...$this->keys(), ...$scoped]));
+        foreach (array_keys(Themes::all()) as $candidate) {
+            if (str_starts_with($key, 'theme_'.$candidate.'_') && strlen($candidate) > strlen($slug)) {
+                $slug = $candidate;
+            }
+        }
+
+        return $slug;
+    }
+
+    /**
+     * The theme whose settings the card is currently showing: the one picked in
+     * Site Design, falling back to the live theme if the pick is not (or is not
+     * yet) one of the installed themes. Same expression render() uses, so the
+     * "Create theme.json" button always acts on the theme the form above it
+     * belongs to.
+     */
+    private function selectedSlug(): string
+    {
+        $selected = (string) ($this->settings['site_theme'] ?? '');
+
+        return array_key_exists($selected, Themes::all()) ? $selected : Themes::active();
     }
 }

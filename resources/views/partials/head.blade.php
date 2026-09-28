@@ -25,43 +25,51 @@
 <style>[x-cloak]{display:none!important}</style>
 
 @php
-    // The ecommerce theme's primary/secondary colors (editable from its own
-    // settings panel on the Theme Settings screen). Applied only when that
-    // theme is active, and after the compiled CSS so these :root tokens win
-    // the cascade — same pattern as layouts/admin.blade.php.
+    // A theme's own colours (Theme Settings → its own Colors panel), read from
+    // its theme.json and emitted as :root custom properties.
+    //
+    // Theme-agnostic on purpose. This used to be gated on the ecommerce theme by
+    // name, which meant a new theme could add colour settings to its
+    // settings.blade.php, see them save, and watch them do nothing — the one
+    // thing a theme author cannot debug from their own theme folder. Now any
+    // theme declaring these field names gets them applied, and a theme declaring
+    // none emits no block at all.
+    //
+    // Rendered after the compiled CSS so these tokens win the cascade — same
+    // pattern as layouts/admin.blade.php.
     $storefrontTheme = \App\Support\Themes::active();
+    $storefrontColor = fn (string $field) => theme_color($field, null, $storefrontTheme);
+
+    // The brand token drives links, active states and badges, and is what the
+    // other areas fall back to, so it is the one that can be answered by either
+    // of two fields. "?:", not "??": a theme's theme.json carries a key for
+    // every field its form declares, so an unset accent is present-and-blank
+    // rather than absent, and a null coalesce would stop there and drop the
+    // primary colour with it.
+    $storefrontColors = array_filter([
+        '--color-brand' => $storefrontColor('accent_color') ?: $storefrontColor('primary_color'),
+        '--color-secondary' => $storefrontColor('secondary_color'),
+        '--color-sf-header' => $storefrontColor('header_bg_color'),
+        '--color-sf-header-text' => $storefrontColor('header_text_color'),
+        '--color-sf-nav' => $storefrontColor('nav_bg_color'),
+        '--color-sf-nav-text' => $storefrontColor('nav_text_color'),
+        '--color-sf-footer' => $storefrontColor('footer_bg_color'),
+        '--color-sf-footer-text' => $storefrontColor('footer_text_color'),
+        '--color-sf-footer-bottom' => $storefrontColor('footer_bottom_color'),
+        '--color-sf-button' => $storefrontColor('button_bg_color'),
+        '--color-sf-button-text' => $storefrontColor('button_text_color'),
+        '--color-sf-price' => $storefrontColor('price_color'),
+        '--color-sf-heading' => $storefrontColor('heading_color'),
+        '--color-sf-text' => $storefrontColor('text_color'),
+        '--color-page-bg' => $storefrontColor('page_bg_color'),
+        '--color-sale' => $storefrontColor('sale_color'),
+    ], fn (?string $value) => $value !== null && $value !== '');
 @endphp
-@if ($storefrontTheme === 'ecommerce')
-    @php
-        // Theme Settings → Colors: one setting per storefront area. Blank (or
-        // anything that isn't a hex color) keeps the default from app.css.
-        $hex = fn (?string $v) => is_string($v) && preg_match('/^#[0-9a-fA-F]{3,8}$/', trim($v)) ? trim($v) : null;
-        $storefrontColors = [
-            // The accent drives links, active states and badges — and is what
-            // the other areas fall back to. Older installs only have "primary".
-            '--color-brand' => $hex(\App\Models\Setting::get('theme_ecommerce_accent_color'))
-                ?? $hex(\App\Models\Setting::get('theme_ecommerce_primary_color')) ?? '#045b30',
-            '--color-secondary' => $hex(\App\Models\Setting::get('theme_ecommerce_secondary_color')),
-            '--color-sf-header' => $hex(\App\Models\Setting::get('theme_ecommerce_header_bg_color')),
-            '--color-sf-header-text' => $hex(\App\Models\Setting::get('theme_ecommerce_header_text_color')),
-            '--color-sf-nav' => $hex(\App\Models\Setting::get('theme_ecommerce_nav_bg_color')),
-            '--color-sf-nav-text' => $hex(\App\Models\Setting::get('theme_ecommerce_nav_text_color')),
-            '--color-sf-footer' => $hex(\App\Models\Setting::get('theme_ecommerce_footer_bg_color')),
-            '--color-sf-footer-text' => $hex(\App\Models\Setting::get('theme_ecommerce_footer_text_color')),
-            '--color-sf-footer-bottom' => $hex(\App\Models\Setting::get('theme_ecommerce_footer_bottom_color')),
-            '--color-sf-button' => $hex(\App\Models\Setting::get('theme_ecommerce_button_bg_color')),
-            '--color-sf-button-text' => $hex(\App\Models\Setting::get('theme_ecommerce_button_text_color')),
-            '--color-sf-price' => $hex(\App\Models\Setting::get('theme_ecommerce_price_color')),
-            '--color-sf-heading' => $hex(\App\Models\Setting::get('theme_ecommerce_heading_color')),
-            '--color-sf-text' => $hex(\App\Models\Setting::get('theme_ecommerce_text_color')),
-            '--color-page-bg' => $hex(\App\Models\Setting::get('theme_ecommerce_page_bg_color')),
-            '--color-sale' => $hex(\App\Models\Setting::get('theme_ecommerce_sale_color')),
-        ];
-    @endphp
+@if ($storefrontColors)
     <style>
         :root {
-            @foreach (array_filter($storefrontColors) as $var => $color)
-                {{ $var }}: {{ $color }};
+            @foreach ($storefrontColors as $var => $value)
+                {{ $var }}: {{ $value }};
             @endforeach
         }
     </style>

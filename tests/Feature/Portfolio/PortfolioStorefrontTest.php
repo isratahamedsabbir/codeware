@@ -5,6 +5,7 @@ use App\Models\Page;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\PortfolioProfile;
+use App\Support\ThemeSettings;
 use Database\Seeders\PortfolioContentSeeder;
 use Database\Seeders\PortfolioMenuSeeder;
 use Database\Seeders\RolePermissionSeeder;
@@ -35,7 +36,7 @@ beforeEach(function () {
  */
 function setRows(string $key, array $rows): void
 {
-    Setting::set($key, json_encode($rows));
+    ThemeSettings::merge('portfolio', [$key => $rows]);
 }
 
 it('renders the projects the owner entered, with the stack split into chips', function () {
@@ -205,6 +206,13 @@ it('reads a rating as a number, clamped to five, and treats a blank one as no ra
 });
 
 it('hides a section with no rows instead of printing a heading over nothing', function () {
+    // Emptied rather than assumed empty: the list under test belongs to whoever
+    // installed the theme, and these assertions are about an empty list hiding
+    // its heading, not about the repository's copy of the file being blank.
+    foreach (['theme_portfolio_projects', 'theme_portfolio_experiences', 'theme_portfolio_skills', 'theme_portfolio_testimonials'] as $key) {
+        ThemeSettings::merge('portfolio', [$key => []]);
+    }
+
     // Everything left blank: the sections that used to be table-backed are the
     // ones most likely to be empty on a real install, and an empty "Featured
     // projects" heading advertises a gap rather than hiding it.
@@ -225,7 +233,7 @@ it('keeps the testimonials anchor on the page even with nothing to show, so a de
 
 it('survives a hand-edited or corrupt list value without fataling the page', function () {
     foreach (['theme_portfolio_projects', 'theme_portfolio_experiences', 'theme_portfolio_skills', 'theme_portfolio_testimonials'] as $key) {
-        Setting::set($key, '{"not":"a list"}');
+        ThemeSettings::merge('portfolio', [$key => '{"not":"a list"}']);
     }
 
     $this->get('/')
@@ -269,6 +277,8 @@ it('seeds no placeholder company names, because "Your Company" tells a visitor n
 });
 
 it('round-trips a project through the admin screen and out to the page', function () {
+    ThemeSettings::merge('portfolio', ['theme_portfolio_projects' => []]);
+
     $this->seed(RolePermissionSeeder::class);
     $this->actingAs(User::factory()->admin()->create());
 
@@ -281,7 +291,7 @@ it('round-trips a project through the admin screen and out to the page', functio
         ->call('save')
         ->assertHasNoErrors();
 
-    $stored = json_decode(Setting::where('key', 'theme_portfolio_projects')->value('value'), true);
+    $stored = ThemeSettings::rows('portfolio', 'theme_portfolio_projects');
 
     expect($stored)->toBe([[
         'title' => 'Storefront & Admin Split',
@@ -324,9 +334,9 @@ it('never lets a repeater grow past the cap its theme declared', function () {
         ->assertCount('repeaters.theme_portfolio_stats', 4)
         ->call('save');
 
-    expect(json_decode(Setting::where('key', 'theme_portfolio_stats')->value('value'), true))
+    expect(ThemeSettings::rows('portfolio', 'theme_portfolio_stats'))
         ->toHaveCount(4)
-        ->and(array_column(json_decode(Setting::where('key', 'theme_portfolio_stats')->value('value'), true), 'label'))
+        ->and(array_column(ThemeSettings::rows('portfolio', 'theme_portfolio_stats'), 'label'))
         ->toBe(['One', 'Two', 'Three', 'Four']);
 });
 
@@ -346,7 +356,7 @@ it('does not store a row the owner added but never filled in', function () {
         ->assertCount('repeaters.theme_portfolio_stats', 2)
         ->call('save');
 
-    expect(json_decode(Setting::where('key', 'theme_portfolio_stats')->value('value'), true))
+    expect(ThemeSettings::rows('portfolio', 'theme_portfolio_stats'))
         ->toBe([['value' => '1', 'label' => 'One']]);
 });
 
@@ -356,8 +366,8 @@ it('truncates an over-long list on save, so a stored value can never exceed the 
 
     // The admin screen can only get here through its own add button, which stops
     // at the cap. This is the belt to that braces: a value already in the
-    // database from a hand-edited settings row, an older cap, or a crafted
-    // request is cut to the declared number of rows on the way back in.
+    // theme's theme.json from a hand-edit, an older cap, or a crafted request
+    // is cut to the declared number of rows on the way back in.
     $rows = [];
     foreach (range(1, 9) as $n) {
         $rows[] = ['value' => (string) $n, 'label' => "Stat {$n}"];
@@ -367,7 +377,7 @@ it('truncates an over-long list on save, so a stored value can never exceed the 
     Livewire::test(Index::class)
         ->call('save');
 
-    $stored = json_decode(Setting::where('key', 'theme_portfolio_stats')->value('value'), true);
+    $stored = ThemeSettings::rows('portfolio', 'theme_portfolio_stats');
 
     expect($stored)->toHaveCount(4)
         // The first rows win, which are the ones the reordering UI kept on top.

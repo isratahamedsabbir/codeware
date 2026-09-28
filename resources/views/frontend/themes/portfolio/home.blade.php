@@ -9,6 +9,8 @@
 </head>
 <body class="theme-portfolio antialiased">
 
+    @include('frontend.themes.portfolio.partials.loader')
+
     @php
         $siteName = \App\Models\Setting::get('site_name', config('app.name'));
         $siteIcon = \App\Models\Setting::get('site_icon_white') ?: \App\Models\Setting::get('site_icon');

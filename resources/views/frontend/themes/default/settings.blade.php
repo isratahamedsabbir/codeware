@@ -1,8 +1,8 @@
 {{--
     Default theme settings — bound to the Theme Settings screen (Admin →
     Theme Settings) via wire:model="settings.theme_{slug}_*". Values persist to
-    the settings table and can be read anywhere with
-        \App\Models\Setting::get('theme_default_intro_heading')
+    this theme's own theme.json beside this file and can be read anywhere with
+        \App\Support\ThemeSettings::text('default', 'theme_default_intro_heading')
     See default/home.blade.php for live usage.
 
     This theme owns only the intro block, so it is the one theme whose settings

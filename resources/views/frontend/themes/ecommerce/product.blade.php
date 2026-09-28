@@ -276,6 +276,11 @@
                 @endif
             </div>
 
+            {{-- Share sits directly under the price, above the add-to-cart block:
+                 a visitor deciding about a product is still reading, not yet
+                 buying, and this is the row they come back to once they have. --}}
+            @include('frontend.themes.ecommerce.partials.share')
+
             {{-- The option picker lives inside the add-to-cart component below, so the
                  *picked* combination is what actually lands in the cart line. --}}
 
@@ -383,7 +388,10 @@
                     @endif
                 </div>
 
-                <div class="mt-6 rounded-card border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
+                {{-- No padding: the tab row starts at the container's own left
+                     edge, so anything inset here reads as misaligned the moment
+                     the panel loses its border. mt-6 is the only gap it needs. --}}
+                <div class="mt-6 rounded-card bg-white">
                     @if (filled($product->description))
                         <div x-show="tab === 'description'" @if ($productDetailTab !== 'description') x-cloak @endif role="tabpanel"
                             class="rich-text text-base leading-relaxed text-zinc-600">

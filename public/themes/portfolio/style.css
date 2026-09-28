@@ -892,6 +892,57 @@ html:has(body.theme-portfolio) {
     --form-accent-hover: var(--pf-primary-dark);
 }
 
+/* ── Newsletter ──────────────────────────────────────────────────────── */
+
+/* The shared newsletter box, same --form-* contract as the contact form above.
+   It ships dark (it was built for the ecommerce footer, and those dark values
+   are its own fallbacks), so without this scope a light page would show a
+   white-on-white input and a form nobody can read. */
+.theme-portfolio .pf-newsletter {
+    --form-border: var(--pf-border);
+    --form-border-focus: var(--pf-primary);
+    --form-input-bg: var(--pf-bg-inset);
+    --form-input-bg-focus: var(--pf-bg-elevated);
+    --form-text: var(--pf-text);
+    --form-placeholder: var(--pf-text-muted);
+    --form-accent: var(--pf-primary);
+    --form-accent-hover: var(--pf-primary-dark);
+    --form-submit-text: #ffffff;
+    --form-submit-text-hover: #ffffff;
+    --form-error: #dc2626;
+
+    /* Confirmation is green on both surfaces: the token is a fixed status
+       colour rather than a palette entry, and a green that only reads on white
+       is worse than no confirmation at all. */
+    --form-success-bg: color-mix(in srgb, #10b981 10%, transparent);
+    --form-success-text: var(--pf-heading);
+    --form-success-icon: #10b981;
+}
+
+.theme-portfolio.pf-dark .pf-newsletter {
+    --form-error: #f87171;
+    --form-success-bg: color-mix(in srgb, #10b981 14%, transparent);
+    --form-success-text: #d1fae5;
+    --form-success-icon: #34d399;
+}
+
+/* The one call to action in the band, so it takes the theme's button treatment
+   rather than sitting as a plain filled pill next to an outlined field. */
+.theme-portfolio .pf-newsletter .newsletter-submit {
+    transition: transform 0.2s var(--pf-ease), background-color 0.2s var(--pf-ease),
+        box-shadow 0.2s var(--pf-ease);
+}
+
+.theme-portfolio .pf-newsletter .newsletter-submit:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -12px color-mix(in srgb, var(--pf-primary) 90%, transparent);
+}
+
+/* The 1.1fr footer column is wide enough (~320px at the grid's max width) for
+   the component's own default sm:flex-row, so the field and button sit in one
+   compact row instead of two stacked full-width pills — same reasoning as the
+   ecommerce footer's copy of this box. */
+
 /* ── Long-form text ──────────────────────────────────────────────────── */
 
 /* Post bodies and teasers are rich HTML from the admin editor, so they arrive
@@ -1164,4 +1215,91 @@ html:has(body.theme-portfolio) {
     .theme-portfolio .pf-modal-enter {
         transition: none;
     }
+}
+
+/* ── Page loader ────────────────────────────────────────────────────────────
+   The one screen shown while this page's CSS, fonts and images come in.
+
+   It is visible from the first paint and lifted by a small inline script at the
+   end of <body> — see partials/loader.blade.php, which is where the timing and
+   the safety net live. Deliberately *not* driven from script.js: a loader that
+   has to wait on an external file to be dismissed is a page that shows nothing
+   if that file 404s, and the rest of this theme is written the other way round
+   (see bindReveal: an animation is never allowed to be the reason a page is
+   blank).
+
+   Nothing here is a new request. The styles ride along in this file, the lift is
+   inline in the HTML that has already arrived, and the page underneath is never
+   hidden — it is laid out and painted from the start, and this is simply an
+   opaque sheet over it, so lifting costs one opacity change and no layout. */
+.theme-portfolio .pf-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--pf-bg);
+    opacity: 1;
+    transition: opacity 380ms var(--pf-ease);
+}
+
+/* The page is interactive the moment the lift starts, not when it finishes, so
+   a click landing during the fade is never swallowed by a transparent sheet. */
+.theme-portfolio .pf-loader.is-done {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.theme-portfolio .pf-loader-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.1rem;
+    transition: transform 380ms var(--pf-ease);
+}
+
+/* Lifts away as the sheet fades, so the loader's own contents read as leaving
+   rather than as a still frame dissolving. */
+.theme-portfolio .pf-loader.is-done .pf-loader-inner {
+    transform: translateY(-10px);
+}
+
+.theme-portfolio .pf-loader-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--pf-heading);
+}
+
+.theme-portfolio .pf-loader-track {
+    position: relative;
+    width: 168px;
+    max-width: 44vw;
+    height: 2px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--pf-border);
+}
+
+/* Creeps most of the way on its own, then jumps the rest the moment the page
+   reports ready. Progress that only moves on real events would sit frozen for
+   the whole of a slow image load, which reads as broken rather than as loading. */
+@keyframes pf-loader-fill {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(0.9); }
+}
+
+.theme-portfolio .pf-loader-bar {
+    position: absolute;
+    inset: 0;
+    transform-origin: left center;
+    background: linear-gradient(90deg, var(--pf-primary), var(--pf-accent));
+    animation: pf-loader-fill 1.1s var(--pf-ease) forwards;
+}
+
+.theme-portfolio .pf-loader.is-done .pf-loader-bar {
+    animation: none;
+    transform: scaleX(1);
+    transition: transform 200ms var(--pf-ease);
 }

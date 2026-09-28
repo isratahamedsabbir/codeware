@@ -3,18 +3,23 @@
 namespace Database\Seeders;
 
 use App\Models\Service;
-use App\Models\Setting;
+use App\Support\ThemeSettings;
 use Illuminate\Database\Seeder;
 
 /**
  * The portfolio theme's demo content.
  *
- * All of it is a key/value setting now, edited from Admin → Theme Settings. The
- * one-pager used to hardcode most of these as arrays in home.blade.php, which
- * meant a fresh install told visitors "Your University" and "Training Institute";
- * projects, experience and skills then got their own tables and admin CRUD
- * screens, which split the portfolio across four places to edit it. This seeder
- * writes one JSON list per section so the whole page is one screen and one save.
+ * All of it is a key in the portfolio theme's own theme.json, edited from
+ * Admin → Theme Settings. The one-pager used to hardcode most of these as arrays
+ * in home.blade.php, which meant a fresh install told visitors "Your University"
+ * and "Training Institute"; projects, experience and skills then got their own
+ * tables and admin CRUD screens, which split the portfolio across four places to
+ * edit it. This seeder writes one list per section so the whole page is one
+ * screen and one save.
+ *
+ * Writing a theme's file rather than a row in the settings table is what lets the
+ * folder be zipped up and handed to someone else with its content still in it —
+ * see App\Support\ThemeSettings for why the values moved out of the database.
  *
  * Idempotent: every write goes through seedSetting()/seedScalar(), which skip a
  * key that already holds something, so re-seeding tops up a half-configured
@@ -22,6 +27,9 @@ use Illuminate\Database\Seeder;
  */
 class PortfolioContentSeeder extends Seeder
 {
+    /** The theme whose theme.json this seeder writes. */
+    private const SLUG = 'portfolio';
+
     public function run(): void
     {
         $this->seedProfile();
@@ -34,8 +42,8 @@ class PortfolioContentSeeder extends Seeder
 
     /**
      * The hero, the trust strip, "what I do", education and certifications — read
-     * by the theme as plain settings through App\Support\PortfolioProfile and
-     * edited by the owner from Admin → Theme Settings.
+     * by the theme through App\Support\PortfolioProfile and edited by the owner
+     * from Admin → Theme Settings.
      *
      * This is *demo* content, in the same spirit as the lists below: it exists so
      * a fresh install shows a complete, working page rather than a shell, and
@@ -51,7 +59,7 @@ class PortfolioContentSeeder extends Seeder
      *     hero's download button is visible but 404s. Upload a real CV and replace
      *     it, or clear the field and the button disappears.
      *
-     * Only written when the key is absent. A setting cannot be "keyed on its
+     * Only written when the key is absent. A settings key cannot be "keyed on its
      * title" the way a table row can, so the only safe test is whether the key
      * already holds something; getting that wrong would overwrite real copy the
      * owner has since written, and re-running the seeder must never do that.
@@ -124,7 +132,7 @@ class PortfolioContentSeeder extends Seeder
     }
 
     /**
-     * Seed a single text setting, leaving an existing value alone.
+     * Seed a single text value, leaving an existing one alone.
      */
     private function seedScalar(string $key, string $value): void
     {
@@ -132,7 +140,7 @@ class PortfolioContentSeeder extends Seeder
             return;
         }
 
-        Setting::set($key, $value);
+        ThemeSettings::merge(self::SLUG, [$key => $value]);
     }
 
     /**
@@ -144,33 +152,32 @@ class PortfolioContentSeeder extends Seeder
             return;
         }
 
-        Setting::set($key, json_encode($rows));
+        ThemeSettings::merge(self::SLUG, [$key => $rows]);
     }
 
     /**
      * Whether this key already holds something the owner put there.
      *
      * Blank counts as empty, and that is the whole point: the theme's own settings
-     * screen creates a row for every bound field on first save, so "the row
-     * exists" says nothing about whether anyone filled it in. Treating a blank
-     * row as absent is what lets a re-seed top up a half-configured install
-     * without touching the fields that were genuinely filled in — and it is the
-     * rule App\Support\PortfolioProfile already applies when it decides a field
-     * has nothing to show.
+     * screen creates a skeleton file listing every declared field the first time
+     * it is asked for one, so "the key is there" says nothing about whether
+     * anyone filled it in. Treating a blank value as absent is what lets a
+     * re-seed top up a half-configured install without touching the fields that
+     * were genuinely filled in — and it is the same rule
+     * App\Support\PortfolioProfile already applies when it decides a field has
+     * nothing to show.
      */
     private function hasContent(string $key): bool
     {
-        $raw = trim((string) Setting::get($key, ''));
+        $value = ThemeSettings::get(self::SLUG, $key);
 
-        if ($raw === '') {
-            return false;
+        // A repeater stores a real array; [] and an empty object both mean the
+        // owner has not entered any rows.
+        if (is_array($value)) {
+            return $value !== [];
         }
 
-        // The repeaters store a JSON list; "[]" and a JSON object both mean the
-        // owner has not entered any rows.
-        $decoded = json_decode($raw, true);
-
-        return is_array($decoded) ? $decoded !== [] : true;
+        return trim((string) (is_scalar($value) ? $value : '')) !== '';
     }
 
     /**
