@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Throwable;
 
 class Themes
 {
@@ -119,7 +120,20 @@ class Themes
     {
         $key = spl_object_id(Cache::getFacadeRoot());
 
-        return self::$all[$key] ??= Cache::remember('themes:all', 86400, fn () => self::scan());
+        if (! array_key_exists($key, self::$all)) {
+            try {
+                self::$all[$key] = Cache::remember('themes:all', 86400, fn () => self::scan());
+            } catch (Throwable) {
+                // all() is reached from routes/web.php while the router boots,
+                // which migrate:fresh does after dropping every table — with a
+                // database cache store that is a missing `cache` table. The
+                // folder list is a filesystem scan either way, so serve it
+                // uncached rather than failing the whole command.
+                self::$all[$key] = self::scan();
+            }
+        }
+
+        return self::$all[$key];
     }
 
     /**
