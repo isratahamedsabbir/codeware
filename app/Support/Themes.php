@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Throwable;
 
 class Themes
 {
@@ -52,6 +53,20 @@ class Themes
      * the memo dies with the bootstrap that owns the cache.
      */
     private static array $all = [];
+
+    /**
+     * Request-scoped memo of manifest(), keyed by cache repository instance and
+     * then by slug — the same pattern as $all, but invalidated by the file's
+     * mtime and size rather than held for the whole request unconditionally.
+     * manifest() is called mid-request by code that writes the very file it
+     * reads (ThemeSettings::create() reads it to seed a new theme.json, the
+     * theme installer seeds a freshly moved-in folder), so a memo that could
+     * not tell "the file changed under me" from "cache this forever" would
+     * hand a newly-installed theme back its own stale defaults.
+     *
+     * @var array<int, array<string, array{stamp: string, manifest: array}>>
+     */
+    private static array $manifests = [];
 
     public static function path(): string
     {
@@ -119,7 +134,20 @@ class Themes
     {
         $key = spl_object_id(Cache::getFacadeRoot());
 
-        return self::$all[$key] ??= Cache::remember('themes:all', 86400, fn () => self::scan());
+        if (! array_key_exists($key, self::$all)) {
+            try {
+                self::$all[$key] = Cache::remember('themes:all', 86400, fn () => self::scan());
+            } catch (Throwable) {
+                // all() is reached from routes/web.php while the router boots,
+                // which migrate:fresh does after dropping every table — with a
+                // database cache store that is a missing `cache` table. The
+                // folder list is a filesystem scan either way, so serve it
+                // uncached rather than failing the whole command.
+                self::$all[$key] = self::scan();
+            }
+        }
+
+        return self::$all[$key];
     }
 
     /**
@@ -175,29 +203,43 @@ class Themes
         ];
 
         $file = self::path().'/'.$slug.'/theme.json';
+        $present = is_file($file);
 
-        if (! is_file($file)) {
-            return $defaults;
+        // Keyed on the file's mtime and size as well as the slug — same
+        // stamp ThemeSettings::all() reads the same file under, so a file
+        // this request itself just wrote is re-read rather than served from
+        // a memo written before the write.
+        $stamp = ($present ? 'file' : 'none')
+            .':'.($present ? (int) filemtime($file) : 0)
+            .':'.($present ? (int) filesize($file) : 0);
+
+        $memoKey = spl_object_id(Cache::getFacadeRoot());
+
+        if ((self::$manifests[$memoKey][$slug]['stamp'] ?? null) === $stamp) {
+            return self::$manifests[$memoKey][$slug]['manifest'];
         }
 
-        $data = json_decode((string) file_get_contents($file), true);
+        $manifest = $defaults;
+        $data = $present ? json_decode((string) file_get_contents($file), true) : null;
 
-        if (! is_array($data)) {
-            return $defaults;
+        if (is_array($data)) {
+            $manifest = [
+                'name' => is_string($data['name'] ?? null) && $data['name'] !== '' ? $data['name'] : $defaults['name'],
+                'description' => is_string($data['description'] ?? null) ? $data['description'] : '',
+                'version' => is_string($data['version'] ?? null) && $data['version'] !== '' ? $data['version'] : $defaults['version'],
+                'author' => is_string($data['author'] ?? null) ? $data['author'] : '',
+                'tags' => collect($data['tags'] ?? [])->filter(fn ($tag) => is_string($tag) && $tag !== '')->values()->all(),
+                // Only a literal true opts out. A theme that omits the key, or
+                // spells it as a JSON string or the number 1, is saying nothing
+                // and so is indexable — the reading that keeps a typo from
+                // quietly unlisting a storefront.
+                'no_index' => ($data['no_index'] ?? null) === true,
+            ];
         }
 
-        return [
-            'name' => is_string($data['name'] ?? null) && $data['name'] !== '' ? $data['name'] : $defaults['name'],
-            'description' => is_string($data['description'] ?? null) ? $data['description'] : '',
-            'version' => is_string($data['version'] ?? null) && $data['version'] !== '' ? $data['version'] : $defaults['version'],
-            'author' => is_string($data['author'] ?? null) ? $data['author'] : '',
-            'tags' => collect($data['tags'] ?? [])->filter(fn ($tag) => is_string($tag) && $tag !== '')->values()->all(),
-            // Only a literal true opts out. A theme that omits the key, or
-            // spells it as a JSON string or the number 1, is saying nothing and
-            // so is indexable — the reading that keeps a typo from quietly
-            // unlisting a storefront.
-            'no_index' => ($data['no_index'] ?? null) === true,
-        ];
+        self::$manifests[$memoKey][$slug] = ['stamp' => $stamp, 'manifest' => $manifest];
+
+        return $manifest;
     }
 
     /**

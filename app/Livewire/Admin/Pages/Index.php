@@ -10,7 +10,6 @@ use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\Product;
 use App\Models\ProductCategory;
-use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\EnvFile;
 use App\Support\PageCascade;
@@ -52,7 +51,11 @@ class Index extends Component
 
     public ?int $viewingId = null;
 
+    /** The PUCK_SESSION .env value, in minutes — see saveEditorSettings(). */
     public int $puckSessionMinutes = 30;
+
+    /** The CMS_EDITOR_BASE_URL .env value, edited from the Settings modal (see saveEditorSettings()). */
+    public string $editorBaseUrl = '';
 
     /** The FRONTEND_URL .env value, edited from the Settings modal (see saveFrontendUrl()). */
     public string $frontendUrl = '';
@@ -62,7 +65,8 @@ class Index extends Component
 
     public function mount(): void
     {
-        $this->puckSessionMinutes = Setting::puckSessionMinutes();
+        $this->puckSessionMinutes = PuckEditor::sessionMinutes();
+        $this->editorBaseUrl = EnvFile::get('CMS_EDITOR_BASE_URL', '') ?? '';
         $this->frontendUrl = EnvFile::get('FRONTEND_URL', '') ?? '';
         $this->pagePreviewPath = EnvFile::get('FRONTEND_PAGE_PATH', '') ?? '';
     }
@@ -89,18 +93,73 @@ class Index extends Component
         $this->js('window.open('.json_encode($url).', \'_blank\')');
     }
 
+    /**
+     * Saves the page's Settings modal: the Puck token expiry and the editor's
+     * base URL. Both live in .env (PUCK_SESSION and CMS_EDITOR_BASE_URL), not
+     * the settings table — one value, one home, edited from here.
+     */
     public function saveEditorSettings(): void
     {
         $this->validate([
             'puckSessionMinutes' => 'required|integer|min:1|max:1440',
-        ]);
+            'editorBaseUrl' => 'nullable|url',
+        ], [], ['editorBaseUrl' => 'editor base URL']);
 
-        Setting::set('puck_session_minutes', $this->puckSessionMinutes);
+        // The whole modal is only rendered for access-admin-system, but a
+        // Livewire component's public methods stay directly callable even while
+        // their UI is hidden — this is the actual enforcement of that bar, since
+        // both values below are written straight into .env.
+        Gate::authorize('access-admin-system');
 
-        AdminActivity::log('updated', "Puck editor token expiry set to {$this->puckSessionMinutes} minute(s)");
+        $this->editorBaseUrl = trim($this->editorBaseUrl);
+
+        $current = EnvFile::all();
+
+        $values = [
+            'PUCK_SESSION' => (string) $this->puckSessionMinutes,
+            'CMS_EDITOR_BASE_URL' => $this->editorBaseUrl,
+        ];
+
+        // Only hand EnvFile the keys that actually moved, so saving this modal
+        // never rewrites (and re-quotes) an untouched .env line.
+        $changed = array_filter(
+            $values,
+            fn (string $value, string $key) => ($current[$key] ?? null) !== $value,
+            ARRAY_FILTER_USE_BOTH
+        );
+
+        if ($changed === []) {
+            $this->dispatch('close-modal', name: 'editor-settings');
+            $this->dispatch('notify', message: 'Editor settings saved.');
+
+            return;
+        }
+
+        try {
+            EnvFile::set($changed);
+        } catch (RuntimeException $e) {
+            $this->dispatch('notify', message: 'Could not save the editor settings: '.$e->getMessage());
+
+            return;
+        }
+
+        // Both values are read through config('cms.*'), which this process has
+        // already resolved — clearing the cache only makes the *next* request
+        // pick them up, hence the reload below.
+        Artisan::call('config:clear');
+
+        if (array_key_exists('PUCK_SESSION', $changed)) {
+            AdminActivity::log('updated', "Puck editor token expiry set to {$this->puckSessionMinutes} minute(s)");
+        }
+
+        if (array_key_exists('CMS_EDITOR_BASE_URL', $changed)) {
+            AdminActivity::log('updated', 'CMS editor base URL updated');
+        }
 
         $this->dispatch('close-modal', name: 'editor-settings');
-        $this->dispatch('notify', message: 'Editor settings saved.');
+        $this->dispatch('notify', message: 'Editor settings saved. Configuration cache cleared.');
+
+        $this->js('window.location.reload()');
     }
 
     /**

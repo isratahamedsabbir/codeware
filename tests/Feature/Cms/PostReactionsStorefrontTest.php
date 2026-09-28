@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ScopeSessionCookieToHost;
 use App\Livewire\Frontend\PostReactions;
 use App\Models\Language;
 use App\Models\Page;
@@ -66,7 +67,12 @@ it('counts a post view once per visitor', function () {
 
     expect($post->fresh()->views)->toBe(0);
 
-    $this->withCookies([config('session.cookie') => 'ab12cd34ef56ac78ac90ab12cd34ef56ab12cd34']);
+    // config('session.cookie') is only the *base* name between requests — the
+    // per-host name a request actually uses is settled by the middleware, and
+    // a session cookie under any other name is simply not read.
+    $this->withCookies([
+        ScopeSessionCookieToHost::nameFor(request()->getHost()) => 'ab12cd34ef56ac78ac90ab12cd34ef56ab12cd34',
+    ]);
 
     get('/blog/counted-post')
         ->assertOk()

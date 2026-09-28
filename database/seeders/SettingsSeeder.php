@@ -222,8 +222,12 @@ class SettingsSeeder extends Seeder
             ['key' => 'popup_button_label',   'value' => 'Shop Now', 'type' => 'string', 'group' => 'frontend', 'is_public' => true],
             ['key' => 'popup_button_url',     'value' => '/shop', 'type' => 'string', 'group' => 'frontend', 'is_public' => true],
 
-            // ── Editor ──
-            ['key' => 'puck_session_minutes',    'value' => '30', 'type' => 'integer', 'group' => 'editor', 'is_public' => false],
+            // ── Editor ── no rows: the Puck token expiry lives in .env as
+            // PUCK_SESSION (see PuckEditor::sessionMinutes()) and is edited from
+            // the Settings button on the admin Pages screen. Databases seeded
+            // before that switch may still hold a `puck_session_minutes` row —
+            // nothing reads it any more, and the 'editor' group stays excluded
+            // from the generic Settings loop so it never renders.
 
             // ── Orders ── the fulfillment status past which an order can no
             // longer be cancelled — see Order::canBeCancelled().

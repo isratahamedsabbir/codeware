@@ -39,12 +39,16 @@
                         x-on:click="$dispatch('open-modal', { name: 'frontend-url-settings' })">
                         Frontend URL
                     </flux:button>
+
+                    {{-- Both of this page's settings modals write .env keys, so
+                         both are admin-only (the same bar as the Frontend URL
+                         button above) rather than open to staff. --}}
+                    <flux:modal.trigger name="editor-settings">
+                        <flux:button variant="ghost" size="sm" icon="cog-6-tooth">
+                            Settings
+                        </flux:button>
+                    </flux:modal.trigger>
                 @endcan
-                <flux:modal.trigger name="editor-settings">
-                    <flux:button variant="ghost" size="sm" icon="cog-6-tooth">
-                        Settings
-                    </flux:button>
-                </flux:modal.trigger>
 
                 <flux:dropdown position="bottom" align="end">
                     <flux:button variant="ghost" size="sm" icon="window" icon-trailing="chevron-down">
@@ -299,28 +303,41 @@
     </div>
 
     {{-- Editor Settings Modal --}}
-    <flux:modal name="editor-settings" class="md:w-96"
-        x-on:open-modal.window="if ($event.detail.name === 'editor-settings') $flux.modal('editor-settings').show()"
-        x-on:close-modal.window="if ($event.detail.name === 'editor-settings') $flux.modal('editor-settings').close()">
-        <div class="space-y-4">
-            <flux:heading>Editor settings</flux:heading>
-            <flux:text class="text-sm text-zinc-500">
-                How long a Puck editor link stays valid after you open it. Past this time, the tab must be reopened
-                from here to get a fresh link.
-            </flux:text>
-            <flux:field>
-                <flux:label>Token expiry (minutes)</flux:label>
-                <flux:input type="number" min="1" max="1440" wire:model="puckSessionMinutes" />
-                <flux:error name="puckSessionMinutes" />
-            </flux:field>
-            <div class="flex gap-2 pt-1">
-                <flux:button size="sm" variant="primary" wire:click="saveEditorSettings">Save</flux:button>
-                <flux:modal.close>
-                    <flux:button size="sm" variant="ghost">Cancel</flux:button>
-                </flux:modal.close>
+    {{-- Editor Settings Modal — .env-backed (PUCK_SESSION + CMS_EDITOR_BASE_URL),
+         so the whole block is gated for the same reason as the Frontend URL
+         modal below it. --}}
+    @can('access-admin-system')
+        <flux:modal name="editor-settings" class="md:w-96"
+            x-on:open-modal.window="if ($event.detail.name === 'editor-settings') $flux.modal('editor-settings').show()"
+            x-on:close-modal.window="if ($event.detail.name === 'editor-settings') $flux.modal('editor-settings').close()">
+            <div class="space-y-4">
+                <flux:heading>Editor settings</flux:heading>
+                <flux:text class="text-sm text-zinc-500">
+                    How long a Puck editor link stays valid after you open it. Past this time, the tab must be reopened
+                    from here to get a fresh link.
+                </flux:text>
+                <flux:field>
+                    <flux:label>Token expiry (minutes)</flux:label>
+                    <flux:input type="number" min="1" max="1440" wire:model="puckSessionMinutes" />
+                    <flux:error name="puckSessionMinutes" />
+                </flux:field>
+                <flux:field>
+                    <flux:label>Editor base URL<x-field-hint text="Base URL of the Next.js Puck editor this page's editor links and the Layout dropdown open, e.g. http://127.0.0.1:3002. Changing this edits the live .env file." /></flux:label>
+                    <flux:input wire:model="editorBaseUrl" placeholder="http://127.0.0.1:3002" />
+                    <flux:error name="editorBaseUrl" />
+                </flux:field>
+                <flux:text class="text-sm text-zinc-500">
+                    Saving edits the live .env file and clears the configuration cache.
+                </flux:text>
+                <div class="flex gap-2 pt-1">
+                    <flux:button size="sm" variant="primary" wire:click="saveEditorSettings" wire:loading.attr="disabled">Save</flux:button>
+                    <flux:modal.close>
+                        <flux:button size="sm" variant="ghost">Cancel</flux:button>
+                    </flux:modal.close>
+                </div>
             </div>
-        </div>
-    </flux:modal>
+        </flux:modal>
+    @endcan
 
     {{-- Settings Modal — Frontend URL. Whole block gated (not just the
          trigger button above) so the markup never reaches a staff response

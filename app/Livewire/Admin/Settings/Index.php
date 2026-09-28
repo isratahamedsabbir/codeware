@@ -215,7 +215,10 @@ class Index extends Component
             // this generic per-group loop. 'shop' (shop_enabled) is controlled only via the
             // header toggle (ShopToggle), never a form field here.
             // 'orders' (order_cancellation_cutoff_status) has its own settings modal on
-            // the admin Orders screen, same as 'editor' (puck_session_minutes) does on Pages.
+            // the admin Orders screen, same as 'editor' does on Pages — though the
+            // editor's own token expiry now lives in .env (PUCK_SESSION) and has no
+            // settings row at all; 'editor' is still excluded so a row left over from
+            // an older database never surfaces here.
             'groupedSettings' => Setting::whereNotIn('group', ['layout', 'seo', 'colors', 'currency', 'frontend', 'other', 'editor', 'custom-code', 'tracking', 'shop', 'orders'])
                 ->get()
                 ->groupBy('group')
