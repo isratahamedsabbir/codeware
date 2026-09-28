@@ -23,8 +23,48 @@ class ScopeSessionCookieToHost
 {
     public function handle(Request $request, Closure $next): Response
     {
-        config(['session.cookie' => config('session.cookie').'-'.Str::slug(str_replace('.', '-', $request->getHost()))]);
+        $name = self::nameFor($request->getHost());
+
+        config(['session.cookie' => $name]);
+
+        // Fortify's own service provider resolves the 'web' guard while
+        // *registering* (to bind its login-response redirects), and Laravel
+        // reads a route's controller middleware before the first middleware
+        // runs — so on the storefront's Fortify routes (/login, /register,
+        // /forgot-password, ...) the session store is already built by the
+        // time this middleware gets here, under the un-suffixed name, and
+        // SessionManager caches it for the rest of the request. Setting the
+        // config alone would therefore leave those routes reading and writing
+        // a *different* session cookie than every other page on the same host:
+        // two sessions in one browser, so a customer who logs in on /login is
+        // anonymous everywhere else, and a CSRF token minted under one of them
+        // is a 419 "Page Expired" under the other. Rename the store too.
+        if (app()->resolved('session.store')) {
+            app('session.store')->setName($name);
+        }
 
         return $next($request);
+    }
+
+    /**
+     * The session cookie name a host reads and writes: the app's base name
+     * plus this host's own suffix.
+     *
+     * Idempotent, because a long-lived worker (Octane, a queue worker, or a
+     * single test making several requests) runs more than one request in the
+     * same booted app, where config('session.cookie') still carries the
+     * previous request's suffix.
+     *
+     * Public because the name is only settled per request, so anything that
+     * has to speak for a host's session outside a request — a test seeding a
+     * session cookie, say — has to ask here rather than read
+     * config('session.cookie'), which between requests is still the base name.
+     */
+    public static function nameFor(string $host, ?string $base = null): string
+    {
+        $base ??= (string) config('session.cookie');
+        $suffix = '-'.Str::slug(str_replace('.', '-', $host));
+
+        return str_ends_with($base, $suffix) ? $base : $base.$suffix;
     }
 }

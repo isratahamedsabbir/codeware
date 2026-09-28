@@ -18,7 +18,7 @@ use App\Http\Controllers\RobotsController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\VoucherController;
-use App\Models\Setting;
+use App\Support\PuckEditor;
 use App\Support\Themes;
 use Illuminate\Support\Facades\Route;
 
@@ -56,7 +56,7 @@ Route::get('/admin/{path?}', fn (?string $path = null) => $path
     ->name('admin.legacy');
 
 Route::get('/token', function () {
-    $token = auth()->user()->createToken('test-token', ['*'], now()->addMinutes(Setting::puckSessionMinutes()))->plainTextToken;
+    $token = auth()->user()->createToken('test-token', ['*'], now()->addMinutes(PuckEditor::sessionMinutes()))->plainTextToken;
 
     return response()->json(['token' => $token]);
 })->middleware(['auth']);

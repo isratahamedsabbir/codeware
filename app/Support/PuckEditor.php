@@ -2,7 +2,6 @@
 
 namespace App\Support;
 
-use App\Models\Setting;
 use App\Models\User;
 
 /**
@@ -22,10 +21,23 @@ use App\Models\User;
  */
 class PuckEditor
 {
+    /**
+     * Token lifetime, in minutes. The single place every token mint reads from.
+     *
+     * Sourced from PUCK_SESSION in .env (not the settings table, which used
+     * to hold a duplicate `puck_session_minutes` row — one value, one home)
+     * and edited from the Settings button on the admin Pages screen, which
+     * writes the .env key and clears the config cache so this picks it up.
+     */
+    public static function sessionMinutes(): int
+    {
+        return (int) config('cms.puck_session_minutes', 30);
+    }
+
     public static function token(User $user, string $name): string
     {
         $user->tokens()->where('name', $name)->delete();
 
-        return $user->createToken($name, ['*'], now()->addMinutes(Setting::puckSessionMinutes()))->plainTextToken;
+        return $user->createToken($name, ['*'], now()->addMinutes(static::sessionMinutes()))->plainTextToken;
     }
 }

@@ -189,16 +189,6 @@ class Setting extends Model
     }
 
     /**
-     * How long a minted Puck editor token (Sanctum PAT) stays valid — the
-     * single place every openPuckEditor()/saveAndOpenPageBuilder() call
-     * reads from, driven by the Settings button on the admin Pages screen.
-     */
-    public static function puckSessionMinutes(): int
-    {
-        return (int) static::get('puck_session_minutes', 30);
-    }
-
-    /**
      * The fulfillment status past which an order can no longer be cancelled —
      * see Order::canBeCancelled(). Driven by the "Cancellation Rule" settings
      * modal on the admin Orders screen.
