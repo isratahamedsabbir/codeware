@@ -16,7 +16,7 @@
         <div>
             @include('partials.admin-breadcrumbs', ['routeName' => 'admin.products'])
         </div>
-        <div class="flex items-center gap-2 shrink-0">
+        <div class="flex items-center gap-2 shrink-0"> 
             @if (count($selectedIds) > 0)
                 {{-- Not wrapped in .page-header-actions (see below) — that class
                      forces every button inside it to the solid blue "primary

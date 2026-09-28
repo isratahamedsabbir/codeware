@@ -9,7 +9,7 @@
     'collapsible' => null,
     'collapsed' => true,
     // 'default' = icon + description header; 'postbox' = WordPress-style metabox
-    // (bordered title bar, description moved into the body, collapsible unless
+    // (bordered title bar with the description under the title, collapsible unless
     // :collapsible="false" is passed).
     'variant' => 'default',
     // Postbox only: when set, the open/closed state is remembered per browser.
@@ -31,11 +31,16 @@
         <div @if ($collapsible) role="button" tabindex="0" @click="open = !open" @keydown.enter="open = !open" @keydown.space.prevent="open = !open" @endif
             class="flex min-h-11 items-center justify-between gap-3 px-3 py-2 {{ $collapsible ? 'cursor-pointer select-none' : '' }}"
             :class="open ? 'border-b border-zinc-300 dark:border-zinc-700' : ''">
-            <div class="flex min-w-0 items-center gap-2">
-                <h2 class="truncate text-sm font-semibold text-zinc-800 dark:text-zinc-100">{{ $title }}</h2>
-                @isset($titleActions)
-                    <span class="flex items-center" @click.stop>{{ $titleActions }}</span>
-                @endisset
+            <div class="min-w-0">
+                <div class="flex min-w-0 items-center gap-2">
+                    <h2 class="truncate text-sm font-semibold text-zinc-800 dark:text-zinc-100">{{ $title }}</h2>
+                    @isset($titleActions)
+                        <span class="flex items-center" @click.stop>{{ $titleActions }}</span>
+                    @endisset
+                </div>
+                @if ($description)
+                    <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{{ $description }}</p>
+                @endif
             </div>
             <div class="flex shrink-0 items-center gap-1">
                 @isset($actions)
@@ -52,9 +57,6 @@
 
         <div x-show="open" x-collapse @if ($openDefault === 'false') x-cloak @endif>
             <div class="{{ $bodyClass }}">
-                @if ($description)
-                    <p class="text-xs text-zinc-500">{{ $description }}</p>
-                @endif
                 {{ $slot }}
             </div>
         </div>
