@@ -65,6 +65,31 @@ it('blocks tags when its own feature is off, leaving categories, blog, and produ
     $this->get(route('admin.products'))->assertOk();
 });
 
+it('blocks types when its own feature is off, leaving the taxonomy screens that read it reachable', function () {
+    disableFeature('types');
+
+    $this->get(route('admin.types'))->assertNotFound();
+    $this->get(route('admin.types.create'))->assertNotFound();
+
+    $this->get(route('admin.categories'))->assertOk();
+    $this->get(route('admin.tags'))->assertOk();
+    $this->get(route('admin.product-brands'))->assertOk();
+});
+
+it('hides only the Types link from the live sidebar once its feature is off, leaving Categories reachable', function () {
+    $this->seed(AdminMenuSeeder::class);
+
+    $this->get(route('admin.dashboard'))->assertOk()
+        ->assertSeeHtml(route('admin.types'))
+        ->assertSee('Categories');
+
+    disableFeature('types');
+
+    $this->get(route('admin.dashboard'))->assertOk()
+        ->assertDontSeeHtml(route('admin.types'))
+        ->assertSee('Categories');
+});
+
 it('hides only the Categories link from the live sidebar once its feature is off, leaving Tags reachable', function () {
     $this->seed(AdminMenuSeeder::class);
 

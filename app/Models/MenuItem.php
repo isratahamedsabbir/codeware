@@ -80,6 +80,7 @@ class MenuItem extends Model
         'admin.posts' => 'blog',
         'admin.categories' => 'categories',
         'admin.tags' => 'tags',
+        'admin.types' => 'types',
         'admin.products' => 'products',
         'admin.product-attributes' => 'products',
         'admin.product-brands' => 'brands',
