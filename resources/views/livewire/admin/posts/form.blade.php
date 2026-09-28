@@ -27,8 +27,8 @@
     <div class="flex gap-5 items-start">
 
         {{-- ── MAIN ── --}}
-        <div class="flex-1 min-w-0 space-y-4">
-        <div class="bg-white rounded-[5px] shadow-sm p-6">
+        <div class="flex-1 min-w-0 space-y-5">
+        <x-admin-section-card variant="postbox" persist-key="post-details" title="Post Details" :collapsed="false">
 
             <x-admin-locale-tabs>
                 @foreach (\App\Support\Locale::translatable() as $language)
@@ -69,13 +69,13 @@
                         </flux:select>
                     </flux:field>
             </x-admin-locale-tabs>
-        </div>
+        </x-admin-section-card>
 
         {{-- Additional Data: Description — rich editor, toggled from Settings → Widgets --}}
         @if (\App\Models\Setting::postAdditionalDataEnabled())
-            <x-admin-section-card icon="document-text" title="Additional Data" icon-color="bg-emerald-500/10 text-emerald-600"
+            <x-admin-section-card variant="postbox" persist-key="post-additional-data" title="Additional Data"
                 description="Rich-text description shown in blog listings and as a fallback — the full post body is built separately in the page builder."
-                collapsible :collapsed="true">
+                :collapsed="true">
                 <x-admin-locale-tabs>
                     @foreach (\App\Support\Locale::translatable() as $language)
                         <x-admin-locale-panel :code="$language->code" class="space-y-3">
@@ -92,7 +92,7 @@
             </x-admin-section-card>
         @endif
 
-        @include('partials.admin-seo-fields')
+        @include('partials.admin-seo-fields', ['seoCardVariant' => 'postbox', 'seoPersistKey' => 'post-seo'])
 
         <div class="flex items-center gap-3 flex-wrap">
             <x-admin-save-button :label="$postId ? 'Update Post' : 'Create Post'" />
@@ -100,10 +100,10 @@
         </div>
 
         {{-- ── SIDEBAR ── --}}
-        <div class="w-[320px] shrink-0 space-y-4">
+        <div class="w-[320px] shrink-0 space-y-5">
 
             {{-- Tags — product-typed and post-typed pools, no legacy (App\Models\Tag) --}}
-            <x-admin-section-card icon="tag" title="Tags" body-class="px-4 py-3"
+            <x-admin-section-card variant="postbox" persist-key="post-tags" title="Tags" :collapsed="false"
                 description="Label this post for filtering and search.">
                 <div
                     x-data="{
@@ -197,8 +197,8 @@
             </x-admin-section-card>
 
             {{-- Thumbnail Image --}}
-            <x-admin-section-card icon="photo" title="Thumbnail Image" icon-color="bg-blue-500/10 text-blue-600"
-                body-class="px-4 py-4" description="Shown in post listings and social shares. Recommended 1200×675px.">
+            <x-admin-section-card variant="postbox" persist-key="post-thumbnail" title="Thumbnail Image" :collapsed="false"
+                description="Shown in post listings and social shares. Recommended 1200×675px.">
                 <x-media-picker model="featured_image" label="" size-hint="1200 × 675" placeholder="Select thumbnail image"
                     :picker-id="$featuredImagePickerId" mimes="jpg,jpeg,png,webp,avif" only-images dropzone />
             </x-admin-section-card>

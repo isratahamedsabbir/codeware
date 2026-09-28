@@ -9,8 +9,8 @@
     <div class="flex gap-5 items-start">
 
         {{-- ── MAIN ── --}}
-        <div class="flex-1 min-w-0 space-y-4">
-        <div class="bg-white rounded-[5px] shadow-sm p-6">
+        <div class="flex-1 min-w-0 space-y-5">
+        <x-admin-section-card variant="postbox" persist-key="page-details" title="Page Details" :collapsed="false">
             <x-admin-locale-tabs>
                 @foreach (\App\Support\Locale::translatable() as $language)
                     <x-admin-locale-panel :code="$language->code">
@@ -41,13 +41,13 @@
                         <flux:error name="slug" />
                     </flux:field>
             </x-admin-locale-tabs>
-        </div>
+        </x-admin-section-card>
 
-        @include('partials.admin-seo-fields')
+        @include('partials.admin-seo-fields', ['seoCardVariant' => 'postbox', 'seoPersistKey' => 'page-seo'])
 
         {{-- ── Constant ── --}}
-        <x-admin-section-card icon="variable" title="Constant" icon-color="bg-indigo-500/10 text-indigo-600"
-            description="Freeform key/value pairs — custom flags or extra content." collapsible :collapsed="true">
+        <x-admin-section-card variant="postbox" persist-key="page-constant" title="Constant"
+            description="Freeform key/value pairs — custom flags or extra content." :collapsed="true">
             <x-slot:titleActions>
                 <button type="button" @click="showConstantGuide = true" title="How page constants work"
                     class="flex size-5 items-center justify-center text-zinc-400 transition-colors hover:text-primary cursor-pointer">
@@ -69,8 +69,8 @@
         </div>
 
         {{-- ── SIDEBAR ── --}}
-        <div class="w-[320px] shrink-0 space-y-4">
-            <x-admin-section-card icon="cog-6-tooth" title="Page Settings" body-class="px-4 py-3"
+        <div class="w-[320px] shrink-0 space-y-5">
+            <x-admin-section-card variant="postbox" persist-key="page-settings" title="Page Settings" :collapsed="false"
                 description="Template used to render this page.">
                 <flux:field>
                     <flux:label>Template</flux:label>

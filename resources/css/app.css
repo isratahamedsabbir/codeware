@@ -128,7 +128,7 @@
 
 /* The storefront's signature typeface (Trebuchet MS is a bundled system font,
    so no webfont to load) — applied to storefront <body> via `font-storefront`.
-   Admin surfaces keep the --font-sans stack from the @theme block above. */
+   Admin surfaces override --font-sans to Segoe UI in layouts/admin.blade.php. */
 @utility font-storefront {
     font-family: 'Trebuchet MS', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
 }

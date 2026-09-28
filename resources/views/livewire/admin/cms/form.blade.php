@@ -4,10 +4,10 @@
     </flux:button>
 @endpush
 
-<div class="w-full space-y-6" x-data="{ showCardsGuide: false, showConstantGuide: false }">
+<div class="w-full space-y-5" x-data="{ showCardsGuide: false, showConstantGuide: false }">
 
     {{-- Basics --}}
-    <x-admin-section-card icon="squares-2x2" :title="$page->getTranslation('title', 'en', false)">
+    <x-admin-section-card variant="postbox" persist-key="cms-basics" :title="$page->getTranslation('title', 'en', false)" :collapsed="false">
         <flux:field>
             <div class="flex rounded-lg border border-zinc-300 overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
                 <span class="flex items-center px-3 bg-zinc-50 border-r border-zinc-300 text-sm text-zinc-500">
@@ -21,9 +21,9 @@
     </x-admin-section-card>
 
     {{-- Cards --}}
-    <x-admin-section-card icon="rectangle-group" title="Cards" icon-color="bg-blue-500/10 text-blue-600"
+    <x-admin-section-card variant="postbox" persist-key="cms-cards" title="Cards"
         description="Repeatable image/title/description tiles for this section."
-        collapsible :collapsed="true">
+        :collapsed="true">
         <x-slot:titleActions>
             <button type="button" @click="showCardsGuide = true" title="How sections' cards work"
                 class="flex size-5 items-center justify-center text-zinc-400 transition-colors hover:text-primary cursor-pointer">
@@ -92,8 +92,8 @@
     </x-admin-section-card>
 
     {{-- Constant --}}
-    <x-admin-section-card icon="variable" title="Constant" icon-color="bg-indigo-500/10 text-indigo-600"
-        description="Freeform key/value pairs — SEO tags, custom flags, or extra content." collapsible :collapsed="true">
+    <x-admin-section-card variant="postbox" persist-key="cms-constant" title="Constant"
+        description="Freeform key/value pairs — SEO tags, custom flags, or extra content." :collapsed="true">
         <x-slot:titleActions>
             <button type="button" @click="showConstantGuide = true" title="How section constants work"
                 class="flex size-5 items-center justify-center text-zinc-400 transition-colors hover:text-primary cursor-pointer">

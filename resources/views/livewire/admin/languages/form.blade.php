@@ -9,7 +9,7 @@
     <div class="flex gap-5 items-start max-lg:flex-col">
 
         {{-- ── MAIN ── --}}
-        <div class="flex-1 min-w-0 bg-white rounded-[5px] border border-zinc-100 shadow-sm p-6 space-y-3">
+        <x-admin-section-card variant="postbox" title="Language Details" :collapsible="false" class="flex-1 min-w-0 max-lg:w-full">
 
             <flux:field>
                 <flux:label>{{ __('Name') }} <span class="text-red-500 ml-0.5">*</span></flux:label>
@@ -47,17 +47,17 @@
             </flux:field>
 
             {{-- Footer --}}
-            <div class="-mx-6 -mb-6 mt-2 flex items-center gap-3 flex-wrap rounded-b-lg border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+            <div class="-mx-3 -mb-3 mt-4 flex items-center gap-3 flex-wrap rounded-b-[3px] border-t border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-700 dark:bg-zinc-800/40">
                 <x-admin-save-button :label="$languageId ? __('Update Language') : __('Create Language')" />
             </div>
 
-        </div>
+        </x-admin-section-card>
 
         {{-- ── SIDEBAR ── --}}
-        <div class="w-[320px] max-lg:w-full shrink-0 space-y-4">
+        <div class="w-[320px] max-lg:w-full shrink-0 space-y-5">
 
-            <x-admin-section-card icon="adjustments-horizontal" :title="__('Settings')" body-class="px-4 py-3 space-y-4"
-                :description="__('Text direction and ordering in the switcher.')">
+            <x-admin-section-card variant="postbox" persist-key="language-settings" :title="__('Settings')" :collapsed="false"
+                body-class="p-3 space-y-4" :description="__('Text direction and ordering in the switcher.')">
 
                 <flux:field>
                     <flux:label>{{ __('Text direction') }}</flux:label>
