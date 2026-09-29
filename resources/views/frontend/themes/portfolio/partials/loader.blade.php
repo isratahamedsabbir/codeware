@@ -3,9 +3,11 @@
     images come in. Included by the home page only: it is the curtain over a
     *landing*, and the blog and posts open on content without one.
 
-    It is a full-viewport black sheet, styled as a CRT power-on — a white
-    hairline at the centre that thickens into a full white field before the
-    sheet fades. It appears once per browser: the first time this site is
+    It is a full-viewport black sheet, styled as a CRT power-on — but a screen
+    that parts from the middle: two solid black plates slide apart while a
+    translucent white band swells behind them, so the portfolio beneath is
+    revealed through a widening seam instead of sitting behind an opaque wall
+    the whole time. It appears once per browser: the first time this site is
     opened, and never again after — loader-flag.blade.php (first in <head>)
     is the gate, and the sheet is hidden by default and revealed only when
     that gate decides the machine is starting for the first time.
@@ -41,12 +43,14 @@
 
     The timings are pinned to the CRT animation's own delay and duration, which
     is the correct way to pick them when there is a long animation to avoid
-    cutting off. MIN_MS is the floor (the hairline starts at .2s and needs .9s
+    cutting off. MIN_MS is the floor (the swell starts at .2s and needs 1.2s
     to swell into the field), and MAX_MS is the ceiling for the case that
     actually happens in the field: a stalled image below the fold.
 --}}
 <div data-pf-loader class="pf-loader" aria-hidden="true">
     <div class="pf-loader-crt-line"></div>
+    <div class="pf-loader-crt-plate-top"></div>
+    <div class="pf-loader-crt-plate-bottom"></div>
     <span class="pf-loader-crt-spark"></span>
 </div>
 
@@ -61,7 +65,7 @@
         // cut off at one frame. The ceiling is the important one — it fires
         // whether or not `load` ever does, so a stalled image below the fold can
         // never leave the page covered for long.
-        var MIN_MS = 1150;
+        var MIN_MS = 1450;
         var MAX_MS = 2600;
         var started = Date.now();
         var lifted = false;
@@ -81,7 +85,7 @@
                 // click, and a full-viewport one at that, for no benefit.
                 setTimeout(function () {
                     if (loader.parentNode) loader.parentNode.removeChild(loader);
-                }, 480);
+                }, 1000);
             }, wait);
         }
 

@@ -52,7 +52,11 @@ it('shows the loader only on the first visit, and the flag is set in the head', 
     $head = substr($html, 0, $bodyPos);
     $body = substr($html, $bodyPos);
     expect($head)->toContain('pf-loader-visited')
-        ->and($body)->toContain('data-pf-loader');
+        ->and($body)->toContain('data-pf-loader')
+        ->and($body)->toContain('pf-loader-crt-line')
+        ->and($body)->toContain('pf-loader-crt-plate-top')
+        ->and($body)->toContain('pf-loader-crt-plate-bottom')
+        ->and($body)->toContain('pf-loader-crt-spark');
 });
 
 it('keeps the loader hidden until the first-visit gate reveals it', function () {
@@ -65,14 +69,20 @@ it('keeps the loader hidden until the first-visit gate reveals it', function () 
         ->and($css)->toMatch('/\.pf-first-visit \.theme-portfolio \.pf-loader\{[^}]*display:flex/s');
 });
 
-it('is a full-viewport sheet that covers the page while it loads', function () {
-    // Sometimes a loader is ornamental and sits in a corner; this is not that
-    // loader. It is a deliberate black screen that the page is laid out and
-    // painted behind, and the reason it can get away with that is that the lift
-    // is one opacity change and no layout.
+it('opens from the middle: the black parts, the seam shows the portfolio', function () {
+    // The black is real black, but it lives in two solid plates — top and
+    // bottom — that slide apart on the same swing as the white CRT band. The
+    // loader sheet itself carries no background, so the widening gap between
+    // the plates is transparent: the portfolio underneath shows through the
+    // translucent white band as the machine starts, instead of staying hidden
+    // behind an opaque wall until the fade.
     $css = file_get_contents(public_path('themes/portfolio/style.css'));
 
-    expect($css)->toMatch('/\.theme-portfolio \.pf-loader\{[^}]*background:#000[^}]*position:fixed[^}]*inset:0/s')
+    expect($css)->toMatch('/\.theme-portfolio \.pf-loader-crt-plate-top\{[^}]*background:#000[^}]*top:0/s')
+        ->and($css)->toMatch('/\.theme-portfolio \.pf-loader-crt-plate-bottom\{[^}]*background:#000[^}]*bottom:0/s')
+        ->and($css)->toMatch('/@keyframes pf-crt-open-top\{0%\{transform:translateY\(0\)\}to\{transform:translateY\(-130%\)\}\}/s')
+        ->and($css)->toMatch('/@keyframes pf-crt-open-bottom\{0%\{transform:translateY\(0\)\}to\{transform:translateY\(130%\)\}\}/s')
+        ->and($css)->toMatch('/\.theme-portfolio \.pf-loader-crt-line\{[^}]*background:#ffffff99/s')
         ->and($css)->toMatch('/\.theme-portfolio \.pf-loader\.is-done\{[^}]*opacity:0[^}]*pointer-events:none/s');
 });
 
