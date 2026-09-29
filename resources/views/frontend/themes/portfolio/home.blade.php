@@ -1,13 +1,17 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
+    {{-- Must be first in <head>: this decides whether the loader is shown on
+         this visit, and it has to be decided before the body paints. See the
+         partial. --}}
+    @include('frontend.themes.portfolio.partials.loader-flag')
     @include('partials.head')
     @include('partials.seo-meta')
     {{-- The theme's own sheets. fonts.css carries the @font-face rules that
          used to be a Google Fonts @import inside style.css; it is listed first
          so the faces exist before anything asks for them, and the two roman
          faces are preloaded because the hero text is the LCP element and would
-         otherwise wait on this sheet. The italic face is not preloaded — it is
+         otherwise wait on this sheet. The italic face is not preloaded â€” it is
          used for one label and would only be a wasted reservation. --}}
     <link rel="preload" href="{{ asset('fonts/instrument-sans-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ asset('themes/portfolio/fonts.css') }}">
@@ -41,7 +45,7 @@
         // Services are the exception to the settings-driven rule: they come from
         // the Service model and its admin CRUD screen, not from a settings
         // repeater. A service is something bookable and priced, so it has to
-        // exist as a real record a booking can point at — a JSON list in the
+        // exist as a real record a booking can point at â€” a JSON list in the
         // settings table cannot be referenced by a foreign key. The old
         // theme_portfolio_services repeater is gone rather than left as a second
         // source; see PortfolioProfile::services().
@@ -57,7 +61,7 @@
 
         // The blog teaser before the footer. Posts are read from the same Post
         // model the admin's Posts CRUD writes, exactly as the ecommerce theme's
-        // blog page does — the two themes show the same content differently, and
+        // blog page does â€” the two themes show the same content differently, and
         // there is one set of posts behind both.
         $latestPosts = \App\Models\Post::published()
             ->with('page')
@@ -81,7 +85,7 @@
         // The right-hand contact column, split by what is actually in it: a
         // "Contact information" card with nothing but social tiles under it is a
         // card with a heading and no rows. Both empty means the column is not
-        // drawn at all — an empty bordered card reads as a bug, not as a page.
+        // drawn at all â€” an empty bordered card reads as a bug, not as a page.
         $hasContactInfo = filled($contactEmail)
             || filled($contactAddress)
             || filled($profile['location']);
@@ -165,7 +169,7 @@
                 </div>
 
                 {{-- Portrait. A photo when one is set, the owner's initials when
-                     not — never a broken <img> and never a stock silhouette. --}}
+                     not â€” never a broken <img> and never a stock silhouette. --}}
                 <div class="pf-animate relative mx-auto w-full max-w-sm lg:max-w-none" style="animation-delay:240ms">
                     <div class="pf-glow pointer-events-none absolute inset-4 rounded-full opacity-70" aria-hidden="true"></div>
 
@@ -206,7 +210,7 @@
             @endif
         </section>
 
-        {{-- Services — the section that tells a visitor what they can hire you
+        {{-- Services â€” the section that tells a visitor what they can hire you
              for before they read a single project. Rendered unconditionally
              because the nav links to #services: a nav item whose target is
              absent is a dead link. Projects, Experience and Technology take the
@@ -236,7 +240,7 @@
                     {{-- One card per active Service row. "Request This" opens a popup
                          holding that service's booking form. The form is a
                          Livewire child per service rather than one shared form,
-                         because it has to know which service it is booking — an
+                         because it has to know which service it is booking â€” an
                          id set from the card, re-checked against the active
                          services on submit. Alpine only owns which popup is open;
                          the submission and every validation message are
@@ -250,7 +254,7 @@
 
                                 {{-- A featured image is optional on the Service record,
                                      so the icon is the fallback rather than an image
-                                     placeholder frame — a card showing a broken or
+                                     placeholder frame â€” a card showing a broken or
                                      empty picture reads as an unfinished card. --}}
                                 @if (filled($service->featured_image))
                                     <img src="{{ $service->featured_image }}" alt="{{ $service->name }}" width="48" height="48"
@@ -347,7 +351,7 @@
                             style="--pf-reveal-delay: {{ ($index % 2) * 90 }}ms">
                             {{-- A screenshot is the single strongest thing a project
                                  card can carry, so it goes first and full-bleed. A
-                                 project without one is not given an empty frame —
+                                 project without one is not given an empty frame â€”
                                  the body just closes up, because a card showing a
                                  placeholder reads as an unfinished card. --}}
                             @if (filled($project['image']))
@@ -363,7 +367,7 @@
                             <div class="{{ filled($project['image']) ? 'p-6' : 'p-6 pt-6' }} flex flex-1 flex-col">
                                 <div class="flex items-start justify-between gap-3">
                                     @if (! filled($project['image']))
-                                        <span class="pf-skill-mark text-2xl" aria-hidden="true">{{ $project['icon'] ?: '◆' }}</span>
+                                        <span class="pf-skill-mark text-2xl" aria-hidden="true">{{ $project['icon'] ?: 'â—†' }}</span>
                                     @elseif (filled($project['icon']))
                                         <span class="pf-skill-mark text-2xl" aria-hidden="true">{{ $project['icon'] }}</span>
                                     @endif
@@ -551,7 +555,7 @@
                             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                                 @foreach ($skills as $skillIndex => $skill)
                                     <div data-pf-reveal class="pf-skill" style="--pf-reveal-delay: {{ ($skillIndex % 3) * 60 }}ms">
-                                        <span class="pf-skill-mark" aria-hidden="true">{{ $skill['icon'] ?: '◆' }}</span>
+                                        <span class="pf-skill-mark" aria-hidden="true">{{ $skill['icon'] ?: 'â—†' }}</span>
                                         <span class="min-w-0">
                                             <span class="pf-heading block text-sm font-semibold">{{ $skill['name'] }}</span>
                                             @if (filled($skill['description']))
@@ -607,7 +611,7 @@
 
                                 <figcaption class="mt-6 flex items-center gap-3 border-t border-(--pf-border) pt-5">
                                     <span class="pf-skill-mark" aria-hidden="true">
-                                        {{ \Illuminate\Support\Str::of($testimonial['name'])->substr(0, 1)->upper() ?: '◆' }}
+                                        {{ \Illuminate\Support\Str::of($testimonial['name'])->substr(0, 1)->upper() ?: 'â—†' }}
                                     </span>
                                     <span class="min-w-0">
                                         @if (filled($testimonial['name']))
@@ -751,8 +755,8 @@
         </section>
 
         {{-- Writing, last on the page and directly above the footer. It reads as
-             the natural thing to do next after "Get in touch" — the same order a
-             visitor moves in — and a blog buried mid-page under six earlier
+             the natural thing to do next after "Get in touch" â€” the same order a
+             visitor moves in â€” and a blog buried mid-page under six earlier
              sections is a section nobody scrolls to.
 
              The whole section is conditional, unlike #services above. Nothing
@@ -772,7 +776,7 @@
                     <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach ($latestPosts as $index => $post)
                             {{-- A post's slug lives on its paired Page, not on the Post
-                                 row — same arrangement as products, and why
+                                 row â€” same arrangement as products, and why
                                  FrontendController::post() resolves by
                                  $post->page->slug. Post::slug() is that accessor,
                                  so the link below is the post's real URL. The query
@@ -811,7 +815,7 @@
                         @endforeach
                     </div>
 
-                    {{-- The three above are a sample, not the archive — so the link
+                    {{-- The three above are a sample, not the archive â€” so the link
                          out is not optional decoration but the only route to the
                          rest. --}}
                     <div class="mt-12">

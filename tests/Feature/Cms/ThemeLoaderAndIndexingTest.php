@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Page;
+use App\Models\Post;
 use App\Models\Setting;
 use App\Support\Seo\Sitemap;
 use App\Support\Seo\Url;
@@ -11,10 +13,13 @@ use App\Support\ThemeSettings;
 | The portfolio page loader
 |--------------------------------------------------------------------------
 |
-| The one screen shown while the page's CSS, fonts and images come in. The tests
-| are mostly about the ways it can go wrong, because the failure that matters is
-| a visitor staring at a blank sheet: the lift has to happen on every path out,
-| including the ones where the page never finishes loading.
+| The one screen shown while the home page's CSS, fonts and images come in — a
+| full-viewport black sheet styled as a CRT power-on. It appears once per
+| browser: the first time this site is opened, and never again after. The blog
+| and its posts open straight on content, without one.
+| The tests are mostly about the ways it can go wrong, because the failure
+| that matters is a visitor staring at a blank sheet: the lift has to happen
+| on every path out, including the ones where the page never finishes loading.
 |
 */
 
@@ -28,15 +33,47 @@ function portfolioHome(): string
     return test()->get('/')->assertOk()->getContent();
 }
 
-it('shows the loader on the first paint, before any script has run', function () {
-    // Up from the very first paint rather than added by JS: a loader that has to
-    // wait for a script to appear flashes the content and then covers it, which
-    // is the opposite of smooth.
+it('shows the loader only on the first visit, and the flag is set in the head', function () {
+    // The sheet is hidden by default and the pf-first-visit class is the only
+    // thing that reveals it. The decision is made in the head — before the body
+    // has painted anything — so a visitor who has been here before loads
+    // straight onto the page, and a first-time visitor never sees the loader
+    // flash off. A flag applied after the loader element already exists would
+    // be a flash of the thing being removed.
     $html = portfolioHome();
 
-    expect($html)->toContain('data-pf-loader')
-        ->and($html)->toContain('pf-loader-bar')
-        ->and($html)->toContain('is-done');
+    expect($html)->toContain('pf-loader-visited')
+        ->and($html)->toContain('localStorage')
+        ->and($html)->toContain("classList.add('pf-first-visit')")
+        ->and($html)->toContain('pf-first-visit');
+
+    // And the gate is in <head>, ahead of the body's loader markup.
+    $bodyPos = strpos($html, '<body');
+    $head = substr($html, 0, $bodyPos);
+    $body = substr($html, $bodyPos);
+    expect($head)->toContain('pf-loader-visited')
+        ->and($body)->toContain('data-pf-loader');
+});
+
+it('keeps the loader hidden until the first-visit gate reveals it', function () {
+    // All of this sits on top of a display:none default: no JS, no flag, no
+    // loader — nothing to undo, nothing to flash. The reveal is one rule, and
+    // the sheet is a full viewport by the time it is shown.
+    $css = file_get_contents(public_path('themes/portfolio/style.css'));
+
+    expect($css)->toMatch('/\.theme-portfolio \.pf-loader\{[^}]*display:none/s')
+        ->and($css)->toMatch('/\.pf-first-visit \.theme-portfolio \.pf-loader\{[^}]*display:flex/s');
+});
+
+it('is a full-viewport sheet that covers the page while it loads', function () {
+    // Sometimes a loader is ornamental and sits in a corner; this is not that
+    // loader. It is a deliberate black screen that the page is laid out and
+    // painted behind, and the reason it can get away with that is that the lift
+    // is one opacity change and no layout.
+    $css = file_get_contents(public_path('themes/portfolio/style.css'));
+
+    expect($css)->toMatch('/\.theme-portfolio \.pf-loader\{[^}]*background:#000[^}]*position:fixed[^}]*inset:0/s')
+        ->and($css)->toMatch('/\.theme-portfolio \.pf-loader\.is-done\{[^}]*opacity:0[^}]*pointer-events:none/s');
 });
 
 it('dismisses the loader with a ceiling so a stalled image cannot strand anyone', function () {
@@ -49,19 +86,26 @@ it('dismisses the loader with a ceiling so a stalled image cannot strand anyone'
         ->and($html)->toContain("addEventListener('load', lift)");
 });
 
-it('holds the loader for a moment so a cached page does not flicker', function () {
+it('holds the loader for as long as the CRT animation takes to play', function () {
+    // The hairline starts at .2s and needs .9s to swell into the field. A floor
+    // that is shorter than the animation would cut the effect off at one frame;
+    // the floor exists to let the animation complete, so it is chosen to match
+    // the animation's own delay plus duration.
     $html = portfolioHome();
 
     expect($html)->toContain('MIN_MS')
         ->and($html)->toContain('Math.max(0, MIN_MS');
 });
 
-it('takes the loader away entirely when JavaScript is off', function () {
-    // The one path no script on the page can fix.
-    $html = portfolioHome();
+it('needs no <noscript>, because the hidden default takes the loader away', function () {
+    // With JavaScript off there is no flag, so there is no .pf-first-visit
+    // class, so the display:none default stands and nothing is ever shown.
+    // That is the whole mechanism; a <noscript> block would only be undoing
+    // a sheet that was never meant to be up in the first place.
+    $css = file_get_contents(public_path('themes/portfolio/style.css'));
 
-    expect($html)->toContain('<noscript>')
-        ->and($html)->toContain('.theme-portfolio .pf-loader { display: none; }');
+    expect($css)->toMatch('/\.theme-portfolio \.pf-loader\{[^}]*display:none/s')
+        ->and(portfolioHome())->not->toContain('<noscript>');
 });
 
 it('only ever lifts the loader once', function () {
@@ -103,8 +147,24 @@ it('hides no page content behind the loader', function () {
         ->and($css)->not->toMatch('/\.theme-portfolio\s+body[^{]*\{[^}]*opacity:\s*0/s');
 });
 
-it('shows the loader on the blog page too', function () {
-    expect($this->get('/blog')->assertOk()->getContent())->toContain('data-pf-loader');
+it('does not wrap the blog or a post in the loader', function () {
+    // The loader is the curtain over a landing — the home page — not a banner
+    // over every route. The blog opens straight on content, and a full-viewport
+    // sheet put between a reader and the article they just clicked through to is
+    // the opposite of a welcome.
+    expect($this->get('/blog')->assertOk()->getContent())->not->toContain('data-pf-loader');
+
+    $post = Post::factory()->published()->create([
+        'title' => ['en' => 'The Loader Is Home-Only', 'bn' => ''],
+    ]);
+    Page::factory()->published()->create([
+        'title' => ['en' => 'The Loader Is Home-Only', 'bn' => ''],
+        'slug' => 'the-loader-is-home-only',
+        'type' => 'post',
+        'post_id' => $post->id,
+    ]);
+    expect($this->get('/blog/the-loader-is-home-only')->assertOk()->getContent())
+        ->not->toContain('data-pf-loader');
 });
 
 it('leaves the loader to the portfolio theme alone', function () {

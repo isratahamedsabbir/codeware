@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     @include('partials.head')
@@ -10,8 +10,6 @@
     @include('partials.custom-code-head')
 </head>
 <body class="theme-portfolio antialiased">
-
-    @include('frontend.themes.portfolio.partials.loader')
 
     @php
         // Read by the shared header and footer partials - see the one-pager.

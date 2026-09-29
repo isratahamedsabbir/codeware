@@ -2,6 +2,7 @@
 
 use App\Models\Page;
 use App\Models\Post;
+use App\Models\PostCategory;
 use App\Models\Setting;
 use App\Support\Themes;
 use Database\Seeders\PortfolioMenuSeeder;
@@ -172,4 +173,205 @@ it('skips a post whose paired page is missing, since it has no slug to be found 
     ]);
 
     expect($this->get('/')->assertOk()->getContent())->not->toContain('An Orphan Post');
+});
+
+it('lays the listing out as a grid of cards rather than a column of rows', function () {
+    // A portfolio is read by skimming, so a post has to be recognisable as a
+    // piece of work from its card alone. One <article> per post, in a grid,
+    // is the shape that makes the archive scannable.
+    publishPost('Grid Card One', 'grid-one');
+    publishPost('Grid Card Two', 'grid-two');
+
+    $html = $this->get('/blog')->assertOk()->getContent();
+
+    expect($html)->toContain('sm:grid-cols-2 lg:grid-cols-3')
+        ->and(substr_count($html, '<article data-pf-reveal'))->toBe(2);
+});
+
+it('gives every card a single stretched link, so a post is one tab stop', function () {
+    // A card links its title, and that link carries a ::after covering the whole
+    // card. That is what makes the whole thing the hit target - including the
+    // "Read more" in the corner, which is a span on purpose because a link
+    // there would put the post in the tab order twice.
+    //
+    // The image does not link at all any more: it sits under the same stretched
+    // link as everything else, and with the title right beside it its alt is
+    // empty rather than the title repeated.
+    $post = publishPost('A Linked Card', 'linked-card');
+    $post->update(['featured_image' => '/storage/card.jpg']);
+
+    $html = $this->get('/blog')->assertOk()->getContent();
+
+    expect($html)->toContain('href="'.route('blog.post', 'linked-card').'"')
+        ->and($html)->toContain("after:absolute after:inset-0 after:content-['']")
+        ->and($html)->toContain('alt=""');
+
+    // Exactly one post link in the card, and no separate link on the image or
+    // on the "Read more" corner.
+    expect(substr_count($html, 'href="'.route('blog.post', 'linked-card').'"'))->toBe(1)
+        ->and($html)->not->toContain('tabindex="-1" aria-hidden="true"');
+});
+
+it('lifts the category filter above the stretched link so it stays clickable', function () {
+    // The stretched ::after covers the card, so anything else inside it has to
+    // sit above it. Without this the category is visible, styled as a link, and
+    // cannot be clicked - the one place a visitor would try to filter from.
+    $category = PostCategory::factory()->published()->create(['name' => ['en' => 'Guides', 'bn' => '']]);
+    Page::factory()->published()->create([
+        'title' => ['en' => 'Guides', 'bn' => ''],
+        'slug' => 'guides',
+        'type' => 'post_category',
+        'category_id' => $category->id,
+    ]);
+
+    $post = publishPost('Has A Category', 'has-a-category');
+    $post->update(['category_id' => $category->id]);
+
+    expect($this->get('/blog')->assertOk()->getContent())
+        ->toMatch('/uppercase tracking-wider[^"]*"/')
+        ->and($this->get('/blog')->assertOk()->getContent())
+        ->toContain('relative z-10');
+});
+
+it('counts what is listed, so a reader knows how much there is', function () {
+    // Only when there is something to count: a zero on an empty archive reads
+    // as a mistake rather than as an absence.
+    publishPost('Counted Note', 'counted-note');
+
+    $html = $this->get('/blog')->assertOk()->getContent();
+    expect($html)->toContain('1 note published');
+});
+
+it('counts nothing rather than zero on an empty archive', function () {
+    // The same line, on a page with no posts in it. A "0 notes published"
+    // reads as a broken count rather than as an empty archive.
+    expect($this->get('/blog')->assertOk()->getContent())
+        ->not->toContain('note published')
+        ->and($this->get('/blog')->assertOk()->getContent())
+        ->toContain('Nothing published yet');
+});
+
+it('counts the notes inside a category, and says so', function () {
+    // A filtered view is not the archive, so the wording changes with it -
+    // "14 notes published" on a category page would be a number about a
+    // different set of notes than the one on screen.
+    $category = PostCategory::factory()->published()->create(['name' => ['en' => 'Guides', 'bn' => '']]);
+    Page::factory()->published()->create([
+        'title' => ['en' => 'Guides', 'bn' => ''],
+        'slug' => 'guides',
+        'type' => 'post_category',
+        'category_id' => $category->id,
+    ]);
+
+    $inCategory = publishPost('A Guide', 'a-guide');
+    $inCategory->update(['category_id' => $category->id]);
+    publishPost('Some News', 'some-news');
+
+    $html = $this->get('/blog?category=guides')->assertOk()->getContent();
+
+    expect($html)->toContain('1 note in this category')
+        ->and($html)->toContain('A Guide')
+        ->and($html)->not->toContain('Some News');
+});
+
+it('shows how many notes each category holds next to its filter', function () {
+    // The controller already counts the active posts per category for this
+    // nav, so the count turns a row of filters into a map of where the
+    // writing actually is. A filter that hides an empty category is worse
+    // than one that says the category is empty.
+    $category = PostCategory::factory()->published()->create(['name' => ['en' => 'Guides', 'bn' => '']]);
+    Page::factory()->published()->create([
+        'title' => ['en' => 'Guides', 'bn' => ''],
+        'slug' => 'guides',
+        'type' => 'post_category',
+        'category_id' => $category->id,
+    ]);
+
+    $post = publishPost('Counted In Guides', 'counted-in-guides');
+    $post->update(['category_id' => $category->id]);
+
+    $html = $this->get('/blog')->assertOk()->getContent();
+
+    // A draft in the same category must not be counted: the filter navigates
+    // to published posts only, so a number that included drafts would promise
+    // a page with a post on it that is not there.
+    $draft = Post::factory()->draft()->create([
+        'title' => ['en' => 'An Unwritten Guide', 'bn' => ''],
+        'category_id' => $category->id,
+    ]);
+    Page::factory()->published()->create([
+        'title' => ['en' => 'An Unwritten Guide', 'bn' => ''],
+        'slug' => 'an-unwritten-guide',
+        'type' => 'post',
+        'post_id' => $draft->id,
+    ]);
+
+    expect($this->get('/blog')->assertOk()->getContent())
+        ->toMatch('/opacity-60">1<\/span>/')
+        ->and($this->get('/blog')->assertOk()->getContent())
+        ->not->toMatch('/opacity-60">2<\/span>/');
+});
+
+it('leaves a category-less post with no dangling separator', function () {
+    // The dot between the category and the date belongs to the pair. A post
+    // with no category would otherwise open its meta row on a stray "·".
+    $post = publishPost('No Category Here', 'no-category-here');
+
+    $html = $this->get('/blog')->assertOk()->getContent();
+
+    expect($post->category_id)->toBeNull()
+        ->and($html)->toContain('<time datetime=')
+        ->and($html)->not->toMatch('/tracking-wider[^>]*>\s*<\/a>\s*<span[^>]*>&middot;<\/span>\s*<time/');
+});
+
+it('dates each card with a machine-readable time', function () {
+    // The visible date is formatted for people; the datetime attribute is what
+    // a machine reads, and it is the only part of it that is a date at all.
+    publishPost('Dated Note', 'dated-note', publishedAt: now()->startOfYear());
+
+    $html = $this->get('/blog')->assertOk()->getContent();
+
+    expect($html)->toMatch('/<time datetime="\d{4}-\d{2}-\d{2}"/');
+});
+
+it('pages the archive in the theme rather than in the framework', function () {
+    // Laravel's default pager is unstyled blue underlined text, which is the
+    // one thing on this page that cannot belong to a portfolio. The theme
+    // builds its own, so the pager looks like the rest of the page - and
+    // carries the category filter across, since a page of a filtered archive
+    // that dropped the filter would be a different set of notes by page two.
+    foreach (range(1, 12) as $n) {
+        publishPost("Paged Note {$n}", "paged-note-{$n}");
+    }
+
+    $first = $this->get('/blog')->assertOk()->getContent();
+
+    expect($first)->toContain('aria-label="Blog pagination"')
+        ->and($first)->not->toContain('Laravel Pagination')
+        ->and($first)->toContain('aria-current="page">1<');
+
+    $second = $this->get('/blog?page=2')->assertOk()->getContent();
+
+    expect($second)->toContain('aria-current="page">2<')
+        ->and($second)->toContain('rel="prev"')
+        ->and($second)->not->toContain('rel="next"');
+});
+
+it('leaves out a pager when there is only one page of notes', function () {
+    // A pager on a single page of results is a control for nothing.
+    publishPost('The Only Note', 'the-only-note');
+
+    expect($this->get('/blog')->assertOk()->getContent())
+        ->not->toContain('aria-label="Blog pagination"');
+});
+
+it('invites the reader back to the work when nothing is published', function () {
+    // A portfolio with the blog switched on and no posts yet is a normal state,
+    // not an error. A dashed empty box reads as a bug; a line about what will
+    // appear there, and a way back to the work, does not.
+    $html = $this->get('/blog')->assertOk()->getContent();
+
+    expect($html)->toContain('Nothing published yet')
+        ->and($html)->toContain('Back to the work')
+        ->and($html)->toContain('href="'.route('home').'"');
 });
