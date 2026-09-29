@@ -18,6 +18,18 @@
                     </div>
                 @enderror
 
+                {{-- Guests get told what happens to their email, because the
+                     account it creates is otherwise invisible to them until
+                     they go looking for a password reset. --}}
+                @unless ($signedIn)
+                    <div class="flex items-start gap-2.5 rounded-xl border border-brand/20 bg-brand/5 px-4 py-3 text-sm text-zinc-600">
+                        <x-storefront.icon name="mail" class="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+                        <p>
+                            {{ __('Checking out as a guest. We will create an account for the email you enter so you can track this order — you can set a password for it any time from the "Forgot password" link.') }}
+                        </p>
+                    </div>
+                @endunless
+
                 {{-- 1. Contact details --}}
                 <x-storefront.card :step="1" :title="__('Contact details')" :subtitle="__('We use these to confirm and deliver your order.')">
                     <div class="grid gap-5 p-5 sm:grid-cols-2">

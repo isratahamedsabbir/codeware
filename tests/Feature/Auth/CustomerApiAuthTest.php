@@ -1,14 +1,18 @@
 <?php
 
+use App\Mail\PasswordResetOtpMail;
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 
 // Customer accounts are API-only — register/login/logout/password-reset/email
 // verification all live under /api/v1/auth, backed by the same `users` table
 // the admin/Fortify web login uses (no admin/staff role for these accounts).
+// Password reset is a mailed code redeemed in the same call, not a token link —
+// see App\Http\Controllers\Api\V1\Auth\PasswordResetController.
 
 it('registers a new customer, issues a token, and sends a verification email', function () {
     Notification::fake();
@@ -81,32 +85,50 @@ it('logs a customer out by revoking the current token', function () {
     expect($user->tokens()->count())->toBe(0);
 });
 
-it('sends a password reset link for a known email', function () {
-    Notification::fake();
+it('sends a reset code to a known email', function () {
+    Mail::fake();
     $user = User::factory()->create();
 
     $this->postJson('/api/v1/auth/forgot-password', ['email' => $user->email])
-        ->assertOk();
+        ->assertOk()
+        ->assertJsonPath('data.message', 'If that email address has an account, a code is on its way.');
 
-    Notification::assertSentTo($user, ResetPassword::class);
+    Mail::assertSent(PasswordResetOtpMail::class, fn (PasswordResetOtpMail $mail) => $mail->hasTo($user->email));
 });
 
-it('resets a customer\'s password with a valid token', function () {
-    Notification::fake();
+it('answers the same for an email with no account, and sends nothing', function () {
+    Mail::fake();
     $user = User::factory()->create();
 
-    $this->postJson('/api/v1/auth/forgot-password', ['email' => $user->email]);
+    $known = $this->postJson('/api/v1/auth/forgot-password', ['email' => $user->email])->assertOk();
+    $unknown = $this->postJson('/api/v1/auth/forgot-password', ['email' => 'nobody@example.com'])->assertOk();
 
-    Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($user) {
-        $this->postJson('/api/v1/auth/reset-password', [
-            'token' => $notification->token,
-            'email' => $user->email,
-            'password' => 'brand-new-password',
-            'password_confirmation' => 'brand-new-password',
-        ])->assertOk();
+    // An endpoint that answered differently for the two would let anyone find
+    // out who has an account here.
+    expect($unknown->json('data.message'))->toBe($known->json('data.message'));
+
+    Mail::assertSent(PasswordResetOtpMail::class, 1);
+});
+
+it('resets a customer\'s password with the emailed code, in one call', function () {
+    Mail::fake();
+    $user = User::factory()->create(['password' => 'the-old-password']);
+
+    $this->postJson('/api/v1/auth/forgot-password', ['email' => $user->email])->assertOk();
+
+    $code = null;
+    Mail::assertSent(PasswordResetOtpMail::class, function (PasswordResetOtpMail $mail) use (&$code) {
+        $code = $mail->code;
 
         return true;
     });
+
+    $this->postJson('/api/v1/auth/reset-password', [
+        'email' => $user->email,
+        'code' => $code,
+        'password' => 'brand-new-password',
+        'password_confirmation' => 'brand-new-password',
+    ])->assertOk();
 
     $this->postJson('/api/v1/auth/login', [
         'email' => $user->email,
@@ -114,15 +136,127 @@ it('resets a customer\'s password with a valid token', function () {
     ])->assertOk();
 });
 
-it('rejects password reset with an invalid token', function () {
-    $user = User::factory()->create();
+it('marks the address verified, having proven control of its inbox', function () {
+    Mail::fake();
+    $user = User::factory()->unverified()->create();
+
+    $this->postJson('/api/v1/auth/forgot-password', ['email' => $user->email]);
+    $code = null;
+    Mail::assertSent(PasswordResetOtpMail::class, function (PasswordResetOtpMail $mail) use (&$code) {
+        $code = $mail->code;
+
+        return true;
+    });
 
     $this->postJson('/api/v1/auth/reset-password', [
-        'token' => 'not-a-real-token',
         'email' => $user->email,
+        'code' => $code,
         'password' => 'brand-new-password',
         'password_confirmation' => 'brand-new-password',
-    ])->assertUnprocessable();
+    ])->assertOk();
+
+    expect($user->fresh()->email_verified_at)->not->toBeNull();
+});
+
+it('rejects password reset with an incorrect code', function () {
+    Mail::fake();
+    $user = User::factory()->create(['password' => 'the-old-password']);
+
+    $this->postJson('/api/v1/auth/forgot-password', ['email' => $user->email])->assertOk();
+
+    $this->postJson('/api/v1/auth/reset-password', [
+        'email' => $user->email,
+        'code' => '000000',
+        'password' => 'brand-new-password',
+        'password_confirmation' => 'brand-new-password',
+    ])->assertUnprocessable()->assertJsonValidationErrors('code');
+
+    expect(Hash::check('the-old-password', $user->fresh()->password))->toBeTrue();
+});
+
+it('will not accept the same code twice', function () {
+    Mail::fake();
+    $user = User::factory()->create();
+
+    $this->postJson('/api/v1/auth/forgot-password', ['email' => $user->email]);
+    $code = null;
+    Mail::assertSent(PasswordResetOtpMail::class, function (PasswordResetOtpMail $mail) use (&$code) {
+        $code = $mail->code;
+
+        return true;
+    });
+
+    $payload = [
+        'email' => $user->email,
+        'code' => $code,
+        'password' => 'brand-new-password',
+        'password_confirmation' => 'brand-new-password',
+    ];
+
+    $this->postJson('/api/v1/auth/reset-password', $payload)->assertOk();
+    $this->postJson('/api/v1/auth/reset-password', $payload)->assertUnprocessable()->assertJsonValidationErrors('code');
+});
+
+it('leaves the code already in the inbox usable when another is asked for straight away', function () {
+    Mail::fake();
+    $user = User::factory()->create(['password' => 'the-old-password']);
+
+    $this->postJson('/api/v1/auth/forgot-password', ['email' => $user->email])->assertOk();
+    $code = null;
+    Mail::assertSent(PasswordResetOtpMail::class, function (PasswordResetOtpMail $mail) use (&$code) {
+        $code = $mail->code;
+
+        return true;
+    });
+
+    // Same answer as the first call, because the same thing is true: a code is
+    // with them. A "come back later" error would be the API client looking for a
+    // wait that buys it nothing.
+    $this->postJson('/api/v1/auth/forgot-password', ['email' => $user->email])->assertOk();
+
+    Mail::assertSent(PasswordResetOtpMail::class, 1);
+
+    $this->postJson('/api/v1/auth/reset-password', [
+        'email' => $user->email,
+        'code' => $code,
+        'password' => 'brand-new-password',
+        'password_confirmation' => 'brand-new-password',
+    ])->assertOk();
+});
+
+it('refuses a weak password without spending the code', function () {
+    Mail::fake();
+    $user = User::factory()->create(['password' => 'the-old-password']);
+
+    $this->postJson('/api/v1/auth/forgot-password', ['email' => $user->email]);
+    $code = null;
+    Mail::assertSent(PasswordResetOtpMail::class, function (PasswordResetOtpMail $mail) use (&$code) {
+        $code = $mail->code;
+
+        return true;
+    });
+
+    // The customer gets one code per minute. Spending it on a password that was
+    // going to be refused would cost them the chance to fix their own typo.
+    $this->postJson('/api/v1/auth/reset-password', [
+        'email' => $user->email,
+        'code' => $code,
+        'password' => 'short',
+        'password_confirmation' => 'short',
+    ])->assertUnprocessable()->assertJsonValidationErrors('password');
+
+    $this->postJson('/api/v1/auth/reset-password', [
+        'email' => $user->email,
+        'code' => $code,
+        'password' => 'brand-new-password',
+        'password_confirmation' => 'brand-new-password',
+    ])->assertOk();
+});
+
+it('requires an email and a code to reset a password', function () {
+    $this->postJson('/api/v1/auth/reset-password', [])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['email', 'code', 'password']);
 });
 
 it('verifies a customer\'s email via the signed link', function () {

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Mail\TemplateDrivenMail;
 use App\Models\EmailTemplate;
 use Illuminate\Mail\Mailables\Attachment;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class EmailTemplateService
@@ -24,7 +25,20 @@ class EmailTemplateService
             ->where('active', true)
             ->first();
 
-        if ($template === null || trim($recipient) === '') {
+        // Silently dropping a send is how an email system rots: the template gets
+        // deactivated (or never seeded, or renamed) in the admin panel and every
+        // message quietly stops going out with nothing to notice it by. Both
+        // skip paths are logged so the cause is findable in the log rather than
+        // only via a customer reporting a missing email.
+        if ($template === null) {
+            Log::warning('Email not sent — no active template for this key', ['template_key' => $key]);
+
+            return false;
+        }
+
+        if (trim($recipient) === '') {
+            Log::warning('Email not sent — recipient address is empty', ['template_key' => $key]);
+
             return false;
         }
 

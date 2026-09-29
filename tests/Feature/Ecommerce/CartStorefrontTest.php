@@ -19,8 +19,9 @@ use function Pest\Laravel\get;
 beforeEach(function () {
     Setting::set('site_theme', 'ecommerce');
 
-    // Checkout requires a signed-in shopper, so every test here acts as one.
-    // The guest half of the rule is covered by its own test at the bottom.
+    // Most tests here act as a signed-in shopper. Guests can check out too —
+    // see the two guest tests below, and GuestCheckoutTest for the account a
+    // guest order creates.
     $this->actingAs(User::factory()->create());
 
     Language::create(['code' => 'en', 'name' => 'English', 'native_name' => 'English', 'is_active' => true]);
@@ -168,35 +169,49 @@ it('renders the cart page route and the checkout page route', function () {
     get('/checkout')->assertOk()->assertSee('Checkout');
 });
 
-it('sends a guest from checkout to log in, and the cart stays open to them', function () {
+it('lets a guest reach the checkout page and shows them the guest notice', function () {
     $product = cartProduct('guest-checkout', ['name' => ['en' => 'Guest Checkout', 'bn' => '']]);
     Cart::add($product->id, 1);
 
     auth()->logout();
 
-    // Only checkout is behind 'auth' — browsing and building a basket never
-    // forces an account, and the session cart survives the detour to log in.
+    // Nothing between the cart and the order forces an account — a guest fills
+    // the form in and is done.
     get('/cart')->assertOk()->assertSee('My cart');
-
     get('/checkout')
-        ->assertRedirect(route('login'));
+        ->assertOk()
+        ->assertSee('Checkout')
+        ->assertSee('Checking out as a guest');
 
     expect(session('cart'))->not->toBeEmpty();
 });
 
-it('refuses to mount the checkout component for a guest', function () {
+it('leaves a signed-in shopper no guest notice and prefills their details', function () {
     $product = cartProduct('guest-component', ['name' => ['en' => 'Guest Component', 'bn' => '']]);
+    Cart::add($product->id, 1);
+
+    $user = User::factory()->create(['name' => 'Signed In Buyer', 'email' => 'signed-in@example.com']);
+    auth()->login($user);
+
+    Livewire::test(Checkout::class)
+        ->assertSet('signedIn', true)
+        ->assertSet('customer_name', 'Signed In Buyer')
+        ->assertSet('customer_email', 'signed-in@example.com')
+        ->assertDontSee('Checking out as a guest');
+
+    expect(Order::count())->toBe(0);
+});
+
+it('leaves the guest form empty and flagged as a guest', function () {
+    $product = cartProduct('guest-blank', ['name' => ['en' => 'Guest Blank', 'bn' => '']]);
     Cart::add($product->id, 1);
 
     auth()->logout();
 
-    // The route's 'auth' middleware never runs for a Livewire update, so the
-    // component re-checks for itself — otherwise the form would still place an
-    // order straight from /livewire/update.
     Livewire::test(Checkout::class)
-        ->assertForbidden();
-
-    expect(Order::count())->toBe(0);
+        ->assertSet('signedIn', false)
+        ->assertSet('customer_name', '')
+        ->assertSet('customer_email', '');
 });
 
 it('prefills the checkout form from the signed-in shopper', function () {

@@ -41,9 +41,28 @@ it('still saves messages sent from the contact form', function () {
     Livewire::test(ContactForm::class, ['messagePlaceholder' => 'How can we help you?'])
         ->set('full_name', 'Jane Doe')
         ->set('email', 'jane@example.com')
+        ->set('subject', 'Order status')
         ->set('message', 'Where is my order?')
         ->call('send')
         ->assertSet('sent', true);
 
-    expect(Contact::where('email', 'jane@example.com')->value('message'))->toBe('Where is my order?');
+    expect(Contact::where('email', 'jane@example.com')->value('subject'))->toBe('Order status')
+        ->and(Contact::where('email', 'jane@example.com')->value('message'))->toBe('Where is my order?');
+});
+
+it('requires a subject on the contact form', function () {
+    Livewire::test(ContactForm::class)
+        ->set('full_name', 'Jane Doe')
+        ->set('email', 'jane@example.com')
+        ->set('subject', '')
+        ->set('message', 'Where is my order?')
+        ->call('send')
+        ->assertHasErrors('subject');
+});
+
+it('shows the subject field on the contact form', function () {
+    $this->get('/contact')
+        ->assertOk()
+        ->assertSee('Subject')
+        ->assertSee('placeholder="What is this about?"', false);
 });

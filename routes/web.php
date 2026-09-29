@@ -13,6 +13,7 @@
  * bootstrap/app.php).
  */
 
+use App\Http\Controllers\Auth\PasswordResetOtpController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\RobotsController;
 use App\Http\Controllers\SitemapController;
@@ -21,6 +22,35 @@ use App\Http\Controllers\VoucherController;
 use App\Support\PuckEditor;
 use App\Support\Themes;
 use Illuminate\Support\Facades\Route;
+
+// Password reset, by emailed code rather than by Fortify's token link. The
+// feature is off in config/fortify.php, so Fortify registers none of these names
+// and taking them here keeps every existing reference — the themed pages, the
+// storefront's own links — pointing at the same routes as before.
+//
+// Guest-only in the sense that a reset is for someone who can't get in: someone
+// already signed in has nothing to reset, and a fresh code would be a way to
+// change the password of the account they're already using. Throttled like the
+// login it protects, since both are guesses at a secret over an open endpoint.
+Route::middleware('guest')->group(function () {
+    Route::get('/forgot-password', [PasswordResetOtpController::class, 'create'])->name('password.request');
+    Route::get('/verify-code', [PasswordResetOtpController::class, 'verifyForm'])->name('password.verify');
+    Route::get('/reset-password', [PasswordResetOtpController::class, 'resetForm'])->name('password.reset');
+
+    Route::middleware('throttle:6,1')->group(function () {
+        Route::post('/forgot-password', [PasswordResetOtpController::class, 'store'])
+            // A second limit, counting codes per address+IP per hour rather than
+            // requests per minute. The burst throttle above turns away a script;
+            // this one is what stops the resend button being held down all
+            // afternoon, and it is the limit that keeps arriving mail to one
+            // inbox down to a few an hour. OtpService counts the same number
+            // against the address itself, which is what survives a change of IP.
+            ->middleware('throttle:otp-request')
+            ->name('password.email');
+        Route::post('/verify-code', [PasswordResetOtpController::class, 'verify'])->name('password.verify.check');
+        Route::post('/reset-password', [PasswordResetOtpController::class, 'reset'])->name('password.update');
+    });
+});
 
 // Public, signed invoice links — what the invoice QR code and "Download PDF"
 // button point to, so a customer can view/print/download without logging in.

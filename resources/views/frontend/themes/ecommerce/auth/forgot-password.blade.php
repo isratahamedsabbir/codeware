@@ -21,7 +21,7 @@
         <div class="w-full max-w-md">
             <div class="rounded-card border border-zinc-200 bg-white p-6 sm:p-8">
                 <h1 class="text-xl font-bold uppercase tracking-wide text-sf-text">{{ __('Forgot password') }}</h1>
-                <p class="mt-1 text-sm text-gray-600">{{ __('Enter your email to receive a password reset link.') }}</p>
+                <p class="mt-1 text-sm text-gray-600">{{ __('Enter your email and we will send you a code to set a new password.') }}</p>
 
                 @if (session('status'))
                     <div class="mt-4 rounded-md bg-green-50 px-4 py-3 text-sm text-green-700">
@@ -44,9 +44,9 @@
                         @enderror
                     </div>
 
-                    <button type="submit" data-test="email-password-reset-link-button"
+                    <button type="submit" data-test="email-password-reset-code-button"
                         class="rounded-full bg-sf-button px-4 py-2.5 text-sm font-semibold text-sf-button-text transition hover:opacity-90">
-                        {{ __('Email password reset link') }}
+                        {{ __('Send code') }}
                     </button>
                 </form>
 

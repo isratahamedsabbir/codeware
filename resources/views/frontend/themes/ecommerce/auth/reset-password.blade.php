@@ -31,19 +31,14 @@
 
                 <form method="POST" action="{{ route('password.update') }}" class="mt-6 flex flex-col gap-5">
                     @csrf
-                    <input type="hidden" name="token" value="{{ request()->route('token') }}">
 
-                    <div>
-                        <label for="email" class="mb-1.5 block text-sm font-semibold text-zinc-700">
-                            {{ __('Email') }}
-                        </label>
-                        <input id="email" name="email" value="{{ request('email') }}" type="email" required
-                            autocomplete="email"
-                            class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2.5 text-sm text-sf-text outline-none transition placeholder:text-zinc-400 focus:border-brand focus:ring-2 focus:ring-brand/20">
-                        @error('email')
-                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    {{-- The address is not a field here on purpose: it comes from the session, and it is the
+                         address whose code was just redeemed. Accepting it from the request would leave a gap
+                         between the two steps in which it could be swapped for somebody else's. --}}
+                    <p class="rounded-md bg-zinc-50 px-4 py-3 text-sm text-gray-700">
+                        {{ __('Setting a new password for') }}
+                        <span class="font-semibold">{{ $email }}</span>
+                    </p>
 
                     <div>
                         <label for="password" class="mb-1.5 block text-sm font-semibold text-zinc-700">

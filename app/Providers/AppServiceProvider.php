@@ -10,7 +10,6 @@ use App\Support\Favorites;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Login;
-use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Contracts\Translation\Loader;
 use Illuminate\Support\Facades\Date;
@@ -179,9 +178,14 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Customer accounts are API-only (see Api\V1\Auth\*), so verification/reset
-     * emails must link back to an API endpoint (or the frontend) instead of
-     * Fortify's session-based web routes, which an API client can't use.
+     * Customer accounts are API-only (see Api\V1\Auth\*), so the verification
+     * email has to link back to an API endpoint instead of Fortify's
+     * session-based web route, which an API client can't use.
+     *
+     * Password resets deliberately have no counterpart here any more: they are
+     * done by emailed code rather than by a link (App\Services\
+     * PasswordResetService), so there is no URL to build and nothing to point at
+     * a page that might not exist.
      */
     protected function configureCustomerAuthNotificationUrls(): void
     {
@@ -189,13 +193,6 @@ class AppServiceProvider extends ServiceProvider
             'api.v1.auth.email.verify',
             now()->addMinutes(60),
             ['id' => $notifiable->getKey(), 'hash' => sha1($notifiable->getEmailForVerification())],
-        ));
-
-        ResetPassword::createUrlUsing(fn ($notifiable, string $token) => sprintf(
-            '%s/reset-password?token=%s&email=%s',
-            rtrim(config('app.frontend_url'), '/'),
-            $token,
-            urlencode($notifiable->getEmailForPasswordReset()),
         ));
     }
 

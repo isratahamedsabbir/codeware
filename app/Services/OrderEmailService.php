@@ -56,11 +56,16 @@ class OrderEmailService
      * take the rest of order creation down with it — that's exactly the
      * "sometimes it doesn't send" scenario the manual resend action exists
      * for, so a failure here is swallowed and logged rather than thrown.
+     *
+     * The two outcomes are logged differently on purpose: an exception means
+     * the transport gave up, whereas a plain false means the send was never
+     * attempted at all (no active template, or nobody to send it to) — which
+     * points at the admin panel rather than at SMTP.
      */
     private function attempt(string $key, string $recipient, array $variables, string $audience, Order $order): bool
     {
         try {
-            return $this->templates->send($key, $recipient, $variables);
+            $sent = $this->templates->send($key, $recipient, $variables);
         } catch (Throwable $e) {
             Log::error("Failed to send order {$audience} email", [
                 'order_id' => $order->id,
@@ -71,6 +76,18 @@ class OrderEmailService
 
             return false;
         }
+
+        if (! $sent) {
+            Log::warning("Order {$audience} email was skipped", [
+                'order_id' => $order->id,
+                'order_number' => $order->order_number,
+                'recipient' => $recipient,
+                'template_key' => $key,
+                'reason' => 'no active template, or the recipient address is empty',
+            ]);
+        }
+
+        return $sent;
     }
 
     /**

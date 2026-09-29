@@ -7,18 +7,14 @@
 
         <form method="POST" action="{{ route('password.update') }}" class="flex flex-col gap-6">
             @csrf
-            <!-- Token -->
-            <input type="hidden" name="token" value="{{ request()->route('token') }}">
 
-            <!-- Email Address -->
-            <flux:input
-                name="email"
-                value="{{ request('email') }}"
-                :label="__('Email')"
-                type="email"
-                required
-                autocomplete="email"
-            />
+            {{-- The address is not a field here on purpose: it comes from the session, and it is the
+                 address whose code was just redeemed. Accepting it from the request would leave a gap
+                 between the two steps in which it could be swapped for somebody else's. --}}
+            <div class="rounded-md bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
+                {{ __('Setting a new password for') }}
+                <span class="font-semibold text-zinc-900">{{ $email }}</span>
+            </div>
 
             <!-- Password -->
             <flux:input

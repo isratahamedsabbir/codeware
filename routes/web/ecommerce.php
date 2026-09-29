@@ -72,23 +72,21 @@ Route::middleware('feature:blog')->group(function () {
 // the orders feature is enabled (consistent with the /api/v1/orders routes).
 // The confirmation page only shows the order placed in this session.
 //
-// Checkout itself is behind 'auth' — a guest pressing "Proceed to checkout" from
-// the (still public) cart is sent to log in and returned here afterwards, which
-// is what ties the resulting order to a user_id instead of only an email. The
-// cart page itself stays public so browsing and building a basket never forces
-// an account.
+// Both the cart and the checkout are open to guests: a visitor fills the form
+// in and pays on delivery without ever making an account. The order still
+// belongs to somebody — App\Services\OrderPlacement resolves the account from
+// the email they type, creating one when the address is new — so nothing is
+// lost by not signing in first, and the order turns up in that customer's
+// account history the moment they can get back in through a password reset.
 Route::middleware('feature:orders')->group(function () {
     Route::get('/cart', [FrontendController::class, 'cart'])->name('cart');
-    Route::get('/checkout', [FrontendController::class, 'checkout'])
-        ->middleware('auth')
-        ->name('checkout');
+    Route::get('/checkout', [FrontendController::class, 'checkout'])->name('checkout');
     Route::get('/order-confirmation/{orderNumber}', [FrontendController::class, 'orderConfirmation'])->name('checkout.confirmation');
 });
 
 // Customer account — orders are matched to the user by user_id first, then by
-// their email, so an order placed without an account (through the order API)
-// still shows up here for the customer who later registers with the same
-// address.
+// their email, so an order placed before this account existed still shows up
+// here for the customer who later registers with the same address.
 Route::middleware(['auth'])->group(function () {
     Route::get('/account', [CustomerController::class, 'dashboard'])->name('account.dashboard');
     Route::get('/account/orders', [CustomerController::class, 'orders'])->name('account.orders');

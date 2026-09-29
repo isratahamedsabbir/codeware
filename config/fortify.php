@@ -145,7 +145,14 @@ return [
 
     'features' => [
         Features::registration(),
-        Features::resetPasswords(),
+
+        // Deliberately absent: Features::resetPasswords(). Password resets here
+        // are by emailed code, not by the token link Fortify's feature registers
+        // — routes/web.php keeps the same route names under App\Http\Controllers\
+        // Auth\PasswordResetOtpController instead, so the flow is unchanged from
+        // the outside while the link no longer depends on a page elsewhere to
+        // resolve. See App\Services\PasswordResetService.
+
         Features::emailVerification(),
         Features::twoFactorAuthentication([
             'confirm' => true,

@@ -43,10 +43,18 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->name('auth.')->group(function () {
     Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:6,1')->name('register');
     Route::post('/login', [LoginController::class, 'store'])->name('login')->middleware('throttle:login');
-    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])
-        ->middleware('throttle:6,1')->name('password.email');
+    // Password reset by emailed code, the same flow the storefront runs (see
+    // App\Services\PasswordResetService). Redeeming the code and writing the new
+    // password is a single call, since an API client has nowhere to carry a
+    // verified code between requests the way a browser session can.
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendCode'])
+        // As on the storefront: a per-minute burst throttle for scripts, plus the
+        // hourly otp-request limit that actually keeps one inbox from being
+        // filled. Without the second, a client could space its calls out and
+        // still put a code in the same mailbox every minute.
+        ->middleware(['throttle:6,1', 'throttle:otp-request'])->name('password.code');
     Route::post('/reset-password', [PasswordResetController::class, 'reset'])
-        ->middleware('throttle:6,1')->name('password.update');
+        ->middleware('throttle:6,1')->name('password.reset');
     Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
         ->middleware(['signed', 'throttle:6,1'])->name('email.verify');
 

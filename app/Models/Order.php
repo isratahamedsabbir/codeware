@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class Order extends Model
 {
@@ -50,10 +51,20 @@ class Order extends Model
         // A confirmation to the customer and a notification to the admin —
         // both best-effort (see OrderEmailService), so a mail failure never
         // blocks the order itself from being created.
+        //
+        // Deferred to DB::afterCommit() because the `created` event fires from
+        // inside the placement transaction (see App\Services\OrderPlacement):
+        // sending here would put a real confirmation in the customer's inbox
+        // describing an order that the rollback then erased. Waiting for the
+        // commit means the mail can only ever describe a row that survived.
+        // Outside a transaction (an order created directly, say) the callback
+        // runs inline, so the send is not deferred further than it has to be.
         static::created(function (Order $order) {
-            $service = app(OrderEmailService::class);
-            $service->sendCustomerConfirmation($order);
-            $service->sendAdminNotification($order);
+            DB::afterCommit(function () use ($order) {
+                $service = app(OrderEmailService::class);
+                $service->sendCustomerConfirmation($order);
+                $service->sendAdminNotification($order);
+            });
         });
     }
 
@@ -77,8 +88,10 @@ class Order extends Model
     }
 
     /**
-     * The customer account this order belongs to, when placed by a signed-in
-     * user — null for guest checkouts (see the public order API).
+     * The customer account this order belongs to. Set for every order, including
+     * one placed by a guest — App\Services\OrderPlacement resolves the account
+     * from the submitted email and creates it when the address is new, so this
+     * is null only for orders imported from outside the app.
      */
     public function user(): BelongsTo
     {
@@ -138,10 +151,11 @@ class Order extends Model
     }
 
     /**
-     * Every order this customer account can see — those explicitly attached to
-     * the account (user_id) plus any order their email placed before signing
-     * up (or through the guest API), so the account page never silently drops
-     * pre-account history.
+     * Every order this customer account can see — the ones attached to it
+     * (user_id), plus any still-unattached order carrying their email. That
+     * second clause is a backstop, not the main path: orders placed by a guest
+     * are attached at placement (App\Services\OrderPlacement), so it only
+     * reaches orders that predate that, or were imported with no owner.
      */
     public function scopeForCustomer(Builder $query, User $user): Builder
     {
@@ -153,7 +167,8 @@ class Order extends Model
 
     /**
      * True when this order belongs to the given customer account — either
-     * attached directly or placed with their email (see scopeForCustomer).
+     * attached directly, or one of the unowned orders carrying their email
+     * (see scopeForCustomer).
      */
     public function belongsToCustomer(User $user): bool
     {

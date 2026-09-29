@@ -11,15 +11,17 @@ use Livewire\Component;
  * (Contact::booted() already notifies admins on create) — no separate API
  * round-trip needed since this renders server-side in the same app.
  *
- * Only asks for name/email/message — phone_number and subject are NOT NULL
- * columns on Contact but aren't meaningful to collect from this short form,
- * so they're filled with a placeholder default rather than shown as fields.
+ * Collects name/email/subject/message. phone_number is a NOT NULL column on
+ * Contact but isn't meaningful to collect from this short form, so it is
+ * filled with a placeholder default rather than shown as a field.
  */
 class ContactForm extends Component
 {
     public string $full_name = '';
 
     public string $email = '';
+
+    public string $subject = '';
 
     public string $message = '';
 
@@ -33,6 +35,7 @@ class ContactForm extends Component
         return [
             'full_name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
+            'subject' => 'required|string|max:255',
             'message' => 'required|string',
         ];
     }
@@ -44,10 +47,9 @@ class ContactForm extends Component
         Contact::create([
             ...$validated,
             'phone_number' => '',
-            'subject' => 'Website Contact Form',
         ]);
 
-        $this->reset(['full_name', 'email', 'message']);
+        $this->reset(['full_name', 'email', 'subject', 'message']);
         $this->sent = true;
     }
 

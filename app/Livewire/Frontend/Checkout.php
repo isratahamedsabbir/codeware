@@ -19,10 +19,10 @@ use Livewire\Component;
  * cart and bounces to the order confirmation page. The shop being disabled
  * stops checkout entirely (503), matching the order API's behaviour.
  *
- * Only a signed-in shopper can check out: the route is behind 'auth', and
- * mount() repeats the check because the component is independently reachable as
- * a Livewire endpoint. The order API is unaffected and still places guest
- * orders.
+ * Open to guests: a signed-in shopper has their details prefilled and never
+ * retypes them, while a guest fills the form in themselves. Both end up owned
+ * by an account — OrderPlacement resolves it from the submitted email — so the
+ * two paths differ only in who has to type.
  */
 class Checkout extends Component
 {
@@ -64,16 +64,16 @@ class Checkout extends Component
 
     public array $paymentMethods = [];
 
+    /**
+     * Whether the shopper is checking out signed in. Decides only how the form
+     * is presented — a prefilled form with no hint, or an empty one that says
+     * an account is being made from the email — never whether the order is
+     * allowed (see the class docblock).
+     */
+    public bool $signedIn = false;
+
     public function mount(): void
     {
-        // The /checkout route is behind 'auth'; re-checked here because this
-        // component is also reachable as its own Livewire endpoint, which the
-        // route middleware never runs. Following the same pattern as the other
-        // guest-restricted storefront components (BlogComments, ProductReviews,
-        // PostReactions): 403 rather than a redirect, since a redirect is the
-        // route's job and has already happened by the time anyone gets here.
-        abort_unless(auth()->check(), 403);
-
         $this->paymentMethods = PaymentMethods::available();
 
         $this->shippingMethods = ShippingMethod::active()
@@ -90,9 +90,17 @@ class Checkout extends Component
             ->values()
             ->all();
 
-        // A signed-in shopper never retypes their own details.
-        $this->customer_name = auth()->user()->name;
-        $this->customer_email = auth()->user()->email;
+        // A signed-in shopper never retypes their own details. A guest starts
+        // from an empty form instead — theirs to fill in, and the account that
+        // order creates is keyed off whatever they type.
+        $user = auth()->user();
+
+        $this->signedIn = $user !== null;
+
+        if ($user) {
+            $this->customer_name = $user->name;
+            $this->customer_email = $user->email;
+        }
 
         $this->refresh();
     }
