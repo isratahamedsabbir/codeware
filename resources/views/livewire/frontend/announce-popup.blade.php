@@ -2,10 +2,22 @@
     x-cloak
     x-show="open"
     x-data="{
-        open: ! localStorage.getItem('codeware_popup_dismissed'),
+        open: false,
         dismiss() {
             localStorage.setItem('codeware_popup_dismissed', '1');
             this.open = false;
+        },
+        init() {
+            // Shown a couple seconds after the page settles rather than the
+            // instant Alpine boots. An immediate full-viewport overlay with
+            // its own background image was the largest thing painted on the
+            // page, so it (not the real hero/content) was what PageSpeed
+            // measured for Largest Contentful Paint — and since its timing
+            // depended on hydration speed rather than anything about the
+            // page, the LCP result was inconsistent between runs.
+            if (! localStorage.getItem('codeware_popup_dismissed')) {
+                setTimeout(() => { this.open = true; }, 2500);
+            }
         },
     }"
     @keydown.escape.window="dismiss"
