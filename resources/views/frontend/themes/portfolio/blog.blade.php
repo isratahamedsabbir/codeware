@@ -3,6 +3,8 @@
 <head>
     @include('partials.head')
     @include('partials.seo-meta')
+    <link rel="preload" href="{{ asset('fonts/instrument-sans-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="{{ asset('themes/portfolio/fonts.css') }}">
     <link rel="stylesheet" href="{{ asset('themes/portfolio/style.css') }}">
     <style>[x-cloak]{display:none!important}</style>
     @include('partials.custom-code-head')
@@ -96,7 +98,7 @@
                             </div>
 
                             @if (filled($post->featured_image))
-                                <img src="{{ $post->featured_image }}" alt="{{ $post->title }}"
+                                <img src="{{ $post->featured_image }}" alt="{{ $post->title }}" width="160" height="96"
                                     class="h-32 w-full rounded-xl object-cover sm:h-24 sm:w-40" loading="lazy" decoding="async">
                             @endif
                         </div>

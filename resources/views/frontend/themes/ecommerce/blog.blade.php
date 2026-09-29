@@ -48,7 +48,7 @@
                     <a href="{{ route('blog.post', $post->slug) }}" class="flex flex-1 flex-col">
                         <div class="relative aspect-[16/10] overflow-hidden bg-zinc-100">
                             @if ($post->featured_image)
-                                <img src="{{ $post->featured_image }}" alt="{{ $post->title }}"
+                                <img src="{{ $post->featured_image }}" alt="{{ $post->title }}" loading="lazy" decoding="async" width="800" height="500"
                                     class="h-full w-full object-cover transition duration-300 group-hover:scale-105">
                             @else
                                 <div class="flex h-full items-center justify-center bg-brand/5 text-brand">
@@ -64,7 +64,7 @@
                                     <span class="text-xs font-semibold uppercase tracking-wide text-brand">{{ $post->category->name }}</span>
                                 @endif
                                 @if ($post->published_at)
-                                    <span class="text-xs text-zinc-400">{{ $post->published_at->toDisplay() }}</span>
+                                    <span class="text-xs text-zinc-500">{{ $post->published_at->toDisplay() }}</span>
                                 @endif
                             </div>
                             <h2 class="text-lg font-bold text-sf-heading group-hover:text-brand">{{ $post->title }}</h2>
@@ -91,7 +91,7 @@
                                     {{ $post->user->name }}
                                 </p>
                             @endif
-                            <div class="mt-auto flex items-center justify-between pt-4 text-xs text-zinc-400">
+                            <div class="mt-auto flex items-center justify-between pt-4 text-xs text-zinc-500">
                                 <span>{{ __(':min min read', ['min' => $post->reading_time]) }}</span>
                                 <span class="inline-flex items-center gap-3">
                                     <span class="inline-flex items-center gap-1">

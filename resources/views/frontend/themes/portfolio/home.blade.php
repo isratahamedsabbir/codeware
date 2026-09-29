@@ -3,6 +3,14 @@
 <head>
     @include('partials.head')
     @include('partials.seo-meta')
+    {{-- The theme's own sheets. fonts.css carries the @font-face rules that
+         used to be a Google Fonts @import inside style.css; it is listed first
+         so the faces exist before anything asks for them, and the two roman
+         faces are preloaded because the hero text is the LCP element and would
+         otherwise wait on this sheet. The italic face is not preloaded — it is
+         used for one label and would only be a wasted reservation. --}}
+    <link rel="preload" href="{{ asset('fonts/instrument-sans-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="{{ asset('themes/portfolio/fonts.css') }}">
     <link rel="stylesheet" href="{{ asset('themes/portfolio/style.css') }}">
     <style>[x-cloak]{display:none!important}</style>
     @include('partials.custom-code-head')
@@ -163,7 +171,7 @@
 
                     <div class="pf-photo-frame relative aspect-4/5 overflow-hidden rounded-3xl">
                         @if ($profile['photo'])
-                            <img src="{{ $profile['photo'] }}" alt="{{ $profile['name'] }}"
+                            <img src="{{ $profile['photo'] }}" alt="{{ $profile['name'] }}" width="480" height="600"
                                 class="h-full w-full object-cover" loading="eager" fetchpriority="high">
                         @else
                             <div class="pf-monogram text-[5rem] sm:text-[7rem]">{{ $profile['monogram'] }}</div>
@@ -245,7 +253,7 @@
                                      placeholder frame — a card showing a broken or
                                      empty picture reads as an unfinished card. --}}
                                 @if (filled($service->featured_image))
-                                    <img src="{{ $service->featured_image }}" alt="{{ $service->name }}"
+                                    <img src="{{ $service->featured_image }}" alt="{{ $service->name }}" width="48" height="48"
                                         class="pf-service-icon mb-4 h-12 w-12 rounded-xl object-cover" loading="lazy" decoding="async">
                                 @else
                                     <span class="pf-service-icon" aria-hidden="true">&#9670;</span>
@@ -344,7 +352,7 @@
                                  placeholder reads as an unfinished card. --}}
                             @if (filled($project['image']))
                                 <div class="pf-shot border-b border-(--pf-border)">
-                                    <img src="{{ $project['image'] }}" alt="{{ $project['title'] }}"
+                                    <img src="{{ $project['image'] }}" alt="{{ $project['title'] }}" width="600" height="400"
                                         class="h-full w-full object-cover" loading="lazy" decoding="async">
                                 </div>
                             @endif
@@ -629,8 +637,9 @@
                             <div class="pf-card pf-card-hover group overflow-hidden rounded-2xl">
                                 @if ($card['image'])
                                     <div class="aspect-4/3 overflow-hidden">
-                                        <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}"
+                                        <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}" loading="lazy" decoding="async" width="800" height="600"
                                             class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
+
                                     </div>
                                 @endif
                                 <div class="p-5">
@@ -774,7 +783,7 @@
                                 class="pf-card pf-card-hover pf-card-rail group flex flex-col rounded-2xl p-6"
                                 style="--pf-reveal-delay: {{ $index * 70 }}ms">
                                 @if (filled($post->featured_image))
-                                    <img src="{{ $post->featured_image }}" alt="{{ $post->title }}"
+                                    <img src="{{ $post->featured_image }}" alt="{{ $post->title }}" width="400" height="160"
                                         class="mb-5 h-40 w-full rounded-xl object-cover" loading="lazy" decoding="async">
                                 @endif
 

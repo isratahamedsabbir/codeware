@@ -3,6 +3,8 @@
 <head>
     @include('partials.head')
     @include('partials.seo-meta')
+    <link rel="preload" href="{{ asset('fonts/instrument-sans-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="{{ asset('themes/portfolio/fonts.css') }}">
     <link rel="stylesheet" href="{{ asset('themes/portfolio/style.css') }}">
     <style>[x-cloak]{display:none!important}</style>
     @include('partials.custom-code-head')
@@ -51,9 +53,14 @@
                 </header>
 
                 @if (filled($post->featured_image))
-                    <img src="{{ $post->featured_image }}" alt="{{ $post->title }}"
+                    {{-- The lead image sits just under the header, so on a phone it is
+                         very often this page's largest contentful paint. It wants
+                         eager + high priority rather than the lazy loading used
+                         for the cards further down. --}}
+                    <img src="{{ $post->featured_image }}" alt="{{ $post->title }}" fetchpriority="high" width="1200" height="675"
                         class="mt-10 aspect-[16/9] w-full rounded-2xl object-cover">
                 @endif
+
 
                 {{-- The post body, as stored: description is authored rich text and
                      is the post's own content, so it is emitted unescaped the same
@@ -94,7 +101,7 @@
                         @foreach ($section->localizedCards() as $card)
                             <div class="pf-card pf-card-hover overflow-hidden rounded-2xl">
                                 @if ($card['image'])
-                                    <img src="{{ $card['image'] }}" alt="{{ $card['title'] ?? '' }}"
+                                    <img src="{{ $card['image'] }}" alt="{{ $card['title'] ?? '' }}" width="800" height="500"
                                         class="aspect-[16/10] w-full object-cover" loading="lazy" decoding="async">
                                 @endif
                                 <div class="p-5">
@@ -130,7 +137,7 @@
                             <a href="{{ route('blog.post', $relatedPost->slug) }}"
                                 class="pf-card pf-card-hover pf-card-rail group flex flex-col rounded-2xl p-6">
                                 @if (filled($relatedPost->featured_image))
-                                    <img src="{{ $relatedPost->featured_image }}" alt="{{ $relatedPost->title }}"
+                                    <img src="{{ $relatedPost->featured_image }}" alt="{{ $relatedPost->title }}" width="400" height="160"
                                         class="mb-5 h-40 w-full rounded-xl object-cover" loading="lazy" decoding="async">
                                 @endif
 

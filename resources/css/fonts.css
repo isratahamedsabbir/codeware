@@ -1,0 +1,61 @@
+/* ── Self-hosted webfonts ──
+   Plus Jakarta Sans, latin + latin-ext subsets, variable weight axis.
+
+   Why this file exists instead of the Google Fonts <link> it replaced:
+
+   A webfont used to reach the page two ways, and both cost the same thing.
+   app.css opened with `@import url('https://fonts.googleapis.com/...')`, which
+   is the worst of them: a CSS @import is not discovered until the stylesheet
+   that contains it has finished downloading, so the font request sits behind
+   the stylesheet request behind the HTML request — three serial round trips
+   before a single glyph can paint. The Bunny Fonts <link> in
+   partials/head.blade.php was better but still render-blocking, and it was
+   loaded on every page including the ones that never use it (see below).
+
+   Serving the woff2 ourselves removes the third-party connection setup
+   entirely, so the file is reachable one hop after the CSS that @font-face's it,
+   and the preload in each layout's <head> starts it before the CSS is even
+   parsed.
+
+   The weights, and who actually needs them:
+
+     - The admin panel overrides --font-sans to 'Segoe UI' (layouts/admin.blade.php),
+       so Plus Jakarta Sans is never rendered there.
+     - The ecommerce theme sets `font-storefront`, which is Trebuchet MS — a
+       bundled system font. Its pages never load a byte of this either.
+     - layouts/auth/split.blade.php names this family explicitly, and the
+       portfolio theme falls through to --font-sans because it never sets a
+       family of its own. So the two that genuinely need it are the auth
+       screens and the portfolio theme.
+
+   One file per subset covers every weight: this is a variable font, and the
+   wght axis runs 200–800, which is why a single download serves 400/500/600/700.
+   `font-display: swap` means the fallback paints immediately on a cold cache,
+   which is what keeps the text visible — and the LCP element visible — while
+   this file is still in flight.
+
+   unicode-range keeps the latin-ext file out of the critical path: a page with
+   no accented characters never downloads it, so the ~21 KB is spent only by
+   the pages that need those code points. */
+
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 200 800;
+    font-display: swap;
+    src: url('/fonts/plus-jakarta-sans-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+        U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+        U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 200 800;
+    font-display: swap;
+    src: url('/fonts/plus-jakarta-sans-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+        U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+        U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}

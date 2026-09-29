@@ -38,8 +38,10 @@
     <link rel="apple-touch-icon" href="{{ $siteIcon ?: '/favicon/apple-touch-icon.png' }}">
     <link rel="manifest" href="/favicon/site.webmanifest">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    {{-- No webfont preconnect here, and there is no @font-face to wait for: the
+         panel overrides --font-sans to 'Segoe UI' further down this file, so
+         Plus Jakarta Sans is never rendered. It used to load anyway, from a
+         Google Fonts @import at the top of app.css. --}}
 
     <link rel="stylesheet" href="//unpkg.com/jodit@4.1.16/es2021/jodit.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">

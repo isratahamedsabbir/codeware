@@ -40,7 +40,7 @@
 
                 <a href="{{ url('/') }}" class="flex min-w-0 items-center gap-2">
                     @if ($siteIcon)
-                        <img src="{{ $siteIcon }}" alt="{{ $siteName }}" class="h-9 w-auto">
+                        <img src="{{ $siteIcon }}" alt="{{ $siteName }}" width="120" height="36" class="h-9 w-auto">
                     @endif
                     <span class="truncate text-lg font-bold text-sf-header-text">{{ $siteName }}</span>
                 </a>
@@ -226,7 +226,7 @@
                 <div x-data="{ open: false }" class="border-b border-zinc-100">
                     <button type="button" @click="open = ! open" :aria-expanded="open" class="{{ $mobileSection }}">
                         <span>{{ __('Categories') }}</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-zinc-400 transition-transform duration-200" :class="open && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-zinc-500 transition-transform duration-200" :class="open && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" /></svg>
                     </button>
                     <div x-show="open" x-collapse x-cloak class="pb-2">
                         @foreach ($headerTopCategories as $category)
@@ -244,7 +244,7 @@
                 <div x-data="{ open: false }" class="border-b border-zinc-100">
                     <button type="button" @click="open = ! open" :aria-expanded="open" class="{{ $mobileSection }}">
                         <span>{{ __('Brands') }}</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-zinc-400 transition-transform duration-200" :class="open && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-zinc-500 transition-transform duration-200" :class="open && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" /></svg>
                     </button>
                     <div x-show="open" x-collapse x-cloak class="pb-2">
                         @foreach ($headerBrands as $brand)
@@ -259,7 +259,7 @@
             <a href="{{ route('favorites') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My favorites') }}</a>
             <a href="{{ route('cart') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My cart') }}</a>
             @auth
-                <p class="px-3 pb-1 pt-3 text-xs font-bold uppercase tracking-wide text-zinc-400">{{ __('My account') }}</p>
+                <p class="px-3 pb-1 pt-3 text-xs font-bold uppercase tracking-wide text-zinc-500">{{ __('My account') }}</p>
                 <a href="{{ route('account.dashboard') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My Account') }}</a>
                 <a href="{{ route('account.orders') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My Orders') }}</a>
                 <a href="{{ route('account.profile') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ __('Profile') }}</a>

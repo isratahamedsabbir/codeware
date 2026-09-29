@@ -23,8 +23,9 @@
     @if ($seoMeta ?? false)
         @include('partials.seo-meta')
     @endif
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    {{-- No font preconnect: Plus Jakarta Sans is self-hosted and preloaded by
+         partials.head above. The Google Fonts preconnects that used to sit here
+         opened a connection to two hosts that this page no longer talks to. --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <style>
         /* ── Auth Layout: Brand-themed premium design ── */

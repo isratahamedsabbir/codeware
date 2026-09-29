@@ -57,7 +57,9 @@
 
         @if ($post->featured_image)
             <div class="mt-8 overflow-hidden rounded-card border border-zinc-100 shadow-sm">
-                <img src="{{ $post->featured_image }}" alt="{{ $post->title }}" class="aspect-[16/9] w-full object-cover">
+                    <img src="{{ $post->featured_image }}" alt="{{ $post->title }}" fetchpriority="high" width="1600" height="900"
+                        class="aspect-[16/9] w-full object-cover">
+
             </div>
         @endif
 
@@ -91,7 +93,7 @@
                     <div class="group overflow-hidden rounded-card border border-zinc-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
                         @if ($card['image'])
                             <div class="aspect-[16/10] overflow-hidden bg-zinc-100">
-                                <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}"
+                                <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}" loading="lazy" decoding="async" width="800" height="500"
                                     class="h-full w-full object-cover transition duration-300 group-hover:scale-105">
                             </div>
                         @endif
@@ -122,14 +124,14 @@
                         class="group flex flex-col overflow-hidden rounded-card border border-zinc-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
                         @if ($relatedPost->featured_image)
                             <div class="relative aspect-[16/10] overflow-hidden bg-zinc-100">
-                                <img src="{{ $relatedPost->featured_image }}" alt="{{ $relatedPost->title }}"
+                                <img src="{{ $relatedPost->featured_image }}" alt="{{ $relatedPost->title }}" loading="lazy" decoding="async" width="800" height="500"
                                     class="h-full w-full object-cover transition duration-300 group-hover:scale-105">
                             </div>
                         @endif
                         <div class="flex flex-1 flex-col p-4">
                             <h3 class="line-clamp-2 font-semibold text-sf-heading group-hover:text-brand">{{ $relatedPost->title }}</h3>
                             @if ($relatedPost->published_at)
-                                <span class="mt-2 text-xs text-zinc-400">{{ $relatedPost->published_at->toDisplay() }}</span>
+                                <span class="mt-2 text-xs text-zinc-500">{{ $relatedPost->published_at->toDisplay() }}</span>
                             @endif
                         </div>
                     </a>

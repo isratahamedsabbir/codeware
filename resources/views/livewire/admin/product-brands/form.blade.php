@@ -42,4 +42,6 @@
         </div>
 
     </x-admin-section-card>
+
+    <livewire:admin.media-library.picker-modal key="product-brands-form-picker-modal" />
 </div>

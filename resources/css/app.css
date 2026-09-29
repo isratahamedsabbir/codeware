@@ -1,67 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-@import 'tailwindcss';
-@import '../../vendor/livewire/flux/dist/flux.css';
+/* ── Admin bundle ──
+   The admin panel, the vendor and delivery panels, and the auth screens.
+
+   This file was the whole stylesheet until the storefront was given its own;
+   see resources/css/storefront.css for what that changed. The panel's own
+   rules, its design tokens and its dark-mode remapping are all here now, and
+   the parts a shopper needs are in base.css.
+
+   Unlike the storefront, the sources below are the whole of ../views. That is
+   deliberate: the admin is an internal tool where a missing utility class
+   shows up as a broken screen, and there are ~100 Livewire screens to weigh
+   against a saving nobody outside the login screen will ever see. The
+   storefront makes the opposite trade and enumerates what it needs. */
+
+@import './base.css';
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
 @source '../../vendor/livewire/flux/stubs/**/*.blade.php';
 
-@custom-variant dark (&:where(.dark, .dark *));
-
 @theme {
-    --font-sans: 'Plus Jakarta Sans', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
-
-    --color-zinc-50: #fafafa;
-    --color-zinc-100: #f5f5f5;
-    --color-zinc-200: #e5e5e5;
-    --color-zinc-300: #d4d4d4;
-    --color-zinc-400: #a3a3a3;
-    --color-zinc-500: #737373;
-    --color-zinc-600: #525252;
-    --color-zinc-700: #404040;
-    --color-zinc-800: #262626;
-    --color-zinc-900: #171717;
-    --color-zinc-950: #0a0a0a;
-
-    /* ── Primary / secondary brand colors ── */
-    --color-primary: #1e7bc4;
-    --color-secondary: #7cc242;
-    --color-secondary-hover: #5d9c1f;
-
-    --color-accent: #1e7bc4;
-    --color-accent-content: #1e7bc4;
-    --color-accent-foreground: var(--color-white);
-
-    /* ── Storefront (ecommerce theme) brand palette ── */
-    --color-brand: #045b30;       /* agrony-style green: header, footer, accents */
-    --color-brand-ink: #1d2327;   /* near-black: footer bottom bar */
-    --color-page-bg: #f2f4f8;     /* site-wide storefront page background */
-    --color-sale: #c01616;        /* sale badges / errors */
-
-    /* ── Storefront (ecommerce theme) per-area colors — each one can be set
-       on its own from Theme Settings → Colors (overridden at runtime in
-       partials/head.blade.php); the defaults reproduce the stock look. ── */
-    --color-sf-header: var(--color-brand);          /* top header bar */
-    --color-sf-header-text: #ffffff;
-    --color-sf-nav: #ffffff;                        /* menu bar under the header */
-    --color-sf-nav-text: #222222;
-    --color-sf-footer: var(--color-brand);
-    --color-sf-footer-text: #ffffff;
-    --color-sf-footer-bottom: var(--color-brand-ink); /* copyright strip */
-    --color-sf-button: var(--color-brand);          /* primary call-to-action buttons */
-    --color-sf-button-text: #ffffff;
-    --color-sf-price: var(--color-brand);
-    --color-sf-heading: #171717;
-    --color-sf-text: #262626;
-
-    /* ── Storefront card corners: every card/panel in the ecommerce theme
-       uses `rounded-card` so the whole site shares one radius. ── */
-    --radius-card: 0.75rem;
-
-    /* ── Elevation tint (shared shadow hue) ── */
-    --color-shadow-tint: #0f172a;
-
     /* ── Sidebar (clean white/light) ── */
     --color-sidebar-bg: #ffffff;
     --color-sidebar-border: rgba(226, 232, 240, 0.9);
@@ -98,9 +56,9 @@
     --color-auth-glow-green: color-mix(in srgb, var(--color-secondary) 20%, transparent);
     --color-auth-glow-blue: color-mix(in srgb, var(--color-primary) 10%, transparent);
 
-    /* ── Scrollbar ── */
-    --color-scrollbar-thumb: rgba(100, 116, 139, 0.2);
-    --color-scrollbar-thumb-hover: rgba(100, 116, 139, 0.4);
+    /* Scrollbar tokens now live in base.css, which this bundle imports. They
+       used to be declared here only, and moving them is what took the
+       storefront's scrollbar styling with it when the bundles were split. */
 
     /* ── Form controls ── */ 
     --color-input-border: rgba(209, 213, 219, 0.96);
@@ -126,48 +84,11 @@
     --color-chart-category-text: #71717a;
 }
 
-/* The storefront's signature typeface (Trebuchet MS is a bundled system font,
-   so no webfont to load) — applied to storefront <body> via `font-storefront`.
-   Admin surfaces override --font-sans to Segoe UI in layouts/admin.blade.php. */
-@utility font-storefront {
-    font-family: 'Trebuchet MS', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
-}
-
-/* Typography for admin-authored rich content (Jodit → description /
-   specifications / blog description). Rendered with {!! !!} on the
-   storefront inside a `.rich-text` wrapper. */
-@utility rich-text {
-    & p { margin-block: 0.625rem; }
-    & h1, & h2, & h3, & h4 { font-weight: 700; color: var(--color-sf-heading); }
-    & h1 { font-size: 1.5rem; margin: 1.25rem 0 0.625rem; }
-    & h2 { font-size: 1.25rem; margin: 1.25rem 0 0.5rem; }
-    & h3 { font-size: 1.0625rem; margin: 1.125rem 0 0.5rem; }
-    & h4 { font-size: 1rem; margin: 1rem 0 0.375rem; }
-    & ul, & ol { margin-block: 0.625rem; padding-left: 1.375rem; display: grid; gap: 0.1875rem; }
-    & ul { list-style: disc; }
-    & ol { list-style: decimal; }
-    & li { margin-block: 0.125rem; }
-    & li > ul, & li > ol { margin-block: 0.1875rem; }
-    & a { color: var(--color-brand); text-decoration: underline; }
-    & blockquote {
-        margin: 0.75rem 0; padding: 0.5rem 1rem;
-        border-inline-start: 3px solid var(--color-zinc-300);
-        background: var(--color-zinc-50); border-radius: 0.375rem;
-        color: var(--color-zinc-600);
-    }
-    & img { max-width: 100%; height: auto; border-radius: 0.5rem; margin-block: 0.75rem; }
-    & table { width: 100%; border-collapse: collapse; margin-block: 0.75rem; }
-    & th, & td { border: 1px solid var(--color-zinc-200); padding: 0.375rem 0.625rem; }
-    & th { background: var(--color-zinc-50); font-weight: 600; text-align: start; }
-    & code, & pre {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        font-size: 0.875em; border-radius: 0.375rem; background: var(--color-zinc-100);
-    }
-    & code { padding: 0.125rem 0.3125rem; }
-    & pre { padding: 0.75rem 1rem; overflow-x: auto; margin-block: 0.75rem; color: var(--color-zinc-800); }
-    & hr { margin: 1rem 0; border-color: var(--color-zinc-200); }
-}
-
+/* ── Dark mode ──
+   layouts/admin.blade.php toggles .dark on <html> from localStorage, and
+   re-applies it after every Livewire navigation because wire:navigate morphs
+   the element from always-light markup. The tokens below are the only thing
+   that remapping actually changes. */
 @layer theme {
     .dark {
         --color-accent: #3d9be0;
@@ -209,39 +130,6 @@
         --color-badge-indigo-text: #818cf8;
     }
 }
-
-@layer base {
-
-    *,
-    ::after,
-    ::before,
-    ::backdrop,
-    ::file-selector-button {
-        border-color: var(--color-gray-200, currentColor);
-    }
-
-    body {
-        font-family: var(--font-sans);
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        /* background: #f2f4f8 !important; */
-    }
-}
-
-input,
-select,
-textarea {
-    border-color: #d4d4d4;
-    border-radius: 5px;
-    box-shadow: none;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-    border-color: var(--color-primary) !important;
-    box-shadow: none !important;
-} 
 
 /* ── Admin Sidebar Redesign (Clean White Light) ── */
 

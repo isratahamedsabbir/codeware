@@ -23,3 +23,84 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Static asset delivery
+#
+# Neither of these was configured, and both cost real performance:
+#
+#  - Without compression the storefront stylesheet goes out at its full ~324 KB.
+#    Vite already emits it minified; gzip/brotli is what turns that into ~42 KB.
+#  - Vite fingerprints everything under /build/assets, so those URLs are safe to
+#    cache for a year. Without the header below every repeat visit re-downloads
+#    the CSS and the admin JS bundle.
+#
+# The lifetime difference between the two groups is the important part. Build
+# assets and the woff2 files are content-addressed, so a cached copy can never go
+# stale. The theme stylesheets are not — themes/portfolio/style.css and its
+# fonts.css are hand-maintained files at a fixed path, so a long max-age would
+# strand visitors on a stale design after a deploy. They get a short one instead.
+# ─────────────────────────────────────────────────────────────────────────────
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml
+    AddOutputFilterByType DEFLATE text/javascript application/javascript
+    AddOutputFilterByType DEFLATE application/javascript application/x-javascript
+    AddOutputFilterByType DEFLATE application/json application/xml
+    AddOutputFilterByType DEFLATE application/rss+xml application/atom+xml
+    AddOutputFilterByType DEFLATE image/svg+xml font/ttf font/otf application/vnd.ms-fontobject
+</IfModule>
+
+<IfModule mod_brotli.c>
+    AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/css text/xml
+    AddOutputFilterByType BROTLI_COMPRESS text/javascript application/javascript
+    AddOutputFilterByType BROTLI_COMPRESS application/javascript application/x-javascript
+    AddOutputFilterByType BROTLI_COMPRESS application/json application/xml
+    AddOutputFilterByType BROTLI_COMPRESS application/rss+xml application/atom+xml
+    AddOutputFilterByType BROTLI_COMPRESS image/svg+xml
+</IfModule>
+
+# Already-compressed formats are excluded above on purpose — running them through
+# deflate/brotli burns CPU and typically makes the file slightly larger.
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+
+    # Content-addressed: safe to keep for a year, and the query string on Vite
+    # URLs is only a cache-buster, not a different resource.
+    ExpiresByType text/css                 "access plus 1 year"
+    ExpiresByType application/javascript   "access plus 1 year"
+    ExpiresByType text/javascript          "access plus 1 year"
+    ExpiresByType font/woff2               "access plus 1 year"
+    ExpiresByType font/woff                "access plus 1 year"
+    ExpiresByType image/svg+xml            "access plus 1 month"
+
+    # Not content-addressed — revalidate so a deploy is picked up immediately.
+    ExpiresByType text/html                "access plus 0 seconds"
+</IfModule>
+
+# `immutable` matters as much as the max-age here: without it a browser that has
+# the asset cached will still revalidate it with a conditional request on every
+# navigation, which is the round trip the fingerprinting was meant to avoid.
+#
+# Note that the woff2 files are *not* fingerprinted — they are at fixed names like
+# /fonts/plus-jakarta-sans-latin.woff2. A year-long cache on them is a deliberate
+# trade: swapping a font in place will not reach anyone for a year, so a font
+# change has to land under a new filename. At ~11-27 KB each, and immutable
+# across deploys, the alternative (revalidating them every visit) is the worse
+# deal; rename-on-change is the discipline to accept instead.
+<IfModule mod_headers.c>
+    <FilesMatch "\.(css|js|woff2|woff)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+
+    # Same extension, but a stable path — must stay revalidating.
+    <FilesMatch "^(style|fonts|script)\.css$">
+        Header set Cache-Control "public, max-age=0, must-revalidate"
+    </FilesMatch>
+
+    # Theme scripts are hand-maintained at a fixed path for the same reason.
+    <FilesMatch "script\.js$">
+        Header set Cache-Control "public, max-age=0, must-revalidate"
+    </FilesMatch>
+</IfModule>

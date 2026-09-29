@@ -51,4 +51,6 @@
         </div>
 
     </x-admin-section-card>
+
+    <livewire:admin.media-library.picker-modal key="services-form-picker-modal" />
 </div>

@@ -9,14 +9,14 @@
 
 @php
     $siteName = \App\Models\Setting::get('site_name', config('app.name'));
-    // Hero slider (Theme Settings → Banners): each slide {image, title,
+    // Hero slider (Theme Settings Ã¢â€ â€™ Banners): each slide {image, title,
     // description, url}; older image-only data still renders.
     $heroSlides = \App\Support\HeroSlides::forStorefront();
     $promoImage1 = \App\Models\Setting::get('home_promo_banner_1');
     $promoImage2 = \App\Models\Setting::get('home_promo_banner_2');
 
-    // Promo tile links (Theme Settings): a site path or an http(s) URL —
-    // anything else (blank, javascript:, …) falls back to the Shop page. Read
+    // Promo tile links (Theme Settings): a site path or an http(s) URL Ã¢â‚¬â€
+    // anything else (blank, javascript:, Ã¢â‚¬Â¦) falls back to the Shop page. Read
     // from the ecommerce theme's own theme.json.
     $promoLink = fn (string $key): string => \App\Support\HeroSlides::safeUrl(\App\Support\ThemeSettings::text('ecommerce', $key));
 
@@ -89,7 +89,8 @@
                                 :aria-hidden="active !== {{ $i }}"
                             @endif
                             class="absolute inset-0 transition-opacity duration-1000 ease-out {{ $i === 0 ? '' : 'opacity-0' }}">
-                            <img src="{{ $slide['image'] }}" alt="{{ $slide['title'] ?: $siteName }}" @if ($i > 0) loading="lazy" @endif
+                            <img src="{{ $slide['image'] }}" alt="{{ $slide['title'] ?: $siteName }}" @if ($i > 0) loading="lazy" @else fetchpriority="high" @endif
+                                width="1200" height="440"
                                 @if (count($heroSlides) > 1)
                                     :class="active === {{ $i }} ? 'scale-100' : 'scale-105'"
                                 @endif
@@ -143,7 +144,7 @@
                 ] as $promo)
                     <a href="{{ $promo['url'] }}" class="group/promo relative block h-32 overflow-hidden rounded-card sm:h-44 lg:h-1/2">
                         @if ($promo['image'])
-                            <img src="{{ $promo['image'] }}" alt="{{ $promo['label'] }}" class="h-full w-full object-cover transition duration-500 group-hover/promo:scale-105">
+                            <img src="{{ $promo['image'] }}" alt="{{ $promo['label'] }}" loading="lazy" decoding="async" width="600" height="400" class="h-full w-full object-cover transition duration-500 group-hover/promo:scale-105">
                             <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
                         @else
                             <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-secondary to-brand">
@@ -159,74 +160,52 @@
         <section class="mt-8 bg-white py-8 lg:py-10">
             <div class="mx-auto max-w-7xl px-4 sm:px-6">
 
-                {{-- A snap-scrolling row: 3 / 5 / 6 tiles per view. The arrows only
-                     appear once the tiles overflow, and fade out at either end.
-                     While it overflows it also auto-advances one tile every 3s
-                     (looping back to the start), pausing on hover / touch, in a
-                     background tab, and for visitors who prefer reduced motion. --}}
-                <div class="group/cats relative" aria-label="{{ __('Shop by category') }}" role="region"
-                    x-data="{
-                        canPrev: false,
-                        canNext: false,
-                        update() {
-                            const t = this.$refs.track;
-                            this.canPrev = t.scrollLeft > 4;
-                            this.canNext = t.scrollLeft + t.clientWidth < t.scrollWidth - 4;
-                        },
-                        page(dir) {
-                            const t = this.$refs.track;
-                            t.scrollBy({ left: dir * t.clientWidth, behavior: 'smooth' });
-                        },
-                        paused: false,
-                        timer: null,
-                        step() {
-                            const t = this.$refs.track;
-                            if (this.paused || document.hidden || ! (this.canPrev || this.canNext)) return;
-                            if (! this.canNext) {
-                                t.scrollTo({ left: 0, behavior: 'smooth' });
-                                return;
-                            }
-                            const tile = t.firstElementChild;
-                            const gap = parseFloat(getComputedStyle(t).columnGap) || 0;
-                            t.scrollBy({ left: (tile ? tile.offsetWidth : t.clientWidth) + gap, behavior: 'smooth' });
-                        },
-                        autoplay() {
-                            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-                            this.timer = setInterval(() => this.step(), 3000);
-                        },
-                    }"
-                    x-init="update(); new ResizeObserver(() => update()).observe($refs.track); autoplay()"
-                    @mouseenter="paused = true" @mouseleave="paused = false"
-                    @touchstart.passive="paused = true" @touchend.passive="setTimeout(() => paused = false, 4000)"
-                    @focusin="paused = true" @focusout="paused = false">
-                    <div x-ref="track" @scroll.passive="update()"
-                        class="-mx-1 flex snap-x snap-mandatory gap-2.5 overflow-x-auto scroll-smooth px-1 py-1.5 md:gap-4 no-scrollbar">
+                {{-- A horizontal scroller of the same category card used before,
+                     with arrows to page it. Named "Shop by category" rather than
+                     "Featured categories" so the heading matches what the row
+                     is: a department index, with the featured ones shown here.
+                     It is a real <h2>, which also gives the section an
+                     accessible name. --}}
+                @include('frontend.themes.ecommerce.partials.section-heading', [
+                    'title' => __('Shop by category'),
+                    'subtitle' => __('Browse our most popular departments'),
+                ])
+
+                <div class="relative mt-2"
+                    x-data="{ scrollBy(dir) { this.$refs.track.scrollBy({ left: dir * this.$refs.track.clientWidth * 0.8, behavior: 'smooth' }); } }">
+                    <button type="button" @click="scrollBy(-1)" aria-label="{{ __('Previous') }}"
+                        class="absolute -left-3 top-1/2 z-10 flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 shadow-md transition hover:text-brand sm:-left-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+                    </button>
+
+                    <div x-ref="track" class="no-scrollbar flex snap-x snap-mandatory scroll-smooth gap-2.5 overflow-x-auto px-1 py-1 sm:gap-3 md:gap-4">
                         @foreach ($homeCategories as $category)
                             <a href="{{ route('shop.category', $category->slug) }}"
-                                class="flex h-[104px] w-[calc((100%-1.25rem)/3)] shrink-0 snap-start flex-col items-center justify-center gap-1.5 rounded-card bg-white p-2.5 text-center shadow-sm transition hover:shadow-md md:h-[131px] md:w-[calc((100%-4rem)/5)] md:p-3 lg:w-[calc((100%-5rem)/6)] border border-zinc-200/80">
+                                class="group flex h-26.5 w-32.5 shrink-0 snap-start flex-col items-center justify-center gap-1.5 rounded-card border border-zinc-200/80 bg-white p-2 text-center shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-md sm:h-31 sm:w-37.5 sm:p-2.5 md:h-34 md:w-40 lg:h-38 lg:w-43">
                                 @if ($category->icon)
-                                    <img src="{{ $category->icon }}" alt="" class="h-[50px] w-[50px] rounded-lg object-contain">
+                                    <img src="{{ $category->icon }}" alt="" loading="lazy" decoding="async" width="56" height="56"
+                                        class="h-10 w-10 rounded-lg bg-zinc-50 object-contain p-0.5 transition duration-200 group-hover:scale-105 sm:h-12 sm:w-12 lg:h-14 lg:w-14">
                                 @else
-                                    <span class="flex h-[50px] w-[50px] items-center justify-center rounded-lg bg-gray-50 text-zinc-400">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-50 text-zinc-500 transition duration-200 group-hover:text-brand sm:h-12 sm:w-12 lg:h-14 lg:w-14">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 7 12 3l9.75 4L12 11 2.25 7Zm0 0v10L12 21l9.75-4V7M12 11v10" />
                                         </svg>
                                     </span>
                                 @endif
-                                <span class="w-full truncate text-xs font-semibold text-zinc-700 md:text-sm">{{ $category->name }}</span>
+                                {{-- Clamped to two lines instead of truncated: the old
+                                     single-line ellipsis cut off names like
+                                     "Home & Kitchen Appliances", which is the name the
+                                     shopper is scanning for. --}}
+                                <span class="line-clamp-2 w-full text-[11px] font-semibold leading-tight text-zinc-700 sm:text-sm">{{ $category->name }}</span>
                                 @if ($category->products_count > 0)
-                                    <span class="text-[11px] text-gray-500">{{ $category->products_count }} {{ __('items') }}</span>
+                                    <span class="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-500">{{ $category->products_count }} {{ __('items') }}</span>
                                 @endif
                             </a>
                         @endforeach
                     </div>
 
-                    <button type="button" x-show="canPrev" x-transition.opacity x-cloak @click="page(-1)" aria-label="{{ __('Previous categories') }}"
-                        class="absolute left-0 top-1/2 z-10 hidden h-10 w-10 -translate-x-1/2 md:flex -translate-y-1/2 items-center justify-center rounded-full! border border-zinc-200 bg-white text-sf-text shadow-md transition hover:border-brand hover:text-brand">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
-                    </button>
-                    <button type="button" x-show="canNext" x-transition.opacity x-cloak @click="page(1)" aria-label="{{ __('Next categories') }}"
-                        class="absolute right-0 top-1/2 z-10 hidden h-10 w-10 translate-x-1/2 md:flex -translate-y-1/2 items-center justify-center rounded-full! border border-zinc-200 bg-white text-sf-text shadow-md transition hover:border-brand hover:text-brand">
+                    <button type="button" @click="scrollBy(1)" aria-label="{{ __('Next') }}"
+                        class="absolute -right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 shadow-md transition hover:text-brand sm:-right-4">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
                     </button>
                 </div>
@@ -286,7 +265,7 @@
                     <a href="{{ route('shop.brand', $brand->slug) }}"
                         class="flex min-h-[64px] items-center justify-center rounded-card bg-white p-4 shadow-sm transition hover:shadow-md {{ $brand->logo ? 'grayscale hover:grayscale-0' : '' }}">
                         @if ($brand->logo)
-                            <img src="{{ $brand->logo }}" alt="{{ $brand->name }}" class="max-h-12 w-auto object-contain">
+                            <img src="{{ $brand->logo }}" alt="{{ $brand->name }}" loading="lazy" decoding="async" width="160" height="48" class="max-h-12 w-auto object-contain">
                         @else
                             <span class="text-center text-sm font-bold uppercase tracking-wide text-zinc-700">{{ $brand->name }}</span>
                         @endif
@@ -306,7 +285,7 @@
                     <div class="group overflow-hidden rounded-card bg-white shadow-sm transition hover:shadow-md">
                         @if ($card['image'])
                             <div class="relative aspect-[4/3] overflow-hidden bg-zinc-100">
-                                <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}"
+                                <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}" loading="lazy" decoding="async" width="800" height="600"
                                     class="h-full w-full object-cover transition duration-300 group-hover:scale-105">
                             </div>
                         @endif

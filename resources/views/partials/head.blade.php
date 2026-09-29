@@ -17,10 +17,41 @@
 <link rel="apple-touch-icon" href="{{ $siteIcon ?: '/favicon/apple-touch-icon.png' }}">
 <link rel="manifest" href="/favicon/site.webmanifest">
 
-<link rel="preconnect" href="https://fonts.bunny.net">
-<link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+@php
+    // Plus Jakarta Sans, self-hosted — see resources/css/fonts.css.
+    //
+    // Preloaded, and only for the themes that actually render it. A preload is
+    // a promise the browser keeps whether or not the file is used, so sending
+    // ~27 KB to a page that never draws a glyph of it is a real cost on a
+    // phone. Two themes opt out for two different reasons: ecommerce's
+    // storefront font stack is a system font (Trebuchet MS), and portfolio
+    // has its own self-hosted Instrument Sans, preloaded separately by that
+    // theme's own layout. Known opt-out themes are listed here; anything
+    // else, including a theme installed later as a zip, gets the preload —
+    // because being wrong in that direction costs one duplicate request, while
+    // being wrong the other way costs a font that arrives after the text.
+    $otherFontThemes = ['ecommerce', 'portfolio'];
+    $preloadStorefrontFont = ! in_array(theme_slug(), $otherFontThemes, true);
+@endphp
+@if ($preloadStorefrontFont)
+    {{-- The latin subset only. The latin-ext face is reached through its
+         unicode-range, so a page without accented characters never asks for it. --}}
+    <link rel="preload" href="/fonts/plus-jakarta-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+@endif
 
-@vite(['resources/css/app.css', 'resources/js/app.js'])
+@php
+    // Which bundle to load. Defaults to the storefront one, which is what every
+    // theme template and the vendor/delivery panels want. layouts/app/sidebar
+    // passes 'admin': it is the admin panel's own chrome, it renders admin
+    // Livewire screens, and it has no business pulling a shopper's stylesheet
+    // into the console.
+    $assetBundle = $assetBundle ?? 'storefront';
+@endphp
+@if ($assetBundle === 'admin')
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+@else
+    @vite(['resources/css/storefront.css'])
+@endif
 @fluxAppearance
 <style>[x-cloak]{display:none!important}</style>
 

@@ -47,12 +47,13 @@
 
         if (!loader) return;
 
-        // Long enough that a cached page reads as a deliberate screen rather
-        // than a flicker, short enough that it is never the thing being waited
-        // on. The ceiling is the important one: it fires whether or not `load`
-        // ever does.
-        var MIN_MS = 380;
-        var MAX_MS = 2500;
+        // No artificial floor: the sheet lifts the instant the page is ready,
+        // because holding it up any longer than that is pure added latency
+        // with nothing rendering behind it. The ceiling is the important one
+        // — it fires whether or not `load` ever does, so a stalled image
+        // below the fold can never leave the page covered for long.
+        var MIN_MS = 0;
+        var MAX_MS = 1200;
         var started = Date.now();
         var lifted = false;
 

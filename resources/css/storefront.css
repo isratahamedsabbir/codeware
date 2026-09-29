@@ -1,0 +1,105 @@
+/* ── Storefront bundle: every public, indexable page ──
+   The one a crawler, a phone on a slow connection, and PageSpeed all get.
+
+   This file used to be resources/css/app.css, which meant a visitor to a
+   product page downloaded the admin panel along with it — the sidebar
+   redesign, the dashboard chart palette, the Flux overrides, and a utility
+   class for every class in ~100 admin Livewire screens. It was 414 KB, and it
+   was render-blocking, so all of it sat between the HTML and the first paint.
+
+   The split has three parts, and the first two are the ones that matter:
+
+   1. Sources. Tailwind emits a utility once per stylesheet, per source. So the
+      `@source` list below — not the file's contents — is what decides whether
+      this page pays for the admin's classes. `source(none)` in base.css is
+      what makes the list authoritative; without it Tailwind's automatic
+      project-root scan quietly re-adds everything the list leaves out.
+   2. Contents. The admin's ~880 lines of panel CSS live in app.css now.
+   3. Scripts. There is no storefront JS entry at all — the admin's drag-drop,
+      Echo and date-picker libraries are not loaded here. See vite.config.js.
+
+   Size, measured rather than estimated: this bundle lands at ~324 KB raw /
+   ~42 KB gzipped. About 20 KB gzipped of that is Tailwind and Flux proper, and
+   most of the rest is the Flux component stubs, which is the floor for a
+   Flux-based storefront — see the note by the flux sources below before
+   spending time trying to cut it further.
+
+   Livewire's own bundle is injected by Livewire, not by this file, so a
+   storefront page with no interactive component on it ships no app JS.
+
+   A note for anyone extending these globs: a `*` followed by `/` ends a CSS
+   comment, so a glob written inside one of these notes — `**` then a slash —
+   closes it early and the rest of the prose is parsed as stylesheet. The paths
+   below are therefore spelled out in words rather than pasted in. */
+
+@import './base.css';
+
+@source '../views/frontend';
+@source not '../views/frontend/themes/*/settings.blade.php';
+
+@source '../views/livewire/frontend';
+
+@source '../views/components';
+@source not '../views/components/admin-*';
+@source not '../views/components/admin-row-details';
+@source not '../views/components/media-picker.blade.php';
+@source not '../views/components/layouts';
+@source not '../views/components/date-range-picker.blade.php';
+@source not '../views/components/searchable-select.blade.php';
+@source not '../views/components/per-page-select.blade.php';
+@source not '../views/components/desktop-user-menu.blade.php';
+
+@source '../views/partials';
+@source not '../views/partials/admin-*';
+
+/* The auth layout. The admin, vendor and delivery login screens all render
+   through it, and so does the default theme's home page — which is why it
+   belongs to both bundles even though it is mostly an admin surface. It uses
+   no .admin-* classes, so the storefront's copy styles it correctly.
+
+   Their three login forms come along for the same reason: the default theme's
+   home page renders on this layout, so if the storefront bundle did not style
+   the login form it would ship a visible, unstyled screen on the site's front
+   door. Three small blades is a cheap price for that. */
+@source '../views/layouts/auth';
+@source '../views/livewire/admin/auth';
+@source '../views/livewire/vendor/auth';
+@source '../views/livewire/delivery/auth';
+@source '../views/layouts/delivery.blade.php';
+@source '../views/layouts/vendor.blade.php';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+/* Flux's component appearance is Tailwind utilities, not compiled rules: the
+   classes inside Flux's own stub blades under vendor/livewire/flux/stubs are
+   what actually draw a Flux button, so those stubs have to be scanned for the
+   41 Flux components the storefront templates use.
+
+   There is deliberately no attempt to narrow this to only those 41. The set is
+   a transitive closure — a field pulls in its with-field, label, legend and
+   error stubs, an input pulls in the icon and select stubs — and a file left
+   out of it is a visibly unstyled dropdown or input, not a slightly smaller
+   sheet. Measured: excluding the whole stub tree saves ~22 KB gzipped and
+   unstyles every Flux component, and excluding just the 318 icon files saves
+   0.09 KB, because the classes in those icons dedupe against ones already
+   generated for the rest of the page.
+
+   Worth knowing before editing this list and seeing no change in the output:
+   these two lines are not what put the stubs in the scan. flux.css, which
+   base.css imports, carries its own source declaration for the same directory,
+   and that merges into whatever this stylesheet declares. The explicit list is
+   kept so the dependency is visible here rather than implicit in a vendor
+   file someone can upgrade underneath us. */
+@source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
+@source '../../vendor/livewire/flux/stubs/**/*.blade.php';
+
+/* The storefront's signature typeface. Trebuchet MS ships with every OS, so
+   naming it here costs no request at all — the ecommerce theme sets
+   `font-storefront` on <body> and never loads a webfont to be read.
+
+   The portfolio theme sets no family of its own, so it falls through to
+   --font-sans in base.css and does use Plus Jakarta Sans; that is the reason
+   the self-hosted font is preloaded rather than left to the CSS to discover. */
+@utility font-storefront {
+    font-family: 'Trebuchet MS', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+}

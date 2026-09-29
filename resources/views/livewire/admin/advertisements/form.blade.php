@@ -70,4 +70,6 @@
         </div>
 
     </x-admin-section-card>
+
+    <livewire:admin.media-library.picker-modal key="advertisements-form-picker-modal" />
 </div>

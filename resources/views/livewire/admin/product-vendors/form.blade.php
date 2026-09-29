@@ -40,4 +40,6 @@
         </div>
 
     </x-admin-section-card>
+
+    <livewire:admin.media-library.picker-modal key="product-vendors-form-picker-modal" />
 </div>

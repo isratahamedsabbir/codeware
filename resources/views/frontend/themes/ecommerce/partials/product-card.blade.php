@@ -11,7 +11,7 @@
     <a href="{{ route('products.show', $product->slug) }}" class="relative block overflow-hidden bg-zinc-100" aria-label="{{ $product->name }}">
         @if ($product->featured_image)
             <img src="{{ $product->featured_image }}" alt="{{ $product->name }}"
-                loading="lazy"
+                loading="lazy" decoding="async" width="380" height="190"
                 class="h-[190px] w-full object-cover transition duration-300 group-hover:scale-105">
         @else
             <div class="flex h-[190px] w-full items-center justify-center text-zinc-300">
@@ -45,7 +45,7 @@
 
     <div class="flex flex-1 flex-col gap-1 p-3">
         @if ($product->brand)
-            <span class="text-xs uppercase tracking-wide text-zinc-400">{{ $product->brand->name }}</span>
+            <span class="text-xs uppercase tracking-wide text-zinc-500">{{ $product->brand->name }}</span>
         @endif
 
         <h3 class="text-[15px] font-medium leading-snug text-sf-text">
@@ -57,13 +57,13 @@
         <div class="mt-auto flex flex-wrap items-baseline gap-x-2 gap-y-0.5 pt-2">
             @if ($discount)
                 <span class="text-[15px] font-bold text-sf-price">{{ format_money($discount) }}</span>
-                <span class="text-sm text-gray-400 line-through">{{ format_money($product->price) }}</span>
+                <span class="text-sm text-gray-500 line-through">{{ format_money($product->price) }}</span>
             @else
                 <span class="text-[15px] font-bold text-sf-price">{{ format_money($product->price) }}</span>
             @endif
 
             @if (($sold = $product->soldQuantity()) > 0)
-                <span class="ms-auto inline-flex items-center gap-1 text-xs text-zinc-400" title="{{ __('Units sold') }}">
+                <span class="ms-auto inline-flex items-center gap-1 text-xs text-zinc-500" title="{{ __('Units sold') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-3.5 w-3.5">
                         <path d="M2.25 2.25a.75.75 0 0 0 0 1.5h1.386c.17 0 .318.11.37.276l2.11 7.385a2.25 2.25 0 0 0 2.15 1.639h6.807c.928 0 1.755-.57 2.095-1.429l1.928-4.82a.75.75 0 0 0-1.394-.558l-1.928 4.82a.75.75 0 0 1-.701.482H8.295l-.241-.842a.75.75 0 0 1-.075-.285l-1.667-5.83a1.5 1.5 0 0 0-1.443-1.09H2.25Z" />
                         <path d="M11 19.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Zm-5 0a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Z" />
