@@ -9,18 +9,18 @@
     revealed through a widening seam instead of sitting behind an opaque wall
     the whole time.
 
-    Markup only. Every decision about whether this is ever shown belongs to
-    loader-flag.blade.php, first in <head>: the sheet is display:none by
-    default and is revealed only when that gate has decided the page is slow
-    enough to be worth covering (the pf-slow-visit class) and that this browser
-    has not seen the effect before (pf-first-visit). A fast first visit never
-    renders it, and a returning visit never even considers it.
+    Markup only. Every decision about whether this is ever shown, and about when
+    it goes away, belongs to loader-flag.blade.php, first in <head>: the sheet is
+    display:none by default and is revealed only when that gate has decided this
+    browser has not seen the effect before (the pf-first-visit class), and the
+    timings that lift it are pinned to this animation's own delay and duration.
+    A returning visit never even considers it.
 
-    The dismissal lives in the flag script too, rather than here, because the
-    two halves of the same decision should not be able to disagree: the sheet
-    and the thing that raises and lowers it are written side by side, and a
-    loader that is up with nobody left to take it down is the one failure this
-    file exists to make impossible.
+    The dismissal lives in the flag script rather than here, because the two
+    halves of the same decision should not be able to disagree: the sheet and the
+    thing that raises and lowers it are written side by side, and a loader that
+    is up with nobody left to take it down is the one failure this file exists to
+    make impossible.
 
     The page underneath is never hidden — it is laid out and painted from the
     start, and this is an opaque sheet over it — so lifting costs one opacity

@@ -82,33 +82,33 @@ it('shows the loader only on the first visit, and the flag is set in the head', 
         ->and($body)->toContain('pf-loader-crt-spark');
 });
 
-it('keeps the loader hidden until the page turns out to be slow', function () {
+it('keeps the loader hidden until the first-visit flag says otherwise', function () {
     // All of this sits on top of a display:none default: no JS, no flag, no
     // loader — nothing to undo, nothing to flash. The reveal is one rule, and
     // the sheet is a full viewport by the time it is shown.
     //
-    // The class that reveals it is the slow-page one, not the first-visit one.
-    // Being new to the site is not a reason to hold the page; a page that is
-    // still loading a second and a half after first paint is.
+    // The class that reveals it is the first-visit one. The curtain is the
+    // opening of this theme's home page, and it plays on the first visit whether
+    // or not the page turned out to be slow — a fast page is not a reason to
+    // skip it, it is the case where holding the page costs nothing measurable.
     $css = file_get_contents(public_path('themes/portfolio/style.css'));
 
     expect($css)->toMatch('/\.theme-portfolio \.pf-loader\{[^}]*display:none/s')
-        ->and($css)->toMatch('/\.pf-slow-visit \.theme-portfolio \.pf-loader\{[^}]*display:flex/s')
-        ->and($css)->not->toMatch('/\.pf-first-visit \.theme-portfolio \.pf-loader\{/s');
+        ->and($css)->toMatch('/\.pf-first-visit \.theme-portfolio \.pf-loader\{[^}]*display:flex/s')
+        ->and($css)->not->toMatch('/\.pf-slow-visit \.theme-portfolio \.pf-loader\{/s');
 });
 
-it('waits to find out whether the page is slow rather than assuming it', function () {
-    // The check reads document.readyState after SLOW_MS and gives up if the
-    // page is already there. That single condition is the difference between
-    // a loader that earns its place and one that taxes every first visit —
-    // and a first visit is what PageSpeed, Lighthouse and the Chrome UX Report
-    // all measure, since they run with a clean profile and so take the slow
-    // branch on a healthy site.
+it('raises the loader on the first visit rather than waiting to find out', function () {
+    // There is no speed check in the decision. The page is not measured and the
+    // loader is not held back to see whether it was slow — the flag alone arms
+    // it, and it is up from the first paint, because a visitor who is new here
+    // is owed the opening and a visitor who has been here is not made to wait
+    // through the test of it.
     $html = portfolioHome();
 
-    expect($html)->toContain('SLOW_MS')
-        ->and($html)->toContain("document.readyState === 'complete'")
-        ->and($html)->toContain("classList.add('pf-slow-visit')");
+    expect($html)->toContain("classList.add('pf-first-visit')")
+        ->and($html)->not->toContain('SLOW_MS')
+        ->and($html)->not->toContain('pf-slow-visit');
 });
 
 it('opens from the middle: the black parts, the seam shows the portfolio', function () {
@@ -138,18 +138,18 @@ it('dismisses the loader with a ceiling so a stalled image cannot strand anyone'
         ->and($html)->toContain("addEventListener('load', lift)");
 });
 
-it('shows the loader only once the slow check has already passed', function () {
-    // The animation floor is now conditional. When the page was there in time,
-    // no loader exists, so no floor needs protecting; when it was slow, the
-    // SHOW_MIN_MS floor keeps the CRT from being cut off at one frame. The old
-    // unconditional 1450ms floor is what made every first visit pay for an
-    // animation most of them were fast enough to skip.
+it('holds the loader for the length of its own animation', function () {
+    // The floor is unconditional, because the sheet is always raised now: MIN_MS
+    // is measured from the first paint rather than from whenever `load` happens
+    // to fire, so a page that is ready in 50ms does not cut the CRT off at one
+    // frame. `Math.max` is the other half — it is the reason the floor can be
+    // expressed as a duration since the start rather than a second delay stacked
+    // on top of the exit.
     $html = portfolioHome();
 
-    expect($html)->toContain('SHOW_MIN_MS')
-        ->and($html)->toContain('setTimeout(lift, SHOW_MIN_MS)')
-        ->and($html)->not->toContain('var MIN_MS')
-        ->and($html)->not->toContain('Math.max(0, MIN_MS');
+    expect($html)->toContain('var MIN_MS = 1450')
+        ->and($html)->toContain('Math.max(0, MIN_MS - (Date.now() - started))')
+        ->and($html)->not->toContain('SHOW_MIN_MS');
 });
 
 it('never hides content behind a loader it did not need', function () {
