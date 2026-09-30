@@ -21,8 +21,6 @@
 </head>
 <body class="theme-portfolio antialiased">
 
-    @include('frontend.themes.portfolio.partials.loader')
-
     @php
         $siteName = \App\Models\Setting::get('site_name', config('app.name'));
         $siteIcon = \App\Models\Setting::get('site_icon_white') ?: \App\Models\Setting::get('site_icon');
@@ -91,6 +89,12 @@
             || filled($profile['location']);
         $hasContactDetails = $hasContactInfo || $socials->isNotEmpty();
     @endphp
+
+    {{-- After the settings read, because the sheet carries the site's own
+         monogram and name. It is position:fixed over the page, so where it sits
+         in the body does not decide what is seen first — the head flag decides
+         that, before any of this paints. --}}
+    @include('frontend.themes.portfolio.partials.loader')
 
     @include('frontend.themes.portfolio.partials.header')
 

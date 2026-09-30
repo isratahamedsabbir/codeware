@@ -83,9 +83,12 @@
    naming it here costs no request at all — the ecommerce theme sets
    `font-storefront` on <body> and never loads a webfont to be read.
 
-   The portfolio theme sets no family of its own, so it falls through to
-   --font-sans in base.css and does use Plus Jakarta Sans; that is the reason
-   the self-hosted font is preloaded rather than left to the CSS to discover. */
+   The portfolio theme does not use this utility: it sets its own class to
+   Instrument Sans, and the default theme reads --font-sans from base.css. Those
+   two are the reasons the self-hosted font is preloaded rather than left to the
+   CSS to discover. A theme's body font can also be set from Admin → Theme
+   Settings, in which case partials/head.blade.php overrides whatever a utility
+   like this one says — see App\Support\ThemeFont. */
 @utility font-storefront {
     font-family: 'Trebuchet MS', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
 }

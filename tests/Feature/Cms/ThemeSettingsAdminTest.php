@@ -417,11 +417,11 @@ it('navigates a theme\'s settings sections by menu beside the form, not a tab st
         expect($html)->not->toContain('border-b-2 px-4 py-2.5');
     };
 
-    // The portfolio theme's seven sections; the count is asserted because a
+    // The portfolio theme's eight sections; the count is asserted because a
     // section added to the theme without a nav entry is a section the owner
     // cannot reach.
-    $expectMenu('portfolio', 7);
-    $expectMenu('ecommerce', 2);
+    $expectMenu('portfolio', 8);
+    $expectMenu('ecommerce', 3);
 });
 
 it('picks the theme from the Site Design grid, open on arrival and on the live theme', function () {

@@ -19,14 +19,24 @@
 
    The weights, and who actually needs them:
 
-     - The admin panel overrides --font-sans to 'Segoe UI' (layouts/admin.blade.php),
-       so Plus Jakarta Sans is never rendered there.
+     - The admin panel overrides --font-sans with a system font or with Roboto
+       (layouts/admin.blade.php, via App\Support\AdminFont) and never names this
+       family, so not one byte of this is downloaded by the panel.
      - The ecommerce theme sets `font-storefront`, which is Trebuchet MS — a
        bundled system font. Its pages never load a byte of this either.
-     - layouts/auth/split.blade.php names this family explicitly, and the
-       portfolio theme falls through to --font-sans because it never sets a
-       family of its own. So the two that genuinely need it are the auth
-       screens and the portfolio theme.
+     - The portfolio theme sets its own class to Instrument Sans and ships its
+       own @font-face in public/themes/portfolio/fonts.css, so it needs neither
+       this family nor this file.
+     - So the two consumers are the default theme, which reads var(--font-sans)
+       from base.css, and layouts/auth/split.blade.php, which names the family
+       outright.
+
+   One caveat if a theme's font is set from Admin → Theme Settings: the
+   declarations below are not the whole story any more. A theme that picks a
+   different face gets its @font-face emitted by partials/head.blade.php from
+   App\Support\ThemeFont, because which stylesheet a page loads depends on the
+   theme and a theme that ships its own never sees this file. See
+   App\Support\ThemeFont::facesFor().
 
    One file per subset covers every weight: this is a variable font, and the
    wght axis runs 200–800, which is why a single download serves 400/500/600/700.

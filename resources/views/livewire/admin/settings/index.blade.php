@@ -198,7 +198,7 @@ $imageMeta = match ($setting->key) {
                              frontend Site Design picker, which moved to the dedicated Theme
                              Settings screen. The colors themselves belong here in General. --}}
                         <x-admin-section-card header-border="border-zinc-100" icon="swatch" title="Backend"
-                            description="Colors used across the admin panel, including buttons.">
+                            description="Colors and typeface used across the admin panel, including buttons.">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 @foreach ($colorSettings as $setting)
                                     <flux:field>
@@ -212,6 +212,24 @@ $imageMeta = match ($setting->key) {
                                         </div>
                                     </flux:field>
                                 @endforeach
+                                {{-- The panel's typeface. Admin-only, and nothing to do with the
+                                     storefront themes. System font and Segoe UI are faces the
+                                     machine already has, so they cost nothing; Roboto is
+                                     self-hosted and the only one that downloads a file. System
+                                     font is the default. See App\Support\AdminFont. --}}
+                                <flux:field class="sm:col-span-2">
+                                    <flux:label>Backend Font</flux:label>
+                                    <flux:select wire:model="settings.admin_font" class="w-full">
+                                        @foreach ($adminFontOptions as $value => $label)
+                                            <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                                        @endforeach
+                                    </flux:select>
+                                    <flux:description>
+                                        Typeface for the admin panel only. System font follows the
+                                        device; Segoe UI is named first on every device; Roboto is
+                                        self-hosted and the only option that downloads a font file.
+                                    </flux:description>
+                                </flux:field>
                             </div>
                         </x-admin-section-card>
                     </div>

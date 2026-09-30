@@ -1,20 +1,20 @@
 {{--
-    The page loader — the one sheet shown while this page's CSS, fonts and
-    images come in. Included by the home page only: it is the curtain over a
-    *landing*, and the blog and posts open on content without one.
+    The page loader — the sheet shown while this page's CSS, fonts and images come
+    in. Included by the home page only: it is the curtain over a *landing*, and
+    the blog and posts open on content without one.
 
-    It is a full-viewport black sheet, styled as a CRT power-on — but a screen
-    that parts from the middle: two solid black plates slide apart while a
-    translucent white band swells behind them, so the portfolio beneath is
-    revealed through a widening seam instead of sitting behind an opaque wall
-    the whole time.
+    It is one ink-coloured sheet carrying the site's own mark, and a hairline
+    that fills from the left while the page settles underneath. The mark is the
+    portfolio's existing lockup — the same monogram and name the hero is built
+    from — so the curtain is the site introducing itself rather than a device
+    animation sitting on top of it.
 
     Markup only. Every decision about whether this is ever shown, and about when
     it goes away, belongs to loader-flag.blade.php, first in <head>: the sheet is
     display:none by default and is revealed only when that gate has decided this
     browser has not seen the effect before (the pf-first-visit class), and the
-    timings that lift it are pinned to this animation's own delay and duration.
-    A returning visit never even considers it.
+    timings that lift it are pinned to this animation's own duration. A returning
+    visit never even considers it.
 
     The dismissal lives in the flag script rather than here, because the two
     halves of the same decision should not be able to disagree: the sheet and the
@@ -27,8 +27,18 @@
     change and no layout.
 --}}
 <div data-pf-loader class="pf-loader" aria-hidden="true">
-    <div class="pf-loader-crt-line"></div>
-    <div class="pf-loader-crt-plate-top"></div>
-    <div class="pf-loader-crt-plate-bottom"></div>
-    <span class="pf-loader-crt-spark"></span>
+    <div class="pf-loader-mark">
+        @if (filled($profile['monogram'] ?? null))
+            <span class="pf-loader-monogram">{{ $profile['monogram'] }}</span>
+            <span class="pf-loader-rule" aria-hidden="true"></span>
+        @endif
+
+        @if (filled($siteName ?? null))
+            <span class="pf-loader-name">{{ $siteName }}</span>
+        @endif
+    </div>
+
+    <div class="pf-loader-track" aria-hidden="true">
+        <span class="pf-loader-bar"></span>
+    </div>
 </div>

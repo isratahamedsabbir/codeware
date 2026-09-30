@@ -18,6 +18,15 @@
 <link rel="manifest" href="/favicon/site.webmanifest">
 
 @php
+    // The active theme's chosen typeface (Admin → Theme Settings → Typography),
+    // read from its theme.json. See App\Support\ThemeFont.
+    $storefrontTheme = \App\Support\Themes::active();
+    $storefrontFont = \App\Support\ThemeFont::normalize(
+        \App\Support\ThemeSettings::text($storefrontTheme, \App\Support\ThemeSettings::keyFor('font', $storefrontTheme))
+    );
+    $storefrontFontStack = \App\Support\ThemeFont::stackFor($storefrontFont);
+    $storefrontFontPreload = \App\Support\ThemeFont::preloadFor($storefrontFont);
+
     // Plus Jakarta Sans, self-hosted — see resources/css/fonts.css.
     //
     // Preloaded, and only for the themes that actually render it. A preload is
@@ -30,10 +39,21 @@
     // else, including a theme installed later as a zip, gets the preload —
     // because being wrong in that direction costs one duplicate request, while
     // being wrong the other way costs a font that arrives after the text.
+    //
+    // Superseded the moment a theme picks a font of its own: this preload is for
+    // the font a theme renders by default, so a theme that has chosen one gets
+    // that file preloaded instead — two preloads would mean two requests for two
+    // files where only one is ever drawn.
     $otherFontThemes = ['ecommerce', 'portfolio'];
-    $preloadStorefrontFont = ! in_array(theme_slug(), $otherFontThemes, true);
+    $preloadStorefrontFont = $storefrontFontStack === null
+        && ! in_array(theme_slug(), $otherFontThemes, true);
 @endphp
-@if ($preloadStorefrontFont)
+@if ($storefrontFontPreload)
+    {{-- Whichever face the active theme selected. The latin subset only: the
+         latin-ext file is reached through its unicode-range, so a page without
+         accented characters never asks for it. See ThemeFont::preloadFor(). --}}
+    <link rel="preload" href="{{ $storefrontFontPreload }}" as="font" type="font/woff2" crossorigin>
+@elseif ($preloadStorefrontFont)
     {{-- The latin subset only. The latin-ext face is reached through its
          unicode-range, so a page without accented characters never asks for it. --}}
     <link rel="preload" href="/fonts/plus-jakarta-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -73,7 +93,6 @@
     //
     // Rendered after the compiled CSS so these tokens win the cascade — same
     // pattern as layouts/admin.blade.php.
-    $storefrontTheme = \App\Support\Themes::active();
     $storefrontColor = fn (string $field) => theme_color($field, null, $storefrontTheme);
 
     // The brand token drives links, active states and badges, and is what the
@@ -108,5 +127,59 @@
                 {{ $var }}: {{ $value }};
             @endforeach
         }
+    </style>
+@endif
+
+@if ($storefrontFontStack)
+    {{-- The typeface the active theme selected, if it selected one. A theme
+         that has not chosen emits nothing at all, which is the point: its own
+         stylesheet keeps the font it was designed around.
+
+         Two deliberate choices here.
+
+         The @font-face declarations are emitted for whichever webfont was
+         chosen rather than relying on the one already in the theme's CSS or in
+         resources/css/fonts.css. Which stylesheet a page loads depends on the
+         theme, so a face declared only in the storefront bundle does not exist
+         on a theme that ships its own — picking Plus Jakarta on portfolio would
+         otherwise download nothing and render the fallback. See
+         ThemeFont::facesFor().
+
+         And the override is !important. The three themes declare their font
+         three different ways, none of which is a token this partial sets:
+         default reads var(--font-sans) on body, ecommerce has a @utility class
+         on body, portfolio has a theme class on body. The two class-based ones
+         outrank a plain body rule, so matching each selector would mean naming
+         every theme's internals here — and a theme installed later would need a
+         new line in this file to be overridable at all. Marking the declaration
+         important is what makes the setting work uniformly.
+
+         It is still the right blast radius. It applies to the body element only,
+         so it changes what the page inherits; any element that names its own
+         font — portfolio's .pf-mono, a display heading — keeps it, because a
+         descendant's own declaration outranks an inherited value however the
+         ancestor was set. A webfont that fails to load falls through to the
+         system tail in its own stack.
+
+         Printed unescaped: a font stack and a @font-face are quoted with single
+         quotes, which double-brace escaping would turn into HTML entities, and
+         entities are not decoded inside a <style> element — the declaration
+         would reach the parser invalid and be dropped. Safe because every value
+         here comes from a hard-coded table in ThemeFont and none of them
+         interpolates the stored setting. --}}
+    <style>
+        @foreach (\App\Support\ThemeFont::facesFor($storefrontFont) as $faces)
+            @foreach ($faces as $face)
+                @font-face {
+                    font-family: {!! \App\Support\ThemeFont::familiesFor($storefrontFont)[$storefrontFont] !!};
+                    font-style: normal;
+                    font-weight: {!! \App\Support\ThemeFont::weightsFor($storefrontFont)[$storefrontFont] !!};
+                    font-display: swap;
+                    src: url('{!! $face['url'] !!}') format('woff2');
+                    unicode-range: {!! $face['unicodeRange'] !!};
+                }
+            @endforeach
+        @endforeach
+        body { font-family: {!! $storefrontFontStack !!} !important; }
     </style>
 @endif

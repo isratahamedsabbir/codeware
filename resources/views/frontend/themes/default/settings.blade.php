@@ -5,10 +5,11 @@
         \App\Support\ThemeSettings::text('default', 'theme_default_intro_heading')
     See default/home.blade.php for live usage.
 
-    This theme owns only the intro block, so it is the one theme whose settings
-    screen shows no section menu: a sidebar holding a single "Intro" entry is
-    navigation that leads nowhere. The menu is still wired up and switches on
-    itself the moment a second section is added to $sections below.
+    This theme owns only the intro block, so before Typography it was the one
+    theme whose settings screen showed no section menu: a sidebar holding a
+    single "Intro" entry is navigation that leads nowhere. The menu is still
+    wired up and switches on itself the moment a second section is added to
+    $sections below.
 
     The wire:key matches the other two themes and is load-bearing. All three
     partials are swapped into one slot by a plain @include on the Theme Settings
@@ -20,6 +21,7 @@
 @php
     $sections = [
         'intro' => ['Intro', 'megaphone'],
+        'typography' => ['Typography', 'bars-3-bottom-left'],
     ];
 
     // One entry means there is nothing to choose between.
@@ -48,6 +50,22 @@
                 <flux:field>
                     <flux:label>Intro Text<x-field-hint text="The supporting line under the heading." /></flux:label>
                     <flux:textarea wire:model="settings.theme_default_intro_text" class="h-24" placeholder="A short description of the site." />
+                </flux:field>
+            </div>
+        </section>
+        <section role="tabpanel" x-show="tab === 'typography'">
+            <div class="grid grid-cols-1 gap-5">
+                {{-- The face this theme's pages render in. "Theme default" leaves
+                     the theme looking the way it was designed, which is what an
+                     untouched field means; anything else overrides it for this
+                     theme only. See App\Support\ThemeFont. --}}
+                <flux:field>
+                    <flux:label>Body Font<x-field-hint text="The typeface for this theme's public pages. Theme default keeps the font this theme ships with." /></flux:label>
+                    <flux:select wire:model="settings.theme_default_font" class="w-full">
+                        @foreach (\App\Support\ThemeFont::options() as $value => $label)
+                            <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
                 </flux:field>
             </div>
         </section>

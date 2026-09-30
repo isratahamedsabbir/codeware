@@ -27,6 +27,15 @@
         $stickyNoteEnabled = (bool) \App\Models\Setting::get('sticky_note_enabled', true);
         $shopToggleEnabled = (bool) \App\Models\Setting::get('shop_toggle_enabled', false);
         $languageSwitcherEnabled = (bool) \App\Models\Setting::get('language_switcher_enabled', true);
+
+        // The panel's typeface (see App\Support\AdminFont). Resolved here rather
+        // than in a view composer because this is the only place that applies
+        // it. System font and Segoe UI are faces the OS already has, so they
+        // need no declaration and no preload; Roboto is self-hosted and does, so
+        // those two pieces are resolved alongside the stack.
+        $adminFont = \App\Support\AdminFont::normalize(\App\Models\Setting::get('admin_font'));
+        $adminFontPreload = \App\Support\AdminFont::preloadFor($adminFont);
+        $adminFontFaces = \App\Support\AdminFont::facesFor($adminFont);
     @endphp
     @if ($favicon)
         <link rel="icon" href="{{ $favicon }}" type="{{ Str::endsWith($favicon, '.svg') ? 'image/svg+xml' : 'image/x-icon' }}" sizes="any">
@@ -38,10 +47,20 @@
     <link rel="apple-touch-icon" href="{{ $siteIcon ?: '/favicon/apple-touch-icon.png' }}">
     <link rel="manifest" href="/favicon/site.webmanifest">
 
-    {{-- No webfont preconnect here, and there is no @font-face to wait for: the
-         panel overrides --font-sans to 'Segoe UI' further down this file, so
-         Plus Jakarta Sans is never rendered. It used to load anyway, from a
-         Google Fonts @import at the top of app.css. --}}
+    {{-- The panel's webfont, when the chosen option is one the OS does not have
+         (currently only Roboto). The @font-face declarations are inlined at the
+         bottom of this file rather than linked, so an unselected webfont costs
+         no request and a selected one is discovered in the same response as the
+         HTML — no stylesheet request to discover the file in, and no waterfall
+         behind it. A linked stylesheet would have to be fetched and parsed
+         before the browser learns a font exists.
+
+         Only the latin subset is preloaded, and deliberately: preloading a
+         subset a page may never use is a request the preloader cannot cancel
+         once started, so the choice is made here. See AdminFont::preloadFor(). --}}
+    @if ($adminFontPreload)
+        <link rel="preload" href="{{ $adminFontPreload }}" as="font" type="font/woff2" crossorigin>
+    @endif
 
     <link rel="stylesheet" href="//unpkg.com/jodit@4.1.16/es2021/jodit.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
@@ -82,13 +101,43 @@
            compiled app.css, so this wins over both the light and .dark token
            blocks there (equal specificity, later in source). Primary also drives
            --color-accent, which is what buttons/focus rings/active nav actually use. */
+        {{-- The @font-face for whichever option is a webfont, inlined so it needs
+             no request of its own. Outside the :root block because @font-face is
+             a top-level at-rule and would be invalid nested inside a rule.
+             Also printed unescaped, and for the same reason as the stack below. --}}
+        @foreach ($adminFontFaces as $faces)
+            @foreach ($faces as $face)
+                @font-face {
+                    font-family: 'Roboto';
+                    font-style: normal;
+                    font-weight: 100 900;
+                    font-stretch: 100%;
+                    font-display: swap;
+                    src: url('{!! $face['url'] !!}') format('woff2');
+                    unicode-range: {!! $face['unicodeRange'] !!};
+                }
+            @endforeach
+        @endforeach
+
         :root {
             --color-primary: {{ $adminPrimaryColor }};
             --color-secondary: {{ $adminSecondaryColor }};
             --color-accent: {{ $adminPrimaryColor }};
             --color-accent-content: {{ $adminPrimaryColor }};
-            /* Admin-only typeface — overrides the global --font-sans from app.css. */
-            --font-sans: 'Segoe UI', ui-sans-serif, system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
+            /* Admin-only typeface — overrides the global --font-sans from
+                 app.css. Resolved from the "Backend font" setting: the OS's own
+                 UI font by default, Segoe UI named first, or the self-hosted
+                 Roboto declared above.
+
+                 Printed unescaped, deliberately. A font stack is quoted with
+                 single quotes and double-brace escaping would turn each one into
+                 an HTML entity, and entities are not decoded inside a <style>
+                 element — the declaration would reach the parser as an invalid
+                 family and be dropped, leaving the panel with no font override at
+                 all. Safe to do because both stackFor() and facesFor() return
+                 values from hard-coded tables in AdminFont and never interpolate
+                 the stored setting. */
+            --font-sans: {!! \App\Support\AdminFont::stackFor($adminFont) !!};
         }
     </style>
 </head>

@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Settings;
 
 use App\Models\Setting;
 use App\Support\AdminActivity;
+use App\Support\AdminFont;
 use App\Support\EnvFile;
 use Illuminate\Support\Facades\Artisan;
 use Livewire\Component;
@@ -63,6 +64,12 @@ class Index extends Component
                 ? (bool) $setting->value
                 : ($setting->value ?? '');
         }
+
+        // The row is seeded, but a database that predates the setting has none —
+        // and the select would then render with nothing selected, which reads
+        // as "unset" rather than as the deliberate default. Default it to the
+        // system font, the same value the seeder writes.
+        $this->settings['admin_font'] = $this->settings['admin_font'] ?? AdminFont::SYSTEM;
     }
 
     protected function loadConstants(): void
@@ -189,10 +196,14 @@ class Index extends Component
     private function persistGeneralSettings(): void
     {
         foreach ($this->settings as $key => $value) {
-            Setting::set($key, $value);
+            // The panel typeface is stored as a theme slug, so it is validated
+            // against the options that exist now: a value whose theme is gone
+            // (uninstalled, or hand-edited) becomes the system default rather
+            // than a dangling reference that resolves to nothing.
+            Setting::set($key, $key === 'admin_font' ? AdminFont::normalize($value) : $value);
         }
 
-        $constants = collect($this->constants)->filter(fn ($pair) => filled($pair['key'] ?? null))->values()->all();
+        $constants = collect($this->constants)->filter(fn (array $pair) => filled($pair['key'] ?? null))->values()->all();
         Setting::set('constants', json_encode($constants));
     }
 
@@ -219,11 +230,18 @@ class Index extends Component
             // editor's own token expiry now lives in .env (PUCK_SESSION) and has no
             // settings row at all; 'editor' is still excluded so a row left over from
             // an older database never surfaces here.
-            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'seo', 'colors', 'currency', 'frontend', 'other', 'editor', 'custom-code', 'tracking', 'shop', 'orders'])
+            // 'admin' (admin_font) is hand-rendered in the Backend card above, not
+            // through this generic per-group loop — it needs a select, not a plain
+            // text input.
+            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'seo', 'colors', 'currency', 'frontend', 'other', 'editor', 'custom-code', 'tracking', 'shop', 'orders', 'admin'])
                 ->get()
                 ->groupBy('group')
                 ->sortBy(fn ($items, $group) => $groupOrder[$group] ?? count($groupOrder)),
             'colorSettings' => Setting::where('group', 'colors')->get(),
+            // The panel's typeface options: the OS's own font, or Segoe UI named
+            // first. A fixed pair, so this is a constant read and not a per-theme
+            // lookup — see App\Support\AdminFont.
+            'adminFontOptions' => AdminFont::options(),
         ])->layout('layouts.admin', ['title' => 'Settings']);
     }
 }

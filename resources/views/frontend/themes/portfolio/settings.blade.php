@@ -59,6 +59,7 @@
         'skills' => ['Skills', 'sparkles'],
         'testimonials' => ['Testimonials', 'chat-bubble-left-right'],
         'credentials' => ['Credentials', 'academic-cap'],
+        'typography' => ['Typography', 'bars-3-bottom-left'],
     ]" />
 
     {{-- `x-cloak` on the whole column: panels stay mounted (x-show, not x-if) so
@@ -373,6 +374,25 @@
                     ['name' => 'period', 'label' => 'Year', 'placeholder' => '2024', 'wide' => true],
                     ['name' => 'description', 'label' => 'Issuer', 'placeholder' => 'Amazon Web Services', 'wide' => true],
                 ]" />
+        </div>
+    </section>
+
+    {{-- The face this theme's pages render in. This theme ships Instrument Sans
+         and is designed around it, so "Theme default" is the option that keeps
+         it looking the way it was built; the rest are there for a deliberate
+         change, or for a portfolio that should read in the same face as the rest
+         of a multi-theme site. See App\Support\ThemeFont. --}}
+    <section role="tabpanel" x-show="tab === 'typography'"
+        class="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="grid grid-cols-1 gap-5">
+            <flux:field>
+                <flux:label>Body Font<x-field-hint text="The typeface for this theme's public pages. Theme default keeps Instrument Sans, the font this theme ships with." /></flux:label>
+                    <flux:select wire:model="settings.theme_portfolio_font" class="w-full">
+                    @foreach (\App\Support\ThemeFont::options() as $value => $label)
+                        <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+            </flux:field>
         </div>
     </section>
     </div>

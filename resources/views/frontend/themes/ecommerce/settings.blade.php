@@ -32,6 +32,7 @@
     <x-admin-settings-nav class="lg:sticky lg:top-14 lg:self-start" :tabs="[
         'banners' => ['Banners', 'photo'],
         'colors' => ['Colors', 'swatch'],
+        'typography' => ['Typography', 'bars-3-bottom-left'],
     ]" />
 
     {{-- Both panels stay mounted (x-show, not x-if) so every media picker keeps
@@ -179,10 +180,9 @@
                                 </div>
                             </div>
                         @endforeach
-                    </div>
-                </div>
-            </div>
         </div>
+    </div>
+    </div>
     </section>
 
     {{-- Colors — one per storefront area. Blank means "use the default"
@@ -297,7 +297,7 @@
                 </div>
 
                 <div class="p-3">
-                    <div class="overflow-hidden rounded-lg ring-1 ring-zinc-200 dark:ring-zinc-700" style="font-family: 'Trebuchet MS', 'Segoe UI', sans-serif">
+                    <div class="overflow-hidden rounded-lg ring-1 ring-zinc-200 dark:ring-zinc-700" style="font-family: {{ \App\Support\ThemeFont::stackFor(\App\Support\ThemeFont::normalize($settings['theme_'.$themeSlug.'_font'] ?? '')) ?? "'Trebuchet MS', 'Segoe UI', sans-serif" }}">
                         {{-- Header --}}
                         <div class="flex items-center gap-2 px-2.5 py-2"
                             :style="`background: ${c('theme_ecommerce_header_bg_color', accent)}; color: ${c('theme_ecommerce_header_text_color', '#ffffff')}`">
@@ -350,7 +350,25 @@
                 </div>
             </aside>
         </div>
-    </div>
+
+    {{-- The face this theme's pages render in. Its own section rather than a
+         field on Colors because a colour picker cannot show a typeface, and the
+         live preview above belongs to the colours panel. Inside the stacked
+         column, so it replaces the colours panel in place rather than becoming a
+         third item in the outer grid. --}}
+    <section role="tabpanel" x-show="tab === 'typography'" x-cloak
+        class="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="grid grid-cols-1 gap-5">
+            <flux:field>
+                <flux:label>Body Font<x-field-hint text="The typeface for this theme's public pages. Theme default keeps the font this theme ships with." /></flux:label>
+                <flux:select wire:model="settings.theme_ecommerce_font" class="w-full">
+                    @foreach (\App\Support\ThemeFont::options() as $value => $label)
+                        <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+            </flux:field>
+        </div>
+    </section>
     </div>
 </div>
 

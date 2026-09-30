@@ -76,10 +76,8 @@ it('shows the loader only on the first visit, and the flag is set in the head', 
     $body = substr($html, $bodyPos);
     expect($head)->toContain('pf-loader-visited')
         ->and($body)->toContain('data-pf-loader')
-        ->and($body)->toContain('pf-loader-crt-line')
-        ->and($body)->toContain('pf-loader-crt-plate-top')
-        ->and($body)->toContain('pf-loader-crt-plate-bottom')
-        ->and($body)->toContain('pf-loader-crt-spark');
+        ->and($body)->toContain('pf-loader-mark')
+        ->and($body)->toContain('pf-loader-track');
 });
 
 it('keeps the loader hidden until the first-visit flag says otherwise', function () {
@@ -111,21 +109,38 @@ it('raises the loader on the first visit rather than waiting to find out', funct
         ->and($html)->not->toContain('pf-slow-visit');
 });
 
-it('opens from the middle: the black parts, the seam shows the portfolio', function () {
-    // The black is real black, but it lives in two solid plates — top and
-    // bottom — that slide apart on the same swing as the white CRT band. The
-    // loader sheet itself carries no background, so the widening gap between
-    // the plates is transparent: the portfolio underneath shows through the
-    // translucent white band as the machine starts, instead of staying hidden
-    // behind an opaque wall until the fade.
+it('carries the site own mark and a hairline that fills as the page settles', function () {
+    // The curtain is the site introducing itself, not a device animation played
+    // over it: the same monogram and name the hero is built from, on one ink
+    // sheet, with a hairline filling from the left underneath. The bar's duration
+    // is the loader's whole length — it finishes as the sheet lifts — which is
+    // why it is one value matched to the flag's floor rather than two that drift.
     $css = file_get_contents(public_path('themes/portfolio/style.css'));
 
-    expect($css)->toMatch('/\.theme-portfolio \.pf-loader-crt-plate-top\{[^}]*background:#000[^}]*top:0/s')
-        ->and($css)->toMatch('/\.theme-portfolio \.pf-loader-crt-plate-bottom\{[^}]*background:#000[^}]*bottom:0/s')
-        ->and($css)->toMatch('/@keyframes pf-crt-open-top\{0%\{transform:translateY\(0\)\}to\{transform:translateY\(-130%\)\}\}/s')
-        ->and($css)->toMatch('/@keyframes pf-crt-open-bottom\{0%\{transform:translateY\(0\)\}to\{transform:translateY\(130%\)\}\}/s')
-        ->and($css)->toMatch('/\.theme-portfolio \.pf-loader-crt-line\{[^}]*background:#ffffff99/s')
+    expect($css)->toMatch('/\.theme-portfolio \.pf-loader\{[^}]*background:#06080f[^}]*flex-direction:column/s')
+        ->and($css)->toMatch('/\.theme-portfolio \.pf-loader-mark\{[^}]*align-items:center[^}]*display:flex/s')
+        ->and($css)->toMatch('/\.theme-portfolio \.pf-loader-monogram\{[^}]*animation:pf-loader-rise/s')
+        ->and($css)->toMatch('/\.theme-portfolio \.pf-loader-name\{[^}]*text-transform:uppercase[^}]*letter-spacing:\.22em/s')
+        ->and($css)->toMatch('/\.theme-portfolio \.pf-loader-track\{[^}]*height:1px/s')
+        ->and($css)->toMatch('/\.theme-portfolio \.pf-loader-bar\{[^}]*animation:pf-loader-fill 1\.4s/s')
+        ->and($css)->toMatch('/@keyframes pf-loader-fill\{0%\{transform:scaleX\(0\)\}100%\{transform:scaleX\(1\)\}\}/s')
         ->and($css)->toMatch('/\.theme-portfolio \.pf-loader\.is-done\{[^}]*opacity:0[^}]*pointer-events:none/s');
+});
+
+it('shows the mark it has, as a lockup on the sheet', function () {
+    // The lockup is assembled from the site own monogram and name — the two the
+    // hero is built from — so the curtain is the same mark the page reveals. The
+    // divider between them is the only element that can be stranded, and it only
+    // renders alongside the monogram, so a site without one gets no line pointing
+    // at nothing.
+    $html = portfolioHome();
+
+    expect($html)->toContain('pf-loader-mark')
+        ->and($html)->toContain('pf-loader-monogram')
+        ->and($html)->toContain('pf-loader-name')
+        ->and($html)->toContain('pf-loader-rule')
+        ->and($html)->toContain('pf-loader-track')
+        ->and($html)->toContain('pf-loader-bar');
 });
 
 it('dismisses the loader with a ceiling so a stalled image cannot strand anyone', function () {

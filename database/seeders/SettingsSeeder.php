@@ -116,6 +116,20 @@ class SettingsSeeder extends Seeder
                 'group' => 'colors',
                 'is_public' => true,
             ],
+            // Admin panel typeface. 'system' is the deliberate default — the OS
+            // answers, so it costs no request. 'segoe' is also a system face.
+            // 'roboto' is the one webfont option, self-hosted from public/fonts.
+            // Kept out of the 'colors' group on purpose — it is not a color, and
+            // the Backend card renders 'colors' as color pickers. Admin-only and
+            // not a storefront theme concern, so is_public is false. See
+            // App\Support\AdminFont.
+            [
+                'key' => 'admin_font',
+                'value' => 'system',
+                'type' => 'string',
+                'group' => 'admin',
+                'is_public' => false,
+            ],
             [
                 'key' => 'header_content',
                 'value' => json_encode(['root' => ['props' => []], 'content' => [], 'zones' => []]),
