@@ -14,7 +14,7 @@
     the accent here follows the merchant's chosen brand colour.
 
     The header is handed the frontend menu explicitly because on a real page the
-    controller passes it in (see FrontendController) and the partial reads it
+    controller passes it in (see the RendersBlog concern) and the partial reads it
     unguarded at the nav's top level.
 
     Like the default theme's 404 this needs the asset pipeline and the settings

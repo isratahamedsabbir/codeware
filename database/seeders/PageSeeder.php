@@ -16,7 +16,7 @@ class PageSeeder extends Seeder
         ['file' => 'contact', 'sort_order' => 2],
         ['file' => 'faq',     'sort_order' => 3],
         // Inactive — Fortify serves /login directly (see FortifyServiceProvider),
-        // never through FrontendController::page(). This row only exists so its
+        // never through the themes' PageController. This row only exists so its
         // SEO title/description are editable from /admin/pages; kept inactive so
         // it never shows up in navPages() as a site-nav link.
         ['file' => 'login',   'sort_order' => 4, 'status' => 'inactive'],

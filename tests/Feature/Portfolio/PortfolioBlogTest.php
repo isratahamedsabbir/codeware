@@ -12,10 +12,11 @@ use Database\Seeders\PortfolioMenuSeeder;
  * sits above the footer on the one-pager.
  *
  * The plumbing underneath is the ecommerce theme's, unchanged — the same routes,
- * the same FrontendController methods, the same Post rows. What is new is that
- * the portfolio theme owns templates for those route names, so the 'theme' guard
- * lets /blog answer here instead of 404ing. That pairing is the thing worth
- * pinning down: a route registered without a template resolves and then 500s.
+ * the same Post rows, and the same RendersBlog concern behind both themes'
+ * BlogController. What is new is that the portfolio theme owns templates for
+ * those route names, so the 'theme' guard lets /blog answer here instead of
+ * 404ing. That pairing is the thing worth pinning down: a route registered
+ * without a template resolves and then 500s.
  */
 
 beforeEach(function () {

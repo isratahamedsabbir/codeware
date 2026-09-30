@@ -1,4 +1,21 @@
 @push('page-header-actions')
+    {{-- public/storage must be a symlink into storage/app/public or the `public`
+         disk 404s at /storage/... — see createStorageLink() in Index.php.
+         A developer-environment tool only (same gate the Admin → Features
+         screen uses, see Livewire\Admin\Features\Index), so a deployed site
+         never shows it: there the link either already exists or an admin has to
+         fix it on the server. Also admin-tier only, and only while the link is
+         actually missing — once it exists the button has nothing left to do.
+         Same cross-DOM event approach as Watermark/Upload Files: rendered
+         outside this component's root, so it dispatches a window event that the
+         root <div> below (x-on:link-storage.window) forwards to Livewire. --}}
+    @if (app()->environment('developer') && Gate::allows('access-admin-system') && ! $this->hasStorageLink())
+        <flux:button variant="ghost" size="sm" icon="link"
+            onclick="window.dispatchEvent(new CustomEvent('link-storage'))">
+            Link Storage
+        </flux:button>
+    @endif
+
     {{-- Same cross-DOM event approach as Upload Files: the header renders outside
          this component's root, so this dispatches a window event that the root
          <div> below (x-on:open-watermark-modal.window) forwards to
@@ -21,7 +38,9 @@
     </flux:button>
 @endpush
 
-<div class="space-y-5" x-data x-on:open-watermark-modal.window="$wire.openWatermarkModal()">
+<div class="space-y-5" x-data
+    x-on:open-watermark-modal.window="$wire.openWatermarkModal()"
+    x-on:link-storage.window="$wire.createStorageLink()">
 
     {{-- ─── Media Grid ──────────────────────────────────────────────────────── --}}
     <div class="rounded-[5px] border border-slate-200 bg-white overflow-hidden">

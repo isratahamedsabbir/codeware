@@ -1,0 +1,26 @@
+/* ── The "portfolio" theme stylesheet ──
+   Its own entry, so a one-pager downloads the classes its own three templates
+   use and not the ecommerce theme's shop and checkout. The shared half comes
+   from storefront-shared.css, which is why this file has no rules of its own
+   below.
+
+   A theme with a stylesheet here is served this instead of the catch-all
+   storefront.css — see Themes::storefrontEntry(). Dropping this file back
+   removes the theme from that lookup and it falls back to the catch-all, which
+   still styles it, just with every theme's classes in the one sheet.
+
+   The theme's real stylesheet is not this one: it is the hand-written
+   public/themes/portfolio/style.css, linked directly by the theme's own blades
+   so it is unlayered and outranks Tailwind's utilities (see the note in
+   partials/header.blade.php). This entry exists to compile the theme's
+   *utility* classes — the antialiased, grid and spacing utilities in its
+   templates — which is what the @source line below collects. */
+
+@import '../../base.css';
+@import '../../storefront-shared.css';
+
+@source '../../../views/frontend/themes/portfolio';
+
+/* The admin theme-settings screen renders settings.blade.php inline, and the
+   picker markup in it is on no storefront page. */
+@source not '../../../views/frontend/themes/portfolio/settings.blade.php';

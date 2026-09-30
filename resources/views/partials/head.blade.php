@@ -45,12 +45,17 @@
     // passes 'admin': it is the admin panel's own chrome, it renders admin
     // Livewire screens, and it has no business pulling a shopper's stylesheet
     // into the console.
+    //
+    // 'storefront' resolves per theme: a theme with its own stylesheet is served
+    // that, so its page pays only for the utility classes its own templates use
+    // rather than for every theme's. A theme that ships none gets the catch-all
+    // storefront bundle, which scans them all. See Themes::storefrontEntry().
     $assetBundle = $assetBundle ?? 'storefront';
 @endphp
 @if ($assetBundle === 'admin')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 @else
-    @vite(['resources/css/storefront.css'])
+    @vite([\App\Support\Themes::storefrontEntry()])
 @endif
 @fluxAppearance
 <style>[x-cloak]{display:none!important}</style>

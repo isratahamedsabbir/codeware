@@ -171,6 +171,41 @@ it('lets a theme answer 404 for itself by shipping an errors/404.blade.php', fun
         ->assertDontSee('bare theme not found');
 });
 
+it('styles a theme that ships no stylesheet of its own', function () {
+    // The bundled themes each have a resources/css/themes/{slug}/theme.css, and
+    // that is what makes a theme cheap to load. A theme does not have to: a
+    // zipped-in one ships templates and no stylesheet, and the storefront has
+    // to still serve it a sheet — the catch-all, which scans every theme's
+    // classes. Bare HTML would be a worse outcome than a larger download, so
+    // this fallback is the deliberate direction to err in.
+    installBareTheme('bare', ['home', 'page']);
+
+    Setting::set('site_theme', 'bare');
+    Themes::forget();
+
+    expect(Themes::hasStylesheet('bare'))->toBeFalse()
+        ->and(Themes::storefrontEntry())->toBe('resources/css/storefront.css');
+
+    // And the page still renders — a theme with no stylesheet of its own is a
+    // working theme, not a broken one.
+    $this->get('/')->assertOk()->assertSee('Home');
+});
+
+it('serves a theme its own stylesheet when it has one', function () {
+    // The other side of the same rule: a theme that does ship a stylesheet is
+    // served that one, so its page carries its own classes rather than every
+    // theme's. The two links are distinguishable in the rendered HTML, which is
+    // the only place the choice is observable from.
+    Setting::set('site_theme', 'portfolio');
+
+    expect(Themes::storefrontEntry())->toBe('resources/css/themes/portfolio/theme.css');
+
+    $this->get('/')
+        ->assertOk()
+        ->assertSee('theme-portfolio-', escape: false)
+        ->assertDontSee('assets/storefront-', escape: false);
+});
+
 it('keeps the shared error pages for the admin panel and the API', function () {
     Setting::set('site_theme', 'ecommerce');
 

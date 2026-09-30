@@ -777,7 +777,7 @@
                         @foreach ($latestPosts as $index => $post)
                             {{-- A post's slug lives on its paired Page, not on the Post
                                  row â€” same arrangement as products, and why
-                                 FrontendController::post() resolves by
+                                 RendersBlog::post() resolves by
                                  $post->page->slug. Post::slug() is that accessor,
                                  so the link below is the post's real URL. The query
                                  requires a page, so it is never null here. Title,

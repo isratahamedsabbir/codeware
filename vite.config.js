@@ -1,6 +1,39 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import tailwindcss from "@tailwindcss/vite";
+import { readdirSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+/**
+ * Every theme's own stylesheet, as a Vite input.
+ *
+ * Scanned rather than listed, because a theme is a folder: a theme installed
+ * later as a zip drops resources/css/themes/{slug}/theme.css in and has to get
+ * a bundle without anyone editing this file. A theme with no stylesheet here
+ * simply contributes no input and is served the catch-all storefront bundle
+ * instead — see Themes::storefrontEntry().
+ *
+ * Keyed by a name that includes the slug rather than passed as a list, because
+ * all three files are called theme.css: Vite names an entry chunk after the
+ * file, so three inputs sharing a basename share a chunk name too, and the
+ * manifest then collapses them into one entry that reports a file the wrong two
+ * of them were never built from. The slug in the name is what keeps the three
+ * separate.
+ */
+function themeStylesheets() {
+    const dir = 'resources/css/themes';
+
+    if (!existsSync(dir)) {
+        return {};
+    }
+
+    return Object.fromEntries(
+        readdirSync(dir, { withFileTypes: true })
+            .filter((entry) => entry.isDirectory() && existsSync(join(dir, entry.name, 'theme.css')))
+            .map((entry) => [`theme-${entry.name}`, `${dir}/${entry.name}/theme.css`])
+            .sort(([a], [b]) => a.localeCompare(b)),
+    );
+}
 
 export default defineConfig({
     plugins: [
@@ -17,16 +50,22 @@ export default defineConfig({
             // component on them, and a theme with real JavaScript of its own
             // keeps using its own asset path — see public/themes/portfolio.
             //
-            // A theme does not need an entry here to be fast; it needs the
-            // storefront bundle, which every theme shares. See the @source list
-            // in resources/css/storefront.css for how a theme's own classes get
-            // into that bundle, and the two `not` rules there for what is kept
-            // out of it.
-            input: [
-                'resources/css/app.css',
-                'resources/css/storefront.css',
-                'resources/js/app.js',
-            ],
+            // The storefront bundle is further split per theme: a theme with a
+            // stylesheet at resources/css/themes/{slug}/theme.css is served
+            // that, so its page pays only for the utility classes its own
+            // templates use. storefront.css stays in the list as the catch-all
+            // for a theme that ships none — it scans every theme, so such a
+            // theme is styled rather than bare.
+            //
+            // The theme inputs are read off the filesystem (see above) rather
+            // than listed, so installing a theme does not mean editing this
+            // file.
+            input: {
+                app: 'resources/css/app.css',
+                'app-js': 'resources/js/app.js',
+                storefront: 'resources/css/storefront.css',
+                ...themeStylesheets(),
+            },
             refresh: true,
         }),
         tailwindcss(),

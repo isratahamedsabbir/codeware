@@ -13,7 +13,7 @@ use Spatie\Permission\Models\Role;
 /**
  * Shared, cached building blocks every public page needs (nav pages, the
  * frontend menu, the home page, the vendor/delivery login flags) — used by both
- * FrontendController and CustomerController so the theme's header/footer
+ * Themes/ThemeController so the theme's header/footer
  * partials get the same payload from a single source instead of duplicated
  * queries on every request.
  *

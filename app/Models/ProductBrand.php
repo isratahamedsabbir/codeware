@@ -45,7 +45,7 @@ class ProductBrand extends Model
      * brands (unlike Products/ProductCategories) have no paired Page to own a
      * slug, so it's computed on the fly for the storefront's /brand/{slug}
      * links. Uses the same separator as Slug::make so it round-trips with the
-     * FrontendController::resolveBrand() lookup.
+     * App\Http\Controllers\Themes\ThemeController::resolveBrand() lookup.
      */
     protected $appends = ['slug'];
 

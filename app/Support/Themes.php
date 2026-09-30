@@ -13,11 +13,11 @@ class Themes
 {
     /**
      * Every storefront route name mapped to the template its page renders
-     * through — the mirror image of the `view(Themes::viewOrFail(...))` call in
-     * each FrontendController/CustomerController method. Two things depend on
-     * this staying in sync: the 404 a missing template produces, and
-     * canRenderLink(), which drops a nav/menu link pointing at a page the
-     * active theme ships no template for rather than leaving a dead end.
+     * through — the mirror image of the `$this->view('...')` call in each themed
+     * controller (see App\Http\Controllers\Themes\ThemeController::view()).
+     * Two things depend on this staying in sync: the 404 a missing template
+     * produces, and canRenderLink(), which drops a nav/menu link pointing at a
+     * page the active theme ships no template for rather than leaving a dead end.
      *
      * Deliberately keyed by route *name*, not URL, and resolved from a
      * MenuItem's stored URL at runtime (see routeNameFor()) rather than parsed
@@ -91,6 +91,51 @@ class Themes
     public static function routesPath(): string
     {
         return base_path('routes/web');
+    }
+
+    /**
+     * Where the per-theme stylesheets live — resources/css/themes/{slug}/theme.css,
+     * one per theme folder, the same one-file-per-theme rule as the route files
+     * above and for the same reason: a theme is a folder you can zip up and hand
+     * to someone else, and a file that only half a theme lives in is a file the
+     * next person cannot find.
+     */
+    public static function stylesheetsPath(): string
+    {
+        return resource_path('css/themes');
+    }
+
+    /**
+     * Whether a given theme ships a stylesheet of its own. A theme without one
+     * is served the catch-all storefront bundle instead, which scans every
+     * theme's templates — so it is styled, just at the price of carrying every
+     * other theme's classes too. See storefrontEntry() for which of the two a
+     * given theme gets.
+     */
+    public static function hasStylesheet(string $theme): bool
+    {
+        return is_file(static::stylesheetsPath().'/'.$theme.'/theme.css');
+    }
+
+    /**
+     * The Vite entry the active theme's pages load their stylesheet from: its own
+     * when it ships one, the catch-all storefront bundle when it does not.
+     *
+     * This is the stylesheet half of the same rule the rest of this class applies
+     * to templates and routes — a theme is served by what it ships, and a
+     * fallback to something another theme made is only ever the *styling* of a
+     * page, never its content or its route. The deliberate exception is a theme
+     * that ships no stylesheet at all, which is styled by the catch-all rather
+     * than left unstyled: bare HTML is a broken storefront, and a theme
+     * installed later as a zip is exactly that case.
+     */
+    public static function storefrontEntry(?string $theme = null): string
+    {
+        $theme ??= static::active();
+
+        return static::hasStylesheet($theme)
+            ? 'resources/css/themes/'.$theme.'/theme.css'
+            : 'resources/css/storefront.css';
     }
 
     /**

@@ -1,0 +1,91 @@
+/* ── The storefront sources every theme shares ──
+   The @source list, with no rules of its own, split out of storefront.css so
+   that each theme's own stylesheet can import it.
+
+   Why this file exists: the sources below are theme-independent — the shared
+   partials, the shared components, the auth layout, pagination, the Flux stubs.
+   Every theme pays for them exactly once, and a theme's own stylesheet
+   (resources/css/themes/{slug}/theme.css) needs them too. Declaring the list in
+   each of those would mean keeping four copies in step by hand, so it is
+   declared once here and imported.
+
+   What is deliberately NOT here: ../views/frontend/themes. That is the whole
+   point of the per-theme entries — a theme's stylesheet scans only its own
+   template folder, so a portfolio page stops paying for the ecommerce theme's
+   ~40 shop/cart/checkout templates and vice versa. See storefront.css for the
+   catch-all that still scans every theme, which is what a theme installed later
+   as a zip falls back to.
+
+   A note for anyone extending these globs: a `*` followed by `/` ends a CSS
+   comment, so a glob written inside one of these notes — `**` then a slash —
+   closes it early and the rest of the prose is parsed as stylesheet. The paths
+   below are therefore spelled out in words rather than pasted in. */
+
+@source '../views/frontend/partials';
+
+@source '../views/livewire/frontend';
+
+@source '../views/components';
+@source not '../views/components/admin-*';
+@source not '../views/components/admin-row-details';
+@source not '../views/components/media-picker.blade.php';
+@source not '../views/components/layouts';
+@source not '../views/components/date-range-picker.blade.php';
+@source not '../views/components/searchable-select.blade.php';
+@source not '../views/components/per-page-select.blade.php';
+@source not '../views/components/desktop-user-menu.blade.php';
+
+@source '../views/partials';
+@source not '../views/partials/admin-*';
+
+/* The auth layout. The admin, vendor and delivery login screens all render
+   through it, and so does the default theme's home page — which is why it
+   belongs to every theme's bundle even though it is mostly an admin surface. It
+   uses no .admin-* classes, so a theme's copy styles it correctly.
+
+   Their three login forms come along for the same reason: the default theme's
+   home page renders on this layout, so if a theme's bundle did not style the
+   login form it would ship a visible, unstyled screen on the site's front
+   door. Three small blades is a cheap price for that. */
+@source '../views/layouts/auth';
+@source '../views/livewire/admin/auth';
+@source '../views/livewire/vendor/auth';
+@source '../views/livewire/delivery/auth';
+@source '../views/layouts/delivery.blade.php';
+@source '../views/layouts/vendor.blade.php';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+/* Flux's component appearance is Tailwind utilities, not compiled rules: the
+   classes inside Flux's own stub blades under vendor/livewire/flux/stubs are
+   what actually draw a Flux button, so those stubs have to be scanned for the
+   Flux components the storefront templates use.
+
+   There is deliberately no attempt to narrow this to only the ones in use. The
+   set is a transitive closure — a field pulls in its with-field, label, legend
+   and error stubs, an input pulls in the icon and select stubs — and a file left
+   out of it is a visibly unstyled dropdown or input, not a slightly smaller
+   sheet. Measured: excluding the whole stub tree saves ~22 KB gzipped and
+   unstyles every Flux component, and excluding just the 318 icon files saves
+   0.09 KB, because the classes in those icons dedupe against ones already
+   generated for the rest of the page.
+
+   Worth knowing before editing this list and seeing no change in the output:
+   these two lines are not what put the stubs in the scan. flux.css, which
+   base.css imports, carries its own source declaration for the same directory,
+   and that merges into whatever this stylesheet declares. The explicit list is
+   kept so the dependency is visible here rather than implicit in a vendor
+   file someone can upgrade underneath us. */
+@source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
+@source '../../vendor/livewire/flux/stubs/**/*.blade.php';
+
+/* The storefront's signature typeface. Trebuchet MS ships with every OS, so
+   naming it here costs no request at all — the ecommerce theme sets
+   `font-storefront` on <body> and never loads a webfont to be read.
+
+   The portfolio theme sets no family of its own, so it falls through to
+   --font-sans in base.css and does use Plus Jakarta Sans; that is the reason
+   the self-hosted font is preloaded rather than left to the CSS to discover. */
+@utility font-storefront {
+    font-family: 'Trebuchet MS', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+}

@@ -349,7 +349,12 @@
         </footer>
     </flux:main>
 
-    <div x-data x-on:notify.window="toastr.success($event.detail.message)"></div>
+    {{-- Honours the dispatcher's optional `type`, matching the auth split
+         layout: a component that dispatches('notify', type: 'error') was being
+         shown as a green success toast here, which mislabelled every failure
+         message in the admin panel. Defaults to 'success' so the ~80 existing
+         call sites that pass only a message are unaffected. --}}
+    <div x-data x-on:notify.window="toastr[$event.detail.type || 'success']($event.detail.message)"></div>
 
     @if ($calculatorEnabled)
         @persist('admin-calculator')

@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\MediaLibrary;
 use App\Models\MediaLibrary;
 use App\Models\Setting;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -296,6 +297,153 @@ class Index extends Component
 
         $this->closeWatermarkModal();
         $this->dispatch('notify', message: 'Watermark settings saved successfully');
+    }
+
+    // ── Storage symlink ──────────────────────────────────────────────────────
+    // Everything this page shows is served from the `public` disk, which
+    // Laravel only exposes over HTTP at /storage/... when public/storage is a
+    // symlink into storage/app/public. On a fresh clone (or after someone
+    // committed a copy of that folder instead of linking it) public/storage is
+    // a plain directory or is missing entirely, uploads then 404, and
+    // `php artisan storage:link` refuses to run because the path already
+    // exists. The header button calls createStorageLink() so the fix does not
+    // require shell access to the server.
+    //
+    // Staff can reach this page (route comment: "content — Staff included") so
+    // the action is behind access-admin-system, the same gate that keeps other
+    // system-level actions (delete post, bulk product ops) off the staff tier —
+    // writing to the server filesystem is not a content edit. It is also
+    // developer-environment only, so a deployed site neither shows the button
+    // nor can be made to run it.
+
+    public function hasStorageLink(): bool
+    {
+        return is_link($this->storageLinkPath());
+    }
+
+    /**
+     * The link and its target come from filesystems.links, the same declaration
+     * `php artisan storage:link` reads, so this button can never end up
+     * pointing somewhere else than Artisan would.
+     */
+    public function storageLinkPath(): string
+    {
+        return (string) (array_key_first($this->configuredStorageLinks()) ?: public_path('storage'));
+    }
+
+    public function storageTargetPath(): string
+    {
+        $links = $this->configuredStorageLinks();
+        $from = (string) array_key_first($links);
+
+        return $from === '' ? storage_path('app/public') : (string) $links[$from];
+    }
+
+    /** @return array<string, string> */
+    private function configuredStorageLinks(): array
+    {
+        return array_map('strval', (array) config('filesystems.links', []));
+    }
+
+    public function createStorageLink(): void
+    {
+        Gate::authorize('access-admin-system');
+
+        // The header button that calls this is developer-only, and so is the
+        // action: without this a deployed site could still have the filesystem
+        // rewritten through a hand-rolled $wire call from devtools. Same
+        // environment gate as the Admin → Features screen
+        // (see Livewire\Admin\Features\Index).
+        abort_unless(app()->environment('developer'), 404, 'Linking storage is only available in the developer environment.');
+
+        if ($this->hasStorageLink()) {
+            $this->dispatch('notify', type: 'info', message: 'Storage is already linked — nothing to do.');
+
+            return;
+        }
+
+        $link = $this->storageLinkPath();
+        $target = $this->storageTargetPath();
+
+        if (! is_dir($target)) {
+            $this->dispatch('notify', type: 'error', message: "Cannot link storage: {$target} does not exist.");
+
+            return;
+        }
+
+        // A copied directory is sitting where the link has to go, which is
+        // exactly what makes storage:link fail. Move it aside rather than
+        // deleting it: nothing is lost, and the admin can drop the copy once
+        // uploads are confirmed working through the link.
+        $backup = null;
+
+        if (file_exists($link)) {
+            $backup = $this->unusedPath($link.'.bak-'.now()->format('Ymd-His'));
+
+            if (! @rename($link, $backup)) {
+                $this->dispatch('notify', type: 'error', message: "Could not move the existing {$link} directory aside. Check its permissions and try again.");
+
+                return;
+            }
+        }
+
+        if (! @symlink($target, $link)) {
+            if ($backup !== null) {
+                @rename($backup, $link);
+            }
+
+            $this->dispatch('notify', type: 'error', message: $this->symlinkFailureMessage());
+
+            return;
+        }
+
+        // symlink() returning true is not proof of a working link on every
+        // platform, and telling an admin "done" for a broken link is the worst
+        // possible outcome here — so confirm before reporting success.
+        if (! is_link($link)) {
+            if ($backup !== null) {
+                @rename($backup, $link);
+            } else {
+                @unlink($link);
+            }
+
+            $this->dispatch('notify', type: 'error', message: "Created {$link}, but it is not a usable symlink. Check the web server's file permissions.");
+
+            return;
+        }
+
+        $this->dispatch('notify', type: 'success', message: $backup === null
+            ? "Storage linked: {$link} → {$target}"
+            : "Storage linked: {$link} → {$target}. The directory it replaced was kept at {$backup} — delete it once uploads are loading.");
+
+        // The button is rendered from a @push('page-header-actions') block,
+        // which the layout only flushes on a full page load, so re-rendering in
+        // place would leave the button on screen with nothing left to do. Send
+        // the admin back to a freshly rendered page instead.
+        $this->redirect(route('admin.media-library'));
+    }
+
+    /** First free path in the $path, $path-1, $path-2, ... series. */
+    private function unusedPath(string $path): string
+    {
+        $suffix = 1;
+
+        while (file_exists($path.'-'.$suffix)) {
+            $suffix++;
+        }
+
+        return file_exists($path) ? $path.'-'.$suffix : $path;
+    }
+
+    private function symlinkFailureMessage(): string
+    {
+        $reason = error_get_last()['message'] ?? 'unknown error';
+
+        if (PHP_OS_FAMILY === 'Windows') {
+            return 'Could not create the symlink ('.$reason.'). Windows only allows this when Developer Mode is on or the process is elevated — run "php artisan storage:link" from an Administrator terminal instead.';
+        }
+
+        return 'Could not create the symlink: '.$reason.'. Check that PHP is permitted to create symlinks, or run "php artisan storage:link" manually.';
     }
 
     public function render()

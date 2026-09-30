@@ -40,7 +40,7 @@ class Tag extends Model
      * tags (unlike Products/ProductCategories) have no paired Page to own a
      * slug, so it's computed on the fly for the storefront's /tag/{slug}
      * links. Uses the same separator as Slug::make so it round-trips with the
-     * FrontendController::resolveTag() lookup.
+     * App\Http\Controllers\Themes\ThemeController::resolveTag() lookup.
      */
     protected $appends = ['slug'];
 
