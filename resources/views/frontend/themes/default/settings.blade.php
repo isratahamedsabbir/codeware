@@ -53,3 +53,5 @@
         </section>
     </div>
 </div>
+
+@fluxScripts

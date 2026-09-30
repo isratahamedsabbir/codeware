@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Support\Locale::direction() }}">
 <head>
     @include('partials.head')
@@ -320,8 +320,8 @@
                 </div>
             @endif
 
-            {{-- Product details as plain value pills — categories, brand, type,
-                 then any tags — no labels in front of them. --}}
+            {{-- Product details as plain value pills â€” categories, brand, type,
+                 then any tags â€” no labels in front of them. --}}
             <div class="mt-8 flex flex-wrap items-center gap-2 border-t border-zinc-100 pt-6">
                 @foreach ($product->categories as $category)
                     <a href="{{ route('shop.category', $category->slug) }}"
@@ -436,7 +436,7 @@
                         @endif
                         @if ($advertisement->url)
                             <span class="text-xs font-medium text-sf-primary">
-                                {{ __('Learn more') }} <span aria-hidden="true">→</span>
+                                {{ __('Learn more') }} <span aria-hidden="true">â†’</span>
                                 @if ($host = parse_url($advertisement->url, PHP_URL_HOST))
                                     <span class="font-normal text-zinc-400">{{ $host }}</span>
                                 @endif
@@ -516,9 +516,7 @@
 
 @include('frontend.themes.ecommerce.partials.footer')
 
-<livewire:frontend.chat-widget />
-
-@fluxScripts
+@include('frontend.partials.chat-widget')
 @include('partials.custom-code-body')
 </body>
 </html>

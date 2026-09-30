@@ -10,6 +10,7 @@ use App\Models\User;
 use Database\Seeders\AdminMenuSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Livewire\Livewire;
+use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
@@ -240,6 +241,31 @@ it('hides an inactive item from the live sidebar but keeps it in the management 
     $dashboard->assertDontSee('Contacts');
 
     Livewire::test(MenuIndex::class)->assertSee('Contacts');
+});
+
+it('hides the Vendors link from Access Control once the vendor role is deactivated, and brings it back when reactivated', function () {
+    $this->seed(AdminMenuSeeder::class);
+    activateRoles('vendor');
+
+    $this->get(config('app.admin_url'))->assertOk()->assertSee('Vendors');
+
+    Role::where('name', 'vendor')->update(['status' => 'inactive']);
+
+    // Roles, Permissions and Users are siblings in the same group, so the group
+    // survives its Vendors child dropping out rather than vanishing whole.
+    $dashboard = $this->get(config('app.admin_url'))->assertOk();
+    $dashboard->assertDontSee('Vendors')->assertSeeInOrder(['Access Control', 'Users']);
+
+    activateRoles('vendor');
+
+    $this->get(config('app.admin_url'))->assertOk()->assertSee('Vendors');
+});
+
+it('drops the Vendors link when the vendor role is deleted outright, not just deactivated', function () {
+    $this->seed(AdminMenuSeeder::class);
+    Role::where('name', 'vendor')->delete();
+
+    $this->get(config('app.admin_url'))->assertOk()->assertDontSee('Vendors');
 });
 
 it('can toggle a menu item into and out of the short menu', function () {

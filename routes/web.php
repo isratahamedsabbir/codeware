@@ -14,6 +14,7 @@
  */
 
 use App\Http\Controllers\Auth\PasswordResetOtpController;
+use App\Http\Controllers\ChatWidgetFragmentController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\RobotsController;
 use App\Http\Controllers\SitemapController;
@@ -93,6 +94,13 @@ Route::get('/token', function () {
 
 Route::get('/test-private-channel', [TestController::class, 'testPrivateChannel']);
 Route::get('/test-public-channel', [TestController::class, 'testPublicChannel']);
+
+// The chat bubble's contents, fetched the first time somebody opens it. Not
+// theme-scoped for the same reason the storefront's own pages are not: the
+// bubble is the same component in every theme, and it has to keep working
+// after the admin switches the site from one to another. See
+// App\Http\Controllers\ChatWidgetFragmentController for why it exists at all.
+Route::get('/chat-widget', ChatWidgetFragmentController::class)->name('chat-widget.fragment');
 
 require __DIR__.'/settings.php';
 

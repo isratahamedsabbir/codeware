@@ -17,6 +17,7 @@ use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
+    activateRoles('customer', 'delivery_boy');
 
     $this->rider = User::factory()->create(['password' => 'correct-password']);
     $this->rider->assignRole(['customer', 'delivery_boy']);

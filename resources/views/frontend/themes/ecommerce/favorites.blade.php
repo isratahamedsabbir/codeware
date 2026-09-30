@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Support\Locale::direction() }}">
 <head>
     @include('partials.head')
@@ -32,7 +32,7 @@
                 </svg>
                 <h2 class="mt-4 text-lg font-semibold text-sf-text">{{ __('No favorites yet') }}</h2>
                 <p class="mx-auto mt-1 max-w-md text-sm text-gray-500">
-                    {{ __('Tap the heart on any product to save it here — it stays even before you sign in.') }}
+                    {{ __('Tap the heart on any product to save it here â€” it stays even before you sign in.') }}
                 </p>
                 <a href="{{ route('shop') }}"
                     class="mt-6 inline-block rounded-full bg-sf-button px-6 py-2.5 text-sm font-semibold text-sf-button-text transition hover:opacity-90">
@@ -55,9 +55,7 @@
 
 @include('frontend.themes.ecommerce.partials.footer')
 
-<livewire:frontend.chat-widget />
-
-@fluxScripts
+@include('frontend.partials.chat-widget')
 @include('partials.custom-code-body')
 </body>
 </html>

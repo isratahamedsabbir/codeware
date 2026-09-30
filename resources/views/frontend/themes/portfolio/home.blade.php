@@ -114,7 +114,7 @@
 
                     <h1 class="pf-heading pf-animate text-4xl leading-[1.08] font-bold sm:text-5xl lg:text-6xl" style="animation-delay:140ms">
                         <span class="pf-mono block text-base font-normal text-(--pf-text-muted) sm:text-lg">Hi, I'm</span>
-                        <span data-typewriter class="pf-gradient-text mt-2 block whitespace-nowrap" style="visibility:hidden">{{ $profile['name'] }}</span>
+                        <span class="pf-typewriter pf-gradient-text mt-2 block whitespace-nowrap">{{ $profile['name'] }}</span>
                     </h1>
 
                     @if ($profile['role'])
@@ -830,9 +830,7 @@
 
     @include('frontend.themes.portfolio.partials.footer')
 
-    <livewire:frontend.chat-widget />
-
-    @fluxScripts
+    @include('frontend.partials.chat-widget')
     <script src="{{ asset('themes/portfolio/script.js') }}" defer></script>
 @include('partials.custom-code-body')
 </body>

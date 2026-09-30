@@ -287,9 +287,7 @@
 
     @include('frontend.themes.portfolio.partials.footer')
 
-    <livewire:frontend.chat-widget />
-
-    @fluxScripts
+    @include('frontend.partials.chat-widget')
     <script src="{{ asset('themes/portfolio/script.js') }}" defer></script>
 @include('partials.custom-code-body')
 </body>

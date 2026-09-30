@@ -188,3 +188,47 @@ it('keeps the site primary color when no chat widget color is set', function () 
 
     Livewire::test(ChatWidget::class)->assertDontSeeHtml('--color-primary:');
 });
+
+it('sends the real widget to a click, not to a page load', function () {
+    // The two runtimes this feature used to cost every visitor on every page
+    // now ride along with the fragment, so the endpoint has to hand back all
+    // three things or the panel arrives unable to do anything: the component's
+    // markup, Flux (for the widget's own form controls) and Livewire (for
+    // everything else).
+    Setting::set('chat_widget_enabled', true);
+
+    $response = $this->getJson(route('chat-widget.fragment'))->assertOk();
+
+    $payload = $response->json();
+
+    expect($payload['enabled'])->toBeTrue()
+        ->and($payload['html'])->toContain('data-chat-toggle')
+        ->and($payload['scripts'])->toHaveCount(2)
+        ->and($payload['scripts'][0])->toContain('flux')
+        ->and($payload['scripts'][1])->toContain('livewire');
+});
+
+it('answers the click with nothing when the widget has been switched off since', function () {
+    // The bubble is in the page, so the setting is only consulted at the moment
+    // it is clicked. Reporting it disabled lets the placeholder take the button
+    // away, rather than fetching a component that would render an empty frame.
+    Setting::set('chat_widget_enabled', false);
+
+    $this->getJson(route('chat-widget.fragment'))
+        ->assertOk()
+        ->assertExactJson(['enabled' => false]);
+});
+
+it('puts a button on the page that can fetch itself a panel', function () {
+    // Deliberately not the component: what ships on page load is a static
+    // button pointing at the endpoint, and the assertion that it is *not* the
+    // component is the half that saves 386 KB of JavaScript.
+    Setting::set('chat_widget_enabled', true);
+
+    $partial = file_get_contents(resource_path('views/frontend/partials/chat-widget.blade.php'));
+
+    expect($partial)->toContain('data-chat-widget-host')
+        ->and($partial)->toContain("route('chat-widget.fragment')")
+        ->and($partial)->toContain('data-chat-toggle')
+        ->and($partial)->not->toContain('<livewire:');
+});

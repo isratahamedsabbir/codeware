@@ -6,6 +6,7 @@ use Database\Seeders\RolePermissionSeeder;
 
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
+    activateRoles('vendor');
 });
 
 test('guests are redirected to login from the vendor portal', function () {

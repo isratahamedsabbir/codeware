@@ -120,6 +120,18 @@ class MenuItem extends Model
         'admin.upazilas' => 'location',
     ];
 
+    /**
+     * Route name prefixes mapped to the role that switches that part of the panel
+     * on and off. Only the vendor tier so far: with the 'vendor' role deactivated
+     * there is no Vendor Portal to manage and nobody who can be given the role, so
+     * the Access Control → Vendors link drops out rather than opening a screen
+     * that can only ever be empty. admin/staff are deliberately absent — the panel
+     * itself hangs off them, so there's nothing left to hide when they go.
+     */
+    private const ROLE_ROUTE_PREFIXES = [
+        'admin.product-vendors' => 'vendor',
+    ];
+
     protected $fillable = [
         'group',
         'parent_id',
@@ -264,6 +276,27 @@ class MenuItem extends Model
         return null;
     }
 
+    /**
+     * The name of the role this item's route hangs off, or null if it isn't tied
+     * to one. Checked in isVisibleToCurrentUser() alongside the gate and feature
+     * toggles — same idea, one level further out: the switch lives on the role
+     * rather than on a feature flag.
+     */
+    private function requiredRole(): ?string
+    {
+        if (! $this->route_name) {
+            return null;
+        }
+
+        foreach (self::ROLE_ROUTE_PREFIXES as $prefix => $role) {
+            if ($this->route_name === $prefix || str_starts_with($this->route_name, $prefix.'.')) {
+                return $role;
+            }
+        }
+
+        return null;
+    }
+
     public function isVisibleToCurrentUser(): bool
     {
         $gate = $this->requiredGate();
@@ -278,6 +311,15 @@ class MenuItem extends Model
         // hide its sidebar link there too rather than linking to a dead end.
         if ($this->route_name === 'admin.features'
             && ! (app()->environment('developer') && (auth()->user()?->hasRole('admin') ?? false))) {
+            return false;
+        }
+
+        // A deactivated role takes its section of the panel with it. Only an admin
+        // sees the Roles screen that would switch it back on, so there's no
+        // dead-end risk in hiding this one — the switch is a level up, not sideways.
+        $role = $this->requiredRole();
+
+        if ($role !== null && ! User::isRoleActive($role)) {
             return false;
         }
 

@@ -8,6 +8,7 @@ use Livewire\Livewire;
 
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
+    activateRoles('vendor');
 });
 
 it('serves its own login page on the vendor host instead of the shared admin one', function () {

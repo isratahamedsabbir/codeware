@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Support\Locale::direction() }}">
 <head>
     @include('partials.head')
@@ -23,7 +23,7 @@
     <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         <div class="mb-6">
             <h1 class="text-lg font-bold uppercase tracking-wide text-sf-text md:text-2xl">{{ __('My Account') }}</h1>
-            <p class="mt-1 text-sm text-gray-600">{{ __('Welcome back, :name — here is what is happening with your orders.', ['name' => $user->name]) }}</p>
+            <p class="mt-1 text-sm text-gray-600">{{ __('Welcome back, :name â€” here is what is happening with your orders.', ['name' => $user->name]) }}</p>
         </div>
 
         <div class="flex flex-col gap-6 md:flex-row">
@@ -95,9 +95,7 @@
 
 @include('frontend.themes.ecommerce.partials.footer')
 
-<livewire:frontend.chat-widget />
-
-@fluxScripts
+@include('frontend.partials.chat-widget')
 @include('partials.custom-code-body')
 </body>
 </html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Support\Locale::direction() }}">
 <head>
     @include('partials.head')
@@ -101,7 +101,7 @@
                                         </svg>
                                         {{ $post->views }}
                                     </span>
-                                    <span class="font-semibold text-brand group-hover:underline">{{ __('Read more') }} →</span>
+                                    <span class="font-semibold text-brand group-hover:underline">{{ __('Read more') }} â†’</span>
                                 </span>
                             </div>
                         </div>
@@ -124,9 +124,7 @@
 
 @include('frontend.themes.ecommerce.partials.footer')
 
-<livewire:frontend.chat-widget />
-
-@fluxScripts
+@include('frontend.partials.chat-widget')
 @include('partials.custom-code-body')
 </body>
 </html>

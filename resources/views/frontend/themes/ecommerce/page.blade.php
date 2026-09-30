@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Support\Locale::direction() }}">
 <head>
     @include('partials.head')
@@ -66,9 +66,7 @@
 
 @include('frontend.themes.ecommerce.partials.footer')
 
-<livewire:frontend.chat-widget />
-
-@fluxScripts
+@include('frontend.partials.chat-widget')
 @include('partials.custom-code-body')
 </body>
 </html>

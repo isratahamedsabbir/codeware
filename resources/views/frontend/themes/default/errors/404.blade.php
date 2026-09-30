@@ -1,17 +1,17 @@
-{{--
+﻿{{--
     The default theme's 404.
 
     Themes::errorView() prefers a theme's own errors/{code}.blade.php over the
     shared resources/views/errors/{code}.blade.php, so this file is what a
     visitor on the default theme actually gets. A theme that ships no such file
-    falls back to the shared page instead — nothing here is required for the
+    falls back to the shared page instead â€” nothing here is required for the
     storefront to work.
 
     Deliberately the same chrome as a real page of this theme (its own header and
     footer, its Tailwind tokens, the same admin/vendor/delivery links) rather
     than the shared page's standalone shell: someone who hits a dead URL is still
     on the site, and should be able to navigate away from it. That is why the
-    page carries one "back home" button and no second row of suggested links —
+    page carries one "back home" button and no second row of suggested links â€”
     the header directly above it is already the nav.
 
     This does mean the page needs the asset pipeline, the settings table and the
@@ -23,7 +23,7 @@
 <head>
     @include('partials.head')
     {{-- A 404 must never be indexed, and must never claim a canonical URL for a
-         page that does not exist — so partials.seo-meta is deliberately absent
+         page that does not exist â€” so partials.seo-meta is deliberately absent
          here (it derives both from $page). --}}
     <meta name="robots" content="noindex, nofollow">
     @include('partials.custom-code-head')
@@ -53,9 +53,7 @@
 
 @include('frontend.themes.default.partials.footer')
 
-<livewire:frontend.chat-widget />
-
-@fluxScripts
+@include('frontend.partials.chat-widget')
 @include('partials.custom-code-body')
 </body>
 </html>

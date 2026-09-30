@@ -6,6 +6,7 @@ use App\Support\ThemeSettings;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /*
@@ -97,6 +98,20 @@ function pairPageFor(Model $entity, string $type, string $slug, int $userId): Pa
         'slug' => $slug,
         'status' => 'active',
     ]);
+}
+
+/**
+ * Switches on the self-service roles RolePermissionSeeder creates switched off
+ * (vendor/delivery_boy/customer — see the seeder's createInactiveRole()).
+ *
+ * A test that exercises one of those portals has to stand in for the admin
+ * enabling the role from Admin → Roles first: an inactive role rejects its
+ * holders at login and on every gated request, which is the whole point of the
+ * default, so the portal tests would otherwise only ever prove the lockout.
+ */
+function activateRoles(string ...$names): void
+{
+    Role::whereIn('name', $names)->update(['status' => 'active']);
 }
 
 /**

@@ -14,6 +14,7 @@ use App\Models\ProductCategory;
 use App\Models\ProductVendor;
 use App\Models\Tag;
 use App\Models\Type;
+use App\Models\User;
 use App\Support\AdminActivity;
 use App\Support\Locale;
 use App\Support\PuckEditor;
@@ -723,6 +724,19 @@ class Form extends Component
     public function productVendors()
     {
         return ProductVendor::orderBy('sort_order')->orderBy('name')->get();
+    }
+
+    /**
+     * Whether the Vendor card is shown at all. It follows the 'vendor' role's
+     * status: with the role deactivated there is no Vendor Portal and nobody who
+     * can hold it, so the picker would only ever be a dead end. vendor_id itself
+     * is left untouched on save, so a product that already had one keeps it and
+     * it reappears the moment the role is switched back on.
+     */
+    #[Computed]
+    public function vendorRoleActive(): bool
+    {
+        return User::isRoleActive('vendor');
     }
 
     /**

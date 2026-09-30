@@ -1,10 +1,10 @@
-{{--
+﻿{{--
     The ecommerce theme's 404.
 
     Themes::errorView() prefers a theme's own errors/{code}.blade.php over the
     shared resources/views/errors/{code}.blade.php, so this file is what a
     visitor on the ecommerce theme actually gets. A theme that ships no such file
-    falls back to the shared page instead — nothing here is required for the
+    falls back to the shared page instead â€” nothing here is required for the
     storefront to work.
 
     Wears the storefront's own chrome (header with the category dropdown and
@@ -18,7 +18,7 @@
     unguarded at the nav's top level.
 
     Like the default theme's 404 this needs the asset pipeline and the settings
-    table, which the shared shell does not — that is the trade, and the reason
+    table, which the shared shell does not â€” that is the trade, and the reason
     the shared page stays as the fallback.
 --}}
 <!DOCTYPE html>
@@ -26,7 +26,7 @@
 <head>
     @include('partials.head')
     {{-- A 404 must never be indexed, and must never claim a canonical URL for a
-         page that does not exist — so partials.seo-meta is deliberately absent
+         page that does not exist â€” so partials.seo-meta is deliberately absent
          here (it derives both from $page). --}}
     <meta name="robots" content="noindex, nofollow">
     @include('partials.custom-code-head')
@@ -59,9 +59,7 @@
 
 @include('frontend.themes.ecommerce.partials.footer')
 
-<livewire:frontend.chat-widget />
-
-@fluxScripts
+@include('frontend.partials.chat-widget')
 @include('partials.custom-code-body')
 </body>
 </html>

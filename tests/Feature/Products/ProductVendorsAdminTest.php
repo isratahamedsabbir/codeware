@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Admin\Products\Form as ProductForm;
 use App\Livewire\Admin\ProductVendors\Form as ProductVendorForm;
 use App\Livewire\Admin\ProductVendors\Index as ProductVendorIndex;
 use App\Models\Product;
@@ -8,6 +9,7 @@ use App\Models\User;
 use App\Support\EnvFile;
 use Database\Seeders\RolePermissionSeeder;
 use Livewire\Livewire;
+use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
     // EnvFile must never touch the real project .env during tests — see
@@ -213,4 +215,29 @@ it('deletes a vendor, leaving products that used it with no vendor', function ()
 
     expect(ProductVendor::find($vendor->id))->toBeNull();
     expect($product->fresh()->vendor)->toBeNull();
+});
+
+it('hides the product form\'s Vendor card while the vendor role is deactivated, keeping any existing assignment', function () {
+    activateRoles('vendor');
+    $vendor = ProductVendor::factory()->create(['name' => 'Acme Supplies']);
+
+    Livewire::test(ProductForm::class)
+        ->assertOk()
+        ->assertSee('Vendor')
+        ->assertSee('Acme Supplies');
+
+    Role::where('name', 'vendor')->update(['status' => 'inactive']);
+
+    // The card is gone, but vendor_id is left on the component rather than
+    // nulled, so saving through the hidden card can't silently drop a product's
+    // vendor — it reappears the moment the role is switched back on.
+    $product = Product::factory()->create(['vendor_id' => $vendor->id]);
+
+    Livewire::test(ProductForm::class, ['id' => $product->id])
+        ->assertOk()
+        ->assertDontSee('Acme Supplies')
+        ->assertSet('vendor_id', $vendor->id)
+        ->call('save');
+
+    expect($product->fresh()->vendor_id)->toBe($vendor->id);
 });

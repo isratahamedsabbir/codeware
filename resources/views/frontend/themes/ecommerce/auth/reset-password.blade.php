@@ -1,4 +1,4 @@
-@php
+﻿@php
     $title = __('Reset password');
     $page = null;
     $navPages = \App\Models\Page::ofType('page')->published()->orderBy('sort_order')->get();
@@ -76,9 +76,7 @@
 
 @include('frontend.themes.ecommerce.partials.footer')
 
-<livewire:frontend.chat-widget />
-
-@fluxScripts
+@include('frontend.partials.chat-widget')
 @include('partials.custom-code-body')
 </body>
 </html>

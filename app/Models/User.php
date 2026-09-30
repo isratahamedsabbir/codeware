@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable(['name', 'email', 'code', 'password', 'photo', 'signature', 'provider', 'provider_id'])]
@@ -155,6 +156,21 @@ class User extends Authenticatable
     public function hasInactiveRole(): bool
     {
         return $this->roles()->where('status', 'inactive')->exists();
+    }
+
+    /**
+     * Whether the named role (Admin → Roles) is currently switched on, for the
+     * admin surfaces that hang off a single role — the Access Control → Vendors
+     * link and the product form's vendor picker both disappear with the 'vendor'
+     * role, since neither means anything while the Vendor Portal is off.
+     *
+     * A role that doesn't exist at all counts as off: Admin → Roles can delete
+     * any role but 'admin', and a deleted 'vendor' leaves the same dead ends
+     * behind that a deactivated one does.
+     */
+    public static function isRoleActive(string $role): bool
+    {
+        return Role::where('name', $role)->where('status', 'active')->exists();
     }
 
     /**

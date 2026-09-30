@@ -59,17 +59,38 @@ class RolePermissionSeeder extends Seeder
         // Vendor: no admin-panel permissions at all — this role only gates entry to
         // the separate Vendor Portal (see access-vendor-portal in AppServiceProvider),
         // it grants nothing under /admin/*.
-        Role::findOrCreate('vendor', 'web');
+        $this->createInactiveRole('vendor');
 
         // Delivery boy: same idea as Vendor — no admin-panel permissions, only
         // gates entry to the separate Delivery Portal (see access-delivery-portal
         // in AppServiceProvider). Never combined with admin/staff/vendor.
-        Role::findOrCreate('delivery_boy', 'web');
+        $this->createInactiveRole('delivery_boy');
 
         // Customer: the default tier for everyone who registers through the public
         // site/API (see CreateNewUser) — no admin-panel permissions, access-admin
         // already excludes it. Every user belongs to some role; this is the
         // catch-all for the ones that aren't admin/staff/vendor.
-        Role::findOrCreate('customer', 'web');
+        $this->createInactiveRole('customer');
+    }
+
+    /**
+     * Creates one of the self-service roles (vendor/delivery_boy/customer) switched
+     * off, so a fresh install ships with no storefront-facing access live: an admin
+     * enables each one deliberately from Admin → Roles, the same "inactive until
+     * switched on" rule every other create-form in the panel follows.
+     *
+     * The status is only written when the role is actually created — a role an admin
+     * has since enabled is left alone on a re-seed, so `db:seed` can be re-run
+     * without quietly deactivating a tier that is in use.
+     */
+    private function createInactiveRole(string $name): Role
+    {
+        $role = Role::findOrCreate($name, 'web');
+
+        if ($role->wasRecentlyCreated) {
+            $role->update(['status' => 'inactive']);
+        }
+
+        return $role;
     }
 }

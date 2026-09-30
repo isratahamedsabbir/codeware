@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Support\Locale::direction() }}">
 <head>
     @include('partials.head')
@@ -80,7 +80,7 @@
                 <p class="mt-1 text-sm text-zinc-500">{{ __(':count products found', ['count' => $products->total()]) }}</p>
             </div>
             <a href="{{ route('shop', ['category' => $category->slug]) }}" class="text-sm font-semibold text-brand hover:underline">
-                {{ __('Filter in shop') }} →
+                {{ __('Filter in shop') }} â†’
             </a>
         </div>
 
@@ -106,9 +106,7 @@
 
 @include('frontend.themes.ecommerce.partials.footer')
 
-<livewire:frontend.chat-widget />
-
-@fluxScripts
+@include('frontend.partials.chat-widget')
 @include('partials.custom-code-body')
 </body>
 </html>

@@ -480,24 +480,26 @@
                 <flux:error name="brand_id" />
             </x-admin-section-card>
 
-            {{-- Vendor --}}
-            <x-admin-section-card variant="postbox" persist-key="product-vendor" title="Vendor"
-                description="Optional — which vendor supplies this product." :collapsed="true">
-                <select wire:model="vendor_id" class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                    <option value="">No vendor</option>
-                    @foreach ($this->productVendors as $vendor)
-                        <option value="{{ $vendor->id }}">{{ $vendor->name }}</option>
-                    @endforeach
-                </select>
-                @if ($this->productVendors->isEmpty())
-                    <p class="text-xs text-zinc-400 mt-1.5">No vendors yet.
-                        <a href="{{ route('admin.product-vendors.create') }}" wire:navigate class="text-indigo-500 hover:underline">
-                            Create one
-                        </a>.
-                    </p>
-                @endif
-                <flux:error name="vendor_id" />
-            </x-admin-section-card>
+            {{-- Vendor — hidden entirely while the 'vendor' role is deactivated --}}
+            @if ($this->vendorRoleActive)
+                <x-admin-section-card variant="postbox" persist-key="product-vendor" title="Vendor"
+                    description="Optional — which vendor supplies this product." :collapsed="true">
+                    <select wire:model="vendor_id" class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                        <option value="">No vendor</option>
+                        @foreach ($this->productVendors as $vendor)
+                            <option value="{{ $vendor->id }}">{{ $vendor->name }}</option>
+                        @endforeach
+                    </select>
+                    @if ($this->productVendors->isEmpty())
+                        <p class="text-xs text-zinc-400 mt-1.5">No vendors yet.
+                            <a href="{{ route('admin.product-vendors.create') }}" wire:navigate class="text-indigo-500 hover:underline">
+                                Create one
+                            </a>.
+                        </p>
+                    @endif
+                    <flux:error name="vendor_id" />
+                </x-admin-section-card>
+            @endif
 
             {{-- Tags — product-typed and post-typed pools, no legacy (App\Models\Tag) --}}
             <x-admin-section-card variant="postbox" persist-key="product-tags" title="Tags"

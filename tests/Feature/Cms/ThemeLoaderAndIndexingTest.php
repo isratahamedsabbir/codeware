@@ -7,6 +7,7 @@ use App\Support\Seo\Sitemap;
 use App\Support\Seo\Url;
 use App\Support\Themes;
 use App\Support\ThemeSettings;
+use Illuminate\Support\Facades\File;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,6 +32,28 @@ beforeEach(function () {
 function portfolioHome(): string
 {
     return test()->get('/')->assertOk()->getContent();
+}
+
+/**
+ * Every storefront template, with Blade comments taken out.
+ *
+ * The comments matter: the chat widget's own docblock names @fluxScripts while
+ * explaining why the rest of the themes no longer emit it, and a test that read
+ * its own prose as a directive would be useless.
+ */
+function storefrontTemplates(): array
+{
+    $files = File::allFiles(resource_path('views/frontend'));
+
+    $templates = [];
+
+    foreach ($files as $file) {
+        $contents = preg_replace('/\{\{--.*?--\}\}/s', '', $file->getContents());
+
+        $templates[str_replace(resource_path('views').'\\', '', $file->getRealPath())] = $contents;
+    }
+
+    return $templates;
 }
 
 it('shows the loader only on the first visit, and the flag is set in the head', function () {
@@ -59,14 +82,33 @@ it('shows the loader only on the first visit, and the flag is set in the head', 
         ->and($body)->toContain('pf-loader-crt-spark');
 });
 
-it('keeps the loader hidden until the first-visit gate reveals it', function () {
+it('keeps the loader hidden until the page turns out to be slow', function () {
     // All of this sits on top of a display:none default: no JS, no flag, no
     // loader — nothing to undo, nothing to flash. The reveal is one rule, and
     // the sheet is a full viewport by the time it is shown.
+    //
+    // The class that reveals it is the slow-page one, not the first-visit one.
+    // Being new to the site is not a reason to hold the page; a page that is
+    // still loading a second and a half after first paint is.
     $css = file_get_contents(public_path('themes/portfolio/style.css'));
 
     expect($css)->toMatch('/\.theme-portfolio \.pf-loader\{[^}]*display:none/s')
-        ->and($css)->toMatch('/\.pf-first-visit \.theme-portfolio \.pf-loader\{[^}]*display:flex/s');
+        ->and($css)->toMatch('/\.pf-slow-visit \.theme-portfolio \.pf-loader\{[^}]*display:flex/s')
+        ->and($css)->not->toMatch('/\.pf-first-visit \.theme-portfolio \.pf-loader\{/s');
+});
+
+it('waits to find out whether the page is slow rather than assuming it', function () {
+    // The check reads document.readyState after SLOW_MS and gives up if the
+    // page is already there. That single condition is the difference between
+    // a loader that earns its place and one that taxes every first visit —
+    // and a first visit is what PageSpeed, Lighthouse and the Chrome UX Report
+    // all measure, since they run with a clean profile and so take the slow
+    // branch on a healthy site.
+    $html = portfolioHome();
+
+    expect($html)->toContain('SLOW_MS')
+        ->and($html)->toContain("document.readyState === 'complete'")
+        ->and($html)->toContain("classList.add('pf-slow-visit')");
 });
 
 it('opens from the middle: the black parts, the seam shows the portfolio', function () {
@@ -96,22 +138,72 @@ it('dismisses the loader with a ceiling so a stalled image cannot strand anyone'
         ->and($html)->toContain("addEventListener('load', lift)");
 });
 
-it('holds the loader for as long as the CRT animation takes to play', function () {
-    // The hairline starts at .2s and needs .9s to swell into the field. A floor
-    // that is shorter than the animation would cut the effect off at one frame;
-    // the floor exists to let the animation complete, so it is chosen to match
-    // the animation's own delay plus duration.
+it('shows the loader only once the slow check has already passed', function () {
+    // The animation floor is now conditional. When the page was there in time,
+    // no loader exists, so no floor needs protecting; when it was slow, the
+    // SHOW_MIN_MS floor keeps the CRT from being cut off at one frame. The old
+    // unconditional 1450ms floor is what made every first visit pay for an
+    // animation most of them were fast enough to skip.
     $html = portfolioHome();
 
-    expect($html)->toContain('MIN_MS')
-        ->and($html)->toContain('Math.max(0, MIN_MS');
+    expect($html)->toContain('SHOW_MIN_MS')
+        ->and($html)->toContain('setTimeout(lift, SHOW_MIN_MS)')
+        ->and($html)->not->toContain('var MIN_MS')
+        ->and($html)->not->toContain('Math.max(0, MIN_MS');
+});
+
+it('never hides content behind a loader it did not need', function () {
+    // The thing being optimised is the largest contentful paint, and on this
+    // page that is the name in the hero. It has to be legible from the first
+    // frame: no hidden text, no character-at-a-time typing, no opacity ramp on
+    // anything the visitor is waiting to read.
+    $html = portfolioHome();
+
+    expect($html)->toContain('pf-typewriter')
+        ->and($html)->not->toContain('data-typewriter')
+        ->and($html)->not->toContain('visibility:hidden');
+});
+
+it('sends Flux to a template that uses it, and to nothing else', function () {
+    // Flux's runtime is ~131 KB, so it used to be pulled in by every template on
+    // the off-chance that one of them needed it. Twenty-eight of them did not.
+    // Stripping it is only safe as long as the three that do still ask for it,
+    // and a template that grows a flux: component later has to ask again — so
+    // this is asserted in both directions rather than trusting the current list.
+    $needs = array_keys(array_filter(
+        storefrontTemplates(),
+        fn ($contents) => str_contains($contents, '<flux:'),
+    ));
+
+    $asks = array_keys(array_filter(
+        storefrontTemplates(),
+        fn ($contents) => str_contains($contents, '@fluxScripts'),
+    ));
+
+    expect($needs)->not->toBeEmpty()
+        ->and($needs)->each->toBeIn($asks)
+        ->and(array_diff($asks, $needs))->toBe([]);
+});
+
+it('never asks a storefront page for the chat widget it now fetches', function () {
+    // The bubble used to be <livewire:frontend.chat-widget />, which is what
+    // dragged Livewire onto pages that had no other reason to load it. The
+    // replacement is a static button plus a fetch, and if a template quietly
+    // goes back to the component the saving is gone with nobody noticing.
+    $components = array_keys(array_filter(
+        storefrontTemplates(),
+        fn ($contents) => str_contains($contents, '<livewire:frontend.chat-widget'),
+    ));
+
+    expect($components)->toBe([]);
 });
 
 it('needs no <noscript>, because the hidden default takes the loader away', function () {
-    // With JavaScript off there is no flag, so there is no .pf-first-visit
-    // class, so the display:none default stands and nothing is ever shown.
-    // That is the whole mechanism; a <noscript> block would only be undoing
-    // a sheet that was never meant to be up in the first place.
+    // With JavaScript off there is no flag and no slow check, so the class that
+    // reveals the loader is never added, so the display:none default stands and
+    // nothing is ever shown. That is the whole mechanism; a <noscript> block
+    // would only be undoing a sheet that was never meant to be up in the first
+    // place.
     $css = file_get_contents(public_path('themes/portfolio/style.css'));
 
     expect($css)->toMatch('/\.theme-portfolio \.pf-loader\{[^}]*display:none/s')

@@ -1,4 +1,4 @@
-@php
+﻿@php
     $title = __('Sign in');
     $page = null;
     $navPages = \App\Models\Page::ofType('page')->published()->orderBy('sort_order')->get();
@@ -110,7 +110,7 @@
 
 @include('frontend.themes.ecommerce.partials.footer')
 
-<livewire:frontend.chat-widget />
+@include('frontend.partials.chat-widget')
 
 @if (\App\Support\Recaptcha::enabled())
     <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
@@ -146,8 +146,6 @@
         });
     });
 </script>
-
-@fluxScripts
 @include('partials.custom-code-body')
 </body>
 </html>

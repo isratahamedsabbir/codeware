@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Support\Locale::direction() }}">
 <head>
     @include('partials.head')
@@ -65,7 +65,7 @@
                     </div>
                 </section>
 
-                {{-- Items + totals — same rows and total box as checkout --}}
+                {{-- Items + totals â€” same rows and total box as checkout --}}
                 <section class="overflow-hidden rounded-card border border-zinc-200 bg-white shadow-sm">
                     <header class="{{ $cardHeader }}">
                         <h2 class="text-base font-bold text-sf-heading">{{ __('Order items') }}</h2>
@@ -176,7 +176,7 @@
                                     </p>
                                 @endif
                             @else
-                                <p class="text-zinc-500">{{ __('No shipping address — this order had nothing physical to deliver.') }}</p>
+                                <p class="text-zinc-500">{{ __('No shipping address â€” this order had nothing physical to deliver.') }}</p>
                             @endif
                         </div>
                     </section>
@@ -189,7 +189,7 @@
                         <dl class="space-y-3 px-5 py-4 text-sm">
                             <div class="flex items-center justify-between gap-3">
                                 <dt class="text-zinc-500">{{ __('Method') }}</dt>
-                                <dd class="text-right font-medium text-sf-heading">{{ $order->payment_method ? \App\Support\PaymentMethods::label($order->payment_method) : '—' }}</dd>
+                                <dd class="text-right font-medium text-sf-heading">{{ $order->payment_method ? \App\Support\PaymentMethods::label($order->payment_method) : 'â€”' }}</dd>
                             </div>
                             <div class="flex items-center justify-between gap-3">
                                 <dt class="text-zinc-500">{{ __('Status') }}</dt>
@@ -206,7 +206,7 @@
                                             <span class="min-w-0 truncate text-zinc-600">
                                                 {{ $transaction->payment_method }}
                                                 @if ($transaction->reference)
-                                                    <span class="text-xs text-zinc-400">· {{ $transaction->reference }}</span>
+                                                    <span class="text-xs text-zinc-400">Â· {{ $transaction->reference }}</span>
                                                 @endif
                                             </span>
                                             <span class="shrink-0 font-semibold tabular-nums text-sf-heading">{{ format_money($transaction->amount) }}</span>
@@ -233,9 +233,7 @@
 
 @include('frontend.themes.ecommerce.partials.footer')
 
-<livewire:frontend.chat-widget />
-
-@fluxScripts
+@include('frontend.partials.chat-widget')
 @include('partials.custom-code-body')
 </body>
 </html>
