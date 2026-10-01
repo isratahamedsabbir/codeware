@@ -3,7 +3,8 @@
         ? route($link->route_name)
         : ($link->url ?? '#');
     $isActive = $link->route_name
-        && (request()->routeIs($link->route_name) || request()->routeIs($link->route_name.'.*'));
+        ? (request()->routeIs($link->route_name) || request()->routeIs($link->route_name.'.*'))
+        : ($link->url && request()->url() === $link->url);
     $iconName = \App\Models\MenuItem::iconExists($link->icon) ? $link->icon : 'link';
     $navigationStyle = $navigationStyle ?? 'submenu';
 @endphp

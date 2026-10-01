@@ -42,6 +42,7 @@ class Features
         'localization' => 'Localization (Languages & Translations)',
         'location' => 'Location (Countries, Divisions, Districts, Upazilas)',
         'advance' => 'Advance (Sitemap & Robots.txt)',
+        'plugins' => 'Plugins (install & manage plugin modules)',
     ];
 
     public static function enabled(string $key): bool

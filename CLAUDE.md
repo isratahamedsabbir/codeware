@@ -80,6 +80,10 @@ Public API supports `?locale=en|bn` query parameter for translated fields, and `
 
 **Slug auto-generation**: All slug-able models generate slugs from the `en` value in their `booted()` `saving` hook. Slugs are not regenerated if already set.
 
+### Plugins
+
+Modular plugins live in `plugins/{slug}/` (registry: `App\Support\Plugins`, wiring: `PluginServiceProvider`). Each needs `plugin.json` (name, version, description, author, icon, `default`) and `index.blade.php` (its management screen, rendered at `admin.plugins.show` inside the admin layout with `$plugin` in scope). Optional: `routes.php` (mounted at `/plugins/{slug}/…`, names `admin.plugins.{slug}.*`), `migrations/`, extra views (`plugin-{slug}::name`). Install/activate/remove at Plugins → Plugin Settings (`admin.plugin-settings`); active slugs are stored in the `plugins_active` setting. `"default": true` plugins are always on and undeletable. The sidebar "Plugins" dropdown is built at runtime by `Plugins::extendMenu()` (not stored in `menu_items`).
+
 ### Settings Cache
 
 `Setting::get($key)` is cached forever. Always use `Setting::set($key, $value)` (not direct `update()`) to write, as it busts the cache. If you update settings directly in migrations or seeders, manually call `Cache::forget("setting:{$key}")`.

@@ -1,0 +1,12 @@
+{
+    "name": "Calendar",
+    "version": "1.0.0",
+    "description": "Adds a calendar to the admin header. Activate the plugin, enable it on its screen, then click the calendar icon to browse months.",
+    "author": "Codeware",
+    "icon": "calendar-days",
+    "default": false,
+    "settings": {
+        "enabled": true,
+        "week_start": "0"
+    }
+}

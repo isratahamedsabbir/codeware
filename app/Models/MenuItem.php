@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Concerns\CachesContent;
 use App\Support\Features;
+use App\Support\Plugins;
 use App\Support\Themes;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -61,6 +62,8 @@ class MenuItem extends Model
         'admin.voucher-purchases',
         'admin.shipping-methods',
         'admin.advance',
+        'admin.plugin-settings',
+        'admin.plugins',
         'admin.countries',
         'admin.divisions',
         'admin.districts',
@@ -113,6 +116,8 @@ class MenuItem extends Model
         'admin.voucher-purchases' => 'vouchers',
         'admin.shipping-methods' => 'orders',
         'admin.advance' => 'advance',
+        'admin.plugin-settings' => 'plugins',
+        'admin.plugins' => 'plugins',
         'admin.history' => 'audit-log',
         'admin.countries' => 'location',
         'admin.divisions' => 'location',
@@ -351,7 +356,7 @@ class MenuItem extends Model
      */
     public static function menuForCurrentUser(): Collection
     {
-        return static::menuCached()
+        $menu = static::menuCached()
             ->reject(fn (self $item) => ! $item->is_group && ! $item->isVisibleToCurrentUser())
             ->map(fn (self $item) => tap($item, function (self $i) {
                 if ($i->is_group) {
@@ -360,6 +365,9 @@ class MenuItem extends Model
             }))
             ->reject(fn (self $item) => $item->is_group && $item->children->isEmpty())
             ->values();
+
+        // The Plugins dropdown is built from the /plugins folder, not menu rows.
+        return Plugins::extendMenu($menu);
     }
 
     /**

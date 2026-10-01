@@ -1,0 +1,14 @@
+{
+    "name": "Clock",
+    "version": "1.0.0",
+    "description": "Adds a clock to the admin header. Enable it on this screen, then click the clock icon to see the current time and date.",
+    "author": "Codeware",
+    "icon": "clock",
+    "default": true,
+    "settings": {
+        "enabled": false,
+        "style": "analog",
+        "format": "12",
+        "seconds": true
+    }
+}

@@ -155,6 +155,15 @@ Route::middleware(['auth', 'admin', 'activity-log'])->group(function () {
             Route::redirect('/env', '/developer-tools', 301);
         });
 
+        // Plugins — Plugin Settings (install / activate / remove) and the per-plugin
+        // screen each active plugin renders from its own index.blade.php. The
+        // settings route is registered first so /plugins/settings is never read
+        // as a plugin slug. See App\Support\Plugins.
+        Route::middleware('feature:plugins')->group(function () {
+            Route::get('/plugins/settings', App\Livewire\Admin\Plugins\Index::class)->name('plugin-settings');
+            Route::get('/plugins/{slug}', App\Livewire\Admin\Plugins\Show::class)->name('plugins.show');
+        });
+
         Route::middleware('feature:email-templates')->group(function () {
             Route::get('/email-templates', App\Livewire\Admin\EmailTemplates\Index::class)->name('email-templates');
         });

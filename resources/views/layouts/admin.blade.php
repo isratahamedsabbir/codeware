@@ -254,6 +254,7 @@
                             'Access Control' => 'shield-check',
                             'Location' => 'map',
                             'Advance' => 'adjustments-horizontal',
+                            'Plugins' => 'puzzle-piece',
                         ][$item->label] ?? 'squares-2x2';
                     @endphp
                     <div class="nav-group" x-show="groupMatches({{ $item->id }})">
@@ -336,6 +337,11 @@
                         <flux:icon.document-text class="size-5" />
                     </button>
                 @endif
+
+                {{-- Header widgets contributed by active plugins (plugins/{slug}/header.blade.php) --}}
+                @foreach (\App\Support\Plugins::headerViews() as $pluginHeaderView)
+                    @include($pluginHeaderView)
+                @endforeach
 
                 <button type="button" x-data="{ dark: document.documentElement.classList.contains('dark') }"
                     @click="dark = !dark; document.documentElement.classList.toggle('dark', dark); localStorage.setItem('admin-theme', dark ? 'dark' : 'light')"
