@@ -40,6 +40,8 @@
     @endif
 
     <div @class(['min-w-0 space-y-5', 'x-cloak' => $showMenu])>
+        {{-- Bare panel: the admin "Theme Settings" card supplies the surface behind it,
+         so a card here would be a white box on a white box. --}}
         <section role="tabpanel" x-show="tab === 'intro'">
             <div class="grid grid-cols-1 gap-5">
                 <flux:field>
@@ -59,14 +61,13 @@
                      the theme looking the way it was designed, which is what an
                      untouched field means; anything else overrides it for this
                      theme only. See App\Support\ThemeFont. --}}
-                <flux:field>
-                    <flux:label>Body Font<x-field-hint text="The typeface for this theme's public pages. Theme default keeps the font this theme ships with." /></flux:label>
-                    <flux:select wire:model="settings.theme_default_font" class="w-full">
-                        @foreach (\App\Support\ThemeFont::options() as $value => $label)
-                            <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
-                        @endforeach
-                    </flux:select>
-                </flux:field>
+                <x-admin-font-picker
+                    model="settings.theme_default_font"
+                    :value="$settings['theme_default_font'] ?? ''"
+                    own-face="plus-jakarta"
+                    own-label="Plus Jakarta Sans"
+                    hint="Applies to this theme's public pages only. Every theme keeps its own typeface until you say otherwise."
+                    description="Theme default keeps Plus Jakarta Sans, the font this theme ships with. Anything else replaces it for this theme alone — the other themes are untouched." />
             </div>
         </section>
     </div>

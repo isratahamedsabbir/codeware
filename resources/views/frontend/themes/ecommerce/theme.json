@@ -28,5 +28,6 @@
     "theme_ecommerce_footer_text_color": "#5a1616",
     "theme_ecommerce_footer_bottom_color": "",
     "theme_ecommerce_primary_color": "#045b30",
-    "theme_ecommerce_secondary_color": "#7cc242"
+    "theme_ecommerce_secondary_color": "#7cc242",
+    "theme_ecommerce_font": ""
 }

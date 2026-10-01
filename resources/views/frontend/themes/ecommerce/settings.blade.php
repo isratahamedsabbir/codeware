@@ -1,4 +1,4 @@
-{{--
+﻿{{--
     Ecommerce theme settings — bound to the Theme Settings screen (Admin →
     Theme Settings) via wire:model="settings.*". Values persist to this theme's
     own theme.json beside this file and are read by ecommerce/home.blade.php
@@ -54,34 +54,12 @@
          z-indexed cards on the images from rising above the sticky page
          header and save bar. --}}
     <section role="tabpanel" x-show="tab === 'banners'" x-data="{ activeSlide: 0 }"
-        class="isolate overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-700 dark:bg-zinc-900">
-        <header class="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 px-5 py-4 dark:border-zinc-700">
-            <div class="flex items-center gap-3">
-                <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <flux:icon.rectangle-group variant="mini" class="size-5" />
-                </span>
-                <div>
-                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Homepage banners</p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Arranged as they appear on the storefront. Click any area to choose an image.</p>
-                </div>
-            </div>
-        </header>
-
+        class="isolate overflow-hidden rounded-xl bg-white dark:bg-zinc-900">
         {{-- ── Canvas: hero (2/3) + promo tiles (1/3) ── --}}
         <div class="bg-zinc-50/70 p-5 dark:bg-zinc-800/40">
             <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
                 {{-- Hero slider --}}
                 <div class="min-w-0 space-y-3 lg:col-span-2">
-                    <div class="flex items-center justify-between">
-                        <p class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                            Hero slider
-                            <span class="rounded-full bg-zinc-200/70 px-2 py-0.5 text-[10px] font-semibold normal-case tracking-normal text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
-                                {{ count($heroSlides) }} / {{ \App\Livewire\Admin\ThemeSettings\Index::MAX_HERO_SLIDES }}
-                            </span>
-                        </p>
-                        <span class="text-[11px] text-zinc-400">1920 × 600</span>
-                    </div>
-
                     {{-- Each slide's text and link sit on the image itself, where
                          the storefront shows them. The fields are a sibling of
                          the picker (not inside its button), so typing never
@@ -157,11 +135,6 @@
                 {{-- Promo tiles — stacked beside the hero on desktop, side by
                      side under it on smaller screens, as on the storefront. --}}
                 <div class="min-w-0 space-y-3">
-                    <div class="flex items-center justify-between">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Promo tiles</p>
-                        <span class="text-[11px] text-zinc-400">1200 × 400</span>
-                    </div>
-
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1">
                         @foreach ($promoTiles as [$imageKey, $linkKey, $promoLabel, $promoPosition, $example])
                             <div class="relative min-w-0">
@@ -180,9 +153,10 @@
                                 </div>
                             </div>
                         @endforeach
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-    </div>
     </section>
 
     {{-- Colors — one per storefront area. Blank means "use the default"
@@ -235,14 +209,17 @@
         }"
         role="tabpanel" x-show="tab === 'colors'" x-cloak
     >
-        <p class="mb-3 text-xs text-zinc-500 dark:text-zinc-400">Leave a color on its default to follow the brand accent.</p>
-
         <div class="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_19rem] xl:items-start">
             {{-- Color groups --}}
             <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 @foreach ($colorGroups as $group => $meta)
-                    <section class="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
-                        <header class="flex items-center justify-between gap-3 border-b border-zinc-100 bg-zinc-50/70 px-4 py-2.5 dark:border-zinc-700 dark:bg-zinc-800/50">
+                    <section class="overflow-hidden rounded-xl bg-white dark:bg-zinc-900">
+                        {{-- Which part of the storefront these colours belong to.
+                             Not a panel title — the fields below are labelled one
+                             by one, so without the group a colour has nothing
+                             saying whether it is the header, a product card or
+                             the footer. --}}
+                        <header class="flex items-center justify-between gap-3 bg-zinc-50/70 px-4 py-2.5 dark:bg-zinc-800/50">
                             <span class="flex items-center gap-2 text-sm font-semibold text-zinc-800 dark:text-zinc-100">
                                 <flux:icon :name="$meta['icon']" variant="mini" class="size-4 text-zinc-400" />
                                 {{ $group }}
@@ -256,7 +233,7 @@
                             </span>
                         </header>
 
-                        <div class="divide-y divide-zinc-100 px-4 dark:divide-zinc-800">
+                        <div class="px-4">
                             @foreach ($meta['fields'] as [$key, $label, $default, $hint])
                                 <div class="flex items-center justify-between gap-3 py-2.5">
                                     <label for="{{ $key }}" class="min-w-0">
@@ -290,14 +267,9 @@
             </div>
 
             {{-- Live preview — a miniature storefront painted with the values above. --}}
-            <aside class="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm xl:sticky xl:top-24 dark:border-zinc-700 dark:bg-zinc-900">
-                <div class="flex items-center justify-between border-b border-zinc-100 px-4 py-2.5 dark:border-zinc-700">
-                    <span class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Live preview</span>
-                    <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600 dark:bg-emerald-500/10">Updates as you pick</span>
-                </div>
-
+            <aside class="overflow-hidden rounded-xl bg-white shadow-sm xl:sticky xl:top-24 dark:bg-zinc-900">
                 <div class="p-3">
-                    <div class="overflow-hidden rounded-lg ring-1 ring-zinc-200 dark:ring-zinc-700" style="font-family: {{ \App\Support\ThemeFont::stackFor(\App\Support\ThemeFont::normalize($settings['theme_'.$themeSlug.'_font'] ?? '')) ?? "'Trebuchet MS', 'Segoe UI', sans-serif" }}">
+                    <div class="overflow-hidden rounded-lg" style="font-family: {{ \App\Support\ThemeFont::stackFor(\App\Support\ThemeFont::normalize($settings['theme_ecommerce_font'] ?? '')) ?? "'Trebuchet MS', 'Segoe UI', sans-serif" }}">
                         {{-- Header --}}
                         <div class="flex items-center gap-2 px-2.5 py-2"
                             :style="`background: ${c('theme_ecommerce_header_bg_color', accent)}; color: ${c('theme_ecommerce_header_text_color', '#ffffff')}`">
@@ -350,24 +322,22 @@
                 </div>
             </aside>
         </div>
+    </div>
 
     {{-- The face this theme's pages render in. Its own section rather than a
          field on Colors because a colour picker cannot show a typeface, and the
-         live preview above belongs to the colours panel. Inside the stacked
-         column, so it replaces the colours panel in place rather than becoming a
-         third item in the outer grid. --}}
+         live preview above belongs to the colours panel. A sibling of the
+         colours panel, inside the stacked column, so it replaces it in place
+         rather than becoming a third item in the outer grid. --}}
     <section role="tabpanel" x-show="tab === 'typography'" x-cloak
-        class="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-700 dark:bg-zinc-900">
-        <div class="grid grid-cols-1 gap-5">
-            <flux:field>
-                <flux:label>Body Font<x-field-hint text="The typeface for this theme's public pages. Theme default keeps the font this theme ships with." /></flux:label>
-                <flux:select wire:model="settings.theme_ecommerce_font" class="w-full">
-                    @foreach (\App\Support\ThemeFont::options() as $value => $label)
-                        <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
-                    @endforeach
-                </flux:select>
-            </flux:field>
-        </div>
+        class="rounded-xl bg-white p-5 dark:bg-zinc-900">
+        <x-admin-font-picker
+            model="settings.theme_ecommerce_font"
+            :value="$settings['theme_ecommerce_font'] ?? ''"
+            own-face="trebuchet"
+            own-label="Trebuchet MS"
+            hint="Applies to this theme's public pages only. Every theme keeps its own typeface until you say otherwise."
+            description="Theme default keeps Trebuchet MS, the font this theme ships with. Anything else replaces it for this theme alone — the other themes are untouched." />
     </section>
     </div>
 </div>

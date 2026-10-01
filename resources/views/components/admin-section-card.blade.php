@@ -6,6 +6,12 @@
     'actions' => null,
     'bodyClass' => null,
     'headerBorder' => 'border-zinc-200',
+    // Drops the outline and the shadow, and the header divider with them, so the
+    // section reads as a clean tinted block rather than a bordered, shadowed
+    // box. The surface stays: on a tinted admin page a section with no
+    // background at all loses the fill the form fields are read against. Off by
+    // default, so every other admin screen keeps its full framing.
+    'plain' => false,
     'collapsible' => null,
     'collapsed' => true,
     // 'default' = icon + description header; 'postbox' = WordPress-style metabox
@@ -26,11 +32,13 @@
 @endphp
 
 @if ($postbox)
-    <div {{ $attributes->class(['admin-postbox rounded-[3px] border border-zinc-300 bg-white shadow-[0_1px_1px_rgba(0,0,0,0.04)] dark:border-zinc-700 dark:bg-zinc-800/40']) }}
+    <div {{ $attributes->class($plain
+        ? 'admin-postbox rounded-[3px] bg-white dark:bg-zinc-800/40'
+        : 'admin-postbox rounded-[3px] bg-white shadow-[0_1px_1px_rgba(0,0,0,0.04)] dark:bg-zinc-800/40 border border-zinc-300 dark:border-zinc-700') }}
         x-data="{ open: {{ $openExpr }} }">
         <div @if ($collapsible) role="button" tabindex="0" @click="open = !open" @keydown.enter="open = !open" @keydown.space.prevent="open = !open" @endif
             class="flex min-h-11 items-center justify-between gap-3 px-3 py-2 {{ $collapsible ? 'cursor-pointer select-none' : '' }}"
-            :class="open ? 'border-b border-zinc-300 dark:border-zinc-700' : ''">
+            :class="open ? '{{ $plain ? '' : 'border-b border-zinc-300 dark:border-zinc-700' }}' : ''">
             <div class="min-w-0">
                 <div class="flex min-w-0 items-center gap-2">
                     <h2 class="truncate text-sm font-semibold text-zinc-800 dark:text-zinc-100">{{ $title }}</h2>
@@ -62,10 +70,12 @@
         </div>
     </div>
 @else
-<div {{ $attributes->class(['rounded-[5px] bg-white shadow-sm border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800/40 overflow-hidden']) }}
+<div {{ $attributes->class($plain
+    ? 'rounded-[5px] bg-white dark:bg-zinc-800/40 overflow-hidden'
+    : 'rounded-[5px] bg-white shadow-sm dark:bg-zinc-800/40 overflow-hidden border border-zinc-200 dark:border-zinc-700') }}
     @if ($collapsible) x-data="{ open: {{ $collapsed ? 'false' : 'true' }} }" @endif>
     <div @if ($collapsible) role="button" tabindex="0" @click="open = !open" @keydown.enter="open = !open" @keydown.space.prevent="open = !open" @endif
-        class="flex items-center justify-between gap-3 px-6 py-4 border-b {{ $headerBorder }} dark:border-zinc-700 {{ $collapsible ? 'cursor-pointer select-none' : '' }}">
+        class="flex items-center justify-between gap-3 px-6 py-4 {{ $plain ? '' : 'border-b '.$headerBorder.' dark:border-zinc-700 ' }} {{ $collapsible ? 'cursor-pointer select-none' : '' }}">
         <div class="flex items-center gap-3 min-w-0">
             <div class="flex size-9 items-center justify-center rounded-lg {{ $iconColor }} shrink-0">
                 <x-dynamic-component :component="'flux::icon.'.$icon" class="size-5" />

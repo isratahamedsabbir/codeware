@@ -1,4 +1,4 @@
-{{--
+﻿{{--
     Portfolio theme settings — bound to the Theme Settings screen (Admin →
 
     Theme Settings) via wire:model="settings.theme_{slug}_*".
@@ -28,6 +28,12 @@
     A section with no rows is not rendered on the storefront at all, so leaving
     these empty is a valid state: a smaller finished portfolio beats a
     half-filled one that advertises the gaps.
+
+    Each panel holds one kind of list. Education and Certifications used to share
+    a single "Credentials" panel side by side, which left the column a row sat in
+    as the only thing saying what it was for — so they are two panels now, and a
+    stored browser that still remembers the old tab name is sent to the first of
+    the two rather than left looking at nothing.
 --}}
 {{-- The wire:key is load-bearing, not decoration. This partial and
      ecommerce/settings.blade.php are swapped into the same slot on the Theme
@@ -43,7 +49,22 @@
 <div
     wire:key="theme-settings-{{ $themeSlug }}"
     x-data="{
-        tab: (() => { try { const saved = localStorage.getItem('theme-portfolio-tab') || 'profile'; return saved === 'work' ? 'projects' : saved } catch (e) { return 'profile' } })(),
+        // The two renames below are one-way and permanent: a stored tab name
+        // that no longer matches a panel would leave `tab` pointing at nothing,
+        // so the screen would open blank with no menu entry marked. A renamed
+        // tab has to send the browser to whatever replaced it, the same way the
+        // old 'work' name was folded into 'projects'.
+        tab: (() => {
+            try {
+                const saved = localStorage.getItem('theme-portfolio-tab') || 'profile'
+                if (saved === 'work') return 'projects'
+                // 'credentials' was one panel holding two lists. It is now a
+                // panel each, so a browser that remembers the old name lands on
+                // the first of the two.
+                if (saved === 'credentials') return 'education'
+                return saved
+            } catch (e) { return 'profile' }
+        })(),
         open(name) { this.tab = name; try { localStorage.setItem('theme-portfolio-tab', name) } catch (e) {} },
     }"
     class="grid gap-5 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-6"
@@ -58,7 +79,8 @@
         'experience' => ['Experience', 'briefcase'],
         'skills' => ['Skills', 'sparkles'],
         'testimonials' => ['Testimonials', 'chat-bubble-left-right'],
-        'credentials' => ['Credentials', 'academic-cap'],
+        'education' => ['Education', 'academic-cap'],
+        'certifications' => ['Certifications', 'check-badge'],
         'typography' => ['Typography', 'bars-3-bottom-left'],
     ]" />
 
@@ -72,19 +94,7 @@
     {{-- Both panels stay mounted (x-show) so the media picker keeps its Livewire
          binding while switching tabs; the last tab is remembered per browser. --}}
     <section role="tabpanel" x-show="tab === 'profile'"
-        class="isolate overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-700 dark:bg-zinc-900">
-        <header class="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 px-5 py-4 dark:border-zinc-700">
-            <div class="flex items-center gap-3">
-                <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <flux:icon.user-circle variant="mini" class="size-5" />
-                </span>
-                <div>
-                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Identity</p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">The name, role, photo and résumé button at the top of the page.</p>
-                </div>
-            </div>
-        </header>
-
+        class="isolate overflow-hidden rounded-xl bg-white dark:bg-zinc-900">
         {{-- Direct uploads rather than Media Library pickers: a new file
              replaces the old one and the old file is deleted on save
              (see App\Livewire\Admin\ThemeSettings\Index::saveUploads()). --}}
@@ -125,7 +135,7 @@
                     </flux:field>
                 </div>
 
-                <div class="grid grid-cols-1 items-start gap-5 border-t border-zinc-100 pt-5 sm:grid-cols-2 dark:border-zinc-700">
+                <div class="grid grid-cols-1 items-start gap-5 pt-5 sm:grid-cols-2">
                     <x-admin-theme-upload upload-key="theme_portfolio_resume_url" type="pdf" label="Résumé (PDF)"
                         hint="No file hides the download button."
                         :value="$settings['theme_portfolio_resume_url'] ?? ''" :pending="$uploads['theme_portfolio_resume_url'] ?? null" />
@@ -141,25 +151,11 @@
 
     {{-- ══ Sections ══════════════════════════════════════════════════════ --}}
     <section role="tabpanel" x-show="tab === 'sections'"
-        class="isolate overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-700 dark:bg-zinc-900">
-        <header class="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 px-5 py-4 dark:border-zinc-700">
-            <div class="flex items-center gap-3">
-                <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <flux:icon.chart-bar variant="mini" class="size-5" />
-                </span>
-                <div>
-                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Hero stats</p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">The numbers under the hero.</p>
-                </div>
-            </div>
-        </header>
-
+        class="isolate overflow-hidden rounded-xl bg-white dark:bg-zinc-900">
         <div class="space-y-8 p-5">
             <x-admin-repeatable-fields
                 :repeaters="$repeaters"
                 setting-key="theme_portfolio_stats"
-                label="Hero stats"
-                hint="Both halves matter — a bare number reads as filler, so give each one a label. The first row is also repeated on your photo."
                 empty-title="No stats yet"
                 empty-hint="The strip is hidden until you add at least one."
                 add-label="Add stat"
@@ -191,25 +187,11 @@
          CRUD screens; they are lists here so the whole portfolio is edited in
          one place. --}}
     <section role="tabpanel" x-show="tab === 'projects'"
-        class="isolate overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-700 dark:bg-zinc-900">
-        <header class="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 px-5 py-4 dark:border-zinc-700">
-            <div class="flex items-center gap-3">
-                <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <flux:icon.folder variant="mini" class="size-5" />
-                </span>
-                <div>
-                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Projects</p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">The work you want to be asked about. The storefront shows them in the order given — put your strongest project first.</p>
-                </div>
-            </div>
-        </header>
-
+        class="isolate overflow-hidden rounded-xl bg-white dark:bg-zinc-900">
         <div class="space-y-8 p-5">
             <x-admin-repeatable-fields
                 :repeaters="$repeaters"
                 setting-key="theme_portfolio_projects"
-                label="Projects"
-                hint="A project without a description is a title with nothing behind it — one sentence on the problem and your part in it goes a long way."
                 empty-title="No projects yet"
                 empty-hint="The whole section stays hidden until you add one."
                 add-label="Add project"
@@ -230,25 +212,12 @@
 
     {{-- ══ Experience ══════════════════════════════════════════════════════ --}}
     <section role="tabpanel" x-show="tab === 'experience'"
-        class="isolate overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-700 dark:bg-zinc-900">
-        <header class="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 px-5 py-4 dark:border-zinc-700">
-            <div class="flex items-center gap-3">
-                <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <flux:icon.briefcase variant="mini" class="size-5" />
-                </span>
-                <div>
-                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Experience</p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Where you did the work, shown as a timeline in the order given.</p>
-                </div>
-            </div>
-        </header>
+        class="isolate overflow-hidden rounded-xl bg-white dark:bg-zinc-900">
 
         <div class="space-y-8 p-5">
             <x-admin-repeatable-fields
                 :repeaters="$repeaters"
                 setting-key="theme_portfolio_experiences"
-                label="Experience"
-                hint="Leave the company blank for freelance or contract work — the company line simply disappears, so an empty value is not a gap on the page."
                 empty-title="No experience yet"
                 empty-hint="The timeline stays hidden until you add one."
                 add-label="Add role"
@@ -265,25 +234,12 @@
 
     {{-- ══ Skills ══════════════════════════════════════════════════════════ --}}
     <section role="tabpanel" x-show="tab === 'skills'"
-        class="isolate overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-700 dark:bg-zinc-900">
-        <header class="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 px-5 py-4 dark:border-zinc-700">
-            <div class="flex items-center gap-3">
-                <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <flux:icon.sparkles variant="mini" class="size-5" />
-                </span>
-                <div>
-                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Skills</p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Shown as labelled columns, one per group. Reuse a group name exactly to collect skills under the same heading.</p>
-                </div>
-            </div>
-        </header>
+        class="isolate overflow-hidden rounded-xl bg-white dark:bg-zinc-900">
 
         <div class="p-5">
             <x-admin-repeatable-fields
                 :repeaters="$repeaters"
                 setting-key="theme_portfolio_skills"
-                label="Skills"
-                hint="A skill with no group is not shown at all, so give every row one — the group is what turns a long list into something scannable."
                 empty-title="No skills yet"
                 empty-hint="The whole section stays hidden until you add one."
                 add-label="Add skill"
@@ -300,25 +256,12 @@
 
     {{-- ══ Testimonials ═════════════════════════════════════════════════════ --}}
     <section role="tabpanel" x-show="tab === 'testimonials'"
-        class="isolate overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-700 dark:bg-zinc-900">
-        <header class="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 px-5 py-4 dark:border-zinc-700">
-            <div class="flex items-center gap-3">
-                <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <flux:icon.chat-bubble-left-right variant="mini" class="size-5" />
-                </span>
-                <div>
-                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Testimonials</p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">What clients say about working with you. A quote without an attribution is not a testimonial, so the name and role are worth filling in.</p>
-                </div>
-            </div>
-        </header>
+        class="isolate overflow-hidden rounded-xl bg-white dark:bg-zinc-900">
 
         <div class="p-5">
             <x-admin-repeatable-fields
                 :repeaters="$repeaters"
                 setting-key="theme_portfolio_testimonials"
-                label="Testimonials"
-                hint="Only add quotes you were actually given — an invented testimonial is the one thing on this page that can cost you a client."
                 empty-title="No testimonials yet"
                 empty-hint="The section stays hidden until you add one."
                 add-label="Add testimonial"
@@ -333,26 +276,25 @@
         </div>
     </section>
 
-    {{-- ══ Credentials ═══════════════════════════════════════════════════ --}}
-    <section role="tabpanel" x-show="tab === 'credentials'"
-        class="isolate overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-700 dark:bg-zinc-900">
-        <header class="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 px-5 py-4 dark:border-zinc-700">
-            <div class="flex items-center gap-3">
-                <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <flux:icon.academic-cap variant="mini" class="size-5" />
-                </span>
-                <div>
-                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Education &amp; certifications</p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Shown beside the work timeline. Each block hides itself when empty, so a gap is never advertised.</p>
-                </div>
-            </div>
-        </header>
-
-        <div class="grid grid-cols-1 gap-8 p-5 xl:grid-cols-2">
+    {{-- ══ Education ════════════════════════════════════════════════════ --}}
+    {{-- Education and Certifications were one Credentials panel holding two
+         lists side by side, and that was the one panel on this screen where the
+         field labels alone did not say what belonged in them: "Degree /
+         Qualification" and "Certification" are the same kind of thing — a
+         course, a period, a body that issued it — so which list a row was
+         heading for came down to which column it sat in. Each is its own panel
+         now, and the row index inside the card names it, so neither panel needs
+         a heading of its own: the menu already says which one you are looking
+         at, and a second copy above the card only pushed the rows down. Each
+         list may be left empty — it hides itself on the public page rather than
+         printing an empty heading, so a portfolio with only education never has
+         to invent certifications. --}}
+    <section role="tabpanel" x-show="tab === 'education'"
+        class="isolate overflow-hidden rounded-xl bg-white dark:bg-zinc-900">
+        <div class="p-5">
             <x-admin-repeatable-fields
                 :repeaters="$repeaters"
                 setting-key="theme_portfolio_education"
-                label="Education"
                 empty-title="No education yet"
                 add-label="Add qualification"
                 :max="8"
@@ -361,11 +303,19 @@
                     ['name' => 'period', 'label' => 'Period', 'placeholder' => '2018 — 2022', 'wide' => true],
                     ['name' => 'description', 'label' => 'Institution', 'placeholder' => 'University name', 'wide' => true],
                 ]" />
+        </div>
+    </section>
 
+    {{-- ══ Certifications ════════════════════════════════════════════════ --}}
+    {{-- No heading of its own: the menu already names this section and the
+         repeater card below repeats the label inside it, so a third copy above
+         the card said the same word twice and pushed the rows down. --}}
+    <section role="tabpanel" x-show="tab === 'certifications'"
+        class="isolate overflow-hidden rounded-xl bg-white dark:bg-zinc-900">
+        <div class="p-5">
             <x-admin-repeatable-fields
                 :repeaters="$repeaters"
                 setting-key="theme_portfolio_certifications"
-                label="Certifications"
                 empty-title="No certifications yet"
                 add-label="Add certification"
                 :max="12"
@@ -383,17 +333,14 @@
          change, or for a portfolio that should read in the same face as the rest
          of a multi-theme site. See App\Support\ThemeFont. --}}
     <section role="tabpanel" x-show="tab === 'typography'"
-        class="rounded-xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-700 dark:bg-zinc-900">
-        <div class="grid grid-cols-1 gap-5">
-            <flux:field>
-                <flux:label>Body Font<x-field-hint text="The typeface for this theme's public pages. Theme default keeps Instrument Sans, the font this theme ships with." /></flux:label>
-                    <flux:select wire:model="settings.theme_portfolio_font" class="w-full">
-                    @foreach (\App\Support\ThemeFont::options() as $value => $label)
-                        <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
-                    @endforeach
-                </flux:select>
-            </flux:field>
-        </div>
+        class="rounded-xl bg-white p-5 dark:bg-zinc-900">
+        <x-admin-font-picker
+            model="settings.theme_portfolio_font"
+            :value="$settings['theme_portfolio_font'] ?? ''"
+            own-face="instrument-sans"
+            own-label="Instrument Sans"
+            hint="Applies to this theme's public pages only. Every theme keeps its own typeface until you say otherwise."
+            description="Theme default keeps Instrument Sans, the font this theme ships with. Anything else replaces it for this theme alone — the other themes are untouched." />
     </section>
     </div>
 </div>

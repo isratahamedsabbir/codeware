@@ -292,11 +292,91 @@ it('saves the choice into that theme own theme.json', function () {
         ->and(ThemeSettings::all('default'))->not->toHaveKey('theme_portfolio_font');
 });
 
-it('offers the picker on every theme settings screen', function () {
+it('saves and reloads the choice for every theme, not just the active one', function () {
+    // The screen only ever renders the selected theme, so a picker that was
+    // quietly missing from any other theme's form would go unnoticed by a test
+    // that never selects that theme. Each slug is selected, typed into and read
+    // back here for exactly that reason.
     foreach (array_keys(Themes::all()) as $slug) {
+        Setting::set('site_theme', $slug);
+
         Livewire::test(ThemeSettingsIndex::class)
-            ->assertSee('Body Font')
-            ->assertSee('Instrument Sans');
+            ->set('settings.theme_'.$slug.'_font', 'roboto')
+            ->call('save');
+
+        expect(ThemeSettings::text($slug, 'theme_'.$slug.'_font'))
+            ->toBe('roboto', 'theme '.$slug.' did not save its own font');
+
+        // And the next mount has to hand it back, or the picker would show
+        // "Theme default" over a font that is already in effect.
+        $reloaded = Livewire::test(ThemeSettingsIndex::class)->get('settings');
+
+        expect($reloaded['theme_'.$slug.'_font'])->toBe('roboto', 'theme '.$slug.' did not reload its font');
+    }
+});
+
+it('offers the picker, reachable from the section menu, on every theme', function () {
+    foreach (array_keys(Themes::all()) as $slug) {
+        Setting::set('site_theme', $slug);
+
+        $html = Livewire::test(ThemeSettingsIndex::class)->html();
+
+        // The label proves the field renders and the nav entry proves it can be
+        // reached — a panel behind no menu button is a setting nobody finds.
+        expect($html)
+            ->toContain('Body Font')
+            ->toContain("open('typography')");
+
+        // The picker has to live *inside* the Typography panel, and that panel
+        // has to be reachable on its own. Both of those are invisible to a
+        // page-wide substring search: a panel left unclosed around it parks the
+        // field inside a sibling panel, so the markup, the label and the menu
+        // button are all present and correct while the field never appears on
+        // screen. So the field is looked up through the DOM instead.
+        $dom = new DOMDocument;
+
+        @$dom->loadHTML('<!DOCTYPE html><html><body>'.$html.'</body></html>', LIBXML_NOERROR | LIBXML_NOWARNING);
+
+        $xpath = new DOMXPath($dom);
+
+        $panel = $xpath->query(
+            '//*[@role="tabpanel" and contains(@x-show, "typography")]'
+        )->item(0);
+
+        expect($panel)->not->toBeNull('theme '.$slug.' has no Typography panel');
+
+        // And it must not itself be buried in another panel, which is exactly
+        // how the ecommerce one went missing.
+        for ($node = $panel->parentNode; $node instanceof DOMElement; $node = $node->parentNode) {
+            expect($node->getAttribute('role'))
+                ->not->toBe('tabpanel', 'theme '.$slug.' nests its Typography panel inside another panel');
+        }
+
+        // The colon in wire:model makes the attribute namespaced as far as an
+        // XPath predicate is concerned, and the lookup comes back empty, so the
+        // candidates are walked in PHP instead.
+        $key = 'settings.theme_'.$slug.'_font';
+        $select = null;
+
+        foreach ($xpath->query('.//select', $panel) as $candidate) {
+            if ($candidate->getAttribute('wire:model') === $key) {
+                $select = $candidate;
+                break;
+            }
+        }
+
+        expect($select)->not->toBeNull('theme '.$slug.' has no font select in its own Typography panel');
+
+        // The picker's own options, read out of that select — the page holds
+        // other selects too, so a page-wide match would pass even if this
+        // theme's select offered the wrong list.
+        $offered = [];
+
+        foreach ($xpath->query('.//option', $select) as $option) {
+            $offered[$option->getAttribute('value')] = trim($option->textContent);
+        }
+
+        expect($offered)->toEqual(ThemeFont::options());
     }
 });
 

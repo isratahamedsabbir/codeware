@@ -49,7 +49,7 @@
          radio bound to the same `settings.site_theme` the storefront reads, so
          choosing here is choosing the live site, not a separate "editing" state.
          Kept expanded because it holds that selector. --}}
-    <x-admin-section-card header-border="border-zinc-100" icon="swatch" title="Site Design"
+    <x-admin-section-card plain header-border="border-zinc-100" icon="swatch" title="Site Design"
         description="Preview each installed theme, read what it ships with, and pick the one to use — changes apply once you save."
         collapsible :collapsed="false">
 
@@ -72,11 +72,11 @@
                         wire:model.live="settings.site_theme" class="sr-only">
 
                     {{-- Browser chrome --}}
-                    <div class="flex items-center gap-1.5 border-b border-zinc-100 bg-zinc-50 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-800/70">
+                    <div class="flex items-center gap-1.5 bg-zinc-50 px-3 py-2 dark:bg-zinc-800/70">
                         <span class="size-2 rounded-full bg-rose-400"></span>
                         <span class="size-2 rounded-full bg-amber-400"></span>
                         <span class="size-2 rounded-full bg-emerald-400"></span>
-                        <span class="ml-2 flex-1 truncate rounded bg-white px-2 py-0.5 text-[9px] font-medium text-zinc-400 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:ring-zinc-700">
+                        <span class="ml-2 flex-1 truncate rounded bg-white px-2 py-0.5 text-[9px] font-medium text-zinc-400 dark:bg-zinc-800">
                             {{ $slug }} · codeware.test
                         </span>
                     </div>
@@ -108,7 +108,7 @@
                                 {{-- Product tiles --}}
                                 <div class="grid grid-cols-4 gap-1.5">
                                     @foreach ([1, 2, 3, 4] as $tile)
-                                        <div class="flex flex-col items-center gap-1 rounded-md bg-white p-1.5 ring-1 ring-zinc-100">
+                                        <div class="flex flex-col items-center gap-1 rounded-md bg-white p-1.5">
                                             <div class="w-full rounded-sm bg-zinc-200" style="height: 14px"></div>
                                             <div class="h-1 w-5 rounded bg-zinc-300"></div>
                                         </div>
@@ -159,7 +159,7 @@
                     </div>
 
                     {{-- Footer --}}
-                    <div class="flex items-center gap-3 border-t border-zinc-100 px-3.5 py-2.5 dark:border-zinc-700">
+                    <div class="flex items-center gap-3 px-3.5 py-2.5">
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-2">
                                 <p class="truncate text-sm font-semibold text-zinc-800 dark:text-zinc-100">{{ $label }}</p>
@@ -206,7 +206,7 @@
         @endphp
 
         @if ($selectedCard)
-            <div class="mt-5 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-800/40">
+            <div class="mt-5 rounded-xl bg-white p-5 dark:bg-zinc-800/40">
                 <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
                     <h4 class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
                         {{ $selectedCard['manifest']['name'] }}
@@ -275,7 +275,7 @@
                         </span>
                     @endif
                     @foreach ($selectedCard['manifest']['tags'] as $tag)
-                        <span class="rounded-md border border-zinc-200 bg-zinc-50 px-2 py-0.5 font-mono text-[11px] text-zinc-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                        <span class="rounded-md bg-zinc-50 px-2 py-0.5 font-mono text-[11px] text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
                             {{ $tag }}
                         </span>
                     @endforeach
@@ -305,7 +305,7 @@
          settings away rather than that there was nowhere to put them. --}}
 
     @if ($selectedHasSettings)
-        <x-admin-section-card header-border="border-zinc-100" icon="adjustments-horizontal" title="Theme Settings"
+        <x-admin-section-card plain header-border="border-zinc-100" icon="adjustments-horizontal" title="Theme Settings"
             description="Everything the {{ $selectedSlug }} theme defines for itself. Stored in its own {{ \App\Support\ThemeSettings::FILE }} inside the theme folder, not in the database.">
             <x-slot:titleActions>
                 <button type="button" @click="showThemeGuide = true" title="How theme settings work"
@@ -321,7 +321,7 @@
                  managing themes, not a corruption to report. --}}
             <x-slot:actions>
                 @if ($settingsFileExists)
-                    <span class="hidden items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 font-mono text-[11px] font-medium text-emerald-700 ring-1 ring-emerald-200 sm:inline-flex dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/30"
+                    <span class="hidden items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 font-mono text-[11px] font-medium text-emerald-700 sm:inline-flex dark:bg-emerald-500/10 dark:text-emerald-400"
                         title="{{ $settingsFilePath }}">
                         <flux:icon.document-text class="size-3.5" />
                         {{ $settingsFileCount }} {{ Str::plural('value', $settingsFileCount) }}
@@ -379,6 +379,25 @@
             ])
         </x-admin-section-card>
     @endif
+
+    {{-- ── Site Widgets ─────────────────────────────────────────────────────
+     Live Chat and Popup are not theme settings. Neither has a single key
+     starting with a theme slug, neither is declared by the theme's own
+     settings.blade.php, and neither lands in the theme's theme.json — they
+     are two site-wide features that happen to live on this screen. Left as
+     siblings of the theme's own sections they read as more of the same
+     thing, which is the wrong thing to believe about them: editing a theme
+     should not imply you are about to change the chat bubble for every
+     theme, or a popup that is not part of the theme at all.
+
+     So they get their own parent section. It carries the boundary on its
+     own — its heading, and the outlined cards nested under it — so nothing
+     is wedged between it and Theme Settings; the gap a separator would have
+     occupied is not worth a strip of empty page halfway down. --}}
+<x-admin-section-card plain icon="squares-2x2" title="Site Widgets"
+        description="Features that sit on the public site on their own, kept apart from the theme above because no theme sets them and switching theme does not change them.">
+
+        <div class="space-y-5">
 
     {{-- ── Live Chat Widget ───────────────────────────────────────────────
          Collapsed on open, like Popup: the colour picker and its mockup are a
@@ -557,6 +576,9 @@
         </div>
     </x-admin-section-card>
 
+        </div>
+    </x-admin-section-card>
+
     {{-- ── Install Theme modal ─────────────────────────────────────────────── --}}
     @if ($showInstallModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
@@ -666,7 +688,7 @@
                     file inside the theme folder and it appears in this panel automatically.
                 </p>
 
-                <div class="rounded-lg border border-zinc-200 bg-zinc-50/70 p-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+                <div class="rounded-lg bg-zinc-50/70 p-4 dark:bg-zinc-800/40">
                     <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">1. Fields bind to settings</p>
                     <p class="text-xs text-zinc-500 dark:text-zinc-400">
                         Use Flux fields. Each control's key starts with the theme slug so settings stay namespaced per theme:
@@ -677,7 +699,7 @@
 &lt;/flux:field&gt;</code></pre>
                 </div>
 
-                <div class="rounded-lg border border-zinc-200 bg-zinc-50/70 p-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+                <div class="rounded-lg bg-zinc-50/70 p-4 dark:bg-zinc-800/40">
                     <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">2. Read it in your theme views</p>
                     <p class="text-xs text-zinc-500 dark:text-zinc-400">
                         One helper, no slug to repeat — it reads the active theme's own file.
@@ -707,7 +729,7 @@
                     </p>
                 </div>
 
-                <div class="rounded-lg border border-zinc-200 bg-zinc-50/70 p-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+                <div class="rounded-lg bg-zinc-50/70 p-4 dark:bg-zinc-800/40">
                     <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">3. Stored in the theme's own file</p>
                     <p class="text-xs text-zinc-500 dark:text-zinc-400">
                         Values are written to a
@@ -720,7 +742,7 @@
                     </p>
                 </div>
 
-                <div class="rounded-lg border border-zinc-200 bg-zinc-50/70 p-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+                <div class="rounded-lg bg-zinc-50/70 p-4 dark:bg-zinc-800/40">
                     <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">4. Ship a route file too</p>
                     <p class="text-xs text-zinc-500 dark:text-zinc-400">
                         A theme's templates are only reachable through its routes, and those live
@@ -750,9 +772,12 @@ Route::get('/', fn () =&gt; view(
         </div>
     </div>
 
-    {{-- ── Save bar ── --}}
+    {{-- ── Save bar ──
+         No upward shadow: it drew a dark line across the bottom of the form,
+         reading as the card's footer edge rather than as the bar floating over
+         the page. The border is what separates it from the panel behind it. --}}
     <div
-        class="sticky bottom-0 z-10 flex flex-col gap-3 rounded-[5px] border border-zinc-200 bg-white/95 px-5 py-3.5 shadow-[0_-4px_16px_-8px_rgba(0,0,0,0.15)] backdrop-blur dark:border-zinc-700 dark:bg-zinc-800/90 sm:flex-row sm:items-center sm:justify-between">
+        class="sticky bottom-0 z-10 flex flex-col gap-3 rounded-[5px] border border-zinc-200 bg-white/95 px-5 py-3.5 backdrop-blur dark:border-zinc-700 dark:bg-zinc-800/90 sm:flex-row sm:items-center sm:justify-between">
         <p class="text-xs text-zinc-400">
             Your changes apply to the public site once saved.
         </p>
@@ -761,7 +786,7 @@ Route::get('/', fn () =&gt; view(
                 Discard
             </flux:button>
             <flux:button variant="primary" wire:click="save" wire:loading.attr="disabled" size="sm">
-                <span wire:loading.remove>Save Theme Settings</span>
+                <span wire:loading.remove>Save Changes</span>
                 <span wire:loading>Saving…</span>
             </flux:button>
         </div>

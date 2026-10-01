@@ -48,6 +48,36 @@ function makeThemeZip(string $slug, array $files): string
     return $path;
 }
 
+/**
+ * Drops keys from a theme's real theme.json, so a test can assert on a field the
+ * shipped file happens to carry a value for.
+ *
+ * Written by hand rather than through ThemeSettings::merge() because merging can
+ * only add or overwrite — nothing else makes a key absent, and absent-from-the-file
+ * is the state the two tests below are actually about. Pest's own snapshot
+ * (tests/Pest.php) puts the file back afterwards, so the repository's theme
+ * folders are left as they were found.
+ *
+ * @param  array<int, string>  $keys
+ */
+function forgetThemeJsonKeys(string $slug, array $keys): void
+{
+    $file = ThemeSettings::file($slug);
+
+    $values = json_decode((string) File::get($file), true);
+
+    foreach ($keys as $key) {
+        unset($values[$key]);
+    }
+
+    File::put(
+        $file,
+        json_encode((object) $values, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)."\n"
+    );
+
+    ThemeSettings::forget();
+}
+
 it('renders the theme settings page', function () {
     Livewire::test(ThemeSettingsScreen::class)
         ->assertStatus(200)
@@ -133,10 +163,15 @@ it('loads theme-scoped values out of the theme\'s own theme.json', function () {
 it('loads a blank value for a declared field the file has never had a key for', function () {
     ThemeSettings::merge('ecommerce', ['theme_ecommerce_accent_color' => '#c01616']);
 
-    $component = Livewire::test(ThemeSettingsScreen::class);
-
     // header_bg_color is declared by ecommerce/settings.blade.php but absent from
     // the file, so it has to come up blank rather than missing from the bag.
+    // Taken out of the file first: the shipped file does carry a colour for it,
+    // and the state worth pinning down is the absent one, not whatever the
+    // repository happens to be holding today.
+    forgetThemeJsonKeys('ecommerce', ['theme_ecommerce_header_bg_color']);
+
+    $component = Livewire::test(ThemeSettingsScreen::class);
+
     expect($component->get('settings.theme_ecommerce_header_bg_color'))->toBe('');
 });
 
@@ -325,6 +360,11 @@ it('renders a color picker for every storefront area', function () {
 });
 
 it('saves brand-new per-area colors even before they are in the file', function () {
+    // Both keys start out absent, which is the whole subject of the test: the
+    // screen has to offer a field the file has never heard of. Removed here
+    // rather than assumed, since the shipped file now carries values for them.
+    forgetThemeJsonKeys('ecommerce', ['theme_ecommerce_header_bg_color', 'theme_ecommerce_button_bg_color']);
+
     Livewire::test(ThemeSettingsScreen::class)
         ->assertSet('settings.theme_ecommerce_header_bg_color', '')
         ->set('settings.theme_ecommerce_header_bg_color', '#112233')
@@ -417,10 +457,11 @@ it('navigates a theme\'s settings sections by menu beside the form, not a tab st
         expect($html)->not->toContain('border-b-2 px-4 py-2.5');
     };
 
-    // The portfolio theme's eight sections; the count is asserted because a
+    // The portfolio theme's nine sections; the count is asserted because a
     // section added to the theme without a nav entry is a section the owner
-    // cannot reach.
-    $expectMenu('portfolio', 8);
+    // cannot reach. Education and Certifications used to share one "Credentials"
+    // entry and are two now, which is what took this from eight to nine.
+    $expectMenu('portfolio', 9);
     $expectMenu('ecommerce', 3);
 });
 
@@ -634,7 +675,11 @@ it('renders the homepage hero as a slider with each slide\'s title, description 
 it('links each promo banner to its own URL, falling back to the shop', function () {
     Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'ecommerce')
-        ->assertSee('Promo tiles')
+        // The tiles' own labels, not the heading that used to sit above them:
+        // a panel heading is decoration, and asserting on it made a cosmetic
+        // change look like a broken screen.
+        ->assertSee('New arrivals')
+        ->assertSee('Best deals')
         ->assertSee('settings.theme_ecommerce_promo_2_link', false)
         ->set('settings.theme_ecommerce_promo_1_link', '/shop?sort=newest')
         ->set('settings.theme_ecommerce_promo_2_link', 'javascript:alert(1)')

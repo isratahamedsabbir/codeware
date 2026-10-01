@@ -24,7 +24,13 @@
      * admin would load it as a scalar and clobber the rows.
      */
     'settingKey',
-    'label',
+    /**
+     * Names the list. Optional: a settings screen whose own panel heading already
+     * says what the list is passes nothing here, so the name is not repeated.
+     * Omitted, the row index and the wiring error fall back to a name derived
+     * from the setting key, which keeps every row still addressable.
+     */
+    'label' => null,
     'hint' => null,
     'emptyTitle' => 'Nothing here yet',
     'emptyHint' => null,
@@ -51,12 +57,14 @@
 ])
 
 <div class="space-y-3">
-    <div class="min-h-9">
-        <label class="block text-sm font-medium text-zinc-800 dark:text-zinc-100">{{ $label }}</label>
-        @if ($hint)
-            <span class="block text-[11px] leading-tight font-normal text-zinc-400 dark:text-zinc-500">{{ $hint }}</span>
-        @endif
-    </div>
+    @if ($label)
+        <div class="min-h-9">
+            <label class="block text-sm font-medium text-zinc-800 dark:text-zinc-100">{{ $label }}</label>
+            @if ($hint)
+                <span class="block text-[11px] leading-tight font-normal text-zinc-400 dark:text-zinc-500">{{ $hint }}</span>
+            @endif
+        </div>
+    @endif
 
     @php
         // A null here means the call site never passed :repeaters, which is a
@@ -64,11 +72,15 @@
         // yet" over a section the owner can plainly see on their own site.
         $rows = $repeaters === null ? null : ($repeaters[$settingKey] ?? []);
         $count = $rows === null ? 0 : count($rows);
+
+        // Without an explicit label, name the list after the last word of its key so the
+        // row index still reads as words: theme_portfolio_skills -> Skills.
+        $name = $label ?: Str::of($settingKey)->afterLast('_')->headline();
     @endphp
 
     @if ($rows === null)
         <div class="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
-            <p class="font-semibold">{{ $label }} is not connected to its data.</p>
+            <p class="font-semibold">{{ $name }} is not connected to its data.</p>
             <p class="mt-1 text-xs">
                 This list needs <code class="font-mono">:repeaters=&quot;$repeaters&quot;</code> on its
                 <code class="font-mono">&lt;x-admin-repeatable-fields&gt;</code> tag, or it cannot
@@ -85,7 +97,7 @@
 
                 <div class="mb-3 flex items-center justify-between gap-2">
                     <span class="font-mono text-[10px] font-semibold tracking-wider text-zinc-400 uppercase">
-                        {{ $label }} {{ $i + 1 }}
+                        {{ $name }} {{ $i + 1 }}
                     </span>
 
                     {{-- Reorder. The storefront prints rows in stored order, so
