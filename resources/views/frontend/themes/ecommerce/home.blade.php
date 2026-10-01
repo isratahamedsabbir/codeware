@@ -129,12 +129,19 @@
                         </div>
                     @endif
                 @else
+                    {{-- No slides configured: show the site name as visible text so
+                         the first screen has a real Largest Contentful Paint
+                         element (a bare gradient gives Lighthouse NO_LCP, and
+                         PageSpeed then reports no Performance score at all). --}}
                     <div class="flex h-full w-full items-center bg-gradient-to-br from-brand to-emerald-800 px-8 md:px-12">
+                        <h1 class="max-w-xl text-3xl font-bold leading-tight text-white md:text-5xl">{{ $siteName }}</h1>
                     </div>
                 @endif
                 {{-- The hero is image-only; this keeps the page's main heading for
                      search engines and screen readers. --}}
-                <h1 class="sr-only">{{ $siteName }}</h1>
+                @if ($heroSlides !== [])
+                    <h1 class="sr-only">{{ $siteName }}</h1>
+                @endif
             </a>
 
             <div class="grid grid-cols-2 gap-4 lg:flex lg:flex-col">
