@@ -22,7 +22,7 @@
     // read from its theme.json. See App\Support\ThemeFont.
     $storefrontTheme = \App\Support\Themes::active();
     $storefrontFont = \App\Support\ThemeFont::normalize(
-        \App\Support\ThemeSettings::text($storefrontTheme, \App\Support\ThemeSettings::keyFor('font', $storefrontTheme))
+        \App\Support\ThemeSettings::text($storefrontTheme, \App\Support\ThemeSettings::keyFor('font'))
     );
     $storefrontFontStack = \App\Support\ThemeFont::stackFor($storefrontFont);
     $storefrontFontPreload = \App\Support\ThemeFont::preloadFor($storefrontFont);
@@ -56,7 +56,7 @@
 @elseif ($preloadStorefrontFont)
     {{-- The latin subset only. The latin-ext face is reached through its
          unicode-range, so a page without accented characters never asks for it. --}}
-    <link rel="preload" href="/fonts/plus-jakarta-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/fonts/plus-jakarta/plus-jakarta-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
 @endif
 
 @php
@@ -93,7 +93,7 @@
     //
     // Rendered after the compiled CSS so these tokens win the cascade — same
     // pattern as layouts/admin.blade.php.
-    $storefrontColor = fn (string $field) => theme_color($field, null, $storefrontTheme);
+    $storefrontColor = fn (string $field) => theme_color($field, null);
 
     // The brand token drives links, active states and badges, and is what the
     // other areas fall back to, so it is the one that can be answered by either
@@ -168,17 +168,17 @@
          here comes from a hard-coded table in ThemeFont and none of them
          interpolates the stored setting. --}}
     <style>
-        @foreach (\App\Support\ThemeFont::facesFor($storefrontFont) as $faces)
-            @foreach ($faces as $face)
-                @font-face {
-                    font-family: {!! \App\Support\ThemeFont::familiesFor($storefrontFont)[$storefrontFont] !!};
-                    font-style: normal;
-                    font-weight: {!! \App\Support\ThemeFont::weightsFor($storefrontFont)[$storefrontFont] !!};
-                    font-display: swap;
-                    src: url('{!! $face['url'] !!}') format('woff2');
-                    unicode-range: {!! $face['unicodeRange'] !!};
-                }
-            @endforeach
+        @foreach (\App\Support\ThemeFont::facesFor($storefrontFont) as $face)
+            @font-face {
+                font-family: '{!! $face['family'] !!}';
+                font-style: {!! $face['style'] !!};
+                font-weight: {!! $face['weight'] !!};
+                font-display: swap;
+                src: url('{!! $face['url'] !!}') format('{!! $face['format'] !!}');
+                @if ($face['unicodeRange'])
+                unicode-range: {!! $face['unicodeRange'] !!};
+                @endif
+            }
         @endforeach
         body { font-family: {!! $storefrontFontStack !!} !important; }
     </style>

@@ -68,8 +68,10 @@ class Index extends Component
         // The row is seeded, but a database that predates the setting has none —
         // and the select would then render with nothing selected, which reads
         // as "unset" rather than as the deliberate default. Default it to the
-        // system font, the same value the seeder writes.
-        $this->settings['admin_font'] = $this->settings['admin_font'] ?? AdminFont::SYSTEM;
+        // system font, the same value the seeder writes. A saved font whose
+        // folder has since been deleted is shown as the system font too, which
+        // is what the panel is already rendering in.
+        $this->settings['admin_font'] = AdminFont::normalize($this->settings['admin_font'] ?? AdminFont::SYSTEM);
     }
 
     protected function loadConstants(): void

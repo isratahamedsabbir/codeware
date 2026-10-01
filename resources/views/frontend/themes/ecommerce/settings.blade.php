@@ -269,7 +269,7 @@
             {{-- Live preview — a miniature storefront painted with the values above. --}}
             <aside class="overflow-hidden rounded-xl bg-white shadow-sm xl:sticky xl:top-24 dark:bg-zinc-900">
                 <div class="p-3">
-                    <div class="overflow-hidden rounded-lg" style="font-family: {{ \App\Support\ThemeFont::stackFor(\App\Support\ThemeFont::normalize($settings['theme_ecommerce_font'] ?? '')) ?? "'Trebuchet MS', 'Segoe UI', sans-serif" }}">
+                    <div class="overflow-hidden rounded-lg" style="font-family: {{ \App\Support\ThemeFont::stackFor($settings['theme_ecommerce_font'] ?? '') ?? "'Trebuchet MS', 'Segoe UI', sans-serif" }}">
                         {{-- Header --}}
                         <div class="flex items-center gap-2 px-2.5 py-2"
                             :style="`background: ${c('theme_ecommerce_header_bg_color', accent)}; color: ${c('theme_ecommerce_header_text_color', '#ffffff')}`">

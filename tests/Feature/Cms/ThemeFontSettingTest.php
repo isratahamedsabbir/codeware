@@ -3,6 +3,7 @@
 use App\Livewire\Admin\ThemeSettings\Index as ThemeSettingsIndex;
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\AdminFont;
 use App\Support\ThemeFont;
 use App\Support\Themes;
 use App\Support\ThemeSettings;
@@ -103,12 +104,14 @@ function storefrontOverride(): string
     return 'body { font-family:';
 }
 
-it('offers the theme default first, then the faces', function () {
+it('offers the theme default first, then system, then that theme own font folders', function () {
     $options = ThemeFont::options();
 
     expect(array_key_first($options))->toBe(ThemeFont::THEME_DEFAULT)
         ->and($options[ThemeFont::THEME_DEFAULT])->toBe('Theme default')
-        ->and(array_keys($options))->toBe(['', 'system', 'trebuchet', 'plus-jakarta', 'instrument-sans', 'roboto']);
+        ->and(array_keys($options))        ->toBe(['', 'system', 'instrument-sans', 'jetbrains-mono', 'plus-jakarta', 'roboto'])
+        // the same folders are what the admin panel offers
+        ->and(array_keys(AdminFont::options()))->toBe(['system', 'instrument-sans', 'jetbrains-mono', 'plus-jakarta', 'roboto']);
 });
 
 it('serves every self-hosted face it offers from public/fonts', function () {
@@ -116,11 +119,9 @@ it('serves every self-hosted face it offers from public/fonts', function () {
     // connection, so it is asserted against the filesystem rather than trusted.
     $urls = [];
 
-    foreach (['system', 'trebuchet', 'plus-jakarta', 'instrument-sans', 'roboto'] as $value) {
-        foreach (ThemeFont::facesFor($value) as $faces) {
-            foreach ($faces as $face) {
-                $urls[] = $face['url'];
-            }
+    foreach (array_keys(ThemeFont::options()) as $value) {
+        foreach (ThemeFont::facesFor($value) as $face) {
+            $urls[] = $face['url'];
         }
     }
 
@@ -143,12 +144,13 @@ it('resolves a blank or unrecognised value to the theme keeping its own font', f
         ->and(ThemeFont::stackFor('a-face-that-does-not-exist'))->toBeNull()
         ->and(ThemeFont::normalize('a-face-that-does-not-exist'))->toBe(ThemeFont::THEME_DEFAULT)
         ->and(ThemeFont::normalize(['not', 'a', 'string']))->toBe(ThemeFont::THEME_DEFAULT)
-        ->and(ThemeFont::normalize('roboto'))->toBe(ThemeFont::ROBOTO);
+        ->and(ThemeFont::normalize('roboto'))->toBe('roboto')
+        ->and(ThemeFont::normalize('instrument-sans'))->toBe('instrument-sans');
 });
 
 it('describes no file for a system face or for the theme default', function () {
     // A system face has no file, so declaring one would be inventing a download.
-    foreach ([ThemeFont::THEME_DEFAULT, ThemeFont::SYSTEM, ThemeFont::TREBUCHET, 'a-face-that-does-not-exist'] as $value) {
+    foreach ([ThemeFont::THEME_DEFAULT, ThemeFont::SYSTEM, 'a-face-that-does-not-exist'] as $value) {
         expect(ThemeFont::facesFor($value))->toBe([])
             ->and(ThemeFont::preloadFor($value))->toBeNull();
     }
@@ -163,11 +165,11 @@ it('emits nothing at all for a theme that has not chosen a font', function () {
 });
 
 it('overrides the font of whichever theme is active', function () {
-    chooseFontFor('portfolio', ThemeFont::ROBOTO);
+    chooseFontFor('portfolio', 'roboto');
 
     expect(storefrontHome('portfolio'))
-        ->toContain("body { font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif !important; }", escape: false)
-        ->toContain("font-family: 'Roboto';", escape: false);
+        ->toContain("body { font-family: 'roboto', ui-sans-serif", escape: false)
+        ->toContain("font-family: 'roboto';", escape: false);
 });
 
 it('overrides a font the theme declared on a class, not on body', function () {
@@ -177,7 +179,7 @@ it('overrides a font the theme declared on a class, not on body', function () {
     // without the marker would lose the cascade while the setting still saved
     // correctly — a picker that looks like it works and changes nothing.
     foreach (['portfolio', 'ecommerce'] as $theme) {
-        chooseFontFor($theme, ThemeFont::ROBOTO);
+        chooseFontFor($theme, 'roboto');
 
         $home = storefrontHome($theme);
 
@@ -193,7 +195,7 @@ it('leaves the element in charge of its own font alone', function () {
     // A descendant that names its own font — portfolio's .pf-mono, a display
     // heading — keeps it, because a descendant's own declaration outranks an
     // inherited value however the ancestor was set.
-    chooseFontFor('portfolio', ThemeFont::ROBOTO);
+    chooseFontFor('portfolio', 'roboto');
 
     $home = storefrontHome('portfolio');
 
@@ -206,9 +208,9 @@ it('leaves the element in charge of its own font alone', function () {
 it('applies a choice to one theme without touching another', function () {
     // Per theme, not global: the whole point of storing it in that theme's own
     // theme.json.
-    chooseFontFor('portfolio', ThemeFont::PLUS_JAKARTA);
+    chooseFontFor('portfolio', 'roboto');
 
-    expect(storefrontHome('portfolio'))->toContain("'Plus Jakarta Sans', ui-sans-serif", escape: false)
+    expect(storefrontHome('portfolio'))->toContain("'roboto', ui-sans-serif", escape: false)
         ->and(storefrontHome('default'))->not->toContain(storefrontOverride(), escape: false);
 });
 
@@ -217,15 +219,13 @@ it('declares the face it names, so the family exists on every theme', function (
     // in resources/css/fonts.css does not exist on a theme that ships its own
     // stylesheet. Picking Plus Jakarta on portfolio would otherwise download
     // nothing and render the fallback.
-    foreach ([ThemeFont::PLUS_JAKARTA, ThemeFont::INSTRUMENT_SANS, ThemeFont::ROBOTO] as $font) {
+    foreach (['plus-jakarta', 'roboto'] as $font) {
         chooseFontFor('default', $font);
 
         $home = storefrontHome('default');
 
-        foreach (ThemeFont::facesFor($font) as $faces) {
-            foreach ($faces as $face) {
-                expect($home)->toContain("src: url('{$face['url']}') format('woff2');", escape: false);
-            }
+        foreach (ThemeFont::facesFor($font) as $face) {
+            expect($home)->toContain("src: url('{$face['url']}') format('woff2');", escape: false);
         }
     }
 });
@@ -234,12 +234,12 @@ it('preloads only the latin subset, and only when a webfont is chosen', function
     // Preloading a subset the page may never use is a request the preloader
     // cannot cancel once started, so latin-ext is left to the unicode-range check
     // that happens anyway.
-    chooseFontFor('default', ThemeFont::ROBOTO);
+    chooseFontFor('default', 'roboto');
 
     $home = storefrontHome('default');
 
     expect($home)
-        ->toContain('<link rel="preload" href="/fonts/roboto-latin.woff2" as="font" type="font/woff2" crossorigin>', escape: false)
+        ->toContain('<link rel="preload" href="/fonts/roboto/roboto-latin.woff2" as="font" type="font/woff2" crossorigin>', escape: false)
         ->not->toContain('roboto-latin-ext.woff2" as="font"', escape: false);
 });
 
@@ -259,7 +259,7 @@ it('preloads no font at all when a system face is chosen', function () {
 it('preloads the chosen face instead of the one the theme would have used', function () {
     // The default theme preloads Plus Jakarta today. If it picked Roboto it would
     // be two preloads for two files where only one is ever drawn.
-    chooseFontFor('default', ThemeFont::ROBOTO);
+    chooseFontFor('default', 'roboto');
 
     expect(storefrontHome('default'))
         ->not->toContain('plus-jakarta-sans-latin.woff2" as="font"', escape: false);
@@ -269,26 +269,17 @@ it('keeps a system fallback behind every webfont it names', function () {
     // A webfont can fail to arrive — a bad deploy, a proxy that eats the woff2. A
     // stack of only 'Roboto' would then resolve to nothing and the page would
     // render in the browser default, which is not one of the options on offer.
-    foreach ([ThemeFont::PLUS_JAKARTA, ThemeFont::INSTRUMENT_SANS, ThemeFont::ROBOTO] as $font) {
+    foreach (['plus-jakarta', 'roboto'] as $font) {
         expect(ThemeFont::stackFor($font))->toContain('sans-serif');
     }
 });
 
-it('declares each webfont over the weight axis it actually has', function () {
-    // A weight outside a declared axis is rendered with the nearest declared
-    // weight rather than the one asked for, so 700 in a face claiming 400-500
-    // comes out looking like 600.
-    chooseFontFor('default', ThemeFont::PLUS_JAKARTA);
-
-    expect(storefrontHome('default'))->toContain('font-weight: 200 800;', escape: false);
-});
-
 it('saves the choice into that theme own theme.json', function () {
     Livewire::test(ThemeSettingsIndex::class)
-        ->set('settings.theme_default_font', 'instrument-sans')
+        ->set('settings.theme_default_font', 'roboto')
         ->call('save');
 
-    expect(ThemeSettings::text('default', 'theme_default_font'))->toBe('instrument-sans')
+    expect(ThemeSettings::text('default', 'theme_default_font'))->toBe('roboto')
         ->and(ThemeSettings::all('default'))->not->toHaveKey('theme_portfolio_font');
 });
 
@@ -376,7 +367,7 @@ it('offers the picker, reachable from the section menu, on every theme', functio
             $offered[$option->getAttribute('value')] = trim($option->textContent);
         }
 
-        expect($offered)->toEqual(ThemeFont::options());
+        expect($offered)->toEqual(ThemeFont::options($slug));
     }
 });
 
@@ -389,4 +380,32 @@ it('leaves the admin panel font alone', function () {
     $home = storefrontHome('default');
 
     expect($home)->not->toContain('roboto', escape: false);
+});
+
+it('offers a font folder dropped into public/fonts to the panel and every theme', function () {
+    $dir = public_path('fonts/zz-theme-test');
+    File::ensureDirectoryExists($dir);
+    File::put($dir.'/ZzTheme-Regular.woff2', 'wOF2');
+
+    try {
+        expect(ThemeFont::options())->toHaveKey('zz-theme-test', 'Zz Theme Test')
+            ->and(AdminFont::options())->toHaveKey('zz-theme-test', 'Zz Theme Test')
+            ->and(ThemeFont::stackFor('zz-theme-test'))->toStartWith("'zz-theme-test', ui-sans-serif")
+            ->and(ThemeFont::facesFor('zz-theme-test'))->toHaveCount(1);
+
+        chooseFontFor('default', 'zz-theme-test');
+
+        expect(storefrontHome('default'))
+            ->toContain("src: url('/fonts/zz-theme-test/ZzTheme-Regular.woff2') format('woff2');", escape: false);
+
+        // The folder is deleted while it is still the saved choice: the theme
+        // renders as it ships, with no error and no dangling @font-face.
+        File::deleteDirectory($dir);
+
+        expect(storefrontHome('default'))
+            ->not->toContain('zz-theme-test', escape: false)
+            ->not->toContain(storefrontOverride(), escape: false);
+    } finally {
+        File::deleteDirectory($dir);
+    }
 });

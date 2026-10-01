@@ -3,7 +3,7 @@
 <head>
     @include('partials.head')
     @include('partials.seo-meta')
-    <link rel="preload" href="{{ asset('fonts/instrument-sans-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ asset('fonts/instrument-sans/instrument-sans-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ asset('themes/portfolio/fonts.css') }}">
     <link rel="stylesheet" href="{{ asset('themes/portfolio/style.css') }}">
     <style>[x-cloak]{display:none!important}</style>

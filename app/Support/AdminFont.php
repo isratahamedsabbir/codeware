@@ -3,189 +3,246 @@
 namespace App\Support;
 
 /**
- * The panel's typeface: a choice among three faces, two of which the machine
- * already has.
+ * The panel's typeface, discovered from the filesystem.
  *
- * The split that matters here is between an option the OS answers and an option
- * it cannot. SYSTEM and SEGOE are resolved by the browser from what is
- * installed, so the whole setting is a change to one CSS custom property and
- * costs no request. ROBOTO is a webfont: not installed on Windows or macOS by
- * default, so selecting it means shipping a woff2 and a @font-face, and the
- * stack has to keep a system fallback behind the family name in case the file
- * never arrives.
+ * The default is SYSTEM: the OS answers, so the setting costs no request. Every
+ * other option is a sub-folder of public/fonts/, one folder per family:
  *
- * That asymmetry is why this class also describes the file for the webfont
- * option (see preloadFor() and facesFor()) instead of leaving the layout to
- * hardcode a path. Adding a second webfont later is a matter of describing it
- * here, not of editing a view.
+ *   public/fonts/inter/inter-latin.woff2
+ *   public/fonts/inter/inter-latin-ext.woff2
+ *   public/fonts/hind-siliguri/HindSiliguri-Bold.ttf
  *
- *   - SYSTEM lets the OS answer: San Francisco on a Mac, Segoe UI on Windows,
- *     whatever the Linux desktop has. The default, and the right one to hand to
- *     someone who has never thought about panel typography — native is the point.
- *   - SEGOE puts Segoe UI first whatever the OS is. On Windows the same face the
- *     system option resolves to; elsewhere it is the difference between a panel
- *     that looks like the machine it is on and one that looks like it was
- *     designed on a different one. It is here for exactly that case, and because
- *     the panel used to be hard-coded to it.
- *   - ROBOTO is Google's most widely recognised UI face and the one most teams
- *     have a mockup or a design system drawn in. It is the only option here
- *     that downloads anything.
+ * Dropping a folder in is the whole installation: it appears in the Backend Font
+ * dropdown, and selecting it declares an @font-face for each file inside and
+ * puts the family ahead of the system stack. The same folders are offered to the
+ * storefront themes (see ThemeFont), so a font is stored once; which font the
+ * panel uses and which each theme uses are still separate settings.
+ * A saved font whose folder has since been deleted falls back to the system font.
  *
- * @see resources/views/layouts/admin.blade.php, which applies the stack to
- *      --font-sans and inlines the @font-face for whichever option needs one.
+ * Conventions read from file names (all optional):
+ *   - weight: thin, extralight, light, regular, medium, semibold, bold,
+ *     extrabold, black, or a number 100-900. No hint means a variable font
+ *     covering 100-900.
+ *   - style: "italic" or "oblique" in the name.
+ *   - subset: "latin-ext" or "latin" in the name sets the Google unicode-range,
+ *     so the ext file is only fetched when a character needs it.
+ *
+ * The stored value is the folder name. Folder names are restricted to letters,
+ * digits, space, "_" and "-", which is what lets the layout print the family and
+ * URLs unescaped inside <style> without any stored text reaching the CSS.
+ *
+ * @see resources/views/layouts/admin.blade.php
  */
 class AdminFont
 {
     /**
-     * The null option's slug: the OS's own UI font, whatever that is.
-     *
-     * A theme folder and a settings group are never called this, so the value
-     * cannot collide with one.
+     * The null option: the OS's own UI font.
      */
     public const SYSTEM = 'system';
 
     /**
-     * Segoe UI named first, ahead of the OS's answer.
+     * Where font folders live, relative to public/fonts/. Empty: the folders sit
+     * directly in public/fonts/ and are shared by the admin panel and every
+     * storefront theme, so one copy of a font serves all of them.
      */
-    public const SEGOE = 'segoe';
+    public const SCOPE = '';
+
+    private const FOLDER_PATTERN = '/^[A-Za-z0-9][A-Za-z0-9 _-]*$/';
+
+    private const FORMATS = [
+        'woff2' => 'woff2',
+        'woff' => 'woff',
+        'ttf' => 'truetype',
+        'otf' => 'opentype',
+    ];
+
+    private const WEIGHTS = [
+        'extralight' => 200, 'ultralight' => 200,
+        'extrabold' => 800, 'ultrabold' => 800,
+        'semibold' => 600, 'demibold' => 600,
+        'thin' => 100, 'light' => 300, 'regular' => 400, 'normal' => 400,
+        'medium' => 500, 'bold' => 700, 'black' => 900, 'heavy' => 900,
+    ];
+
+    private const RANGES = [
+        'latin-ext' => 'U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF',
+        'latin' => 'U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD',
+    ];
+
+    private const SYSTEM_STACK = "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
 
     /**
-     * A webfont, self-hosted. See the file map in facesFor().
-     */
-    public const ROBOTO = 'roboto';
-
-    /**
-     * The stack for each option, keyed by stored value.
-     *
-     * Every one ends in the same generic tail, so text still renders on a
-     * machine with none of the named faces — a stack that could resolve to
-     * nothing would leave the panel to the browser's default instead, which is
-     * not one of these.
-     *
-     * Roboto leads its own stack, not the other way round: the whole point of
-     * choosing it over the system option is that it wins where it is installed,
-     * and it also has to win over a same-named face that some other tool may
-     * have registered. The system tail behind it is the fallback for the case
-     * where the woff2 has not arrived.
-     *
-     * @return array<string, string>
-     */
-    public static function stacks(): array
-    {
-        return [
-            self::SYSTEM => "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-            self::SEGOE => "'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-            self::ROBOTO => "'Roboto', 'Helvetica Neue', Arial, sans-serif",
-        ];
-    }
-
-    /**
-     * The label each stored value is offered under, in the order they are offered.
+     * The label each stored value is offered under: the system font first, then
+     * every font folder, alphabetically.
      *
      * @return array<string, string>
      */
     public static function options(): array
     {
-        return [
-            self::SYSTEM => 'System font',
-            self::SEGOE => 'Segoe UI',
-            self::ROBOTO => 'Roboto',
-        ];
+        return [self::SYSTEM => 'System font'] + self::folders();
     }
 
     /**
-     * The @font-face sources for an option, keyed by stored value.
+     * Just the font folders under public/fonts/{scope}/: folder name => label.
      *
-     * Only the webfont options appear. A system face has no file, so declaring
-     * one would be inventing a download.
+     * Public so the storefront's ThemeFont can offer the same folders.
      *
-     * Self-hosted rather than linked to a CDN, for the reasons laid out at the
-     * top of resources/css/fonts.css: a third-party stylesheet is
-     * render-blocking and costs a connection setup on every panel load. The
-     * declarations are inlined into the layout only when their option is
-     * selected, so an unselected webfont costs nothing at all.
-     *
-     * The subsets are Google's own unicode ranges, copied rather than invented.
-     * They are the mechanism that keeps a file out of the critical path: a page
-     * with no character outside a range never downloads the file for that range,
-     * so the ~29 KB latin-ext file is spent only by the pages that actually have
-     * a character in it. Bengali is deliberately absent — the panel can be
-     * translated (see lang/bn.json), and those characters fall through to a
-     * system Bengali face rather than bloating the common case for them.
-     *
-     * font-weight is the variable axis, so one file per subset serves every
-     * weight the panel uses, and font-display: swap means text paints in the
-     * fallback immediately rather than waiting on the file.
-     *
-     * @return array<string, array<int, array{url: string, unicodeRange: string}>>
+     * @return array<string, string>
      */
-    public static function facesFor(mixed $value): array
+    public static function folders(string $scope = self::SCOPE): array
     {
-        $value = self::normalize($value);
+        $folders = [];
 
-        if ($value !== self::ROBOTO) {
-            return [];
+        foreach (glob(rtrim(public_path('fonts/'.$scope), '/\\').'/*', GLOB_ONLYDIR) ?: [] as $dir) {
+            $name = basename($dir);
+
+            if ($name !== self::SYSTEM && preg_match(self::FOLDER_PATTERN, $name) && self::filesIn($dir) !== []) {
+                $folders[$name] = ucwords(str_replace(['-', '_'], ' ', $name));
+            }
         }
 
-        return [
-            $value => [
-                [
-                    'url' => '/fonts/roboto-latin-ext.woff2',
-                    'unicodeRange' => 'U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF',
-                ],
-                [
-                    'url' => '/fonts/roboto-latin.woff2',
-                    'unicodeRange' => 'U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD',
-                ],
-            ],
-        ];
+        return $folders;
     }
 
     /**
-     * The file to preload for an option, or null when it has none.
+     * The stack for each option, keyed by stored value.
      *
-     * Only ever the *latin* subset. Preloading a subset the page may not use is
-     * how the preloading turns into a speculative download: the browser has to
-     * be told to skip the fetch when unicode-range would not have matched, and
-     * until it does, the file is a request the preloader cannot cancel. The
-     * latin range covers ordinary panel text, so preloading it is a safe bet;
-     * latin-ext is left to the range check that happens anyway.
-     *
-     * @return non-empty-string|null
+     * @return array<string, string>
      */
-    public static function preloadFor(mixed $value): ?string
+    public static function stacks(): array
     {
-        return self::facesFor($value)[self::ROBOTO][1]['url'] ?? null;
+        $stacks = [];
+
+        foreach (array_keys(self::options()) as $value) {
+            $stacks[$value] = self::stackFor($value);
+        }
+
+        return $stacks;
     }
 
     /**
-     * The stack to apply for a stored setting value.
-     *
-     * An unknown value resolves to the system stack rather than to an unstyled
-     * family name. A settings row can be hand-edited, or left over from a
-     * version that offered different choices, and a font-family of something
-     * that resolves to nothing would silently drop the panel to the browser
-     * default instead of the deliberate default.
+     * The stack to apply for a stored value; unknown values get the system stack.
      *
      * @return non-empty-string
      */
     public static function stackFor(mixed $value): string
     {
-        $value = is_string($value) ? trim($value) : '';
+        $value = self::normalize($value);
 
-        return self::stacks()[$value] ?? self::stacks()[self::SYSTEM];
+        return $value === self::SYSTEM ? self::SYSTEM_STACK : "'{$value}', ".self::SYSTEM_STACK;
     }
 
     /**
-     * The value to store, normalised against the options that exist.
-     *
-     * Saving goes through this so a stored value is always one the select
-     * actually offers, and so facesFor() below can rely on it.
+     * The value to store, normalised against the folders that exist.
      */
     public static function normalize(mixed $value): string
     {
         $value = is_string($value) ? trim($value) : '';
 
-        return array_key_exists($value, self::options()) ? $value : self::SYSTEM;
+        return $value !== self::SYSTEM && array_key_exists($value, self::options()) ? $value : self::SYSTEM;
+    }
+
+    /**
+     * The @font-face descriptors for an option; empty for the system font.
+     *
+     * @return list<array{family: string, url: string, format: string, weight: string, style: string, unicodeRange: ?string}>
+     */
+    public static function facesFor(mixed $value): array
+    {
+        $value = self::normalize($value);
+
+        return $value === self::SYSTEM ? [] : self::facesIn(self::SCOPE, $value);
+    }
+
+    /**
+     * The @font-face descriptors for one folder of a scope. The folder name must
+     * already be a known one (see folders()).
+     *
+     * @return list<array{family: string, url: string, format: string, weight: string, style: string, unicodeRange: ?string}>
+     */
+    public static function facesIn(string $scope, string $value): array
+    {
+        $faces = [];
+
+        foreach (self::filesIn(rtrim(public_path('fonts/'.$scope), '/\\').'/'.$value) as $path) {
+            $file = basename($path);
+            $name = strtolower(pathinfo($file, PATHINFO_FILENAME));
+
+            $faces[] = [
+                'family' => $value,
+                'url' => '/fonts/'.implode('/', array_map('rawurlencode', [...array_filter(explode('/', $scope)), $value, $file])),
+                'format' => self::FORMATS[strtolower(pathinfo($file, PATHINFO_EXTENSION))],
+                'weight' => self::weightOf($name),
+                'style' => preg_match('/italic|oblique/', $name) ? 'italic' : 'normal',
+                'unicodeRange' => str_contains($name, 'latin-ext') ? self::RANGES['latin-ext']
+                    : (str_contains($name, 'latin') ? self::RANGES['latin'] : null),
+            ];
+        }
+
+        return $faces;
+    }
+
+    /**
+     * The one file worth preloading: a regular-style woff2, the plain latin
+     * subset if there is one. Null when there is no suitable woff2.
+     */
+    public static function preloadFor(mixed $value): ?string
+    {
+        return self::preloadOf(self::facesFor($value));
+    }
+
+    /**
+     * @param  list<array{url: string, format: string, style: string, unicodeRange: ?string}>  $faces
+     */
+    public static function preloadOf(array $faces): ?string
+    {
+        $candidates = array_values(array_filter(
+            $faces,
+            fn (array $f) => $f['format'] === 'woff2' && $f['style'] === 'normal',
+        ));
+
+        foreach ($candidates as $face) {
+            if ($face['unicodeRange'] === self::RANGES['latin']) {
+                return $face['url'];
+            }
+        }
+
+        foreach ($candidates as $face) {
+            if ($face['unicodeRange'] === null) {
+                return $face['url'];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return list<string> Font files directly inside a folder, sorted.
+     */
+    private static function filesIn(string $dir): array
+    {
+        $files = array_filter(
+            glob($dir.'/*') ?: [],
+            fn (string $p) => is_file($p) && isset(self::FORMATS[strtolower(pathinfo($p, PATHINFO_EXTENSION))]),
+        );
+
+        sort($files);
+
+        return array_values($files);
+    }
+
+    private static function weightOf(string $name): string
+    {
+        foreach (self::WEIGHTS as $word => $weight) {
+            if (str_contains($name, $word)) {
+                return (string) $weight;
+            }
+        }
+
+        if (preg_match('/(?<!\d)([1-9]00)(?!\d)/', $name, $m)) {
+            return $m[1];
+        }
+
+        return '100 900';
     }
 }

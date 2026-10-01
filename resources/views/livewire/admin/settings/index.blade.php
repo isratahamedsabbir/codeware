@@ -226,8 +226,8 @@ $imageMeta = match ($setting->key) {
                                     </flux:select>
                                     <flux:description>
                                         Typeface for the admin panel only. System font follows the
-                                        device; Segoe UI is named first on every device; Roboto is
-                                        self-hosted and the only option that downloads a font file.
+                                        device. To add a font, put its files in a new folder inside
+                                        public/fonts/ (e.g. public/fonts/inter/) and it will appear here.
                                     </flux:description>
                                 </flux:field>
                             </div>

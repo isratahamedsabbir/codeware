@@ -50,13 +50,13 @@
     $stacks = \App\Support\ThemeFont::stacks();
     $current = \App\Support\ThemeFont::normalize($value);
 
-    // Every webfont on offer that the panel's own bundle does not already
-    // declare. Plus Jakarta Sans is in resources/css/fonts.css, which base.css
-    // imports, so re-declaring it here would be a duplicate; the other two are
-    // self-hosted for the storefront only and have to be said out loud.
-    $specimenFaces = array_values(array_diff(
-        array_keys(array_filter($options, fn ($option) => \App\Support\ThemeFont::facesFor($option) !== [], ARRAY_FILTER_USE_KEY)),
-        [\App\Support\ThemeFont::PLUS_JAKARTA],
+    // Every webfont this theme offers, declared here so the specimen can draw
+    // it before anything is saved. Each folder's family is its own name, so none
+    // of these collide with a face the panel's bundle declares.
+    $specimenFaces = array_keys(array_filter(
+        $options,
+        fn ($option) => \App\Support\ThemeFont::facesFor($option) !== [],
+        ARRAY_FILTER_USE_KEY,
     ));
 
     // The same two rules the Alpine below applies, run once on the server so the
@@ -73,19 +73,18 @@
      on the other ninety-odd admin screens. --}}
 <style>
     @foreach ($specimenFaces as $face)
-        @foreach (\App\Support\ThemeFont::facesFor($face)[$face] as $source)
-            {{-- The family name and the weight axis come from ThemeFont too. They
-                 have to agree with the file that serves them, and nothing forces
-                 them to: a family retyped here would be a download that is never
-                 used, and an axis that claims one weight would render the next
-                 one at the wrong weight. --}}
+        @foreach (\App\Support\ThemeFont::facesFor($face) as $source)
+            {{-- Family, weight, style and format all come from ThemeFont, so
+                 they agree with the file that serves them. --}}
             @font-face {
-                font-family: {{ \App\Support\ThemeFont::familiesFor($face)[$face] }};
-                font-style: normal;
-                font-weight: {{ \App\Support\ThemeFont::weightsFor($face)[$face] }};
+                font-family: '{!! $source['family'] !!}';
+                font-style: {!! $source['style'] !!};
+                font-weight: {!! $source['weight'] !!};
                 font-display: swap;
-                src: url('{{ $source['url'] }}') format('woff2');
-                unicode-range: {{ $source['unicodeRange'] }};
+                src: url('{!! $source['url'] !!}') format('{!! $source['format'] !!}');
+                @if ($source['unicodeRange'])
+                unicode-range: {!! $source['unicodeRange'] !!};
+                @endif
             }
         @endforeach
     @endforeach

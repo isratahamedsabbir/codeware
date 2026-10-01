@@ -105,18 +105,17 @@
              no request of its own. Outside the :root block because @font-face is
              a top-level at-rule and would be invalid nested inside a rule.
              Also printed unescaped, and for the same reason as the stack below. --}}
-        @foreach ($adminFontFaces as $faces)
-            @foreach ($faces as $face)
-                @font-face {
-                    font-family: 'Roboto';
-                    font-style: normal;
-                    font-weight: 100 900;
-                    font-stretch: 100%;
-                    font-display: swap;
-                    src: url('{!! $face['url'] !!}') format('woff2');
-                    unicode-range: {!! $face['unicodeRange'] !!};
-                }
-            @endforeach
+        @foreach ($adminFontFaces as $face)
+            @font-face {
+                font-family: '{!! $face['family'] !!}';
+                font-style: {!! $face['style'] !!};
+                font-weight: {!! $face['weight'] !!};
+                font-display: swap;
+                src: url('{!! $face['url'] !!}') format('{!! $face['format'] !!}');
+                @if ($face['unicodeRange'])
+                unicode-range: {!! $face['unicodeRange'] !!};
+                @endif
+            }
         @endforeach
 
         :root {

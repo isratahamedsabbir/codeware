@@ -298,6 +298,7 @@
                 empty-title="No education yet"
                 add-label="Add qualification"
                 :max="8"
+                :columns="2"
                 :fields="[
                     ['name' => 'title', 'label' => 'Degree / Qualification', 'placeholder' => 'B.Sc. in Computer Science', 'wide' => true],
                     ['name' => 'period', 'label' => 'Period', 'placeholder' => '2018 — 2022', 'wide' => true],
@@ -319,6 +320,7 @@
                 empty-title="No certifications yet"
                 add-label="Add certification"
                 :max="12"
+                :columns="2"
                 :fields="[
                     ['name' => 'title', 'label' => 'Certification', 'placeholder' => 'AWS Certified Developer', 'wide' => true],
                     ['name' => 'period', 'label' => 'Year', 'placeholder' => '2024', 'wide' => true],
