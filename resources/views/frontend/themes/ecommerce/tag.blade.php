@@ -34,7 +34,7 @@
                 <p class="mt-1 text-sm text-zinc-500">{{ __(':count products found', ['count' => $products->total()]) }}</p>
             </div>
             <a href="{{ route('shop', ['tag' => $tag->slug]) }}" class="text-sm font-semibold text-brand hover:underline">
-                {{ __('Filter in shop') }} â†’
+                {{ __('Filter in shop') }} →
             </a>
         </div>
 

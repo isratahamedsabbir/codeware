@@ -25,7 +25,7 @@
         <h1 class="text-3xl font-extrabold text-sf-heading sm:text-4xl">{{ $brand->name }}</h1>
         <a href="{{ route('shop', ['brand' => $brand->slug]) }}"
             class="rounded-full bg-brand px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">
-            {{ __('View all') }} â†’
+            {{ __('View all') }} →
         </a>
     </header>
 

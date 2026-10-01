@@ -4,12 +4,12 @@
     Themes::errorView() prefers a theme's own errors/{code}.blade.php over the
     shared resources/views/errors/{code}.blade.php, so this file is what a
     visitor on the portfolio theme actually gets. A theme that ships no such file
-    falls back to the shared page instead â€” nothing here is required for the
+    falls back to the shared page instead — nothing here is required for the
     storefront to work.
 
     Built from the same pieces as the one-pager: the theme-portfolio body class,
     its own public/themes/portfolio/style.css, the pf-* components and the
-    --pf-* custom properties. That matters more here than in the other themes â€”
+    --pf-* custom properties. That matters more here than in the other themes —
     the portfolio has a light/dark toggle, and the page has to follow it, which
     it does for free by reading the same variables the rest of the theme does
     rather than hardcoding a background.
@@ -28,7 +28,7 @@
     @include('partials.head')
     <link rel="stylesheet" href="{{ asset('themes/portfolio/style.css') }}">
     {{-- A 404 must never be indexed, and must never claim a canonical URL for a
-         page that does not exist â€” so partials.seo-meta is deliberately absent
+         page that does not exist — so partials.seo-meta is deliberately absent
          here (it derives both from $page). --}}
     <meta name="robots" content="noindex, nofollow">
     <style>[x-cloak]{display:none!important}</style>
@@ -59,7 +59,7 @@
                     {{ __('Error') }} &middot; {{ __('Not found') }}
                 </span>
                 <h2 class="pf-heading text-2xl font-bold sm:text-3xl">{{ __('Sorry, page not found') }}</h2>
-                <p class="mt-3 text-sm leading-relaxed text-(--pf-text-muted)">{{ __('This page does not exist. The sections below are all there is â€” try one of them.') }}</p>
+                <p class="mt-3 text-sm leading-relaxed text-(--pf-text-muted)">{{ __('This page does not exist. The sections below are all there is — try one of them.') }}</p>
 
                 <a href="{{ url('/') }}" class="pf-btn-solid pf-mono mt-8 px-7 py-3 text-xs tracking-wider uppercase">
                     {{ __('Back to homepage') }}

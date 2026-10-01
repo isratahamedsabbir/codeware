@@ -9,14 +9,14 @@
 
 @php
     $siteName = \App\Models\Setting::get('site_name', config('app.name'));
-    // Hero slider (Theme Settings ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Banners): each slide {image, title,
+    // Hero slider (Theme Settings → Banners): each slide {image, title,
     // description, url}; older image-only data still renders.
     $heroSlides = \App\Support\HeroSlides::forStorefront();
     $promoImage1 = \App\Models\Setting::get('home_promo_banner_1');
     $promoImage2 = \App\Models\Setting::get('home_promo_banner_2');
 
     // Promo tile links (Theme Settings): a site path or an http(s) URL ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â
-    // anything else (blank, javascript:, ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦) falls back to the Shop page. Read
+    // anything else (blank, javascript:, …) falls back to the Shop page. Read
     // from the ecommerce theme's own theme.json.
     $promoLink = fn (string $key): string => \App\Support\HeroSlides::safeUrl(\App\Support\ThemeSettings::text('ecommerce', $key));
 

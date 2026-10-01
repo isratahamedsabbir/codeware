@@ -19,9 +19,9 @@
     $priceMax = ceil((float) $bounds->max);
     $filterMin = is_numeric($filters['min_price']) ? (float) $filters['min_price'] : $priceMin;
     $filterMax = is_numeric($filters['max_price']) ? (float) $filters['max_price'] : $priceMax;
-    $currencySymbol = \App\Models\Setting::get('currency_symbol', 'à§³');
+    $currencySymbol = \App\Models\Setting::get('currency_symbol', '৳');
 
-    // Removable chips for every active filter â€” each links to the current URL
+    // Removable chips for every active filter — each links to the current URL
     // minus just that one filter.
     $without = fn (array $keys) => request()->fullUrlWithQuery(array_fill_keys([...$keys, 'page'], null));
     $chips = [];
@@ -41,7 +41,7 @@
         $chips[] = ['label' => $filters['type'] === 'digital' ? __('Digital') : __('Physical'), 'url' => $without(['type'])];
     }
     if (filled($filters['min_price']) || filled($filters['max_price'])) {
-        $chips[] = ['label' => $currencySymbol.number_format($filterMin).' â€“ '.$currencySymbol.number_format($filterMax), 'url' => $without(['min_price', 'max_price'])];
+        $chips[] = ['label' => $currencySymbol.number_format($filterMin).' – '.$currencySymbol.number_format($filterMax), 'url' => $without(['min_price', 'max_price'])];
     }
     foreach ($filters['attributes'] as $attrName => $attrValue) {
         $chips[] = [
@@ -135,7 +135,7 @@
                         </div>
                     </form>
 
-                    {{-- Price â€” applies on its own shortly after the shopper lets go of
+                    {{-- Price — applies on its own shortly after the shopper lets go of
                          a slider thumb or edits a number; no Apply button. --}}
                     <style>
                         .cw-range { appearance: none; -webkit-appearance: none; background: transparent; pointer-events: none; }
@@ -250,7 +250,7 @@
                                         </span>
                                     </template>
                                     <template x-if="!applying">
-                                        <span>{{ __('Range') }}: {{ $currencySymbol }}<span x-text="format(boundsMin)"></span> â€“ {{ $currencySymbol }}<span x-text="format(boundsMax)"></span></span>
+                                        <span>{{ __('Range') }}: {{ $currencySymbol }}<span x-text="format(boundsMin)"></span> – {{ $currencySymbol }}<span x-text="format(boundsMax)"></span></span>
                                     </template>
                                 </p>
                             </form>
@@ -370,7 +370,7 @@
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <p class="text-sm text-zinc-500">
                         @if ($products->total() > 0)
-                            {!! __('Showing :fromâ€“:to of :total products', [
+                            {!! __('Showing :from–:to of :total products', [
                                 'from' => '<span class="font-semibold text-sf-heading">'.$products->firstItem().'</span>',
                                 'to' => '<span class="font-semibold text-sf-heading">'.$products->lastItem().'</span>',
                                 'total' => '<span class="font-semibold text-sf-heading">'.$products->total().'</span>',

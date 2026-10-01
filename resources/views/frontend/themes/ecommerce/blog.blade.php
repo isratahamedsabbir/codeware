@@ -101,7 +101,7 @@
                                         </svg>
                                         {{ $post->views }}
                                     </span>
-                                    <span class="font-semibold text-brand group-hover:underline">{{ __('Read more') }} â†’</span>
+                                    <span class="font-semibold text-brand group-hover:underline">{{ __('Read more') }} →</span>
                                 </span>
                             </div>
                         </div>

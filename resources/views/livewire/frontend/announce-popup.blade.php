@@ -23,13 +23,14 @@
     @keydown.escape.window="dismiss"
     role="dialog"
     aria-modal="true"
+    aria-labelledby="announce-popup-title"
     class="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/60 px-4 py-8 backdrop-blur-sm"
 >
     <div class="absolute inset-0" @click="dismiss"></div>
 
     <div @click.stop class="relative w-full max-w-lg overflow-hidden rounded-card bg-brand shadow-2xl">
         @if ($image)
-            <img src="{{ $image }}" alt="{{ $title }}" class="absolute inset-0 h-full w-full object-cover">
+            <img src="{{ $image }}" alt="" aria-hidden="true" loading="lazy" decoding="async" class="absolute inset-0 h-full w-full object-cover">
             <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/55 to-black/25"></div>
         @else
             <div class="absolute inset-0 bg-gradient-to-b from-brand to-emerald-950"></div>
@@ -43,7 +44,7 @@
         </button>
 
         <div class="relative flex flex-col items-center px-6 py-12 text-center sm:px-10">
-            <h2 class="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">{{ $title }}</h2>
+            <h2 id="announce-popup-title" class="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">{{ $title }}</h2>
 
             @if ($description)
                 <p class="mt-3 text-sm leading-relaxed text-white/85 sm:text-base">{{ $description }}</p>
@@ -60,7 +61,7 @@
             @endif
 
             <button type="button" @click="dismiss"
-                class="mt-4 text-xs font-semibold text-white/60 underline-offset-4 transition hover:text-white hover:underline">
+                class="mt-4 text-xs font-semibold text-white/90 underline-offset-4 transition hover:text-white hover:underline">
                 {{ __('Maybe later') }}
             </button>
         </div>
