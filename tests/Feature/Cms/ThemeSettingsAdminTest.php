@@ -146,7 +146,7 @@ it('renders the selected theme settings panel below the picker', function () {
     Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'ecommerce')
         ->assertSeeHtml('Ecommerce')
-        ->assertSeeHtml('v1.0.0');
+        ->assertSeeHtml('About Ecommerce');
 });
 
 it('loads theme-scoped values out of the theme\'s own theme.json', function () {
@@ -308,7 +308,8 @@ it('refuses to create a theme.json that is already there', function () {
 
 it('offers no theme.json button for a theme that declares no settings form', function () {
     // A theme with no settings.blade.php has no fields to write, and its settings
-    // card is not rendered at all — so there is nothing to create a file for.
+    // card is not rendered at all — so there is nothing to create a file for. The
+    // file the installer gave it holds its identity and nothing else.
     $zip = makeThemeZip('retro', ['home.blade.php' => 'retro home']);
 
     Livewire::test(ThemeSettingsScreen::class)
@@ -322,14 +323,16 @@ it('offers no theme.json button for a theme that declares no settings form', fun
         ->assertDontSee('Create theme.json')
         ->assertDontSee('Theme Settings</h');
 
-    // And calling the action anyway does not leave a stray file behind: it is
-    // reachable directly by anything that can talk to the Livewire endpoint.
+    // And calling the action anyway does not overwrite it: it is reachable
+    // directly by anything that can talk to the Livewire endpoint, and create()
+    // refuses a file that is already there.
     Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'retro')
         ->call('createSettingsFile')
         ->assertHasNoErrors();
 
-    expect(ThemeSettings::exists('retro'))->toBeFalse();
+    expect(ThemeSettings::exists('retro'))->toBeTrue()
+        ->and(ThemeSettings::settings('retro'))->toBe([]);
 });
 
 it('does not create a theme.json for a theme that is not installed', function () {
@@ -930,11 +933,11 @@ it('leaves a theme that ships its own theme.json exactly as it was', function ()
         ->and(Themes::manifest('retro')['version'])->toBe('2.1.0');
 });
 
-it('gives no theme.json to a theme that declares no settings form', function () {
-    // Seeding is for a theme that has fields needing somewhere to live. A theme
-    // with no settings.blade.php has none, so a manifest-only file would hold
-    // nothing the theme could ever write — and offering "Create theme.json" on
-    // a screen with no fields would be worse than useless.
+it('gives a theme that declares no settings form a manifest holding only its identity', function () {
+    // A theme with no settings.blade.php has no fields, so the file holds no
+    // settings — but theme.json is also where a theme's name and serial number
+    // live, and a theme installed with neither is one the picker cannot tell from
+    // another. So it gets a manifest and nothing else.
     $zip = makeThemeZip('retro', ['home.blade.php' => 'retro home']);
 
     Livewire::test(ThemeSettingsScreen::class)
@@ -943,7 +946,10 @@ it('gives no theme.json to a theme that declares no settings form', function () 
         ->call('installTheme')
         ->assertHasNoErrors();
 
-    expect(ThemeSettings::exists('retro'))->toBeFalse();
+    expect(ThemeSettings::exists('retro'))->toBeTrue()
+        ->and(ThemeSettings::settings('retro'))->toBe([])
+        ->and(Themes::manifest('retro')['name'])->toBe('Retro')
+        ->and(Themes::manifest('retro')['sn'])->toBeGreaterThan(0);
 });
 
 it('flags a theme that ships no routes file, because selecting it 404s the site', function () {

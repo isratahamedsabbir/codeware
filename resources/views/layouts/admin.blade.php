@@ -242,6 +242,8 @@
                         $groupIcon = [
                             'Products' => 'cube',
                             'Accessories' => 'puzzle-piece',
+                            'Service' => 'wrench-screwdriver',
+                            'Vouchers' => 'gift',
                             'Sales' => 'shopping-bag',
                             'Blog' => 'pencil-square',
                             'Library & System' => 'folder',

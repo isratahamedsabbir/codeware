@@ -75,7 +75,7 @@ class ThemeSettings
      * way: this class already asks Themes for a manifest, and Themes knowing
      * about this class's constants to answer that question would be a circle.
      */
-    public const MANIFEST_KEYS = ['name', 'description', 'version', 'author', 'tags', 'no_index'];
+    public const MANIFEST_KEYS = ['name', 'description', 'version', 'author', 'tags', 'no_index', 'sn'];
 
     /**
      * What every settings key in a theme's file starts with, before the theme's
@@ -375,6 +375,14 @@ class ThemeSettings
      * reset, and a create that overwrote would be a single click away from
      * wiping a finished theme's manifest and content. It returns false so the
      * caller can say so rather than appear to have succeeded.
+     *
+     * A serial number is added to the seed unless the caller passes one. Since
+     * every other path into a theme.json — the installer, this method — is the
+     * app creating the file rather than a theme author shipping it, this is where
+     * the "every theme has an SN" promise is actually kept for a theme that
+     * arrives without one; a caller that knows the number it wants (a test, a
+     * seeder building a known set) still sets it itself rather than being handed
+     * whatever came next.
      */
     public static function create(string $slug, array $values = []): bool
     {
@@ -382,7 +390,13 @@ class ThemeSettings
             return false;
         }
 
-        return static::write($slug, array_merge(Themes::manifest($slug), $values));
+        $manifest = Themes::manifest($slug);
+
+        if (! array_key_exists('sn', $values)) {
+            $manifest['sn'] = Themes::nextSn();
+        }
+
+        return static::write($slug, array_merge($manifest, $values));
     }
 
     /**
@@ -456,9 +470,17 @@ class ThemeSettings
         }
 
         // Drop the memo rather than updating it: the new mtime is not knowable
-        // to the second on every filesystem, and a stale memo here would show
+        // to the same second on every filesystem, and a stale memo here would show
         // the owner yesterday's values on the screen they just saved.
         static::forget($slug);
+
+        // The manifest memo too, and for a stronger version of the same reason:
+        // this file *is* the manifest, so a write here changes what
+        // Themes::manifest() answers, and that reader's own mtime check can miss a
+        // second write inside the same second. Anything that writes a theme.json
+        // and then asks the theme what it is called — the installer, the admin
+        // form — has to read back what it just wrote.
+        Themes::forgetManifest($slug);
 
         return true;
     }

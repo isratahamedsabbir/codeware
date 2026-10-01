@@ -163,6 +163,21 @@
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-2">
                                 <p class="truncate text-sm font-semibold text-zinc-800 dark:text-zinc-100">{{ $label }}</p>
+                                @if (filled($themeCards[$slug]['manifest']['version']))
+                                    <span class="shrink-0 font-mono text-[10px] text-zinc-400">v{{ $themeCards[$slug]['manifest']['version'] }}</span>
+                                @endif
+                                @php
+                                    $info = $themeCards[$slug]['manifest'];
+                                    $tip = $info['description'];
+                                @endphp
+                                @if (filled($tip))
+                                <flux:tooltip :content="$tip" class="shrink-0">
+                                    <button type="button" x-on:click.prevent.stop aria-label="About {{ $label }}"
+                                        class="flex size-5 items-center justify-center rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">
+                                        <flux:icon.information-circle class="size-4" />
+                                    </button>
+                                </flux:tooltip>
+                                @endif
                                 @if ($slug === $activeTheme)
                                     <span class="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
                                         Live
@@ -180,6 +195,13 @@
                                 @endif
                             </p>
                         </div>
+                        @if ($themeCards[$slug]['manifest']['tags'] !== [])
+                            <div class="flex max-w-[45%] shrink-0 flex-wrap justify-end gap-1">
+                                @foreach ($themeCards[$slug]['manifest']['tags'] as $tag)
+                                    <span class="rounded-md bg-zinc-50 px-1.5 py-0.5 font-mono text-[10px] text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">{{ $tag }}</span>
+                                @endforeach
+                            </div>
+                        @endif
                         @if (! $themeCards[$slug]['hasRoutes'])
                             {{-- On the card as well as in the panel below, because
                                  the radio right next to it is what picks the
@@ -189,106 +211,18 @@
                                 title="This theme ships no routes/web/{{ $slug }}.php, so it has no pages of its own. Selecting it will 404 the whole site.">
                                 <flux:icon.exclamation-triangle class="size-3.5" />
                             </span>
-                        @else
-                            <span x-show="$wire.settings.site_theme === '{{ $slug }}'" x-cloak
-                                class="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow">
-                                <flux:icon.check class="size-3.5" />
-                            </span>
                         @endif
                     </div>
+
+                    @if ($themeCards[$slug]['hasRoutes'])
+                        <span x-show="$wire.settings.site_theme === '{{ $slug }}'" x-cloak
+                            class="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full bg-primary text-white shadow">
+                            <flux:icon.check class="size-3.5" />
+                        </span>
+                    @endif
                 </label>
             @endforeach
         </div>
-
-        {{-- Selected theme's own settings (read from the theme folder's theme.json) --}}
-        @php
-            $selectedCard = $themeCards[$selectedSlug] ?? null;
-        @endphp
-
-        @if ($selectedCard)
-            <div class="mt-5 rounded-xl bg-white p-5 dark:bg-zinc-800/40">
-                <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
-                    <h4 class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-                        {{ $selectedCard['manifest']['name'] }}
-                    </h4>
-
-                    @if (filled($selectedCard['manifest']['version']))
-                        <span class="rounded-full bg-zinc-100 px-2.5 py-0.5 font-mono text-[11px] font-medium text-zinc-500 dark:bg-zinc-700 dark:text-zinc-300">
-                            v{{ $selectedCard['manifest']['version'] }}
-                        </span>
-                    @endif
-
-                    @if ($selectedSlug === $activeTheme)
-                        <span class="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
-                            Live
-                        </span>
-                    @endif
-
-                    @if (filled($selectedCard['manifest']['author']))
-                        <span class="ml-auto text-xs text-zinc-400">
-                            by {{ $selectedCard['manifest']['author'] }}
-                        </span>
-                    @endif
-                </div>
-
-                @if (filled($selectedCard['manifest']['description']))
-                    <p class="mt-2 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-                        {{ $selectedCard['manifest']['description'] }}
-                    </p>
-                @endif
-
-                {{-- A theme is templates plus the routes that point at them. Pick
-                     one with no routes/web/{slug}.php and the storefront resolves
-                     no URL at all — every page, the homepage included, is a 404,
-                     and the cause is a file that is not in the theme folder an
-                     owner would go looking in. --}}
-                @unless ($selectedCard['hasRoutes'])
-                    <div class="mt-4 flex flex-wrap items-start gap-4 rounded-lg border border-amber-200 bg-amber-50/70 p-4 dark:border-amber-500/30 dark:bg-amber-500/10">
-                        <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400">
-                            <flux:icon.exclamation-triangle class="size-5" />
-                        </span>
-
-                        <div class="min-w-0 flex-1 text-sm leading-relaxed text-amber-800 dark:text-amber-200">
-                            <p class="font-semibold">This theme ships no route file, so it has no pages of its own.</p>
-                            <p class="mt-1 text-xs text-amber-700/90 dark:text-amber-300/80">
-                                Selecting it will make every public page — the homepage included — return a
-                                404. Its templates are only ever reached through a route, and a theme's
-                                routes live outside the theme folder, in this one file:
-                            </p>
-
-                            <p class="mt-2 break-all font-mono text-[11px] text-amber-700/80 dark:text-amber-300/70">
-                                {{ $selectedCard['routeFile'] }}
-                            </p>
-                        </div>
-                    </div>
-                @endunless
-
-                <div class="mt-4 flex flex-wrap items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-                    <span class="flex items-center gap-1.5">
-                        <flux:icon.document-text class="size-3.5 text-zinc-400" />
-                        {{ $selectedCard['templates'] }} templates
-                    </span>
-                    @if ($selectedCard['shop'])
-                        <span class="flex items-center gap-1.5">
-                            <flux:icon.shopping-bag class="size-3.5 text-zinc-400" />
-                            shop pages
-                        </span>
-                    @endif
-                    @foreach ($selectedCard['manifest']['tags'] as $tag)
-                        <span class="rounded-md bg-zinc-50 px-2 py-0.5 font-mono text-[11px] text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-                            {{ $tag }}
-                        </span>
-                    @endforeach
-                </div>
-            </div>
-        @endif
-
-        <p class="flex items-center gap-1.5 text-xs text-zinc-400">
-            <flux:icon.sparkles class="size-3.5 text-amber-400" />
-            Adding a theme is as simple as dropping a new folder into
-            <code class="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">resources/views/frontend/themes/</code>
-            — it shows up here automatically.
-        </p>
     </x-admin-section-card>
 
     {{-- ── Theme's own settings ──────────────────────────────────────────────

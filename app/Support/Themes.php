@@ -212,6 +212,155 @@ class Themes
     }
 
     /**
+     * Which installed theme already answers to a name, or null when the name is
+     * free — the uniqueness check's reporting half. Being told *which* theme is
+     * the one already called "Shop" is the difference between a message the
+     * owner can act on and one they have to go and work out.
+     *
+     * $excludeSlug is the theme being edited, so a theme keeping its own name is
+     * not a collision with itself. It is the same exclusion the admin form needs
+     * when it is about to write a name back over the theme it is showing.
+     *
+     * @see static::isNameUnique() for the yes/no half
+     */
+    public static function themeWithName(string $name, ?string $excludeSlug = null): ?string
+    {
+        $needle = static::nameKey($name);
+
+        if ($needle === '') {
+            return null;
+        }
+
+        foreach (array_keys(static::all()) as $slug) {
+            if ($slug === $excludeSlug) {
+                continue;
+            }
+
+            if (static::nameKey((string) static::manifest($slug)['name']) === $needle) {
+                return $slug;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Whether a theme name is free, by the same comparison themeWithName() makes.
+     *
+     * An empty name is *not* free. A theme.json with a blank "name" is read back
+     * as the slug in title case (see manifest()'s fallback), which is a perfectly
+     * good name — and for a slug like "shop_plus" that fallback is "Shop Plus",
+     * so two themes can collide on a name nobody ever typed. Answering "unique"
+     * for a blank name would let that through and hand the owner a duplicate they
+     * did not make and cannot see.
+     */
+    public static function isNameUnique(string $name, ?string $excludeSlug = null): bool
+    {
+        return trim($name) !== '' && static::themeWithName($name, $excludeSlug) === null;
+    }
+
+    /**
+     * The form a theme name is compared in: trimmed, case-folded, and with runs
+     * of whitespace collapsed to single spaces.
+     *
+     * Case is folded because these names are rendered as plain text in the admin
+     * picker and in the storefront footer, where "Shop" and "shop" are the same
+     * word to whoever is reading them. Two themes differing only in case are not
+     * a distinction anybody can act on — they are a duplicate with a typo in it,
+     * and letting one past the check would then block the owner's later, correct
+     * save of the other.
+     *
+     * The whitespace collapse is there for the same reason, and for the likelier
+     * cause: a theme author hand-typing a manifest is exactly how a double space
+     * gets in there.
+     *
+     * One definition, used by both callers above — the failure mode this guards
+     * against is the two of them comparing names two slightly different ways,
+     * which passes here and then contradicts the error message.
+     */
+    private static function nameKey(string $name): string
+    {
+        return mb_strtolower(trim(preg_replace('/\s+/u', ' ', $name) ?? $name));
+    }
+
+    /**
+     * The serial number to hand the next theme: one past the highest one in use.
+     *
+     * Max-plus-one rather than a count of themes, so a deleted theme's number is
+     * never handed out again. A serial that gets reused is a serial that refers
+     * to two different themes across the life of a site, which defeats the point
+     * of having one — and the gaps cost nothing, since nothing derives an
+     * ordering or a row count from this number.
+     *
+     * A theme whose manifest carries no SN yet reads as 0 (see manifest()), so
+     * the built-in themes are simply counted as the ones holding up the floor.
+     */
+    public static function nextSn(): int
+    {
+        $used = static::allSn();
+
+        return $used === [] ? 1 : max($used) + 1;
+    }
+
+    /**
+     * Whether a serial number is free. The check behind the SN field on the admin
+     * manifest form, and the reason SNs are validated at all rather than only
+     * assigned: an owner typing a number by hand is the one way two themes end
+     * up sharing one.
+     *
+     * Zero is never free. It is the value a manifest with no SN reads back as
+     * (see manifest()), so accepting it would be accepting the number that stands
+     * for "this theme was never given one".
+     */
+    public static function isSnUnique(int $sn, ?string $excludeSlug = null): bool
+    {
+        if ($sn < 1) {
+            return false;
+        }
+
+        return static::slugBySn($sn, $excludeSlug) === null;
+    }
+
+    /**
+     * The theme holding a serial number, or null when it is free.
+     *
+     * $excludeSlug skips the theme being edited, so re-saving a theme's existing
+     * SN is not read back as that SN being taken by itself.
+     */
+    public static function slugBySn(int $sn, ?string $excludeSlug = null): ?string
+    {
+        foreach (array_keys(static::all()) as $slug) {
+            if ($slug === $excludeSlug) {
+                continue;
+            }
+
+            if ((int) static::manifest($slug)['sn'] === $sn) {
+                return $slug;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Every installed theme's serial number, as slug => SN.
+     *
+     * Read through manifest() rather than off the raw files, so the numbers here
+     * are the same ones the admin form shows and the same ones the uniqueness
+     * checks compare — a serial read any other way is a serial that can disagree
+     * with the one it is supposed to be checking.
+     *
+     * @return array<string, int>
+     */
+    public static function allSn(): array
+    {
+        return collect(static::all())
+            ->keys()
+            ->mapWithKeys(fn (string $slug) => [$slug => (int) static::manifest($slug)['sn']])
+            ->all();
+    }
+
+    /**
      * Drop the cached theme list so installs/uninstalls show up on the next
      * call to all() — called by the admin theme installer after it writes a
      * new folder, since all() otherwise caches the scan for a whole day.
@@ -220,6 +369,38 @@ class Themes
     {
         self::$all = [];
         Cache::forget('themes:all');
+
+        static::forgetManifest();
+    }
+
+    /**
+     * Drop one theme's memoed manifest, or every theme's when given no slug.
+     *
+     * manifest() normally notices a changed file by its mtime and size, which is
+     * what catches a theme.json replaced from outside the app. It cannot catch a
+     * theme.json this request has just written twice inside the same second,
+     * though: a save that renames a theme and then reads its manifest back would
+     * be handed the version from before the save. Anything writing a manifest and
+     * reading it back in one request — the admin form, the installer — clears it
+     * here rather than relying on the clock.
+     *
+     * Separate from forget() because the manifest memo is per-request while the
+     * folder list behind all() is cached for a day: renaming a theme does not
+     * change which folders exist, and throwing that cache away on every rename
+     * would make a cheap action cost a rescan of the themes directory for the
+     * next day of requests.
+     */
+    public static function forgetManifest(?string $slug = null): void
+    {
+        if ($slug === null) {
+            self::$manifests = [];
+
+            return;
+        }
+
+        foreach (array_keys(self::$manifests) as $memoKey) {
+            unset(self::$manifests[$memoKey][$slug]);
+        }
     }
 
     /**
@@ -234,7 +415,7 @@ class Themes
      * keys out of a larger file and everything else in it is none of this
      * method's business.
      *
-     * @return array{name: string, description: string, version: string, author: string, tags: array<int, string>, no_index: bool}
+     * @return array{name: string, description: string, version: string, author: string, tags: array<int, string>, no_index: bool, sn: int}
      */
     public static function manifest(string $slug): array
     {
@@ -245,6 +426,7 @@ class Themes
             'author' => '',
             'tags' => [],
             'no_index' => false,
+            'sn' => 0,
         ];
 
         $file = self::path().'/'.$slug.'/theme.json';
@@ -279,12 +461,46 @@ class Themes
                 // and so is indexable — the reading that keeps a typo from
                 // quietly unlisting a storefront.
                 'no_index' => ($data['no_index'] ?? null) === true,
+                'sn' => static::readSn($data['sn'] ?? null),
             ];
         }
 
         self::$manifests[$memoKey][$slug] = ['stamp' => $stamp, 'manifest' => $manifest];
 
         return $manifest;
+    }
+
+    /**
+     * A manifest's raw "sn" value as the integer the rest of the app compares,
+     * or 0 for a theme that has never been given one.
+     *
+     * theme.json is a file the owner is expected to open and edit, so this
+     * arrives as whatever the JSON happened to hold: an integer if the app wrote
+     * it, a numeric *string* if it was typed by hand into a quoted field, a
+     * float if someone spelled it "3.0", and something that is not a number at
+     * all if they typed a word. Only the integer is taken at face value; the rest
+     * are coerced, and anything that cannot be is read as 0 rather than allowed
+     * to become a string where every other SN in the app is an integer.
+     *
+     * 0 is the deliberate "no serial number yet" value rather than an error: it
+     * is what a theme shipped without one looks like, and nextSn()/allSn() both
+     * treat it as holding up the floor of the sequence instead of counting it.
+     */
+    private static function readSn(mixed $value): int
+    {
+        if (is_int($value)) {
+            return $value;
+        }
+
+        if (is_string($value) && preg_match('/^\s*-?\d+\s*$/', $value) === 1) {
+            return (int) trim($value);
+        }
+
+        if (is_float($value) && floor($value) === $value) {
+            return (int) $value;
+        }
+
+        return 0;
     }
 
     /**
@@ -322,11 +538,27 @@ class Themes
         $available = self::all();
         $selected = Setting::get('site_theme', 'default');
 
-        if (array_key_exists($selected, $available)) {
+        // all() is cached for a day, so a theme folder deleted since then is
+        // still listed — confirm the folder really exists before trusting it.
+        $exists = fn ($slug) => is_string($slug)
+            && array_key_exists($slug, $available)
+            && is_dir(self::path().'/'.$slug);
+
+        if ($exists($selected)) {
             return $selected;
         }
 
-        return array_key_exists('default', $available) ? 'default' : (array_key_first($available) ?? 'default');
+        if ($exists('default')) {
+            return 'default';
+        }
+
+        foreach (array_keys($available) as $slug) {
+            if ($exists($slug)) {
+                return $slug;
+            }
+        }
+
+        return 'default';
     }
 
     /**

@@ -175,9 +175,6 @@
                  PortfolioProfile::services() were removed rather than kept as a
                  second source. "What I do" on the storefront now renders the
                  active Service rows and hands each one a booking form. --}}
-            <p class="text-sm text-zinc-500 dark:text-zinc-400">
-                {{ __('Services are managed under Services in the admin menu, not here.') }}
-            </p>
         </div>
     </section>
 

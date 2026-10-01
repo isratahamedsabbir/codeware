@@ -705,6 +705,24 @@ class Index extends Component
             return;
         }
 
+        // The name the theme will go by once it is installed, which is its own
+        // manifest name if it ships one and the slug-derived fallback otherwise —
+        // checked here, before anything is moved into place, because a name
+        // collision is a reason to refuse the package and not to leave a folder
+        // behind for the owner to clean up.
+        $name = $this->packagedThemeName($temp.'/'.$root, $slug);
+
+        if (! Themes::isNameUnique($name)) {
+            $clash = Themes::themeWithName($name);
+
+            File::deleteDirectory($temp);
+            $this->addError('themeZip', is_string($clash)
+                ? 'This package\'s theme is called "'.Themes::manifest($clash)['name'].'", which an installed theme already uses. Theme names have to be unique — change the "name" in the zip\'s '.ThemeSettings::FILE.' and upload it again.'
+                : 'This package\'s theme has no usable name. Give it one in the '.ThemeSettings::FILE.' inside the zip.');
+
+            return;
+        }
+
         try {
             File::moveDirectory($temp.'/'.$root, $themesPath.'/'.$slug);
         } catch (\Throwable $e) {
@@ -727,7 +745,14 @@ class Index extends Component
 
         $seeded = $this->seedInstalledThemeFile($slug);
 
-        AdminActivity::log('created', "Theme \"{$slug}\" installed");
+        // Covers the one path seedInstalledThemeFile() leaves: a theme that
+        // shipped its own theme.json. After a create() the number is already there
+        // and this is a no-op.
+        $this->assignSerialNumber($slug);
+
+        $sn = Themes::manifest($slug)['sn'];
+
+        AdminActivity::log('created', 'Theme "'.$slug.'" installed'.($sn > 0 ? ' (SN '.$sn.')' : ''));
 
         // A real reload so the new theme card appears in the picker.
         $this->showInstallModal = false;
@@ -740,9 +765,10 @@ class Index extends Component
             'failed' => 'error',
             default => 'success',
         }, match ($seeded) {
-            'created' => "Theme \"{$slug}\" installed. Created its ".ThemeSettings::FILE.' with every field it declares — fill them in below.',
-            'failed' => "Theme \"{$slug}\" installed, but its ".ThemeSettings::FILE.' could not be written (check that the theme folder is writable). Select it and use "Create '.ThemeSettings::FILE.'".',
-            default => "Theme \"{$slug}\" installed.",
+            'created' => 'Theme "'.$slug.'" installed as '.$sn.'. Created its '.ThemeSettings::FILE.' with every field it declares — fill them in below.',
+            'manifest' => 'Theme "'.$slug.'" installed as '.$sn.'. It declares no settings of its own, so its '.ThemeSettings::FILE.' holds nothing but its name and serial number.',
+            'failed' => 'Theme "'.$slug.'" installed, but its '.ThemeSettings::FILE.' could not be written (check that the theme folder is writable). Select it and use "Create '.ThemeSettings::FILE.'".',
+            default => 'Theme "'.$slug.'" installed'.($sn > 0 ? ' as '.$sn : '').'.',
         });
         $this->js('window.location.reload()');
     }
@@ -766,7 +792,13 @@ class Index extends Component
      * the install to report a permissions problem on an optional file would be
      * the wrong trade.
      *
-     * @return 'created'|'skipped'|'failed'
+     * A theme declaring no fields does get a file, holding only a manifest. That
+     * used to be skipped, because there were no fields to put in it — but the
+     * file is also where a theme's name and serial number live, so skipping it
+     * left a theme that had been installed with no identity at all, and one that
+     * only got an SN once somebody went and saved its settings form by hand.
+     *
+     * @return 'created'|'manifest'|'skipped'|'failed'
      */
     private function seedInstalledThemeFile(string $slug): string
     {
@@ -774,17 +806,85 @@ class Index extends Component
             return 'skipped';
         }
 
-        // A theme that ships no settings.blade.php declares no fields, so there
-        // is nothing to seed it with: the file would be a manifest and nothing
-        // else, holding no value the theme could ever write. Not creating it is
-        // also the honest answer — a theme with no settings form is not a theme
-        // that has lost its settings file, and saying it was would put a "Create
-        // theme.json" button on a screen that has no fields to fill in.
-        if (! Themes::hasSettings($slug)) {
-            return 'skipped';
+        // A theme that ships no settings.blade.php declares no fields, so the
+        // file holds a manifest and nothing else. That is not the same as a
+        // theme with no file at all — see above.
+        $values = Themes::hasSettings($slug) ? $this->themeFileSkeleton($slug) : [];
+
+        if (! ThemeSettings::create($slug, $values)) {
+            return 'failed';
         }
 
-        return ThemeSettings::create($slug, $this->themeFileSkeleton($slug)) ? 'created' : 'failed';
+        return $values === [] ? 'manifest' : 'created';
+    }
+
+    /**
+     * Give a theme the serial number it does not have, right after it is
+     * installed.
+     *
+     * Serial numbers are the installer's job rather than the theme author's, and
+     * this is the only moment the app can be sure a number is free — the check in
+     * Themes::nextSn() is against what is installed now, so handing out a number
+     * any earlier would race a second install.
+     *
+     * Only fills in a theme that has none, and only a file this app can write
+     * into. A theme that shipped a theme.json already carrying an SN keeps it,
+     * which is what makes a theme zip that has been round this loop before come
+     * back with the number it left with — the identity the rest of the site has
+     * been using all along. A file that is missing was given one by
+     * seedInstalledThemeFile() and already has its number, so the only case left
+     * here is a theme author's own file, and one this cannot parse is left for
+     * the owner to fix rather than overwritten on their behalf.
+     *
+     * Best-effort: a file that cannot be written is reported by the Theme
+     * Settings card rather than failing an install over an optional field.
+     */
+    private function assignSerialNumber(string $slug): void
+    {
+        if (! ThemeSettings::exists($slug)
+            || ThemeSettings::all($slug) === []
+            || Themes::manifest($slug)['sn'] > 0) {
+            return;
+        }
+
+        ThemeSettings::merge($slug, ['sn' => Themes::nextSn()]);
+    }
+
+    /**
+     * The name a theme inside an unpacked zip will go by once installed.
+     *
+     * Its own manifest name if the package ships a usable one, and the same
+     * slug-derived fallback Themes::manifest() falls back to otherwise — read from
+     * the extracted folder rather than from the installed themes directory,
+     * because at this point the package has not been installed and
+     * Themes::manifest() would answer about some other theme entirely.
+     *
+     * The fallback matters as much as the manifest. A package with no theme.json
+     * is installed under a name derived from its folder, and two slugs that
+     * differ only in punctuation ("my-shop" and "my_shop") produce the same
+     * derived name, so the collision the check is here to catch can happen
+     * without anybody having typed a name at all.
+     */
+    private function packagedThemeName(string $folder, string $slug): string
+    {
+        $file = $folder.'/'.ThemeSettings::FILE;
+
+        if (is_file($file) && is_readable($file)) {
+            $data = json_decode((string) file_get_contents($file), true);
+
+            // A package whose theme.json is a list, or a JSON scalar, has no name
+            // to read out of it — the same shapes ThemeSettings::all() refuses,
+            // and for the same reason: nothing here can be trusted to be a name.
+            if (is_array($data) && ($data === [] || ! array_is_list($data))) {
+                $name = $data['name'] ?? null;
+
+                if (is_string($name) && trim($name) !== '') {
+                    return trim($name);
+                }
+            }
+        }
+
+        return ucwords(str_replace(['-', '_'], ' ', $slug));
     }
 
     /**
@@ -907,6 +1007,10 @@ class Index extends Component
             'settingsFilePath' => ThemeSettings::file($selectedSlug),
             'settingsFileExists' => ThemeSettings::exists($selectedSlug),
             'settingsFileCount' => count(ThemeSettings::settings($selectedSlug)),
+            // The number a blank serial number on the form will be given, so the
+            // field can say what it will become instead of leaving the owner to
+            // save and find out.
+            'nextSn' => Themes::nextSn(),
         ])->layout('layouts.admin', ['title' => 'Theme Settings']);
     }
 
