@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Admin\DeveloperGuide;
 use App\Livewire\Admin\Env\Index as EnvIndex;
 use App\Models\User;
 use App\Support\EnvFile;
@@ -232,29 +233,47 @@ it('allows a blank cms editor base url', function () {
     expect(EnvFile::get('CMS_EDITOR_BASE_URL'))->toBe('');
 });
 
-it('shows each section note in a modal opened from an info icon on its card', function () {
-    $infoKeys = ['app', 'google-login', 'facebook-login', 'pixel', 'recaptcha', 'google-maps', 'aws-s3', 'firebase', 'cms-editor'];
+it('links every integration card to its section of the developer guide', function () {
+    $anchors = [
+        'maintenance', 'debug', 'app', 'google-login', 'facebook-login',
+        'pixel', 'recaptcha', 'google-maps', 'aws-s3', 'firebase', 'cms-editor',
+    ];
 
-    $this->get(route('admin.env'))
-        ->assertOk()
-        ->assertSee('data-modal="env-info"', false)
-        ->assertSee('data-modal="env-save-confirm"', false);
+    $html = Livewire::test(EnvIndex::class)->html();
 
-    foreach ($infoKeys as $infoKey) {
-        $this->get(route('admin.env'))
-            ->assertSee(sprintf('openInfo(\'%s\')', $infoKey), false);
+    foreach ($anchors as $anchor) {
+        expect($html)->toContain(route('admin.developer-guide').'#integration-'.$anchor);
     }
-
-    Livewire::test(EnvIndex::class)
-        ->call('openInfo', 'google-login')
-        ->assertSet('infoKey', 'google-login')
-        ->assertDispatched('open-modal', name: 'env-info');
 });
 
-it('rejects unknown info keys', function () {
-    Livewire::test(EnvIndex::class)
-        ->call('openInfo', 'not-a-section')
-        ->assertSet('infoKey', null);
+it('retires the section info modal in favour of the developer guide', function () {
+    $html = Livewire::test(EnvIndex::class)->html();
+
+    // Every card note now lives in the guide, reached by deep link, so the modal
+    // that restated them — and its trigger — must be gone. If openInfo() or the
+    // env-info modal comes back, someone has rebuilt the second source of truth
+    // this link exists to avoid.
+    expect($html)
+        ->not->toContain('openInfo(')
+        ->not->toContain('data-modal="env-info"')
+        ->not->toContain('env-info');
+});
+
+it('answers every question the info modal used to answer, in the guide', function () {
+    $anchors = [
+        'maintenance', 'debug', 'app', 'google-login', 'facebook-login',
+        'pixel', 'recaptcha', 'google-maps', 'aws-s3', 'firebase', 'cms-editor',
+    ];
+
+    $guide = Livewire::actingAs(User::factory()->admin()->create())
+        ->test(DeveloperGuide::class)
+        ->html();
+
+    expect($guide)->toContain('id="developer-tools"');
+
+    foreach ($anchors as $anchor) {
+        expect($guide)->toContain('id="integration-'.$anchor.'"');
+    }
 });
 
 it('opens on the General tab with no Overview tab', function () {

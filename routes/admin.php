@@ -32,6 +32,7 @@ use App\Livewire\Admin\Advance\Robots;
 use App\Livewire\Admin\Advance\Sitemap;
 use App\Livewire\Admin\Auth\Login;
 use App\Livewire\Admin\Dashboard;
+use App\Livewire\Admin\DeveloperGuide;
 use App\Livewire\Admin\Orders\Show;
 use App\Livewire\Admin\Posts\Form;
 use App\Livewire\Admin\Posts\Index;
@@ -65,6 +66,12 @@ Route::middleware(['auth', 'admin', 'activity-log'])->group(function () {
 
     // Profile
     Route::get('/profile', Profile::class)->name('profile');
+
+    // Developer Guide — the panel's own documentation: how plugins and themes
+    // are built and used, how features and settings work, and how Pages, their
+    // inner content and the rest of the CMS fit together. Like About, always
+    // reachable regardless of role or feature flags.
+    Route::get('/developer-guide', DeveloperGuide::class)->name('developer-guide');
 
     // About — company info, always reachable regardless of role or feature flags
     Route::get('/about', About::class)->name('about');

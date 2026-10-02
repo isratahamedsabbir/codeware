@@ -43,7 +43,7 @@
     </flux:button>
 @endpush
 
-<div class="space-y-5" x-data="{ showThemeGuide: false }" x-on:open-theme-install.window="$wire.openInstallModal()">
+<div class="space-y-5" x-on:open-theme-install.window="$wire.openInstallModal()">
     {{-- ── Site Design ──
          The preview grid, and the only place the theme is picked: each card is a
          radio bound to the same `settings.site_theme` the storefront reads, so
@@ -52,6 +52,20 @@
     <x-admin-section-card plain header-border="border-zinc-100" icon="swatch" title="Site Design"
         description="Preview each installed theme, read what it ships with, and pick the one to use — changes apply once you save."
         collapsible :collapsed="false">
+
+        {{-- This card is where a theme is chosen and installed, so the question it
+             draws is "how do I add one" — answered by the guide's creation
+             checklist. The Theme Settings card below asks a different question and
+             points at the rest of the same section; scroll-mt-24 on the target keeps
+             the heading clear of the sticky header. --}}
+        <x-slot:titleActions>
+            <a href="{{ route('admin.developer-guide') }}#create-a-theme"
+                title="How to create a theme — open the Developer Guide"
+                aria-label="How to create a theme — open the Developer Guide"
+                class="flex size-5 items-center justify-center text-zinc-400 transition-colors hover:text-primary">
+                <flux:icon.information-circle class="size-4" />
+            </a>
+        </x-slot:titleActions>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             @foreach ($themes as $slug => $label)
@@ -242,10 +256,28 @@
         <x-admin-section-card plain header-border="border-zinc-100" icon="adjustments-horizontal" title="Theme Settings"
             description="Everything the {{ $selectedSlug }} theme defines for itself. Stored in its own {{ \App\Support\ThemeSettings::FILE }} inside the theme folder, not in the database.">
             <x-slot:titleActions>
-                <button type="button" @click="showThemeGuide = true" title="How theme settings work"
-                    class="flex size-5 items-center justify-center text-zinc-400 transition-colors hover:text-primary cursor-pointer">
+                {{-- Points into the Developer Guide rather than opening a copy of
+                     it. Everything this button used to explain - how a theme
+                     declares settings, where they are stored, how a theme folder
+                     is laid out, why the routes file matters - is answered once in
+                     the guide, so the modal was a second copy to keep true, and the
+                     first one to go stale.
+
+                     #theme-settings rather than the top of the Themes section: this
+                     card is about the settings themselves, and the guide answers
+                     that in three parts in order - where a setting lives, how to
+                     read it, how to declare a new one - which is why those are
+                     grouped under that one anchor.
+
+                     A plain anchor rather than wire:navigate: the guide is another
+                     page entirely, and a full load is what actually honours the
+                     fragment and lands on the heading. --}}
+                <a href="{{ route('admin.developer-guide') }}#theme-settings"
+                    title="How theme settings work and are declared — open the Developer Guide"
+                    aria-label="How theme settings work and are declared — open the Developer Guide"
+                    class="flex size-5 items-center justify-center text-zinc-400 transition-colors hover:text-primary">
                     <flux:icon.information-circle class="size-4" />
-                </button>
+                </a>
             </x-slot:titleActions>
 
             {{-- Right of the header: the file's state, and the button that puts
@@ -595,116 +627,6 @@
         </div>
     @endif
 
-    {{-- ── Theme Settings Guide modal ─────────────────────────────────────── --}}
-    <div x-show="showThemeGuide" x-cloak x-transition
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
-        @keydown.escape.window="showThemeGuide = false">
-        <div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-zinc-200 bg-white shadow-xl dark:border-zinc-700 dark:bg-zinc-800"
-            @click.away="showThemeGuide = false">
-
-            <div class="flex items-center justify-between border-b border-zinc-100 px-6 py-4 dark:border-zinc-700">
-                <h3 class="flex items-center gap-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                    <flux:icon.information-circle class="size-4 text-primary" />
-                    Theme Settings Guide
-                </h3>
-                <button type="button" @click="showThemeGuide = false"
-                    class="rounded p-1 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-700">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-
-            <div class="grid gap-4 p-6 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-                <p>
-                    Themes can define their own settings. Drop a
-                    <code class="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[11px] text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">settings.blade.php</code>
-                    file inside the theme folder and it appears in this panel automatically.
-                </p>
-
-                <div class="rounded-lg bg-zinc-50/70 p-4 dark:bg-zinc-800/40">
-                    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">1. Fields bind to settings</p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">
-                        Use Flux fields. Each control's key starts with the theme slug so settings stay namespaced per theme:
-                    </p>
-                    <pre class="mt-2 overflow-x-auto rounded-md bg-zinc-900 p-3 font-mono text-[11px] leading-relaxed text-zinc-100"><code>&lt;flux:field&gt;
-    &lt;flux:label&gt;Hero badge&lt;/flux:label&gt;
-    &lt;flux:input wire:model="settings.theme_first_one_hero_badge" /&gt;
-&lt;/flux:field&gt;</code></pre>
-                </div>
-
-                <div class="rounded-lg bg-zinc-50/70 p-4 dark:bg-zinc-800/40">
-                    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">2. Read it in your theme views</p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">
-                        One helper, no slug to repeat — it reads the active theme's own file.
-                        In <code class="font-mono text-[10px]">home.blade.php</code>:
-                    </p>
-                    {{-- The verbatim wrapper is not decoration: this sample is
-                         itself Blade, so written plainly the conditionals and
-                         loops in it would compile and run, and the guide would
-                         show a theme template with its loops already evaluated.
-                         Deliberately no at-signs in this comment — Blade compiles
-                         directives before it strips comments. --}}
-                    <pre class="mt-2 overflow-x-auto rounded-md bg-zinc-900 p-3 font-mono text-[11px] leading-relaxed text-zinc-100"><code>@verbatim
-@if ($badge = theme_setting('hero_badge'))
-    &lt;span&gt;{{ $badge }}&lt;/span&gt;
-@endif
-
-@foreach (theme_rows('projects') as $project)
-    &lt;h3&gt;{{ $project['title'] }}&lt;/h3&gt;
-@endforeach
-@endverbatim</code></pre>
-                    <p class="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-                        Also available: <code class="font-mono text-[10px]">theme_json()</code>,
-                        <code class="font-mono text-[10px]">theme_name()</code>,
-                        <code class="font-mono text-[10px]">theme_color()</code>,
-                        <code class="font-mono text-[10px]">theme_setting_key()</code>.
-                        Pass a theme slug as the last argument to read a specific theme's file.
-                    </p>
-                </div>
-
-                <div class="rounded-lg bg-zinc-50/70 p-4 dark:bg-zinc-800/40">
-                    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">3. Stored in the theme's own file</p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">
-                        Values are written to a
-                        <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[10px] text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">{{ \App\Support\ThemeSettings::FILE }}</code>
-                        in the theme's own folder, keyed by
-                        <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[10px] text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">theme_&lt;slug&gt;_*</code>
-                        — so a theme carries its content with it and never touches the database.
-                        A newly installed theme gets one of these created for it automatically; the
-                        Create button above this panel puts it back if it ever goes missing.
-                    </p>
-                </div>
-
-                <div class="rounded-lg bg-zinc-50/70 p-4 dark:bg-zinc-800/40">
-                    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">4. Ship a route file too</p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">
-                        A theme's templates are only reachable through its routes, and those live
-                        outside the theme folder. Without one, selecting the theme 404s the whole
-                        site — the picker flags this above.
-                    </p>
-                    <pre class="mt-2 overflow-x-auto rounded-md bg-zinc-900 p-3 font-mono text-[11px] leading-relaxed text-zinc-100"><code><span class="text-zinc-500">// routes/web/first_one.php</span>
-Route::get('/', fn () =&gt; view(
-    \App\Support\Themes::viewOrFail('home')
-))-&gt;name('home');</code></pre>
-                </div>
-
-                <p class="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50/70 p-4 text-xs text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300">
-                    <flux:icon.light-bulb class="mt-0.5 size-4 shrink-0" />
-                    <span>
-                        For a full walkthrough of theme structure, packages and install rules, open the
-                        <a href="{{ asset('docs/theme-builder-guide.pdf') }}" target="_blank"
-                            class="font-semibold text-blue-700 underline decoration-blue-300 underline-offset-2 hover:decoration-blue-500 dark:text-blue-300">
-                            Theme Builder Guide PDF</a>.
-                    </span>
-                </p>
-            </div>
-
-            <div class="flex items-center justify-end border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-700 dark:bg-zinc-800/40">
-                <flux:button variant="primary" size="sm" @click="showThemeGuide = false">Got it</flux:button>
-            </div>
-        </div>
-    </div>
 
     {{-- ── Save bar ──
          No upward shadow: it drew a dark line across the bottom of the form,

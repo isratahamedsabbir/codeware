@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Admin\DeveloperGuide;
 use App\Livewire\Admin\Pages\Form as PagesForm;
 use App\Livewire\Admin\Pages\Index as PagesIndex;
 use App\Models\Page;
@@ -102,10 +103,28 @@ it('saves and opens the puck editor for a new page', function () {
     expect($xjs[0]['expression'] ?? null)->toContain('\/puck\/edit\/page\/');
 });
 
-it('shows the page constants usage guide via the info icon on the page form Constant card', function () {
-    Livewire::test(PagesForm::class)
-        ->assertSee('How Page Constants Work')
-        ->assertSee('page_constant(')
-        ->assertSee('by page slug + key')
-        ->assertSee('data.constant');
+it('sends the page constants info icon into the guide page constants block', function () {
+    $html = Livewire::test(PagesForm::class)->html();
+
+    expect($html)
+        ->toContain(route('admin.developer-guide').'#page-constants')
+        ->toContain('How page constants work — open the Developer Guide')
+        // The modal restated the guide and repeated the stale "resolves to its
+        // public URL" line. If it comes back, the second source of truth is back.
+        ->not->toContain('showConstantGuide')
+        ->not->toContain('How Page Constants Work');
+});
+
+it('answers every question the page constants modal used to answer, in the guide', function () {
+    $guide = Livewire::actingAs(User::factory()->admin()->create())
+        ->test(DeveloperGuide::class)
+        ->html();
+
+    expect($guide)
+        ->toContain('id="page-constants"')
+        ->toContain('page_constant(')
+        ->toContain('data.constant')
+        // Argument order and the silent-miss behaviour the modal never covered.
+        ->toContain('page_constant($slug, $key)')
+        ->toContain('null');
 });

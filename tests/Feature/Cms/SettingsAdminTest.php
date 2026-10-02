@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Admin\DeveloperGuide;
 use App\Livewire\Admin\Settings\Index as SettingsIndex;
 use App\Models\Language;
 use App\Models\Setting;
@@ -494,12 +495,37 @@ it('saves the environment from the settings form and clears the config cache', f
     @unlink($envPath);
 });
 
-it('shows the constants usage guide via the info icon on the Constant card', function () {
-    Livewire::test(SettingsIndex::class)
-        ->assertSee('How Constants Work')
-        ->assertSee('setting_constant(')
-        ->assertSee('/api/v1/settings')
-        ->assertSee('File-type constants');
+it('sends the constant card info icon into the guide constants block', function () {
+    $html = Livewire::test(SettingsIndex::class)->html();
+
+    expect($html)
+        ->toContain(route('admin.developer-guide').'#constants')
+        ->toContain('How constants work — open the Developer Guide')
+        // The modal that restated the guide is gone, and with it the duplicated
+        // copy of how constants work — including a stale claim that a file
+        // constant "resolves to" its URL when the picker stores the URL itself.
+        // If these come back, someone has rebuilt the second source of truth
+        // this link exists to avoid.
+        ->not->toContain('showConstantsGuide')
+        ->not->toContain('How Constants Work');
+});
+
+it('answers every question the constants modal used to answer, in the guide', function () {
+    $guide = Livewire::actingAs(User::factory()->admin()->create())
+        ->test(DeveloperGuide::class)
+        ->html();
+
+    // The modal is only safe to delete if the guide picked up everything it
+    // claimed, plus the key rules that decide whether a save succeeds at all.
+    expect($guide)
+        ->toContain('id="constants"')
+        ->toContain('setting_constant(')
+        ->toContain('/api/v1/settings')
+        ->toContain('data.constant')
+        // The rules the modal never mentioned.
+        ->toContain('/^[A-Za-z0-9_]*$/')
+        ->toContain('unique')
+        ->toContain('max:1000');
 });
 
 it('renders the Additional Data section toggles on the widgets tab', function () {

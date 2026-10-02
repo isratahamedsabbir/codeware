@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Admin\DeveloperGuide;
 use App\Livewire\Admin\ThemeSettings\Index as ThemeSettingsScreen;
 use App\Models\MenuItem;
 use App\Models\Setting;
@@ -546,24 +547,72 @@ it('keys each theme settings panel by slug so switching themes cannot leave a st
         ->and($ecommerce)->not->toContain('wire:key="theme-settings-portfolio"');
 });
 
-it('shows the theme settings guide via the info icon on the theme settings card', function () {
-    Livewire::test(ThemeSettingsScreen::class)
+it('sends the theme settings info icon into the guide theme settings block', function () {
+    $html = Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'ecommerce')
-        ->assertSee('How theme settings work')
-        ->assertSee('Theme Settings Guide')
-        ->assertSee('settings.blade.php')
-        ->assertSee('Theme Builder Guide PDF')
-        ->assertSee('theme.json')
-        ->assertSeeHtml("theme_setting('hero_badge')")
-        ->assertSeeHtml("theme_rows('projects')")
-        // The sample is Blade, so it has to reach the reader as text. Written
-        // plainly, the conditionals and loops in it compile and run and the
-        // guide shows a theme template with its loops already evaluated.
-        // assertSeeHtml, not assertSee: these are literal quotes in a code
-        // sample, and assertSee would escape them before looking.
-        ->assertSeeHtml("@if (\$badge = theme_setting('hero_badge'))")
-        ->assertSeeHtml("@foreach (theme_rows('projects') as \$project)")
-        ->assertSeeHtml('@endforeach');
+        ->html();
+
+    expect($html)
+        ->toContain(route('admin.developer-guide').'#theme-settings')
+        ->toContain('How theme settings work and are declared — open the Developer Guide')
+        // The modal that restated the guide is gone, and with it the duplicated
+        // copy of how theme settings work. If either string comes back, someone
+        // has rebuilt the second source of truth this link exists to avoid.
+        ->not->toContain('showThemeGuide')
+        ->not->toContain('Theme Settings Guide');
+});
+
+it('sends the site design info icon to the guide theme creation checklist', function () {
+    // Site Design asks "how do I add a theme" and Theme Settings asks "how do
+    // theme settings work" - two different questions, so they must not both
+    // land on the same spot.
+    $html = Livewire::test(ThemeSettingsScreen::class)
+        ->set('settings.site_theme', 'ecommerce')
+        ->html();
+
+    expect($html)
+        ->toContain(route('admin.developer-guide').'#create-a-theme')
+        ->toContain('How to create a theme — open the Developer Guide');
+});
+
+it('points every guide deep link at an anchor the guide actually renders', function () {
+    $admin = User::factory()->admin()->create();
+
+    $guide = Livewire::actingAs($admin)->test(DeveloperGuide::class)->html();
+    $settings = Livewire::actingAs($admin)->test(ThemeSettingsScreen::class)
+        ->set('settings.site_theme', 'ecommerce')
+        ->html();
+
+    // Collect every fragment the theme settings screen links into the guide with,
+    // then check each one resolves to a real id on the guide page. A renamed
+    // section would otherwise leave a link that lands at the top of the page.
+    preg_match_all(
+        '/'.preg_quote(route('admin.developer-guide'), '/').'#([\w-]+)/',
+        $settings,
+        $links
+    );
+
+    expect($links[1])->toContain('create-a-theme', 'theme-settings');
+
+    foreach ($links[1] as $fragment) {
+        expect($guide)->toContain('id="'.$fragment.'"');
+    }
+});
+
+it('orders the two theme settings destinations so neither lands inside the other', function () {
+    $guide = Livewire::actingAs(User::factory()->admin()->create())
+        ->test(DeveloperGuide::class)
+        ->html();
+
+    // Both anchors sit inside the same Themes section, so "the settings icon
+    // opens the settings part" is only true while the settings block starts
+    // before the creation checklist ends.
+    $settings = strpos($guide, 'id="theme-settings"');
+    $create = strpos($guide, 'id="create-a-theme"');
+
+    expect($settings)->not->toBeFalse()
+        ->and($create)->not->toBeFalse()
+        ->and($settings)->toBeLessThan($create);
 });
 
 it('omits the theme settings card when the selected theme has none', function () {

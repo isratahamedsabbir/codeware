@@ -2,6 +2,7 @@
 
 use App\Livewire\Admin\Cms\Form as CmsForm;
 use App\Livewire\Admin\Cms\Index as CmsIndex;
+use App\Livewire\Admin\DeveloperGuide;
 use App\Models\CmsSection;
 use App\Models\MenuItem;
 use App\Models\Page;
@@ -332,22 +333,42 @@ it('seeds Pages as a standalone menu item, with no separate CMS item', function 
         ->and(MenuItem::where('route_name', 'admin.cms')->exists())->toBeFalse();
 });
 
-it('shows the card usage guide via the info icon on the Cards card', function () {
+it('sends the cards info icon into the guide section cards block', function () {
     $page = Page::factory()->create();
 
-    Livewire::test(CmsForm::class, ['pageId' => $page->id])
-        ->assertSee('How Section Cards Work')
-        ->assertSee('cms_cards(')
-        ->assertSee('repeatable tile')
-        ->assertSee('data.cms[...].cards');
+    $html = Livewire::test(CmsForm::class, ['pageId' => $page->id])->html();
+
+    expect($html)
+        ->toContain(route('admin.developer-guide').'#section-cards')
+        ->toContain('How section cards work — open the Developer Guide')
+        ->not->toContain('showCardsGuide')
+        ->not->toContain('How Section Cards Work');
 });
 
-it('shows the constant usage guide via the info icon on the Constant card', function () {
+it('sends the section constants info icon into the guide section constants block', function () {
     $page = Page::factory()->create();
 
-    Livewire::test(CmsForm::class, ['pageId' => $page->id])
-        ->assertSee('How Section Constants Work')
-        ->assertSee('cms_constant(')
-        ->assertSee('key/value pair scoped')
-        ->assertSee('data.cms[...].constant');
+    $html = Livewire::test(CmsForm::class, ['pageId' => $page->id])->html();
+
+    expect($html)
+        ->toContain(route('admin.developer-guide').'#section-constants')
+        ->toContain('How section constants work — open the Developer Guide')
+        ->not->toContain('showConstantGuide')
+        ->not->toContain('How Section Constants Work');
+});
+
+it('answers every question the two section modals used to answer, in the guide', function () {
+    $guide = Livewire::actingAs(User::factory()->admin()->create())
+        ->test(DeveloperGuide::class)
+        ->html();
+
+    expect($guide)
+        ->toContain('id="section-cards"')
+        ->toContain('id="section-constants"')
+        ->toContain('cms_cards(')
+        ->toContain('cms_constant(')
+        ->toContain('data.cms[].cards')
+        ->toContain('data.cms[].constant')
+        // The trap the cards modal glossed over: there is no reorder at all.
+        ->toContain('no reordering');
 });

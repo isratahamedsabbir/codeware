@@ -82,11 +82,16 @@ class AdminMenuSeeder extends Seeder
             ['Voucher Sales', 'banknotes', 'admin.voucher-purchases'],
         ]);
 
+        // Developer Guide sits directly after Developer Tools rather than at the
+        // top level: it is the panel explaining its own innards, so it belongs with
+        // the env/Developer Tools row that the people who open it are already on,
+        // instead of floating far away at the bottom of the sidebar.
         $this->group('Library & System', 15, [
             ['Settings', 'cog-6-tooth', 'admin.settings'],
             ['Theme Settings', 'swatch', 'admin.theme-settings'],
             ['Plugin Settings', 'squares-plus', 'admin.plugin-settings'],
             ['Developer Tools', 'command-line', 'admin.env'],
+            ['Developer Guide', 'book-open', 'admin.developer-guide'],
             ['Global SEO', 'magnifying-glass', 'admin.seo'],
             ['Social Links', 'share', 'admin.social'],
             ['Payment Gateways', 'credit-card', 'admin.payment-gateways'],
@@ -148,6 +153,10 @@ class AdminMenuSeeder extends Seeder
             ['Password Generator', 'key', 'admin.advance.password-generator'],
         ]);
 
+        // About is the last thing in the sidebar. It answers "what am I looking
+        // at and who built it" - a question you have once, at the end, never
+        // while you are working - so it closes the list rather than competing for
+        // a position next to screens that get opened daily.
         $this->standalone('About', 'building-office', 'admin.about', 26);
     }
 

@@ -5,6 +5,7 @@ use App\Livewire\Admin\Plugins\Show;
 use App\Models\MenuItem;
 use App\Models\User;
 use App\Support\Plugins;
+use Database\Seeders\AdminMenuSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
@@ -143,7 +144,7 @@ it('ships a Calendar plugin that stays out of the header until activated', funct
 });
 
 it('puts Plugin Settings right after Theme Settings, not in the Plugins dropdown', function () {
-    $this->seed(Database\Seeders\AdminMenuSeeder::class);
+    $this->seed(AdminMenuSeeder::class);
     // Simulate an older menu that predates the seeded Plugin Settings row.
     MenuItem::where('route_name', 'admin.plugin-settings')->delete();
     $this->actingAs($this->admin);

@@ -109,7 +109,7 @@ it('offers the theme default first, then system, then that theme own font folder
 
     expect(array_key_first($options))->toBe(ThemeFont::THEME_DEFAULT)
         ->and($options[ThemeFont::THEME_DEFAULT])->toBe('Theme default')
-        ->and(array_keys($options))        ->toBe(['', 'system', 'instrument-sans', 'jetbrains-mono', 'plus-jakarta', 'roboto'])
+        ->and(array_keys($options))->toBe(['', 'system', 'instrument-sans', 'jetbrains-mono', 'plus-jakarta', 'roboto'])
         // the same folders are what the admin panel offers
         ->and(array_keys(AdminFont::options()))->toBe(['system', 'instrument-sans', 'jetbrains-mono', 'plus-jakarta', 'roboto']);
 });

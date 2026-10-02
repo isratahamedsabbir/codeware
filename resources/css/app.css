@@ -1017,3 +1017,54 @@ html.dark .jodit-status-bar {
 .admin-calc-key {
     @apply flex h-full min-h-10 items-center justify-center rounded-lg bg-zinc-100 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-200 cursor-pointer border-none dark:bg-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-600;
 }
+
+/* Developer Guide code blocks — syntax token colours.
+   Emitted by App\Support\DocHighlight as bare class names rather than
+   Tailwind utilities, because the token type is decided at runtime by the
+   tokenizer: a utility per token would be a class Tailwind cannot see in any
+   source file and would strip on build. Flat classes in a stylesheet survive
+   purging, and let the palette live in one place instead of in the token map. */
+
+.doc-c-plain { color: var(--doc-c-plain); }
+.doc-c-zinc { color: var(--doc-c-zinc); font-style: italic; }
+.doc-c-sky { color: var(--doc-c-sky); }
+.doc-c-emerald { color: var(--doc-c-emerald); }
+.doc-c-amber { color: var(--doc-c-amber); }
+.doc-c-violet { color: var(--doc-c-violet); }
+
+:root {
+    --doc-c-plain: #27272a;
+    --doc-c-zinc: #71717a;
+    --doc-c-sky: #0369a1;
+    --doc-c-emerald: #047857;
+    --doc-c-amber: #b45309;
+    --doc-c-violet: #7c3aed;
+}
+
+html.dark {
+    --doc-c-plain: #d4d4d8;
+    --doc-c-zinc: #8b8b96;
+    --doc-c-sky: #7dd3fc;
+    --doc-c-emerald: #6ee7b7;
+    --doc-c-amber: #fcd34d;
+    --doc-c-violet: #c4b5fd;
+}
+
+/* Anchor links reveal on section hover rather than sitting there permanently -
+   twelve permanent link icons is more chrome than content. */
+
+.doc-section-anchor {
+    opacity: 0;
+    transition: opacity 150ms ease;
+}
+
+.doc-section:hover .doc-section-anchor,
+.doc-section-anchor:focus-visible {
+    opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .doc-section-anchor {
+        transition: none;
+    }
+}
