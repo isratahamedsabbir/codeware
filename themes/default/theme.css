@@ -1,0 +1,18 @@
+/* ── The "default" theme stylesheet ──
+   Its own entry, so a default-theme page downloads the classes its own four
+   templates use and not the ecommerce theme's forty. The shared half comes from
+   storefront-shared.css, which is why this file has no rules of its own below.
+
+   A theme with a stylesheet here is served this instead of the catch-all
+   storefront.css — see Themes::storefrontEntry(). Dropping this file back
+   removes the theme from that lookup and it falls back to the catch-all, which
+   still styles it, just with every theme's classes in the one sheet. */
+
+@import '../../resources/css/base.css';
+@import '../../resources/css/storefront-shared.css';
+
+@source '.';
+
+/* The admin theme-settings screen renders settings.blade.php inline, and the
+   picker markup in it is on no storefront page. */
+@source not './settings.blade.php';
