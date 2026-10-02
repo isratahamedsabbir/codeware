@@ -101,7 +101,7 @@ it('gives every bundled theme its own 404, in that theme own design', function (
     foreach ($expected as $slug => $needles) {
         Setting::set('site_theme', $slug);
 
-        expect(Themes::errorView(404))->toBe("frontend.themes.{$slug}.errors.404");
+        expect(Themes::errorView(404))->toBe("theme-{$slug}::errors.404");
 
         $response = $this->get('/nope-not-a-page')->assertNotFound();
 
@@ -158,7 +158,7 @@ it('lets a theme answer 404 for itself by shipping an errors/404.blade.php', fun
     Setting::set('site_theme', 'bare');
     Themes::forget();
 
-    expect(Themes::errorView(404))->toBe('frontend.themes.bare.errors.404');
+    expect(Themes::errorView(404))->toBe('theme-bare::errors.404');
 
     $this->get('/nope-not-a-page')
         ->assertNotFound()
@@ -198,7 +198,7 @@ it('serves a theme its own stylesheet when it has one', function () {
     // the only place the choice is observable from.
     Setting::set('site_theme', 'portfolio');
 
-    expect(Themes::storefrontEntry())->toBe('resources/css/themes/portfolio/theme.css');
+    expect(Themes::storefrontEntry())->toBe('themes/portfolio/theme.css');
 
     $this->get('/')
         ->assertOk()
@@ -280,8 +280,8 @@ it('resolves a nested account template instead of silently falling through', fun
 
     // 'account.dashboard' is account/dashboard.blade.php — read as directories,
     // since a plain concatenation looks for a file no theme can ship.
-    expect(Themes::view('account.dashboard'))->toBe('frontend.themes.ecommerce.account.dashboard');
-    expect(Themes::view('account.profile'))->toBe('frontend.themes.ecommerce.account.profile');
+    expect(Themes::view('account.dashboard'))->toBe('theme-ecommerce::account.dashboard');
+    expect(Themes::view('account.profile'))->toBe('theme-ecommerce::account.profile');
 
     Setting::set('site_theme', 'default');
     expect(Themes::view('account.dashboard'))->toBeNull();

@@ -194,13 +194,13 @@ class FortifyServiceProvider extends ServiceProvider
      */
     private function configureViews(): void
     {
-        Fortify::loginView(fn () => self::themedView('frontend.themes.ecommerce.auth.login', 'pages::auth.login'));
+        Fortify::loginView(fn () => self::themedView('theme-ecommerce::auth.login', 'pages::auth.login'));
         Fortify::verifyEmailView(fn () => view('pages::auth.verify-email'));
         Fortify::twoFactorChallengeView(fn () => view('pages::auth.two-factor-challenge'));
         Fortify::confirmPasswordView(fn () => view('pages::auth.confirm-password'));
-        Fortify::registerView(fn () => self::themedView('frontend.themes.ecommerce.auth.register', 'pages::auth.register'));
-        Fortify::resetPasswordView(fn () => self::themedView('frontend.themes.ecommerce.auth.reset-password', 'pages::auth.reset-password'));
-        Fortify::requestPasswordResetLinkView(fn () => self::themedView('frontend.themes.ecommerce.auth.forgot-password', 'pages::auth.forgot-password'));
+        Fortify::registerView(fn () => self::themedView('theme-ecommerce::auth.register', 'pages::auth.register'));
+        Fortify::resetPasswordView(fn () => self::themedView('theme-ecommerce::auth.reset-password', 'pages::auth.reset-password'));
+        Fortify::requestPasswordResetLinkView(fn () => self::themedView('theme-ecommerce::auth.forgot-password', 'pages::auth.forgot-password'));
     }
 
     /**

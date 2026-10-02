@@ -7,21 +7,20 @@ import { join } from 'node:path';
 /**
  * Every theme's own stylesheet, as a Vite input.
  *
- * Scanned rather than listed, because a theme is a folder: a theme installed
- * later as a zip drops resources/css/themes/{slug}/theme.css in and has to get
- * a bundle without anyone editing this file. A theme with no stylesheet here
- * simply contributes no input and is served the catch-all storefront bundle
- * instead — see Themes::storefrontEntry().
+ * Scanned rather than listed, because a theme is a module folder: a theme
+ * installed later as a zip drops themes/{slug}/theme.css in and has to get a
+ * bundle without anyone editing this file. A theme with no stylesheet simply
+ * contributes no input and is served the catch-all storefront bundle instead —
+ * see Themes::storefrontEntry().
  *
  * Keyed by a name that includes the slug rather than passed as a list, because
- * all three files are called theme.css: Vite names an entry chunk after the
- * file, so three inputs sharing a basename share a chunk name too, and the
- * manifest then collapses them into one entry that reports a file the wrong two
- * of them were never built from. The slug in the name is what keeps the three
- * separate.
+ * all of these files are called theme.css: Vite names an entry chunk after the
+ * file, so inputs sharing a basename share a chunk name too, and the manifest
+ * then collapses them into one entry that reports a file the wrong two of them
+ * were never built from. The slug in the name is what keeps them separate.
  */
 function themeStylesheets() {
-    const dir = 'resources/css/themes';
+    const dir = 'themes';
 
     if (!existsSync(dir)) {
         return {};
@@ -34,7 +33,6 @@ function themeStylesheets() {
             .sort(([a], [b]) => a.localeCompare(b)),
     );
 }
-
 export default defineConfig({
     plugins: [
         laravel({
@@ -48,10 +46,10 @@ export default defineConfig({
             // views, so a shopper's page now loads no application JavaScript at
             // all. Livewire still injects its own runtime on pages that have a
             // component on them, and a theme with real JavaScript of its own
-            // keeps using its own asset path — see public/themes/portfolio.
+            // keeps using its own asset path — see themes/portfolio/assets.
             //
             // The storefront bundle is further split per theme: a theme with a
-            // stylesheet at resources/css/themes/{slug}/theme.css is served
+            // stylesheet at themes/{slug}/theme.css is served
             // that, so its page pays only for the utility classes its own
             // templates use. storefront.css stays in the list as the catch-all
             // for a theme that ships none — it scans every theme, so such a

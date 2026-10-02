@@ -57,7 +57,7 @@ class Frontend
     }
 
     /**
-     * The "Portfolio" menu (see PortfolioMenuSeeder) — the portfolio theme's own
+     * The "Portfolio" menu (see ThemesPortfolioDatabaseSeedersMenuSeeder) — the portfolio theme's own
      * nav. Kept apart from menuItems() on purpose: the portfolio is a single
      * page, so its items are section anchors ("#projects", "#skills", ...) that
      * only mean anything there, while the ecommerce theme keeps menuItems().

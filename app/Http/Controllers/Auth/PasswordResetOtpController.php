@@ -50,7 +50,7 @@ class PasswordResetOtpController extends Controller
     public function create(): mixed
     {
         return FortifyServiceProvider::themedView(
-            'frontend.themes.ecommerce.auth.forgot-password',
+            'theme-ecommerce::auth.forgot-password',
             'pages::auth.forgot-password',
         );
     }
@@ -107,7 +107,7 @@ class PasswordResetOtpController extends Controller
         }
 
         return FortifyServiceProvider::themedView(
-            'frontend.themes.ecommerce.auth.verify-code',
+            'theme-ecommerce::auth.verify-code',
             'pages::auth.verify-code',
         )->with('email', $email);
     }
@@ -159,7 +159,7 @@ class PasswordResetOtpController extends Controller
         }
 
         return FortifyServiceProvider::themedView(
-            'frontend.themes.ecommerce.auth.reset-password',
+            'theme-ecommerce::auth.reset-password',
             'pages::auth.reset-password',
         )->with('email', $request->session()->get(self::VERIFIED_SESSION_KEY));
     }

@@ -4,7 +4,7 @@
  * The system's own web routes — the plumbing every theme shares.
  *
  * The storefront's public pages are NOT here: each theme owns its routes in
- * routes/web/{slug}.php, and only the active theme's pages answer (see the
+ * themes/{slug}/routes.php, and only the active theme's pages answer (see the
  * bottom of this file). So `/shop` is a route on an ecommerce site and a 404 on
  * a portfolio one, decided by whether the active theme can serve the page rather
  * than by a controller discovering the theme has no template for it. Everything
@@ -123,7 +123,7 @@ Route::get('/robots.txt', RobotsController::class)->name('robots');
 // portfolio site's not-found page even though the route exists. See
 // App\Http\Middleware\EnsureActiveTheme for why the routes are all registered
 // rather than only the active theme's file being loaded, and
-// routes/web/default.php for the one-file-per-theme rule.
+// themes/default/routes.php for the one-file-per-theme rule.
 //
 // `Route::middleware(...)->group()` takes the file as its only argument (it's a
 // RouteRegistrar, not the facade's own two-argument group()) and deliberately

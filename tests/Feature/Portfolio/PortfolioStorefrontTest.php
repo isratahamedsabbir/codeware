@@ -6,11 +6,11 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Support\PortfolioProfile;
 use App\Support\ThemeSettings;
-use Database\Seeders\PortfolioContentSeeder;
-use Database\Seeders\PortfolioMenuSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
+use Themes\Portfolio\Database\Seeders\ContentSeeder as PortfolioContentSeeder;
+use Themes\Portfolio\Database\Seeders\MenuSeeder as PortfolioMenuSeeder;
 
 /**
  * The portfolio one-pager's list sections, all of which are settings-driven now.

@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\File;
  *
  * So the values live where the theme lives, in the manifest it already ships:
  *
- *     resources/views/frontend/themes/{slug}/theme.json
+ *     themes/{slug}/theme.json
  *
  * One file per theme, not two. The manifest is the natural home for it — it is
  * the file every copy of a theme already has, it is the file a theme author

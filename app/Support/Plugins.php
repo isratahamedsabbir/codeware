@@ -237,7 +237,7 @@ class Plugins
      * Plugin Settings. The entries are built here rather than stored as menu rows
      * because the set of plugins changes by dropping a folder in, not by editing
      * the menu. A seeded "Plugins" group is reused (so the admin can still move
-     * it); otherwise a virtual one is appended.
+     * it); otherwise a virtual one is slotted in just above About.
      *
      * @param  Collection<int, MenuItem>  $menu
      * @return Collection<int, MenuItem>
@@ -297,12 +297,165 @@ class Plugins
         if ($group === null) {
             $group = new MenuItem(['label' => self::MENU_GROUP, 'is_group' => true]);
             $group->id = -1;
-            $menu = $menu->push($group);
+
+            // About closes the sidebar, so the dropdown goes directly above it rather
+            // than at the very end - appending would leave About stranded in the
+            // middle of the list. Falls back to the end if About is absent.
+            $about = $menu->search(fn (MenuItem $item) => $item->route_name === 'admin.about');
+
+            if ($about === false) {
+                $menu->push($group);
+            } else {
+                // Splice rewrites the collection in place; its return value is the
+                // slice it removed, which is nothing here, so it is not reassigned.
+                $menu->splice($about, 0, [$group]);
+            }
         }
 
         $group->setRelation('children', $children);
 
         return $menu->values();
+    }
+
+    /**
+     * Writes a brand-new plugin folder from the basics the admin typed on the
+     * Plugin Settings screen: the two files every plugin needs, plus a commented
+     * routes.php to copy from. What comes out is a real plugin — it shows up in
+     * the list and can be zipped and reinstalled — which the admin then edits by
+     * hand and activates.
+     *
+     * @param  array{name: string, slug: string, version: string, description: string, author: string, icon: string}  $data
+     *
+     * @throws \RuntimeException with a message safe to show the admin
+     */
+    public static function create(array $data): string
+    {
+        $slug = $data['slug'];
+
+        if (! self::isValidSlug($slug)) {
+            throw new \RuntimeException('The plugin slug must use lowercase letters, numbers, dashes and underscores only.');
+        }
+
+        if (file_exists(self::path().'/'.$slug)) {
+            throw new \RuntimeException("A plugin named \"{$slug}\" already exists.");
+        }
+
+        File::ensureDirectoryExists(self::path().'/'.$slug);
+
+        File::put(self::path().'/'.$slug.'/'.self::MANIFEST, self::starterManifest($data));
+        File::put(self::path().'/'.$slug.'/'.self::INDEX, self::starterIndex());
+        File::put(self::path().'/'.$slug.'/routes.php', self::starterRoutes());
+
+        self::flush();
+
+        return $slug;
+    }
+
+    /**
+     * @param  array{name: string, slug: string, version: string, description: string, author: string, icon: string}  $data
+     */
+    private static function starterManifest(array $data): string
+    {
+        $manifest = json_encode([
+            'name' => $data['name'],
+            'version' => $data['version'],
+            'description' => $data['description'],
+            'author' => $data['author'],
+            'icon' => $data['icon'],
+            'default' => false,
+            'settings' => [
+                'enabled' => true,
+            ],
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+        return $manifest."\n";
+    }
+
+    private static function starterIndex(): string
+    {
+        return <<<'BLADE'
+        {{-- This is the plugin's own screen. It opens from the sidebar's Plugins
+             dropdown inside the admin layout, with the plugin.json data as
+             `$plugin` and every key under "settings" bound to values.key — those
+             save themselves. One root element, same as any admin view. --}}
+        <div class="max-w-2xl space-y-6">
+            <x-admin-section-card icon="{{ $plugin['icon'] }}" title="{{ $plugin['name'] }}" description="{{ $plugin['description'] }}">
+                <div class="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
+                    <div>
+                        <p class="text-sm font-medium text-zinc-800 dark:text-zinc-100">Enabled</p>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400">Saved as this plugin's own setting. Add more keys under "settings" in plugin.json.</p>
+                    </div>
+                    <flux:switch wire:model.live="values.enabled" />
+                </div>
+            </x-admin-section-card>
+        </div>
+        BLADE;
+    }
+
+    private static function starterRoutes(): string
+    {
+        return <<<'PHP'
+        <?php
+
+        // Extra admin routes for this plugin. They load only while the plugin is
+        // active, behind admin login, at /plugins/{slug}/… and are named
+        // admin.plugins.{slug}.… . Views in this folder are
+        // plugin-{slug}::name.
+
+        // Route::get('/', function () {
+        //     return view('plugin-my-plugin::page');
+        // })->name('home');
+        PHP;
+    }
+
+    /**
+     * Packs an installed plugin back into a zip holding that one folder — the
+     * same shape installFromZip() accepts, so a plugin can be backed up before it
+     * is hand-edited, or handed to someone else as a shareable file. Returns the
+     * temp path of the archive; the caller sends it and cleans it up.
+     *
+     * @throws \RuntimeException with a message safe to show the admin
+     */
+    public static function toZip(string $slug): string
+    {
+        $plugin = self::find($slug);
+
+        if ($plugin === null) {
+            throw new \RuntimeException("Plugin \"{$slug}\" is not installed.");
+        }
+
+        $path = tempnam(sys_get_temp_dir(), 'plugin-export-');
+        @unlink($path);
+
+        $zip = new \ZipArchive;
+
+        if ($zip->open($path, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            throw new \RuntimeException('Could not create the zip file.');
+        }
+
+        self::addToZip($zip, $plugin['path'], $slug);
+        $zip->close();
+
+        return $path;
+    }
+
+    private static function addToZip(\ZipArchive $zip, string $absoluteDir, string $localPrefix): void
+    {
+        $zip->addEmptyDir($localPrefix);
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($absoluteDir, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::SELF_FIRST,
+        );
+
+        foreach ($iterator as $item) {
+            $localPath = $localPrefix.'/'.ltrim(
+                str_replace('\\', '/', substr($item->getPathname(), strlen($absoluteDir))),
+                '/',
+            );
+
+            $item->isDir() ? $zip->addEmptyDir($localPath) : $zip->addFile($item->getPathname(), $localPath);
+        }
     }
 
     /**
@@ -386,7 +539,11 @@ class Plugins
         throw new \RuntimeException('The zip must contain exactly one plugin folder at its root.');
     }
 
-    private static function slugify(string $name): string
+    /**
+     * Turns a display name into a folder-safe slug, or '' when nothing usable is
+     * left (e.g. a name written entirely in a non-latin script).
+     */
+    public static function slugify(string $name): string
     {
         return trim(preg_replace('/[^a-z0-9_-]+/', '-', strtolower($name)), '-_');
     }

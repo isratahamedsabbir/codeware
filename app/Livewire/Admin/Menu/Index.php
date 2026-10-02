@@ -218,7 +218,7 @@ class Index extends Component
             if ($this->linkType === 'custom') {
                 $rules['url'] = ['required', 'string', 'max:255', function ($attribute, $value, $fail) {
                     // A bare "#fragment" is a same-page section anchor (see
-                    // PortfolioMenuSeeder) — only a one-pager's own nav uses one.
+                    // ThemesPortfolioDatabaseSeedersMenuSeeder) — only a one-pager's own nav uses one.
                     if ($value && ! preg_match('~^(#|/|https?://)~', $value)) {
                         $fail(__('Link must start with #, /, http:// or https://.'));
                     }

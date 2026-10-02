@@ -146,7 +146,7 @@ def _inline(text: str) -> str:
 
     Every fragment is escaped, including the inside of a `code` span. That last
     one is not optional: the prose is full of file paths like
-    `resources/views/frontend/themes/<slug>/` and component tags like
+    `themes/<slug>/` and component tags like
     `<x-admin-repeatable-fields>`, and reportlab's parser reads an unescaped
     "<...>" as markup and drops it. Left raw, "routes/web/<slug>.php" comes out
     of the PDF as "routes/web/.php" — which is worse than no document at all,
@@ -427,12 +427,12 @@ def cover() -> list:
         Paragraph("What you need before you start", S["h2"]),
         p("A theme is a folder of Blade templates plus two small files that sit outside it. "
           "That is the whole idea, and the rest of this document is detail on how those parts fit together. "
-          "You need a copy of the site, permission to write to `resources/views/frontend/themes/`, "
+          "You need a copy of the site, permission to write to `themes/`, "
           "and `routes/web/`. Nothing else — a theme has no build step, no package manager and no "
           "migration. It is files."),
         Spacer(1, 10),
     ] + code([
-        "resources/views/frontend/themes/     <- your theme folder goes here",
+        "themes/     <- your theme folder goes here",
         "routes/web/<slug>.php               <- your theme's URLs go here",
         "public/themes/<slug>/               <- your theme's CSS/JS go here (optional)",
     ]) + [
@@ -458,7 +458,7 @@ def cover() -> list:
 
 def chapter_1() -> list:
     return h1("1", "What a theme is") + [
-        p("A theme is a folder of Blade templates under `resources/views/frontend/themes/`, "
+        p("A theme is a folder of Blade templates under `themes/`, "
           "named for the site design it produces. The site stores one setting — `site_theme` — "
           "holding the slug of the active theme, and every storefront page renders from that "
           "theme's folder and nowhere else."),
@@ -491,10 +491,10 @@ def chapter_2() -> list:
         p("A theme is one folder, but three of its files are not in it. Knowing which is which "
           "before you start saves the most confusing half hour you will spend on this."),
         h2("In the theme folder"),
-        p("`resources/views/frontend/themes/<slug>/` — the templates, and the file that holds the theme's "
+        p("`themes/<slug>/` — the templates, and the file that holds the theme's "
           "name and content. Optional extras nest in subfolders: `partials/`, `account/`, `errors/`."),
     ] + code([
-        "resources/views/frontend/themes/photography/",
+        "themes/photography/",
         "|-- theme.json            # manifest + settings (see chapter 3)",
         "|-- home.blade.php        # the one template every theme needs",
         "|-- page.blade.php        # standalone CMS pages",
@@ -505,7 +505,7 @@ def chapter_2() -> list:
         "    |-- header.blade.php",
         "    `-- footer.blade.php",
     ]) + [
-        p("`resources/views/frontend/themes/<slug>/settings.blade.php` is the important one to recognise: "
+        p("`themes/<slug>/settings.blade.php` is the important one to recognise: "
           "drop that single file in and a configuration panel for your theme appears in the admin, "
           "built from the fields you declare in it. Chapter 5 is about that file."),
         h2("Outside the theme folder"),
@@ -675,7 +675,7 @@ def chapter_4() -> list:
 
 def chapter_5() -> list:
     return h1("5", "settings.blade.php — declaring your fields") + [
-        p("Add one file, `resources/views/frontend/themes/<slug>/settings.blade.php`, and a panel for "
+        p("Add one file, `themes/<slug>/settings.blade.php`, and a panel for "
           "your theme appears in Admin → Theme Settings. There is nothing to register. The panel is "
           "built from what your file declares, and what it saves goes into your theme's `theme.json`."),
         p("This is the part with a contract, so read this chapter even if you skim the rest. Three "

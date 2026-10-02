@@ -216,7 +216,7 @@ class SettingsSeeder extends Seeder
             // the ecommerce theme, and a theme's own settings live in the
             // theme.json inside its folder (see App\Support\ThemeSettings),
             // which ships with the theme. The two values the table used to carry
-            // are in resources/views/frontend/themes/ecommerce/theme.json,
+            // are in themes/ecommerce/theme.json,
             // where the storefront's fallbacks have always assumed they'd be.
 
             // ── Frontend chat widget ── shows/hides the chat bubble on the

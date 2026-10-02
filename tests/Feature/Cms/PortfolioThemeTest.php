@@ -5,7 +5,7 @@ use App\Models\MenuItem;
 use App\Models\Page;
 use App\Models\Setting;
 use App\Support\Frontend;
-use Database\Seeders\PortfolioMenuSeeder;
+use Themes\Portfolio\Database\Seeders\MenuSeeder as PortfolioMenuSeeder;
 
 beforeEach(function () {
     Page::factory()->published()->create(['title' => ['en' => 'Home', 'bn' => ''], 'slug' => 'home', 'sort_order' => 0]);

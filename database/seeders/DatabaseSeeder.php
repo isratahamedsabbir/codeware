@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Themes\Ecommerce\Database\Seeders\MenuSeeder;
+use Themes\Portfolio\Database\Seeders\ContentSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -53,9 +55,9 @@ class DatabaseSeeder extends Seeder
         $this->call(ProductAttributeSeeder::class);
         $this->call(ShippingMethodSeeder::class);
         $this->call(PageSeeder::class);
-        $this->call(FrontendMenuSeeder::class);
-        $this->call(PortfolioMenuSeeder::class);
-        $this->call(PortfolioContentSeeder::class);
+        $this->call(MenuSeeder::class);
+        $this->call(\Themes\Portfolio\Database\Seeders\MenuSeeder::class);
+        $this->call(ContentSeeder::class);
         $this->call(QuickLinksMenuSeeder::class);
         $this->call(EmailTemplatesSeeder::class);
         $this->call(NotificationsSeeder::class);

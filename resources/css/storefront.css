@@ -19,7 +19,7 @@
       Echo and date-picker libraries are not loaded here. See vite.config.js.
 
    What this file is *for*, now that themes have their own: it is the catch-all.
-   A theme with a stylesheet at resources/css/themes/{slug}/theme.css is served
+   A theme with a stylesheet at themes/{slug}/theme.css is served
    that instead (see Themes::storefrontEntry()), so a portfolio page no longer
    downloads the ecommerce theme's shop and checkout templates' classes. This
    bundle is what answers for a theme that ships no stylesheet of its own — a
@@ -44,10 +44,10 @@
 @import './base.css';
 @import './storefront-shared.css';
 
-@source '../views/frontend/themes';
+@source '../../themes';
 
 /* The admin theme-settings screen renders a theme's settings.blade.php inline
    (see Themes::hasSettings()), and that file carries picker markup no storefront
    page ever reaches. Kept out of the storefront the same way the shared list
    keeps the admin's own components out. */
-@source not '../views/frontend/themes/*/settings.blade.php';
+@source not '../../themes/*/settings.blade.php';

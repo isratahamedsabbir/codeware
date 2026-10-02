@@ -24,6 +24,37 @@ class Index extends Component
     public $themeZip = null;
 
     /**
+     * The Create Theme form. Kept out of $settings on purpose: those are the
+     * site-wide values this screen saves to the settings table, and a half-typed
+     * theme name is none of their business — every one of them is written into
+     * the new theme's own theme.json by Themes::create() instead.
+     */
+    public string $newName = '';
+
+    public string $newSlug = '';
+
+    public string $newVersion = '1.0.0';
+
+    public string $newDescription = '';
+
+    public string $newAuthor = '';
+
+    public bool $showCreateModal = false;
+
+    /**
+     * Whether the owner has typed the slug themselves. One-way: once the field has
+     * been edited by hand the name stops rewriting it, because a slug that keeps
+     * changing under someone who is fixing a typo in it is worse than one they
+     * have to retype. The Create button clears it along with the rest of the form.
+     *
+     * Public because it has to survive the round trip to the browser: every
+     * keystroke is its own request and the component is rebuilt from the payload,
+     * so a flag that stayed private would be reset to false on each one and the
+     * name would keep overwriting a slug that had been edited a second earlier.
+     */
+    public bool $slugEdited = false;
+
+    /**
      * The site-wide settings this screen owns: the active site design
      * (site_theme), the chat widget, the announcement popup and the homepage
      * copy & imagery the theme templates render. Boolean values are stored as
@@ -642,8 +673,96 @@ class Index extends Component
     }
 
     /**
+     * The New Theme header button, same cross-DOM arrangement as openInstallModal()
+     * — see the note there.
+     */
+    public function openCreateModal(): void
+    {
+        $this->resetErrorBag();
+        $this->showCreateModal = true;
+    }
+
+    public function closeCreateModal(): void
+    {
+        $this->reset('newName', 'newSlug', 'newVersion', 'newDescription', 'newAuthor', 'showCreateModal');
+        $this->newVersion = '1.0.0';
+        $this->slugEdited = false;
+        $this->resetErrorBag();
+    }
+
+    /**
+     * Keep the slug in step with the name while it is still derived from it.
+     */
+    public function updatedNewName(): void
+    {
+        if (! $this->slugEdited) {
+            $this->newSlug = $this->slugify($this->newName);
+        }
+    }
+
+    /**
+     * Writes the new theme's folder from the basics given here: every page
+     * template, its header/footer/404 partials, its own stylesheet, its settings
+     * screen, a commented routes file and its theme.json, all in one folder.
+     *
+     * Nothing is activated. The theme appears on the picker above as a card to
+     * choose from, and choosing it is a separate press of Save on this screen —
+     * a theme that took the site live the moment it was created would replace a
+     * finished design with placeholders.
+     */
+    public function createTheme(): void
+    {
+        $this->validate([
+            'newName' => 'required|string|max:191',
+            'newSlug' => ['required', 'string', 'max:191', function ($attribute, $value, $fail) {
+                if (! ThemeSettings::isValidSlug($value)) {
+                    $fail(__('Use letters, numbers, dashes and underscores only.'));
+
+                    return;
+                }
+
+                if (file_exists(Themes::path().'/'.$value)) {
+                    $fail(__('A theme with this slug already exists.'));
+                }
+            }],
+            'newVersion' => 'required|string|max:32',
+            'newDescription' => 'nullable|string|max:255',
+            'newAuthor' => 'nullable|string|max:191',
+        ]);
+
+        try {
+            $slug = Themes::create([
+                'name' => $this->newName,
+                'slug' => $this->newSlug,
+                'version' => $this->newVersion,
+                'description' => $this->newDescription,
+                'author' => $this->newAuthor,
+            ]);
+        } catch (\RuntimeException $e) {
+            $this->addError('newSlug', $e->getMessage());
+
+            return;
+        }
+
+        AdminActivity::log('created', "Theme \"{$slug}\" created");
+
+        $this->closeCreateModal();
+
+        // The picker and this screen's own declarations memo both read the themes
+        // directory, and a newly written folder has to be in both before the form
+        // below renders — see Themes::create(), which clears the cached scan, and
+        // the reload that puts the new card in the grid.
+        $this->declarations = null;
+        $this->repeaterMaxes = null;
+
+        session()->flash('success', "Theme \"{$slug}\" created with a folder of its own under themes/{$slug}. Fill in its templates, then pick it above to go live.");
+
+        $this->js('window.location.reload()');
+    }
+
+    /**
      * Installs a theme uploaded as zip of a single folder into
-     * resources/views/frontend/themes/ (the folder name becomes the slug).
+     * themes/ (the folder name becomes the slug).
      * The zip's contents are validated before anything touches the themes
      * directory: path-traversal entries are rejected, total size is capped,
      * and an existing theme folder of the same slug is never overwritten.
@@ -734,6 +853,7 @@ class Index extends Component
 
         File::deleteDirectory($temp);
         Themes::forget();
+        Themes::registerViews($slug);
 
         // The theme is on disk now, and so is its settings.blade.php if it ships
         // one — so the declaration scan has to read the files again. It is
@@ -984,14 +1104,17 @@ class Index extends Component
                     'shop' => is_file($base.'/shop.blade.php'),
                     'manifest' => Themes::manifest($slug),
                     'hasSettings' => Themes::hasSettings($slug),
-                    // A theme with templates but no routes/web/{slug}.php
-                    // registers no storefront URLs at all, so picking it gives a
-                    // site that 404s on every page — including the homepage.
-                    // The theme is installed perfectly correctly; it is just
-                    // missing the one file that says "this is my home page", and
-                    // nothing on the picker would otherwise say so.
+                    // A theme with templates but no route file registers no
+                    // storefront URLs at all, so picking it gives a site that 404s
+                    // on every page — including the homepage. The theme is
+                    // installed perfectly correctly; it is just missing the one
+                    // file that says "this is my home page", and nothing on the
+                    // picker would otherwise say so. Where it *is* matters too, so
+                    // a theme without one is reported as the path to create rather
+                    // than as null — beside its own templates, which is where a
+                    // theme created or installed from here keeps it.
                     'hasRoutes' => Themes::routeFileExists($slug),
-                    'routeFile' => Themes::routesPath().'/'.$slug.'.php',
+                    'routeFile' => Themes::routeFile($slug) ?? Themes::path().'/'.$slug.'/routes.php',
                 ]];
             })
             ->all();
@@ -1018,7 +1141,7 @@ class Index extends Component
      * The site-wide settings keys this screen owns. Kept in sync with the field
      * widgets in the blade view; the homepage image keys are read by the
      * storefront home template (see
-     * resources/views/frontend/themes/ecommerce/home.blade.php).
+     * themes/ecommerce/home.blade.php).
      *
      * Deliberately no `theme_*` key: those belong to a theme's own
      * theme.json, not to this table (see saveThemeValues()).
@@ -1056,7 +1179,7 @@ class Index extends Component
     private function settingsDeclarations(): array
     {
         return $this->declarations ??= collect(
-            glob(resource_path('views/frontend/themes/*/settings.blade.php')) ?: []
+            glob(base_path('themes/*/settings.blade.php')) ?: []
         )
             ->map(fn (string $file) => (string) file_get_contents($file))
             ->values()

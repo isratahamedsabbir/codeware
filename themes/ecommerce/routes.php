@@ -17,6 +17,7 @@
  * template referenced from Themes::ROUTE_TEMPLATES needs a route here too.
  */
 
+use Illuminate\Support\Facades\Route;
 use Themes\Ecommerce\Controllers\AccountController;
 use Themes\Ecommerce\Controllers\BlogController;
 use Themes\Ecommerce\Controllers\CartController;
@@ -24,7 +25,6 @@ use Themes\Ecommerce\Controllers\HomeController;
 use Themes\Ecommerce\Controllers\PageController;
 use Themes\Ecommerce\Controllers\ProductController;
 use Themes\Ecommerce\Controllers\ShopController;
-use Illuminate\Support\Facades\Route;
 
 // The homepage and the standalone pages are repeated here on purpose: each theme
 // file is a complete description of that theme's site, so they can be read side

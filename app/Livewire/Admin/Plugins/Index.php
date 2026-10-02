@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Plugins;
 
+use App\Models\MenuItem;
 use App\Support\AdminActivity;
 use App\Support\Plugins;
 use Livewire\Component;
@@ -21,6 +22,23 @@ class Index extends Component
 
     /** @var TemporaryUploadedFile|null */
     public $pluginZip = null;
+
+    public bool $showCreateModal = false;
+
+    public string $newName = '';
+
+    public string $newSlug = '';
+
+    /** Set once the admin types in the slug box, which stops the name from overwriting it. */
+    public bool $slugEdited = false;
+
+    public string $newVersion = '1.0.0';
+
+    public string $newDescription = '';
+
+    public string $newAuthor = '';
+
+    public string $newIcon = 'puzzle-piece';
 
     public function openInstallModal(): void
     {
@@ -50,6 +68,98 @@ class Index extends Component
 
         $this->closeInstallModal();
         session()->flash('success', "Plugin \"{$slug}\" installed. Activate it below to add it to the Plugins menu.");
+    }
+
+    public function openCreateModal(): void
+    {
+        $this->resetErrorBag();
+        $this->showCreateModal = true;
+    }
+
+    public function closeCreateModal(): void
+    {
+        $this->reset('newName', 'newSlug', 'newVersion', 'newDescription', 'newAuthor', 'newIcon', 'showCreateModal');
+        $this->slugEdited = false;
+        $this->resetErrorBag();
+    }
+
+    public function updatedNewName(): void
+    {
+        if (! $this->slugEdited) {
+            $this->newSlug = Plugins::slugify($this->newName);
+        }
+    }
+
+    /**
+     * Creates the plugin folder from the basics given here. Nothing is activated
+     * yet — the admin edits the generated files first, then presses Activate.
+     */
+    public function createPlugin(): void
+    {
+        $this->validate([
+            'newName' => 'required|string|max:191',
+            'newSlug' => ['required', 'string', 'max:191', function ($attribute, $value, $fail) {
+                if (! Plugins::isValidSlug($value)) {
+                    $fail(__('Use lowercase letters, numbers, dashes and underscores only.'));
+
+                    return;
+                }
+
+                if (file_exists(Plugins::path().'/'.$value)) {
+                    $fail(__('A plugin with this slug already exists.'));
+                }
+            }],
+            'newVersion' => 'required|string|max:32',
+            'newDescription' => 'nullable|string|max:255',
+            'newAuthor' => 'nullable|string|max:191',
+            'newIcon' => ['nullable', 'string', 'max:64', function ($attribute, $value, $fail) {
+                if ($value && ! MenuItem::iconExists($value)) {
+                    $fail(__('Unknown icon name.'));
+                }
+            }],
+        ]);
+
+        $slug = $this->newSlug;
+
+        try {
+            Plugins::create([
+                'name' => $this->newName,
+                'slug' => $slug,
+                'version' => $this->newVersion,
+                'description' => $this->newDescription,
+                'author' => $this->newAuthor,
+                'icon' => MenuItem::iconExists($this->newIcon) ? $this->newIcon : 'puzzle-piece',
+            ]);
+        } catch (\RuntimeException $e) {
+            $this->addError('newSlug', $e->getMessage());
+
+            return;
+        }
+
+        AdminActivity::log('plugins.create', "Plugin \"{$slug}\" created");
+
+        $this->closeCreateModal();
+
+        session()->flash('success', "Plugin \"{$slug}\" created in plugins/{$slug}. Edit its files, then press Activate to add it to the Plugins menu.");
+    }
+
+    /**
+     * Hands the plugin back as a .zip holding its own folder — a backup before a
+     * round of hand-editing, or a file to share with someone else.
+     */
+    public function downloadPlugin(string $slug)
+    {
+        try {
+            $zipPath = Plugins::toZip($slug);
+        } catch (\RuntimeException $e) {
+            $this->addError('plugins', $e->getMessage());
+
+            return null;
+        }
+
+        AdminActivity::log('plugins.download', "Plugin \"{$slug}\" downloaded as a zip");
+
+        return response()->download($zipPath, "{$slug}.zip")->deleteFileAfterSend(true);
     }
 
     public function toggle(string $slug): void

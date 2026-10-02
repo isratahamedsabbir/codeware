@@ -220,9 +220,19 @@ migrations/        optional - loaded while the plugin is active
             &mdash; the set of plugins changes by dropping a folder in, not by editing the menu.
         </p>
 
-        <x-admin-doc-code label="Installing from a zip" file="app/Support/Plugins.php:313">
+        <x-admin-doc-code label="Creating, installing and packing plugins" file="app/Support/Plugins.php:331">
+// Admin -> Plugins -> Plugin Settings -> New Plugin: writes plugins/{slug}/
+// with plugin.json, index.blade.php and a commented routes.php
+$slug = Plugins::create([
+    'name' => 'Clock', 'slug' => 'clock', 'version' => '1.0.0',
+    'description' => 'What it does.', 'author' => 'You', 'icon' => 'clock',
+]);
+
 // Admin -> Plugins -> Plugin Settings -> Install
 $slug = Plugins::installFromZip($upload->getRealPath());
+
+// The download button on a plugin's row - a backup before hand-editing:
+$zipPath = Plugins::toZip('calendar');   // one folder at the zip root
 
 // Or activate / deactivate / remove:
 Plugins::setActive('calendar', true);
@@ -234,6 +244,16 @@ Plugins::delete('calendar');   // refuses for "default": true
             <span class="font-mono">plugin.json</span> at the zip root (slug taken from its
             <span class="font-mono">slug</span> or <span class="font-mono">name</span> key). It rejects path
             traversal, caps the package at 2000 files / 50&nbsp;MB, and refuses to overwrite an existing slug.
+        </p>
+
+        <p class="text-xs text-zinc-500">
+            <strong>New Plugin</strong> on the Plugin Settings screen asks only for the basics and writes a
+            starter folder &mdash; <span class="font-mono">plugin.json</span>,
+            <span class="font-mono">index.blade.php</span> and a commented
+            <span class="font-mono">routes.php</span> &mdash; which the admin then edits by hand before
+            activating it. The download button on a plugin's row packs the folder back into that same
+            one-folder zip (<span class="font-mono">Plugins::toZip()</span>), so a backup taken before editing
+            installs again as-is.
         </p>
 
         <div>
@@ -283,20 +303,34 @@ Plugins::delete('calendar');   // refuses for "default": true
 
     {{-- 2. Themes --}}
     <x-admin-doc-section id="themes" icon="swatch" title="2. Themes"
-        description="app/Support/Themes.php &middot; app/Support/ThemeSettings.php &middot; resources/views/frontend/themes/">
+        description="app/Support/Themes.php &middot; app/Support/ThemeSettings.php &middot; themes/">
         <p>
-            A theme is a folder under
-            <span class="font-mono text-xs">resources/views/frontend/themes/{slug}/</span> plus its own route
-            file and stylesheet. Four halves, all named after the slug:
+            A theme is a self-contained module in
+            <span class="font-mono text-xs">themes/{slug}/</span>, the same shape as a plugin: its routes,
+            templates, controllers, database files and public assets are all inside that one folder, so
+            the folder is the unit that gets zipped, installed and handed to someone else.
+            <span class="font-mono text-xs">ThemeServiceProvider</span> plugs every installed theme in.
         </p>
 
-        <x-admin-doc-code label="The four halves of a theme" file="per slug" lang="text">
-resources/views/frontend/themes/{slug}/    templates + theme.json + settings.blade.php + errors/
-routes/web/{slug}.php                     that theme's storefront routes
-resources/css/themes/{slug}/theme.css     that theme's stylesheet (optional)
-app/Http/Controllers/Themes/{slug}/       that theme's controllers
+        <x-admin-doc-code label="Inside a theme module" file="themes/{slug}/" lang="text">
+theme.json            manifest + settings values
+settings.blade.php    its admin settings screen
+theme.css             its own Vite entry (omit to inherit the catch-all storefront.css)
+routes.php            its storefront routes, behind the 'theme' guard
+*.blade.php           its templates (partials/, errors/, account/ ...), view namespace theme-{slug}::
+Controllers/          namespace Themes\{Slug}\Controllers, autoloaded - no composer dump
+database/migrations/  loaded with the app's own migrations
+database/seeders/     namespace Themes\{Slug}\Database\Seeders
+assets/               public files, served at /themes/{slug}/... (nothing else is ever served)
         </x-admin-doc-code>
 
+        <p>
+            <strong>New Theme</strong> writes the templates, <span class="font-mono text-xs">routes.php</span>
+            and <span class="font-mono text-xs">theme.css</span> into the folder. Shared base classes
+            (<span class="font-mono text-xs">ThemeController</span> and the
+            <span class="font-mono text-xs">Renders*</span> concerns) stay in
+            <span class="font-mono text-xs">app/Http/Controllers/Themes/</span>; a theme's own controllers extend them.
+        </p>
         <x-admin-doc-note tone="danger" title="There is no template fallback between themes">
             A page the active theme ships no template for <strong>does not exist</strong> on that site. It 404s
             rather than quietly rendering in another theme's design &mdash; and because
@@ -318,7 +352,7 @@ app/Http/Controllers/Themes/{slug}/       that theme's controllers
              separate from the folder layout above it, which is about what a theme
              *is*, and from the creation checklist below, which is about adding one. --}}
         <div id="theme-settings" class="scroll-mt-24">
-            <x-admin-doc-code label="theme.json - manifest and settings in one file" file="resources/views/frontend/themes/default/theme.json">
+            <x-admin-doc-code label="theme.json - manifest and settings in one file" file="themes/default/theme.json">
 {
     "name": "Default",
     "sn": 1,
@@ -380,10 +414,11 @@ app/Http/Controllers/Themes/{slug}/       that theme's controllers
             theme, edits the site-wide keys (<span class="font-mono text-xs">site_theme</span> and the
             homepage copy/imagery), and renders the selected theme's own
             <span class="font-mono text-xs">settings.blade.php</span> inline. It also installs a theme from a
-            zip and can create a missing <span class="font-mono text-xs">theme.json</span> from the slug.
+            zip, creates one from its basics with <strong>New Theme</strong>, and can create a missing
+            <span class="font-mono text-xs">theme.json</span> from the slug.
         </p>
 
-        <x-admin-doc-code label="A theme's own settings screen" file="resources/views/frontend/themes/portfolio/settings.blade.php">
+        <x-admin-doc-code label="A theme's own settings screen" file="themes/portfolio/settings.blade.php">
 {{-- scalar fields bind to the settings bag, with the theme prefix in the key --}}
 &lt;flux:field&gt;
     &lt;flux:label&gt;Display Name&lt;/flux:label&gt;
@@ -468,15 +503,34 @@ app/Http/Controllers/Themes/{slug}/       that theme's controllers
              since the guide runs on prose and code blocks with no sub-headings to
              hang an id on. --}}
         <div id="create-a-theme" class="scroll-mt-24">
+            <p>
+                <strong>New Theme</strong> on the Theme Settings screen writes steps 1&ndash;7 of this
+                checklist for you: name it on the form and it creates the folder with a template for every
+                route name in <span class="font-mono text-xs">Themes::ROUTE_TEMPLATES</span> &mdash;
+                each one a working placeholder &mdash; plus
+                <span class="font-mono text-xs">errors/404.blade.php</span>, a header and footer partial
+                they share, <span class="font-mono text-xs">theme.css</span>,
+                <span class="font-mono text-xs">settings.blade.php</span>, a commented
+                <span class="font-mono text-xs">routes.php</span> and a
+                <span class="font-mono text-xs">theme.json</span> seeded with the name, version and author
+                you typed and the next free serial number. Nothing is activated: it appears on the picker as
+                a card, and your current design stays live until you choose it and save.
+            </p>
+
             <x-admin-doc-code label="Building a new theme - the checklist" file="" lang="text">
-1. mkdir resources/views/frontend/themes/my-theme/
+0. Admin -> Theme Settings -> New Theme, or do the rest by hand
+1. mkdir themes/my-theme/
 2. theme.json  - name, version, author (tags / no_index / sn optional)
-3. home.blade.php  - at minimum; add page/product/post/... per what you serve
+3. one template per route name in Themes::ROUTE_TEMPLATES  - home, page,
+   shop, product, category, brand, tag, favorites, blog, post, cart,
+   checkout, order-confirmation, account/{dashboard,orders,order,profile}
 4. errors/404.blade.php  - otherwise Laravel's shared error page is used
-5. settings.blade.php  - optional, to expose theme-specific options in the admin
-6. resources/css/themes/my-theme/theme.css  - optional, omit to inherit storefront.css
-7. routes/web/my-theme.php  - optional, auto-registered behind the 'theme' guard
-8. Admin -> Theme Settings -> pick it as the active theme
+5. partials/header.blade.php + footer.blade.php  - shared chrome
+6. settings.blade.php  - optional, to expose theme-specific options in the admin
+7. theme.css  - optional, omit to inherit the catch-all storefront.css
+8. routes.php  - optional, auto-registered behind the 'theme' guard
+9. Controllers/, database/, assets/  - optional, see "Inside a theme module"
+10. Admin -> Theme Settings -> pick it as the active theme
             </x-admin-doc-code>
         </div>
     </x-admin-doc-section>
@@ -1077,7 +1131,7 @@ $token = PuckEditor::token($user, "puck-builder-{$page->id}");   // scoped per p
             </p>
         </div>
 
-        <x-admin-doc-code label="Reading sections in a theme template" file="resources/views/frontend/themes/default/page.blade.php">
+        <x-admin-doc-code label="Reading sections in a theme template" file="themes/default/page.blade.php">
 @verbatim
 @foreach ($sections as $section)
     @continue(blank($section->localizedCards()))   {{-- skip sections with no cards #}}

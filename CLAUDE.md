@@ -84,6 +84,10 @@ Public API supports `?locale=en|bn` query parameter for translated fields, and `
 
 Modular plugins live in `plugins/{slug}/` (registry: `App\Support\Plugins`, wiring: `PluginServiceProvider`). Each needs `plugin.json` (name, version, description, author, icon, `default`) and `index.blade.php` (its management screen, rendered at `admin.plugins.show` inside the admin layout with `$plugin` in scope). Optional: `routes.php` (mounted at `/plugins/{slug}/…`, names `admin.plugins.{slug}.*`), `migrations/`, extra views (`plugin-{slug}::name`). Install/activate/remove at Plugins → Plugin Settings (`admin.plugin-settings`); active slugs are stored in the `plugins_active` setting. `"default": true` plugins are always on and undeletable. The sidebar "Plugins" dropdown is built at runtime by `Plugins::extendMenu()` (not stored in `menu_items`).
 
+### Themes
+
+Themes are modules too, in `themes/{slug}/` (registry: `App\Support\Themes`, wiring: `ThemeServiceProvider`). Everything a theme is made of lives in its folder: `theme.json`, `settings.blade.php`, `theme.css` (its own Vite entry), `routes.php`, templates (view namespace `theme-{slug}::`), `Controllers/` (namespace `Themes\{Slug}\Controllers`), `database/migrations` + `database/seeders` (namespace `Themes\{Slug}\Database\Seeders`) and `assets/` (served at `/themes/{slug}/...`). Classes autoload from the folder via `Themes::autoload()` — no composer dump. Shared base classes (`ThemeController`, `Renders*` concerns) stay in `app/Http/Controllers/Themes/`. Don't put theme files back in `resources/`, `routes/` or `public/`.
+
 ### Settings Cache
 
 `Setting::get($key)` is cached forever. Always use `Setting::set($key, $value)` (not direct `update()`) to write, as it busts the cache. If you update settings directly in migrations or seeders, manually call `Cache::forget("setting:{$key}")`.

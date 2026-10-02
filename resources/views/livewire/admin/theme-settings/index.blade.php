@@ -38,12 +38,20 @@
         Install Theme
     </flux:button>
 
+    {{-- Next to Install rather than inside the upload modal: building a theme
+         from scratch and adding someone else's are two different jobs, and only
+         one of them starts with a zip. --}}
+    <flux:button variant="primary" size="sm" icon="plus"
+        onclick="window.dispatchEvent(new CustomEvent('open-theme-create'))">
+        New Theme
+    </flux:button>
+
     <flux:button variant="outline" size="sm" icon="arrow-top-right-on-square" href="{{ $frontendUrl }}" target="_blank">
         View Public Site
     </flux:button>
 @endpush
 
-<div class="space-y-5" x-on:open-theme-install.window="$wire.openInstallModal()">
+<div class="space-y-5" x-on:open-theme-install.window="$wire.openInstallModal()" x-on:open-theme-create.window="$wire.openCreateModal()">
     {{-- ── Site Design ──
          The preview grid, and the only place the theme is picked: each card is a
          radio bound to the same `settings.site_theme` the storefront reads, so
@@ -220,9 +228,13 @@
                             {{-- On the card as well as in the panel below, because
                                  the radio right next to it is what picks the
                                  theme, and this is the last screen before the
-                                 site stops resolving. --}}
+                                 site stops resolving. The path is in the
+                                 tooltip rather than a sentence, because where
+                                 the file goes is the only thing the owner
+                                 needs from it — and a theme created from here
+                                 keeps it beside its own templates. --}}
                             <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400"
-                                title="This theme ships no routes/web/{{ $slug }}.php, so it has no pages of its own. Selecting it will 404 the whole site.">
+                                title="This theme ships no route file, so it has no pages of its own — put one at themes/{{ $slug }}/routes.php. Selecting it will 404 the whole site.">
                                 <flux:icon.exclamation-triangle class="size-3.5" />
                             </span>
                         @endif
@@ -327,7 +339,7 @@
                         </p>
 
                         <p class="mt-2 break-all font-mono text-[11px] text-amber-700/80 dark:text-amber-300/70">
-                            {{ $settingsFilePath ?? resource_path('views/frontend/themes/'.$selectedSlug.'/'.App\Support\ThemeSettings::FILE) }}
+                            {{ $settingsFilePath ?? base_path('themes/'.$selectedSlug.'/'.App\Support\ThemeSettings::FILE) }}
                         </p>
                     </div>
 
@@ -339,7 +351,7 @@
                 </div>
             @endunless
 
-            @include('frontend.themes.'.$selectedSlug.'.settings', [
+            @include(App\Support\Themes::viewNamespace($selectedSlug).'::settings', [
                 'themeSlug' => $selectedSlug,
                 'settings' => $settings,
             ])
@@ -580,9 +592,11 @@
                             <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[10px] text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">{{ \App\Support\ThemeSettings::FILE }}</code>
                             gets one created for it on the spot, seeded with every field it declares — so
                             you can install a theme and go straight to filling it in. One
-                            <em>cannot</em> come from inside the zip: a theme's routes live in
-                            <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[10px] text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">routes/web/&lt;slug&gt;.php</code>,
-                            so add that file next to your theme folder before installing.
+                            <em>cannot</em> come from inside the zip: a theme's routes are code the app
+                            registers, not files it may read out of a folder, so add
+                            <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[10px] text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">routes.php</code>
+                            to the theme folder before installing — beside its templates, where
+                            <strong>New Theme</strong> puts it.
                         </span>
                     </p>
 
@@ -621,6 +635,103 @@
                     <flux:button variant="primary" size="sm" wire:click="installTheme" wire:loading.attr="disabled">
                         <span wire:loading.remove>Install Theme</span>
                         <span wire:loading>Installing…</span>
+                    </flux:button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+
+    {{-- ── New Theme modal ───────────────────────────────────────────────────
+         Writes a starter folder rather than a file, so this says what lands on
+         disk instead of where to put it: the folder is the deliverable, and the
+         screen says "you can open it and edit it" rather than a path the owner
+         then has to go and find. --}}
+    @if ($showCreateModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+            <div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-zinc-200 bg-white shadow-xl dark:border-zinc-700 dark:bg-zinc-800"
+                @click.away="$wire.closeCreateModal()">
+
+                <div class="flex items-center justify-between border-b border-zinc-100 px-6 py-4 dark:border-zinc-700">
+                    <h3 class="text-sm font-medium text-zinc-900 dark:text-zinc-100">New Theme</h3>
+                    <button wire:click="closeCreateModal"
+                        class="rounded p-1 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-700">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="grid gap-5 p-6">
+                    <p class="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                        Creates a theme folder you can open and edit: every page template it could
+                        ever need, the header and footer they share, its own 404, its stylesheet,
+                        its settings screen and a
+                        <code class="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">routes.php</code>
+                        to write your controllers into — all inside
+                        <code class="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">themes/&lt;slug&gt;/</code>,
+                        so the one folder can be zipped and handed to someone else whole.
+                    </p>
+
+                    <p class="-mt-2 flex items-start gap-2 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+                        <flux:icon.information-circle class="mt-px size-4 shrink-0 text-zinc-400" />
+                        <span>
+                            Nothing goes live. The theme shows up on the picker above as a card to
+                            choose from, and your current design stays on the public site until you
+                            pick it and save.
+                        </span>
+                    </p>
+
+                    <flux:field>
+                        <flux:label>Name<x-field-hint text="What the theme is called in the admin." /></flux:label>
+                        <flux:input wire:model="newName" placeholder="e.g. Aurora" />
+                        @error('newName')
+                            <flux:error name="newName" />
+                        @enderror
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>Slug<x-field-hint text="The folder name. Edit it before creating — it cannot be changed later without renaming the folder." /></flux:label>
+                        <flux:input wire:model.live.debounce.400ms="newSlug" class="font-mono"
+                            x-on:input="$wire.set('slugEdited', true)" placeholder="aurora" />
+                        @error('newSlug')
+                            <flux:error name="newSlug" />
+                        @enderror
+                    </flux:field>
+
+                    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                        <flux:field>
+                            <flux:label>Version</flux:label>
+                            <flux:input wire:model="newVersion" placeholder="1.0.0" />
+                            @error('newVersion')
+                                <flux:error name="newVersion" />
+                            @enderror
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label>Author<x-field-hint text="Optional." /></flux:label>
+                            <flux:input wire:model="newAuthor" placeholder="{{ config('app.name') }}" />
+                            @error('newAuthor')
+                                <flux:error name="newAuthor" />
+                            @enderror
+                        </flux:field>
+                    </div>
+
+                    <flux:field>
+                        <flux:label>Description<x-field-hint text="Optional. One line, shown on the theme card." /></flux:label>
+                        <flux:textarea wire:model="newDescription" class="h-20"
+                            placeholder="A single-column storefront with a dark hero." />
+                        @error('newDescription')
+                            <flux:error name="newDescription" />
+                        @enderror
+                    </flux:field>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+                    <flux:button variant="ghost" size="sm" wire:click="closeCreateModal">Cancel</flux:button>
+                    <flux:button variant="primary" size="sm" wire:click="createTheme" wire:loading.attr="disabled">
+                        <span wire:loading.remove>Create Theme</span>
+                        <span wire:loading>Creating…</span>
                     </flux:button>
                 </div>
             </div>

@@ -156,7 +156,8 @@ class AdminMenuSeeder extends Seeder
         // About is the last thing in the sidebar. It answers "what am I looking
         // at and who built it" - a question you have once, at the end, never
         // while you are working - so it closes the list rather than competing for
-        // a position next to screens that get opened daily.
+        // a position next to screens that get opened daily. The virtual Plugins
+        // dropdown is inserted directly above it (see Plugins::extendMenu()).
         $this->standalone('About', 'building-office', 'admin.about', 26);
     }
 

@@ -1019,14 +1019,18 @@ it('flags a theme that ships no routes file, because selecting it 404s the site'
         });
 
     expect($card['hasRoutes'])->toBeFalse()
-        ->and(str_replace('/', DIRECTORY_SEPARATOR, $card['routeFile']))
-        ->toEndWith('routes'.DIRECTORY_SEPARATOR.'web'.DIRECTORY_SEPARATOR.'retro.php');
+        // Reported as the path to create, not as nothing: a theme with no routes
+        // file is the one thing standing between it and a live site, so the card
+        // names where the file goes — beside its own templates.
+        ->and(str_replace('\\', '/', $card['routeFile']))
+        ->toEndWith('themes/retro/routes.php');
 
     // And the warning is actually on the screen, next to the radio that picks
-    // the theme — this is the last screen before the site stops resolving.
+    // the theme — this is the last screen before the site stops resolving, and
+    // it says where the missing file goes.
     Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'retro')
-        ->assertSee('retro.php');
+        ->assertSee('themes/retro/routes.php');
 });
 
 it('does not flag a theme that ships a routes file', function () {

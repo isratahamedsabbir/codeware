@@ -2,18 +2,30 @@
     {{-- Rendered by the layout header, outside this component's DOM root, so it
          dispatches a window event the root <div> forwards (same pattern as the
          Theme Settings "Install Theme" button). --}}
+    <flux:button variant="outline" size="sm" icon="plus"
+        onclick="window.dispatchEvent(new CustomEvent('open-plugin-create'))">
+        New Plugin
+    </flux:button>
     <flux:button variant="outline" size="sm" icon="arrow-up-tray"
         onclick="window.dispatchEvent(new CustomEvent('open-plugin-install'))">
         Install Plugin
     </flux:button>
 @endpush
 
-<div class="space-y-5" x-data="{ showGuide: false }" x-on:open-plugin-install.window="$wire.openInstallModal()">
+<div class="space-y-5" x-data="{ showGuide: false }"
+    x-on:open-plugin-create.window="$wire.openCreateModal()"
+    x-on:open-plugin-install.window="$wire.openInstallModal()">
     @if (session('success'))
         <div class="rounded-lg bg-green-50 border border-green-200 text-green-800 px-4 py-3 text-sm dark:bg-green-950 dark:border-green-800 dark:text-green-300">
             {{ session('success') }}
         </div>
     @endif
+
+    @error('plugins')
+        <div class="rounded-lg bg-red-50 border border-red-200 text-red-800 px-4 py-3 text-sm dark:bg-red-950 dark:border-red-800 dark:text-red-300">
+            {{ $message }}
+        </div>
+    @enderror
 
     <x-admin-section-card icon="puzzle-piece" title="Installed Plugins"
         description="Active plugins appear in the Plugins menu. Each one is managed from its own screen.">
@@ -55,6 +67,11 @@
                             <flux:button size="sm" variant="outline" icon="arrow-top-right-on-square"
                                 href="{{ route('admin.plugins.show', $slug) }}" wire:navigate>Manage</flux:button>
                         @endif
+
+                        <flux:button size="sm" variant="ghost" icon="arrow-down-tray"
+                            title="Download as zip" aria-label="Download {{ $plugin['name'] }} as zip"
+                            wire:click="downloadPlugin('{{ $slug }}')"
+                            wire:loading.attr="disabled" wire:target="downloadPlugin('{{ $slug }}')" />
 
                         @unless ($plugin['default'])
                             <flux:button size="sm" variant="{{ $plugin['active'] ? 'ghost' : 'primary' }}"
@@ -143,12 +160,12 @@
                 </section>
 
                 <section>
-                    <h4 class="mb-1 font-semibold text-zinc-900 dark:text-zinc-100">6. Install, activate, remove</h4>
+                    <h4 class="mb-1 font-semibold text-zinc-900 dark:text-zinc-100">6. Create, install, activate, remove</h4>
                     <ol class="list-decimal space-y-1 pl-5">
-                        <li>Zip the plugin folder (the zip should hold that one folder, e.g. <code class="font-mono text-xs">my-plugin/</code>).</li>
-                        <li>Click <b>Install Plugin</b> (top right) and choose the zip. Or copy the folder into <code class="font-mono text-xs">plugins/</code> yourself.</li>
+                        <li>To start your own, click <b>New Plugin</b> (top right), fill in the basics and press <b>Create Plugin</b>. It writes <code class="font-mono text-xs">plugins/my-plugin/</code> with a <code class="font-mono text-xs">plugin.json</code>, an <code class="font-mono text-xs">index.blade.php</code> and a commented <code class="font-mono text-xs">routes.php</code> — edit those files next.</li>
+                        <li>To add someone else's plugin, zip its folder (the zip holds that one folder, e.g. <code class="font-mono text-xs">my-plugin/</code>) and click <b>Install Plugin</b> to choose it. Or copy the folder into <code class="font-mono text-xs">plugins/</code> yourself.</li>
                         <li>Press <b>Activate</b> on its row. It now appears in the sidebar Plugins menu, and in the header if it ships a <code class="font-mono text-xs">header.blade.php</code>.</li>
-                        <li><b>Manage</b> opens its screen, <b>Deactivate</b> turns it off, the bin icon deletes it. Default plugins cannot be turned off or deleted.</li>
+                        <li><b>Manage</b> opens its screen, the download icon saves the whole folder back as a <code class="font-mono text-xs">.zip</code> (back it up before a round of editing, or share it), <b>Deactivate</b> turns it off, the bin icon deletes it. Default plugins cannot be turned off or deleted.</li>
                     </ol>
                 </section>
 
@@ -163,6 +180,92 @@
             </div>
         </div>
     </div>
+
+    {{-- ── Create plugin modal ── --}}
+    @if ($showCreateModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+            <div class="flex max-h-[90vh] w-full max-w-lg flex-col rounded-xl bg-white shadow-xl dark:bg-zinc-800" @click.away="$wire.closeCreateModal()">
+                <div class="flex items-center justify-between border-b border-zinc-100 px-6 py-4 dark:border-zinc-700">
+                    <h3 class="text-sm font-medium text-zinc-900 dark:text-zinc-100">New Plugin</h3>
+                    <button wire:click="closeCreateModal" class="rounded p-1 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700">
+                        <flux:icon.x-mark class="size-4" />
+                    </button>
+                </div>
+
+                <div class="grid gap-4 overflow-y-auto p-6">
+                    <p class="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                        Writes <code class="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] dark:bg-zinc-700">plugins/{slug}/</code>
+                        with a <code class="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] dark:bg-zinc-700">plugin.json</code>,
+                        an <code class="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] dark:bg-zinc-700">index.blade.php</code>
+                        screen and a commented
+                        <code class="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] dark:bg-zinc-700">routes.php</code>.
+                        Edit those files, then press <b>Activate</b> on the plugin's row.
+                    </p>
+
+                    <flux:field>
+                        <flux:label>Plugin name</flux:label>
+                        <flux:input wire:model.live.debounce.400ms="newName" placeholder="e.g. WhatsApp Alerts" />
+                        <flux:error name="newName" />
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>Slug (folder name)</flux:label>
+                        <div class="flex items-center gap-2">
+                            <flux:input wire:model.live.debounce.400ms="newSlug" class="font-mono"
+                                x-on:input="$wire.set('slugEdited', true)" />
+                            <span class="shrink-0 font-mono text-xs text-zinc-400">plugins/{{ $newSlug ?: '…' }}/</span>
+                        </div>
+                        <flux:description>{{ __('Lowercase letters, numbers, dashes and underscores — it becomes the folder name.') }}</flux:description>
+                        <flux:error name="newSlug" />
+                    </flux:field>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <flux:field>
+                            <flux:label>Version</flux:label>
+                            <flux:input wire:model="newVersion" placeholder="1.0.0" />
+                            <flux:error name="newVersion" />
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label>Author</flux:label>
+                            <flux:input wire:model="newAuthor" placeholder="Your name" />
+                            <flux:error name="newAuthor" />
+                        </flux:field>
+                    </div>
+
+                    <flux:field>
+                        <flux:label>Description</flux:label>
+                        <flux:textarea wire:model="newDescription" rows="2" placeholder="What the plugin does." />
+                        <flux:error name="newDescription" />
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>Icon</flux:label>
+                        <div class="flex items-center gap-2">
+                            <flux:input wire:model.live.debounce.400ms="newIcon" placeholder="puzzle-piece" class="font-mono" />
+                            <div class="flex size-9 shrink-0 items-center justify-center rounded-lg border border-zinc-200 text-zinc-500 dark:border-zinc-700">
+                                @if (\App\Models\MenuItem::iconExists($newIcon))
+                                    <x-dynamic-component :component="'flux::icon.'.$newIcon" class="size-4.5" />
+                                @else
+                                    <flux:icon.question-mark-circle class="size-4.5 text-zinc-300" />
+                                @endif
+                            </div>
+                        </div>
+                        <flux:description>{{ __('A Flux icon name, e.g. bell, chat-bubble, sparkles.') }}</flux:description>
+                        <flux:error name="newIcon" />
+                    </flux:field>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+                    <flux:button variant="ghost" size="sm" wire:click="closeCreateModal">Cancel</flux:button>
+                    <flux:button variant="primary" size="sm" wire:click="createPlugin" wire:loading.attr="disabled">
+                        <span wire:loading.remove wire:target="createPlugin">Create Plugin</span>
+                        <span wire:loading wire:target="createPlugin">Creating…</span>
+                    </flux:button>
+                </div>
+            </div>
+        </div>
+    @endif
 
     @if ($showInstallModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">

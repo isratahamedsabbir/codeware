@@ -43,11 +43,15 @@ function portfolioHome(): string
  */
 function storefrontTemplates(): array
 {
-    $files = File::allFiles(resource_path('views/frontend'));
+    $files = array_merge(File::allFiles(resource_path('views/frontend')), File::allFiles(base_path('themes')));
 
     $templates = [];
 
     foreach ($files as $file) {
+        if (! str_ends_with($file->getFilename(), '.blade.php')) {
+            continue;
+        }
+
         $contents = preg_replace('/\{\{--.*?--\}\}/s', '', $file->getContents());
 
         $templates[str_replace(resource_path('views').'\\', '', $file->getRealPath())] = $contents;
@@ -89,7 +93,7 @@ it('keeps the loader hidden until the first-visit flag says otherwise', function
     // opening of this theme's home page, and it plays on the first visit whether
     // or not the page turned out to be slow — a fast page is not a reason to
     // skip it, it is the case where holding the page costs nothing measurable.
-    $css = file_get_contents(public_path('themes/portfolio/style.css'));
+    $css = file_get_contents(base_path('themes/portfolio/assets/style.css'));
 
     expect($css)->toMatch('/\.theme-portfolio \.pf-loader\{[^}]*display:none/s')
         ->and($css)->toMatch('/\.pf-first-visit \.theme-portfolio \.pf-loader\{[^}]*display:flex/s')
@@ -115,7 +119,7 @@ it('carries the site own mark and a hairline that fills as the page settles', fu
     // sheet, with a hairline filling from the left underneath. The bar's duration
     // is the loader's whole length — it finishes as the sheet lifts — which is
     // why it is one value matched to the flag's floor rather than two that drift.
-    $css = file_get_contents(public_path('themes/portfolio/style.css'));
+    $css = file_get_contents(base_path('themes/portfolio/assets/style.css'));
 
     expect($css)->toMatch('/\.theme-portfolio \.pf-loader\{[^}]*background:#06080f[^}]*flex-direction:column/s')
         ->and($css)->toMatch('/\.theme-portfolio \.pf-loader-mark\{[^}]*align-items:center[^}]*display:flex/s')
@@ -219,7 +223,7 @@ it('needs no <noscript>, because the hidden default takes the loader away', func
     // nothing is ever shown. That is the whole mechanism; a <noscript> block
     // would only be undoing a sheet that was never meant to be up in the first
     // place.
-    $css = file_get_contents(public_path('themes/portfolio/style.css'));
+    $css = file_get_contents(base_path('themes/portfolio/assets/style.css'));
 
     expect($css)->toMatch('/\.theme-portfolio \.pf-loader\{[^}]*display:none/s')
         ->and(portfolioHome())->not->toContain('<noscript>');
@@ -247,7 +251,7 @@ it('gives the page back its clicks the moment the lift starts', function () {
     // A full-viewport element left in the document, even at opacity 0, swallows
     // clicks — so the page is handed back when the lift starts, not when the
     // transition ends, and the element goes away entirely afterwards.
-    $css = file_get_contents(public_path('themes/portfolio/style.css'));
+    $css = file_get_contents(base_path('themes/portfolio/assets/style.css'));
 
     expect($css)->toMatch('/\.pf-loader\.is-done\s*\{[^}]*pointer-events:\s*none/s')
         ->and(portfolioHome())->toContain('removeChild(loader)');
@@ -258,7 +262,7 @@ it('hides no page content behind the loader', function () {
     // the start, so lifting it is one opacity change and no layout — and there
     // is no opacity: 0 on the content that could be left there if the script
     // never ran.
-    $css = file_get_contents(public_path('themes/portfolio/style.css'));
+    $css = file_get_contents(base_path('themes/portfolio/assets/style.css'));
 
     expect($css)->not->toMatch('/\.theme-portfolio\s+main[^{]*\{[^}]*opacity:\s*0/s')
         ->and($css)->not->toMatch('/\.theme-portfolio\s+body[^{]*\{[^}]*opacity:\s*0/s');

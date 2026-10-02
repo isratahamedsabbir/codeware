@@ -12,7 +12,7 @@ use App\Support\Frontend;
  * Split out of the old application-wide FrontendController and shared by every
  * theme that ships a home template, so the *data* a homepage needs is stated
  * once. What a theme's homepage looks like was always the template's own job
- * (resources/views/frontend/themes/{slug}/home.blade.php) and still is — this
+ * (themes/{slug}/home.blade.php) and still is — this
  * only decides what it is handed.
  */
 trait RendersHomePage

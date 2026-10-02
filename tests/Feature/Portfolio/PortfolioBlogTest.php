@@ -5,7 +5,7 @@ use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\Setting;
 use App\Support\Themes;
-use Database\Seeders\PortfolioMenuSeeder;
+use Themes\Portfolio\Database\Seeders\MenuSeeder as PortfolioMenuSeeder;
 
 /*
  * The portfolio theme's blog: the listing, the single post, and the teaser that

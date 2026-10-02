@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Keeps a theme's routes from answering on another theme's site.
  *
- * routes/web.php registers every theme's routes/web/{slug}.php behind this
+ * routes/web.php registers every theme's themes/{slug}/routes.php behind this
  * middleware rather than registering only the active one. That is deliberate:
  *
  *  - A theme's file is the whole description of that theme's site, so it is worth

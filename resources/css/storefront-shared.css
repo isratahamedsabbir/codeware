@@ -5,11 +5,11 @@
    Why this file exists: the sources below are theme-independent — the shared
    partials, the shared components, the auth layout, pagination, the Flux stubs.
    Every theme pays for them exactly once, and a theme's own stylesheet
-   (resources/css/themes/{slug}/theme.css) needs them too. Declaring the list in
+   (themes/{slug}/theme.css) needs them too. Declaring the list in
    each of those would mean keeping four copies in step by hand, so it is
    declared once here and imported.
 
-   What is deliberately NOT here: ../views/frontend/themes. That is the whole
+   What is deliberately NOT here: ../../themes. That is the whole
    point of the per-theme entries — a theme's stylesheet scans only its own
    template folder, so a portfolio page stops paying for the ecommerce theme's
    ~40 shop/cart/checkout templates and vice versa. See storefront.css for the

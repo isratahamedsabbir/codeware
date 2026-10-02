@@ -15,10 +15,17 @@ beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
     $this->admin = User::factory()->admin()->create();
     Plugins::flush();
+    // Whatever the test adds under plugins/ is removed again afterwards.
+    $this->slugsBefore = array_keys(Plugins::all());
 });
 
 afterEach(function () {
     File::deleteDirectory(Plugins::path().'/demo-plugin');
+
+    foreach (array_diff(array_keys(Plugins::all()), $this->slugsBefore) as $slug) {
+        File::deleteDirectory(Plugins::path().'/'.$slug);
+    }
+
     Plugins::flush();
 });
 
@@ -53,6 +60,19 @@ it('lists the default plugin and Plugin Settings in the sidebar Plugins dropdown
 
     expect($group)->not->toBeNull()
         ->and($group->children->pluck('label')->all())->toBe(['Clock', 'Plugin Settings']);
+});
+
+it('places the Plugins dropdown directly before About, which stays last', function () {
+    $this->seed(AdminMenuSeeder::class);
+    $this->actingAs($this->admin);
+
+    $labels = MenuItem::menuForCurrentUser()
+        ->map(fn (MenuItem $item) => $item->label)
+        ->all();
+
+    expect(array_search('Plugins', $labels, true))
+        ->toBe(array_search('About', $labels, true) - 1)
+        ->and(end($labels))->toBe('About');
 });
 
 it('renders a plugin index view inside the admin layout', function () {
@@ -163,4 +183,123 @@ it('renders the plugin guide button on Plugin Settings', function () {
         ->assertOk()
         ->assertSee('How to build and use a plugin')
         ->assertSee('plugin.json');
+});
+
+it('creates a plugin folder from the basics given in the modal', function () {
+    $this->actingAs($this->admin);
+
+    Livewire::test(Index::class)
+        ->call('openCreateModal')
+        ->assertSee('New Plugin')
+        ->assertSee('Slug (folder name)')
+        ->set('newName', 'WhatsApp Alerts')
+        // The folder name follows the name until the admin types their own.
+        ->assertSet('newSlug', 'whatsapp-alerts')
+        ->set('newDescription', 'Sends order updates over WhatsApp.')
+        ->set('newAuthor', 'Codeware')
+        ->set('newIcon', 'chat-bubble-left-right')
+        ->call('createPlugin')
+        ->assertHasNoErrors()
+        ->assertSet('showCreateModal', false);
+
+    $path = Plugins::path().'/whatsapp-alerts';
+
+    expect(is_file($path.'/plugin.json'))->toBeTrue()
+        ->and(is_file($path.'/index.blade.php'))->toBeTrue()
+        ->and(is_file($path.'/routes.php'))->toBeTrue();
+
+    $manifest = json_decode((string) file_get_contents($path.'/plugin.json'), true);
+
+    expect($manifest)->toMatchArray([
+        'name' => 'WhatsApp Alerts',
+        'version' => '1.0.0',
+        'description' => 'Sends order updates over WhatsApp.',
+        'author' => 'Codeware',
+        'icon' => 'chat-bubble-left-right',
+        'default' => false,
+    ]);
+
+    // It is listed straight away, but off until the admin is happy with the files.
+    expect(Plugins::find('whatsapp-alerts')['active'])->toBeFalse();
+});
+
+it('opens the generated screen once the new plugin is activated', function () {
+    $this->actingAs($this->admin);
+
+    Livewire::test(Index::class)
+        ->set('newName', 'WhatsApp Alerts')
+        ->set('newDescription', 'Sends order updates over WhatsApp.')
+        ->call('createPlugin')
+        ->assertHasNoErrors()
+        ->call('toggle', 'whatsapp-alerts');
+
+    $this->get(route('admin.plugins.show', 'whatsapp-alerts'))
+        ->assertOk()
+        ->assertSee('WhatsApp Alerts')
+        ->assertSee('Sends order updates over WhatsApp.');
+});
+
+it('refuses to create a plugin with a slug that is taken or unusable', function () {
+    $this->actingAs($this->admin);
+
+    Livewire::test(Index::class)
+        ->set('newName', 'Clock')
+        ->set('newSlug', 'clock')
+        ->call('createPlugin')
+        ->assertHasErrors(['newSlug' => 'A plugin with this slug already exists.']);
+
+    Livewire::test(Index::class)
+        ->set('newName', 'Clock Two')
+        ->set('newSlug', 'Clock Two!')
+        ->call('createPlugin')
+        ->assertHasErrors(['newSlug' => 'Use lowercase letters, numbers, dashes and underscores only.']);
+
+    expect(is_dir(Plugins::path().'/clock'))->toBeTrue()
+        ->and(is_dir(Plugins::path().'/Clock Two!'))->toBeFalse();
+});
+
+it('downloads an installed plugin as a zip holding just its folder', function () {
+    $this->actingAs($this->admin);
+
+    $component = Livewire::test(Index::class)
+        ->call('downloadPlugin', 'clock')
+        ->assertFileDownloaded('clock.zip');
+
+    $download = $component->effects['download'];
+    $zipPath = tempnam(sys_get_temp_dir(), 'plugin-export').'.zip';
+    file_put_contents($zipPath, base64_decode($download['content']));
+
+    $zip = new ZipArchive;
+    $zip->open($zipPath);
+    $names = collect(range(0, $zip->numFiles - 1))->map(fn (int $i) => $zip->getNameIndex($i));
+    $zip->close();
+    @unlink($zipPath);
+
+    // One folder, named after the plugin — the shape the install screen wants.
+    expect($download['name'])->toBe('clock.zip')
+        ->and($names)->toContain('clock/plugin.json', 'clock/index.blade.php', 'clock/header.blade.php')
+        ->and($names->filter(fn (string $n) => str_starts_with($n, 'calendar/'))->all())->toBe([]);
+});
+
+it('hands back a zip that installs the same plugin again after it is deleted', function () {
+    $this->actingAs($this->admin);
+
+    Livewire::test(Index::class)
+        ->set('newName', 'Round Trip')
+        ->set('newSlug', 'round-trip')
+        ->call('createPlugin')
+        ->assertHasNoErrors();
+
+    $zipPath = Plugins::toZip('round-trip');
+
+    expect(Plugins::delete('round-trip'))->toBeTrue()
+        ->and(Plugins::find('round-trip'))->toBeNull();
+
+    $slug = Plugins::installFromZip($zipPath);
+    @unlink($zipPath);
+
+    expect($slug)->toBe('round-trip')
+        ->and(Plugins::find('round-trip')['name'])->toBe('Round Trip')
+        // Installing does not switch it on — that stays the admin's decision.
+        ->and(Plugins::find('round-trip')['active'])->toBeFalse();
 });

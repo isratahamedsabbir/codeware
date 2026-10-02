@@ -5,7 +5,10 @@ namespace App\Support;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
@@ -68,9 +71,24 @@ class Themes
      */
     private static array $manifests = [];
 
+    /**
+     * Where the themes live — themes/{slug}/, one self-contained module per theme,
+     * the same shape as plugins/{slug}/. Everything a theme is made of is inside
+     * its own folder, so it can be zipped up and handed to someone else whole:
+     *
+     *     themes/{slug}/
+     *         theme.json          manifest + settings values
+     *         settings.blade.php  its admin settings screen
+     *         theme.css           its own Vite entry
+     *         routes.php          its storefront routes
+     *         *.blade.php         its templates (partials/, errors/, account/ ...)
+     *         Controllers/        namespace Themes\{Slug}\Controllers
+     *         database/           migrations/ and seeders/ (Themes\{Slug}\Database\Seeders)
+     *         assets/             public files, served at /themes/{slug}/...
+     */
     public static function path(): string
     {
-        return resource_path('views/frontend/themes');
+        return base_path('themes');
     }
 
     /**
@@ -84,25 +102,126 @@ class Themes
     }
 
     /**
-     * Where the per-theme route files live — routes/web/{slug}.php, one per theme
-     * folder, mirroring this class's one-template-per-page convention on the
-     * routing side.
+     * The view namespace a theme's templates are registered under, so a template
+     * is named theme-{slug}::home or theme-{slug}::partials.header whatever
+     * directory the folder happens to live in.
      */
-    public static function routesPath(): string
+    public static function viewNamespace(string $slug): string
     {
-        return base_path('routes/web');
+        return 'theme-'.$slug;
     }
 
     /**
-     * Where the per-theme stylesheets live — resources/css/themes/{slug}/theme.css,
-     * one per theme folder, the same one-file-per-theme rule as the route files
-     * above and for the same reason: a theme is a folder you can zip up and hand
-     * to someone else, and a file that only half a theme lives in is a file the
-     * next person cannot find.
+     * Point the theme-{slug}:: view namespace at the theme's folder. Idempotent;
+     * ThemeServiceProvider does it for every installed theme at boot, and the
+     * code that creates or installs a theme calls it for the new one, since the
+     * provider has already booted by then.
      */
-    public static function stylesheetsPath(): string
+    public static function registerViews(string $slug): void
     {
-        return resource_path('css/themes');
+        View::addNamespace(static::viewNamespace($slug), static::path().'/'.$slug);
+    }
+
+    /**
+     * The folder whose files are served publicly at /themes/{slug}/... — the only
+     * part of a theme the web can reach directly (see ThemeAssetController).
+     */
+    public static function assetsPath(string $theme): string
+    {
+        return static::path().'/'.$theme.'/assets';
+    }
+
+    /**
+     * A theme's database folder — migrations/ is loaded by ThemeServiceProvider
+     * and seeders/ is autoloaded as Themes\{Slug}\Database\Seeders.
+     */
+    public static function databasePath(string $theme): string
+    {
+        return static::path().'/'.$theme.'/database';
+    }
+
+    /**
+     * The stylesheet a theme ships — themes/{slug}/theme.css — or null when it
+     * ships none.
+     */
+    public static function stylesheet(string $theme): ?string
+    {
+        $file = static::path().'/'.$theme.'/theme.css';
+
+        return is_file($file) ? $file : null;
+    }
+
+    /**
+     * The route file routes/web.php registers for a theme —
+     * themes/{slug}/routes.php — or null when it has none.
+     */
+    public static function routeFile(string $theme): ?string
+    {
+        $file = static::path().'/'.$theme.'/routes.php';
+
+        return is_file($file) ? $file : null;
+    }
+
+    /**
+     * Resolve a class in the Themes\{Studly}\... namespace to a file inside the
+     * matching theme folder, so a theme's controllers and seeders load without a
+     * composer dump — which a theme installed from a zip could never wait for.
+     * Themes\Ecommerce\Controllers\ShopController is
+     * themes/ecommerce/Controllers/ShopController.php, and
+     * Themes\Portfolio\Database\Seeders\MenuSeeder is
+     * themes/portfolio/database/seeders/MenuSeeder.php (directories are tried as
+     * written and then lowercased).
+     *
+     * Registered by ThemeServiceProvider. Reads the folder directly rather than
+     * through all(), which needs the cache and so is not safe to call from inside
+     * an autoloader.
+     */
+    public static function autoload(string $class): void
+    {
+        if (! str_starts_with($class, 'Themes\\')) {
+            return;
+        }
+
+        $parts = explode('\\', $class);
+
+        if (count($parts) < 3) {
+            return;
+        }
+
+        $slug = static::slugForStudly($parts[1]);
+
+        if ($slug === null) {
+            return;
+        }
+
+        $name = array_pop($parts);
+        $directories = array_slice($parts, 2);
+        $base = static::path().'/'.$slug.'/';
+
+        foreach ([implode('/', $directories), strtolower(implode('/', $directories))] as $directory) {
+            $file = $base.($directory === '' ? '' : $directory.'/').$name.'.php';
+
+            if (is_file($file)) {
+                require_once $file;
+
+                return;
+            }
+        }
+    }
+
+    private static function slugForStudly(string $studly): ?string
+    {
+        if (! is_dir(static::path())) {
+            return null;
+        }
+
+        foreach (scandir(static::path()) as $entry) {
+            if ($entry[0] !== '.' && is_dir(static::path().'/'.$entry) && Str::studly($entry) === $studly) {
+                return $entry;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -114,7 +233,7 @@ class Themes
      */
     public static function hasStylesheet(string $theme): bool
     {
-        return is_file(static::stylesheetsPath().'/'.$theme.'/theme.css');
+        return static::stylesheet($theme) !== null;
     }
 
     /**
@@ -134,7 +253,7 @@ class Themes
         $theme ??= static::active();
 
         return static::hasStylesheet($theme)
-            ? 'resources/css/themes/'.$theme.'/theme.css'
+            ? 'themes/'.$theme.'/theme.css'
             : 'resources/css/storefront.css';
     }
 
@@ -145,7 +264,7 @@ class Themes
      */
     public static function routeFileExists(string $theme): bool
     {
-        return is_file(static::routesPath().'/'.$theme.'.php');
+        return static::routeFile($theme) !== null;
     }
 
     /**
@@ -161,12 +280,12 @@ class Themes
         return collect(static::all())
             ->keys()
             ->filter(fn (string $slug) => static::routeFileExists($slug))
-            ->mapWithKeys(fn (string $slug) => [$slug => static::routesPath().'/'.$slug.'.php'])
+            ->mapWithKeys(fn (string $slug) => [$slug => (string) static::routeFile($slug)])
             ->all();
     }
 
     /**
-     * Every theme folder under resources/views/frontend/themes, as slug => label.
+     * Every theme folder under themes/, as slug => label.
      *
      * The folder list is a filesystem scan (scandir + is_dir per entry), so it's
      * cached for a day rather than repeated on every themed request — the admin
@@ -623,7 +742,14 @@ class Themes
      */
     public static function view(string $name): ?string
     {
-        return static::has($name) ? 'frontend.themes.'.static::active().'.'.$name : null;
+        if (! static::has($name)) {
+            return null;
+        }
+
+        $theme = static::active();
+        static::registerViews($theme);
+
+        return static::viewNamespace($theme).'::'.$name;
     }
 
     /**
@@ -659,9 +785,13 @@ class Themes
     {
         $theme = static::active();
 
-        return is_file(static::templateFile($theme, "errors/{$code}"))
-            ? "frontend.themes.{$theme}.errors.{$code}"
-            : "errors.{$code}";
+        if (! is_file(static::templateFile($theme, "errors/{$code}"))) {
+            return "errors.{$code}";
+        }
+
+        static::registerViews($theme);
+
+        return static::viewNamespace($theme)."::errors.{$code}";
     }
 
     /**
@@ -701,7 +831,7 @@ class Themes
      */
     private static function routeNameFor(?string $url): ?string
     {
-        // A bare "#fragment" (see PortfolioMenuSeeder), an absolute URL, or
+        // A bare "#fragment" (see ThemesPortfolioDatabaseSeedersMenuSeeder), an absolute URL, or
         // anything that isn't a root-relative path isn't ours to resolve.
         if (! is_string($url) || ! str_starts_with($url, '/')) {
             return null;
@@ -737,6 +867,400 @@ class Themes
         }
 
         return true;
+    }
+
+    /**
+     * The storefront pages every new theme is started with, as template name =>
+     * the label its placeholder is titled with.
+     *
+     * One entry per route name in ROUTE_TEMPLATES, which is the whole list on
+     * purpose. Themes are strictly self-contained (see view()): a page the active
+     * theme ships no template for does not exist on that site, and canRenderLink()
+     * drops it from the nav. Starting a theme off with a handful of templates
+     * would therefore ship it as a site with holes in it, and the owner would
+     * find them one dead nav link at a time.
+     *
+     * Every file is a working page that renders on its own — no controller
+     * variables are read, because what any given controller passes is the one
+     * thing a scaffold cannot know. Filling them in is the theme author's job;
+     * having them all exist is not.
+     *
+     * @var array<string, string>
+     */
+    private const STARTER_TEMPLATES = [
+        'home' => 'Home',
+        'page' => 'Page',
+        'shop' => 'Shop',
+        'product' => 'Product',
+        'category' => 'Category',
+        'brand' => 'Brand',
+        'tag' => 'Tag',
+        'favorites' => 'Favorites',
+        'blog' => 'Blog',
+        'post' => 'Post',
+        'cart' => 'Cart',
+        'checkout' => 'Checkout',
+        'order-confirmation' => 'Order confirmation',
+        'account/dashboard' => 'Account dashboard',
+        'account/orders' => 'Account orders',
+        'account/order' => 'Account order',
+        'account/profile' => 'Account profile',
+    ];
+
+    /**
+     * Writes a brand-new theme folder from the basics typed on the Theme Settings
+     * screen: every page template listed in STARTER_TEMPLATES, the header and
+     * footer partials they share, the theme's own 404, a stylesheet, a settings
+     * screen and a commented routes file — all inside the one folder, so the
+     * theme can be zipped and handed to someone else whole.
+     *
+     * The theme is not activated. Creating it and choosing it are two decisions,
+     * and picking a design is the owner's to make on the picker above: a
+     * half-built theme that went live the moment it was created would replace a
+     * working site with seventeen placeholders.
+     *
+     * @param  array{name: string, slug: string, version: string, description: string, author: string}  $data
+     *
+     * @throws \RuntimeException with a message safe to show the admin
+     */
+    public static function create(array $data): string
+    {
+        $slug = $data['slug'];
+
+        if (! ThemeSettings::isValidSlug($slug)) {
+            throw new \RuntimeException('The theme slug must use letters, numbers, dashes and underscores only.');
+        }
+
+        if (file_exists(static::path().'/'.$slug)) {
+            throw new \RuntimeException("A theme named \"{$slug}\" already exists.");
+        }
+
+        if (! static::isNameUnique($data['name'])) {
+            throw new \RuntimeException("Another installed theme is already called \"{$data['name']}\". Theme names have to be unique.");
+        }
+
+        foreach (static::STARTER_TEMPLATES as $template => $label) {
+            static::writeThemeFile($slug, $template.'.blade.php', static::starterTemplate($slug, $template, $label));
+        }
+
+        static::writeThemeFile($slug, 'errors/404.blade.php', static::starterError($slug));
+        static::writeThemeFile($slug, 'partials/header.blade.php', static::starterHeader($slug));
+        static::writeThemeFile($slug, 'partials/footer.blade.php', static::starterFooter());
+        static::writeThemeFile($slug, 'theme.css', static::starterStylesheet($slug));
+        static::writeThemeFile($slug, 'settings.blade.php', static::starterSettings());
+        static::writeThemeFile($slug, 'routes.php', static::starterRoutes($slug));
+
+        // Last, because it is the one file the folder is not finished without:
+        // ThemeSettings::create() seeds it from Themes::manifest() and gives it a
+        // serial number, and it refuses to write one into a folder that does not
+        // exist yet — which is the point, the folder above is what makes this
+        // theme rather than a file somebody dropped in themes/.
+        if (! ThemeSettings::create($slug, array_filter([
+            'name' => $data['name'],
+            'description' => $data['description'],
+            'version' => $data['version'],
+            'author' => $data['author'],
+        ], fn ($value) => trim((string) $value) !== ''))) {
+            static::forget();
+
+            throw new \RuntimeException("The \"{$slug}\" theme folder was written, but its ".ThemeSettings::FILE.' could not be created (is the themes directory writable?).');
+        }
+
+        static::forget();
+        static::registerViews($slug);
+
+        return $slug;
+    }
+
+    /**
+     * Write one file inside a theme folder, making the directories it needs on the
+     * way. File::put() does not create a parent directory, and most of what a
+     * theme is made of lives in one (errors/, partials/, account/).
+     */
+    private static function writeThemeFile(string $slug, string $relative, string $contents): void
+    {
+        $file = static::path().'/'.$slug.'/'.$relative;
+
+        File::ensureDirectoryExists(dirname($file));
+        File::put($file, $contents);
+    }
+
+    private static function starterTemplate(string $slug, string $template, string $label): string
+    {
+        return str_replace(
+            ['{slug}', '{label}', '{page}'],
+            [$slug, $label, $template],
+            <<<'BLADE'
+            {{-- The {label} page of the "{slug}" theme.
+
+                 One file per page, all of them in this folder — see
+                 App\Support\Themes::STARTER_TEMPLATES for the list and
+                 ROUTE_TEMPLATES for the route name each one answers. This is a
+                 working placeholder: it renders as it stands, reads no variables
+                 and links nowhere but home. Replace the <main> with your own
+                 markup; the head, the header and the footer around it are the
+                 theme's own and can stay. --}}
+            <!DOCTYPE html>
+            <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+            <head>
+                @include('partials.head')
+                @include('partials.seo-meta')
+                @include('partials.custom-code-head')
+            </head>
+            <body class="bg-white text-zinc-800 antialiased">
+
+            @include('theme-{slug}::partials.header')
+
+            <main>
+                <section class="mx-auto max-w-2xl px-6 py-24 text-center">
+                    <h1 class="text-3xl font-bold text-zinc-900 sm:text-4xl">{label}</h1>
+                    <p class="mt-4 text-sm text-zinc-500">
+                        This is the "{slug}" theme's {page} page. Replace this section with your own markup.
+                    </p>
+                </section>
+            </main>
+
+            @include('theme-{slug}::partials.footer')
+
+            @include('frontend.partials.chat-widget')
+            @include('partials.custom-code-body')
+            </body>
+            </html>
+            BLADE
+        );
+    }
+
+    private static function starterError(string $slug): string
+    {
+        return str_replace(
+            ['{slug}'],
+            [$slug],
+            <<<'BLADE'
+            {{-- The "{slug}" theme's 404.
+
+                 Themes::errorView() prefers a theme's own errors/{code}.blade.php
+                 over the shared resources/views/errors/{code}.blade.php, so this
+                 is what a visitor who hits a dead URL on this theme actually gets
+                 — in the theme's own header, footer and stylesheet rather than the
+                 shared shell. Delete it and the site falls back to that shared
+                 page instead. --}}
+            <!DOCTYPE html>
+            <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+            <head>
+                @include('partials.head')
+                {{-- A 404 must never be indexed, and must never claim a canonical
+                     URL for a page that does not exist — so partials.seo-meta is
+                     deliberately absent here (it derives both from $page). --}}
+                <meta name="robots" content="noindex, nofollow">
+                @include('partials.custom-code-head')
+            </head>
+            <body class="bg-white text-zinc-800 antialiased">
+
+            @include('theme-{slug}::partials.header')
+
+            <main>
+                <section class="mx-auto flex max-w-4xl flex-col items-center gap-8 px-6 py-24 text-center">
+                    <h1 class="text-7xl font-extrabold leading-none tracking-tight text-zinc-900">404</h1>
+
+                    <div>
+                        <h2 class="text-2xl font-bold text-zinc-900">{{ __('Sorry, page not found') }}</h2>
+                        <p class="mt-3 text-zinc-600">{{ __('The page you requested could not be found. It may have been moved, renamed, or removed.') }}</p>
+
+                        <a href="{{ url('/') }}" class="mt-8 inline-block rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90">
+                            {{ __('Back to homepage') }}
+                        </a>
+                    </div>
+                </section>
+            </main>
+
+            @include('theme-{slug}::partials.footer')
+
+            @include('frontend.partials.chat-widget')
+            @include('partials.custom-code-body')
+            </body>
+            </html>
+            BLADE
+        );
+    }
+
+    private static function starterHeader(string $slug): string
+    {
+        return str_replace(
+            ['{slug}'],
+            [$slug],
+            <<<'BLADE'
+            {{-- The "{slug}" theme's header, shared by every page of this theme
+                 (its templates and its 404), which is why it is a partial rather
+                 than markup repeated in seventeen files.
+
+                 Reads the CMS pages itself rather than expecting the including
+                 view to hand them over, so a new page needs nothing but its own
+                 @include to be navigable. --}}
+            @php
+                $siteName = \App\Models\Setting::get('site_name', config('app.name'));
+                $siteIcon = \App\Models\Setting::get('site_icon');
+                $navPages = \App\Support\Frontend::navPages();
+            @endphp
+
+            <header class="sticky top-0 z-20 border-b border-zinc-100 bg-white/90 backdrop-blur">
+                <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+                    <a href="{{ url('/') }}" class="flex items-center gap-2">
+                        @if ($siteIcon)
+                            <img src="{{ $siteIcon }}" alt="{{ $siteName }}" class="h-8 w-auto">
+                        @endif
+                        <span class="text-lg font-bold text-zinc-900">{{ $siteName }}</span>
+                    </a>
+
+                    <nav class="hidden items-center gap-6 md:flex">
+                        @foreach ($navPages as $navPage)
+                            <a href="{{ $navPage->slug === 'home' ? url('/') : url('/'.$navPage->slug) }}"
+                                class="text-sm font-medium text-zinc-600 hover:text-zinc-900">
+                                {{ $navPage->getTranslation('title', 'en', false) }}
+                            </a>
+                        @endforeach
+                    </nav>
+                </div>
+            </header>
+            BLADE
+        );
+    }
+
+    private static function starterFooter(): string
+    {
+        return <<<'BLADE'
+        {{-- The theme's footer, shared by every page for the same reason its
+             header is. Reads its own settings. --}}
+        @php
+            $siteName = \App\Models\Setting::get('site_name', config('app.name'));
+        @endphp
+
+        <footer class="border-t border-zinc-100 bg-zinc-50 px-6 py-10">
+            <div class="mx-auto flex max-w-6xl flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
+                <p class="text-sm text-zinc-500">&copy; {{ now()->setTimezone(display_timezone())->year }} {{ $siteName }}. {{ __('All rights reserved.') }}</p>
+            </div>
+        </footer>
+        BLADE;
+    }
+
+    /**
+     * The theme's own stylesheet, in its own folder — Themes::storefrontEntry()
+     * serves it, and vite.config.js scans every themes/{slug}/theme.css for the same reason.
+     */
+    private static function starterStylesheet(string $slug): string
+    {
+        return str_replace(
+            ['{slug}'],
+            [$slug],
+            <<<'CSS'
+            /* The "{slug}" theme stylesheet — its own Vite entry, so a page of this
+               theme downloads the utility classes its own templates use and not
+               every other theme's. See Themes::storefrontEntry().
+
+               The shared half (base.css and storefront-shared.css) is imported
+               rather than copied, exactly as the bundled themes do it. The
+               @source lines collect the utility classes from this theme's own
+               templates; delete them and none of the classes below are generated.
+
+               Paths are relative to this file, themes/{slug}/theme.css: two levels
+               up is the project root. */
+            @import '../../resources/css/base.css';
+            @import '../../resources/css/storefront-shared.css';
+
+            @source '.';
+
+            /* The admin Theme Settings screen renders settings.blade.php inline,
+               and the picker markup in it is on no storefront page. */
+            @source not './settings.blade.php';
+
+            /* Your own rules go below this line. */
+            CSS
+        );
+    }
+
+    private static function starterSettings(): string
+    {
+        return <<<'BLADE'
+        {{-- This theme's settings screen (Admin → Theme Settings). Rendered inline
+             into the panel, one root element, and everything on it is saved into
+             this theme's own theme.json inside this folder rather than the
+             database — so the folder can be zipped and handed to someone else with
+             its content still in it.
+
+             A field is declared by its binding: any settings.theme_<slug>_…
+             key below is discovered by parsing this file, so a new field appears
+             here on the next load and saves like any other. It must start with
+             "theme_" followed by this theme's own slug, so two themes cannot end
+             up writing over each other's values.
+
+             Scalar fields bind to wire:model="settings.…"; a list of rows
+             (repeater, gallery, anything with add/remove) is declared with
+             <x-admin-repeatable-fields setting-key="theme_<slug>_…"> instead, which
+             is a separate bag precisely so a list is never written back as a
+             string. Repeaters may add :max="…" for a row cap.
+
+             No fields yet — the panel below is the whole thing this theme has to
+             say for itself until it declares some. }}
+        <div class="rounded-xl border border-dashed border-zinc-300 bg-zinc-50/60 p-5 dark:border-zinc-600 dark:bg-zinc-800/30">
+            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-200">
+                {{ ucwords(str_replace(['-', '_'], ' ', $themeSlug)) }} settings
+            </p>
+            <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                This theme does not define any settings yet. Add a form field below, keyed
+                <code class="font-mono">settings.theme_&lt;slug&gt;_…</code>, and it will
+                show up here and be saved into this theme's own
+                <code class="font-mono">{{ \App\Support\ThemeSettings::FILE }}</code>.
+            </p>
+        </div>
+
+        @fluxScripts
+        BLADE;
+    }
+
+    private static function starterRoutes(string $slug): string
+    {
+        return str_replace(
+            ['{slug}'],
+            [$slug],
+            <<<'PHP'
+            <?php
+
+            /*
+             * The storefront routes of the "{slug}" theme — in this folder, beside
+             * the templates they render.
+             *
+             * routes/web.php registers this file behind the 'theme' guard, which
+             * 404s any request the active theme has no template for, so everything
+             * here answers only while this theme is the active one. A theme with no
+             * route file at all (this one, as shipped) registers no storefront URLs
+             * and is flagged as such on the theme picker.
+             *
+             * A route name means the same page in every theme's file, and the 'theme'
+             * guard is keyed on that name — so a route and the template of the same
+             * name have to be added together. The full list of names is
+             * Themes::ROUTE_TEMPLATES, and this theme ships one template for each
+             * of them (see Themes::STARTER_TEMPLATES).
+             *
+             * Controllers live in this folder's Controllers/ directory (namespace
+             * Themes\{Slug}\Controllers, autoloaded — no composer dump needed), one
+             * class per page, and render through Themes::view() so the page comes out of this
+             * theme rather than whichever one happens to be active:
+             *
+             *     public function home()
+             *     {
+             *         return $this->view('home');
+             *     }
+             */
+
+            use Illuminate\Support\Facades\Route;
+
+            // Left commented rather than shipped pointing at a class that does not
+            // exist: routes/web.php registers this file on every request, so a live
+            // route to a missing controller would take the whole site down until the
+            // file was edited. Uncomment it once the controller is written.
+            //
+            // Route::get('/', [\Themes\YourTheme\Controllers\HomeController::class, 'home'])->name('home');
+            PHP
+        );
     }
 
     /**

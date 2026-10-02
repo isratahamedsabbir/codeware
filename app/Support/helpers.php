@@ -142,7 +142,7 @@ if (! function_exists('setting_constant')) {
 if (! function_exists('theme_slug')) {
     /**
      * The slug of the theme the public site is currently rendering — the folder
-     * name under resources/views/frontend/themes/, which is also the middle
+     * name under themes/, which is also the middle
      * part of every `theme_{slug}_*` key in that theme's theme.json.
      */
     function theme_slug(): string

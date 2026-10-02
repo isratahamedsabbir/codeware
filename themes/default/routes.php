@@ -27,9 +27,9 @@
  * way Themes::ROUTE_TEMPLATES mirrors them for the nav filter.
  */
 
+use Illuminate\Support\Facades\Route;
 use Themes\Default\Controllers\HomeController;
 use Themes\Default\Controllers\PageController;
-use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'home'])->name('home');
 

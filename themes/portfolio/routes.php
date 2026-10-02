@@ -30,9 +30,9 @@
  * See themes/default/routes.php.
  */
 
+use Illuminate\Support\Facades\Route;
 use Themes\Portfolio\Controllers\BlogController;
 use Themes\Portfolio\Controllers\HomeController;
-use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'home'])->name('home');
 

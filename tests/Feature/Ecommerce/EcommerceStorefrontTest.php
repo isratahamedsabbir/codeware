@@ -8,8 +8,8 @@ use App\Models\ProductCategory;
 use App\Models\Setting;
 use App\Models\Tag;
 use App\Models\User;
-use Database\Seeders\FrontendMenuSeeder;
 use Database\Seeders\RolePermissionSeeder;
+use Themes\Ecommerce\Database\Seeders\MenuSeeder as FrontendMenuSeeder;
 
 use function Pest\Laravel\get;
 

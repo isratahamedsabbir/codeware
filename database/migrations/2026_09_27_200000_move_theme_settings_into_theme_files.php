@@ -114,7 +114,7 @@ return new class extends Migration
      */
     private function themeSlugs(): array
     {
-        $path = resource_path('views/frontend/themes');
+        $path = base_path('themes');
 
         if (! File::isDirectory($path)) {
             return [];

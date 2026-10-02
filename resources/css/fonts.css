@@ -25,7 +25,7 @@
      - The ecommerce theme sets `font-storefront`, which is Trebuchet MS — a
        bundled system font. Its pages never load a byte of this either.
      - The portfolio theme sets its own class to Instrument Sans and ships its
-       own @font-face in public/themes/portfolio/fonts.css, so it needs neither
+       own @font-face in themes/portfolio/assets/fonts.css, so it needs neither
        this family nor this file.
      - So the two consumers are the default theme, which reads var(--font-sans)
        from base.css, and layouts/auth/split.blade.php, which names the family

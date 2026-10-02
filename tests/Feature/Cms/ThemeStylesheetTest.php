@@ -9,8 +9,7 @@ use App\Support\Themes;
 |--------------------------------------------------------------------------
 |
 | A theme is a folder, and its stylesheet lives in it alongside the templates it
-| styles: resources/css/themes/{slug}/theme.css, next to routes/web/{slug}.php
-| and resources/views/frontend/themes/{slug}/. The two properties worth pinning
+| styles: themes/{slug}/theme.css, next to its routes.php and its templates. The two properties worth pinning
 | down are that a theme with one is served it, and that a theme without one is
 | still styled — the second because a theme installed later as a zip ships
 | templates and no stylesheet, and bare HTML is a broken storefront.
@@ -19,7 +18,7 @@ use App\Support\Themes;
 
 it('gives every bundled theme its own stylesheet', function (string $theme) {
     expect(Themes::hasStylesheet($theme))->toBeTrue()
-        ->and(Themes::storefrontEntry($theme))->toBe("resources/css/themes/{$theme}/theme.css");
+        ->and(Themes::storefrontEntry($theme))->toBe("themes/{$theme}/theme.css");
 })->with(['default', 'ecommerce', 'portfolio']);
 
 it('falls back to the catch-all storefront bundle for a theme that ships no stylesheet', function () {
@@ -36,7 +35,7 @@ it('serves the active theme its own stylesheet rather than the catch-all', funct
     // rather than named, so the head partial needs no branch of its own.
     Setting::set('site_theme', 'portfolio');
 
-    expect(Themes::storefrontEntry())->toBe('resources/css/themes/portfolio/theme.css');
+    expect(Themes::storefrontEntry())->toBe('themes/portfolio/theme.css');
 });
 
 it('keeps every theme stylesheet inside its own folder', function () {
@@ -59,7 +58,7 @@ it('keeps every theme stylesheet inside its own folder', function () {
         // arrangement is meant to make impossible.
         $sources = array_values(array_map(
             'trim',
-            preg_split('/\R/', (string) file_get_contents(Themes::stylesheetsPath().'/'.$theme.'/theme.css')),
+            preg_split('/\R/', (string) file_get_contents(Themes::path().'/'.$theme.'/theme.css')),
         ));
         $sources = array_values(array_filter(
             $sources,
@@ -67,7 +66,7 @@ it('keeps every theme stylesheet inside its own folder', function () {
         ));
 
         expect($sources)
-            ->toContain("@source '../../../views/frontend/themes/{$theme}';")
+            ->toContain("@source '.';")
             ->toHaveCount(2); // its own folder, and the `not` rule for its settings screen
     }
 });
