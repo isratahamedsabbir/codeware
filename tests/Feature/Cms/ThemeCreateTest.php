@@ -79,8 +79,8 @@ it('writes a complete theme folder from the basics given on the form', function 
         ->and(is_file($folder.'/partials/header.blade.php'))->toBeTrue()
         ->and(is_file($folder.'/partials/footer.blade.php'))->toBeTrue()
         ->and(is_file($folder.'/settings.blade.php'))->toBeTrue()
-        ->and(is_file($folder.'/theme.css'))->toBeTrue()
-        ->and(is_file($folder.'/routes.php'))->toBeTrue()
+        ->and(is_file($folder.'/public/css/theme.css'))->toBeTrue()
+        ->and(is_file($folder.'/routes/web.php'))->toBeTrue()
         ->and(is_file($folder.'/'.ThemeSettings::FILE))->toBeTrue();
 });
 
@@ -92,19 +92,19 @@ it('keeps everything the new theme needs inside its own folder', function () {
     // Its stylesheet and its route file are read from in here — the whole point
     // of the button, and what lets the folder be zipped and handed over intact.
     expect(Themes::hasStylesheet('aurora'))->toBeTrue()
-        ->and(Themes::stylesheet('aurora'))->toBe($folder.'/theme.css')
-        ->and(Themes::storefrontEntry('aurora'))->toBe('themes/aurora/theme.css')
+        ->and(Themes::stylesheet('aurora'))->toBe($folder.'/public/css/theme.css')
+        ->and(Themes::storefrontEntry('aurora'))->toBe('themes/aurora/public/css/theme.css')
         ->and(Themes::routeFileExists('aurora'))->toBeTrue()
-        ->and(Themes::routeFile('aurora'))->toBe($folder.'/routes.php')
-        ->and(Themes::allRouteFiles())->toHaveKey('aurora', $folder.'/routes.php');
+        ->and(Themes::routeFile('aurora'))->toBe($folder.'/routes/web.php')
+        ->and(Themes::allRouteFiles())->toHaveKey('aurora', $folder.'/routes/web.php');
 });
 
 it('keeps the bundled themes in the same module layout', function () {
     // The shipped themes are modules like any other: stylesheet and routes in
     // their own folder, nothing left in routes/web or resources/css/themes.
-    expect(Themes::routeFile('default'))->toBe(base_path('themes/default/routes.php'))
-        ->and(Themes::stylesheet('portfolio'))->toBe(base_path('themes/portfolio/theme.css'))
-        ->and(Themes::storefrontEntry('portfolio'))->toBe('themes/portfolio/theme.css');
+    expect(Themes::routeFile('default'))->toBe(base_path('themes/default/routes/web.php'))
+        ->and(Themes::stylesheet('portfolio'))->toBe(base_path('themes/portfolio/public/css/theme.css'))
+        ->and(Themes::storefrontEntry('portfolio'))->toBe('themes/portfolio/public/css/theme.css');
 });
 
 it('ships a routes file with nothing registered in it', function () {
@@ -114,7 +114,7 @@ it('ships a routes file with nothing registered in it', function () {
     // starter file with a live route pointing at a controller nobody has written
     // yet would take the whole site down rather than just the new theme.
     $live = array_filter(
-        preg_split('/\R/', (string) File::get(Themes::path().'/aurora/routes.php')),
+        preg_split('/\R/', (string) File::get(Themes::path().'/aurora/routes/web.php')),
         fn (string $line) => str_contains($line, 'Route::')
             && ! str_starts_with(trim($line), '//')
             && ! str_starts_with(trim($line), '*'),

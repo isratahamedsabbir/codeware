@@ -10,32 +10,18 @@
       "description": "API root every request in the collection is built from (used directly as {{base_url}}/..., not /api/v1/... — the prefix must already be included here). Change the host to https://yourdomain.com/api/v1 for production."
     },
     {
-      "key": "locale",
-      "value": "en",
-      "type": "default",
-      "enabled": true,
-      "description": "Language for public API responses. Accepts: en or bn."
-    },
-    {
-      "key": "admin_token",
-      "value": "",
-      "type": "secret",
-      "enabled": true,
-      "description": "Sanctum personal access token for admin requests. Generate via Tinker: $user->createToken('postman')->plainTextToken"
-    },
-    {
       "key": "admin_email",
       "value": "admin@codeware.test",
       "type": "default",
       "enabled": true,
-      "description": "Admin email used in the Login request body."
+      "description": "Reference only — not wired into any request. The collection has a single Auth > Login request, shared by both roles, so edit its body directly (or keep this here as a reminder of which account the Admin folder expects). Its token goes in the collection variable admin_token, not here: a collection variable shadows one of the same name in the environment."
     },
     {
       "key": "admin_password",
       "value": "",
       "type": "secret",
       "enabled": true,
-      "description": "Admin password used in the Login request body."
+      "description": "Reference only — not wired into any request. See admin_email."
     }
   ],
   "_postman_variable_scope": "environment",

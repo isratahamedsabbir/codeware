@@ -14,11 +14,11 @@
    its rules are Tailwind utilities, so there is no hand-written sheet for it
    the way the portfolio theme has one. */
 
-@import '../../resources/css/base.css';
-@import '../../resources/css/storefront-shared.css';
+@import '../../../../resources/css/base.css';
+@import '../../../../resources/css/storefront-shared.css';
 
-@source '.';
+@source '../..';
 
 /* The admin theme-settings screen renders settings.blade.php inline, and the
    picker markup in it is on no storefront page. */
-@source not './settings.blade.php';
+@source not '../../settings.blade.php';

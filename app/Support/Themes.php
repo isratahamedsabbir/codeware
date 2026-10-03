@@ -79,12 +79,13 @@ class Themes
      *     themes/{slug}/
      *         theme.json          manifest + settings values
      *         settings.blade.php  its admin settings screen
-     *         theme.css           its own Vite entry
-     *         routes.php          its storefront routes
+     *         routes/web.php      its storefront routes
      *         *.blade.php         its templates (partials/, errors/, account/ ...)
      *         Controllers/        namespace Themes\{Slug}\Controllers
      *         database/           migrations/ and seeders/ (Themes\{Slug}\Database\Seeders)
-     *         assets/             public files, served at /themes/{slug}/...
+     *         public/             everything the web serves, at /themes/{slug}/...
+     *             css/theme.css     its own Vite entry
+     *             css/, js/, img/   hand-written static files, served as-is
      */
     public static function path(): string
     {
@@ -126,9 +127,9 @@ class Themes
      * The folder whose files are served publicly at /themes/{slug}/... — the only
      * part of a theme the web can reach directly (see ThemeAssetController).
      */
-    public static function assetsPath(string $theme): string
+    public static function publicPath(string $theme): string
     {
-        return static::path().'/'.$theme.'/assets';
+        return static::path().'/'.$theme.'/public';
     }
 
     /**
@@ -141,23 +142,23 @@ class Themes
     }
 
     /**
-     * The stylesheet a theme ships — themes/{slug}/theme.css — or null when it
-     * ships none.
+     * The stylesheet a theme ships — themes/{slug}/public/css/theme.css — or null
+     * when it ships none.
      */
     public static function stylesheet(string $theme): ?string
     {
-        $file = static::path().'/'.$theme.'/theme.css';
+        $file = static::path().'/'.$theme.'/public/css/theme.css';
 
         return is_file($file) ? $file : null;
     }
 
     /**
      * The route file routes/web.php registers for a theme —
-     * themes/{slug}/routes.php — or null when it has none.
+     * themes/{slug}/routes/web.php — or null when it has none.
      */
     public static function routeFile(string $theme): ?string
     {
-        $file = static::path().'/'.$theme.'/routes.php';
+        $file = static::path().'/'.$theme.'/routes/web.php';
 
         return is_file($file) ? $file : null;
     }
@@ -253,7 +254,7 @@ class Themes
         $theme ??= static::active();
 
         return static::hasStylesheet($theme)
-            ? 'themes/'.$theme.'/theme.css'
+            ? 'themes/'.$theme.'/public/css/theme.css'
             : 'resources/css/storefront.css';
     }
 
@@ -545,6 +546,7 @@ class Themes
             'author' => '',
             'tags' => [],
             'no_index' => false,
+            'default' => false,
             'sn' => 0,
         ];
 
@@ -580,6 +582,11 @@ class Themes
                 // and so is indexable — the reading that keeps a typo from
                 // quietly unlisting a storefront.
                 'no_index' => ($data['no_index'] ?? null) === true,
+                // Same reading as no_index above, and for the same reason: the key
+                // is what marks a theme as one of the ones that ships with the
+                // system, so a typo has to fail towards "not default" rather than
+                // leave a bundled theme quietly deletable.
+                'default' => ($data['default'] ?? null) === true,
                 'sn' => static::readSn($data['sn'] ?? null),
             ];
         }
@@ -946,9 +953,9 @@ class Themes
         static::writeThemeFile($slug, 'errors/404.blade.php', static::starterError($slug));
         static::writeThemeFile($slug, 'partials/header.blade.php', static::starterHeader($slug));
         static::writeThemeFile($slug, 'partials/footer.blade.php', static::starterFooter());
-        static::writeThemeFile($slug, 'theme.css', static::starterStylesheet($slug));
+        static::writeThemeFile($slug, 'public/css/theme.css', static::starterStylesheet($slug));
         static::writeThemeFile($slug, 'settings.blade.php', static::starterSettings());
-        static::writeThemeFile($slug, 'routes.php', static::starterRoutes($slug));
+        static::writeThemeFile($slug, 'routes/web.php', static::starterRoutes($slug));
 
         // Last, because it is the one file the folder is not finished without:
         // ThemeSettings::create() seeds it from Themes::manifest() and gives it a
@@ -970,6 +977,173 @@ class Themes
         static::registerViews($slug);
 
         return $slug;
+    }
+
+    /**
+     * Whether a theme carries `"default": true` in its theme.json — the flag that
+     * marks it as one of the themes the system ships with, the same thing
+     * `"default": true` means in a plugin.json.
+     *
+     * A theme created here or installed from a zip never sets it, so nothing the
+     * owner adds can lock itself out of deletion. The bundled themes set it by
+     * hand in their own theme.json, which is also why a theme handed to someone
+     * else carries its own protection with it.
+     */
+    public static function isDefault(string $slug): bool
+    {
+        return static::manifest($slug)['default'] === true;
+    }
+
+    /**
+     * Why a theme cannot be deleted, or null when it can.
+     *
+     * Three separate reasons, checked in the order the owner would want them
+     * explained, because each one is a different mistake to undo:
+     *
+     *  - it says `"default": true`, so it is one of the bundled themes;
+     *  - it is the live theme (the site_theme setting), so deleting it would take
+     *    the storefront down until another theme was picked and saved;
+     *  - it is the only theme installed, so there would be nothing left for the
+     *    storefront to render in at all.
+     *
+     * Returned as a message rather than a bool because the admin screen puts the
+     * reason on the disabled Delete button, and a greyed-out control that will not
+     * say why is the thing that sends people to the console.
+     */
+    public static function undeletableBecause(string $slug): ?string
+    {
+        if (static::isDefault($slug)) {
+            return 'This theme ships with Codeware, so it cannot be deleted.';
+        }
+
+        if ($slug === static::active()) {
+            return 'This theme is live. Pick another theme and save first.';
+        }
+
+        if (count(static::all()) < 2) {
+            return 'This is the only installed theme. Install or create another one first.';
+        }
+
+        return null;
+    }
+
+    /**
+     * Removes a theme folder and everything in it — templates, controllers,
+     * migrations, seeders, its public/ files and its theme.json, which is where
+     * its settings live, so those go with it.
+     *
+     * Refuses everything undeletableBecause() refuses, so the live theme and the
+     * last one standing cannot be removed out from under the storefront even if
+     * the screen is bypassed and the method called directly.
+     *
+     * What it cannot undo is the theme's database migrations, which ran when the
+     * theme was activated or installed and have no down path in a theme folder.
+     * That is what the confirmation modal is for.
+     */
+    public static function delete(string $slug): bool
+    {
+        if (! static::isInstalled($slug) || static::undeletableBecause($slug) !== null) {
+            return false;
+        }
+
+        File::deleteDirectory(static::path().'/'.$slug);
+        static::forget();
+
+        return true;
+    }
+
+    /**
+     * Whether $slug is the name of a theme that is actually installed, as opposed
+     * to just a well-formed path fragment.
+     *
+     * The two are not the same thing and the difference is the whole point of
+     * this method: `themes/../storage` is a real directory, so a caller that only
+     * checked the slug's shape would let "../storage" through, and
+     * File::deleteDirectory() or a zip walk does not care that it was told to.
+     * Both delete() and toZip() touch the filesystem on a name that arrived from
+     * the admin form, so both go through here first.
+     */
+    public static function isInstalled(string $slug): bool
+    {
+        return ThemeSettings::isValidSlug($slug)
+            && array_key_exists($slug, static::all())
+            && is_dir(static::path().'/'.$slug);
+    }
+
+    /**
+     * Packs an installed theme back into a zip holding that one folder — the same
+     * shape Theme Settings' install accepts, so a theme can be backed up before it
+     * is hand-edited, or handed to someone else as a shareable file.
+     *
+     * Returns the temp path of the archive; the caller sends it and cleans it up.
+     *
+     * @throws \RuntimeException with a message safe to show the admin
+     */
+    public static function toZip(string $slug): string
+    {
+        if (! static::isInstalled($slug)) {
+            throw new \RuntimeException('That theme is not installed.');
+        }
+
+        $path = tempnam(sys_get_temp_dir(), 'theme-export-');
+        @unlink($path);
+
+        $zip = new \ZipArchive;
+
+        if ($zip->open($path, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            throw new \RuntimeException('Could not create the zip file.');
+        }
+
+        static::addToZip($zip, static::path().'/'.$slug, $slug);
+        $zip->close();
+
+        return $path;
+    }
+
+    /**
+     * Adds a theme folder to an archive under one top-level {slug}/ folder, which
+     * is the shape the installer looks for.
+     *
+     * The folder is copied whole, with no exclusions, because the folder *is* the
+     * unit that gets handed over: dropping its database/ or public/ on the way out
+     * would make the archive install into something that is missing half of
+     * itself. Editor and OS droppings are the one exception — they are not part of
+     * the theme, and a .DS_Store from a Mac is how an archive picks up a slug that
+     * the receiving side cannot use.
+     */
+    private static function addToZip(\ZipArchive $zip, string $absoluteDir, string $localPrefix): void
+    {
+        $zip->addEmptyDir($localPrefix);
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($absoluteDir, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::SELF_FIRST,
+        );
+
+        foreach ($iterator as $item) {
+            $localPath = $localPrefix.'/'.ltrim(
+                str_replace('\\', '/', substr($item->getPathname(), strlen($absoluteDir))),
+                '/',
+            );
+
+            if ($item->isDir()) {
+                $zip->addEmptyDir($localPath);
+            } elseif (! static::isJunk($item->getFilename())) {
+                $zip->addFile($item->getPathname(), $localPath);
+            }
+        }
+    }
+
+    /**
+     * Whether a filename is an editor or OS artefact rather than part of the theme.
+     */
+    private static function isJunk(string $name): bool
+    {
+        return $name === '.DS_Store'
+            || $name === 'Thumbs.db'
+            || str_starts_with($name, '._')
+            || str_ends_with($name, '~')
+            || in_array(strtolower($name), ['__macosx', '.git', 'node_modules'], true);
     }
 
     /**
@@ -1144,7 +1318,8 @@ class Themes
 
     /**
      * The theme's own stylesheet, in its own folder — Themes::storefrontEntry()
-     * serves it, and vite.config.js scans every themes/{slug}/theme.css for the same reason.
+     * serves it, and vite.config.js scans every themes/{slug}/public/css/theme.css
+     * for the same reason.
      */
     private static function starterStylesheet(string $slug): string
     {
@@ -1161,16 +1336,18 @@ class Themes
                @source lines collect the utility classes from this theme's own
                templates; delete them and none of the classes below are generated.
 
-               Paths are relative to this file, themes/{slug}/theme.css: two levels
-               up is the project root. */
-            @import '../../resources/css/base.css';
-            @import '../../resources/css/storefront-shared.css';
+               Paths are relative to this file, themes/{slug}/public/css/theme.css:
+               two levels up is the theme folder and four are the project root, so
+               the @source below collects the theme's whole folder from inside
+               public/ rather than only public/ itself. */
+            @import '../../../../resources/css/base.css';
+            @import '../../../../resources/css/storefront-shared.css';
 
-            @source '.';
+            @source '../..';
 
             /* The admin Theme Settings screen renders settings.blade.php inline,
                and the picker markup in it is on no storefront page. */
-            @source not './settings.blade.php';
+            @source not '../../settings.blade.php';
 
             /* Your own rules go below this line. */
             CSS

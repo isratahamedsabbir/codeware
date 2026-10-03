@@ -19,7 +19,7 @@
       Echo and date-picker libraries are not loaded here. See vite.config.js.
 
    What this file is *for*, now that themes have their own: it is the catch-all.
-   A theme with a stylesheet at themes/{slug}/theme.css is served
+   A theme with a stylesheet at themes/{slug}/public/css/theme.css is served
    that instead (see Themes::storefrontEntry()), so a portfolio page no longer
    downloads the ecommerce theme's shop and checkout templates' classes. This
    bundle is what answers for a theme that ships no stylesheet of its own — a

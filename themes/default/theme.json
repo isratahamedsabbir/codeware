@@ -1,6 +1,7 @@
 {
     "name": "Default",
     "sn": 1,
+    "default": true,
     "description": "The minimal built-in theme: a landing page with Admin / Vendor / Delivery login links and standard content pages. Ships with no extra stylesheet and relies on the site's global CSS.",
     "version": "1.0.0",
     "author": "Codeware",

@@ -16,8 +16,8 @@ use Illuminate\Support\ServiceProvider;
  *    under Themes\{Slug}\..., so a theme installed from a zip needs no composer dump;
  *  - its templates are the theme-{slug}:: view namespace;
  *  - its database/migrations are loaded with the app's own;
- *  - its assets/ folder is served at /themes/{slug}/...;
- *  - its routes.php is registered by routes/web.php (behind the 'theme' guard,
+ *  - its public/ folder is served at /themes/{slug}/...;
+ *  - its routes/web.php is registered by routes/web.php (behind the 'theme' guard,
  *    so only the active theme answers).
  */
 class ThemeServiceProvider extends ServiceProvider

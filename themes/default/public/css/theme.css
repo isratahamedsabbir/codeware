@@ -8,11 +8,11 @@
    removes the theme from that lookup and it falls back to the catch-all, which
    still styles it, just with every theme's classes in the one sheet. */
 
-@import '../../resources/css/base.css';
-@import '../../resources/css/storefront-shared.css';
+@import '../../../../resources/css/base.css';
+@import '../../../../resources/css/storefront-shared.css';
 
-@source '.';
+@source '../..';
 
 /* The admin theme-settings screen renders settings.blade.php inline, and the
    picker markup in it is on no storefront page. */
-@source not './settings.blade.php';
+@source not '../../settings.blade.php';

@@ -101,13 +101,13 @@ function pairPageFor(Model $entity, string $type, string $slug, int $userId): Pa
 }
 
 /**
- * Switches on the self-service roles RolePermissionSeeder creates switched off
- * (vendor/delivery_boy/customer — see the seeder's createInactiveRole()).
+ * Switches on the roles RolePermissionSeeder creates switched off
+ * (staff/vendor/delivery_boy/customer — see the seeder's createInactiveRole()).
  *
- * A test that exercises one of those portals has to stand in for the admin
+ * A test that exercises one of those tiers has to stand in for the admin
  * enabling the role from Admin → Roles first: an inactive role rejects its
  * holders at login and on every gated request, which is the whole point of the
- * default, so the portal tests would otherwise only ever prove the lockout.
+ * default, so those tests would otherwise only ever prove the lockout.
  */
 function activateRoles(string ...$names): void
 {

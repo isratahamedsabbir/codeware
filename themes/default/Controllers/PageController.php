@@ -8,7 +8,7 @@ use App\Http\Controllers\Themes\ThemeController;
 /**
  * The "default" theme's standalone pages — About, Contact, FAQ and whatever
  * else the admin has published, at the three whitelisted slugs
- * themes/default/routes.php registers.
+ * themes/default/routes/web.php registers.
  *
  * A theme with no page.blade.php registers no `page` route at all, so this
  * class exists for the default theme (and the ecommerce theme, which has its

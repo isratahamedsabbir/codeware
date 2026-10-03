@@ -50,6 +50,7 @@ it('shows a Settings modal to edit the vendor portal url for an admin, but not f
         ->assertSee('vendor-url-settings', false);
 
     $this->seed(RolePermissionSeeder::class);
+    activateRoles('staff');
     $staff = User::factory()->create();
     $staff->assignRole('staff');
 

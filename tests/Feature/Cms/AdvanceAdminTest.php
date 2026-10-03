@@ -21,6 +21,7 @@ beforeEach(function () {
     SeoResolver::flush();
 
     $this->seed(RolePermissionSeeder::class);
+    activateRoles('staff');
 
     $this->admin = User::factory()->admin()->create();
     $this->staff = User::factory()->create();

@@ -29,8 +29,8 @@ use Illuminate\Support\Str;
  * across files named after the application rather than the theme, and a theme
  * that shipped a different shop listing or a different account layout had
  * nowhere to put that. They are now one class per theme per concern, under
- * Themes/{slug}/, matching the other per-theme halves: themes/{slug}/routes.php,
- * themes/{slug}/ and themes/{slug}/.
+ * Themes/{slug}/, matching the other per-theme halves: themes/{slug}/routes/web.php,
+ * themes/{slug}/public/ and themes/{slug}/.
  *
  * What deliberately stays here is everything that is not a theme's decision:
  * the payload every page's header/footer needs, the product query the catalog

@@ -11,6 +11,7 @@ use Livewire\Livewire;
 
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
+    activateRoles('staff');
 
     $this->userA = User::factory()->create();
     $this->userA->assignRole('admin');

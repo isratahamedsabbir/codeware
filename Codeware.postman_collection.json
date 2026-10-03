@@ -1,14 +1,19 @@
 {
 	"info": {
 		"name": "Codeware API",
-		"description": "Codeware REST API (v1) — public storefront endpoints, customer account (auth + profile), and admin CRUD.\n\n**Setup**\n1. Set `base_url` (defaults to the local Herd/Laragon host, `https://codeware.test/api/v1`).\n2. Run `Auth > Register` or `Auth > Login` once — the token is captured automatically into `customer_token`.\n3. For the Admin folder, log in with an admin account's credentials via `Auth > Login`, then copy the returned `token` value into the `admin_token` collection variable (there is no separate admin login endpoint — admin vs customer is just a flag on the same `users` table).\n4. Public endpoints need no auth at all.",
+		"description": "Codeware REST API (v1) — public storefront endpoints, customer account (auth + profile), and admin CRUD.\n\n---\n\n**Setup**\n\n1. Set `base_url` — defaults to the local Herd/Laragon host, `https://codeware.test/api/v1`. The `/api/v1` prefix is part of the value.\n2. Run `Auth > Register` or `Auth > Login` once. The test script captures `data.token` into the `customer_token` collection variable automatically, so every authenticated customer request works from then on.\n3. For the **Admin** folder, log in with an *admin* account through `Auth > Login`, then copy the returned `data.token` into the `admin_token` collection variable. There is no separate admin login endpoint — admin vs customer is just a role on the same `users` table, and the same `Auth > Login` request serves both.\n4. Public endpoints need no auth at all.\n\n---\n\n**Conventions**\n\n**Response envelope.** There is no `JsonResource` — each controller hand-builds the body.\n\n- Paginated: `{ \"data\": [...], \"meta\": { \"current_page\", \"last_page\", \"per_page\", \"total\" } }`. `meta` has exactly those four keys, always. `GET /products` adds `meta.attributes` (facet list); `GET /notifications` adds `meta.unread_count`.\n- Single resource, create, update: `{ \"data\": { ... } }` — **no `meta` key at all**.\n- Un-paginated lists (`/pages`, `/product-categories`, `/settings/public`, `/layout`, `/cms`, and admin `/admin/pages`, `/admin/product-categories`, `/admin/settings`): `{ \"data\": [...] }`, no `meta`, and `?per_page` is ignored.\n- Deletes return `204` with an empty body.\n\n**Errors.** Laravel's stock shapes — the key is always `message`, never `error`. No global JSON exception renderer exists, so:\n\n- `422` validation → `{ \"message\": \"The given data was invalid.\", \"errors\": { \"field\": [\"...\"] } }`\n- `401` → `{ \"message\": \"Unauthenticated.\" }`\n- `403` → `{ \"message\": \"This action is unauthorized.\" }` (also returned for a blocked account or a deactivated role — the middleware revokes the token)\n- `404` → `{ \"message\": \"Not Found\" }`\n- `429` → `{ \"message\": \"Too Many Attempts.\" }`, `503` → shop closed for new orders\n\n> The collection sets `Accept: application/json` on every request. Without it Laravel does not treat the call as a JSON call, so a 422 comes back as a **302 redirect** and a 401 as a **redirect to the web login page** instead of a JSON error body.\n\n**`?locale=`.** Accepts the `code` of any active row in the `languages` table (`en` and `bn` as seeded). An unrecognised value is silently ignored rather than rejected. Honoured by `/posts`, `/pages`, `/products`, `/product-categories`, `/services`, `/settings/public` and `/vouchers` only — **no admin endpoint reads it**, so admin responses always return every translation as a `{ en: ..., bn: ... }` map.\n\n**`?per_page=`.** Defaults to the `pagination_per_page` setting (10) on public endpoints and to 15 (30 for media) on admin ones. Capped at 100, except comments and reviews which cap at 50.\n\n**Translatable fields.** Writes are nested — `\"title\": { \"en\": \"...\", \"bn\": \"...\" }` — while admin *reads* come back as the whole map. Asymmetric by design; both spellings are shown in the request bodies below.\n\n---\n\n**Not in this collection.** Themes and plugins have no REST surface at all — they are filesystem modules under `themes/{slug}/` and `plugins/{slug}/`, managed through Admin → Theme Settings and Admin → Plugin Settings. The storefront itself (shop, cart, checkout, account pages) is rendered server-side by Blade, not served over `/api/v1`.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "codeware"
 	},
+	"header": [
+		{ "key": "Accept", "value": "application/json" }
+	],
 	"variable": [
 		{ "key": "base_url", "value": "https://codeware.test/api/v1", "type": "string" },
+		{ "key": "locale", "value": "en", "type": "string" },
+		{ "key": "per_page", "value": "15", "type": "string" },
 		{ "key": "customer_token", "value": "", "type": "string" },
-		{ "key": "admin_token", "value": "", "type": "string" },
+		{ "key": "admin_token", "value": "", "type": "string", "description": "Sanctum personal access token for the Admin folder. Run Auth > Login with an admin account and paste the data.token from the response. Set it here rather than in the environment: a collection variable shadows one of the same name in the environment, so a token pasted into the environment is silently ignored while this stays empty." },
 		{ "key": "product_slug", "value": "", "type": "string" },
 		{ "key": "product_id", "value": "", "type": "string" },
 		{ "key": "category_slug", "value": "", "type": "string" },
@@ -228,11 +233,11 @@
 					"request": {
 						"method": "GET",
 						"url": {
-							"raw": "{{base_url}}/notifications?per_page=15&status=",
+							"raw": "{{base_url}}/notifications?per_page={{per_page}}&status=",
 							"host": ["{{base_url}}"],
 							"path": ["notifications"],
 							"query": [
-								{ "key": "per_page", "value": "15" },
+								{ "key": "per_page", "value": "{{per_page}}" },
 								{ "key": "status", "value": "unread", "disabled": true }
 							]
 						}
@@ -254,7 +259,7 @@
 		},
 		{
 			"name": "Public",
-			"description": "No authentication required. Every product/post/category endpoint accepts `?locale=en|bn`.",
+			"description": "No authentication required. Errors still come back as JSON — see the collection description for the envelope, the `?locale=` / `?per_page` rules and why `Accept: application/json` is set collection-wide.",
 			"item": [
 				{
 					"name": "Products",
@@ -264,12 +269,12 @@
 							"request": {
 								"method": "GET",
 								"url": {
-									"raw": "{{base_url}}/products?locale=en&per_page=12&category={{category_slug}}&search=&featured=",
+									"raw": "{{base_url}}/products?locale={{locale}}&per_page={{per_page}}&category={{category_slug}}&search=&featured=",
 									"host": ["{{base_url}}"],
 									"path": ["products"],
 									"query": [
-										{ "key": "locale", "value": "en" },
-										{ "key": "per_page", "value": "12" },
+										{ "key": "locale", "value": "{{locale}}" },
+										{ "key": "per_page", "value": "{{per_page}}" },
 										{ "key": "category", "value": "{{category_slug}}" },
 										{ "key": "search", "value": "", "disabled": true },
 										{ "key": "featured", "value": "1", "disabled": true }
@@ -279,7 +284,7 @@
 						},
 						{
 							"name": "Get Product by Slug",
-							"request": { "method": "GET", "url": "{{base_url}}/products/{{product_slug}}?locale=en" }
+							"request": { "method": "GET", "url": "{{base_url}}/products/{{product_slug}}?locale={{locale}}" }
 						}
 					]
 				},
@@ -288,11 +293,11 @@
 					"item": [
 						{
 							"name": "List Product Categories",
-							"request": { "method": "GET", "url": "{{base_url}}/product-categories?locale=en" }
+							"request": { "method": "GET", "url": "{{base_url}}/product-categories?locale={{locale}}" }
 						},
 						{
 							"name": "Get Product Category by Slug",
-							"request": { "method": "GET", "url": "{{base_url}}/product-categories/{{category_slug}}?locale=en" }
+							"request": { "method": "GET", "url": "{{base_url}}/product-categories/{{category_slug}}?locale={{locale}}" }
 						}
 					]
 				},
@@ -304,12 +309,12 @@
 							"request": {
 								"method": "GET",
 								"url": {
-									"raw": "{{base_url}}/services?locale=en&per_page=12&search=",
+									"raw": "{{base_url}}/services?locale={{locale}}&per_page={{per_page}}&search=",
 									"host": ["{{base_url}}"],
 									"path": ["services"],
 									"query": [
-										{ "key": "locale", "value": "en" },
-										{ "key": "per_page", "value": "12" },
+										{ "key": "locale", "value": "{{locale}}" },
+										{ "key": "per_page", "value": "{{per_page}}" },
 										{ "key": "search", "value": "", "disabled": true }
 									]
 								}
@@ -317,7 +322,7 @@
 						},
 						{
 							"name": "Get Service by Slug",
-							"request": { "method": "GET", "url": "{{base_url}}/services/{{service_slug}}?locale=en" }
+							"request": { "method": "GET", "url": "{{base_url}}/services/{{service_slug}}?locale={{locale}}" }
 						}
 					]
 				},
@@ -329,12 +334,12 @@
 							"request": {
 								"method": "GET",
 								"url": {
-									"raw": "{{base_url}}/posts?locale=en&per_page=15&category={{category_slug}}&search=",
+									"raw": "{{base_url}}/posts?locale={{locale}}&per_page={{per_page}}&category={{category_slug}}&search=",
 									"host": ["{{base_url}}"],
 									"path": ["posts"],
 									"query": [
-										{ "key": "locale", "value": "en" },
-										{ "key": "per_page", "value": "15" },
+										{ "key": "locale", "value": "{{locale}}" },
+										{ "key": "per_page", "value": "{{per_page}}" },
 										{ "key": "category", "value": "{{category_slug}}" },
 										{ "key": "search", "value": "", "disabled": true }
 									]
@@ -343,7 +348,7 @@
 						},
 						{
 							"name": "Get Post by Slug",
-							"request": { "method": "GET", "url": "{{base_url}}/posts/{{post_slug}}?locale=en" }
+							"request": { "method": "GET", "url": "{{base_url}}/posts/{{post_slug}}?locale={{locale}}" }
 						}
 					]
 				},
@@ -352,11 +357,11 @@
 					"item": [
 						{
 							"name": "List Pages",
-							"request": { "method": "GET", "url": "{{base_url}}/pages?locale=en" }
+							"request": { "method": "GET", "url": "{{base_url}}/pages?locale={{locale}}" }
 						},
 						{
 							"name": "Get Page by Slug",
-							"request": { "method": "GET", "url": "{{base_url}}/pages/{{page_slug}}?locale=en" }
+							"request": { "method": "GET", "url": "{{base_url}}/pages/{{page_slug}}?locale={{locale}}" }
 						}
 					]
 				},
@@ -513,13 +518,13 @@
 							"request": {
 								"method": "GET",
 								"url": {
-									"raw": "{{base_url}}/comments?commentable_type=post&commentable_id=1&per_page=15",
+									"raw": "{{base_url}}/comments?commentable_type=post&commentable_id=1&per_page={{per_page}}",
 									"host": ["{{base_url}}"],
 									"path": ["comments"],
 									"query": [
 										{ "key": "commentable_type", "value": "post" },
 										{ "key": "commentable_id", "value": "1" },
-										{ "key": "per_page", "value": "15", "disabled": true }
+										{ "key": "per_page", "value": "{{per_page}}", "disabled": true }
 									]
 								}
 							}
@@ -557,13 +562,13 @@
 							"request": {
 								"method": "GET",
 								"url": {
-									"raw": "{{base_url}}/reviews?reviewable_type=product&reviewable_id=1&per_page=15",
+									"raw": "{{base_url}}/reviews?reviewable_type=product&reviewable_id=1&per_page={{per_page}}",
 									"host": ["{{base_url}}"],
 									"path": ["reviews"],
 									"query": [
-										{ "key": "reviewable_type", "value": "product" },
-										{ "key": "reviewable_id", "value": "1" },
-										{ "key": "per_page", "value": "15", "disabled": true }
+{ "key": "reviewable_type", "value": "product" },
+									{ "key": "reviewable_id", "value": "1" },
+									{ "key": "per_page", "value": "{{per_page}}", "disabled": true }
 									]
 								}
 							}
@@ -615,11 +620,11 @@
 									}
 								}
 							],
-							"request": { "method": "GET", "url": "{{base_url}}/vouchers?locale=en" }
+							"request": { "method": "GET", "url": "{{base_url}}/vouchers?locale={{locale}}" }
 						},
 						{
 							"name": "Get Voucher by Slug",
-							"request": { "method": "GET", "url": "{{base_url}}/vouchers/{{voucher_slug}}?locale=en" }
+							"request": { "method": "GET", "url": "{{base_url}}/vouchers/{{voucher_slug}}?locale={{locale}}" }
 						},
 						{
 							"name": "Purchase Voucher",
@@ -760,7 +765,7 @@
 		},
 		{
 			"name": "Admin",
-			"description": "Requires an admin account's Sanctum token (see collection description for how to obtain one). Every request here is gated by `auth:sanctum` + the `access-admin` policy gate.",
+			"description": "Requires a Sanctum bearer token from an **admin or staff** account — `{{admin_token}}`, inherited by every request in this folder (and its sub-folders). Put the `data.token` returned by `Auth > Login` into that variable.\n\n> **Staff get 403 on three of these groups.** The whole folder is behind `auth:sanctum` + `can:access-admin`, but `Users`, `Settings` and `Layout` sit one level deeper behind `can:access-admin-system`, which is the `admin` role alone — the same split as the Livewire panel. Log in as an `admin` account if you need those three.",
 			"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}", "type": "string" }] },
 			"item": [
 				{
@@ -771,11 +776,11 @@
 							"request": {
 								"method": "GET",
 								"url": {
-									"raw": "{{base_url}}/admin/products?per_page=15&status=active",
+									"raw": "{{base_url}}/admin/products?per_page={{per_page}}&status=active",
 									"host": ["{{base_url}}"],
 									"path": ["admin", "products"],
 									"query": [
-										{ "key": "per_page", "value": "15" },
+										{ "key": "per_page", "value": "{{per_page}}" },
 										{ "key": "status", "value": "active", "disabled": true }
 									]
 								}
@@ -896,11 +901,11 @@
 							"request": {
 								"method": "GET",
 								"url": {
-									"raw": "{{base_url}}/admin/posts?per_page=15&status=active",
+									"raw": "{{base_url}}/admin/posts?per_page={{per_page}}&status=active",
 									"host": ["{{base_url}}"],
 									"path": ["admin", "posts"],
 									"query": [
-										{ "key": "per_page", "value": "15" },
+										{ "key": "per_page", "value": "{{per_page}}" },
 										{ "key": "status", "value": "active", "disabled": true }
 									]
 								}
@@ -1028,11 +1033,11 @@
 							"request": {
 								"method": "GET",
 								"url": {
-									"raw": "{{base_url}}/admin/media?per_page=30&type=image",
+									"raw": "{{base_url}}/admin/media?per_page={{per_page}}&type=image",
 									"host": ["{{base_url}}"],
 									"path": ["admin", "media"],
 									"query": [
-										{ "key": "per_page", "value": "30" },
+										{ "key": "per_page", "value": "{{per_page}}" },
 										{ "key": "type", "value": "image", "disabled": true }
 									]
 								}
@@ -1130,11 +1135,11 @@
 							"request": {
 								"method": "GET",
 								"url": {
-									"raw": "{{base_url}}/admin/contacts?per_page=15&status=unread",
+									"raw": "{{base_url}}/admin/contacts?per_page={{per_page}}&status=unread",
 									"host": ["{{base_url}}"],
 									"path": ["admin", "contacts"],
 									"query": [
-										{ "key": "per_page", "value": "15" },
+										{ "key": "per_page", "value": "{{per_page}}" },
 										{ "key": "status", "value": "unread", "disabled": true }
 									]
 								}
@@ -1171,11 +1176,11 @@
 							"request": {
 								"method": "GET",
 								"url": {
-									"raw": "{{base_url}}/admin/subscribers?per_page=15&status=subscribed&search=",
+									"raw": "{{base_url}}/admin/subscribers?per_page={{per_page}}&status=subscribed&search=",
 									"host": ["{{base_url}}"],
 									"path": ["admin", "subscribers"],
 									"query": [
-										{ "key": "per_page", "value": "15" },
+										{ "key": "per_page", "value": "{{per_page}}" },
 										{ "key": "status", "value": "subscribed", "disabled": true },
 										{ "key": "search", "value": "", "disabled": true }
 									]
@@ -1201,11 +1206,11 @@
 							"request": {
 								"method": "GET",
 								"url": {
-									"raw": "{{base_url}}/admin/users?per_page=15&search=&role=",
+									"raw": "{{base_url}}/admin/users?per_page={{per_page}}&search=&role=",
 									"host": ["{{base_url}}"],
 									"path": ["admin", "users"],
 									"query": [
-										{ "key": "per_page", "value": "15" },
+										{ "key": "per_page", "value": "{{per_page}}" },
 										{ "key": "search", "value": "", "disabled": true },
 										{ "key": "role", "value": "staff", "disabled": true }
 									]

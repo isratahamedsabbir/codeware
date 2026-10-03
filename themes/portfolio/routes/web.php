@@ -16,18 +16,18 @@
  * Both controllers are this theme's own, in themes/portfolio/Controllers/
  * — the fourth per-theme half, after the route file (this one), the templates
  * (themes/portfolio/) and the stylesheet
- * (themes/portfolio/theme.css).
+ * (themes/portfolio/public/css/theme.css).
  *
  * The blog is the one thing here that is not a one-pager section, because a post
  * is its own page. The names and the Post rows are the ecommerce theme's, but
  * the layout is this theme's own post.blade.php: `blog` and `blog.post` are names
  * shared across theme files on purpose, and the 'theme' guard is keyed on the
  * name, so the pair moves together — this theme answering /blog only works
- * because it ships blog.blade.php and post.blade.php. See themes/default/routes.php.
+ * because it ships blog.blade.php and post.blade.php. See themes/default/routes/web.php.
  *
  * The homepage is repeated in the other theme files on purpose: each file is a
  * complete description of that theme's site, so they can be read side by side.
- * See themes/default/routes.php.
+ * See themes/default/routes/web.php.
  */
 
 use Illuminate\Support\Facades\Route;

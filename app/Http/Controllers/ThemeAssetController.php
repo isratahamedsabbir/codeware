@@ -7,15 +7,28 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
- * Serves a file out of a theme's assets/ folder at /themes/{slug}/{path}.
+ * Serves a file out of a theme's public/ folder at /themes/{slug}/{path}.
  *
  * A theme is one folder under themes/, outside public/, so the only part of it
- * the web may reach is assets/ — and it reaches it through here. Nothing else in
- * the folder (templates, controllers, theme.json) is ever served, and the
- * resolved path must stay inside assets/ so "../" cannot climb out of it.
+ * the web may reach is its own public/ — and it reaches it through here. Nothing
+ * else in the folder (templates, controllers, routes/, theme.json) is ever
+ * served, and the resolved path must stay inside public/ so "../" cannot climb
+ * out of it.
  */
 class ThemeAssetController extends Controller
 {
+    /**
+     * The one file in public/ that is never served from here: the theme's Vite
+     * entry, themes/{slug}/public/css/theme.css. It sits under public/ with the
+     * rest of the theme's css, but it is a Tailwind source full of @import and
+     *
+     * @source directives, so handing it to a browser as text/css does nothing.
+     * The compiled sheet is what reaches the page, under its own hashed name from
+     *
+     * @vite — see Themes::storefrontEntry().
+     */
+    private const ENTRY = 'theme.css';
+
     private const TYPES = [
         'css' => 'text/css; charset=utf-8',
         'js' => 'text/javascript; charset=utf-8',
@@ -39,7 +52,12 @@ class ThemeAssetController extends Controller
     {
         abort_unless(array_key_exists($theme, Themes::all()), 404);
 
-        $root = realpath(Themes::assetsPath($theme));
+        abort_if(
+            basename($path) === self::ENTRY,
+            404
+        );
+
+        $root = realpath(Themes::publicPath($theme));
         $file = $root === false ? false : realpath($root.'/'.$path);
 
         abort_if(

@@ -35,8 +35,8 @@ function routesOfTheme(string $slug): array
 
 /**
  * A theme owns its storefront *routes*, not just its templates: each theme's
- * routes/web/{slug}.php is registered, but only the pages the active theme can
- * serve answer.
+ * themes/{slug}/routes/web.php is registered, but only the pages the active
+ * theme can serve answer.
  *
  * The point of these is that a page belonging to another theme 404s without its
  * controller ever running — /shop on a portfolio site is the portfolio's own

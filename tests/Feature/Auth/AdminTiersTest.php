@@ -19,6 +19,12 @@ beforeEach(function () {
     app()[PermissionRegistrar::class]->forgetCachedPermissions();
     $this->seed(RolePermissionSeeder::class);
 
+    // 'staff' ships inactive like every other non-admin tier, and access-admin
+    // refuses a holder of an inactive role. These tests are about which screens
+    // the two tiers reach, so the tier has to be switched on first - otherwise
+    // every staff assertion would only ever be proving the lockout.
+    activateRoles('staff');
+
     $this->adminRoleUser = User::factory()->create();
     $this->adminRoleUser->assignRole('admin');
 

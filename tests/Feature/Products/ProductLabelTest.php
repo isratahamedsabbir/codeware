@@ -116,6 +116,7 @@ it('can print a label for a soft-deleted product', function () {
 
 it('lets staff (who already manage products) print a label too', function () {
     $this->seed(RolePermissionSeeder::class);
+    activateRoles('staff');
     $staff = User::factory()->create();
     $staff->assignRole('staff');
     $product = Product::factory()->create();

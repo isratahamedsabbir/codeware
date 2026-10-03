@@ -313,20 +313,22 @@ Plugins::delete('calendar');   // refuses for "default": true
         </p>
 
         <x-admin-doc-code label="Inside a theme module" file="themes/{slug}/" lang="text">
-theme.json            manifest + settings values
-settings.blade.php    its admin settings screen
-theme.css             its own Vite entry (omit to inherit the catch-all storefront.css)
-routes.php            its storefront routes, behind the 'theme' guard
-*.blade.php           its templates (partials/, errors/, account/ ...), view namespace theme-{slug}::
-Controllers/          namespace Themes\{Slug}\Controllers, autoloaded - no composer dump
-database/migrations/  loaded with the app's own migrations
-database/seeders/     namespace Themes\{Slug}\Database\Seeders
-assets/               public files, served at /themes/{slug}/... (nothing else is ever served)
+theme.json                manifest + settings values
+settings.blade.php        its admin settings screen
+routes/web.php            its storefront routes, behind the 'theme' guard
+*.blade.php               its templates (partials/, errors/, account/ ...), view namespace theme-{slug}::
+Controllers/              namespace Themes\{Slug}\Controllers, autoloaded - no composer dump
+database/migrations/      loaded with the app's own migrations
+database/seeders/         namespace Themes\{Slug}\Database\Seeders
+public/                   everything the web serves, at /themes/{slug}/...
+    css/theme.css         its own Vite entry (omit to inherit the catch-all storefront.css)
+    css/, js/, img/       hand-written static files, served as-is
         </x-admin-doc-code>
 
         <p>
-            <strong>New Theme</strong> writes the templates, <span class="font-mono text-xs">routes.php</span>
-            and <span class="font-mono text-xs">theme.css</span> into the folder. Shared base classes
+            <strong>New Theme</strong> writes the templates,
+            <span class="font-mono text-xs">routes/web.php</span>
+            and <span class="font-mono text-xs">public/css/theme.css</span> into the folder. Shared base classes
             (<span class="font-mono text-xs">ThemeController</span> and the
             <span class="font-mono text-xs">Renders*</span> concerns) stay in
             <span class="font-mono text-xs">app/Http/Controllers/Themes/</span>; a theme's own controllers extend them.
@@ -509,9 +511,9 @@ assets/               public files, served at /themes/{slug}/... (nothing else i
                 route name in <span class="font-mono text-xs">Themes::ROUTE_TEMPLATES</span> &mdash;
                 each one a working placeholder &mdash; plus
                 <span class="font-mono text-xs">errors/404.blade.php</span>, a header and footer partial
-                they share, <span class="font-mono text-xs">theme.css</span>,
+                They share, <span class="font-mono text-xs">public/css/theme.css</span>,
                 <span class="font-mono text-xs">settings.blade.php</span>, a commented
-                <span class="font-mono text-xs">routes.php</span> and a
+                <span class="font-mono text-xs">routes/web.php</span> and a
                 <span class="font-mono text-xs">theme.json</span> seeded with the name, version and author
                 you typed and the next free serial number. Nothing is activated: it appears on the picker as
                 a card, and your current design stays live until you choose it and save.
@@ -527,9 +529,9 @@ assets/               public files, served at /themes/{slug}/... (nothing else i
 4. errors/404.blade.php  - otherwise Laravel's shared error page is used
 5. partials/header.blade.php + footer.blade.php  - shared chrome
 6. settings.blade.php  - optional, to expose theme-specific options in the admin
-7. theme.css  - optional, omit to inherit the catch-all storefront.css
-8. routes.php  - optional, auto-registered behind the 'theme' guard
-9. Controllers/, database/, assets/  - optional, see "Inside a theme module"
+7. public/css/theme.css  - optional, omit to inherit the catch-all storefront.css
+8. routes/web.php  - optional, auto-registered behind the 'theme' guard
+9. Controllers/, database/, public/css|js  - optional, see "Inside a theme module"
 10. Admin -> Theme Settings -> pick it as the active theme
             </x-admin-doc-code>
         </div>

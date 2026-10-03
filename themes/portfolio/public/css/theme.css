@@ -10,17 +10,17 @@
    still styles it, just with every theme's classes in the one sheet.
 
    The theme's real stylesheet is not this one: it is the hand-written
-   themes/portfolio/assets/style.css, linked directly by the theme's own blades
+   themes/portfolio/public/css/style.css, linked directly by the theme's own blades
    so it is unlayered and outranks Tailwind's utilities (see the note in
    partials/header.blade.php). This entry exists to compile the theme's
    *utility* classes — the antialiased, grid and spacing utilities in its
    templates — which is what the @source line below collects. */
 
-@import '../../resources/css/base.css';
-@import '../../resources/css/storefront-shared.css';
+@import '../../../../resources/css/base.css';
+@import '../../../../resources/css/storefront-shared.css';
 
-@source '.';
+@source '../..';
 
 /* The admin theme-settings screen renders settings.blade.php inline, and the
    picker markup in it is on no storefront page. */
-@source not './settings.blade.php';
+@source not '../../settings.blade.php';

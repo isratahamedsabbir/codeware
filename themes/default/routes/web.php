@@ -15,7 +15,7 @@
  * The controllers are this theme's own, in themes/default/Controllers/
  * — the fourth per-theme half, after the route file (this one), the templates
  * (themes/default/) and the stylesheet
- * (themes/default/theme.css). Every line here points at a class
+ * (themes/default/public/css/theme.css). Every line here points at a class
  * inside this theme's folder, so what this theme's site is made of is readable
  * without opening a file named after the application.
  *

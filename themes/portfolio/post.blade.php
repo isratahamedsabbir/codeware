@@ -1,11 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     @include('partials.head')
     @include('partials.seo-meta')
     <link rel="preload" href="{{ asset('fonts/instrument-sans/instrument-sans-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="{{ asset('themes/portfolio/fonts.css') }}">
-    <link rel="stylesheet" href="{{ asset('themes/portfolio/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('themes/portfolio/css/fonts.css') }}">
+    <link rel="stylesheet" href="{{ asset('themes/portfolio/css/style.css') }}">
     <style>[x-cloak]{display:none!important}</style>
     @include('partials.custom-code-head')
 </head>
@@ -75,7 +75,7 @@
                     <div class="mt-10 flex flex-wrap items-center gap-2">
                         @foreach ($post->tags as $tag)
                             {{-- No /blog/tag route in this theme (see
-                                 themes/portfolio/routes.php), and the ecommerce one is
+                                 themes/portfolio/routes/web.php), and the ecommerce one is
                                  404-guarded away here, so tags render as plain
                                  labels rather than as links that would dead-end. --}}
                             <span class="pf-mono rounded-full bg-(--pf-bg-inset) px-3 py-1 text-[11px] text-(--pf-text-muted)">
@@ -159,7 +159,7 @@
     @include('theme-portfolio::partials.footer')
 
     @include('frontend.partials.chat-widget')
-    <script src="{{ asset('themes/portfolio/script.js') }}" defer></script>
+    <script src="{{ asset('themes/portfolio/js/script.js') }}" defer></script>
 @include('partials.custom-code-body')
 </body>
 </html>

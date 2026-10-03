@@ -10,6 +10,7 @@ use App\Support\ThemeSettings;
 use Database\Seeders\AdminMenuSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Livewire\Livewire;
 
@@ -25,6 +26,10 @@ afterEach(function () {
     File::deleteDirectory(Themes::path().'/foo');
     File::deleteDirectory(Themes::path().'/bar');
     File::deleteDirectory(Themes::path().'/my-cool-store');
+
+    // Undo onlyTheseThemesInstalled() — the real folder list is what later tests
+    // and the rest of the suite expect to find.
+    Themes::forget();
 });
 
 /**
@@ -47,6 +52,41 @@ function makeThemeZip(string $slug, array $files): string
     $zip->close();
 
     return $path;
+}
+
+/**
+ * Makes Themes::all() report exactly $themes, by priming the day-long scan cache
+ * it reads and clearing the per-request memo above it.
+ *
+ * The point is to reach the "only one theme is installed" branch without moving
+ * the repository's own theme folders aside for the length of a test. afterEach
+ * calls Themes::forget(), which puts the real list back.
+ *
+ * @param  array<string, string>  $themes
+ */
+function onlyTheseThemesInstalled(array $themes): void
+{
+    Themes::forget();
+    Cache::put('themes:all', $themes, 86400);
+}
+
+/**
+ * Installs a throwaway theme folder named retro through the real installer, so
+ * the tests below act on a theme that is on disk with a theme.json and the whole
+ * file layout behind it. afterEach deletes the folder.
+ */
+function installRetroTheme(): void
+{
+    Livewire::test(ThemeSettingsScreen::class)
+        ->call('openInstallModal')
+        ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents(makeThemeZip('retro', [
+            'home.blade.php' => 'retro home',
+            'routes/web.php' => '<?php // retro routes',
+            'public/css/theme.css' => '@import "../../../../resources/css/base.css";',
+        ]))))
+        ->call('installTheme');
+
+    expect(is_dir(Themes::path().'/retro'))->toBeTrue();
 }
 
 /**
@@ -505,8 +545,13 @@ it('moves the selection when a theme card is picked', function () {
 
     // The ecommerce settings form is what came up.
     expect($html)->toContain('theme_ecommerce_accent_color')
-        ->and($html)->not->toContain('theme_portfolio_projects')
-        ->and(substr_count($html, 'x-show="$wire.settings.site_theme'))->toBe(3);
+        ->and($html)->not->toContain('theme_portfolio_projects');
+
+    // One card action menu per theme, so every card carries its own download.
+    expect(substr_count($html, 'Theme actions'))->toBe(3)
+        // And the picked card is told apart by its border treatment rather than a
+        // tick overlay — nothing on a card re-shows the site_theme Alpine value.
+        ->and(substr_count($html, 'x-show="$wire.settings.site_theme'))->toBe(0);
 });
 
 it('keys each theme settings panel by slug so switching themes cannot leave a stale Alpine scope', function () {
@@ -1023,14 +1068,14 @@ it('flags a theme that ships no routes file, because selecting it 404s the site'
         // file is the one thing standing between it and a live site, so the card
         // names where the file goes — beside its own templates.
         ->and(str_replace('\\', '/', $card['routeFile']))
-        ->toEndWith('themes/retro/routes.php');
+        ->toEndWith('themes/retro/routes/web.php');
 
     // And the warning is actually on the screen, next to the radio that picks
     // the theme — this is the last screen before the site stops resolving, and
     // it says where the missing file goes.
     Livewire::test(ThemeSettingsScreen::class)
         ->set('settings.site_theme', 'retro')
-        ->assertSee('themes/retro/routes.php');
+        ->assertSee('themes/retro/routes/web.php');
 });
 
 it('does not flag a theme that ships a routes file', function () {
@@ -1038,4 +1083,293 @@ it('does not flag a theme that ships a routes file', function () {
 
     Livewire::test(ThemeSettingsScreen::class)
         ->assertViewHas('themeCards', fn (array $cards): bool => $cards['portfolio']['hasRoutes'] === true);
+});
+
+it('downloads an installed theme as a zip holding its own folder', function () {
+    installRetroTheme();
+
+    $zipPath = Themes::toZip('retro');
+
+    try {
+        $zip = new ZipArchive;
+
+        expect($zip->open($zipPath))->toBeTrue();
+
+        // The same shape installTheme() accepts, so a downloaded theme goes back
+        // in whole: one top-level folder named for the slug, everything under it.
+        foreach ([
+            'retro/home.blade.php',
+            'retro/routes/web.php',
+            'retro/public/css/theme.css',
+            'retro/theme.json',
+        ] as $entry) {
+            expect($zip->locateName($entry))->not->toBeFalse();
+        }
+
+        // And nothing escapes that folder - an entry outside it would land loose
+        // in themes/ on re-install.
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            expect(str_starts_with($zip->getNameIndex($i), 'retro/'))->toBeTrue();
+        }
+
+        $zip->close();
+    } finally {
+        File::delete($zipPath);
+    }
+});
+
+it('serves a downloaded theme to the browser as a named zip', function () {
+    installRetroTheme();
+
+    Livewire::test(ThemeSettingsScreen::class)
+        ->call('downloadTheme', 'retro')
+        ->assertFileDownloaded('retro.zip')
+        ->assertHasNoErrors();
+});
+
+it('refuses to download a theme that is not installed', function () {
+    Livewire::test(ThemeSettingsScreen::class)
+        ->call('downloadTheme', 'nope-not-installed')
+        ->assertHasErrors('themes');
+});
+
+it('will not download or delete a directory outside themes/ via a crafted slug', function () {
+    // `themes/../storage` is a real directory, so anything that resolves the slug
+    // against themes/ without checking it names an installed theme would zip the
+    // whole storage tree — or, worse, delete it. Both actions take a slug off the
+    // wire, and themeToDelete is a public property that can be set without going
+    // through the modal, so the guard has to be in Themes, not just the form.
+    // The slug as the wire would deliver it: a fragment that walks out of
+    // themes/ and back down into the project root.
+    $outside = '..'.DIRECTORY_SEPARATOR.basename(Themes::path());
+    $resolved = Themes::path().DIRECTORY_SEPARATOR.$outside;
+
+    expect(is_dir($resolved))->toBeTrue();
+
+    expect(Themes::isInstalled($outside))->toBeFalse()
+        ->and(Themes::delete($outside))->toBeFalse()
+        ->and(is_dir($resolved))->toBeTrue();
+
+    try {
+        Themes::toZip($outside);
+
+        $this->fail('toZip() packed a directory outside themes/.');
+    } catch (RuntimeException $e) {
+        expect($e->getMessage())->toBe('That theme is not installed.');
+    }
+
+    Livewire::test(ThemeSettingsScreen::class)
+        ->call('downloadTheme', $outside)
+        ->assertHasErrors('themes');
+
+    Livewire::test(ThemeSettingsScreen::class)
+        ->set('themeToDelete', $outside)
+        ->call('deleteTheme')
+        ->assertHasErrors('themeToDelete');
+
+    expect(is_dir($resolved))->toBeTrue();
+});
+
+it('offers a download for every theme, including the bundled ones', function () {
+    // From the three-dot menu on each card, not from a separate section: one card
+    // is one theme, so the actions for it belong on it.
+    Livewire::test(ThemeSettingsScreen::class)
+        ->assertSee("wire:click=\"downloadTheme('default')\"", escape: false)
+        ->assertSee("wire:click=\"downloadTheme('portfolio')\"", escape: false)
+        ->assertSee('Theme actions', escape: false);
+});
+
+it('does not put a tick on a card when a theme is picked', function () {
+    // The live theme announces itself with a glowing border instead, so a tick
+    // would only have repeated a mark that is already there.
+    Setting::set('site_theme', 'default');
+
+    $html = Livewire::test(ThemeSettingsScreen::class)
+        ->set('settings.site_theme', 'ecommerce')
+        ->html();
+
+    // No Alpine-driven tick overlay is left anywhere: nothing on a card reacts to
+    // the site_theme value any more, it is decided server-side when rendered.
+    expect($html)->not->toContain('x-show="$wire.settings.site_theme')
+        // And no filled tick-circle sitting in the corner of a card.
+        ->and($html)->not->toContain('rounded-full bg-primary text-white shadow')
+        // The picked card still says so, in words.
+        ->and($html)->toContain('Selected');
+});
+
+it('deletes a theme folder and everything in it', function () {
+    Livewire::test(ThemeSettingsScreen::class)
+        ->call('openInstallModal')
+        ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents(makeThemeZip('retro', [
+            'home.blade.php' => 'retro home',
+            'routes/web.php' => '<?php // retro routes',
+            'public/css/theme.css' => '@import "../../../../resources/css/base.css";',
+        ]))))
+        ->call('installTheme');
+
+    expect(is_dir(Themes::path().'/retro'))->toBeTrue();
+
+    Livewire::test(ThemeSettingsScreen::class)
+        ->call('confirmDelete', 'retro')
+        ->call('deleteTheme')
+        ->assertHasNoErrors();
+
+    // The whole folder, not just the templates: its theme.json went with it, which
+    // is where its settings were stored.
+    expect(is_dir(Themes::path().'/retro'))->toBeFalse();
+
+    // And the picker stops offering it on the very next render.
+    Livewire::test(ThemeSettingsScreen::class)
+        ->assertViewHas('themeCards', fn (array $cards): bool => ! array_key_exists('retro', $cards));
+});
+
+it('refuses to delete the live theme', function () {
+    // Three themes are installed, so this is the live-theme guard and not the
+    // last-theme one — and it has to hold for a theme that is *not* the default
+    // one, or the default flag would be doing the work instead.
+    expect(Themes::isDefault('ecommerce'))->toBeFalse()
+        ->and(count(Themes::all()))->toBeGreaterThan(1);
+
+    Setting::set('site_theme', 'ecommerce');
+
+    expect(Themes::undeletableBecause('ecommerce'))->toContain('live');
+
+    Livewire::test(ThemeSettingsScreen::class)
+        ->call('confirmDelete', 'ecommerce')
+        ->call('deleteTheme')
+        ->assertHasErrors('themeToDelete');
+
+    expect(is_dir(Themes::path().'/ecommerce'))->toBeTrue();
+});
+
+it('protects only the default theme, whichever one is live', function () {
+    // The default theme is refused while another one is live, so the refusal is
+    // the manifest flag and not the live-theme guard standing in for it.
+    Setting::set('site_theme', 'ecommerce');
+
+    expect(Themes::undeletableBecause('default'))->toContain('ships with Codeware');
+
+    // Switching away from it does not unlock it, and picking it does not change
+    // what the other two are allowed to do.
+    Setting::set('site_theme', 'portfolio');
+
+    expect(Themes::undeletableBecause('default'))->toContain('ships with Codeware')
+        ->and(Themes::undeletableBecause('portfolio'))->toContain('live')
+        ->and(Themes::undeletableBecause('ecommerce'))->toBeNull();
+});
+
+it('lets any theme but the default one be deleted', function () {
+    // Only themes/default/theme.json carries "default": true. The other two
+    // bundled themes are ordinary folders as far as deletion goes — being part of
+    // the release is not the same as being the one the site falls back to.
+    expect(Themes::isDefault('default'))->toBeTrue()
+        ->and(Themes::isDefault('ecommerce'))->toBeFalse()
+        ->and(Themes::isDefault('portfolio'))->toBeFalse();
+
+    // Something else has to be live, or the live-theme guard would be the thing
+    // under test rather than the manifest flag.
+    Setting::set('site_theme', 'ecommerce');
+
+    expect(Themes::undeletableBecause('ecommerce'))->toContain('live')
+        ->and(Themes::undeletableBecause('portfolio'))->toBeNull();
+
+    // The fallback theme stays protected even once it is not the live one.
+    expect(Themes::undeletableBecause('default'))->toContain('ships with Codeware');
+
+    // And a non-default, non-live theme really does go — including its whole
+    // folder tree, so the delete is checked against a snapshot rather than the
+    // top-level files alone.
+    $stash = tempnam(sys_get_temp_dir(), 'portfolio-');
+
+    File::delete($stash);
+    File::copyDirectory(Themes::path().'/portfolio', $stash);
+
+    try {
+        Livewire::test(ThemeSettingsScreen::class)
+            ->call('confirmDelete', 'portfolio')
+            ->assertSet('deleteBlockedBy', null)
+            ->call('deleteTheme')
+            ->assertHasNoErrors();
+
+        expect(is_dir(Themes::path().'/portfolio'))->toBeFalse();
+    } finally {
+        // Put it back whole — the rest of the suite, and the repository, expect
+        // this theme to be there.
+        File::copyDirectory($stash, Themes::path().'/portfolio');
+        File::deleteDirectory($stash);
+    }
+
+    expect(is_dir(Themes::path().'/portfolio'))->toBeTrue()
+        ->and(File::exists(Themes::path().'/portfolio/routes/web.php'))->toBeTrue();
+});
+
+it('refuses to delete the last installed theme even when it is not the live one', function () {
+    // A stale themes:all entry, which is a real state rather than a contrived one:
+    // the folder list is cached for a day, so a theme whose folder has since
+    // gone can still be listed — and active() will not resolve to it, because it
+    // checks the folder is really there. Nothing but the count stops that row
+    // being deleted. 'gone' is not the default theme either, so the manifest flag
+    // cannot be what is refusing it.
+    onlyTheseThemesInstalled(['gone' => 'Gone']);
+
+    expect(Themes::isDefault('gone'))->toBeFalse()
+        ->and(Themes::active())->not->toBe('gone')
+        ->and(Themes::undeletableBecause('gone'))->toContain('only');
+
+    Livewire::test(ThemeSettingsScreen::class)
+        ->call('confirmDelete', 'gone')
+        ->call('deleteTheme')
+        ->assertHasErrors('themeToDelete');
+});
+
+it('explains why a theme cannot be deleted instead of only greying the button out', function () {
+    Livewire::test(ThemeSettingsScreen::class)
+        ->call('confirmDelete', 'default')
+        ->assertSet('showDeleteModal', true)
+        ->assertSet('themeToDelete', 'default')
+        ->assertSee('This theme cannot be deleted')
+        // The reason is on screen rather than behind a hover: the card menu quotes
+        // it too, but the modal is where it is read before anything is attempted.
+        ->assertSee('This theme ships with Codeware')
+        // And no Delete action is reachable in that modal — the screen does not
+        // offer a button the server would only refuse.
+        ->assertDontSee('wire:click="deleteTheme"', escape: false);
+});
+
+it('lists a real warning of what a delete takes with it', function () {
+    Livewire::test(ThemeSettingsScreen::class)
+        ->call('openInstallModal')
+        ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents(makeThemeZip('retro', [
+            'home.blade.php' => 'retro home',
+        ]))))
+        ->call('installTheme');
+
+    Livewire::test(ThemeSettingsScreen::class)
+        ->call('confirmDelete', 'retro')
+        ->assertSet('showDeleteModal', true)
+        ->assertSet('deleteBlockedBy', null)
+        // Not a one-line confirm: it names the folder, the settings that live in
+        // the theme's own theme.json, and the migrations that stay applied.
+        ->assertSee('Delete this theme?')
+        ->assertSee('themes/retro/')
+        ->assertSee('theme.json')
+        ->assertSee('migrations it already ran stay applied');
+});
+
+it('cancels a delete without touching the folder', function () {
+    Livewire::test(ThemeSettingsScreen::class)
+        ->call('openInstallModal')
+        ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents(makeThemeZip('retro', [
+            'home.blade.php' => 'retro home',
+        ]))))
+        ->call('installTheme');
+
+    Livewire::test(ThemeSettingsScreen::class)
+        ->call('confirmDelete', 'retro')
+        ->call('closeDeleteModal')
+        ->assertSet('showDeleteModal', false)
+        ->assertSet('themeToDelete', null)
+        ->assertDontSee('Delete this theme?');
+
+    expect(is_dir(Themes::path().'/retro'))->toBeTrue();
 });

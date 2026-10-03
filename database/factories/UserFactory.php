@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 /**
  * @extends Factory<User>
@@ -70,10 +71,21 @@ class UserFactory extends Factory
 
     /**
      * Assigns the 'staff' Spatie role (content-only permissions — see
-     * RolePermissionSeeder).
+     * RolePermissionSeeder), switching the role on first.
+     *
+     * RolePermissionSeeder ships 'staff' inactive like every other non-admin
+     * tier, and access-admin refuses a holder of an inactive role (AppServiceProvider
+     * / EnsureUserIsNotBlocked). Assigning the role alone would therefore hand
+     * back a user the admin panel rejects, so this state stands in for the admin
+     * who has already enabled the tier from Admin → Roles — which is the whole
+     * point of the default.
      */
     public function staff(): static
     {
-        return $this->afterCreating(fn (User $user) => $user->assignRole('staff'));
+        return $this->afterCreating(function (User $user) {
+            Role::where('name', 'staff')->where('guard_name', 'web')->update(['status' => 'active']);
+
+            $user->assignRole('staff');
+        });
     }
 }

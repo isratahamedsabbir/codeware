@@ -71,11 +71,15 @@ class ThemeSettings
      * owner has typed into a form, so it must not turn up in the "13 values"
      * count next to the Create button.
      *
+     * `default` is here for the same reason too, and carries more weight: it is
+     * what marks a theme as one of the ones shipped with the system, and a theme
+     * that says so cannot be deleted from Theme Settings (see Themes::delete()).
+     *
      * Spelled out here rather than taken from Themes so the dependency runs one
      * way: this class already asks Themes for a manifest, and Themes knowing
      * about this class's constants to answer that question would be a circle.
      */
-    public const MANIFEST_KEYS = ['name', 'description', 'version', 'author', 'tags', 'no_index', 'sn'];
+    public const MANIFEST_KEYS = ['name', 'description', 'version', 'author', 'tags', 'no_index', 'default', 'sn'];
 
     /**
      * What every settings key in a theme's file starts with, before the theme's

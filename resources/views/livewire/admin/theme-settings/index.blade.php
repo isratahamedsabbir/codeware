@@ -75,6 +75,17 @@
             </a>
         </x-slot:titleActions>
 
+        {{-- Download failures have nowhere of their own to go now that the actions live
+             in the card menus: the menu closes on click-outside, so a message
+             rendered inside it would be dismissed before it could be read. Sits
+             above the grid instead, where the click that caused it happened. --}}
+        @error('themes')
+            <p class="mb-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50/70 p-3 text-xs font-medium text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400">
+                <flux:icon.exclamation-triangle class="mt-px size-4 shrink-0" />
+                {{ $message }}
+            </p>
+        @enderror
+
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             @foreach ($themes as $slug => $label)
                 @php
@@ -84,7 +95,16 @@
 
                 <label
                     class="group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border bg-white text-left transition-all duration-150
-                        @if ($selected || $slug === $activeTheme)
+                        @if ($slug === $activeTheme)
+                            {{-- The live theme gets a glow rather than a flat ring:
+                                 it is the one card in this grid that is actually
+                                 serving the site right now, and that has to read at
+                                 a glance from across the room — a 2px outline looks
+                                 the same as an unsaved selection did. --}}
+                            border-primary shadow-[0_0_0_1px_var(--color-primary),0_0_18px_-2px_color-mix(in_oklab,var(--color-primary),transparent_45%)]
+                        @elseif ($selected)
+                            {{-- Picked but not saved yet: a plain ring, so it never
+                                 gets mistaken for the live theme above. --}}
                             border-primary ring-2 ring-primary/25
                         @else
                             border-zinc-200 hover:border-zinc-300 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800/40 dark:hover:border-zinc-500
@@ -234,22 +254,131 @@
                                  needs from it — and a theme created from here
                                  keeps it beside its own templates. --}}
                             <span class="flex size-6 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400"
-                                title="This theme ships no route file, so it has no pages of its own — put one at themes/{{ $slug }}/routes.php. Selecting it will 404 the whole site.">
+                                title="This theme ships no route file, so it has no pages of its own — put one at themes/{{ $slug }}/routes/web.php. Selecting it will 404 the whole site.">
                                 <flux:icon.exclamation-triangle class="size-3.5" />
                             </span>
                         @endif
                     </div>
 
-                    @if ($themeCards[$slug]['hasRoutes'])
-                        <span x-show="$wire.settings.site_theme === '{{ $slug }}'" x-cloak
-                            class="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full bg-primary text-white shadow">
-                            <flux:icon.check class="size-3.5" />
-                        </span>
-                    @endif
+                    {{-- Per-card actions. There is no tick here on purpose: the live theme already
+                         announces itself with the glowing border above, and a second
+                         mark saying "selected" made the card say the same thing twice
+                         while the thing worth knowing — which one is actually live —
+                         was the one carrying the smaller badge.
+
+                         The three dots sit inside the <label>, so every click has to
+                         stop propagation or it would also toggle the radio and
+                         change the site theme as a side effect of opening a menu.
+                         Click-away closes it; Escape does too. --}}
+                    <div class="absolute right-2 top-2" x-data="{ open: false }"
+                        x-on:click.outside="open = false" x-on:keydown.escape.window="open = false">
+                        <button type="button" x-on:click.prevent.stop="open = ! open"
+                            aria-label="Actions for {{ $label }}" title="Theme actions"
+                            class="flex size-6 items-center justify-center rounded-full bg-white/80 text-zinc-500 opacity-0 shadow-sm backdrop-blur transition group-hover:opacity-100 focus:opacity-100 hover:bg-white hover:text-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-900 dark:hover:text-white"
+                            :class="open && 'opacity-100'">
+                            <flux:icon.ellipsis-horizontal class="size-4" />
+                        </button>
+
+                        <div x-show="open" x-cloak x-on:click.prevent.stop
+                            class="absolute right-0 z-20 mt-1 w-56 overflow-hidden rounded-lg border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
+                            @php $blocked = \App\Support\Themes::undeletableBecause($slug); @endphp
+
+                            <button type="button" wire:click="downloadTheme('{{ $slug }}')"
+                                wire:loading.attr="disabled" wire:target="downloadTheme('{{ $slug }}')"
+                                class="flex w-full items-center gap-2.5 px-3 py-2 text-left text-xs font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:opacity-50 dark:text-zinc-200 dark:hover:bg-zinc-800">
+                                <flux:icon.arrow-down-tray class="size-4 shrink-0 text-zinc-400" />
+                                <span class="flex-1">Download as zip</span>
+                                <span wire:loading.remove wire:target="downloadTheme('{{ $slug }}')"
+                                    class="font-mono text-[10px] text-zinc-400">.zip</span>
+                                <span wire:loading wire:target="downloadTheme('{{ $slug }}')"
+                                    class="text-[10px] text-zinc-400">Preparing…</span>
+                            </button>
+
+                            {{-- Delete, and the reason when there isn't one. Both come from
+                                 Themes::undeletableBecause(), the same call deleteTheme()
+                                 refuses on, so the menu cannot offer an action the server
+                                 would only reject. A bundled theme, the live theme and
+                                 the last one installed are all kept. --}}
+                            <div class="my-1 border-t border-zinc-100 dark:border-zinc-800"></div>
+
+                            @if ($blocked)
+                                <span class="block px-3 py-2 text-[11px] leading-relaxed text-zinc-500 dark:text-zinc-400"
+                                    title="{{ $blocked }}">
+                                    <span class="font-medium text-zinc-600 dark:text-zinc-300">Delete theme</span> — {{ $blocked }}
+                                </span>
+                            @else
+                                <button type="button" wire:click="confirmDelete('{{ $slug }}')"
+                                    class="flex w-full items-center gap-2.5 px-3 py-2 text-left text-xs font-medium text-red-600 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10">
+                                    <flux:icon.trash class="size-4 shrink-0" />
+                                    <span class="flex-1">Delete theme</span>
+                                    <span class="text-[10px] text-zinc-400">and its files</span>
+                                </button>
+                            @endif
+                        </div>
+                    </div>
                 </label>
             @endforeach
         </div>
     </x-admin-section-card>
+
+    {{-- ── Delete Theme modal ────────────────────────────────────────────────
+         A modal rather than the one-line wire:confirm the Plugins screen uses,
+         because deleting a theme folder takes things with it that a single
+         sentence does not mention: its settings (they live in its theme.json),
+         its templates, and the migrations it already ran — and none of that comes
+         back from a trash folder that does not exist. --}}
+    @if ($showDeleteModal && $themeToDelete)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/50 p-4" role="dialog" aria-modal="true">
+            <div class="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-5 shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
+                <div class="flex items-start gap-3">
+                    <span class="flex size-9 shrink-0 items-center justify-center rounded-lg {{ $deleteBlockedBy ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400' : 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400' }}">
+                        <flux:icon.{{ $deleteBlockedBy ? 'exclamation-triangle' : 'trash' }} class="size-5" />
+                    </span>
+
+                    <div class="min-w-0 flex-1">
+                        <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                            {{ $deleteBlockedBy ? 'This theme cannot be deleted' : 'Delete this theme?' }}
+                        </h3>
+
+                        @if ($deleteBlockedBy)
+                            <p class="mt-1.5 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">{{ $deleteBlockedBy }}</p>
+                        @else
+                            <p class="mt-1.5 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+                                <strong class="font-semibold">{{ \App\Support\Themes::manifest($themeToDelete)['name'] }}</strong>
+                                and every file in <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[11px] dark:bg-zinc-800">themes/{{ $themeToDelete }}/</code>
+                                will be removed. That includes:
+                            </p>
+                            <ul class="mt-2 list-inside list-disc space-y-1 text-xs leading-relaxed text-zinc-600 dark:text-zinc-300">
+                                <li>its templates, controllers, database files and <code class="font-mono text-[10px]">public/</code> assets</li>
+                                <li>its <code class="font-mono text-[10px]">routes/web.php</code>, so it stops being a site</li>
+                                <li>its settings — they are stored in its own <code class="font-mono text-[10px]">{{ \App\Support\ThemeSettings::FILE }}</code>, which goes with the folder</li>
+                            </ul>
+                            <p class="mt-2 rounded-lg bg-amber-50 p-2.5 text-xs leading-relaxed text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+                                Any database migrations it already ran stay applied. Download it first if you might want it back.
+                            </p>
+                        @endif
+                    </div>
+                </div>
+
+                @error('themeToDelete')
+                    <p class="mt-3 text-xs font-medium text-red-600 dark:text-red-400">{{ $message }}</p>
+                @enderror
+
+                <div class="mt-5 flex justify-end gap-2">
+                    <flux:button variant="ghost" size="sm" wire:click="closeDeleteModal">
+                        {{ $deleteBlockedBy ? 'Close' : 'Cancel' }}
+                    </flux:button>
+
+                    @unless ($deleteBlockedBy)
+                        <flux:button variant="danger" size="sm" wire:click="deleteTheme" wire:loading.attr="disabled">
+                            <span wire:loading.remove>Delete theme</span>
+                            <span wire:loading>Deleting…</span>
+                        </flux:button>
+                    @endunless
+                </div>
+            </div>
+        </div>
+    @endif
 
     {{-- ── Theme's own settings ──────────────────────────────────────────────
          If the selected theme ships a settings.blade.php at its root, render it

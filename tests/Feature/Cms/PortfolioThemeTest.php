@@ -81,7 +81,7 @@ it('renders the nav as section anchors wired to the scroll spy', function () {
         ->assertOk()
         ->assertSee('href="'.url('/').'#projects"', false)
         ->assertSee('data-pf-nav-link="projects"', false)
-        ->assertSee(asset('themes/portfolio/script.js'), false);
+        ->assertSee(asset('themes/portfolio/js/script.js'), false);
 });
 
 it('carries the same nav into the stacked mobile menu, since a phone cannot reach the sections otherwise', function () {
@@ -97,5 +97,5 @@ it('keeps its own light/dark toggle and stylesheet, independent of the app bundl
     $this->get('/')
         ->assertOk()
         ->assertSee('data-pf-theme-toggle', false)
-        ->assertSee(asset('themes/portfolio/style.css'), false);
+        ->assertSee(asset('themes/portfolio/css/style.css'), false);
 });

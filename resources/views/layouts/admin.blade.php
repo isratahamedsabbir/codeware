@@ -254,7 +254,11 @@
                             'Access Control' => 'shield-check',
                             'Location' => 'map',
                             'Advance' => 'adjustments-horizontal',
-                            'Plugins' => 'puzzle-piece',
+                            // cube-transparent, not puzzle-piece: Accessories already
+                            // took that one, and two sidebar groups wearing the same
+                            // icon read as one. The outline cube says "a module you
+                            // plug in" and stays clear of Products' solid cube.
+                            'Plugins' => 'cube-transparent',
                         ][$item->label] ?? 'squares-2x2';
                     @endphp
                     <div class="nav-group" x-show="groupMatches({{ $item->id }})">

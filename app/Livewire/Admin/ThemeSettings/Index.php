@@ -41,6 +41,13 @@ class Index extends Component
 
     public bool $showCreateModal = false;
 
+    /** The theme the Delete modal is open for, and why it may be undeletable. */
+    public ?string $themeToDelete = null;
+
+    public ?string $deleteBlockedBy = null;
+
+    public bool $showDeleteModal = false;
+
     /**
      * Whether the owner has typed the slug themselves. One-way: once the field has
      * been edited by hand the name stops rewriting it, because a slug that keeps
@@ -894,6 +901,108 @@ class Index extends Component
     }
 
     /**
+     * Hands the theme back as a .zip holding its own folder — a backup before a
+     * round of hand-editing, or a file to share with someone else.
+     *
+     * The archive is the same shape installTheme() accepts, so a theme that is
+     * downloaded and uploaded again comes back whole: templates, controllers,
+     * database files and its public/ folder all travel in it, and its
+     * theme.json goes with them, which is what keeps its settings with it.
+     */
+    public function downloadTheme(string $slug)
+    {
+        try {
+            $zipPath = Themes::toZip($slug);
+        } catch (\RuntimeException $e) {
+            $this->addError('themes', $e->getMessage());
+
+            return null;
+        }
+
+        AdminActivity::log('updated', "Theme \"{$slug}\" downloaded as a zip");
+
+        return response()->download($zipPath, "{$slug}.zip")->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Opens the confirmation for one theme, carrying the reason it cannot be
+     * deleted along so the modal can explain a greyed-out Delete rather than the
+     * owner having to work out why nothing happened.
+     */
+    public function confirmDelete(string $slug): void
+    {
+        if (! array_key_exists($slug, Themes::all())) {
+            return;
+        }
+
+        $this->themeToDelete = $slug;
+        $this->deleteBlockedBy = Themes::undeletableBecause($slug);
+        $this->showDeleteModal = true;
+    }
+
+    public function closeDeleteModal(): void
+    {
+        $this->reset('themeToDelete', 'deleteBlockedBy', 'showDeleteModal');
+        $this->resetErrorBag();
+    }
+
+    /**
+     * Removes the theme folder confirmed above. Everything in it goes: templates,
+     * controllers, migrations, seeders, its public/ files, and its theme.json —
+     * which is where its settings are stored, so those are gone with the folder
+     * and are not recoverable from here.
+     *
+     * The delete is refused for the live theme, for the last installed theme and
+     * for one whose manifest says it is a default, both here and in
+     * Themes::delete(), so a stale card cannot delete the theme the site is
+     * being served from.
+     */
+    public function deleteTheme(): void
+    {
+        $slug = (string) $this->themeToDelete;
+
+        // Checked before the guard reasons, because themeToDelete is a public
+        // property and so can be set on this component without going through
+        // confirmDelete() — including to a string like "../storage", which is a
+        // real directory relative to themes/. Themes::delete() refuses those too;
+        // this is what turns that refusal into a message instead of a shrug.
+        if ($slug === '' || ! Themes::isInstalled($slug)) {
+            $this->addError('themeToDelete', 'No such theme is installed.');
+
+            return;
+        }
+
+        if (($blocked = Themes::undeletableBecause($slug)) !== null) {
+            $this->addError('themeToDelete', $blocked);
+            $this->deleteBlockedBy = $blocked;
+
+            return;
+        }
+
+        $name = Themes::manifest($slug)['name'];
+
+        if (! Themes::delete($slug)) {
+            $this->addError('themeToDelete', "Could not delete \"{$name}\". Check that the themes directory is writable.");
+
+            return;
+        }
+
+        AdminActivity::log('deleted', "Theme \"{$slug}\" deleted");
+
+        $this->declarations = null;
+        $this->repeaterMaxes = null;
+
+        $this->closeDeleteModal();
+
+        session()->flash('success', "Theme \"{$name}\" and all of its files have been deleted.");
+
+        // A real reload: the picker above, this screen's own field declarations and
+        // the theme.json of whatever is selected all have to stop reading a theme
+        // that is no longer on disk.
+        $this->js('window.location.reload()');
+    }
+
+    /**
      * Give a freshly installed theme the theme.json it should have shipped with,
      * seeded with every field its settings.blade.php declares.
      *
@@ -1114,7 +1223,7 @@ class Index extends Component
                     // than as null — beside its own templates, which is where a
                     // theme created or installed from here keeps it.
                     'hasRoutes' => Themes::routeFileExists($slug),
-                    'routeFile' => Themes::routeFile($slug) ?? Themes::path().'/'.$slug.'/routes.php',
+                    'routeFile' => Themes::routeFile($slug) ?? Themes::path().'/'.$slug.'/routes/web.php',
                 ]];
             })
             ->all();

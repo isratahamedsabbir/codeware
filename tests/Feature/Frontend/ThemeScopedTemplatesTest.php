@@ -172,7 +172,7 @@ it('lets a theme answer 404 for itself by shipping an errors/404.blade.php', fun
 });
 
 it('styles a theme that ships no stylesheet of its own', function () {
-    // The bundled themes each have a resources/css/themes/{slug}/theme.css, and
+    // The bundled themes each have a public/css/theme.css, and
     // that is what makes a theme cheap to load. A theme does not have to: a
     // zipped-in one ships templates and no stylesheet, and the storefront has
     // to still serve it a sheet — the catch-all, which scans every theme's
@@ -198,7 +198,7 @@ it('serves a theme its own stylesheet when it has one', function () {
     // the only place the choice is observable from.
     Setting::set('site_theme', 'portfolio');
 
-    expect(Themes::storefrontEntry())->toBe('themes/portfolio/theme.css');
+    expect(Themes::storefrontEntry())->toBe('themes/portfolio/public/css/theme.css');
 
     $this->get('/')
         ->assertOk()

@@ -43,8 +43,9 @@ class RolePermissionSeeder extends Seeder
         // Staff: content-only. No access to Settings, Users, Roles/Permissions, Menu,
         // Activity History, Localization, Contacts, Comments, or the File Manager —
         // those stay Admin/Super Admin only (see access-admin-system gate in
-        // AppServiceProvider).
-        $staff = Role::findOrCreate('staff', 'web');
+        // AppServiceProvider). Ships switched off like the storefront-facing tiers:
+        // an admin enables it deliberately from Admin → Roles.
+        $staff = $this->createInactiveRole('staff');
         $staff->syncPermissions([
             'view dashboard',
             'view posts', 'create posts', 'update posts', 'delete posts',
@@ -74,10 +75,11 @@ class RolePermissionSeeder extends Seeder
     }
 
     /**
-     * Creates one of the self-service roles (vendor/delivery_boy/customer) switched
-     * off, so a fresh install ships with no storefront-facing access live: an admin
-     * enables each one deliberately from Admin → Roles, the same "inactive until
-     * switched on" rule every other create-form in the panel follows.
+     * Creates one of the non-admin roles (staff/vendor/delivery_boy/customer)
+     * switched off, so a fresh install ships with only the admin tier live: an
+     * admin enables each one deliberately from Admin → Roles, the same
+     * "inactive until switched on" rule every other create-form in the panel
+     * follows.
      *
      * The status is only written when the role is actually created — a role an admin
      * has since enabled is left alone on a re-seed, so `db:seed` can be re-run

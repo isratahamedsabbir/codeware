@@ -10,7 +10,7 @@
  * theme's own, in themes/ecommerce/Controllers/ — the fourth per-theme
  * half, after the route file (this one), the templates
  * (themes/ecommerce/) and the stylesheet
- * (themes/ecommerce/theme.css).
+ * (themes/ecommerce/public/css/theme.css).
  *
  * Each of the shop routes renders through the active theme's own template, and
  * would 404 on a theme that shipped none (see Themes::view()) — so every

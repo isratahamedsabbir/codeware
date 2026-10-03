@@ -8,10 +8,10 @@ import { join } from 'node:path';
  * Every theme's own stylesheet, as a Vite input.
  *
  * Scanned rather than listed, because a theme is a module folder: a theme
- * installed later as a zip drops themes/{slug}/theme.css in and has to get a
- * bundle without anyone editing this file. A theme with no stylesheet simply
- * contributes no input and is served the catch-all storefront bundle instead —
- * see Themes::storefrontEntry().
+ * installed later as a zip drops themes/{slug}/public/css/theme.css in and has
+ * to get a bundle without anyone editing this file. A theme with no stylesheet
+ * simply contributes no input and is served the catch-all storefront bundle
+ * instead — see Themes::storefrontEntry().
  *
  * Keyed by a name that includes the slug rather than passed as a list, because
  * all of these files are called theme.css: Vite names an entry chunk after the
@@ -28,8 +28,8 @@ function themeStylesheets() {
 
     return Object.fromEntries(
         readdirSync(dir, { withFileTypes: true })
-            .filter((entry) => entry.isDirectory() && existsSync(join(dir, entry.name, 'theme.css')))
-            .map((entry) => [`theme-${entry.name}`, `${dir}/${entry.name}/theme.css`])
+            .filter((entry) => entry.isDirectory() && existsSync(join(dir, entry.name, 'public/css/theme.css')))
+            .map((entry) => [`theme-${entry.name}`, `${dir}/${entry.name}/public/css/theme.css`])
             .sort(([a], [b]) => a.localeCompare(b)),
     );
 }
@@ -46,10 +46,10 @@ export default defineConfig({
             // views, so a shopper's page now loads no application JavaScript at
             // all. Livewire still injects its own runtime on pages that have a
             // component on them, and a theme with real JavaScript of its own
-            // keeps using its own asset path — see themes/portfolio/assets.
+            // keeps using its own asset path — see themes/portfolio/public.
             //
             // The storefront bundle is further split per theme: a theme with a
-            // stylesheet at themes/{slug}/theme.css is served
+            // stylesheet at themes/{slug}/public/css/theme.css is served
             // that, so its page pays only for the utility classes its own
             // templates use. storefront.css stays in the list as the catch-all
             // for a theme that ships none — it scans every theme, so such a
