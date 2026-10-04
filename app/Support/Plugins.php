@@ -161,6 +161,14 @@ class Plugins
      * View names of the header widgets contributed by active plugins — a plugin
      * ships plugins/{slug}/header.blade.php to put an icon in the admin top bar.
      *
+     * Each namespace is registered here rather than assumed from
+     * PluginServiceProvider's boot loop, which only ever saw the plugins that
+     * existed when the app booted. A plugin installed or activated during a
+     * request is in that state by the time the header renders — the layout
+     * includes whatever this returns, with no second chance — and an unregistered
+     * namespace is a hard "No hint path defined" 500 on every admin page.
+     * Idempotent, exactly as indexView() does it.
+     *
      * @return list<string>
      */
     public static function headerViews(): array
@@ -169,11 +177,22 @@ class Plugins
 
         foreach (self::active() as $slug => $plugin) {
             if (is_file($plugin['path'].'/header.blade.php')) {
+                View::addNamespace(self::viewNamespace($slug), $plugin['path']);
                 $views[] = self::viewNamespace($slug).'::header';
             }
         }
 
         return $views;
+    }
+
+    /**
+     * The settings row one plugin's saved values live in. Named here because
+     * three things have to agree on it — reading it, writing it, and dropping it
+     * when the plugin is deleted.
+     */
+    public static function settingsKey(string $slug): string
+    {
+        return "plugin_{$slug}_settings";
     }
 
     /**
@@ -186,7 +205,7 @@ class Plugins
         $manifest = $plugin ? (json_decode((string) @file_get_contents($plugin['path'].'/'.self::MANIFEST), true) ?: []) : [];
         $defaults = is_array($manifest['settings'] ?? null) ? $manifest['settings'] : [];
 
-        $raw = Setting::get("plugin_{$slug}_settings", '[]');
+        $raw = Setting::get(self::settingsKey($slug), '[]');
         $saved = is_array($raw) ? $raw : (json_decode((string) $raw, true) ?: []);
 
         return array_replace($defaults, array_intersect_key($saved, $defaults));
@@ -196,7 +215,7 @@ class Plugins
     {
         $allowed = array_keys(self::settings($slug));
 
-        Setting::set("plugin_{$slug}_settings", json_encode(array_intersect_key($values, array_flip($allowed))));
+        Setting::set(self::settingsKey($slug), json_encode(array_intersect_key($values, array_flip($allowed))));
     }
 
     public static function setActive(string $slug, bool $active): void
@@ -217,6 +236,20 @@ class Plugins
         self::flush();
     }
 
+    /**
+     * Removes a plugin's folder and everything in it, along with the two traces
+     * of it that live outside the folder: its slug in `plugins_active` (so the
+     * dropdown and the boot-time route registration stop referencing it) and its
+     * saved values (so a plugin later reinstalled under the same slug starts
+     * from its manifest defaults instead of silently inheriting the settings it
+     * had before it was deleted).
+     *
+     * Refuses a plugin that is not installed or is one of the bundled defaults,
+     * so this cannot be talked into deleting a folder it never resolved.
+     *
+     * What it cannot undo is the plugin's database migrations, which ran when it
+     * was activated or installed — the same warning the theme modal gives.
+     */
     public static function delete(string $slug): bool
     {
         $plugin = self::find($slug);
@@ -226,6 +259,7 @@ class Plugins
         }
 
         self::setActive($slug, false);
+        Setting::forget(self::settingsKey($slug));
         File::deleteDirectory($plugin['path']);
         self::flush();
 

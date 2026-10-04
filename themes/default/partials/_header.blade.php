@@ -57,7 +57,10 @@
                     </button>
                 </form>
             @else
-                <a href="{{ route('login') }}" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90">
+                {{-- The admin panel's own login on its own host, not route('login'): that is
+                     the customer login, and this theme ships no auth/ template for
+                     it. See the same note in themes/default/home.blade.php. --}}
+                <a href="{{ route('admin.login') }}" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90">
                     {{ __('Admin Login') }}
                 </a>
                 @if ($showVendorLogin ?? false)

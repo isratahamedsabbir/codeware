@@ -347,6 +347,35 @@ public/                   everything the web serves, at /themes/{slug}/...
             bundle, because bare HTML is a broken storefront.
         </p>
 
+        <x-admin-doc-note tone="warning" title="Customers are a theme's own pages too">
+            A theme opts into having customer accounts by shipping the guest pages in its own
+            <span class="font-mono text-[11px]">auth/</span> folder &mdash;
+            <span class="font-mono text-[11px]">login</span>,
+            <span class="font-mono text-[11px]">register</span>,
+            <span class="font-mono text-[11px]">forgot-password</span>,
+            <span class="font-mono text-[11px]">verify-code</span> (the reset step, which is by emailed
+            code rather than a link),
+            <span class="font-mono text-[11px]">reset-password</span> &mdash; and the account area itself
+            under <span class="font-mono text-[11px]">account/</span>. These resolve through
+            <span class="font-mono text-[11px]">Themes::viewOrFail()</span> like any other page, so
+            <span class="font-mono text-[11px]">/login</span> on a theme with no
+            <span class="font-mono text-[11px]">auth/login.blade.php</span> is a <strong>404</strong>, not
+            a shared page in someone else's design &mdash; which is what it used to be, and why a
+            portfolio site used to answer that URL with a page badged &ldquo;Admin Panel&rdquo;.
+            Only <span class="font-mono text-[11px]">ecommerce</span> ships them today.
+
+            <p class="mt-2">
+                The three screens a signed-in customer passes <em>through</em> rather than to &mdash; the
+                email-verification notice, the two-factor challenge and the password confirmation
+                &mdash; stay shared on purpose, in
+                <span class="font-mono text-[11px]">resources/views/pages/auth/</span>: they are steps
+                inside a flow, not pages to navigate to, and a theme should not be able to 404 a customer
+                halfway through signing in. Each panel keeps its own login entirely, on its own host
+                (<span class="font-mono text-[11px]">route('admin.login')</span>), so nothing here can
+                lock an administrator out of the site.
+            </p>
+        </x-admin-doc-note>
+
         {{-- The Theme Settings screen's own destination. Grouped as one block because
              that screen's question is answered in three parts that only make sense
              in order - where a setting lives, how to read it, how to declare a new
@@ -558,7 +587,7 @@ public/                   everything the web serves, at /themes/{slug}/...
             feature added to the list after the table was last seeded still shows checked.
         </p>
 
-        <x-admin-doc-code label="Reading a feature anywhere in the app" file="app/Support/Features.php:48">
+        <x-admin-doc-code label="Reading a feature anywhere in the app" file="app/Support/Features.php:63">
 use App\Support\Features;
 
 if (Features::enabled('comments')) {
@@ -585,6 +614,31 @@ Route::middleware('feature:vouchers')->prefix('vouchers')->group(function () { .
             <li>A group left with no visible children is dropped entirely.</li>
         </ol>
 
+        <p>
+            Settings and header widgets are gated by the same idea, one level down: a toggle for a module that
+            is no longer there is a dead control, and the header widget it enables has nothing left to do.
+            <span class="font-mono text-xs">Features::SETTING_FEATURES</span> maps such a setting key to the
+            feature it belongs to, and <span class="font-mono text-xs">Features::settingAvailable()</span> is
+            the single test both sides ask &mdash; the Settings card and the widget in
+            <span class="font-mono text-xs">layouts/admin.blade.php</span> &mdash; so they cannot drift apart.
+            Hiding a toggle hides only the control; the stored value is left alone and comes back intact if the
+            feature is turned on again.
+        </p>
+
+        <x-admin-doc-code label="A feature-owned setting and the widget behind it" file="app/Support/Features.php:56">
+public const SETTING_FEATURES = [
+    'shop_toggle_enabled' => 'products',
+    'additional_data_products_enabled' => 'products',
+    'additional_data_posts_enabled' => 'blog',
+    'language_switcher_enabled' => 'localization',
+];
+
+// The Settings card, and the admin header widget it enables
+@if (Features::settingAvailable('shop_toggle_enabled'))
+    ...
+@endif
+        </x-admin-doc-code>
+
         <p class="text-xs text-zinc-500">
             The same screen also has to be hidden for the people who cannot use it: the Features page itself
             is developer-environment + admin-role only (see
@@ -597,7 +651,8 @@ Route::middleware('feature:vouchers')->prefix('vouchers')->group(function () { .
 1. Add the key and label to Features::ALL
 2. Wrap the route group in middleware('feature:{key}')
 3. Add the route prefix -> key pair to MenuItem::FEATURE_ROUTE_PREFIXES
-4. The toggle appears on the Features screen automatically
+4. Map any setting/header widget that belongs to it in Features::SETTING_FEATURES
+5. The toggle appears on the Features screen automatically
         </x-admin-doc-code>
 
         <div>

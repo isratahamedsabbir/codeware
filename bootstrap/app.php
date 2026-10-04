@@ -193,7 +193,17 @@ return Application::configure(basePath: dirname(__DIR__))
                 return null;
             }
 
-            return response()->view('errors::500', [
+            // Named as a plain dotted path rather than "errors::500" the way the
+            // framework's own handler does. That namespace is registered in one
+            // place only — Handler::renderHttpException() — and this callback
+            // answers the plain Throwable case before any HttpException has been
+            // rendered, so on a process that has only ever crashed the namespaced
+            // name resolves to nothing. Ask for it anyway and the crash becomes
+            // "No hint path defined for [errors]", replacing the real error (and
+            // its stack trace, in the log) with a second, far more confusing one.
+            // The dotted path resolves against resources/views/errors/500.blade.php
+            // directly, no namespace involved.
+            return response()->view('errors.500', [
                 'errors' => new ViewErrorBag,
                 'exception' => $e,
             ], 500);

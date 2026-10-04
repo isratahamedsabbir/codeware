@@ -11,7 +11,6 @@ use App\Services\OtpService;
 use App\Support\Recaptcha as RecaptchaSupport;
 use App\Support\Themes;
 use Illuminate\Cache\RateLimiting\Limit;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -187,35 +186,47 @@ class FortifyServiceProvider extends ServiceProvider
     }
 
     /**
-     * Configure Fortify views. The shared auth pages (dark admin-style layout,
-     * used by the default/portfolio themes) stay untouched; an ecommerce
-     * storefront gets its own storefront-styled login/register/password pages
-     * that match the theme's header/footer.
+     * Configure Fortify views.
+     *
+     * The guest pages a visitor signs in or recovers an account through are the
+     * *active theme's* pages, resolved by template name the same way every other
+     * storefront page is — so /login is the ecommerce login on an ecommerce site,
+     * and on a theme that ships no auth/ folder it is a 404 rather than some other
+     * design's page. It used to be the reverse: an "ecommerce or fall back to the
+     * shared admin-styled page" switch, which meant a portfolio site answered /login
+     * with a page badged "Admin Panel" (resources/views/pages/auth/login.blade.php,
+     * from before the admin panel moved to its own host with its own login).
+     *
+     * So a theme opts into having customers by shipping these templates:
+     *
+     *     themes/{slug}/auth/login.blade.php
+     *     themes/{slug}/auth/register.blade.php
+     *     themes/{slug}/auth/forgot-password.blade.php
+     *     themes/{slug}/auth/verify-code.blade.php      (the OTP step, by code)
+     *     themes/{slug}/auth/reset-password.blade.php
+     *
+     * and into letting a signed-in customer do anything else by shipping the
+     * account/ templates Themes::ROUTE_TEMPLATES lists. ecommerce ships all of them;
+     * portfolio and default ship none, so on those a customer account simply does not
+     * exist — and none of its links are rendered either.
+     *
+     * Deliberately still shared, because they are steps *inside* a flow that is
+     * already themed rather than pages a visitor navigates to on their own, and a
+     * theme cannot be expected to design them: the email-verification notice, the
+     * two-factor challenge and the re-enter-your-password confirmation. A theme that
+     * wants its own styling wraps or replaces them; nothing here 404s a signed-in
+     * customer halfway through signing in.
      */
     private function configureViews(): void
     {
-        Fortify::loginView(fn () => self::themedView('theme-ecommerce::auth.login', 'pages::auth.login'));
+        Fortify::loginView(fn () => view(Themes::viewOrFail('auth/login')));
+        Fortify::registerView(fn () => view(Themes::viewOrFail('auth/register')));
+        Fortify::resetPasswordView(fn () => view(Themes::viewOrFail('auth/reset-password')));
+        Fortify::requestPasswordResetLinkView(fn () => view(Themes::viewOrFail('auth/forgot-password')));
+
         Fortify::verifyEmailView(fn () => view('pages::auth.verify-email'));
         Fortify::twoFactorChallengeView(fn () => view('pages::auth.two-factor-challenge'));
         Fortify::confirmPasswordView(fn () => view('pages::auth.confirm-password'));
-        Fortify::registerView(fn () => self::themedView('theme-ecommerce::auth.register', 'pages::auth.register'));
-        Fortify::resetPasswordView(fn () => self::themedView('theme-ecommerce::auth.reset-password', 'pages::auth.reset-password'));
-        Fortify::requestPasswordResetLinkView(fn () => self::themedView('theme-ecommerce::auth.forgot-password', 'pages::auth.forgot-password'));
-    }
-
-    /**
-     * Pick the ecommerce theme's view when the theme is active — otherwise fall
-     * back to the shared (non-storefront) page, so portfolio/default themes
-     * keep the exact pages they already render.
-     *
-     * Public and static so the password reset controllers (which replace
-     * Fortify's own, because that flow is by code rather than by link — see
-     * App\Http\Controllers\Auth\PasswordResetOtpController) render through the
-     * exact same switch instead of keeping a second copy of it.
-     */
-    public static function themedView(string $ecommerceView, string $sharedView): View
-    {
-        return Themes::active() === 'ecommerce' ? view($ecommerceView) : view($sharedView);
     }
 
     /**

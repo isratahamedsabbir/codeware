@@ -9,14 +9,14 @@ use Illuminate\Support\Facades\Route;
  * The error pages in resources/views/errors/ are rendered by the framework's
  * exception handler for any HttpException (404 from a missing route, 403 from
  * Gate::authorize, 419 from a stale CSRF token, 429 from the throttle middleware,
- * …). They carry the status code, a static line of copy and a link home — no
- * queries — so these lock in that the right page is used for each status, that
+ * â€¦). They carry the status code, a static line of copy and a link home â€” no
+ * queries â€” so these lock in that the right page is used for each status, that
  * the page stays self-contained, and that the home link is the site's APP_URL
  * rather than the host the error happened to be served on.
  *
  * A storefront 404 is the active theme's own page when it ships one (see
  * ThemeScopedTemplatesTest for that half), so this suite pins a theme with no
- * errors/ folder — which is exactly the case these shared pages exist to serve.
+ * errors/ folder â€” which is exactly the case these shared pages exist to serve.
  */
 beforeEach(function () {
     // Otherwise the framework renders Ignition instead of the error views.
@@ -39,7 +39,7 @@ afterEach(function () {
 /*
  * The one thing every error page has to get right: the link back goes to
  * APP_URL. url('/') would answer with the host of the request, which on the
- * admin, vendor or delivery portal is that panel's own host — so a storefront
+ * admin, vendor or delivery portal is that panel's own host â€” so a storefront
  * error page rendered on a panel host would send a visitor to a login screen.
  */
 it('links back to the site home from APP_URL, not the host the error was served on', function () {
@@ -56,7 +56,7 @@ it('links back to the site home from APP_URL, not the host the error was served 
 
 /*
  * The Nicepage layout: a large status code, a short line of copy, a round button
- * back home. All three are static strings — the page must stay sayable without a
+ * back home. All three are static strings â€” the page must stay sayable without a
  * lookup, which is what "Suggested pages" used to break.
  */
 it('renders the status code, a line of copy and a way home', function () {
@@ -75,7 +75,7 @@ it('renders the status code, a line of copy and a way home', function () {
 });
 
 /*
- * The code and the copy have to agree — a 403 page that says "page not found"
+ * The code and the copy have to agree â€” a 403 page that says "page not found"
  * sends a visitor looking for a broken link instead of a permission problem.
  */
 it('gives each status its own line of copy', function (int $code, string $title) {
@@ -114,7 +114,7 @@ it('renders the matching code for each server error status', function (int $code
 ]);
 
 /*
- * A status with no copy of its own still gets a page, not a blank one — the
+ * A status with no copy of its own still gets a page, not a blank one â€” the
  * generic line carries the code so "Error 409" reads as deliberate.
  */
 it('falls back to the catch-all page for an unmapped client error', function () {
@@ -145,13 +145,19 @@ it('keeps API responses as JSON instead of HTML error pages', function () {
  * A real crash (dead database, fatal error) is a plain Throwable, so without
  * the render callback in bootstrap/app.php the framework bypasses
  * resources/views/errors entirely and falls back to Symfony's generic page.
+ *
+ * Under /__crash/, deliberately not /__errors/: the route above registers
+ * /__errors/{code} first, so it would answer /__errors/boom with abort(0) — an
+ * HttpException, which is a different code path entirely and passes whether or
+ * not the genuine-crash branch works. The three tests below used to sit on that
+ * collision and pass for the wrong reason.
  */
 it('renders our 500 page for a genuine crash, not just abort(500)', function () {
-    Route::get('/__errors/boom', function () {
+    Route::get('/__crash/boom', function () {
         throw new RuntimeException('the database is on fire');
     });
 
-    $response = $this->get('/__errors/boom')->assertStatus(500);
+    $response = $this->get('/__crash/boom')->assertStatus(500);
 
     $response->assertSee('500');
 
@@ -161,9 +167,9 @@ it('renders our 500 page for a genuine crash, not just abort(500)', function () 
 });
 
 it('keeps a genuine crash as JSON for API clients', function () {
-    Route::get('/__errors/boom', fn () => throw new RuntimeException('the database is on fire'));
+    Route::get('/__crash/boom', fn () => throw new RuntimeException('the database is on fire'));
 
-    $this->getJson('/__errors/boom')
+    $this->getJson('/__crash/boom')
         ->assertStatus(500)
         ->assertHeader('content-type', 'application/json');
 });
@@ -171,23 +177,23 @@ it('keeps a genuine crash as JSON for API clients', function () {
 it('leaves the stack trace alone in debug mode', function () {
     config(['app.debug' => true]);
 
-    Route::get('/__errors/boom', function () {
+    Route::get('/__crash/boom', function () {
         throw new RuntimeException('the database is on fire');
     });
 
     // Assembled at runtime on purpose. Ignition embeds the source of whatever
-    // threw — this file — into its payload, so a needle written out as a literal
+    // threw â€” this file â€” into its payload, so a needle written out as a literal
     // here would match that embedded source and assert nothing at all.
     $errHome = implode('-', ['err', 'home']);
 
-    $this->get('/__errors/boom')
+    $this->get('/__crash/boom')
         ->assertStatus(500)
         ->assertDontSee($errHome, escape: false);
 });
 
 /*
  * An error page that depends on the compiled asset manifest, the layout or the
- * database will itself fail to render on a fresh deploy or during an outage —
+ * database will itself fail to render on a fresh deploy or during an outage â€”
  * which is exactly when it is needed. It has to stay self-contained.
  */
 it('keeps the error page shell self-contained', function () {
@@ -203,7 +209,7 @@ it('keeps the error page shell self-contained', function () {
 
 /*
  * "Simple" is the requirement, so the page must not quietly grow a database
- * read or a settings lookup back in — that is exactly what the old branded
+ * read or a settings lookup back in â€” that is exactly what the old branded
  * shell did, and it is what made an error page able to fail itself.
  */
 it('keeps the error page free of database and settings lookups', function () {

@@ -30,14 +30,27 @@ it('renders the storefront login page on an ecommerce theme', function () {
         ->assertSee(route('register'));
 });
 
-it('keeps the shared login page on non-ecommerce themes', function () {
+/*
+ * A customer account belongs to the theme, not to the installer: the guest pages
+ * are the active theme's auth/ templates, so a theme that ships none has no
+ * customer sign-in at all and says so with its own 404 — rather than answering
+ * with some other design's page, which is how /login used to serve the
+ * admin-badged shared login on a portfolio site.
+ */
+it('404s the login page on a theme with no customer account area', function () {
     Setting::set('site_theme', 'default');
 
     get('/login')
-        ->assertOk()
+        ->assertNotFound()
         ->assertDontSee('data-login-form', false)
-        ->assertSee('Admin Panel');
+        ->assertDontSee('Admin Panel');
 });
+
+it('404s every guest auth page on a theme with no customer account area', function (string $path) {
+    Setting::set('site_theme', 'portfolio');
+
+    get($path)->assertNotFound();
+})->with(['/login', '/register', '/forgot-password']);
 
 it('sends guests at the account pages to the storefront login', function () {
     get('/account')->assertRedirect('/login');

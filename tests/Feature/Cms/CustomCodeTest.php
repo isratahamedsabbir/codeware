@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Setting;
+use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 
 beforeEach(function () {
     Setting::set('custom_head_code', '<meta name="custom-head-probe" content="1">');
@@ -27,10 +29,23 @@ it('injects the custom code on inner ecommerce pages too', function () {
         ->assertSee('customBodyProbe', false);
 });
 
-it('keeps the custom code off the admin and auth screens', function () {
-    Setting::set('site_theme', 'default');
+it('injects the custom code on the storefront login page, like any other public page', function () {
+    // A theme's own auth/login template, so a public page of the active theme —
+    // which is where the code used to be missing, because that page used to be
+    // the shared admin-styled one rather than the theme's.
+    Setting::set('site_theme', 'ecommerce');
 
     $this->get(route('login'))->assertOk()
+        ->assertSee('custom-head-probe', false)
+        ->assertSee('customBodyProbe', false);
+});
+
+it('keeps the custom code off the admin panel', function () {
+    Setting::set('site_theme', 'ecommerce');
+    $this->seed(RolePermissionSeeder::class);
+    $this->actingAs(User::factory()->admin()->create());
+
+    $this->get(config('app.admin_url').'/developer-tools')->assertOk()
         ->assertDontSee('custom-head-probe', false)
         ->assertDontSee('customBodyProbe', false);
 });

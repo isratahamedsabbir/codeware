@@ -30,7 +30,12 @@
 
         <div class="flex flex-col items-center gap-4">
             <div class="flex items-center gap-3">
-                <a href="{{ route('login') }}"
+                {{-- The admin panel, not the storefront: this page is the panels'
+                     front door, and the admin panel has its own login on its own
+                     host (routes/admin.php). route('login') is the *customer*
+                     login, which this theme ships no template for — it 404s, as
+                     the rest of this theme's non-existent pages do. --}}
+                <a href="{{ route('admin.login') }}"
                     class="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-secondary transition-colors">
                     {{ __('Admin Login') }}
                 </a>

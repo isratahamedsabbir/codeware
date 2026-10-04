@@ -5,13 +5,23 @@ use App\Models\User;
 use Laravel\Fortify\Features;
 use Spatie\Permission\Models\Role;
 
+/*
+ * The storefront's login screen is a theme template (themes/{slug}/auth/login),
+ * so a theme only has one if it ships one — ecommerce does, and is pinned here
+ * because "can the login screen be rendered at all" is no longer a question the
+ * default theme can answer. ThemeScopedTemplatesTest covers the other half: a
+ * theme with no auth/ folder 404s the page instead of borrowing another's.
+ */
 test('login screen can be rendered', function () {
+    Setting::set('site_theme', 'ecommerce');
+
     $response = $this->get(route('login'));
 
     $response->assertOk();
 });
 
 test('login screen shows the uploaded site icon', function () {
+    Setting::set('site_theme', 'ecommerce');
     Setting::set('site_icon', '/storage/site-icon.png');
 
     $this->get(route('login'))

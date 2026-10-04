@@ -25,8 +25,16 @@
         $adminSecondaryColor = \App\Models\Setting::get('secondary_color', '#7cc242');
         $calculatorEnabled = (bool) \App\Models\Setting::get('calculator_enabled', true);
         $stickyNoteEnabled = (bool) \App\Models\Setting::get('sticky_note_enabled', true);
-        $shopToggleEnabled = (bool) \App\Models\Setting::get('shop_toggle_enabled', false);
-        $languageSwitcherEnabled = (bool) \App\Models\Setting::get('language_switcher_enabled', true);
+        $notificationsEnabled = (bool) \App\Models\Setting::get('notifications_enabled', true);
+        // The header widgets that only make sense alongside a feature are gone
+        // with it (Settings → Features), not just un-configurable: a Shop On/Off
+        // button on a panel with no products, a language dropdown on a panel with
+        // no languages. settingAvailable() is the same rule the Settings toggle
+        // for each of them is hidden by, so the two can't disagree.
+        $shopToggleEnabled = \App\Support\Features::settingAvailable('shop_toggle_enabled')
+            && (bool) \App\Models\Setting::get('shop_toggle_enabled', false);
+        $languageSwitcherEnabled = \App\Support\Features::settingAvailable('language_switcher_enabled')
+            && (bool) \App\Models\Setting::get('language_switcher_enabled', true);
 
         // The panel's typeface (see App\Support\AdminFont). Resolved here rather
         // than in a view composer because this is the only place that applies
@@ -374,7 +382,9 @@
                     </svg>
                 </button> 
 
-                <livewire:admin.notifications.bell />
+                @if ($notificationsEnabled)
+                    <livewire:admin.notifications.bell />
+                @endif
             </div> 
 
             <div class="w-px h-6 bg-zinc-200/80 mx-2 max-sm:hidden"></div>

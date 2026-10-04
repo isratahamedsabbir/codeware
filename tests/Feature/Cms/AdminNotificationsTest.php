@@ -1,7 +1,9 @@
 <?php
 
 use App\Livewire\Admin\Notifications\Bell;
+use App\Livewire\Admin\Settings\Index as SettingsIndex;
 use App\Models\Contact;
+use App\Models\Setting;
 use App\Models\User;
 use App\Notifications\AdminAlert;
 use Database\Seeders\RolePermissionSeeder;
@@ -127,6 +129,53 @@ it('renders the bell component in the admin layout header', function () {
         ->assertOk()
         ->assertSee('admin.notifications.bell')
         ->assertSee('aria-label="Notifications"', false);
+});
+
+it('drops the bell from the admin header once disabled in settings, without deleting anything', function () {
+    $admin = User::factory()->admin()->create();
+    $admin->notify(new AdminAlert('Still here'));
+
+    Setting::set('notifications_enabled', '0');
+
+    $this->actingAs($admin)
+        ->get(config('app.admin_url').'/posts')
+        ->assertOk()
+        ->assertDontSee('admin.notifications.bell')
+        ->assertDontSee('aria-label="Notifications"', false);
+
+    // Only the bell is hidden — the rows are untouched, so turning it back on
+    // finds them waiting rather than silently emptying the user's inbox.
+    expect($admin->fresh()->unreadNotifications()->count())->toBe(1);
+
+    Setting::set('notifications_enabled', '1');
+
+    $this->actingAs($admin)
+        ->get(config('app.admin_url').'/posts')
+        ->assertOk()
+        ->assertSee('admin.notifications.bell');
+});
+
+it('offers the notification bell toggle on the settings widgets tab', function () {
+    Livewire::actingAs(User::factory()->admin()->create())
+        ->test(SettingsIndex::class)
+        ->assertSee('Notifications')
+        ->assertSee('settings.notifications_enabled', false);
+});
+
+it('saves the notification bell toggle through the settings form', function () {
+    Livewire::actingAs(User::factory()->admin()->create())
+        ->test(SettingsIndex::class)
+        ->set('settings.notifications_enabled', false)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect((bool) Setting::get('notifications_enabled'))->toBeFalse();
+});
+
+it('seeds the notification bell toggle, enabled by default', function () {
+    $this->artisan('db:seed', ['--class' => 'SettingsSeeder']);
+
+    expect((bool) Setting::get('notifications_enabled', true))->toBeTrue();
 });
 
 it('leaves notifications in place when the user is deleted, since the native table has no FK to users', function () {

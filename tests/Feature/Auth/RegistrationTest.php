@@ -1,10 +1,15 @@
 <?php
 
+use App\Models\Setting;
 use App\Models\User;
 use Laravel\Fortify\Features;
 
 beforeEach(function () {
     $this->skipUnlessFortifyHas(Features::registration());
+
+    // The registration page is a theme template (themes/{slug}/auth/register),
+    // so the suite runs on the one bundled theme that ships it.
+    Setting::set('site_theme', 'ecommerce');
 });
 
 test('registration screen can be rendered', function () {
@@ -22,7 +27,9 @@ test('new users can register', function () {
     ]);
 
     $response->assertSessionHasNoErrors()
-        ->assertRedirect(route('dashboard', absolute: false));
+        // The account area of the theme that has one — see
+        // FortifyServiceProvider::accountPath().
+        ->assertRedirect(route('account.dashboard', absolute: false));
 
     $this->assertAuthenticated();
 });

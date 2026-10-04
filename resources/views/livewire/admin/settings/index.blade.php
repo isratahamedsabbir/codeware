@@ -303,7 +303,18 @@ $imageMeta = match ($setting->key) {
             </div>
         </div>
 
-        {{-- Widgets tab — each widget is its own card, straight in the grid. --}}
+        {{-- Widgets tab — each widget is its own card, straight in the grid.
+
+             A toggle whose feature is off (Settings → Features) drops out here
+             rather than configuring something the panel no longer has. The
+             header widget each one enables asks the same question, so the two
+             never disagree — see Features::settingAvailable(). --}}
+        @php
+            $shopToggleAvailable = \App\Support\Features::settingAvailable('shop_toggle_enabled');
+            $languageSwitcherAvailable = \App\Support\Features::settingAvailable('language_switcher_enabled');
+            $productAdditionalDataAvailable = \App\Support\Features::settingAvailable('additional_data_products_enabled');
+            $postAdditionalDataAvailable = \App\Support\Features::settingAvailable('additional_data_posts_enabled');
+        @endphp
         <div x-show="tab === 'widgets'">
             <div class="max-w-[1600px]">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
@@ -384,7 +395,23 @@ $imageMeta = match ($setting->key) {
                     </p>
                 </x-admin-section-card>
 
+                {{-- Notification bell --}}
+                <x-admin-section-card header-border="border-zinc-100" icon="bell" title="Notifications"
+                    description="Shows the notification bell in the admin header.">
+                    <x-slot:actions>
+                        <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
+                            <input type="checkbox" wire:model="settings.notifications_enabled" class="rounded border-zinc-300 text-primary" />
+                            Enable
+                        </label>
+                    </x-slot:actions>
+
+                    <p class="text-xs text-zinc-400">
+                        Turning this off only hides the bell. Notifications are still recorded, so turning it back on finds them all still there.
+                    </p>
+                </x-admin-section-card>
+
                 {{-- Shop toggle --}}
+                @if ($shopToggleAvailable)
                 <x-admin-section-card header-border="border-zinc-100" icon="building-storefront" title="Shop Toggle"
                     description="Adds a Shop On/Off button to the admin header for quickly closing the storefront to new orders.">
                     <x-slot:actions>
@@ -398,8 +425,10 @@ $imageMeta = match ($setting->key) {
                         While the shop is off, customers cannot place new orders.
                     </p>
                 </x-admin-section-card>
+                @endif
 
                 {{-- Language switcher --}}
+                @if ($languageSwitcherAvailable)
                 <x-admin-section-card header-border="border-zinc-100" icon="language" title="Language Switcher"
                     description="Shows the language dropdown in the admin header.">
                     <x-slot:actions>
@@ -413,9 +442,11 @@ $imageMeta = match ($setting->key) {
                         Turning this off does not change the admin panel's language, only hides the switcher itself.
                     </p>
                 </x-admin-section-card>
+                @endif
 
                 {{-- Additional Data sections — show/hide the rich-editor cards on the
                      admin Product and Blog Post forms (see Product and Posts forms). --}}
+                @if ($productAdditionalDataAvailable)
                 <x-admin-section-card header-border="border-zinc-100" icon="document-text" title="Product Additional Data"
                     description="Shows the Additional Data card on the product form.">
                     <x-slot:actions>
@@ -429,7 +460,9 @@ $imageMeta = match ($setting->key) {
                         Rich editors for the product's description, short description and specification. Off hides the card without touching saved content.
                     </p>
                 </x-admin-section-card>
+                @endif
 
+                @if ($postAdditionalDataAvailable)
                 <x-admin-section-card header-border="border-zinc-100" icon="newspaper" title="Blog Post Additional Data"
                     description="Shows the Additional Data card on the blog post form.">
                     <x-slot:actions>
@@ -443,6 +476,7 @@ $imageMeta = match ($setting->key) {
                         A rich editor for the post's description. Off hides the card without touching saved content.
                     </p>
                 </x-admin-section-card>
+                @endif
                 </div>
             </div>
         </div>

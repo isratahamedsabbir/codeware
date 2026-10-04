@@ -1,10 +1,13 @@
 <?php
 
+use App\Livewire\Admin\DeveloperGuide;
 use App\Livewire\Admin\Features\Index as FeaturesIndex;
 use App\Livewire\Admin\Menu\Index;
 use App\Models\Feature;
+use App\Models\Language;
 use App\Models\MenuItem;
 use App\Models\Page;
+use App\Models\Setting;
 use App\Models\User;
 use App\Support\Features;
 use Database\Seeders\AdminMenuSeeder;
@@ -362,6 +365,128 @@ it('hides the CMS row action on the Pages list once the cms feature is off', fun
 
     Livewire::test(App\Livewire\Admin\Pages\Index::class)
         ->assertDontSeeHtml(route('admin.cms', ['pageId' => $page->id]));
+});
+
+it('shows the product-, blog- and language-related Settings toggles while their features are on', function () {
+    Livewire::test(App\Livewire\Admin\Settings\Index::class)
+        ->assertSee('Shop Toggle')
+        ->assertSee('Product Additional Data')
+        ->assertSee('Blog Post Additional Data')
+        ->assertSee('Language Switcher');
+});
+
+it('hides the product-related Settings toggles once the products feature is off, leaving the blog and language ones', function () {
+    disableFeature('products');
+
+    Livewire::test(App\Livewire\Admin\Settings\Index::class)
+        ->assertDontSee('Shop Toggle')
+        ->assertDontSee('Product Additional Data')
+        ->assertSee('Blog Post Additional Data')
+        ->assertSee('Language Switcher');
+});
+
+it('hides the blog-related Settings toggle once the blog feature is off, leaving the product and language ones', function () {
+    disableFeature('blog');
+
+    Livewire::test(App\Livewire\Admin\Settings\Index::class)
+        ->assertDontSee('Blog Post Additional Data')
+        ->assertSee('Shop Toggle')
+        ->assertSee('Product Additional Data')
+        ->assertSee('Language Switcher');
+});
+
+it('hides the language-related Settings toggle once the localization feature is off, leaving the product and blog ones', function () {
+    disableFeature('localization');
+
+    Livewire::test(App\Livewire\Admin\Settings\Index::class)
+        ->assertDontSee('Language Switcher')
+        ->assertSee('Shop Toggle')
+        ->assertSee('Product Additional Data')
+        ->assertSee('Blog Post Additional Data');
+});
+
+it('keeps a hidden toggle out of the way without discarding the value behind it', function () {
+    Setting::set('shop_toggle_enabled', '1');
+    disableFeature('products');
+
+    Livewire::test(App\Livewire\Admin\Settings\Index::class)
+        ->assertDontSee('Shop Toggle')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    // Re-enabling the feature brings the toggle back exactly as it was left —
+    // hiding a control must not silently reset it.
+    expect((bool) Setting::get('shop_toggle_enabled'))->toBeTrue();
+
+    Feature::updateOrCreate(['key' => 'products'], ['label' => Features::ALL['products'], 'is_enabled' => true]);
+
+    Livewire::test(App\Livewire\Admin\Settings\Index::class)->assertSee('Shop Toggle');
+});
+
+it('drops the shop toggle and language switcher from the admin header once their features are off', function () {
+    // Both toggles are on, and the switcher needs a second active language
+    // before it renders anything at all.
+    Setting::set('shop_toggle_enabled', '1');
+    Setting::set('language_switcher_enabled', '1');
+    Language::create(['code' => 'en', 'name' => 'English', 'is_active' => true, 'is_default' => true]);
+    Language::create(['code' => 'bn', 'name' => 'Bengali', 'native_name' => 'বাংলা', 'is_active' => true]);
+
+    $this->get(route('admin.dashboard'))->assertOk()
+        ->assertSee('Shop On')
+        ->assertSee('Change language', false);
+
+    disableFeature('products');
+    disableFeature('localization');
+
+    $this->get(route('admin.dashboard'))->assertOk()
+        ->assertDontSee('Shop On')
+        ->assertDontSee('Change language', false);
+});
+
+it('leaves the header widgets that belong to no feature alone when features are off', function () {
+    disableFeature('products');
+    disableFeature('blog');
+    disableFeature('localization');
+
+    $this->get(route('admin.dashboard'))->assertOk()
+        ->assertSee('Sticky Note', false)
+        ->assertSee('Calculator', false);
+});
+
+it('documents the settings and header gating in the developer guide', function () {
+    // The "adding a feature" recipe is what a developer follows next, so the
+    // fourth step has to name the map the toggle cards and header widgets read.
+    $guide = Livewire::test(DeveloperGuide::class)->html();
+
+    expect($guide)
+        ->toContain('Features::SETTING_FEATURES')
+        ->toContain('Features::settingAvailable');
+});
+
+it('drops the shop toggle from the admin header once products is off, leaving the switcher', function () {
+    Setting::set('shop_toggle_enabled', '1');
+    Setting::set('language_switcher_enabled', '1');
+    Language::create(['code' => 'en', 'name' => 'English', 'is_active' => true, 'is_default' => true]);
+    Language::create(['code' => 'bn', 'name' => 'Bengali', 'native_name' => 'বাংলা', 'is_active' => true]);
+
+    disableFeature('products');
+
+    $this->get(route('admin.dashboard'))->assertOk()
+        ->assertDontSee('Shop On')
+        ->assertSee('Change language', false);
+});
+
+it('drops the language switcher from the admin header once localization is off, leaving the shop toggle', function () {
+    Setting::set('shop_toggle_enabled', '1');
+    Setting::set('language_switcher_enabled', '1');
+    Language::create(['code' => 'en', 'name' => 'English', 'is_active' => true, 'is_default' => true]);
+    Language::create(['code' => 'bn', 'name' => 'Bengali', 'native_name' => 'বাংলা', 'is_active' => true]);
+
+    disableFeature('localization');
+
+    $this->get(route('admin.dashboard'))->assertOk()
+        ->assertDontSee('Change language', false)
+        ->assertSee('Shop On');
 });
 
 it('renders the features screen, only in the developer environment', function () {

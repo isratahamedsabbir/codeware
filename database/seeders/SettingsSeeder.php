@@ -286,6 +286,12 @@ class SettingsSeeder extends Seeder
             // opened from the header icon or the Ctrl+Alt+N shortcut.
             ['key' => 'sticky_note_enabled', 'value' => '1', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
 
+            // ── Notification bell (admin panel) ── shows/hides the header bell.
+            // Hiding it only takes the bell off the header: notifications are
+            // still recorded per user, so turning it back on finds them all
+            // still there and unread.
+            ['key' => 'notifications_enabled', 'value' => '1', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
+
             // ── reCAPTCHA (login page) ── shown/verified only when this is on
             // AND the Site/Secret keys below are set — see Settings → Env.
             ['key' => 'recaptcha_enabled', 'value' => '0', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],

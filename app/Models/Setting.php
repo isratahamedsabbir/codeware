@@ -135,13 +135,37 @@ class Setting extends Model
     {
         static::updateOrCreate(['key' => $key], ['value' => $value]);
 
+        self::bust();
+    }
+
+    /**
+     * Removes a row outright, for the settings that belong to a module rather
+     * than to the site — a deleted plugin's saved values, say. set() can only
+     * write, so without this a plugin uninstalled and later reinstalled under
+     * the same slug silently inherits the configuration it had before, which is
+     * never what reinstalling a plugin means.
+     *
+     * A no-op when the row does not exist, so callers do not have to check.
+     */
+    public static function forget(string $key): void
+    {
+        static::query()->where('key', $key)->delete();
+
+        self::bust();
+    }
+
+    /**
+     * Drops the per-request memo and orphans the forever cache by bumping its
+     * version. Bumping is what invalidates derived entries too — the public
+     * settings list among them — without needing cache tagging, which only
+     * redis/memcached/array support. Which store is actually used is driven
+     * entirely by CACHE_STORE in .env.
+     */
+    private static function bust(): void
+    {
         self::$allCache = [];
         self::$version = [];
 
-        // Bumping the version orphans the map key built from the old version —
-        // including derived caches like the public settings list — without
-        // needing cache tagging, which only redis/memcached/array support.
-        // Which store is actually used is driven entirely by CACHE_STORE in .env.
         // Store the new version in the memo as well — cacheVersion() re-reads
         // the *old* value into the (just-cleared) memo before this write, so
         // leave that memo pointing at the value we just persisted.

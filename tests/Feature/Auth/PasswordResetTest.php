@@ -1,6 +1,7 @@
 <?php
 
 use App\Mail\PasswordResetOtpMail;
+use App\Models\Setting;
 use App\Models\User;
 use App\Providers\FortifyServiceProvider;
 use App\Services\OtpService;
@@ -12,12 +13,20 @@ use Illuminate\Support\Facades\Mail;
  *
  * Three steps, in order: ask for a code on the address, redeem it, set a new
  * password. The code is what proves the requester can read that inbox, and
- * redeeming it leaves a session flag that the last step reads the address from —
+ * redeeming it leaves a session flag that the last step reads the address from �?"
  * so the address cannot be swapped between the two.
  *
  * Replaces Fortify's token link, which pointed at a page in the Next.js app and
  * so was a dead end until that page existed. See App\Services\PasswordResetService.
+ *
+ * The three screens are theme templates (themes/ecommerce/auth/{forgot-password,
+ * verify-code,reset-password}), so the theme is pinned to the one bundled theme
+ * that ships them \u2014 a theme without an auth/ folder has no customer account to
+ * reset, and 404s the whole flow (see CustomerAccountTest).
  */
+beforeEach(function () {
+    Setting::set('site_theme', 'ecommerce');
+});
 
 /** The code that was actually mailed, read back off the fake mail. */
 function mailedCode(): string

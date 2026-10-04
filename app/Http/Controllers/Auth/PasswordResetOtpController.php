@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Concerns\PasswordValidationRules;
 use App\Http\Controllers\Controller;
-use App\Providers\FortifyServiceProvider;
 use App\Services\OtpService;
 use App\Services\PasswordResetService;
+use App\Support\Themes;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -49,10 +49,7 @@ class PasswordResetOtpController extends Controller
     /** The form that asks which address to send a code to. */
     public function create(): mixed
     {
-        return FortifyServiceProvider::themedView(
-            'theme-ecommerce::auth.forgot-password',
-            'pages::auth.forgot-password',
-        );
+        return view(Themes::viewOrFail('auth/forgot-password'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -106,10 +103,8 @@ class PasswordResetOtpController extends Controller
             return redirect()->route('password.request');
         }
 
-        return FortifyServiceProvider::themedView(
-            'theme-ecommerce::auth.verify-code',
-            'pages::auth.verify-code',
-        )->with('email', $email);
+        return view(Themes::viewOrFail('auth/verify-code'))
+            ->with('email', $email);
     }
 
     public function verify(Request $request): RedirectResponse
@@ -158,10 +153,8 @@ class PasswordResetOtpController extends Controller
             return redirect()->route('password.request');
         }
 
-        return FortifyServiceProvider::themedView(
-            'theme-ecommerce::auth.reset-password',
-            'pages::auth.reset-password',
-        )->with('email', $request->session()->get(self::VERIFIED_SESSION_KEY));
+        return view(Themes::viewOrFail('auth/reset-password'))
+            ->with('email', $request->session()->get(self::VERIFIED_SESSION_KEY));
     }
 
     public function reset(Request $request): RedirectResponse

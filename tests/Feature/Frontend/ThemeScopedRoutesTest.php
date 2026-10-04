@@ -117,6 +117,51 @@ it('gives an account page a 404 on a theme without an account area, rather than 
     $this->get('/account')->assertRedirect(route('login'));
 });
 
+/*
+ * The customer sign-in pages are theme templates too — themes/{slug}/auth/login
+ * and its siblings — even though Fortify registers the routes rather than a
+ * theme's route file, so the guard in App\Http\Middleware\EnsureActiveTheme never
+ * sees them. They resolve the same way instead, at view time
+ * (App\Providers\FortifyServiceProvider::configureViews), which keeps one rule
+ * for "is this page part of this site" instead of two.
+ *
+ * This matters because the alternative was worse than a missing page: /login used
+ * to fall back to a shared admin-styled page badged "Admin Panel", so a portfolio
+ * site with no accounts at all answered the URL with the admin panel's own login.
+ */
+it('serves the customer login page from the active theme, and 404s it on a theme without one', function () {
+    Setting::set('site_theme', 'ecommerce');
+
+    $this->get('/login')
+        ->assertOk()
+        ->assertSee('data-login-form', false);
+
+    Setting::set('site_theme', 'portfolio');
+
+    $this->get('/login')
+        ->assertNotFound()
+        ->assertSee(__('Sorry, page not found'));
+});
+
+it('leaves each panel own login alone, since none of them is a theme page', function () {
+    // Each panel has its own login component on its own host, which is the whole
+    // reason storefront theme scoping can't lock an administrator out. Built from
+    // the host settings, because the vendor and delivery portals have no *_url.
+    $panels = [
+        'admin_host' => 'admin',
+        'vendor_host' => 'vendor',
+        'delivery_host' => 'delivery',
+    ];
+
+    foreach ($panels as $host => $panel) {
+        Setting::set('site_theme', 'portfolio');
+
+        $this->get('http://'.config("app.{$host}").'/login')
+            ->assertOk()
+            ->assertSee("data-test=\"{$panel}-login-button\"", false);
+    }
+});
+
 it('keeps the system routes on every theme, since they are not a themed page', function (string $theme) {
     // Signed invoice links, the /admin bounce, the auth routes: none of these
     // render a theme template, so none of them are registered behind a theme
