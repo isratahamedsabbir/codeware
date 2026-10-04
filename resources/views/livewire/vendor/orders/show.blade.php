@@ -20,7 +20,7 @@
                 <p class="text-xs text-zinc-500">Order</p>
                 <p class="font-mono text-lg font-semibold text-zinc-900">{{ $order->order_number }}</p>
             </div>
-            @include('livewire.vendor.orders.partials.status-badge', ['status' => $order->status])
+            @include('livewire.vendor.orders.partials._status-badge', ['status' => $order->status])
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5 pt-5 border-t border-zinc-100">

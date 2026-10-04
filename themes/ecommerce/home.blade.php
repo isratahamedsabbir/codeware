@@ -1,9 +1,9 @@
 ﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Support\Locale::direction() }}">
 <head>
-    @include('partials.head')
-    @include('partials.seo-meta')
-    @include('partials.custom-code-head')
+    @include('partials._head')
+    @include('partials._seo-meta')
+    @include('partials._custom-code-head')
 </head>
 <body class="bg-page-bg font-storefront text-sf-text antialiased">
 
@@ -59,11 +59,17 @@
         ->get();
 @endphp
 
-@include('theme-ecommerce::partials.header')
+@include('theme-ecommerce::partials._header')
 
 <main>
     <div class="mx-auto w-full max-w-7xl px-4 sm:px-6">
-        <section class="mt-6 grid w-full grid-cols-1 gap-4 lg:h-[440px] lg:grid-cols-3">
+        {{-- The 3-up hero (main banner + two stacked promos) starts at xl, not lg.
+             At lg (1024px) the main banner was still two columns of a 3-column grid
+             — about 590px wide and 440px tall — so a 1200x440 crop was being pushed
+             through a portrait-shaped box and lost most of its middle. Between lg
+             and xl the promos sit side by side under a full-width banner instead,
+             which is what the stacking order already did below lg. --}}
+        <section class="mt-6 grid w-full grid-cols-1 gap-4 xl:h-[440px] xl:grid-cols-3">
             <a href="{{ $heroSlides[0]['url'] ?? route('shop') }}"
                 @if (count($heroSlides) > 1)
                     :href="links[active]"
@@ -79,7 +85,7 @@
                     x-init="start()"
                     @mouseenter="stop()" @mouseleave="start()"
                 @endif
-                class="group/hero relative block h-[300px] overflow-hidden rounded-card lg:col-span-2 lg:h-full">
+                class="group/hero relative block h-[300px] overflow-hidden rounded-card sm:h-[360px] xl:col-span-2 xl:h-full">
                 @if ($heroSlides !== [])
                     @foreach ($heroSlides as $i => $slide)
                         @php $hasText = filled($slide['title']) || filled($slide['description']); @endphp
@@ -144,12 +150,12 @@
                 @endif
             </a>
 
-            <div class="grid grid-cols-2 gap-4 lg:flex lg:flex-col">
+            <div class="grid grid-cols-2 gap-4 xl:flex xl:flex-col">
                 @foreach ([
                     ['image' => $promoImage1, 'label' => __('New arrivals'), 'url' => $promoLink('theme_ecommerce_promo_1_link')],
                     ['image' => $promoImage2, 'label' => __('Best deals'), 'url' => $promoLink('theme_ecommerce_promo_2_link')],
                 ] as $promo)
-                    <a href="{{ $promo['url'] }}" class="group/promo relative block h-32 overflow-hidden rounded-card sm:h-44 lg:h-1/2">
+                    <a href="{{ $promo['url'] }}" class="group/promo relative block h-32 overflow-hidden rounded-card sm:h-44 lg:h-56 xl:h-1/2">
                         @if ($promo['image'])
                             <img src="{{ $promo['image'] }}" alt="{{ $promo['label'] }}" loading="lazy" decoding="async" width="600" height="400" class="h-full w-full object-cover transition duration-500 group-hover/promo:scale-105">
                             <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
@@ -173,7 +179,7 @@
                      is: a department index, with the featured ones shown here.
                      It is a real <h2>, which also gives the section an
                      accessible name. --}}
-                @include('theme-ecommerce::partials.section-heading', [
+                @include('theme-ecommerce::partials._section-heading', [
                     'title' => __('Shop by category'),
                     'subtitle' => __('Browse our most popular departments'),
                 ])
@@ -222,13 +228,13 @@
 
     @if ($featured->isNotEmpty())
         <section class="mx-auto max-w-7xl px-4 pt-8 sm:px-6">
-            @include('theme-ecommerce::partials.section-heading', [
+            @include('theme-ecommerce::partials._section-heading', [
                 'title' => __('Featured products'),
                 'subtitle' => __('Hand-picked products for you'),
             ])
             <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4 xl:grid-cols-5">
                 @foreach ($featured as $product)
-                    @include('theme-ecommerce::partials.product-card', ['product' => $product])
+                    @include('theme-ecommerce::partials._product-card', ['product' => $product])
                 @endforeach
             </div>
         </section>
@@ -236,13 +242,13 @@
 
     @if ($bestSellers->isNotEmpty())
         <section class="mx-auto max-w-7xl px-4 pt-10 sm:px-6">
-            @include('theme-ecommerce::partials.section-heading', [
+            @include('theme-ecommerce::partials._section-heading', [
                 'title' => __('Best sellers'),
                 'subtitle' => __('Most loved by our customers'),
             ])
             <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4 xl:grid-cols-5">
                 @foreach ($bestSellers as $product)
-                    @include('theme-ecommerce::partials.product-card', ['product' => $product])
+                    @include('theme-ecommerce::partials._product-card', ['product' => $product])
                 @endforeach
             </div>
         </section>
@@ -250,13 +256,13 @@
 
     @if ($newArrivals->isNotEmpty())
         <section class="mx-auto max-w-7xl px-4 pt-10 sm:px-6">
-            @include('theme-ecommerce::partials.section-heading', [
+            @include('theme-ecommerce::partials._section-heading', [
                 'title' => __('New arrivals'),
                 'subtitle' => __('Just added to the store'),
             ])
             <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4 xl:grid-cols-5">
                 @foreach ($newArrivals as $product)
-                    @include('theme-ecommerce::partials.product-card', ['product' => $product])
+                    @include('theme-ecommerce::partials._product-card', ['product' => $product])
                 @endforeach
             </div>
         </section>
@@ -264,7 +270,7 @@
 
     @if ($homeBrands->isNotEmpty())
         <section class="mx-auto max-w-7xl px-4 pt-10 sm:px-6">
-            @include('theme-ecommerce::partials.section-heading', [
+            @include('theme-ecommerce::partials._section-heading', [
                 'title' => __('Shop by brand'),
             ])
             <div class="grid grid-cols-2 gap-3 md:grid-cols-5 md:gap-4">
@@ -286,7 +292,7 @@
         @continue(blank($section->localizedCards()))
 
         <section id="{{ $section->name }}" class="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-            @include('theme-ecommerce::partials.section-heading', ['title' => $section->name])
+            @include('theme-ecommerce::partials._section-heading', ['title' => $section->name])
             <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4">
                 @foreach ($section->localizedCards() as $card)
                     <div class="group overflow-hidden rounded-card bg-white shadow-sm transition hover:shadow-md">
@@ -311,9 +317,9 @@
     @endforeach
 </main>
 
-@include('theme-ecommerce::partials.footer')
+@include('theme-ecommerce::partials._footer')
 
-@include('frontend.partials.chat-widget')
-@include('partials.custom-code-body')
+@include('frontend.partials._chat-widget')
+@include('partials._custom-code-body')
 </body>
 </html>

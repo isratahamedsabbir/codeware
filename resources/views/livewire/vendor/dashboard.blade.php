@@ -157,7 +157,7 @@
                                 <p class="text-xs text-zinc-400 truncate mt-0.5">{{ $order->customer_name }} &middot; {{ $order->created_at?->toDisplay() }}</p>
                             </div>
                         </div>
-                        @include('livewire.vendor.orders.partials.status-badge', ['status' => $order->status])
+                        @include('livewire.vendor.orders.partials._status-badge', ['status' => $order->status])
                     </a>
                 @empty
                     <div class="px-5 py-10 text-sm text-zinc-400 text-center flex flex-col items-center justify-center gap-2">

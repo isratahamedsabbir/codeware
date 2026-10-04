@@ -1,13 +1,13 @@
 ﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Support\Locale::direction() }}">
 <head>
-    @include('partials.head')
-    @include('partials.seo-meta')
-    @include('partials.custom-code-head')
+    @include('partials._head')
+    @include('partials._seo-meta')
+    @include('partials._custom-code-head')
 </head>
 <body class="bg-page-bg font-storefront text-sf-text antialiased">
 
-@include('theme-ecommerce::partials.header')
+@include('theme-ecommerce::partials._header')
 
 @php
     $crumbs = [
@@ -18,7 +18,7 @@
 @endphp
 
 <main>
-    @include('theme-ecommerce::partials.breadcrumbs', ['crumbs' => $crumbs])
+    @include('theme-ecommerce::partials._breadcrumbs', ['crumbs' => $crumbs])
 
     <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         <div class="mb-6">
@@ -27,7 +27,7 @@
         </div>
 
         <div class="flex flex-col gap-6 md:flex-row">
-            @include('theme-ecommerce::account.partials.account-nav')
+            @include('theme-ecommerce::account.partials._account-nav')
 
             <div class="min-w-0 flex-1">
                 @if ($orders->isEmpty())
@@ -65,7 +65,7 @@
                                         <td class="px-5 py-3.5 text-gray-600">{{ $order->items->sum('quantity') }}</td>
                                         <td class="px-5 py-3.5 font-bold text-sf-text">{{ format_money($order->total) }}</td>
                                         <td class="px-5 py-3.5">
-                                            @include('theme-ecommerce::account.partials.status-badge', ['status' => $order->status])
+                                            @include('theme-ecommerce::account.partials._status-badge', ['status' => $order->status])
                                         </td>
                                         <td class="px-5 py-3.5 text-right">
                                             <a href="{{ route('account.orders.show', $order->order_number) }}"
@@ -88,9 +88,9 @@
     </div>
 </main>
 
-@include('theme-ecommerce::partials.footer')
+@include('theme-ecommerce::partials._footer')
 
-@include('frontend.partials.chat-widget')
-@include('partials.custom-code-body')
+@include('frontend.partials._chat-widget')
+@include('partials._custom-code-body')
 </body>
 </html>

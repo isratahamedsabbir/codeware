@@ -1,13 +1,13 @@
 ﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Support\Locale::direction() }}">
 <head>
-    @include('partials.head')
-    @include('partials.seo-meta')
-    @include('partials.custom-code-head')
+    @include('partials._head')
+    @include('partials._seo-meta')
+    @include('partials._custom-code-head')
 </head>
 <body class="bg-page-bg font-storefront text-sf-text antialiased">
 
-@include('theme-ecommerce::partials.header')
+@include('theme-ecommerce::partials._header')
 
 @php
     $user = auth()->user();
@@ -18,7 +18,7 @@
 @endphp
 
 <main>
-    @include('theme-ecommerce::partials.breadcrumbs', ['crumbs' => $crumbs])
+    @include('theme-ecommerce::partials._breadcrumbs', ['crumbs' => $crumbs])
 
     <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         <div class="mb-6">
@@ -27,7 +27,7 @@
         </div>
 
         <div class="flex flex-col gap-6 md:flex-row">
-            @include('theme-ecommerce::account.partials.account-nav')
+            @include('theme-ecommerce::account.partials._account-nav')
 
             <div class="flex-1 space-y-6">
                 <div class="grid gap-4 sm:grid-cols-2">
@@ -80,7 +80,7 @@
                                         <p class="text-xs text-gray-500">{{ $order->created_at?->toDisplay() }}</p>
                                     </div>
                                     <div class="flex items-center gap-3">
-                                        @include('theme-ecommerce::account.partials.status-badge', ['status' => $order->status])
+                                        @include('theme-ecommerce::account.partials._status-badge', ['status' => $order->status])
                                         <span class="text-sm font-bold text-sf-text">{{ format_money($order->total) }}</span>
                                     </div>
                                 </li>
@@ -93,9 +93,9 @@
     </div>
 </main>
 
-@include('theme-ecommerce::partials.footer')
+@include('theme-ecommerce::partials._footer')
 
-@include('frontend.partials.chat-widget')
-@include('partials.custom-code-body')
+@include('frontend.partials._chat-widget')
+@include('partials._custom-code-body')
 </body>
 </html>

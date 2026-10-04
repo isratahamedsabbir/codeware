@@ -48,6 +48,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_blocked' => 'boolean',
+            'balance' => 'decimal:2',
+            'points' => 'integer',
         ];
     }
 

@@ -2,7 +2,7 @@
 
     <div class="mb-3 flex items-center justify-between gap-4 flex-wrap">
         <div>
-            @include('partials.admin-breadcrumbs', ['routeName' => 'admin.voucher-purchases'])
+            @include('partials._admin-breadcrumbs', ['routeName' => 'admin.voucher-purchases'])
         </div>
     </div>
 

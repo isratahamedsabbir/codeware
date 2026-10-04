@@ -1,13 +1,13 @@
 ﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Support\Locale::direction() }}">
 <head>
-    @include('partials.head')
-    @include('partials.seo-meta')
-    @include('partials.custom-code-head')
+    @include('partials._head')
+    @include('partials._seo-meta')
+    @include('partials._custom-code-head')
 </head>
 <body class="bg-page-bg font-storefront text-sf-text antialiased">
 
-@include('theme-ecommerce::partials.header')
+@include('theme-ecommerce::partials._header')
 
 @php
     $crumbs = [
@@ -18,7 +18,7 @@
 @endphp
 
 <main>
-    @include('theme-ecommerce::partials.breadcrumbs', ['crumbs' => $crumbs])
+    @include('theme-ecommerce::partials._breadcrumbs', ['crumbs' => $crumbs])
 
     <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         <div class="mb-6">
@@ -27,7 +27,7 @@
         </div>
 
         <div class="flex flex-col gap-6 md:flex-row">
-            @include('theme-ecommerce::account.partials.account-nav')
+            @include('theme-ecommerce::account.partials._account-nav')
 
             <div class="w-full max-w-xl flex-1">
                 <div class="rounded-card border border-zinc-200 bg-white p-6">
@@ -38,9 +38,9 @@
     </div>
 </main>
 
-@include('theme-ecommerce::partials.footer')
+@include('theme-ecommerce::partials._footer')
 
-@include('frontend.partials.chat-widget')
-@include('partials.custom-code-body')
+@include('frontend.partials._chat-widget')
+@include('partials._custom-code-body')
 </body>
 </html>

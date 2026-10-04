@@ -2,7 +2,7 @@
 
     <div class="mb-3 flex items-center justify-between gap-4 flex-wrap">
         <div>
-            @include('partials.admin-breadcrumbs', ['routeName' => 'admin.menu'])
+            @include('partials._admin-breadcrumbs', ['routeName' => 'admin.menu'])
         </div>
         <div class="flex items-center gap-3 shrink-0 flex-wrap">
             <div class="inline-flex items-center gap-1 p-1 rounded-xl bg-zinc-100">

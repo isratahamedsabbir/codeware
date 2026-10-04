@@ -21,16 +21,16 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-    @include('partials.head')
+    @include('partials._head')
     {{-- A 404 must never be indexed, and must never claim a canonical URL for a
-         page that does not exist — so partials.seo-meta is deliberately absent
+         page that does not exist — so partials._seo-meta is deliberately absent
          here (it derives both from $page). --}}
     <meta name="robots" content="noindex, nofollow">
-    @include('partials.custom-code-head')
+    @include('partials._custom-code-head')
 </head>
 <body class="bg-white text-zinc-800 antialiased">
 
-@include('theme-default::partials.header', [
+@include('theme-default::partials._header', [
     'navPages' => \App\Support\Frontend::navPages(),
     'showVendorLogin' => \App\Support\Frontend::showVendorLogin(),
     'showDeliveryLogin' => \App\Support\Frontend::showDeliveryLogin(),
@@ -51,9 +51,9 @@
     </section>
 </main>
 
-@include('theme-default::partials.footer')
+@include('theme-default::partials._footer')
 
-@include('frontend.partials.chat-widget')
-@include('partials.custom-code-body')
+@include('frontend.partials._chat-widget')
+@include('partials._custom-code-body')
 </body>
 </html>

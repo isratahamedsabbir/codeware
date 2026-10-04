@@ -2,7 +2,7 @@
     Ecommerce theme settings — bound to the Theme Settings screen (Admin →
     Theme Settings) via wire:model="settings.*". Values persist to this theme's
     own theme.json beside this file and are read by ecommerce/home.blade.php
-    and partials/head.blade.php through App\Support\ThemeSettings.
+    and partials/_head.blade.php through App\Support\ThemeSettings.
 
     Banners tab: the hero slider (each slide's image, title, description and
     link) and the two promo tiles with their links. Colors tab: one color per
@@ -57,16 +57,16 @@
         class="isolate overflow-hidden rounded-xl bg-white dark:bg-zinc-900">
         {{-- ── Canvas: hero (2/3) + promo tiles (1/3) ── --}}
         <div class="bg-zinc-50/70 p-5 dark:bg-zinc-800/40">
-            <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
                 {{-- Hero slider --}}
-                <div class="min-w-0 space-y-3 lg:col-span-2">
+                <div class="min-w-0 space-y-3 xl:col-span-2">
                     {{-- Each slide's text and link sit on the image itself, where
                          the storefront shows them. The fields are a sibling of
                          the picker (not inside its button), so typing never
                          opens the media library. --}}
                     @foreach ($heroSlides as $i => $slide)
                         <div wire:key="hero-slide-{{ $i }}" x-show="activeSlide === {{ $i }}" @if ($i > 0) x-cloak @endif class="relative">
-                            <x-media-picker model="heroSlides.{{ $i }}.image" label="Slide {{ $i + 1 }}" size-hint="1920 × 600" preview dropzone drop-height="h-[29rem]"
+                            <x-media-picker model="heroSlides.{{ $i }}.image" label="Slide {{ $i + 1 }}" size-hint="1920 × 600" preview dropzone drop-height="h-72 2xl:h-80"
                                 only-images mimes="jpg,jpeg,png,gif,webp,avif" :max-size-mb="4" placeholder="Choose from the library" />
                             @if (filled($slide['image']))
                                 <span class="pointer-events-none absolute left-3 top-3 z-10 rounded-md bg-zinc-900/75 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur">
@@ -135,10 +135,10 @@
                 {{-- Promo tiles — stacked beside the hero on desktop, side by
                      side under it on smaller screens, as on the storefront. --}}
                 <div class="min-w-0 space-y-3">
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-1">
                         @foreach ($promoTiles as [$imageKey, $linkKey, $promoLabel, $promoPosition, $example])
                             <div class="relative min-w-0">
-                                <x-media-picker model="settings.{{ $imageKey }}" label="{{ $promoLabel }}" size-hint="1200 × 400" preview dropzone drop-height="h-[14rem]"
+                                <x-media-picker model="settings.{{ $imageKey }}" label="{{ $promoLabel }}" size-hint="1200 × 400" preview dropzone drop-height="h-32 2xl:h-36"
                                     only-images mimes="jpg,jpeg,png,gif,webp,avif" :max-size-mb="4" placeholder="Choose from the library" />
                                 @if (filled($settings[$imageKey] ?? null))
                                     <span class="pointer-events-none absolute left-3 top-3 z-10 rounded-md bg-zinc-900/75 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur">
@@ -160,7 +160,7 @@
     </section>
 
     {{-- Colors — one per storefront area. Blank means "use the default"
-         (partials/head.blade.php turns each set value into the matching
+         (partials/_head.blade.php turns each set value into the matching
          --color-* CSS variable). The mini storefront on the right previews
          the current values live, before saving. --}}
     @php

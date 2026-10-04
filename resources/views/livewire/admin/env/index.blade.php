@@ -106,7 +106,7 @@
                 </x-slot:titleActions>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-3">
                     @foreach ($this->envFields()['App'] as $key => $meta)
-                        @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
+                        @include('livewire.admin.env.partials._env-field', ['key' => $key, 'meta' => $meta])
                     @endforeach
                 </div>
             </x-admin-section-card>
@@ -127,7 +127,7 @@
                 </x-slot:titleActions>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-3">
                     @foreach ($this->envFields()['Google Login'] as $key => $meta)
-                        @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
+                        @include('livewire.admin.env.partials._env-field', ['key' => $key, 'meta' => $meta])
                     @endforeach
                 </div>
             </x-admin-section-card>
@@ -144,7 +144,7 @@
                 </x-slot:titleActions>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-3">
                     @foreach ($this->envFields()['Facebook Login'] as $key => $meta)
-                        @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
+                        @include('livewire.admin.env.partials._env-field', ['key' => $key, 'meta' => $meta])
                     @endforeach
                 </div>
             </x-admin-section-card>
@@ -168,7 +168,7 @@
                 </x-slot:actions>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-3">
                     @foreach ($this->envFields()['reCAPTCHA'] as $key => $meta)
-                        @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
+                        @include('livewire.admin.env.partials._env-field', ['key' => $key, 'meta' => $meta])
                     @endforeach
                 </div>
             </x-admin-section-card>
@@ -209,7 +209,7 @@
                 </x-slot:titleActions>
                 <div class="max-w-xl">
                     @foreach ($this->envFields()['Google Maps'] as $key => $meta)
-                        @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
+                        @include('livewire.admin.env.partials._env-field', ['key' => $key, 'meta' => $meta])
                     @endforeach
                 </div>
 
@@ -268,7 +268,7 @@
                 </x-slot:titleActions>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-3">
                     @foreach ($this->envFields()['AWS S3'] as $key => $meta)
-                        @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
+                        @include('livewire.admin.env.partials._env-field', ['key' => $key, 'meta' => $meta])
                     @endforeach
                 </div>
             </x-admin-section-card>
@@ -319,7 +319,7 @@
                 </x-slot:titleActions>
                 <div class="max-w-xl">
                     @foreach ($this->envFields()['CMS Editor'] as $key => $meta)
-                        @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
+                        @include('livewire.admin.env.partials._env-field', ['key' => $key, 'meta' => $meta])
                     @endforeach
                 </div>
             </x-admin-section-card>
@@ -331,7 +331,7 @@
                 <x-admin-section-card header-border="border-zinc-100" icon="rocket-launch" title="{{ __($groupLabel) }}">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         @foreach ($fields as $key => $meta)
-                            @include('livewire.admin.env.partials.env-field', ['key' => $key, 'meta' => $meta])
+                            @include('livewire.admin.env.partials._env-field', ['key' => $key, 'meta' => $meta])
                         @endforeach
                     </div>
                 </x-admin-section-card>

@@ -7,7 +7,7 @@
 
     <div class="mb-3 flex items-center justify-between gap-4 flex-wrap">
         <div>
-            @include('partials.admin-breadcrumbs', ['routeName' => 'admin.categories'])
+            @include('partials._admin-breadcrumbs', ['routeName' => 'admin.categories'])
         </div>
         <div class="flex items-center gap-2 shrink-0">
             @if (count($selectedIds) > 0)

@@ -1,13 +1,13 @@
 ﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Support\Locale::direction() }}">
 <head>
-    @include('partials.head')
-    @include('partials.seo-meta')
-    @include('partials.custom-code-head')
+    @include('partials._head')
+    @include('partials._seo-meta')
+    @include('partials._custom-code-head')
 </head>
 <body class="bg-page-bg font-storefront text-sf-text antialiased">
 
-@include('theme-ecommerce::partials.header')
+@include('theme-ecommerce::partials._header')
 
 @php
     $crumbs = [
@@ -22,7 +22,7 @@
     $crumbs[] = ['label' => $category->name, 'url' => null];
 @endphp
 
-@include('theme-ecommerce::partials.breadcrumbs', ['crumbs' => $crumbs])
+@include('theme-ecommerce::partials._breadcrumbs', ['crumbs' => $crumbs])
 
 <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
     <header class="mb-8">
@@ -87,7 +87,7 @@
         @if ($products->isNotEmpty())
             <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5 lg:grid-cols-4">
                 @foreach ($products as $product)
-                    @include('theme-ecommerce::partials.product-card', ['product' => $product])
+                    @include('theme-ecommerce::partials._product-card', ['product' => $product])
                 @endforeach
             </div>
             <div class="mt-10">
@@ -104,9 +104,9 @@
     </section>
 </main>
 
-@include('theme-ecommerce::partials.footer')
+@include('theme-ecommerce::partials._footer')
 
-@include('frontend.partials.chat-widget')
-@include('partials.custom-code-body')
+@include('frontend.partials._chat-widget')
+@include('partials._custom-code-body')
 </body>
 </html>

@@ -86,7 +86,13 @@
             </p>
         @enderror
 
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {{-- Three columns only once there is genuinely room for them. The sidebar
+             eats a fixed 256px, so counting viewport width overstates what the grid
+             gets: at 1280px (xl) a three-up row leaves each card ~320px, and the
+             footer below stops fitting title, version, badge and tags on one line.
+             2xl is the first breakpoint where three cards are actually comfortable,
+             so a laptop gets two roomy cards rather than three squeezed ones. --}}
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-3">
             @foreach ($themes as $slug => $label)
                 @php
                     $selected = ($settings['site_theme'] ?? null) === $slug;
@@ -123,8 +129,10 @@
                         </span>
                     </div>
 
-                    {{-- Preview pane --}}
-                    <div class="relative h-44 overflow-hidden {{ $preview['bg'] }} p-2.5 dark:bg-zinc-900">
+                    {{-- Preview pane. h-44 is a fixed height on purpose — every theme
+                         has to preview at the same size or the row of cards compares
+                         three different-looking screenshots instead of three themes. --}}
+                    <div class="relative h-44 shrink-0 overflow-hidden {{ $preview['bg'] }} p-2.5 dark:bg-zinc-900">
                         <div class="flex h-full flex-col gap-1.5">
 
                             {{-- Nav bar --}}
@@ -200,8 +208,12 @@
                         </div>
                     </div>
 
-                    {{-- Footer --}}
-                    <div class="flex items-center gap-3 px-3.5 py-2.5">
+                    {{-- Footer. mt-auto pins it to the bottom of the card, so the
+                         footers of the cards in a row sit on one line instead of
+                         floating at whatever height their own content happened to
+                         end — cards in the same grid row stretch to the tallest, and
+                         without this the short ones leave a gap under the text. --}}
+                    <div class="mt-auto flex items-center gap-3 px-3.5 py-2.5">
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-2">
                                 <p class="truncate text-sm font-semibold text-zinc-800 dark:text-zinc-100">{{ $label }}</p>
@@ -238,10 +250,17 @@
                             </p>
                         </div>
                         @if ($themeCards[$slug]['manifest']['tags'] !== [])
-                            <div class="flex max-w-[45%] shrink-0 flex-wrap justify-end gap-1">
-                                @foreach ($themeCards[$slug]['manifest']['tags'] as $tag)
+                            {{-- Capped rather than wrapped. Ecommerce declares five tags,
+                                 and on a narrow card wrapping them pushed the footer to
+                                 three lines and threw the row out of alignment. What is
+                                 left of the count is said once, instead. --}}
+                            <div class="hidden shrink-0 items-center gap-1 lg:flex">
+                                @foreach (array_slice($themeCards[$slug]['manifest']['tags'], 0, 2) as $tag)
                                     <span class="rounded-md bg-zinc-50 px-1.5 py-0.5 font-mono text-[10px] text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">{{ $tag }}</span>
                                 @endforeach
+                                @if (count($themeCards[$slug]['manifest']['tags']) > 2)
+                                    <span class="font-mono text-[10px] text-zinc-400">+{{ count($themeCards[$slug]['manifest']['tags']) - 2 }}</span>
+                                @endif
                             </div>
                         @endif
                         @if (! $themeCards[$slug]['hasRoutes'])

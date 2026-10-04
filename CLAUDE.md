@@ -93,7 +93,8 @@ themes/{slug}/
     theme.json                manifest + settings values in one file
     settings.blade.php        its admin settings screen
     routes/web.php            its storefront routes (optional)
-    *.blade.php               templates, view namespace theme-{slug}:: (partials/, errors/, account/ ...)
+    *.blade.php               page templates, view namespace theme-{slug}:: (errors/, account/ ...)
+    partials/_*.blade.php      fragments a page @includes — the underscore is the convention
     Controllers/              namespace Themes\{Slug}\Controllers — autoloaded, no composer dump
     database/migrations/      auto-loaded via loadMigrationsFrom()
     database/seeders/         namespace Themes\{Slug}\Database\Seeders — NOT auto-discovered
@@ -103,6 +104,8 @@ themes/{slug}/
 ```
 
 The folder name **is** the slug (`^[A-Za-z0-9_-]+$`), and `Themes::all()` is a `scandir` of `themes/` cached for a day under `themes:all` — after adding a folder by hand, `php artisan cache:clear`.
+
+**Partials are underscored everywhere**, not just in themes: anything a page `@include`s lives at `partials/_*.blade.php` — `resources/views/partials/`, `resources/views/frontend/partials/`, `resources/views/livewire/**/partials/`, `themes/{slug}/partials/`. The view name is `partials._name` (`@include('partials._head')`, `@include('theme-ecommerce::account.partials._status-badge')`). Full-page templates (`auth/`, `errors/`, `pages/`) and `<x-...>` components under `resources/views/components/` keep their plain names — a component is invoked as a tag, not included as a fragment. Two things key off the underscore: `resources/css/storefront-shared.css` excludes admin markup with `@source not '../views/partials/_admin-*'`, and `Themes::create()` scaffolds `_header`/`_footer`, so a new partial must be added under the convention or it silently changes the storefront bundle.
 
 **How a request flows:** the active theme is the `site_theme` setting (Admin → Theme Settings). Every installed theme's `routes/web.php` is registered, each wrapped in `['theme', 'referral']` (`routes/web.php:141-143`). The `theme` guard is `EnsureActiveTheme`, which looks up the matched route's *name* in `Themes::ROUTE_TEMPLATES` and 404s if the active theme ships no template for it. It is prepended ahead of `auth` in `bootstrap/app.php` on purpose, so a page the active theme doesn't have answers 404 rather than redirecting to login.
 

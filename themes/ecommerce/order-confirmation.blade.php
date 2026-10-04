@@ -1,13 +1,13 @@
 ﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Support\Locale::direction() }}">
 <head>
-    @include('partials.head')
-    @include('partials.seo-meta')
-    @include('partials.custom-code-head')
+    @include('partials._head')
+    @include('partials._seo-meta')
+    @include('partials._custom-code-head')
 </head>
 <body class="bg-page-bg font-storefront text-sf-text antialiased">
 
-@include('theme-ecommerce::partials.header')
+@include('theme-ecommerce::partials._header')
 
 @php
     $itemCount = (int) $order->items->sum('quantity');
@@ -170,7 +170,7 @@
                     </div>
                     <div class="flex items-center justify-between gap-3">
                         <dt class="text-zinc-500">{{ __('Status') }}</dt>
-                        <dd>@include('theme-ecommerce::account.partials.status-badge', ['status' => $order->status ?: 'pending'])</dd>
+                        <dd>@include('theme-ecommerce::account.partials._status-badge', ['status' => $order->status ?: 'pending'])</dd>
                     </div>
                     @if ($order->payment_method)
                         <div class="flex items-center justify-between gap-3">
@@ -180,7 +180,7 @@
                     @endif
                     <div class="flex items-center justify-between gap-3">
                         <dt class="text-zinc-500">{{ __('Payment status') }}</dt>
-                        <dd>@include('theme-ecommerce::account.partials.status-badge', ['status' => $paymentStatus])</dd>
+                        <dd>@include('theme-ecommerce::account.partials._status-badge', ['status' => $paymentStatus])</dd>
                     </div>
                 </dl>
             </section>
@@ -271,9 +271,9 @@
     </div>
 </main>
 
-@include('theme-ecommerce::partials.footer')
+@include('theme-ecommerce::partials._footer')
 
-@include('frontend.partials.chat-widget')
-@include('partials.custom-code-body')
+@include('frontend.partials._chat-widget')
+@include('partials._custom-code-body')
 </body>
 </html>

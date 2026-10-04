@@ -73,7 +73,7 @@
                     @if ($socials->isNotEmpty())
                         <h2 class="pf-mono text-[10px] font-semibold tracking-wider text-(--pf-text-muted) uppercase">Elsewhere</h2>
                         <div class="mt-4">
-                            @include('theme-portfolio::partials.social-links', ['variant' => 'row'])
+                            @include('theme-portfolio::partials._social-links', ['variant' => 'row'])
                         </div>
                     @endif
 

@@ -3,6 +3,7 @@
 namespace App\Livewire\Frontend\Account;
 
 use App\Concerns\ProfileValidationRules;
+use App\Support\SafeUpload;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -122,7 +123,7 @@ class Profile extends Component
 
         return $this->photo->storeAs(
             'profiles',
-            Str::uuid()->toString().'.'.$this->photo->getClientOriginalExtension(),
+            Str::uuid()->toString().'.'.SafeUpload::extension($this->photo),
             'public',
         );
     }

@@ -30,10 +30,12 @@ document.addEventListener('alpine:init', () => {
             };
         },
 
-        // allowedExt is passed per call (not read from the init config) because
-        // the picker modal's allowed extensions change at runtime — whichever
-        // <x-media-picker mimes="..."> last opened it — and a stale value
-        // baked in at x-data init time would never pick that up.
+        // allowedExt is a *hint* the server intersects with its own list, never
+        // the authority on what may be stored — ChunkedUploadController holds
+        // the real allow-list. It is passed per call (not read from the init
+        // config) because the picker modal's allowed extensions change at
+        // runtime — whichever <x-media-picker mimes="..."> last opened it — and
+        // a stale value baked in at x-data init time would never pick that up.
         startChunkUploads(files, allowedExt) {
             files.forEach((file) => this.chunkUploadOne(file, allowedExt || this.allowedExt));
         },

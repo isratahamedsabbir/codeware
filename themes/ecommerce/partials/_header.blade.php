@@ -154,7 +154,7 @@
                                 class="absolute left-0 top-full z-50 ml-0 flex w-72 max-h-[min(24rem,60vh)] flex-col rounded-r-lg rounded-b-lg border border-gray-100 bg-white py-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
                                 <div class="min-h-0 overflow-y-auto overscroll-contain">
                                     @foreach ($headerTopCategories as $category)
-                                        @include('theme-ecommerce::partials.header-category-item', [
+                                        @include('theme-ecommerce::partials._header-category-item', [
                                             'category' => $category,
                                             'childrenByParent' => $headerChildrenByParent,
                                             'depth' => 0,
@@ -230,7 +230,7 @@
                     </button>
                     <div x-show="open" x-collapse x-cloak class="pb-2">
                         @foreach ($headerTopCategories as $category)
-                            @include('theme-ecommerce::partials.header-category-item', [
+                            @include('theme-ecommerce::partials._header-category-item', [
                                 'category' => $category,
                                 'childrenByParent' => $headerChildrenByParent,
                                 'depth' => 0,

@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
-    @include('partials.head')
+    @include('partials._head')
     @if (($noindex ?? true) !== false)
         <meta name="robots" content="noindex, nofollow">
     @endif
@@ -21,10 +21,10 @@
         one case where the canonical and the og: tags are worth having.
     --}}
     @if ($seoMeta ?? false)
-        @include('partials.seo-meta')
+        @include('partials._seo-meta')
     @endif
     {{-- No font preconnect: Plus Jakarta Sans is self-hosted and preloaded by
-         partials.head above. The Google Fonts preconnects that used to sit here
+         partials._head above. The Google Fonts preconnects that used to sit here
          opened a connection to two hosts that this page no longer talks to. --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <style>
@@ -260,7 +260,7 @@
         }
     </style>
 @if ($customCode ?? false)
-    @include('partials.custom-code-head')
+    @include('partials._custom-code-head')
 @endif
 </head> 
 
@@ -308,7 +308,7 @@
 
     </div>
 
-    @include('partials.auth-loader-overlay')
+    @include('partials._auth-loader-overlay')
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" crossorigin="anonymous"
         referrerpolicy="no-referrer"></script>
@@ -330,7 +330,7 @@
 
     @fluxScripts
 @if ($customCode ?? false)
-    @include('partials.custom-code-body')
+    @include('partials._custom-code-body')
 @endif
 </body>
 

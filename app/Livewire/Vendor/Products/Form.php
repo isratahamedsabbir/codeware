@@ -10,6 +10,7 @@ use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use App\Models\ProductVendor;
 use App\Models\Type;
+use App\Support\SafeUpload;
 use App\Support\Slug;
 use App\Support\Taxonomy;
 use Illuminate\Support\Facades\Auth;
@@ -406,7 +407,7 @@ class Form extends Component
             // isn't deleted here — only a new one is stored.
             $path = $this->featuredImage->storeAs(
                 'products',
-                Str::uuid()->toString().'.'.$this->featuredImage->getClientOriginalExtension(),
+                Str::uuid()->toString().'.'.SafeUpload::extension($this->featuredImage),
                 'public',
             );
 

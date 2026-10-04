@@ -6,7 +6,7 @@
     title or an image in the URL at all — they scrape the og:/twitter: tags off
     the page. So the card a visitor sees is decided by SeoResolver, and the only
     way this partial can produce a different one is by resolving differently.
-    It resolves with the same arguments as partials.seo-meta, and SeoResolver
+    It resolves with the same arguments as partials._seo-meta, and SeoResolver
     memoises per request, so this is the identical SeoData object and costs
     nothing. Building the text from $product->name here would let the page and
     the share card drift apart the moment an admin tuned an og_title.

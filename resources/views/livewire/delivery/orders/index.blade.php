@@ -28,7 +28,7 @@
                         <p class="font-mono text-sm font-semibold text-zinc-900">{{ $order->order_number }}</p>
                         <p class="text-xs text-zinc-500">{{ $order->created_at?->toDisplay() }}</p>
                     </div>
-                    @include('livewire.vendor.orders.partials.status-badge', ['status' => $order->status])
+                    @include('livewire.vendor.orders.partials._status-badge', ['status' => $order->status])
                 </div>
 
                 <div class="mt-3 space-y-1 text-sm">

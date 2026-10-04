@@ -12,7 +12,7 @@
     </flux:button>
 @endpush
 
-<div class="space-y-5" x-data="{ showGuide: false }"
+<div class="space-y-5"
     x-on:open-plugin-create.window="$wire.openCreateModal()"
     x-on:open-plugin-install.window="$wire.openInstallModal()">
     @if (session('success'))
@@ -29,12 +29,18 @@
 
     <x-admin-section-card icon="puzzle-piece" title="Installed Plugins"
         description="Active plugins appear in the Plugins menu. Each one is managed from its own screen.">
-        <x-slot:actions>
-            <button type="button" @click="showGuide = true" title="How to build and use plugins" aria-label="How to build and use plugins"
-                class="inline-flex size-8 items-center justify-center rounded-full border border-zinc-200 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 dark:border-zinc-600 dark:text-zinc-400 dark:hover:bg-zinc-700">
-                <flux:icon.information-circle class="size-5" />
-            </button>
-        </x-slot:actions>
+        {{-- Sits right after the title rather than at the far end of the header:
+             it is a link, not a screen of its own any more, so it reads as part of
+             the heading's label — the same slot Theme Settings' "How to create a
+             theme" link uses. --}}
+        <x-slot:titleActions>
+            <a href="{{ route('admin.developer-guide') }}#plugins" wire:navigate.hover
+                title="How to build and use plugins — open the Developer Guide"
+                aria-label="How to build and use plugins — open the Developer Guide"
+                class="flex size-5 items-center justify-center text-zinc-400 transition-colors hover:text-primary">
+                <flux:icon.information-circle class="size-4" />
+            </a>
+        </x-slot:titleActions>
 
         <div class="divide-y divide-zinc-100 dark:divide-zinc-700">
             @forelse ($plugins as $slug => $plugin)
@@ -89,97 +95,6 @@
             @endforelse
         </div>
     </x-admin-section-card>
-
-    {{-- ── Plugin guide modal ── --}}
-    <div x-show="showGuide" x-cloak x-transition @keydown.escape.window="showGuide = false"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-        <div class="flex max-h-[90vh] w-full max-w-3xl flex-col rounded-xl bg-white shadow-xl dark:bg-zinc-800" @click.away="showGuide = false">
-            <div class="flex items-center justify-between border-b border-zinc-100 px-6 py-4 dark:border-zinc-700">
-                <h3 class="text-sm font-medium text-zinc-900 dark:text-zinc-100">How to build and use a plugin</h3>
-                <button type="button" @click="showGuide = false" class="rounded p-1 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700">
-                    <flux:icon.x-mark class="size-4" />
-                </button>
-            </div>
-
-            <div class="space-y-5 overflow-y-auto p-6 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-                <section>
-                    <h4 class="mb-1 font-semibold text-zinc-900 dark:text-zinc-100">1. What a plugin is</h4>
-                    <p>A plugin is a folder inside <code class="font-mono text-xs">plugins/</code>. The folder name is its slug
-                        (lowercase letters, numbers, <code class="font-mono text-xs">-</code> and <code class="font-mono text-xs">_</code>).
-                        Two files are required; the rest is optional.</p>
-                    <pre class="mt-2 overflow-x-auto rounded-lg bg-zinc-900 p-3 font-mono text-xs text-zinc-100">plugins/my-plugin/
-├── plugin.json        required – name, version, icon…
-├── index.blade.php    required – the plugin's own screen
-├── header.blade.php   optional – an icon/widget in the top bar
-├── routes.php         optional – extra admin routes
-├── migrations/        optional – database tables
-└── …any other views   optional – plugin-my-plugin::name</pre>
-                </section>
-
-                <section>
-                    <h4 class="mb-1 font-semibold text-zinc-900 dark:text-zinc-100">2. plugin.json</h4>
-                    <pre class="overflow-x-auto rounded-lg bg-zinc-900 p-3 font-mono text-xs text-zinc-100">{
-    "name": "My Plugin",
-    "version": "1.0.0",
-    "description": "What it does.",
-    "author": "You",
-    "icon": "bolt",
-    "default": false,
-    "settings": { "enabled": true, "color": "blue" }
-}</pre>
-                    <ul class="mt-2 list-disc space-y-1 pl-5">
-                        <li><b>name</b> is required. <b>icon</b> is a Heroicon name used by the sidebar (e.g. <code class="font-mono text-xs">bolt</code>, <code class="font-mono text-xs">clock</code>).</li>
-                        <li><b>default: true</b> makes the plugin always active and impossible to delete.</li>
-                        <li><b>settings</b> lists the plugin's saved options and their default values.</li>
-                    </ul>
-                </section>
-
-                <section>
-                    <h4 class="mb-1 font-semibold text-zinc-900 dark:text-zinc-100">3. index.blade.php – the plugin screen</h4>
-                    <p>This opens when you click the plugin in the Plugins menu, inside the admin layout. Its
-                        <code class="font-mono text-xs">plugin.json</code> data is available as <code class="font-mono text-xs">$plugin</code>, and each key under
-                        <code class="font-mono text-xs">settings</code> is bound as <code class="font-mono text-xs">values.key</code> and saved automatically. The file needs one root element.</p>
-                    <pre class="mt-2 overflow-x-auto rounded-lg bg-zinc-900 p-3 font-mono text-xs text-zinc-100">&lt;div&gt;
-    &lt;h2&gt;@{{ $plugin['name'] }}&lt;/h2&gt;
-    &lt;flux:switch wire:model.live="values.enabled" /&gt;
-&lt;/div&gt;</pre>
-                </section>
-
-                <section>
-                    <h4 class="mb-1 font-semibold text-zinc-900 dark:text-zinc-100">4. header.blade.php – a top-bar icon</h4>
-                    <p>If an active plugin has this file, it is rendered in the admin header next to the calculator and dark-mode buttons.
-                        Read saved options with <code class="font-mono text-xs">\App\Support\Plugins::settings('my-plugin')</code> and output markup only when the plugin is switched on.
-                        The Clock and Calendar plugins are good examples to copy.</p>
-                </section>
-
-                <section>
-                    <h4 class="mb-1 font-semibold text-zinc-900 dark:text-zinc-100">5. routes.php and migrations/ (optional)</h4>
-                    <p>Routes in <code class="font-mono text-xs">routes.php</code> load only while the plugin is active, behind admin login, at
-                        <code class="font-mono text-xs">/plugins/my-plugin/…</code> with route names starting <code class="font-mono text-xs">admin.plugins.my-plugin.</code>.
-                        Files in <code class="font-mono text-xs">migrations/</code> are picked up by <code class="font-mono text-xs">php artisan migrate</code> while the plugin is active.</p>
-                </section>
-
-                <section>
-                    <h4 class="mb-1 font-semibold text-zinc-900 dark:text-zinc-100">6. Create, install, activate, remove</h4>
-                    <ol class="list-decimal space-y-1 pl-5">
-                        <li>To start your own, click <b>New Plugin</b> (top right), fill in the basics and press <b>Create Plugin</b>. It writes <code class="font-mono text-xs">plugins/my-plugin/</code> with a <code class="font-mono text-xs">plugin.json</code>, an <code class="font-mono text-xs">index.blade.php</code> and a commented <code class="font-mono text-xs">routes.php</code> — edit those files next.</li>
-                        <li>To add someone else's plugin, zip its folder (the zip holds that one folder, e.g. <code class="font-mono text-xs">my-plugin/</code>) and click <b>Install Plugin</b> to choose it. Or copy the folder into <code class="font-mono text-xs">plugins/</code> yourself.</li>
-                        <li>Press <b>Activate</b> on its row. It now appears in the sidebar Plugins menu, and in the header if it ships a <code class="font-mono text-xs">header.blade.php</code>.</li>
-                        <li><b>Manage</b> opens its screen, the download icon saves the whole folder back as a <code class="font-mono text-xs">.zip</code> (back it up before a round of editing, or share it), <b>Deactivate</b> turns it off, the bin icon deletes it. Default plugins cannot be turned off or deleted.</li>
-                    </ol>
-                </section>
-
-                <p class="flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-xs text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
-                    <flux:icon.exclamation-triangle class="mt-px size-4 shrink-0" />
-                    <span>Plugins can run PHP on your server. Only install plugins from sources you trust.</span>
-                </p>
-            </div>
-
-            <div class="flex justify-end border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-700 dark:bg-zinc-800/40">
-                <flux:button variant="primary" size="sm" @click="showGuide = false">Got it</flux:button>
-            </div>
-        </div>
-    </div>
 
     {{-- ── Create plugin modal ── --}}
     @if ($showCreateModal)

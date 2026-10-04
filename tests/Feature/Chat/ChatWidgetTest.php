@@ -225,7 +225,7 @@ it('puts a button on the page that can fetch itself a panel', function () {
     // component is the half that saves 386 KB of JavaScript.
     Setting::set('chat_widget_enabled', true);
 
-    $partial = file_get_contents(resource_path('views/frontend/partials/chat-widget.blade.php'));
+    $partial = file_get_contents(resource_path('views/frontend/partials/_chat-widget.blade.php'));
 
     expect($partial)->toContain('data-chat-widget-host')
         ->and($partial)->toContain("route('chat-widget.fragment')")

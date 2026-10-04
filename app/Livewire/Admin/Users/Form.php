@@ -6,6 +6,7 @@ use App\Models\ProductVendor;
 use App\Models\User;
 use App\Models\UserDocument;
 use App\Support\AdminActivity;
+use App\Support\SafeUpload;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -112,7 +113,7 @@ class Form extends Component
         ]);
 
         foreach ($this->newDocuments as $file) {
-            $path = $file->storeAs('user-documents', Str::uuid().'.'.$file->getClientOriginalExtension(), 'public');
+            $path = $file->storeAs('user-documents', Str::uuid().'.'.SafeUpload::extension($file), 'public');
 
             UserDocument::create([
                 'user_id' => $this->userId,
@@ -239,7 +240,7 @@ class Form extends Component
 
             return $this->photo->storeAs(
                 'profiles',
-                Str::uuid()->toString().'.'.$this->photo->getClientOriginalExtension(),
+                Str::uuid()->toString().'.'.SafeUpload::extension($this->photo),
                 'public',
             );
         }

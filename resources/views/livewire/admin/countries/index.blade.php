@@ -14,7 +14,7 @@
          part of the component's own re-rendered template, this does. --}}
     <div class="mb-3 flex items-center justify-between gap-4 flex-wrap">
         <div>
-            @include('partials.admin-breadcrumbs', ['routeName' => 'admin.countries'])
+            @include('partials._admin-breadcrumbs', ['routeName' => 'admin.countries'])
         </div>
         <div class="flex items-center gap-2 shrink-0">
             @if (count($selectedIds) > 0)

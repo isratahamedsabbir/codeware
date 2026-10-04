@@ -4,20 +4,20 @@
     {{-- Must be first in <head>: this decides whether the loader is shown on
          this visit, and it has to be decided before the body paints. See the
          partial. --}}
-    @include('theme-portfolio::partials.loader-flag')
-    @include('partials.head')
-    @include('partials.seo-meta')
+    @include('theme-portfolio::partials._loader-flag')
+    @include('partials._head')
+    @include('partials._seo-meta')
     {{-- The theme's own sheets. fonts.css carries the @font-face rules that
          used to be a Google Fonts @import inside style.css; it is listed first
          so the faces exist before anything asks for them, and the two roman
          faces are preloaded because the hero text is the LCP element and would
-         otherwise wait on this sheet. The italic face is not preloaded — it is
+         otherwise wait on this sheet. The italic face is not preloaded ï¿½ it is
          used for one label and would only be a wasted reservation. --}}
     <link rel="preload" href="{{ asset('fonts/instrument-sans/instrument-sans-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ asset('themes/portfolio/css/fonts.css') }}">
     <link rel="stylesheet" href="{{ asset('themes/portfolio/css/style.css') }}">
     <style>[x-cloak]{display:none!important}</style>
-    @include('partials.custom-code-head')
+    @include('partials._custom-code-head')
 </head>
 <body class="theme-portfolio antialiased">
 
@@ -43,7 +43,7 @@
         // Services are the exception to the settings-driven rule: they come from
         // the Service model and its admin CRUD screen, not from a settings
         // repeater. A service is something bookable and priced, so it has to
-        // exist as a real record a booking can point at — a JSON list in the
+        // exist as a real record a booking can point at ï¿½ a JSON list in the
         // settings table cannot be referenced by a foreign key. The old
         // theme_portfolio_services repeater is gone rather than left as a second
         // source; see PortfolioProfile::services().
@@ -59,7 +59,7 @@
 
         // The blog teaser before the footer. Posts are read from the same Post
         // model the admin's Posts CRUD writes, exactly as the ecommerce theme's
-        // blog page does — the two themes show the same content differently, and
+        // blog page does ï¿½ the two themes show the same content differently, and
         // there is one set of posts behind both.
         $latestPosts = \App\Models\Post::published()
             ->with('page')
@@ -83,7 +83,7 @@
         // The right-hand contact column, split by what is actually in it: a
         // "Contact information" card with nothing but social tiles under it is a
         // card with a heading and no rows. Both empty means the column is not
-        // drawn at all — an empty bordered card reads as a bug, not as a page.
+        // drawn at all ï¿½ an empty bordered card reads as a bug, not as a page.
         $hasContactInfo = filled($contactEmail)
             || filled($contactAddress)
             || filled($profile['location']);
@@ -92,11 +92,11 @@
 
     {{-- After the settings read, because the sheet carries the site's own
          monogram and name. It is position:fixed over the page, so where it sits
-         in the body does not decide what is seen first — the head flag decides
+         in the body does not decide what is seen first ï¿½ the head flag decides
          that, before any of this paints. --}}
-    @include('theme-portfolio::partials.loader')
+    @include('theme-portfolio::partials._loader')
 
-    @include('theme-portfolio::partials.header')
+    @include('theme-portfolio::partials._header')
 
     <main>
         {{-- Hero --}}
@@ -167,13 +167,13 @@
 
                     @if ($socials->isNotEmpty())
                         <div class="pf-animate mt-9 flex justify-center lg:justify-start" style="animation-delay:480ms">
-                            @include('theme-portfolio::partials.social-links', ['variant' => 'row'])
+                            @include('theme-portfolio::partials._social-links', ['variant' => 'row'])
                         </div>
                     @endif
                 </div>
 
                 {{-- Portrait. A photo when one is set, the owner's initials when
-                     not — never a broken <img> and never a stock silhouette. --}}
+                     not ï¿½ never a broken <img> and never a stock silhouette. --}}
                 <div class="pf-animate relative mx-auto w-full max-w-sm lg:max-w-none" style="animation-delay:240ms">
                     <div class="pf-glow pointer-events-none absolute inset-4 rounded-full opacity-70" aria-hidden="true"></div>
 
@@ -214,7 +214,7 @@
             @endif
         </section>
 
-        {{-- Services — the section that tells a visitor what they can hire you
+        {{-- Services ï¿½ the section that tells a visitor what they can hire you
              for before they read a single project. Rendered unconditionally
              because the nav links to #services: a nav item whose target is
              absent is a dead link. Projects, Experience and Technology take the
@@ -244,7 +244,7 @@
                     {{-- One card per active Service row. "Request This" opens a popup
                          holding that service's booking form. The form is a
                          Livewire child per service rather than one shared form,
-                         because it has to know which service it is booking — an
+                         because it has to know which service it is booking ï¿½ an
                          id set from the card, re-checked against the active
                          services on submit. Alpine only owns which popup is open;
                          the submission and every validation message are
@@ -258,7 +258,7 @@
 
                                 {{-- A featured image is optional on the Service record,
                                      so the icon is the fallback rather than an image
-                                     placeholder frame — a card showing a broken or
+                                     placeholder frame ï¿½ a card showing a broken or
                                      empty picture reads as an unfinished card. --}}
                                 @if (filled($service->featured_image))
                                     <img src="{{ $service->featured_image }}" alt="{{ $service->name }}" width="48" height="48"
@@ -355,7 +355,7 @@
                             style="--pf-reveal-delay: {{ ($index % 2) * 90 }}ms">
                             {{-- A screenshot is the single strongest thing a project
                                  card can carry, so it goes first and full-bleed. A
-                                 project without one is not given an empty frame —
+                                 project without one is not given an empty frame ï¿½
                                  the body just closes up, because a card showing a
                                  placeholder reads as an unfinished card. --}}
                             @if (filled($project['image']))
@@ -749,7 +749,7 @@
                                     <div class="pf-card rounded-2xl p-6">
                                         <h3 class="pf-heading mb-1 text-sm font-semibold">Connect With Me</h3>
                                         <p class="pf-mono mb-5 text-[10px] text-(--pf-text-muted)">Elsewhere on the web</p>
-                                        @include('theme-portfolio::partials.social-links', ['variant' => 'tiles'])
+                                        @include('theme-portfolio::partials._social-links', ['variant' => 'tiles'])
                                     </div>
                                 @endif
                             </div>
@@ -760,8 +760,8 @@
         </section>
 
         {{-- Writing, last on the page and directly above the footer. It reads as
-             the natural thing to do next after "Get in touch" — the same order a
-             visitor moves in — and a blog buried mid-page under six earlier
+             the natural thing to do next after "Get in touch" ï¿½ the same order a
+             visitor moves in ï¿½ and a blog buried mid-page under six earlier
              sections is a section nobody scrolls to.
 
              The whole section is conditional, unlike #services above. Nothing
@@ -781,7 +781,7 @@
                     <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach ($latestPosts as $index => $post)
                             {{-- A post's slug lives on its paired Page, not on the Post
-                                 row — same arrangement as products, and why
+                                 row ï¿½ same arrangement as products, and why
                                  RendersBlog::post() resolves by
                                  $post->page->slug. Post::slug() is that accessor,
                                  so the link below is the post's real URL. The query
@@ -820,7 +820,7 @@
                         @endforeach
                     </div>
 
-                    {{-- The three above are a sample, not the archive — so the link
+                    {{-- The three above are a sample, not the archive ï¿½ so the link
                          out is not optional decoration but the only route to the
                          rest. --}}
                     <div class="mt-12">
@@ -833,10 +833,10 @@
         @endif
     </main>
 
-    @include('theme-portfolio::partials.footer')
+    @include('theme-portfolio::partials._footer')
 
-    @include('frontend.partials.chat-widget')
+    @include('frontend.partials._chat-widget')
     <script src="{{ asset('themes/portfolio/js/script.js') }}" defer></script>
-@include('partials.custom-code-body')
+@include('partials._custom-code-body')
 </body>
 </html>

@@ -1,7 +1,7 @@
 {{--
     Default theme footer — the copyright bar and the social links.
 
-    A partial for the same reason as partials/header.blade.php: the theme's 404
+    A partial for the same reason as partials/_header.blade.php: the theme's 404
     shares it, so the markup lives in one place. Reads its own settings.
 --}}
 @php

@@ -5,7 +5,7 @@
     (per-page field -> global "Global SEO" setting -> default) and every decision
     about canonical URLs, robots directives, og:type and hreflang alternates
     lives in SeoResolver, so this file only decides how the answers are written
-    out. Both partials.head (for the <title>) and this partial resolve the same
+    out. Both partials._head (for the <title>) and this partial resolve the same
     request, and SeoResolver memoises per request so they always agree.
 
     A route that renders no themed template has no Page and no RouteSeo profile,

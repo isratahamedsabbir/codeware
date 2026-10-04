@@ -177,12 +177,16 @@ it('puts Plugin Settings right after Theme Settings, not in the Plugins dropdown
         ->and($menu->first(fn ($i) => $i->label === 'Plugins')->children->pluck('label')->all())->toBe(['Clock']);
 });
 
-it('renders the plugin guide button on Plugin Settings', function () {
+it('links the plugin guide button to the developer guide from Plugin Settings', function () {
     $this->actingAs($this->admin)
         ->get(route('admin.plugin-settings'))
         ->assertOk()
-        ->assertSee('How to build and use a plugin')
-        ->assertSee('plugin.json');
+        // The button sits beside the section title, not at the end of the header,
+        // and it goes to the guide — there is no guide modal on this screen any
+        // more, so the link is the whole affordance.
+        ->assertSee(route('admin.developer-guide').'#plugins', escape: false)
+        ->assertSee('How to build and use plugins', escape: false)
+        ->assertDontSee('showGuide', escape: false);
 });
 
 it('creates a plugin folder from the basics given in the modal', function () {

@@ -20,7 +20,7 @@
                 @foreach ($locales as $language)
                     <x-admin-locale-panel :code="$language->code" class="space-y-4 min-w-0">
                         <flux:field>
-                            @include('partials.seo-char-counter', [
+                            @include('partials._seo-char-counter', [
                                 'path' => 'settings.seo_meta_title.'.$language->code,
                                 'max' => 60,
                                 'label' => 'Meta Title',
@@ -30,7 +30,7 @@
                                 placeholder="Title shown in search engine results" />
                         </flux:field>
                         <flux:field>
-                            @include('partials.seo-char-counter', [
+                            @include('partials._seo-char-counter', [
                                 'path' => 'settings.seo_meta_description.'.$language->code,
                                 'max' => 160,
                                 'label' => 'Meta Description',
@@ -48,7 +48,7 @@
                         @foreach ($locales as $language)
                             <x-admin-locale-panel :code="$language->code" class="space-y-4 min-w-0">
                                 <flux:field>
-                                    @include('partials.seo-char-counter', [
+                                    @include('partials._seo-char-counter', [
                                         'path' => 'settings.seo_og_title.'.$language->code,
                                         'max' => 70,
                                         'label' => 'OG Title',
@@ -58,7 +58,7 @@
                                         placeholder="Defaults to Meta Title if left blank" />
                                 </flux:field>
                                 <flux:field>
-                                    @include('partials.seo-char-counter', [
+                                    @include('partials._seo-char-counter', [
                                         'path' => 'settings.seo_og_description.'.$language->code,
                                         'max' => 200,
                                         'label' => 'OG Description',
@@ -97,7 +97,7 @@
                             @foreach ($locales as $language)
                                 <x-admin-locale-panel :code="$language->code" class="space-y-4 min-w-0">
                                     <flux:field>
-                                        @include('partials.seo-char-counter', [
+                                        @include('partials._seo-char-counter', [
                                             'path' => 'settings.seo_twitter_title.'.$language->code,
                                             'max' => 70,
                                             'label' => 'Twitter Title',
@@ -107,7 +107,7 @@
                                             placeholder="Defaults to Meta Title if left blank" />
                                     </flux:field>
                                     <flux:field>
-                                        @include('partials.seo-char-counter', [
+                                        @include('partials._seo-char-counter', [
                                             'path' => 'settings.seo_twitter_description.'.$language->code,
                                             'max' => 200,
                                             'label' => 'Twitter Description',

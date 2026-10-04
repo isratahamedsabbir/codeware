@@ -36,7 +36,7 @@
 @source not '../views/components/desktop-user-menu.blade.php';
 
 @source '../views/partials';
-@source not '../views/partials/admin-*';
+@source not '../views/partials/_admin-*';
 
 /* The auth layout. The admin, vendor and delivery login screens all render
    through it, and so does the default theme's home page — which is why it
@@ -87,7 +87,7 @@
    Instrument Sans, and the default theme reads --font-sans from base.css. Those
    two are the reasons the self-hosted font is preloaded rather than left to the
    CSS to discover. A theme's body font can also be set from Admin → Theme
-   Settings, in which case partials/head.blade.php overrides whatever a utility
+   Settings, in which case partials/_head.blade.php overrides whatever a utility
    like this one says — see App\Support\ThemeFont. */
 @utility font-storefront {
     font-family: 'Trebuchet MS', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;

@@ -3,7 +3,7 @@
     <head>
         {{-- The admin bundle: this is the panel's own chrome around admin
              Livewire screens, not a shopper page. --}}
-        @include('partials.head', ['assetBundle' => 'admin'])
+        @include('partials._head', ['assetBundle' => 'admin'])
         <meta name="robots" content="noindex, nofollow">
     </head>
     <body class="min-h-screen bg-white dark:bg-zinc-800">

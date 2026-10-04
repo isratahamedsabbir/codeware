@@ -9,7 +9,7 @@
    that contains it has finished downloading, so the font request sits behind
    the stylesheet request behind the HTML request — three serial round trips
    before a single glyph can paint. The Bunny Fonts <link> in
-   partials/head.blade.php was better but still render-blocking, and it was
+   partials/_head.blade.php was better but still render-blocking, and it was
    loaded on every page including the ones that never use it (see below).
 
    Serving the woff2 ourselves removes the third-party connection setup
@@ -33,7 +33,7 @@
 
    One caveat if a theme's font is set from Admin → Theme Settings: the
    declarations below are not the whole story any more. A theme that picks a
-   different face gets its @font-face emitted by partials/head.blade.php from
+   different face gets its @font-face emitted by partials/_head.blade.php from
    App\Support\ThemeFont, because which stylesheet a page loads depends on the
    theme and a theme that ships its own never sees this file. See
    App\Support\ThemeFont::facesFor().

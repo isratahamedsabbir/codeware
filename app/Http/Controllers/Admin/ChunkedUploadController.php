@@ -23,11 +23,48 @@ class ChunkedUploadController extends Controller
 {
     use AuthorizesRequests;
 
-    private const DEFAULT_ALLOWED_EXT = 'jpg,jpeg,png,gif,webp,avif,pdf,mp4,mp3,doc,docx,xls,xlsx';
+    /**
+     * The only extensions this endpoint will ever store, decided here and not
+     * by the caller.
+     *
+     * This list used to be `$request->allowedExt` with this string as the
+     * fallback, which meant the allow-list was a request parameter: posting
+     * `filename=shell.php&allowedExt=php` wrote a .php file to the public disk.
+     * A stored extension that PHP-FPM will execute is remote code execution, so
+     * the extension is now picked from this list and `allowedExt` can only ever
+     * *narrow* it (the picker modal offers images-only, hence the parameter at
+     * all). No executable extension appears below, and DANGEROUS_EXTENSIONS
+     * asserts that stays true.
+     */
+    private const ALLOWED_EXTENSIONS = [
+        'jpg', 'jpeg', 'png', 'gif', 'webp', 'avif',
+        'pdf', 'mp4', 'mp3', 'doc', 'docx', 'xls', 'xlsx',
+    ];
 
-    // Large-file path has no per-chunk size cap to speak of (chunks are
-    // small by construction), but the assembled file still needs a ceiling
-    // to stop someone chunking their way past disk space.
+    /**
+     * Extensions that must never reach the public disk, whatever else changes.
+     *
+     * Checked separately from ALLOWED_EXTENSIONS so that adding a 'doc' or a
+     * new media type later cannot quietly add an executable one, and so the
+     * intent survives a well-meaning edit to the list above.
+     */
+    private const DANGEROUS_EXTENSIONS = [
+        'php', 'php3', 'php4', 'php5', 'php7', 'php8', 'phtml', 'phps', 'phar',
+        'cgi', 'pl', 'py', 'rb', 'sh', 'bash', 'exe', 'com', 'bat', 'cmd',
+        'jsp', 'asp', 'aspx', 'jar', 'htaccess', 'htpasswd', 'ini', 'svg',
+    ];
+
+    /**
+     * Ceiling on one chunk, and on every assembled file.
+     *
+     * The chunk cap is what actually bounds disk use: the total used to be
+     * checked only after every byte had already been streamed to the public
+     * disk, so declaring a huge totalChunks filled the disk and the check
+     * afterwards deleted one file and gave up. Chunks are ~5MB from
+     * resources/js/chunk-upload.js; 10MB leaves room for a bigger client chunk.
+     */
+    private const MAX_CHUNK_SIZE_BYTES = 10_485_760; // 10 MB
+
     private const MAX_TOTAL_SIZE_BYTES = 524_288_000; // 500 MB
 
     public function store(Request $request): JsonResponse
@@ -35,7 +72,7 @@ class ChunkedUploadController extends Controller
         $this->authorize('create', MediaLibrary::class);
 
         $validated = $request->validate([
-            'chunk' => ['required', 'file'],
+            'chunk' => ['required', 'file', 'max:'.intdiv(self::MAX_CHUNK_SIZE_BYTES, 1024)],
             'chunkIndex' => ['required', 'integer', 'min:0'],
             'totalChunks' => ['required', 'integer', 'min:1'],
             'uploadId' => ['required', 'string', 'max:64', 'regex:/^[a-zA-Z0-9\-]+$/'],
@@ -43,14 +80,16 @@ class ChunkedUploadController extends Controller
             'allowedExt' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $allowedExt = collect(explode(',', $validated['allowedExt'] ?? self::DEFAULT_ALLOWED_EXT))
-            ->map(fn ($ext) => strtolower(trim($ext)))
-            ->filter()
-            ->all();
-
         $ext = strtolower(pathinfo($validated['filename'], PATHINFO_EXTENSION));
 
-        if (! in_array($ext, $allowedExt, true)) {
+        if (in_array($ext, self::DANGEROUS_EXTENSIONS, true) || ! in_array($ext, self::ALLOWED_EXTENSIONS, true)) {
+            throw ValidationException::withMessages(['filename' => 'This file type is not allowed.']);
+        }
+
+        // The caller's list is a narrowing hint, never a widening one: a value
+        // that is not already allowed above stays not-allowed here.
+        if (($requested = $this->requestedExtensions($validated['allowedExt'] ?? null)) !== null
+            && ! in_array($ext, $requested, true)) {
             throw ValidationException::withMessages(['filename' => 'This file type is not allowed.']);
         }
 
@@ -66,6 +105,27 @@ class ChunkedUploadController extends Controller
         return $this->assemble($chunkDir, $validated['totalChunks'], $ext, $validated['filename']);
     }
 
+    /**
+     * The caller's narrower allow-list, already intersected with the server's
+     * own. Null when the caller did not narrow at all.
+     *
+     * @return array<int, string>|null
+     */
+    private function requestedExtensions(?string $allowedExt): ?array
+    {
+        if ($allowedExt === null || trim($allowedExt) === '') {
+            return null;
+        }
+
+        return array_values(array_intersect(
+            self::ALLOWED_EXTENSIONS,
+            collect(explode(',', $allowedExt))
+                ->map(fn ($ext) => strtolower(trim($ext)))
+                ->filter()
+                ->all()
+        ));
+    }
+
     private function assemble(string $chunkDir, int $totalChunks, string $ext, string $originalFilename): JsonResponse
     {
         Storage::disk('public')->makeDirectory('media');
@@ -74,6 +134,7 @@ class ChunkedUploadController extends Controller
         $finalAbsolutePath = Storage::disk('public')->path($finalRelativePath);
 
         $out = fopen($finalAbsolutePath, 'wb');
+        $written = 0;
 
         for ($i = 0; $i < $totalChunks; $i++) {
             $chunkPath = Storage::disk('local')->path($chunkDir.'/'.$i);
@@ -87,8 +148,19 @@ class ChunkedUploadController extends Controller
             }
 
             $in = fopen($chunkPath, 'rb');
-            stream_copy_to_stream($in, $out);
+            $written += stream_copy_to_stream($in, $out);
             fclose($in);
+
+            // Bailed out mid-write rather than after it: the file on the public
+            // disk is deleted immediately, so an oversized upload never leaves
+            // the bytes behind.
+            if ($written > self::MAX_TOTAL_SIZE_BYTES) {
+                fclose($out);
+                @unlink($finalAbsolutePath);
+                Storage::disk('local')->deleteDirectory($chunkDir);
+
+                throw ValidationException::withMessages(['filename' => 'File is too large (max 500 MB).']);
+            }
         }
 
         fclose($out);

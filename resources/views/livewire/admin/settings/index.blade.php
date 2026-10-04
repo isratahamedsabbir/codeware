@@ -126,7 +126,7 @@
                         </x-admin-section-card>
 
                         @if (isset($groupedSettings['general']))
-                            @include('partials.admin-settings-group-card', ['group' => 'general', 'items' => $groupedSettings['general']])
+                            @include('partials._admin-settings-group-card', ['group' => 'general', 'items' => $groupedSettings['general']])
                         @endif
 
                         {{-- Image uploads sit right under General so the space they
@@ -190,7 +190,7 @@ $imageMeta = match ($setting->key) {
 
                         @foreach (['localization', 'pagination', 'newsletter'] as $rightGroup)
                             @continue (! isset($groupedSettings[$rightGroup]))
-                            @include('partials.admin-settings-group-card', ['group' => $rightGroup, 'items' => $groupedSettings[$rightGroup]])
+                            @include('partials._admin-settings-group-card', ['group' => $rightGroup, 'items' => $groupedSettings[$rightGroup]])
                         @endforeach
 
                         {{-- Backend (admin panel colors) — shared the old Theme tab with the
@@ -236,7 +236,7 @@ $imageMeta = match ($setting->key) {
                     @foreach ($groupedSettings as $group => $items)
                         @continue (in_array($group, ['general', 'localization', 'pagination', 'newsletter', 'images'], true))
                         <div class="lg:col-span-2">
-                            @include('partials.admin-settings-group-card', ['group' => $group, 'items' => $items])
+                            @include('partials._admin-settings-group-card', ['group' => $group, 'items' => $items])
                         </div>
                     @endforeach
                 </div>

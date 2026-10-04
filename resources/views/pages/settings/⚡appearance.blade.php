@@ -8,7 +8,7 @@ new #[Title('Appearance settings')] class extends Component {
 }; ?>
 
 <section class="w-full">
-    @include('partials.settings-heading')
+    @include('partials._settings-heading')
 
     <flux:heading class="sr-only">{{ __('Appearance settings') }}</flux:heading>
 

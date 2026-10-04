@@ -22,7 +22,7 @@ namespace App\Support;
  * declaration pointing at a file that is gone.
  *
  * The choice is applied by emitting a body font-family after the stylesheet (see
- * resources/views/partials/head.blade.php), since the three themes declare their
+ * resources/views/partials/_head.blade.php), since the three themes declare their
  * font three different ways and none read a shared token.
  */
 class ThemeFont

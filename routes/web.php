@@ -20,7 +20,6 @@ use App\Http\Controllers\RobotsController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\VoucherController;
-use App\Support\PuckEditor;
 use App\Support\Themes;
 use Illuminate\Support\Facades\Route;
 
@@ -86,11 +85,17 @@ Route::get('/admin/{path?}', fn (?string $path = null) => $path
     ->where('path', '.*')
     ->name('admin.legacy');
 
-Route::get('/token', function () {
-    $token = auth()->user()->createToken('test-token', ['*'], now()->addMinutes(PuckEditor::sessionMinutes()))->plainTextToken;
-
-    return response()->json(['token' => $token]);
-})->middleware(['auth']);
+// There is deliberately NO route here that mints a Sanctum token. That used to
+// exist (`/token`, behind plain `auth`) and it was a privilege escalation: a
+// customer session could exchange itself for a `['*']` token, which satisfies
+// both `auth:sanctum` and the `can:access-admin` gate on every /api/v1/admin
+// route - products, orders, media, settings, users, all of it.
+//
+// The Puck editor still needs a token to call back into the admin API, but it
+// is minted where the caller has already been through the admin gate:
+// App\Support\PuckEditor::token(), called from the Admin\{Pages,Posts,Products}
+// Livewire screens. Keep it that way - anything that hands a token to a browser
+// on a non-admin route has to hand out an ability narrower than '*'.
 
 Route::get('/test-private-channel', [TestController::class, 'testPrivateChannel']);
 Route::get('/test-public-channel', [TestController::class, 'testPublicChannel']);

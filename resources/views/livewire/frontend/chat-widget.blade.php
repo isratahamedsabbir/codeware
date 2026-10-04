@@ -14,7 +14,7 @@
     @if ($widgetColor) style="--color-primary: {{ $widgetColor }}" @endif
 >
     {{-- Bubble button. data-chat-toggle is the hook the on-demand loader in
-         frontend/partials/chat-widget.blade.php dispatches the visitor's own
+         frontend/partials/_chat-widget.blade.php dispatches the visitor's own
          click against, so the panel opens on the click that loaded it. --}}
     <button type="button" wire:click="toggle" data-chat-toggle
         class="flex items-center justify-center size-14 rounded-full bg-primary text-white shadow-lg transition hover:opacity-90"

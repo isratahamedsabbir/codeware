@@ -377,7 +377,7 @@
             </flux:button>
         </x-admin-section-card>
 
-        @include('partials.admin-seo-fields', ['seoCardVariant' => 'postbox', 'seoPersistKey' => 'product-seo'])
+        @include('partials._admin-seo-fields', ['seoCardVariant' => 'postbox', 'seoPersistKey' => 'product-seo'])
 
         <div class="flex items-center gap-3 flex-wrap">
             <x-admin-save-button :label="$productId ? 'Update Product' : 'Create Product'" />

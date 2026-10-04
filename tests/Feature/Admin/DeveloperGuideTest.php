@@ -63,6 +63,27 @@ it('lists Developer Guide directly after Developer Tools, and About last', funct
         ->value('route_name'))->toBe('admin.about');
 });
 
+it('shows a section number once, as the badge rather than in the heading too', function () {
+    $html = Livewire::actingAs(User::factory()->admin()->create())
+        ->test(DeveloperGuide::class)
+        ->html();
+
+    // Every top-level section is titled "4. Settings" at the call site, and the
+    // component lifts that number into the badge beside the icon. Printing the
+    // title unchanged as well put the number on screen twice — a "4" chip
+    // immediately followed by a heading still reading "4. Settings".
+    preg_match_all('/data-flux-heading>(.*?)<\/div>/s', $html, $headings);
+
+    expect($headings[1])->not->toBeEmpty();
+
+    foreach ($headings[1] as $heading) {
+        expect(trim($heading))->not->toMatch('/^\d+\./');
+    }
+
+    // And the number is still there — once, in the badge immediately before it.
+    expect($html)->toMatch('/>\s*4\s*<\/span>[\s\S]{0,400}?data-flux-heading>\s*Settings\s*<\/div>/');
+});
+
 it('highlights code and anchors every table-of-contents link to a real section', function () {
     $html = Livewire::actingAs(User::factory()->admin()->create())
         ->test(DeveloperGuide::class)

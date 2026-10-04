@@ -13,7 +13,7 @@
          was when the page first loaded. --}}
     <div class="mb-3 flex items-center justify-between gap-4 flex-wrap">
         <div>
-            @include('partials.admin-breadcrumbs', ['routeName' => 'admin.bookings'])
+            @include('partials._admin-breadcrumbs', ['routeName' => 'admin.bookings'])
         </div>
 
         {{-- No "New booking" button, and deliberately no create route: a

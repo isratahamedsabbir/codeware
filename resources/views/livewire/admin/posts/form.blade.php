@@ -92,7 +92,7 @@
             </x-admin-section-card>
         @endif
 
-        @include('partials.admin-seo-fields', ['seoCardVariant' => 'postbox', 'seoPersistKey' => 'post-seo'])
+        @include('partials._admin-seo-fields', ['seoCardVariant' => 'postbox', 'seoPersistKey' => 'post-seo'])
 
         <div class="flex items-center gap-3 flex-wrap">
             <x-admin-save-button :label="$postId ? 'Update Post' : 'Create Post'" />

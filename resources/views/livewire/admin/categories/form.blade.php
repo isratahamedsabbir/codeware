@@ -64,7 +64,7 @@
             </div>
         </x-admin-section-card>
 
-        @include('partials.admin-seo-fields', ['seoCardVariant' => 'postbox', 'seoPersistKey' => 'category-seo'])
+        @include('partials._admin-seo-fields', ['seoCardVariant' => 'postbox', 'seoPersistKey' => 'category-seo'])
 
         <div class="flex items-center gap-3 flex-wrap">
             <x-admin-save-button :label="$categoryId ? 'Update Category' : 'Create Category'" />

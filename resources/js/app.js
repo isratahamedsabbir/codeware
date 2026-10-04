@@ -16,7 +16,7 @@
  |  real-time is one-directional, from the customer up to the admin, so a
  |  visitor needs no websocket at all.
  |
- |  This file is not referenced by partials/head.blade.php, so a public page
+ |  This file is not referenced by partials/_head.blade.php, so a public page
  |  ships none of it. See vite.config.js.
  */
 

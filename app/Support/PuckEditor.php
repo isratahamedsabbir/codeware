@@ -22,6 +22,18 @@ use App\Models\User;
 class PuckEditor
 {
     /**
+     * The ability carried by a Puck token.
+     *
+     * Narrower than '*' on purpose. Nothing enforces it today - the admin API
+     * routes gate on `can:access-admin`, a Gate over the user's roles, so any
+     * valid token gets as far as the gate. But abilities are the only part of
+     * a token a future `abilities:puck` middleware could check, and a token
+     * that says '*' makes that impossible to add later without breaking the
+     * editor. Cheap now, so keep it narrow.
+     */
+    public const ABILITY = 'puck:edit';
+
+    /**
      * Token lifetime, in minutes. The single place every token mint reads from.
      *
      * Sourced from PUCK_SESSION in .env (not the settings table, which used
@@ -38,6 +50,6 @@ class PuckEditor
     {
         $user->tokens()->where('name', $name)->delete();
 
-        return $user->createToken($name, ['*'], now()->addMinutes(static::sessionMinutes()))->plainTextToken;
+        return $user->createToken($name, [static::ABILITY], now()->addMinutes(static::sessionMinutes()))->plainTextToken;
     }
 }

@@ -9,10 +9,18 @@
 @php
     $anchor = 'doc-'.$id;
 
-    // Titles are written "3. Features", so the badge can be lifted straight off
-    // the heading rather than passed in separately - one source for the number
-    // that cannot drift from the number the reader sees.
-    $number ??= preg_match('/^\s*(\d+)\./', $title, $m) ? $m[1] : null;
+    // Titles are written "4. Settings", and that leading number is lifted into
+    // the badge beside the heading and then stripped from the heading itself.
+    // Printing both showed the number twice — a "4" chip immediately followed by
+    // a heading that still read "4. Settings".
+    //
+    // The number stays written into the title string rather than becoming a
+    // `number="4"` prop on every call: it is then the one place a section's
+    // position exists, so inserting a section is a renumber in one attribute and
+    // the badge cannot drift away from what the heading says.
+    $numbered = preg_match('/^\s*(\d+)\.\s*(.+)$/s', $title, $m);
+    $number ??= $numbered ? $m[1] : null;
+    $heading = $numbered ? $m[2] : $title;
 @endphp
 
 <section id="{{ $anchor }}" data-doc-section
@@ -30,7 +38,7 @@
                         {{ $number }}
                     </span>
                 @endif
-                <flux:heading size="sm">{{ $title }}</flux:heading>
+                <flux:heading size="sm">{{ $heading }}</flux:heading>
             </div>
 
             @if ($description)

@@ -43,7 +43,7 @@
             </x-admin-locale-tabs>
         </x-admin-section-card>
 
-        @include('partials.admin-seo-fields', ['seoCardVariant' => 'postbox', 'seoPersistKey' => 'page-seo'])
+        @include('partials._admin-seo-fields', ['seoCardVariant' => 'postbox', 'seoPersistKey' => 'page-seo'])
 
         {{-- ── Constant ── --}}
         <x-admin-section-card variant="postbox" persist-key="page-constant" title="Constant"

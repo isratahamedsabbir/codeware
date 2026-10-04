@@ -13,7 +13,7 @@
     failure than an empty one.
 
     Usage:
-        @include('theme-portfolio::partials.social-icon', [
+        @include('theme-portfolio::partials._social-icon', [
             'platform' => 'github',
             'class' => 'h-4 w-4',
         ])

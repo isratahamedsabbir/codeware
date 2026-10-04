@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
  * Resolves one page's SEO into a SeoData object.
  *
  * Single source of truth for the fallback chain that used to live inline in
- * partials/seo-meta.blade.php:
+ * partials/_seo-meta.blade.php:
  *
  *     per-page field  ->  global "Global SEO" setting  ->  sensible default
  *
@@ -20,8 +20,8 @@ use Illuminate\Http\Request;
  * is the product page's seo_title — see App\Concerns\HasSeoFields for the admin
  * side of that.
  *
- * Memoised per request, because two partials need it: partials/head.blade.php for
- * the <title> and partials/seo-meta.blade.php for everything else. They have to
+ * Memoised per request, because two partials need it: partials/_head.blade.php for
+ * the <title> and partials/_seo-meta.blade.php for everything else. They have to
  * agree, and resolving twice would be a second settings read per page.
  */
 final class SeoResolver

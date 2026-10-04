@@ -316,7 +316,7 @@ Plugins::delete('calendar');   // refuses for "default": true
 theme.json                manifest + settings values
 settings.blade.php        its admin settings screen
 routes/web.php            its storefront routes, behind the 'theme' guard
-*.blade.php               its templates (partials/, errors/, account/ ...), view namespace theme-{slug}::
+*.blade.php               its templates (partials/_*.blade.php, errors/, account/ ...), view namespace theme-{slug}::
 Controllers/              namespace Themes\{Slug}\Controllers, autoloaded - no composer dump
 database/migrations/      loaded with the app's own migrations
 database/seeders/         namespace Themes\{Slug}\Database\Seeders
@@ -527,7 +527,7 @@ public/                   everything the web serves, at /themes/{slug}/...
    shop, product, category, brand, tag, favorites, blog, post, cart,
    checkout, order-confirmation, account/{dashboard,orders,order,profile}
 4. errors/404.blade.php  - otherwise Laravel's shared error page is used
-5. partials/header.blade.php + footer.blade.php  - shared chrome
+5. partials/_header.blade.php + _footer.blade.php  - shared chrome, underscored so they are the ones a page @includes
 6. settings.blade.php  - optional, to expose theme-specific options in the admin
 7. public/css/theme.css  - optional, omit to inherit the catch-all storefront.css
 8. routes/web.php  - optional, auto-registered behind the 'theme' guard

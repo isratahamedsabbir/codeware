@@ -10,7 +10,7 @@
     Wears the storefront's own chrome (header with the category dropdown and
     search, the four-column footer) and its own colour tokens, so a dead product
     or category URL still looks like the shop. Everything is expressed through
-    the --color-* custom properties partials.head injects from Theme Settings, so
+    the --color-* custom properties partials._head injects from Theme Settings, so
     the accent here follows the merchant's chosen brand colour.
 
     The header is handed the frontend menu explicitly because on a real page the
@@ -24,16 +24,16 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Support\Locale::direction() }}">
 <head>
-    @include('partials.head')
+    @include('partials._head')
     {{-- A 404 must never be indexed, and must never claim a canonical URL for a
-         page that does not exist — so partials.seo-meta is deliberately absent
+         page that does not exist — so partials._seo-meta is deliberately absent
          here (it derives both from $page). --}}
     <meta name="robots" content="noindex, nofollow">
-    @include('partials.custom-code-head')
+    @include('partials._custom-code-head')
 </head>
 <body class="bg-page-bg font-storefront text-sf-text antialiased">
 
-@include('theme-ecommerce::partials.header', [
+@include('theme-ecommerce::partials._header', [
     'menuItems' => \App\Support\Frontend::menuItems(),
 ])
 
@@ -57,9 +57,9 @@
     </section>
 </main>
 
-@include('theme-ecommerce::partials.footer')
+@include('theme-ecommerce::partials._footer')
 
-@include('frontend.partials.chat-widget')
-@include('partials.custom-code-body')
+@include('frontend.partials._chat-widget')
+@include('partials._custom-code-body')
 </body>
 </html>

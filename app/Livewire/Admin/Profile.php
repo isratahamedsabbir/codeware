@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
+use App\Support\SafeUpload;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -55,7 +56,7 @@ class Profile extends Component
         if (! empty($this->photo)) {
             $path = $this->photo->storeAs(
                 'profiles',
-                Str::uuid()->toString().'.'.$this->photo->getClientOriginalExtension(),
+                Str::uuid()->toString().'.'.SafeUpload::extension($this->photo),
                 'public',
             );
 

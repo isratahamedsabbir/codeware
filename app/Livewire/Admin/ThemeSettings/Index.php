@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\ThemeSettings;
 use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\HeroSlides;
+use App\Support\SafeUpload;
 use App\Support\Themes;
 use App\Support\ThemeSettings;
 use Illuminate\Support\Facades\File;
@@ -500,7 +501,7 @@ class Index extends Component
 
             if ($file instanceof TemporaryUploadedFile) {
                 $base = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) ?: $type;
-                $name = Str::limit($base, 60, '').'-'.Str::lower(Str::random(6)).'.'.strtolower($file->getClientOriginalExtension());
+                $name = Str::limit($base, 60, '').'-'.Str::lower(Str::random(6)).'.'.SafeUpload::extension($file);
                 $path = $file->storeAs(self::UPLOAD_DIR.'/'.str_replace('_', '-', $key), $name, 'public');
 
                 $this->settings[$key] = $disk->url($path);

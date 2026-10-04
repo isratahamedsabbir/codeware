@@ -1,13 +1,13 @@
 ﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Support\Locale::direction() }}">
 <head>
-    @include('partials.head')
-    @include('partials.seo-meta')
-    @include('partials.custom-code-head')
+    @include('partials._head')
+    @include('partials._seo-meta')
+    @include('partials._custom-code-head')
 </head>
 <body class="bg-page-bg font-storefront text-sf-text antialiased">
 
-@include('theme-ecommerce::partials.header')
+@include('theme-ecommerce::partials._header')
 
 @php
     $facets = collect(['category', 'brand', 'tag', 'type', 'min_price', 'max_price']);
@@ -63,7 +63,7 @@
         : 'border-zinc-300 group-hover/row:border-zinc-400');
 @endphp
 
-@include('theme-ecommerce::partials.breadcrumbs', [
+@include('theme-ecommerce::partials._breadcrumbs', [
     'crumbs' => [
         ['label' => __('Home'), 'url' => url('/')],
         ['label' => __('Shop'), 'url' => null],
@@ -429,7 +429,7 @@
             @if ($products->isNotEmpty())
                 <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5">
                     @foreach ($products as $product)
-                        @include('theme-ecommerce::partials.product-card', ['product' => $product])
+                        @include('theme-ecommerce::partials._product-card', ['product' => $product])
                     @endforeach
                 </div>
 
@@ -454,9 +454,9 @@
     </div>
 </main>
 
-@include('theme-ecommerce::partials.footer')
+@include('theme-ecommerce::partials._footer')
 
-@include('frontend.partials.chat-widget')
-@include('partials.custom-code-body')
+@include('frontend.partials._chat-widget')
+@include('partials._custom-code-body')
 </body>
 </html>

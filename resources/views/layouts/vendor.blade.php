@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
-        @include('partials.head')
+        @include('partials._head')
         <meta name="robots" content="noindex, nofollow">
         @php
             $vendorPrimaryColor = \App\Models\Setting::get('primary_color', '#1e7bc4');

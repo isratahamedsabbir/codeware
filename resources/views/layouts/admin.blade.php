@@ -279,13 +279,13 @@
                         <div class="nav-group-items" :class="{ 'collapsed': !groupOpen({{ $item->id }}) }"
                             :style="groupOpen({{ $item->id }}) ? 'max-height: 500px; opacity: 1;' : ''">
                             @foreach ($item->children as $child)
-                                @include('partials.admin-nav-link', ['link' => $child])
+                                @include('partials._admin-nav-link', ['link' => $child])
                             @endforeach
                         </div>
                     </div>
                 @else
                     <div x-show="matches({{ \Illuminate\Support\Js::from(__($item->label)) }})">
-                        @include('partials.admin-nav-link', ['link' => $item, 'navigationStyle' => 'top-level'])
+                        @include('partials._admin-nav-link', ['link' => $item, 'navigationStyle' => 'top-level'])
                     </div>
                 @endif
             @endforeach
@@ -312,7 +312,7 @@
             <div class="flex-1"></div>
 
             <div class="flex items-center gap-1.5">
-                @include('partials.admin-command-palette')
+                @include('partials._admin-command-palette')
 
                 <x-admin-quick-menu />
 
@@ -386,7 +386,7 @@
             @unless ($hidePageHeading ?? false)
                 <div class="mb-3 flex items-center justify-between gap-4 flex-wrap">
                     <div>
-                        @include('partials.admin-breadcrumbs')
+                        @include('partials._admin-breadcrumbs')
                     </div> 
                     <div class="flex items-center gap-2 shrink-0 page-header-actions empty:hidden">
                         @stack('page-header-actions')
@@ -418,19 +418,19 @@
 
     @if ($calculatorEnabled)
         @persist('admin-calculator')
-            @include('partials.admin-calculator')
+            @include('partials._admin-calculator')
         @endpersist
     @endif
 
     @if ($stickyNoteEnabled)
         @persist('admin-sticky-note')
-            @include('partials.admin-sticky-note')
+            @include('partials._admin-sticky-note')
         @endpersist
     @endif
 
-    @include('partials.admin-floating-button')
+    @include('partials._admin-floating-button')
 
-    @include('partials.admin-loader-overlay')
+    @include('partials._admin-loader-overlay')
 
     @fluxScripts
 

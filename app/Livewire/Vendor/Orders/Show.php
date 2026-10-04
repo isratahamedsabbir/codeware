@@ -10,10 +10,20 @@ use Livewire\Component;
 
 class Show extends Component
 {
-    public Order $order;
-
-    /** @var Collection<int, OrderItem> */
-    public $items;
+    /**
+     * The order's id, never the Order itself.
+     *
+     * This used to be `public Order $order`, which Livewire rehydrates on every
+     * subsequent request by key — so the scope check in mount() ran once, on
+     * first load, and never again. Swapping the id in the wire payload was
+     * enough to have another vendor's order rendered: customer name, email,
+     * phone and shipping address. The same shape of bug is why
+     * Delivery\Orders\Show holds an int and re-scopes in findOrder().
+     *
+     * Order and items are re-fetched through the vendor scope on each render
+     * instead.
+     */
+    public int $orderId;
 
     /**
      * 404s (not 403s) when none of this order's items belong to the current
@@ -22,20 +32,36 @@ class Show extends Component
      */
     public function mount(int $orderId): void
     {
+        $this->orderId = $this->findOrder($orderId)->id;
+    }
+
+    /** @return Collection<int, OrderItem> */
+    private function items(Order $order): Collection
+    {
+        return $order->items()
+            ->whereHas('product', fn ($q) => $q->whereIn('vendor_id', Auth::user()->vendors()->pluck('product_vendors.id')))
+            ->get();
+    }
+
+    private function findOrder(int $orderId): Order
+    {
         $vendorIds = Auth::user()->vendors()->pluck('product_vendors.id');
 
-        $this->order = Order::findOrFail($orderId);
+        $order = Order::whereHas('items.product', fn ($q) => $q->whereIn('vendor_id', $vendorIds))
+            ->findOrFail($orderId);
 
-        $this->items = $this->order->items()
-            ->whereHas('product', fn ($q) => $q->whereIn('vendor_id', $vendorIds))
-            ->get();
+        abort_if($this->items($order)->isEmpty(), 404);
 
-        abort_if($this->items->isEmpty(), 404);
+        return $order;
     }
 
     public function render()
     {
-        return view('livewire.vendor.orders.show')
-            ->layout('layouts.vendor', ['title' => "Order {$this->order->order_number}"]);
+        $order = $this->findOrder($this->orderId);
+
+        return view('livewire.vendor.orders.show', [
+            'order' => $order,
+            'items' => $this->items($order),
+        ])->layout('layouts.vendor', ['title' => "Order {$order->order_number}"]);
     }
 }

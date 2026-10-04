@@ -76,8 +76,8 @@ it('writes a complete theme folder from the basics given on the form', function 
     }
 
     expect(is_file($folder.'/errors/404.blade.php'))->toBeTrue()
-        ->and(is_file($folder.'/partials/header.blade.php'))->toBeTrue()
-        ->and(is_file($folder.'/partials/footer.blade.php'))->toBeTrue()
+        ->and(is_file($folder.'/partials/_header.blade.php'))->toBeTrue()
+        ->and(is_file($folder.'/partials/_footer.blade.php'))->toBeTrue()
         ->and(is_file($folder.'/settings.blade.php'))->toBeTrue()
         ->and(is_file($folder.'/public/css/theme.css'))->toBeTrue()
         ->and(is_file($folder.'/routes/web.php'))->toBeTrue()

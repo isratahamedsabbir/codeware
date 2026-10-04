@@ -39,7 +39,7 @@
                             <td class="px-4 py-2.5 text-sm text-zinc-500">{{ $order->items->sum('quantity') }}</td>
                             <td class="px-4 py-2.5 text-sm font-medium text-zinc-900">{{ $order->currency }} {{ number_format((float) $order->items->sum('line_total'), 2) }}</td>
                             <td class="px-4 py-2.5">
-                                @include('livewire.vendor.orders.partials.status-badge', ['status' => $order->status])
+                                @include('livewire.vendor.orders.partials._status-badge', ['status' => $order->status])
                             </td>
                             <td class="px-4 py-2.5 text-xs text-zinc-500">{{ $order->created_at?->toDisplay() }}</td>
                             <td class="px-4 py-2.5 text-right">

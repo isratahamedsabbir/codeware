@@ -97,7 +97,7 @@ function chooseFontFor(string $theme, string $font): void
  * `<style>[x-cloak]{display:none!important}</style>`, so "no !important in the
  * page" is not a statement this feature can make — and the compiled CSS a theme
  * may inline carries font-family declarations of its own. This exact line is
- * emitted by partials/head.blade.php and by nothing else.
+ * emitted by partials/_head.blade.php and by nothing else.
  */
 function storefrontOverride(): string
 {

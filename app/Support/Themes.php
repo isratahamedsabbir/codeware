@@ -104,7 +104,7 @@ class Themes
 
     /**
      * The view namespace a theme's templates are registered under, so a template
-     * is named theme-{slug}::home or theme-{slug}::partials.header whatever
+     * is named theme-{slug}::home or theme-{slug}::partials._header whatever
      * directory the folder happens to live in.
      */
     public static function viewNamespace(string $slug): string
@@ -951,8 +951,12 @@ class Themes
         }
 
         static::writeThemeFile($slug, 'errors/404.blade.php', static::starterError($slug));
-        static::writeThemeFile($slug, 'partials/header.blade.php', static::starterHeader($slug));
-        static::writeThemeFile($slug, 'partials/footer.blade.php', static::starterFooter());
+        // Underscored like every other partial in the bundled themes: a leading _
+        // is what makes a file inside a theme readable at a glance as "this one is
+        // included by the pages", rather than a page of its own that happens to sit
+        // in a subfolder.
+        static::writeThemeFile($slug, 'partials/_header.blade.php', static::starterHeader($slug));
+        static::writeThemeFile($slug, 'partials/_footer.blade.php', static::starterFooter());
         static::writeThemeFile($slug, 'public/css/theme.css', static::starterStylesheet($slug));
         static::writeThemeFile($slug, 'settings.blade.php', static::starterSettings());
         static::writeThemeFile($slug, 'routes/web.php', static::starterRoutes($slug));
@@ -1177,13 +1181,13 @@ class Themes
             <!DOCTYPE html>
             <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
             <head>
-                @include('partials.head')
-                @include('partials.seo-meta')
-                @include('partials.custom-code-head')
+                @include('partials._head')
+                @include('partials._seo-meta')
+                @include('partials._custom-code-head')
             </head>
             <body class="bg-white text-zinc-800 antialiased">
 
-            @include('theme-{slug}::partials.header')
+            @include('theme-{slug}::partials._header')
 
             <main>
                 <section class="mx-auto max-w-2xl px-6 py-24 text-center">
@@ -1194,10 +1198,10 @@ class Themes
                 </section>
             </main>
 
-            @include('theme-{slug}::partials.footer')
+            @include('theme-{slug}::partials._footer')
 
-            @include('frontend.partials.chat-widget')
-            @include('partials.custom-code-body')
+            @include('frontend.partials._chat-widget')
+            @include('partials._custom-code-body')
             </body>
             </html>
             BLADE
@@ -1221,16 +1225,16 @@ class Themes
             <!DOCTYPE html>
             <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
             <head>
-                @include('partials.head')
+                @include('partials._head')
                 {{-- A 404 must never be indexed, and must never claim a canonical
-                     URL for a page that does not exist — so partials.seo-meta is
+                     URL for a page that does not exist — so partials._seo-meta is
                      deliberately absent here (it derives both from $page). --}}
                 <meta name="robots" content="noindex, nofollow">
-                @include('partials.custom-code-head')
+                @include('partials._custom-code-head')
             </head>
             <body class="bg-white text-zinc-800 antialiased">
 
-            @include('theme-{slug}::partials.header')
+            @include('theme-{slug}::partials._header')
 
             <main>
                 <section class="mx-auto flex max-w-4xl flex-col items-center gap-8 px-6 py-24 text-center">
@@ -1247,10 +1251,10 @@ class Themes
                 </section>
             </main>
 
-            @include('theme-{slug}::partials.footer')
+            @include('theme-{slug}::partials._footer')
 
-            @include('frontend.partials.chat-widget')
-            @include('partials.custom-code-body')
+            @include('frontend.partials._chat-widget')
+            @include('partials._custom-code-body')
             </body>
             </html>
             BLADE

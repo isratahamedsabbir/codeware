@@ -18,7 +18,7 @@
         'tiles' — labelled cards in a grid (the contact section)
 
     Usage:
-        @include('theme-portfolio::partials.social-links', ['variant' => 'row'])
+        @include('theme-portfolio::partials._social-links', ['variant' => 'row'])
 --}}
 @php
     $variant = (string) ($variant ?? 'row');
@@ -48,7 +48,7 @@
                 <a href="{{ $social['url'] }}" target="_blank" rel="noopener"
                     class="pf-connect-tile group flex items-center gap-3 rounded-xl p-3.5 text-left">
                     <span class="pf-connect-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
-                        @include('theme-portfolio::partials.social-icon', [
+                        @include('theme-portfolio::partials._social-icon', [
                             'platform' => $social['platform'],
                             'class' => 'h-[18px] w-[18px]',
                         ])
@@ -65,7 +65,7 @@
             @foreach ($socials as $social)
                 <a href="{{ $social['url'] }}" target="_blank" rel="noopener" title="{{ $social['label'] }}"
                     aria-label="{{ $social['label'] }}" class="pf-social-icon">
-                    @include('theme-portfolio::partials.social-icon', [
+                    @include('theme-portfolio::partials._social-icon', [
                         'platform' => $social['platform'],
                         'class' => 'h-[18px] w-[18px]',
                     ])

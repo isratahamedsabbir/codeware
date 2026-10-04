@@ -850,7 +850,7 @@ it('installs a theme from a zip into the themes directory', function () {
     $zip = makeThemeZip('retro', [
         'home.blade.php' => 'retro home',
         'page.blade.php' => 'retro page',
-        'partials/head.blade.php' => 'retro head',
+        'partials/_head.blade.php' => 'retro head',
     ]);
 
     Livewire::test(ThemeSettingsScreen::class)
@@ -862,7 +862,7 @@ it('installs a theme from a zip into the themes directory', function () {
 
     expect(is_dir(Themes::path().'/retro'))->toBeTrue()
         ->and(file_exists(Themes::path().'/retro/home.blade.php'))->toBeTrue()
-        ->and(file_exists(Themes::path().'/retro/partials/head.blade.php'))->toBeTrue()
+        ->and(file_exists(Themes::path().'/retro/partials/_head.blade.php'))->toBeTrue()
         ->and(Themes::all())->toHaveKey('retro');
 });
 

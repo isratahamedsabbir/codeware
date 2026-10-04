@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-    @include('partials.head')
-    @include('partials.seo-meta')
+    @include('partials._head')
+    @include('partials._seo-meta')
     <link rel="preload" href="{{ asset('fonts/instrument-sans/instrument-sans-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ asset('themes/portfolio/css/fonts.css') }}">
     <link rel="stylesheet" href="{{ asset('themes/portfolio/css/style.css') }}">
     <style>[x-cloak]{display:none!important}</style>
-    @include('partials.custom-code-head')
+    @include('partials._custom-code-head')
 </head>
 <body class="theme-portfolio antialiased">
 
@@ -19,7 +19,7 @@
         $socials = \App\Support\PortfolioSocials::all();
     @endphp
 
-    @include('theme-portfolio::partials.header')
+    @include('theme-portfolio::partials._header')
 
     <main>
         <section class="px-6 pt-28 pb-12 sm:pt-32">
@@ -285,10 +285,10 @@
         </section>
     </main>
 
-    @include('theme-portfolio::partials.footer')
+    @include('theme-portfolio::partials._footer')
 
-    @include('frontend.partials.chat-widget')
+    @include('frontend.partials._chat-widget')
     <script src="{{ asset('themes/portfolio/js/script.js') }}" defer></script>
-@include('partials.custom-code-body')
+@include('partials._custom-code-body')
 </body>
 </html>

@@ -19,7 +19,7 @@ use Livewire\Mechanisms\FrontendAssets\FrontendAssets;
  *
  * Both were paid for by every visitor on every page to serve a panel that
  * almost none of them ever open. The bubble is now a static button (see
- * resources/views/frontend/partials/chat-widget.blade.php) and this endpoint
+ * resources/views/frontend/partials/_chat-widget.blade.php) and this endpoint
  * hands over the real component — and the two runtimes — the first time
  * somebody actually clicks it.
  *

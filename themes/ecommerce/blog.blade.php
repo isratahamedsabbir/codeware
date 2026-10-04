@@ -1,13 +1,13 @@
 ﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Support\Locale::direction() }}">
 <head>
-    @include('partials.head')
-    @include('partials.seo-meta')
-    @include('partials.custom-code-head')
+    @include('partials._head')
+    @include('partials._seo-meta')
+    @include('partials._custom-code-head')
 </head>
 <body class="bg-white font-storefront text-sf-text antialiased">
 
-@include('theme-ecommerce::partials.header')
+@include('theme-ecommerce::partials._header')
 
 @php
     $activeCategory = (string) request()->query('category', '');
@@ -17,7 +17,7 @@
     ];
 @endphp
 
-@include('theme-ecommerce::partials.breadcrumbs', ['crumbs' => $crumbs])
+@include('theme-ecommerce::partials._breadcrumbs', ['crumbs' => $crumbs])
 
 <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
     <header class="mb-8 text-center">
@@ -122,9 +122,9 @@
     @endif
 </main>
 
-@include('theme-ecommerce::partials.footer')
+@include('theme-ecommerce::partials._footer')
 
-@include('frontend.partials.chat-widget')
-@include('partials.custom-code-body')
+@include('frontend.partials._chat-widget')
+@include('partials._custom-code-body')
 </body>
 </html>

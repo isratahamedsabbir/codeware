@@ -36,7 +36,7 @@
     @if ($children->isNotEmpty())
         <div x-show="expanded" x-collapse x-cloak class="border-l border-zinc-100" style="margin-left: {{ $depth * 0.875 + 1.375 }}rem">
             @foreach ($children as $child)
-                @include('theme-ecommerce::partials.header-category-item', [
+                @include('theme-ecommerce::partials._header-category-item', [
                     'category' => $child,
                     'childrenByParent' => $childrenByParent,
                     'depth' => 0,

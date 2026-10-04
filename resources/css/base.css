@@ -56,7 +56,7 @@
 
     /* â”€â”€ Storefront (ecommerce theme) per-area colors â€” each one can be set
        on its own from Theme Settings â†’ Colors (overridden at runtime in
-       partials/head.blade.php); the defaults reproduce the stock look. â”€â”€ */
+       partials/_head.blade.php); the defaults reproduce the stock look. â”€â”€ */
     --color-sf-header: var(--color-brand);          /* top header bar */
     --color-sf-header-text: #ffffff;
     --color-sf-nav: #ffffff;                        /* menu bar under the header */

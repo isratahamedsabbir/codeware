@@ -1,13 +1,13 @@
 ﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Support\Locale::direction() }}">
 <head>
-    @include('partials.head')
-    @include('partials.seo-meta')
-    @include('partials.custom-code-head')
+    @include('partials._head')
+    @include('partials._seo-meta')
+    @include('partials._custom-code-head')
 </head>
 <body class="bg-page-bg font-storefront text-sf-text antialiased">
 
-@include('theme-ecommerce::partials.header')
+@include('theme-ecommerce::partials._header')
 
 @php
     $crumbs = [
@@ -25,11 +25,11 @@
 @endphp
 
 <main>
-    @include('theme-ecommerce::partials.breadcrumbs', ['crumbs' => $crumbs])
+    @include('theme-ecommerce::partials._breadcrumbs', ['crumbs' => $crumbs])
 
     <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         <div class="flex flex-col gap-6 md:flex-row">
-            @include('theme-ecommerce::account.partials.account-nav')
+            @include('theme-ecommerce::account.partials._account-nav')
 
             <div class="min-w-0 flex-1 space-y-6">
                 {{-- Order header + invoice --}}
@@ -41,7 +41,7 @@
                             <p class="mt-1 text-sm text-zinc-500">{{ __('Placed on :date', ['date' => $order->created_at?->toDisplay()]) }}</p>
                         </div>
                         <div class="shrink-0">
-                            @include('theme-ecommerce::account.partials.status-badge', ['status' => $order->status])
+                            @include('theme-ecommerce::account.partials._status-badge', ['status' => $order->status])
                         </div>
                     </div>
                     <div class="flex flex-col gap-3 border-t border-zinc-100 bg-zinc-50/60 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between">
@@ -193,7 +193,7 @@
                             </div>
                             <div class="flex items-center justify-between gap-3">
                                 <dt class="text-zinc-500">{{ __('Status') }}</dt>
-                                <dd>@include('theme-ecommerce::account.partials.status-badge', ['status' => $order->payment_status ?: 'pending'])</dd>
+                                <dd>@include('theme-ecommerce::account.partials._status-badge', ['status' => $order->payment_status ?: 'pending'])</dd>
                             </div>
                         </dl>
 
@@ -231,9 +231,9 @@
     </div>
 </main>
 
-@include('theme-ecommerce::partials.footer')
+@include('theme-ecommerce::partials._footer')
 
-@include('frontend.partials.chat-widget')
-@include('partials.custom-code-body')
+@include('frontend.partials._chat-widget')
+@include('partials._custom-code-body')
 </body>
 </html>

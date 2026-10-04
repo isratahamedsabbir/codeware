@@ -370,6 +370,12 @@ class Index extends Component
             return;
         }
 
+        if (! FileManagerPath::nameIsAllowed($name)) {
+            $this->addError('newName', 'That file type cannot be created from the File Manager.');
+
+            return;
+        }
+
         try {
             $parent = FileManagerPath::resolve($this->path);
         } catch (Throwable) {
@@ -436,6 +442,12 @@ class Index extends Component
 
         if (! $this->isValidName($name)) {
             $this->addError('composeName', 'Enter a valid file name (no slashes or special characters).');
+
+            return;
+        }
+
+        if (! FileManagerPath::nameIsAllowed($name)) {
+            $this->addError('composeName', 'That file type cannot be created from the File Manager.');
 
             return;
         }
@@ -619,6 +631,13 @@ class Index extends Component
 
         if (! $this->isValidName($newName)) {
             $this->addError('renameNewName', 'Enter a valid name (no slashes or special characters).');
+
+            return;
+        }
+
+        // Otherwise `mv notes.txt shell.php` was a rename away from RCE.
+        if (! FileManagerPath::nameIsAllowed($newName)) {
+            $this->addError('renameNewName', 'That file type cannot be created from the File Manager.');
 
             return;
         }
@@ -1014,7 +1033,11 @@ class Index extends Component
         foreach ($this->uploads as $file) {
             $name = $file->getClientOriginalName();
 
-            if (! $this->isValidName($name) || file_exists($dir.DIRECTORY_SEPARATOR.$name)) {
+            // The client supplies this name, so it is an attacker-controlled
+            // extension on a write into a served directory.
+            if (! $this->isValidName($name)
+                || ! FileManagerPath::nameIsAllowed($name)
+                || file_exists($dir.DIRECTORY_SEPARATOR.$name)) {
                 $skipped++;
 
                 continue;
@@ -1185,8 +1208,20 @@ class Index extends Component
             return false;
         }
 
-        foreach (explode('/', $entry) as $segment) {
+        $segments = explode('/', $entry);
+
+        foreach ($segments as $segment) {
             if ($segment === '..') {
+                return false;
+            }
+        }
+
+        // Zip-slip only covers the path, not what the archive carries: a zip
+        // holding `shell.php` extracts a script into a folder the web server
+        // will run. Every segment is checked, so `bundle/shell.php` is caught
+        // and `bundle/notes.txt` still extracts.
+        foreach ($segments as $segment) {
+            if ($segment !== '' && ! FileManagerPath::nameIsAllowed($segment)) {
                 return false;
             }
         }

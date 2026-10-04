@@ -1,15 +1,15 @@
 ﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Support\Locale::direction() }}">
 <head>
-    @include('partials.head')
-    @include('partials.seo-meta')
-    @include('partials.custom-code-head')
+    @include('partials._head')
+    @include('partials._seo-meta')
+    @include('partials._custom-code-head')
 </head>
 <body class="bg-white font-storefront text-sf-text antialiased">
 
-@include('theme-ecommerce::partials.header')
+@include('theme-ecommerce::partials._header')
 
-@include('theme-ecommerce::partials.breadcrumbs', [
+@include('theme-ecommerce::partials._breadcrumbs', [
     'crumbs' => [
         ['label' => __('Home'), 'url' => url('/')],
         ['label' => $page->getTranslation('title', 'en', false), 'url' => null],
@@ -21,7 +21,7 @@
 
     @if ($block === 'frontend.contact-form')
         {{-- Contact gets its own layout: details beside the form. --}}
-        @include('theme-ecommerce::partials.contact-page')
+        @include('theme-ecommerce::partials._contact-page')
     @else
         <section class="mx-auto max-w-3xl px-6 py-12 text-center">
             <h1 class="text-4xl font-extrabold text-sf-heading">{{ $page->getTranslation('title', 'en', false) }}</h1>
@@ -64,9 +64,9 @@
     @endif
 </main>
 
-@include('theme-ecommerce::partials.footer')
+@include('theme-ecommerce::partials._footer')
 
-@include('frontend.partials.chat-widget')
-@include('partials.custom-code-body')
+@include('frontend.partials._chat-widget')
+@include('partials._custom-code-body')
 </body>
 </html>

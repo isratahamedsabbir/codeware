@@ -6,7 +6,7 @@ namespace App\Support\Seo;
  * Everything a page says about itself to a search engine, resolved once.
  *
  * Built by SeoResolver from the paired Page, the global "Global SEO" settings and
- * the route's RouteSeo profile, so that partials/seo-meta.blade.php only has to
+ * the route's RouteSeo profile, so that partials/_seo-meta.blade.php only has to
  * print it and every theme gets the same answer. Immutable — read it, don't poke
  * at it; change the resolution in SeoResolver instead.
  */

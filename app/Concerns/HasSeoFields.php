@@ -12,7 +12,7 @@ use Livewire\Attributes\Validate;
  * Indexing) shared by Pages/Form and every entity form whose entity is paired
  * with a Page (Products, Posts, ProductCategories, PostCategories) — all of
  * them write these fields onto that same Page row. See
- * resources/views/partials/admin-seo-fields.blade.php for the matching markup.
+ * resources/views/partials/_admin-seo-fields.blade.php for the matching markup.
  *
  * The six text fields are translatable, one value per locale, so the admin types
  * them through the same `<x-admin-locale-tabs>` every other translated field
