@@ -47,7 +47,6 @@
             <table class="w-full divide-y divide-gray-200">
                 <colgroup>
                     <col style="width:5%">
-                    <col style="width:5%">
                     <col class="hidden lg:table-column" style="width:5%">
                     <col style="width:26%">
                     <col style="width:10%">
@@ -60,7 +59,6 @@
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
-                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
                         <th class="hidden lg:table-cell px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Voucher</th>
@@ -83,14 +81,6 @@
                             <td class="px-1 py-2 text-center">
                                 <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $voucher->id"
                                     wire:click="{{ $viewingId === $voucher->id ? 'closeDetails' : 'viewDetails('.$voucher->id.')' }}" />
-                            </td>
-
-                            <td class="px-2 py-2 text-center">
-                                @if (count($selectedIds) > 0)
-                                    <input type="checkbox" wire:click.stop="toggleSelect({{ $voucher->id }})"
-                                        @checked(in_array($voucher->id, $selectedIds, true))
-                                        class="w-4 h-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
-                                @endif
                             </td>
 
                             <td class="hidden lg:table-cell px-2 py-2 text-center text-xs text-zinc-500">
@@ -152,7 +142,7 @@
 
                         </tr>
                         @if ($viewingId === $voucher->id)
-                            <x-admin-row-details colspan="11">
+                            <x-admin-row-details colspan="10">
                                 <x-admin-row-details.item label="Description">
                                     {{ $voucher->getTranslation('description', 'en', false) ?: '—' }}
                                 </x-admin-row-details.item>
@@ -163,7 +153,7 @@
                         @endif
                     @empty
                         <tr>
-                            <td colspan="11" class="px-6 py-16 text-center">
+                            <td colspan="10" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />

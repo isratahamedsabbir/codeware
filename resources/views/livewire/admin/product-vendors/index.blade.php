@@ -69,7 +69,6 @@
         <div class="border border-zinc-100 rounded-lg">
             <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
                 <colgroup>
-                    <col style="width:5%">
                     <col style="width:8%">
                     <col style="width:10%">
                     <col style="width:37%">
@@ -78,7 +77,6 @@
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
-                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Logo</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Name</th>
@@ -92,17 +90,6 @@
                             class="group/row hover:bg-indigo-50/30 transition-colors cursor-default {{ in_array($vendor->id, $selectedIds, true) ? 'bg-indigo-50 ring-1 ring-inset ring-indigo-300' : '' }}"
                             @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()"
                             @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $vendor->id }}) }">
-
-                            {{-- Bulk-select checkbox — its own dedicated column so it never
-                                 crowds into the ID column; stays hidden until a selection is
-                                 already in progress. --}}
-                            <td class="px-2 py-2 text-center" @click.stop>
-                                @if (count($selectedIds) > 0)
-                                    <input type="checkbox" wire:click="toggleSelect({{ $vendor->id }})"
-                                        @checked(in_array($vendor->id, $selectedIds, true))
-                                        class="size-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
-                                @endif
-                            </td>
 
                             {{-- ID --}}
                             <td class="px-2 py-2 text-center text-xs text-zinc-500">
@@ -159,7 +146,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-16 text-center">
+                            <td colspan="5" class="px-6 py-16 text-center">
                                 <flux:icon.briefcase class="w-10 h-10 text-zinc-200 mx-auto mb-3" />
                                 <p class="text-sm text-zinc-600">No vendors found.</p>
                             </td>

@@ -80,7 +80,6 @@
         <div class="border border-zinc-100 rounded-lg">
             <table class="w-full divide-y divide-gray-200" style="table-layout:fixed">
                 <colgroup>
-                    <col style="width:5%">
                     <col style="width:8%">
                     <col style="width:27%">
                     <col style="width:25%">
@@ -89,7 +88,6 @@
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
-                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Name</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">District</th>
@@ -103,17 +101,6 @@
                             class="group/row hover:bg-indigo-50/30 transition-colors cursor-default {{ in_array($upazila->id, $selectedIds, true) ? 'bg-indigo-50 ring-1 ring-inset ring-indigo-300' : '' }}"
                             @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()"
                             @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $upazila->id }}) }">
-
-                            {{-- Bulk-select checkbox — its own dedicated column so it never
-                                 crowds into the ID column; stays hidden until a selection is
-                                 already in progress. --}}
-                            <td class="px-2 py-2 text-center" @click.stop>
-                                @if (count($selectedIds) > 0)
-                                    <input type="checkbox" wire:click="toggleSelect({{ $upazila->id }})"
-                                        @checked(in_array($upazila->id, $selectedIds, true))
-                                        class="size-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
-                                @endif
-                            </td>
 
                             {{-- ID --}}
                             <td class="px-2 py-2 text-center text-xs text-zinc-500">
@@ -165,7 +152,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-16 text-center">
+                            <td colspan="5" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 0 1-2.828 0l-4.243-4.243a8 8 0 1 1 11.314 0z" />

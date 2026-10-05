@@ -104,7 +104,6 @@
                 <thead>
                     <tr class="bg-zinc-50">
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
-                        <th class="px-1 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Customer</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Items</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Total</th>
@@ -125,16 +124,6 @@
                                     wire:click="{{ $viewingId === $order->id ? 'closeDetails' : 'viewDetails('.$order->id.')' }}" />
                             </td>
 
-                            {{-- Bulk-select checkbox — its own dedicated column so it never
-                                 crowds into neighboring cells; stays hidden until a selection
-                                 is already in progress. --}}
-                            <td class="px-2 py-2 text-center">
-                                @if (count($selectedIds) > 0)
-                                    <input type="checkbox" wire:click.stop="toggleSelect({{ $order->id }})"
-                                        @checked(in_array($order->id, $selectedIds, true))
-                                        class="w-4 h-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
-                                @endif
-                            </td>
                             <td class="px-4 py-[5px]">
                                 <div class="font-medium text-zinc-900 text-[12.5px] leading-[1.15]"><x-truncate :text="$order->customer_name" /></div>
                                 <div class="leading-none">
@@ -222,7 +211,7 @@
                             </td>
                         </tr>
                         @if ($viewingId === $order->id)
-                            <x-admin-row-details colspan="9">
+                            <x-admin-row-details colspan="8">
                                 <x-admin-row-details.item label="Items">{{ $order->items_count }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Payment method">{{ \App\Support\PaymentMethods::label($order->payment_method) }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Payment status">{{ ucfirst($order->payment_status) }}</x-admin-row-details.item>
@@ -240,7 +229,7 @@
                         @endif
                     @empty
                         <tr>
-                            <td colspan="9" class="px-6 py-16 text-center">
+                            <td colspan="8" class="px-6 py-16 text-center">
                                 <flux:icon.shopping-bag class="w-10 h-10 text-zinc-200 mx-auto mb-3" />
                                 <p class="text-sm text-zinc-600">No orders found.</p>
                             </td>

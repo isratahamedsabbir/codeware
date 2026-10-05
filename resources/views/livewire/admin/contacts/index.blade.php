@@ -55,7 +55,6 @@
             <table class="w-full divide-y divide-gray-200">
                 <colgroup>
                     <col style="width:5%">
-                    <col style="width:5%">
                     <col class="hidden lg:table-column" style="width:5%">
                     <col style="width:10%">
                     <col class="hidden lg:table-column" style="width:14%">
@@ -67,7 +66,6 @@
                 </colgroup>
                 <thead>
                     <tr class="bg-zinc-50">
-                        <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
                         <th class="px-2 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider w-8"></th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">#</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Name</th>
@@ -90,19 +88,6 @@
                                 <div class="flex items-center justify-center gap-1" @click.stop>
                                     <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingMessageId === $contact->id"
                                         wire:click="{{ $viewingMessageId === $contact->id ? 'closeMessage' : 'viewMessage('.$contact->id.')' }}" />
-                                </div>
-                            </td>
-
-                            {{-- Bulk-select checkbox — its own dedicated column so it never
-                                 crowds into neighboring cells; stays hidden until a selection
-                                 is already in progress. --}}
-                            <td class="px-1 py-2 text-center">
-                                <div @click.stop>
-                                    @if (count($selectedIds) > 0)
-                                        <input type="checkbox" wire:click="toggleSelect({{ $contact->id }})"
-                                            @checked(in_array($contact->id, $selectedIds, true))
-                                            class="size-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
-                                    @endif
                                 </div>
                             </td>
 
@@ -169,7 +154,7 @@
 
                         </tr>
                         @if ($viewingMessageId === $contact->id)
-                            <x-admin-row-details colspan="10">
+                            <x-admin-row-details colspan="9">
                                 <x-admin-row-details.item label="Email">{{ $contact->email }}</x-admin-row-details.item>
                                 @if ($contact->phone_number)
                                     <x-admin-row-details.item label="Phone">{{ $contact->phone_number }}</x-admin-row-details.item>
@@ -179,7 +164,7 @@
                         @endif
                     @empty
                         <tr>
-                            <td colspan="10" class="px-6 py-16 text-center">
+                            <td colspan="9" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
