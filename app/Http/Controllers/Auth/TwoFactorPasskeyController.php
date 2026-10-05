@@ -143,7 +143,7 @@ class TwoFactorPasskeyController extends Controller
 
         $request->session()->regenerate();
 
-        return app(TwoFactorLoginResponse::class);
+        return app(TwoFactorLoginResponse::class)->toResponse($request);
     }
 
     /**

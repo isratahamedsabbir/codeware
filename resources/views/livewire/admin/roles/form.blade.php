@@ -69,12 +69,12 @@
 
                 <div class="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
                     <div class="min-w-0">
-                        <p class="text-sm font-medium text-zinc-800 dark:text-zinc-100">Multi-factor authentication</p>
+                        <p class="text-sm font-medium text-zinc-800 dark:text-zinc-100">Two-factor authentication (2FA)</p>
                         <p class="text-xs text-zinc-500 dark:text-zinc-400">Require a second factor — an
                             authenticator app or a passkey — before this role can sign in. Anyone in the role with
                             no factor yet is held on an enrolment screen; they cannot get in until they set one up.</p>
                     </div>
-                    <flux:switch wire:model="mfaEnabled" aria-label="Require MFA" title="Require a second factor for this role" class="shrink-0" />
+                    <flux:switch wire:model="mfaEnabled" aria-label="Require 2FA" title="Require a second factor for this role" class="shrink-0" />
                 </div>
 
                 <div class="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">

@@ -5,6 +5,12 @@
     // account with *only* a passkey is the case that matters: it has nothing to
     // type into the field below, so without this it would be stuck.
     $canUsePasskey = \App\Support\Mfa::challengedUserHasPasskey();
+
+    // The code form is shown to anyone with an authenticator app, and as the
+    // fallback when nothing can be detected (e.g. the login session is gone) so
+    // the page is never left with no way to answer. A passkey-only account sees
+    // just the passkey button.
+    $canUseTotp = \App\Support\Mfa::challengedUserHasTotp() || ! $canUsePasskey;
 @endphp
 
 {{-- :passkeys loads the WebAuthn client (see layouts/auth/split.blade.php). --}}
@@ -50,7 +56,7 @@
 
                 async usePasskey() {
                     if (!window.Passkeys || !window.Passkeys.supported()) {
-                        this.passkeyError = @json(__('This browser cannot use a passkey. Use the code instead.'));
+                        this.passkeyError = @js(__('This browser cannot use a passkey. Use the code instead.'));
 
                         return;
                     }
@@ -68,17 +74,17 @@
                         );
 
                         if (!optionsResponse.ok) {
-                            this.passkeyError = @json(__('Could not start the passkey check. Try again.'));
+                            this.passkeyError = @js(__('Could not start the passkey check. Try again.'));
 
                             return;
                         }
 
                         const { options } = await optionsResponse.json();
 
-                        const result = await window.Passkeys.get(options);
+                        const result = await window.Passkeys.get(JSON.stringify(options));
 
                         if (result.error) {
-                            // "Cancelled." is what the client says when the user
+                            // Cancelled. is what the client says when the user
                             // dismissed the device prompt, which is not worth
                             // dressing up as an error.
                             this.passkeyError = result.error;
@@ -101,10 +107,10 @@
                         );
 
                         if (!verifyResponse.ok) {
-                            const payload = await verifyResponse.json().catch(() => ({}));
+                            const payload = await verifyResponse.json().catch(function () { return {}; });
 
                             this.passkeyError = payload?.errors?.credential?.[0]
-                                ?? @json(__('That passkey was not accepted. Try again, or use another method.'));
+                                ?? @js(__('That passkey was not accepted. Try again, or use another method.'));
 
                             return;
                         }
@@ -115,13 +121,14 @@
                             ? verifyResponse.url
                             : @js(url('/'));
                     } catch (error) {
-                        this.passkeyError = @json(__('Something went wrong. Try again, or use another method.'));
+                        this.passkeyError = @js(__('Something went wrong. Try again, or use another method.'));
                     } finally {
                         this.passkeyBusy = false;
                     }
                 },
             }"
         >
+            @if ($canUseTotp)
             <div x-show="!showRecoveryInput">
                 <x-auth-header
                     :title="__('Authentication code')"
@@ -135,8 +142,15 @@
                     :description="__('Please confirm access to your account by entering one of your emergency recovery codes.')"
                 />
             </div>
+            @else
+                <x-auth-header
+                    :title="__('Use your passkey')"
+                    :description="__('Approve this sign-in with your fingerprint, face or device PIN.')"
+                />
+            @endif
 
-            <form method="POST" action="{{ route('two-factor.login.store') }}">
+            @if ($canUseTotp)
+            <form method="POST" action="{{ route('two-factor.login.store') }}" class="mt-8">
                 @csrf
 
                 <div class="space-y-5 text-center">
@@ -216,6 +230,18 @@
                     </div>
                 </div>
             </form>
+            @else
+                <div class="mt-8 space-y-3">
+                    <flux:button size="sm" variant="primary" type="button" class="w-full"
+                        x-on:click="usePasskey()" x-bind:disabled="passkeyBusy">
+                        <span x-show="! passkeyBusy">{{ __('Use a passkey') }}</span>
+                        <span x-show="passkeyBusy" x-cloak>{{ __('Waiting for your device…') }}</span>
+                    </flux:button>
+
+                    <p x-show="passkeyError" x-cloak x-text="passkeyError"
+                        class="text-center text-xs text-red-600"></p>
+                </div>
+            @endif
         </div>
     </div>
 </x-layouts::auth>

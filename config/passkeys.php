@@ -23,26 +23,6 @@
 |
 */
 
-// The vendor and delivery portals are configured as hosts (config('app.
-// vendor_host'), derived from VENDOR_URL) rather than as full URLs, so their
-// origins are assembled below from APP_URL's scheme. Inline rather than in a
-// named function because a config file is plain PHP and Pest boots a fresh
-// application per test — a function declared here would be redeclared.
-$scheme = parse_url((string) config('app.url'), PHP_URL_SCHEME) ?: 'https';
-
-$portalOrigin = function (?string $host) use ($scheme): ?string {
-    if (blank($host)) {
-        return null;
-    }
-
-    // Already a full origin — nothing to assemble.
-    if (str_contains($host, '://')) {
-        return rtrim($host, '/');
-    }
-
-    return $scheme.'://'.$host;
-};
-
 return [
 
     /*
@@ -55,21 +35,16 @@ return [
      | failure this whole config exists to avoid: the other three origins would
      | then be suffix violations and every ceremony on them would be rejected.
      |
-     | Derived from APP_URL's host on purpose. The panel hosts are configured as
+     | Defined in config/fortify.php (Fortify copies fortify.passkeys.* over this
+     | file on boot, so the real values must live there). Derived from APP_URL's
+     | host on purpose. The panel hosts are configured as
      | hosts derived from their own URLs (config('app.admin_host') and friends),
      | so APP_URL is the only one of the four guaranteed to be the shared parent
      | rather than a sibling.
      */
-    'relying_party_id' => env('PASSKEYS_RP_ID')
-        ?: parse_url((string) config('app.url'), PHP_URL_HOST),
+    'relying_party_id' => config('fortify.passkeys.relying_party_id'),
 
-    'allowed_origins' => array_values(array_unique(array_filter([
-        config('app.url'),
-        config('app.admin_url'),
-        config('app.frontend_url'),
-        $portalOrigin(config('app.vendor_host')),
-        $portalOrigin(config('app.delivery_host')),
-    ]))),
+    'allowed_origins' => config('fortify.passkeys.allowed_origins'),
 
     'user_handle_secret' => env('PASSKEYS_USER_HANDLE_SECRET', config('app.key')),
 

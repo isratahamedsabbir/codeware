@@ -39,7 +39,7 @@ class Index extends Component
      * @var array<string, string>
      */
     private const REQUIREMENTS = [
-        'mfa_enabled' => 'MFA',
+        'mfa_enabled' => '2FA',
         'recaptcha_enabled' => 'reCAPTCHA',
     ];
 

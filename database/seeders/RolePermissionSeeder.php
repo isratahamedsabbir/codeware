@@ -72,6 +72,15 @@ class RolePermissionSeeder extends Seeder
         // already excludes it. Every user belongs to some role; this is the
         // catch-all for the ones that aren't admin/staff/vendor.
         $this->createInactiveRole('customer');
+
+        // Every run leaves exactly one live tier: admin. Any other role (the ones above
+        // and any custom role) is switched off, even one an admin had enabled.
+        $admin->update(['status' => 'active']);
+        Role::where('name', '!=', 'admin')->update(['status' => 'inactive']);
+
+        // MFA is opt-in per role (Admin → Roles): a fresh seed leaves it off everywhere,
+        // so nobody is sent to enrolment before an admin has chosen to require it.
+        Role::query()->update(['mfa_enabled' => false]);
     }
 
     /**
@@ -80,10 +89,6 @@ class RolePermissionSeeder extends Seeder
      * admin enables each one deliberately from Admin → Roles, the same
      * "inactive until switched on" rule every other create-form in the panel
      * follows.
-     *
-     * The status is only written when the role is actually created — a role an admin
-     * has since enabled is left alone on a re-seed, so `db:seed` can be re-run
-     * without quietly deactivating a tier that is in use.
      */
     private function createInactiveRole(string $name): Role
     {

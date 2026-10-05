@@ -17,14 +17,7 @@
         is a multi-step ceremony — options out, credential back — and so needs
         somewhere to hold the authenticator's answer between two Livewire calls.
 --}}
-<div x-data="{
-        confirmOpen: @js($confirmPrompt),
-        error: null,
-
-        init() {
-            this.$watch('confirmPrompt', (value) => { this.confirmOpen = value });
-        },
-    }" class="space-y-5">
+<div x-data="{ error: null }" class="space-y-5">
 
     @if ($required)
         <flux:callout variant="danger" icon="exclamation-triangle">
@@ -32,43 +25,84 @@
         </flux:callout>
     @endif
 
-    {{-- Password confirmation. Asked once per session, then every action stops
-         asking (App\Livewire\Security\MfaPanel::authorizeChange). --}}
-    <div x-show="confirmOpen" x-cloak x-transition>
-        <x-admin-section-card plain icon="key" title="Confirm your password"
-            description="Needed before a second factor can be added or removed.">
-            <form wire:submit="confirmPasswordAction" class="space-y-4">
-                <flux:field>
-                    <flux:label>Current password</flux:label>
-                    <flux:input wire:model="current_password" type="password" autocomplete="current-password" viewable />
-                    <flux:error name="current_password" />
-                </flux:field>
+    {{-- Password confirmation, as a modal. Asked once per session, then every
+         action stops asking (MfaPanel::authorizeChange()). --}}
+    <div x-show="$wire.confirmPrompt" x-cloak
+        x-on:keydown.escape.window="$wire.confirmPrompt && $wire.toggleConfirmPrompt()"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        role="dialog" aria-modal="true" aria-labelledby="mfa-confirm-title">
+        <div class="absolute inset-0 bg-zinc-900/50 backdrop-blur-sm"
+            x-show="$wire.confirmPrompt" x-transition.opacity
+            x-on:click="$wire.toggleConfirmPrompt()"></div>
 
-                <div class="flex items-center gap-3">
-                    <flux:button size="sm" variant="primary" type="submit">Confirm</flux:button>
-                    <button type="button" wire:click="toggleConfirmPrompt"
-                        class="text-xs text-zinc-500 hover:text-zinc-700 cursor-pointer">
-                        Cancel
-                    </button>
+        <div class="relative w-full max-w-md overflow-hidden rounded-xl border border-zinc-200 bg-white text-zinc-900 shadow-2xl dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            x-show="$wire.confirmPrompt" x-transition.scale.95.opacity>
+            <form wire:submit="confirmPasswordAction">
+                <div class="flex items-start gap-3 px-6 pt-6">
+                    <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300">
+                        <flux:icon.key class="size-5" />
+                    </span>
+                    <div class="min-w-0">
+                        <h3 id="mfa-confirm-title" class="text-base font-semibold">{{ __('Confirm your password') }}</h3>
+                        <p class="mt-0.5 text-sm text-zinc-500">{{ __('Needed before a second factor can be added or removed.') }}</p>
+                    </div>
+                </div>
+
+                <div class="px-6 py-5">
+                    <flux:field>
+                        <flux:label>{{ __('Current password') }}</flux:label>
+                        <flux:input wire:model="current_password" type="password" autocomplete="current-password" viewable
+                            x-init="$watch('$wire.confirmPrompt', (open) => { if (open) $nextTick(() => $el.querySelector('input')?.focus()) })" />
+                        <flux:error name="current_password" />
+                    </flux:field>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 border-t border-zinc-100 bg-zinc-50/70 px-6 py-3 dark:border-zinc-800 dark:bg-zinc-800/40">
+                    <flux:button size="sm" variant="ghost" type="button" wire:click="toggleConfirmPrompt">{{ __('Cancel') }}</flux:button>
+                    <flux:button size="sm" variant="primary" type="submit">{{ __('Confirm') }}</flux:button>
                 </div>
             </form>
-        </x-admin-section-card>
+        </div>
     </div>
 
-    <div wire:key="mfa-panel-body" class="contents" :class="{ 'opacity-50 pointer-events-none': confirmOpen }">
+    <div wire:key="mfa-panel-body" class="flex flex-col gap-5">
 
         {{-- ── Authenticator app (TOTP) ───────────────────────────────── --}}
         @if ($totpSupported)
-            <x-admin-section-card plain icon="device-phone-mobile" title="Authenticator app"
-                description="A 6-digit code from an app on your phone, at every sign-in.">
-                <x-slot:actions>
-                    @if ($totpEnabled)
-                        <flux:button size="sm" variant="danger" wire:click="disableTotp"
-                            wire:confirm="Turn off the authenticator app? Anyone with just your password will be able in.">
-                            Turn off
-                        </flux:button>
-                    @endif
-                </x-slot:actions>
+            <section class="overflow-hidden rounded-xl border border-zinc-200 bg-white text-zinc-900 shadow-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
+                <header class="flex flex-wrap items-center gap-3 border-b border-zinc-100 bg-zinc-50/70 px-5 py-4 dark:border-zinc-800 dark:bg-zinc-800/40">
+                    <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300">
+                        <flux:icon.device-phone-mobile class="size-5" />
+                    </span>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{{ __('Authenticator app') }}</h3>
+                            @if ($totpEnabled)
+                                <span class="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-[11px] font-medium text-green-700">
+                                    <span class="size-1.5 rounded-full bg-green-500"></span>{{ __('On') }}
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600">
+                                    <span class="size-1.5 rounded-full bg-zinc-400"></span>{{ __('Off') }}
+                                </span>
+                            @endif
+                        </div>
+                        <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{{ __('A 6-digit code from an app on your phone, at every sign-in.') }}</p>
+                    </div>
+                    <div class="flex shrink-0 items-center gap-2">
+                        @if ($totpEnabled)
+                            <flux:button size="sm" variant="danger" wire:click="disableTotp"
+                                wire:confirm="Turn off the authenticator app? Anyone with just your password will be able in.">
+                                {{ __('Turn off') }}
+                            </flux:button>
+                        @elseif (! $verifyingTotp)
+                            <flux:button size="sm" variant="primary" wire:click="startTotpSetup">
+                                {{ __('Turn on') }}
+                            </flux:button>
+                        @endif
+                    </div>
+                </header>
+                <div class="space-y-4 px-5 py-5 text-sm">
 
                 <flux:error name="totp" />
 
@@ -191,24 +225,41 @@
                     <p class="text-sm text-zinc-500">
                         {{ __('Off. Turn it on to be asked for a 6-digit code from an authenticator app at every sign-in.') }}
                     </p>
-                    <flux:button size="sm" variant="primary" wire:click="startTotpSetup">
-                        {{ __('Turn on') }}
-                    </flux:button>
                 @endif
-            </x-admin-section-card>
+            </div>
+            </section>
         @endif
 
         {{-- ── Passkeys (WebAuthn) ─────────────────────────────────────── --}}
         @if ($passkeysSupported)
-            <x-admin-section-card plain icon="finger-print" title="Passkeys"
-                description="Sign in with your fingerprint, face or device PIN — no code to type.">
-                <x-slot:actions>
-                    @if ($passkeysEnabled)
-                        <flux:button size="sm" variant="outline" wire:click="$set('addingPasskey', true); $set('passkeyOptions','')">
-                            Add passkey
+            <section class="overflow-hidden rounded-xl border border-zinc-200 bg-white text-zinc-900 shadow-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
+                <header class="flex flex-wrap items-center gap-3 border-b border-zinc-100 bg-zinc-50/70 px-5 py-4 dark:border-zinc-800 dark:bg-zinc-800/40">
+                    <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300">
+                        <flux:icon.finger-print class="size-5" />
+                    </span>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{{ __('Passkeys') }}</h3>
+                            @if ($passkeysEnabled)
+                                <span class="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-[11px] font-medium text-green-700">
+                                    <span class="size-1.5 rounded-full bg-green-500"></span>{{ __('On') }}
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600">
+                                    <span class="size-1.5 rounded-full bg-zinc-400"></span>{{ __('Off') }}
+                                </span>
+                            @endif
+                        </div>
+                        <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{{ __('Sign in with your fingerprint, face or device PIN — no code to type.') }}</p>
+                    </div>
+                    <div class="flex shrink-0 items-center gap-2">
+                        <flux:button size="sm" :variant="$passkeysEnabled ? 'outline' : 'primary'"
+                            wire:click="$set('addingPasskey', true); $set('passkeyOptions','')">
+                            {{ __('Add passkey') }}
                         </flux:button>
-                    @endif
-                </x-slot:actions>
+                    </div>
+                </header>
+                <div class="space-y-4 px-5 py-5 text-sm">
 
                 @unless ($passkeysEnabled)
                     <p class="text-sm text-zinc-500">
@@ -249,6 +300,7 @@
                 <div class="mt-4 border-t border-zinc-100 pt-4 dark:border-zinc-800"
                     x-data="{
                         busy: false,
+                        error: null,
                         available: window.Passkeys ? window.Passkeys.supported() : false,
 
                         async start() {
@@ -282,7 +334,7 @@
                         </flux:callout>
                     </template>
 
-                    <form class="mt-3 space-y-3" wire:submit.prevent="start">
+                    <form class="mt-3 space-y-3" x-on:submit.prevent="start()">
                         <flux:field>
                             <flux:label>Name this passkey</flux:label>
                             <flux:input x-model="$wire.passkeyName" placeholder="MacBook Pro" maxlength="255" />
@@ -303,7 +355,8 @@
 
                     <p x-show="error" x-cloak x-text="error" class="mt-2 text-xs text-red-600"></p>
                 </div>
-            </x-admin-section-card>
+                </div>
+            </section>
         @endif
 
         @unless ($totpSupported || $passkeysSupported)

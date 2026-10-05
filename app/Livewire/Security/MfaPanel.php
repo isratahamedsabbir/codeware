@@ -230,7 +230,7 @@ class MfaPanel extends Component
         $this->reset('code', 'verifyingTotp');
         $this->resetErrorBag();
 
-        app($enable)(Auth::user());
+        $enable(Auth::user());
 
         $user = Auth::user()->fresh();
 
@@ -266,7 +266,7 @@ class MfaPanel extends Component
         $user = Auth::user();
 
         try {
-            app($confirm)($user, $this->code);
+            $confirm($user, $this->code);
         } catch (Throwable) {
             // Fortify's ConfirmTwoFactorAuthentication throws a plain
             // ValidationException on a bad code; anything else reaching here is
@@ -295,7 +295,7 @@ class MfaPanel extends Component
     {
         $this->authorizeChange();
 
-        app($disable)(Auth::user());
+        $disable(Auth::user());
 
         $this->reset('code', 'verifyingTotp', 'qrCodeSvg', 'manualSetupKey');
         $this->resetErrorBag();
@@ -311,7 +311,7 @@ class MfaPanel extends Component
     {
         $this->authorizeChange();
 
-        app($disable)(Auth::user());
+        $disable(Auth::user());
 
         $this->reset('code', 'verifyingTotp', 'qrCodeSvg', 'manualSetupKey');
         $this->resetErrorBag();
@@ -355,7 +355,7 @@ class MfaPanel extends Component
             return;
         }
 
-        app($generate)(Auth::user());
+        $generate(Auth::user());
 
         $this->recoveryCodes = $this->readRecoveryCodes();
         $this->showingRecoveryCodes = true;
@@ -456,10 +456,14 @@ class MfaPanel extends Component
 
             $options = WebAuthn::fromJson($serialized, PublicKeyCredentialCreationOptions::class);
 
-            app($store)(Auth::user(), $this->passkeyName, $publicKeyCredential, $options);
+            $store(Auth::user(), $this->passkeyName, $publicKeyCredential, $options);
         } catch (ValidationException $e) {
             throw $e;
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            // Logged, because the user only sees the generic line below and a
+            // rejected origin or RP id would otherwise leave no trace.
+            report($e);
+
             throw ValidationException::withMessages([
                 'passkeyName' => ['That passkey could not be registered. Try again.'],
             ]);
@@ -481,7 +485,7 @@ class MfaPanel extends Component
         // only fail to match — it can never reach another account's credential.
         $passkey = Auth::user()->passkeys()->findOrFail($passkeyId);
 
-        app($delete)(Auth::user(), $passkey);
+        $delete(Auth::user(), $passkey);
 
         $this->refreshState();
 

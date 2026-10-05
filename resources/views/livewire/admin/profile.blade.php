@@ -101,7 +101,11 @@
          ride on a session someone else may already hold. The panel asks inside
          itself rather than bouncing to a separate page, because this screen is
          where the user already is. --}}
-    <div class="mt-5">
-        <livewire:security.mfa-panel />
-    </div>
+    {{-- Only for accounts whose role switched MFA on (Admin → Roles): for everyone
+         else there is nothing to enrol in, so the section is not shown at all. --}}
+    @if (\App\Support\Mfa::isRequiredFor(auth()->user()))
+        <div class="mt-5">
+            <livewire:security.mfa-panel />
+        </div>
+    @endif
 </div>

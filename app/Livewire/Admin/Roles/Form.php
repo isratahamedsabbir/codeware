@@ -78,7 +78,7 @@ class Form extends Component
             $role->syncPermissions($this->selectedPermissions);
             $this->dispatch('notify', message: 'Role updated successfully');
         } else {
-            $role = Role::create(['name' => $name, 'guard_name' => 'web'] + $requirements);
+            $role = Role::create(['name' => $name, 'guard_name' => 'web', 'status' => 'inactive'] + $requirements);
             $role->syncPermissions($this->selectedPermissions);
             $this->dispatch('notify', message: 'Role created successfully');
         }

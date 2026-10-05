@@ -300,4 +300,24 @@ final class Mfa
 
         return $user instanceof User && self::hasPasskeyFor($user);
     }
+
+    /**
+     * Whether the account mid-challenge has a confirmed authenticator-app secret.
+     *
+     * The other half of challengedUserHasPasskey(): the challenge page offers
+     * only the factors the account actually holds, so a passkey-only account is
+     * not shown a code field it has nothing to type into.
+     */
+    public static function challengedUserHasTotp(): bool
+    {
+        $id = session()->get('login.id');
+
+        if (! $id) {
+            return false;
+        }
+
+        $user = User::find($id);
+
+        return $user instanceof User && self::totpEnabledFor($user);
+    }
 }

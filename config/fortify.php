@@ -179,4 +179,40 @@ return [
         ]),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Passkey Relying Party
+    |--------------------------------------------------------------------------
+    |
+    | Fortify's service provider copies `fortify.passkeys.*` over `passkeys.*` on
+    | boot, so anything set only in config/passkeys.php is overwritten with the
+    | package defaults (allowed_origins = [APP_URL] alone) and a passkey created
+    | on admin.codeware.test is refused. These are the real values;
+    | config/passkeys.php reads them back from here.
+    |
+    | The relying party id is the common ancestor of every host (APP_URL's host,
+    | e.g. codeware.test), not one panel's host, so one enrolment answers on the
+    | storefront, admin, vendor and delivery hosts alike. allowed_origins is the
+    | exact set of origins a ceremony may complete on.
+    */
+    'passkeys' => [
+        'relying_party_id' => env('PASSKEYS_RP_ID')
+            ?: parse_url((string) config('app.url'), PHP_URL_HOST),
+
+        'allowed_origins' => array_values(array_unique(array_filter(array_map(
+            // The vendor and delivery portals are configured as bare hosts; every
+            // other entry is already a full origin.
+            fn ($origin) => blank($origin) ? null : (str_contains($origin, '://')
+                ? rtrim($origin, '/')
+                : (parse_url((string) config('app.url'), PHP_URL_SCHEME) ?: 'https').'://'.$origin),
+            [
+                config('app.url'),
+                config('app.admin_url'),
+                config('app.frontend_url'),
+                config('app.vendor_host'),
+                config('app.delivery_host'),
+            ],
+        )))),
+    ],
+
 ];

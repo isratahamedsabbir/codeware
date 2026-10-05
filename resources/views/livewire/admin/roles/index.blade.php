@@ -126,8 +126,8 @@
                                     <label class="flex items-center gap-1.5 cursor-pointer select-none"
                                         title="Require a second factor — an authenticator app or a passkey — before someone with this role can sign in.">
                                         <flux:switch size="sm" wire:model.live="mfa.{{ $role->id }}" name="mfa"
-                                            aria-label="Require MFA for {{ $role->name }}" />
-                                        <span class="text-xs text-zinc-600">MFA</span>
+                                            aria-label="Require 2FA for {{ $role->name }}" />
+                                        <span class="text-xs text-zinc-600">2FA</span>
                                     </label>
                                     <label class="flex items-center gap-1.5 cursor-pointer select-none"
                                         title="Ask for a reCAPTCHA on this role's login form. Needs both keys set under Settings → Env.">
@@ -157,7 +157,7 @@
                                 <x-admin-row-details.item label="ID">#{{ $role->id }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Users">{{ $role->users_count }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Status">{{ $role->name === 'admin' ? 'Active' : ucfirst($role->status) }}</x-admin-row-details.item>
-                                <x-admin-row-details.item label="MFA">{{ $role->mfa_enabled ? 'Required' : 'Not required' }}</x-admin-row-details.item>
+                                <x-admin-row-details.item label="2FA">{{ $role->mfa_enabled ? 'Required' : 'Not required' }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="reCAPTCHA">{{ $role->recaptcha_enabled ? 'Required' : 'Not required' }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Created by">{{ $role->creator?->name ?? '—' }}</x-admin-row-details.item>
                             </x-admin-row-details>
