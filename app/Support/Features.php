@@ -27,6 +27,7 @@ class Features
         'advertisements' => 'Advertisements',
         'orders' => 'Orders & Reports',
         'discounts' => 'Discounts (Products)',
+        'flash-deals' => 'Flash Deals (time-limited sales, storefront page & API)',
         'vouchers' => 'Gift Vouchers',
         'pages' => 'Pages',
         'cms' => 'CMS',

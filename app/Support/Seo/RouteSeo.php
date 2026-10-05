@@ -41,6 +41,7 @@ final class RouteSeo
         'products.show' => ['type' => 'product', 'index' => true, 'priority' => '0.8', 'changefreq' => 'weekly'],
         'blog' => ['type' => 'website', 'index' => true, 'priority' => '0.7', 'changefreq' => 'daily'],
         'blog.post' => ['type' => 'article', 'index' => true, 'priority' => '0.7', 'changefreq' => 'monthly'],
+        'flash-deals' => ['type' => 'website', 'index' => true, 'priority' => '0.6', 'changefreq' => 'daily'],
 
         // A visitor's own state, not a page of the site: indexing any of these
         // puts a customer's basket, order history or profile into a search index.

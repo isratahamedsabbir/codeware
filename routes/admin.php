@@ -377,6 +377,13 @@ Route::middleware(['auth', 'admin', 'activity-log', 'mfa'])->group(function () {
             Route::get('/discounts/{id}/edit', App\Livewire\Admin\Discounts\Form::class)->name('discounts.edit');
         });
 
+        // Flash Deals — time-boxed sales; the storefront page and public API read the live ones
+        Route::middleware('feature:flash-deals')->group(function () {
+            Route::get('/flash-deals', App\Livewire\Admin\FlashDeals\Index::class)->name('flash-deals');
+            Route::get('/flash-deals/create', App\Livewire\Admin\FlashDeals\Form::class)->name('flash-deals.create');
+            Route::get('/flash-deals/{id}/edit', App\Livewire\Admin\FlashDeals\Form::class)->name('flash-deals.edit');
+        });
+
         // Gift Vouchers — the voucher products and the record of vouchers actually
         // sold. Its own feature toggle (see App\Support\Features).
         Route::middleware('feature:vouchers')->group(function () {

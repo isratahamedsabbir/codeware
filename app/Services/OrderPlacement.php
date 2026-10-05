@@ -73,7 +73,7 @@ class OrderPlacement
             }
 
             $unitPrice = $isVariant ? $product->variationPrice($attributes) : (float) $product->price;
-            $discountPrice = $isVariant ? $product->variationDiscount($attributes) : ($product->hasDiscount() ? (float) $product->discount_price : null);
+            $discountPrice = $product->effectiveDiscount($attributes);
 
             return [
                 'product_id' => $product->id,

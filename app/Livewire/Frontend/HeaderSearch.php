@@ -56,8 +56,8 @@ class HeaderSearch extends Component
                 'slug' => $product->slug,
                 'name' => $product->name,
                 'image' => $product->featured_image,
-                'price' => format_money($product->hasDiscount() ? $product->discount_price : $product->price),
-                'old_price' => $product->hasDiscount() ? format_money($product->price) : null,
+                'price' => format_money($product->effectiveDiscount() ?? $product->price),
+                'old_price' => $product->effectiveDiscount() !== null ? format_money($product->price) : null,
             ])
             ->all();
     }

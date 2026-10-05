@@ -1,7 +1,7 @@
 @php
     $isUpcoming = $product->is_upcoming;
     $inStock = $product->inStock();
-    $discount = $product->hasDiscount() ? (float) $product->discount_price : null;
+    $discount = $product->effectiveDiscount();
     $discountPercent = $discount && (float) $product->price > 0
         ? round((1 - $discount / (float) $product->price) * 100)
         : null;

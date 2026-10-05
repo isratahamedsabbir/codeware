@@ -108,7 +108,8 @@ class ProductController extends Controller
             'slug' => $product->slug,
             'name' => $product->getTranslation('name', $locale, useFallbackLocale: true),
             'price' => (float) $product->price,
-            'discount_price' => $product->hasDiscount() ? (float) $product->discount_price : null,
+            // Includes a running flash deal, so it is what the cart will charge.
+            'discount_price' => $product->effectiveDiscount(),
             'quantity' => $product->quantity,
             'in_stock' => $product->inStock(),
             'warranty_months' => $product->warranty_months,
@@ -157,9 +158,14 @@ class ProductController extends Controller
             // doesn't actually exist) never reach the public API.
             $data['variations'] = collect($product->variations ?? [])
                 ->filter(fn ($row) => $row['visible'] ?? true)
-                ->map(function ($row) {
+                ->map(function ($row) use ($product) {
                     $price = ($row['price'] ?? null) !== null ? (float) $row['price'] : null;
                     $discountPrice = ($row['discount_price'] ?? null) !== null ? (float) $row['discount_price'] : null;
+                    $discountPrice = $price !== null && $discountPrice !== null && $discountPrice >= $price ? null : $discountPrice;
+
+                    if ($price !== null) {
+                        $discountPrice = $product->sellDiscount($price, $discountPrice);
+                    }
                     $quantity = (int) ($row['quantity'] ?? 0);
 
                     return [

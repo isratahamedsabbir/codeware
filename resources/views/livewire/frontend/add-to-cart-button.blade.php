@@ -129,16 +129,19 @@
             'key' => \App\Support\Cart::signature(array_map('strval', $row['attributes'] ?? [])),
             'sku' => ($row['sku'] ?? null) ?: null,
             'price_label' => format_money($row['price'] ?? $product->price),
-            'discount_label' => (isset($row['price'], $row['discount_price']) && (float) $row['discount_price'] < (float) $row['price'])
-                ? format_money($row['discount_price'])
-                : null,
+            'discount_label' => ($rowDiscount = $product->sellDiscount(
+                (float) ($row['price'] ?? $product->price),
+                (isset($row['price'], $row['discount_price']) && (float) $row['discount_price'] < (float) $row['price'])
+                    ? (float) $row['discount_price']
+                    : null,
+            )) !== null ? format_money($rowDiscount) : null,
             'in_stock' => (int) ($row['quantity'] ?? 0) > 0,
             'stock_label' => (int) ($row['quantity'] ?? 0) > 0
                 ? __('In stock')
                 : __('Out of stock'),
         ])->values()->all();
 
-        $pickerBaseDiscount = $product->hasDiscount() ? format_money($product->discount_price) : null;
+        $pickerBaseDiscount = $product->effectiveDiscount() !== null ? format_money($product->effectiveDiscount()) : null;
     }
 
     $pickerWireData = \Illuminate\Support\Js::from([

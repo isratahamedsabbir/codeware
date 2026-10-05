@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Route;
 use Themes\Ecommerce\Controllers\AccountController;
 use Themes\Ecommerce\Controllers\BlogController;
 use Themes\Ecommerce\Controllers\CartController;
+use Themes\Ecommerce\Controllers\FlashDealController;
 use Themes\Ecommerce\Controllers\HomeController;
 use Themes\Ecommerce\Controllers\PageController;
 use Themes\Ecommerce\Controllers\ProductController;
@@ -66,6 +67,13 @@ Route::middleware('feature:advertisements')->group(function () {
 // Saved favorites — guests keep a session bag that merges into their account
 // the moment they sign in (see App\Support\Favorites). No auth required.
 Route::get('/favorites', [ProductController::class, 'favorites'])->name('favorites');
+
+// Flash deals — the sales running right now, with a countdown. The header only
+// links here while one is live, but the page itself answers regardless (an empty
+// state) so a bookmarked link never 404s between two deals.
+Route::middleware('feature:flash-deals')->group(function () {
+    Route::get('/flash-deals', [FlashDealController::class, 'flashDeals'])->name('flash-deals');
+});
 
 // Blog — the public posts feed (listing + single post), gated by the same
 // "blog" feature flag as the admin's Posts module. Post slugs, exactly like

@@ -1,121 +1,58 @@
 {
-    "name": "Portfolio",
-    "sn": 3,
-    "default": false,
-    "description": "A personal portfolio theme: hero, projects, experience, education, skills and a contact section, with light/dark toggle and its own style.css / script.js.",
-    "version": "1.0.0",
-    "author": "Codeware",
-    "tags": [
-        "portfolio",
-        "personal"
-    ],
-    "theme_portfolio_photo": "",
-    "theme_portfolio_name": "Sabbir Hossain",
-    "theme_portfolio_hero_title": "Backend & Platform Engineer",
-    "theme_portfolio_hero_tagline": "APIs, queues and the databases behind them.",
-    "theme_portfolio_location": "Dhaka, Bangladesh",
-    "theme_portfolio_availability": "Available for new projects",
-    "theme_portfolio_resume_url": "/storage/theme-uploads/theme-portfolio-resume-url/cv-ac1olh.pdf",
-    "theme_portfolio_resume_label": "Download CV",
-    "theme_portfolio_stats": [
-        {
-            "value": "5+",
-            "label": "Years shipping"
-        },
-        {
-            "value": "40+",
-            "label": "Projects delivered"
-        }
-    ],
     "theme_portfolio_projects": [
         {
-            "title": "No assets",
-            "description": "Nothing uploaded.",
-            "icon": "",
-            "tech": "",
-            "stats": "",
-            "link": "",
-            "repo": "",
-            "image": ""
-        }
-    ],
-    "theme_portfolio_experiences": [
-        {
-            "role": "Backend Developer",
-            "company": "Acme Ltd",
-            "period": "2022 - 2024",
-            "description": "Owned the billing service."
-        },
-        {
-            "role": "Freelance Developer",
-            "company": "",
-            "period": "2020 - 2022",
-            "description": "Client work of every shape."
-        }
-    ],
-    "theme_portfolio_skills": [
-        {
-            "name": "Laravel",
-            "group": "Backend",
-            "icon": "",
-            "description": ""
-        },
-        {
-            "name": "Orphan",
-            "group": "",
-            "icon": "",
-            "description": ""
-        },
-        {
-            "name": "Also Orphan",
-            "group": "",
-            "icon": "",
-            "description": ""
-        }
-    ],
-    "theme_portfolio_testimonials": [
-        {
-            "quote": "Replace this with a real quote: what the client said about the work, in their own words. One or two sentences is plenty.",
-            "name": "Client name",
-            "role": "Their role, Company",
-            "rating": "5"
-        },
-        {
-            "quote": "Replace this with a second real quote. The most convincing ones name a specific problem and what changed after you fixed it.",
-            "name": "Client name",
-            "role": "Their role, Company",
-            "rating": "5"
-        },
-        {
-            "quote": "Replace this with a third real quote, or delete this row entirely — three is a number, one honest one is better than three thin ones.",
-            "name": "Client name",
-            "role": "Their role, Company",
-            "rating": ""
+            "title": "Order Platform",
+            "description": "Stock control for three branches.",
+            "icon": "📦",
+            "tech": "Laravel",
+            "stats": "In production",
+            "link": "https://example.com/app",
+            "repo": "https://github.com/sabbir/order-platform",
+            "image": "/storage/media/order-platform.png"
         }
     ],
     "theme_portfolio_education": [
         {
-            "title": "B.Sc. in Computer Science & Engineering",
-            "period": "2016 — 2020",
+            "title": "B.Sc. in Computer Science",
+            "period": "2018 - 2022",
             "description": "Example University"
-        },
-        {
-            "title": "Higher Secondary, Science",
-            "period": "2014 — 2016",
-            "description": "Example College"
         }
     ],
     "theme_portfolio_certifications": [
         {
-            "title": "AWS Certified Developer – Associate",
+            "title": "AWS Certified Developer",
             "period": "2024",
             "description": "Amazon Web Services"
-        },
-        {
-            "title": "Meta Front-End Developer",
-            "period": "2023",
-            "description": "Meta"
         }
     ],
-    "theme_portfolio_font": ""
+    "theme_portfolio_photo": "",
+    "theme_portfolio_name": "",
+    "theme_portfolio_hero_title": "",
+    "theme_portfolio_hero_tagline": "",
+    "theme_portfolio_location": "",
+    "theme_portfolio_availability": "",
+    "theme_portfolio_resume_url": "",
+    "theme_portfolio_resume_label": "",
+    "theme_portfolio_font": "",
+    "theme_portfolio_stats": [
+        {
+            "value": "1",
+            "label": "Stat 1"
+        },
+        {
+            "value": "2",
+            "label": "Stat 2"
+        },
+        {
+            "value": "3",
+            "label": "Stat 3"
+        },
+        {
+            "value": "4",
+            "label": "Stat 4"
+        }
+    ],
+    "theme_portfolio_experiences": [],
+    "theme_portfolio_skills": [],
+    "theme_portfolio_testimonials": []
 }

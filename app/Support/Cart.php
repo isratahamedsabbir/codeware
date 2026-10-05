@@ -231,7 +231,7 @@ class Cart
                 }
 
                 $unitPrice = $isVariant ? $product->variationPrice($attributes) : (float) $product->price;
-                $discountPrice = $isVariant ? $product->variationDiscount($attributes) : ($product->hasDiscount() ? (float) $product->discount_price : null);
+                $discountPrice = $product->effectiveDiscount($attributes);
                 $sellPrice = $discountPrice ?? $unitPrice;
 
                 return [

@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\V1\CmsController;
 use App\Http\Controllers\Api\V1\CommentController;
 use App\Http\Controllers\Api\V1\ContactController;
 use App\Http\Controllers\Api\V1\FirebaseTokenController;
+use App\Http\Controllers\Api\V1\FlashDealController;
 use App\Http\Controllers\Api\V1\LayoutController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\OrderController;
@@ -110,6 +111,12 @@ Route::get('/product-categories', [ProductCategoryController::class, 'index'])->
 Route::get('/product-categories/{slug}', [ProductCategoryController::class, 'show'])->name('product-categories.show');
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
+
+// Flash deals — only the ones live right now (see FlashDeal::scopeLive()).
+Route::middleware('feature:flash-deals')->group(function () {
+    Route::get('/flash-deals', [FlashDealController::class, 'index'])->name('flash-deals.index');
+    Route::get('/flash-deals/{id}', [FlashDealController::class, 'show'])->whereNumber('id')->name('flash-deals.show');
+});
 
 Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
 Route::get('/services/{slug}', [ServiceController::class, 'show'])->name('services.show');

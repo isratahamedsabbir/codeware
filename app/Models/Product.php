@@ -153,6 +153,77 @@ class Product extends Model
     }
 
     /**
+     * Flash deals this product is in that are running right now. The window is
+     * part of the relation itself, so once it is loaded (it is memoised on the
+     * model, and can be eager loaded for a listing) every price read agrees on
+     * what is live.
+     */
+    public function flashDeals(): BelongsToMany
+    {
+        return $this->belongsToMany(FlashDeal::class)->live();
+    }
+
+    /**
+     * The best live flash-deal price for a regular price, or null when no live
+     * deal makes it cheaper. Works for a variant's own price too.
+     */
+    public function flashPrice(float $regularPrice): ?float
+    {
+        $prices = $this->flashDeals
+            ->map(fn (FlashDeal $deal) => $deal->priceFor($regularPrice))
+            ->filter(fn ($price) => $price !== null);
+
+        return $prices->isEmpty() ? null : (float) $prices->min();
+    }
+
+    /**
+     * The live deal that gives the lowest price for this product — what the
+     * storefront badges and counts down to.
+     */
+    public function bestFlashDeal(?float $regularPrice = null): ?FlashDeal
+    {
+        $regularPrice ??= (float) $this->price;
+
+        return $this->flashDeals
+            ->filter(fn (FlashDeal $deal) => $deal->priceFor($regularPrice) !== null)
+            ->sortBy(fn (FlashDeal $deal) => $deal->priceFor($regularPrice))
+            ->first();
+    }
+
+    /**
+     * What the shopper actually pays instead of $regularPrice: the cheaper of the
+     * product's own sale price ($ownDiscount — the product's, or the chosen
+     * variant's) and a live flash deal. Null when neither applies. Cart, order
+     * placement and the storefront all go through this so what is shown is what
+     * is charged.
+     */
+    public function sellDiscount(float $regularPrice, ?float $ownDiscount): ?float
+    {
+        $flash = $this->flashPrice($regularPrice);
+
+        if ($flash === null) {
+            return $ownDiscount;
+        }
+
+        return $ownDiscount === null ? $flash : min($ownDiscount, $flash);
+    }
+
+    /**
+     * sellDiscount() for a selected option set — the combination's own price and
+     * sale price when $attributes is non-empty, else the base product's.
+     *
+     * @param  array<string, string>  $attributes
+     */
+    public function effectiveDiscount(array $attributes = []): ?float
+    {
+        if ($attributes !== []) {
+            return $this->sellDiscount($this->variationPrice($attributes), $this->variationDiscount($attributes));
+        }
+
+        return $this->sellDiscount((float) $this->price, $this->hasDiscount() ? (float) $this->discount_price : null);
+    }
+
+    /**
      * Who has favorited this product (see App\Support\Favorites).
      */
     public function wishlists(): HasMany

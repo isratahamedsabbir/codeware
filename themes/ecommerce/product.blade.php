@@ -22,10 +22,11 @@
         ->all();
 
     $hasVariations = $visibleVariations->isNotEmpty();
-    $baseDiscountLabel = $product->hasDiscount() ? format_money($product->discount_price) : null;
+    $baseDiscount = $product->effectiveDiscount();
+    $baseDiscountLabel = $baseDiscount !== null ? format_money($baseDiscount) : null;
 
-    $discountPercent = (! $hasVariations && $product->hasDiscount() && (float) $product->price > 0)
-        ? (int) round(((float) $product->price - (float) $product->discount_price) / (float) $product->price * 100)
+    $discountPercent = (! $hasVariations && $baseDiscount !== null && (float) $product->price > 0)
+        ? (int) round(((float) $product->price - $baseDiscount) / (float) $product->price * 100)
         : null;
 
     $rating = null;
@@ -194,10 +195,13 @@
                     ? [
                         'inStock' => (int) ($firstVariation['quantity'] ?? 0) > 0,
                         'priceLabel' => format_money($variantPrice),
-                        'discountLabel' => isset($firstVariation['price'], $firstVariation['discount_price'])
-                            && (float) $firstVariation['discount_price'] < (float) $firstVariation['price']
-                                ? format_money($firstVariation['discount_price'])
-                                : null,
+                        'discountLabel' => ($firstVariationDiscount = $product->sellDiscount(
+                            (float) $variantPrice,
+                            isset($firstVariation['price'], $firstVariation['discount_price'])
+                                && (float) $firstVariation['discount_price'] < (float) $firstVariation['price']
+                                    ? (float) $firstVariation['discount_price']
+                                    : null,
+                        )) !== null ? format_money($firstVariationDiscount) : null,
                         'sku' => ($firstVariation['sku'] ?? null) ?: null,
                     ]
                     : [

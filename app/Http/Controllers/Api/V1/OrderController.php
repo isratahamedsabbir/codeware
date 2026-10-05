@@ -107,7 +107,7 @@ class OrderController extends Controller
         }
 
         $hasDiscountedItem = $lines->contains(fn (array $line) => ($product = $products->get($line['product_id'])) !== null
-            && $product->hasDiscount());
+            && ($product->hasDiscount() || $product->flashPrice((float) $product->price) !== null));
 
         if ($hasDiscountedItem) {
             throw ValidationException::withMessages([

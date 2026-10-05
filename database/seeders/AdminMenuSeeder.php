@@ -45,6 +45,7 @@ class AdminMenuSeeder extends Seeder
             ['Advertisements', 'megaphone', 'admin.advertisements'],
             ['Coupons', 'ticket', 'admin.coupons'],
             ['Discounts', 'receipt-percent', 'admin.discounts'],
+            ['Flash Deals', 'bolt', 'admin.flash-deals'],
         ]);
 
         // Posts, Products and Services are listed one after another, right after
