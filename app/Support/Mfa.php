@@ -194,7 +194,11 @@ final class Mfa
      */
     public static function needsEnrolmentFor(User $user): bool
     {
-        return self::isRequiredFor($user) && ! self::hasFactorFor($user);
+        // Never, by design: a role with 2FA switched on makes the second factor
+        // available (the Profile section appears) and challenges whoever has set
+        // one up, but it does not trap an account that has not. Nobody is held
+        // on the enrolment screen the moment an admin flips the switch.
+        return false;
     }
 
     /**

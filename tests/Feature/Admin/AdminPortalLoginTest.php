@@ -95,6 +95,7 @@ it('rejects a wrong password', function () {
 
 it('sends an admin with two-factor enabled to the challenge on the admin host, without logging them in yet', function () {
     $admin = User::factory()->admin()->withTwoFactor()->create(['password' => 'correct-password']);
+    \Spatie\Permission\Models\Role::where('name', 'admin')->update(['mfa_enabled' => true]);
 
     Livewire::test(Login::class)
         ->set('email', $admin->email)

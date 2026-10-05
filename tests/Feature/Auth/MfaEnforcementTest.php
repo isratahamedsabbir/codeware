@@ -149,19 +149,19 @@ test('enforcement is off by default so an upgrade cannot lock the panel', functi
         ->assertOk();
 });
 
-test('an admin with no factor is held at the enrolment screen, and the screen answers', function () {
+test('an admin with no factor is not held: 2FA is opt-in from the profile, and the screen still answers', function () {
     $admin = User::factory()->admin()->create();
 
     requireMfaFor(Mfa::AUDIENCE_ADMIN);
 
     $host = config('app.admin_host');
 
-    // Held — the dashboard does not answer.
+    // Switching 2FA on for a role does not trap anyone who has not set one up.
     $this->actingAs($admin)
         ->get('http://'.$host.'/')
-        ->assertRedirect(route('admin.mfa.required'));
+        ->assertOk();
 
-    // And the screen it is held at does, or the policy would be unsatisfiable.
+    // The enrolment screen is still reachable for anyone who goes there.
     $this->actingAs($admin)
         ->get('http://'.$host.'/mfa-required')
         ->assertOk()
@@ -196,7 +196,7 @@ test('a passkey-only admin is let through too', function () {
         ->assertOk();
 });
 
-test('a vendor is held on the vendor host, not the admin one', function () {
+test('a vendor with no factor is not held on the vendor host either', function () {
     activateRoles('vendor');
 
     $user = User::factory()->create();
@@ -205,14 +205,12 @@ test('a vendor is held on the vendor host, not the admin one', function () {
 
     requireMfaFor(Mfa::AUDIENCE_VENDOR);
 
-    $host = config('app.vendor_host');
+    $this->actingAs($user)
+        ->get('http://'.config('app.vendor_host').'/')
+        ->assertOk();
 
     $this->actingAs($user)
-        ->get('http://'.$host.'/')
-        ->assertRedirect(route('vendor.mfa.required'));
-
-    $this->actingAs($user)
-        ->get('http://'.$host.'/mfa-required')
+        ->get('http://'.config('app.vendor_host').'/mfa-required')
         ->assertOk();
 });
 
@@ -411,7 +409,7 @@ test('one role of several is enough to require a factor', function () {
 test('the Roles screen is where the switch lives, so Settings no longer carries one', function () {
     $html = Livewire::test(RolesIndex::class)->html();
 
-    expect($html)->toContain('MFA', 'reCAPTCHA');
+    expect($html)->toContain('2FA', 'reCAPTCHA');
 
     // The Settings page keeps no policy switches at all: the whole reason this
     // moved is that one global switch could not say who it applied to.
