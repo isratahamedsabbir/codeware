@@ -452,6 +452,14 @@ class ThemeSettings
             return false;
         }
 
+        // A folder the web user cannot write to (a deploy that left themes/ owned
+        // by another account) is a failed save, not a crash: file_put_contents()
+        // would raise a warning, and Laravel turns every warning into an
+        // exception, so without this the whole Save ends in a 500.
+        if (! is_writable($directory) || (is_file($file) && ! is_writable($file))) {
+            return false;
+        }
+
         $json = json_encode((object) $values, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         // json_encode() returns false for anything it cannot represent. A
@@ -463,7 +471,7 @@ class ThemeSettings
 
         $temp = $file.'.'.uniqid('', true).'.tmp';
 
-        if (file_put_contents($temp, $json."\n", LOCK_EX) === false) {
+        if (@file_put_contents($temp, $json."\n", LOCK_EX) === false) {
             return false;
         }
 
