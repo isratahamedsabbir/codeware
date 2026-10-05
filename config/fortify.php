@@ -196,8 +196,51 @@ return [
     | exact set of origins a ceremony may complete on.
     */
     'passkeys' => [
-        'relying_party_id' => env('PASSKEYS_RP_ID')
-            ?: parse_url((string) config('app.url'), PHP_URL_HOST),
+        // PASSKEYS_RP_ID wins when set. Otherwise it is the longest domain every
+        // configured host (APP_URL, ADMIN_URL, the vendor and delivery hosts)
+        // shares, because WebAuthn accepts an RP id only if it is the page's own
+        // host or a suffix of it. Taking APP_URL's host alone breaks as soon as
+        // the panel lives on a different domain than APP_URL (the browser then
+        // reports "the relying party ID is not a registrable domain suffix").
+        // If the hosts share nothing usable, fall back to the admin host so at
+        // least that panel works.
+        'relying_party_id' => env('PASSKEYS_RP_ID') ?: (function () {
+            $hosts = array_values(array_filter(array_map(
+                fn ($url) => blank($url) ? null : strtolower((string) (parse_url(str_contains($url, '://') ? $url : 'https://'.$url, PHP_URL_HOST) ?: '')),
+                [config('app.url'), config('app.admin_url'), config('app.vendor_host'), config('app.delivery_host')],
+            )));
+
+            $common = null;
+
+            foreach ($hosts as $host) {
+                $labels = array_reverse(explode('.', $host));
+
+                if ($common === null) {
+                    $common = $labels;
+
+                    continue;
+                }
+
+                $shared = [];
+
+                foreach ($common as $i => $label) {
+                    if (($labels[$i] ?? null) !== $label) {
+                        break;
+                    }
+
+                    $shared[] = $label;
+                }
+
+                $common = $shared;
+            }
+
+            if ($common !== null && count($common) >= 2) {
+                return implode('.', array_reverse($common));
+            }
+
+            return parse_url((string) config('app.admin_url'), PHP_URL_HOST)
+                ?: parse_url((string) config('app.url'), PHP_URL_HOST);
+        })(),
 
         'allowed_origins' => array_values(array_unique(array_filter(array_map(
             // The vendor and delivery portals are configured as bare hosts; every
