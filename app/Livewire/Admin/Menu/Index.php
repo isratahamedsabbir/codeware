@@ -44,6 +44,9 @@ class Index extends Component
     /** Which menu (`group`) is currently being managed — see the Menu model. */
     public string $activeGroup = MenuItem::GROUP_ADMIN_SIDEBAR;
 
+    /** IDs of group menu items that are currently expanded. */
+    public array $expandedGroups = [];
+
     #[Validate('required|string|max:60')]
     public string $newMenuLabel = '';
 
@@ -59,6 +62,7 @@ class Index extends Component
     public function selectMenu(string $group): void
     {
         $this->activeGroup = $group;
+        $this->expandedGroups = [];
     }
 
     public function openNewMenu(): void
@@ -86,6 +90,7 @@ class Index extends Component
         $menu = Menu::firstOrCreate(['slug' => $slug], ['name' => $name]);
 
         $this->activeGroup = $menu->slug;
+        $this->expandedGroups = [];
         $this->newMenuLabel = '';
 
         $this->dispatch('close-modal', name: 'new-menu-form');
@@ -121,6 +126,7 @@ class Index extends Component
         AdminActivity::log('deleted', "Menu: {$menu->name}");
 
         $this->activeGroup = MenuItem::GROUP_ADMIN_SIDEBAR;
+        $this->expandedGroups = [];
 
         $this->dispatch('close-modal', name: 'menu-delete');
         $this->dispatch('notify', message: __('Menu deleted successfully'));
@@ -140,6 +146,12 @@ class Index extends Component
 
         $this->activeGroup = $item->group;
         $this->editingId = $item->id;
+        if ($item->parent_id) {
+            $parent = MenuItem::find($item->parent_id);
+            if ($parent && ! in_array($parent->id, $this->expandedGroups, true)) {
+                $this->expandedGroups[] = $parent->id;
+            }
+        }
         $this->label = $item->label;
         $this->icon = $item->icon ?? '';
         $this->is_group = $item->is_group;
@@ -198,6 +210,7 @@ class Index extends Component
     public function save(): void
     {
         $creating = $this->editingId === null;
+        $savedItem = null;
 
         // is_group only takes effect when creating — an existing row's type can't flip
         // without leaving its route/url/children in an inconsistent state.
@@ -331,33 +344,55 @@ class Index extends Component
         $this->dispatch('notify', message: __('Menu item updated successfully'));
     }
 
+    public function toggleGroup(int $id): void
+    {
+        $this->expandedGroups = $this->isGroupExpanded($id)
+            ? array_values(array_diff($this->expandedGroups, [$id]))
+            : [...$this->expandedGroups, $id];
+    }
+
+    public function isGroupExpanded(int $id): bool
+    {
+        return in_array($id, $this->expandedGroups, true);
+    }
+
     public function confirmDelete(int $id): void
     {
         $this->deletingId = $id;
         $this->dispatch('open-modal', name: 'menu-item-delete');
     }
 
-    public function delete(): void
+        public function delete(): void
     {
-        if ($this->deletingId) {
-            $item = MenuItem::findOrFail($this->deletingId);
-
-            if ($item->is_group && $item->children()->exists()) {
-                $this->dispatch('notify', message: __('Move or delete this group\'s items first.'));
-                $this->deletingId = null;
-                $this->dispatch('close-modal', name: 'menu-item-delete');
-
-                return;
-            }
-
-            AdminActivity::log('deleted', "Menu item: {$item->label}");
-            $item->delete();
-
-            $this->dispatch('notify', message: __('Menu item deleted successfully'));
-            $this->deletingId = null;
+        if (! $this->deletingId) {
+            return;
         }
 
+        $item = MenuItem::findOrFail($this->deletingId);
+
+        // A group that still has children cannot be deleted ??? move or remove
+        // the items first, or the tree becomes orphaned. The UI already notes
+        // this in the confirmation dialog.
+        if ($item->is_group && $item->children()->exists()) {
+            $this->reset('deletingId');
+            $this->dispatch('close-modal', name: 'menu-item-delete');
+            $this->dispatch('notify', message: __('Cannot delete a group that contains items. Move or remove its items first.'));
+            return;
+        }
+
+        $parentId = $item->parent_id;
+        MenuItem::where('parent_id', $item->id)->update(['parent_id' => null]);
+        $item->delete();
+        MenuItem::flushCache();
+        ContentCache::bust();
+
+        if ($parentId && empty(MenuItem::where('parent_id', $parentId)->count())) {
+            $this->expandedGroups = array_values(array_diff($this->expandedGroups, [$parentId]));
+        }
+
+        $this->reset('deletingId');
         $this->dispatch('close-modal', name: 'menu-item-delete');
+        $this->dispatch('notify', message: __('Menu item deleted successfully'));
     }
 
     public function render()

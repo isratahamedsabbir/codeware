@@ -80,15 +80,7 @@
 
                     {{-- Row --}}
                     <div class="flex items-center gap-3 px-4 py-3 hover:bg-indigo-50/30 transition-colors {{ $item->is_active ? '' : 'opacity-50' }}">
-                        <div class="drag-handle cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-600 shrink-0">
-                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="3" y1="6" x2="21" y2="6" />
-                                <line x1="3" y1="12" x2="21" y2="12" />
-                                <line x1="3" y1="18" x2="21" y2="18" />
-                            </svg>
-                        </div>
-
-                        <div class="w-8 h-8 shrink-0 rounded-lg flex items-center justify-center {{ $item->is_group ? 'bg-indigo-50 text-indigo-600' : 'bg-zinc-100 text-zinc-500' }}">
+                        <div class="drag-handle cursor-grab active:cursor-grabbing w-8 h-8 shrink-0 rounded-lg flex items-center justify-center {{ $item->is_group ? 'bg-indigo-50 text-indigo-600' : 'bg-zinc-100 text-zinc-500' }}">
                             @php $iconName = \App\Models\MenuItem::iconExists($item->icon) ? $item->icon : 'link'; @endphp
                             @if ($item->is_group)
                                 <flux:icon.folder class="size-4.5" />
@@ -113,6 +105,17 @@
                         <div class="flex items-center gap-1.5 shrink-0">
 
                             @if ($item->is_group)
+                                @if ($item->children()->exists())
+                                    <button wire:click="toggleGroup({{ $item->id }})"
+                                        aria-label="{{ $this->isGroupExpanded($item->id) ? __('Collapse group') : __('Expand group') }}"
+                                        class="inline-flex items-center justify-center w-6 h-6 rounded border transition-all duration-150 border-zinc-300 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600">
+                                        @if ($this->isGroupExpanded($item->id))
+                                            <flux:icon.chevron-up class="size-3.5" />
+                                        @else
+                                            <flux:icon.chevron-down class="size-3.5" />
+                                        @endif
+                                    </button>
+                                @endif
                                 <button wire:click="openCreate({{ $item->id }})"
                                     class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg border border-zinc-200 text-zinc-600 bg-white hover:bg-zinc-50 transition-colors">
                                     <flux:icon.plus class="size-3.5" />
@@ -197,20 +200,13 @@
                     </div>
 
                     {{-- Children --}}
-                    @if ($item->is_group)
+                    @if ($item->is_group && $this->isGroupExpanded($item->id))
                         <div class="pl-11 pr-4 pb-3 space-y-1" x-init="initGroup($el, {{ $item->id }})">
                             @forelse ($item->children as $child)
                                 <div data-item-id="{{ $child->id }}" wire:key="child-{{ $child->id }}"
                                     class="flex items-center gap-3 px-3 py-2 rounded-lg bg-zinc-50/60 hover:bg-indigo-50/40 transition-colors {{ $child->is_active ? '' : 'opacity-50' }}">
-                                    <div class="drag-handle cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-600 shrink-0">
-                                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <line x1="3" y1="6" x2="21" y2="6" />
-                                            <line x1="3" y1="12" x2="21" y2="12" />
-                                            <line x1="3" y1="18" x2="21" y2="18" />
-                                        </svg>
-                                    </div>
                                     @php $childIcon = \App\Models\MenuItem::iconExists($child->icon) ? $child->icon : 'link'; @endphp
-                                    <div class="w-7 h-7 shrink-0 rounded-lg bg-white border border-zinc-100 flex items-center justify-center text-zinc-400">
+                                    <div class="drag-handle cursor-grab active:cursor-grabbing w-7 h-7 shrink-0 rounded-lg bg-white border border-zinc-100 flex items-center justify-center text-zinc-400">
                                         <x-dynamic-component :component="'flux::icon.'.$childIcon" class="size-3.5" />
                                     </div>
                                     <div class="flex-1 min-w-0">
