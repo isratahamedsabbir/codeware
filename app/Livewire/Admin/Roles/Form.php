@@ -18,6 +18,16 @@ class Form extends Component
 
     public array $selectedPermissions = [];
 
+    /**
+     * The same two switches the roles table carries, editable here too so a
+     * role can be set up in one pass instead of saved and then toggled.
+     */
+    #[Validate('boolean')]
+    public bool $mfaEnabled = false;
+
+    #[Validate('boolean')]
+    public bool $recaptchaEnabled = false;
+
     public function mount(?int $id = null): void
     {
         if ($id) {
@@ -25,6 +35,8 @@ class Form extends Component
             $this->roleId = $id;
             $this->name = $role->name;
             $this->selectedPermissions = $role->permissions->pluck('name')->toArray();
+            $this->mfaEnabled = (bool) $role->mfa_enabled;
+            $this->recaptchaEnabled = (bool) $role->recaptcha_enabled;
         }
     }
 
@@ -47,15 +59,26 @@ class Form extends Component
 
         $creating = $this->roleId === null;
 
+        // On both paths: the two switches are part of what a role *is*, not a
+        // separate step, and leaving them out of the create branch would make a
+        // brand new role come out with the table's toggles out of step with
+        // what was just checked on the form that made it.
+        $requirements = [
+            'mfa_enabled' => $this->mfaEnabled,
+            'recaptcha_enabled' => $this->recaptchaEnabled,
+        ];
+
         if ($this->roleId) {
             $role = Role::findOrFail($this->roleId);
             if ($role->name !== 'admin') {
-                $role->update(['name' => $name, 'guard_name' => 'web']);
+                $role->update(['name' => $name, 'guard_name' => 'web'] + $requirements);
+            } else {
+                $role->update($requirements);
             }
             $role->syncPermissions($this->selectedPermissions);
             $this->dispatch('notify', message: 'Role updated successfully');
         } else {
-            $role = Role::create(['name' => $name, 'guard_name' => 'web']);
+            $role = Role::create(['name' => $name, 'guard_name' => 'web'] + $requirements);
             $role->syncPermissions($this->selectedPermissions);
             $this->dispatch('notify', message: 'Role created successfully');
         }

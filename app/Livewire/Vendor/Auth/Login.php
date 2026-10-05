@@ -2,6 +2,10 @@
 
 namespace App\Livewire\Vendor\Auth;
 
+use App\Models\User;
+use App\Rules\Recaptcha;
+use App\Support\Mfa;
+use App\Support\Recaptcha as RecaptchaSupport;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
@@ -23,6 +27,8 @@ class Login extends Component
     public string $password = '';
 
     public bool $remember = false;
+
+    public string $recaptchaToken = '';
 
     public function mount(): void
     {
@@ -52,6 +58,11 @@ class Login extends Component
             'password' => ['required', 'string'],
         ]);
 
+        // Looked up before the captcha is judged because the requirement belongs to the
+        // role, not to the form. Ahead of Auth::attempt() so a captcha error at an
+        // address with no account behind it is never a way of finding out which
+        // addresses are real.
+        $this->ensureRecaptchaPasses(User::where('email', $this->email)->first());
         $this->ensureIsNotRateLimited();
 
         if (! Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
@@ -88,6 +99,38 @@ class Login extends Component
         }
 
         RateLimiter::clear($this->throttleKey());
+
+        // A second factor is owed when this account's role says so and it has one to
+        // answer with — App\Support\Mfa, the same rule the admin panel's login
+        // uses. The vendor portal has its own login and its own host-scoped
+        // session, so the switch has to be read here too rather than left to
+        // the admin door; without it a vendor required to use 2FA would walk
+        // straight through this door with just their password.
+        //
+        // Auth::attempt above has already logged them in, so the session is
+        // dropped again before the challenge is parked: a half-authenticated
+        // attempt must not be a logged-in one, or a request racing this
+        // redirect would already be inside.
+        $user = Auth::user();
+
+        if (Mfa::mustChallenge($user)) {
+            $this->logout();
+
+            // Same two session keys Fortify parks them under, which is what the
+            // two-factor-challenge screen reads.
+            session()->put([
+                'login.id' => $user->getKey(),
+                'login.remember' => $this->remember,
+            ]);
+
+            // Built from this request's own host rather than with route():
+            // /two-factor-challenge is domainless, so route() would resolve it
+            // against APP_URL and the half-finished session here would not exist
+            // there. See Mfa::challengeUrl().
+            $this->redirect(Mfa::challengeUrl(Mfa::AUDIENCE_VENDOR), navigate: false);
+
+            return;
+        }
 
         session()->regenerate();
 
@@ -127,6 +170,23 @@ class Login extends Component
     private function intendedUrl(): string
     {
         return session()->pull('url.intended', route('vendor.dashboard'));
+    }
+
+    /**
+     * Whether this account's role asked for a reCAPTCHA — see
+     * App\Support\Recaptcha.
+     *
+     * @throws ValidationException
+     */
+    private function ensureRecaptchaPasses(?User $user): void
+    {
+        if (! RecaptchaSupport::requiredFor($user)) {
+            return;
+        }
+
+        $this->validate([
+            'recaptchaToken' => ['required', new Recaptcha],
+        ]);
     }
 
     /**

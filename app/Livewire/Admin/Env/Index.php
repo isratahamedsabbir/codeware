@@ -15,9 +15,9 @@ class Index extends Component
     public array $env = [];
 
     /**
-     * Only the two plain (DB-backed) Settings that live on this page — Tracking's
-     * Google Pixel ID and the reCAPTCHA enable toggle — not every Setting row (that
-     * generic loop stays on the main Settings page).
+     * Only Tracking's Google Pixel ID — the one plain (DB-backed) Setting that
+     * lives on this page — not every Setting row (that generic loop stays on the
+     * main Settings page).
      *
      * @var array<string, mixed>
      */
@@ -49,7 +49,6 @@ class Index extends Component
     protected function loadSettings(): void
     {
         $this->settings['google_pixel_id'] = Setting::get('google_pixel_id', '') ?? '';
-        $this->settings['recaptcha_enabled'] = (bool) Setting::get('recaptcha_enabled');
     }
 
     /**
@@ -381,15 +380,14 @@ class Index extends Component
     }
 
     /**
-     * Persists Tracking's Google Pixel ID and the reCAPTCHA enable toggle — the
-     * only two plain (DB-backed) Settings hosted on this page — alongside the
-     * .env-backed fields above, so a single "Save Environment Settings" click
-     * persists both without the admin needing to know they're stored differently.
+     * Persists Tracking's Google Pixel ID — the only plain (DB-backed) Setting
+     * hosted on this page — alongside the .env-backed fields above, so a single
+     * "Save Environment Settings" click persists both without the admin needing
+     * to know they're stored differently.
      */
     private function persistTrackingSettings(): void
     {
         Setting::set('google_pixel_id', $this->settings['google_pixel_id'] ?? '');
-        Setting::set('recaptcha_enabled', $this->settings['recaptcha_enabled'] ?? false);
     }
 
     public function render()

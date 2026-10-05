@@ -234,8 +234,12 @@ class Index extends Component
             // an older database never surfaces here.
             // 'admin' (admin_font) is hand-rendered in the Backend card above, not
             // through this generic per-group loop — it needs a select, not a plain
-            // text input.
-            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'seo', 'colors', 'currency', 'frontend', 'other', 'editor', 'custom-code', 'tracking', 'shop', 'orders', 'admin'])
+            // text input. 'security' is excluded only as a backstop: MFA and
+            // reCAPTCHA enforcement moved to the per-role switches on Roles, and
+            // the migration deleted those rows, so nothing seeds that group any
+            // more — but a row left behind on an older database would otherwise
+            // render here as a bare checkbox with no explanation.
+            'groupedSettings' => Setting::whereNotIn('group', ['layout', 'seo', 'colors', 'currency', 'frontend', 'other', 'editor', 'custom-code', 'tracking', 'shop', 'orders', 'admin', 'security'])
                 ->get()
                 ->groupBy('group')
                 ->sortBy(fn ($items, $group) => $groupOrder[$group] ?? count($groupOrder)),

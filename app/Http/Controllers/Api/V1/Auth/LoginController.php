@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\ApiMfa;
+use App\Support\ApiUser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -34,12 +36,22 @@ class LoginController extends Controller
             ]);
         }
 
+        // A password that checks out is not the whole sign-in once the account
+        // has a second factor and the API policy is on (see App\Support\ApiMfa).
+        // No token is minted in that case — the caller gets a challenge to answer
+        // instead, and comes back to MfaController::store() for the real one.
+        if (ApiMfa::isRequiredFor($user)) {
+            return response()->json([
+                'data' => ApiMfa::challengePayload($user, ApiMfa::issue($user)),
+            ]);
+        }
+
         $token = $user->createToken('customer-api')->plainTextToken;
 
         return response()->json([
             'data' => [
                 'token' => $token,
-                'user' => $this->formatUser($user),
+                'user' => ApiUser::payload($user),
             ],
         ]);
     }
@@ -49,16 +61,5 @@ class LoginController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json(['data' => ['message' => 'Logged out successfully']]);
-    }
-
-    private function formatUser(User $user): array
-    {
-        return [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'email_verified_at' => $user->email_verified_at?->toIso8601String(),
-            'email_verified_at_display' => $user->email_verified_at?->toDisplay(),
-        ];
     }
 }

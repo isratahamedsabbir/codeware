@@ -150,8 +150,11 @@
             </x-admin-section-card>
 
             {{-- reCAPTCHA --}}
+            {{-- Credentials only. Which login forms show the widget is decided by the
+                 per-role reCAPTCHA switches on Roles; this card holds the keys they
+                 need. --}}
             <x-admin-section-card id="env-section-recaptcha" class="scroll-mt-24" header-border="border-zinc-100" icon="shield-check" title="reCAPTCHA"
-                description="Shown on the admin login form only while enabled and both keys below are set.">
+                description="Used by any login whose role has reCAPTCHA switched on. Both keys are needed before it can verify anything.">
                 <x-slot:titleActions>
                     <a href="{{ route('admin.developer-guide') }}#integration-recaptcha"
                         title="Where to get these — open the Developer Guide"
@@ -160,12 +163,6 @@
                         <flux:icon.information-circle class="size-4" />
                     </a>
                 </x-slot:titleActions>
-                <x-slot:actions>
-                    <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
-                        <input type="checkbox" wire:model="settings.recaptcha_enabled" class="rounded border-zinc-300 text-primary" />
-                        Enable
-                    </label>
-                </x-slot:actions>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-3">
                     @foreach ($this->envFields()['reCAPTCHA'] as $key => $meta)
                         @include('livewire.admin.env.partials._env-field', ['key' => $key, 'meta' => $meta])

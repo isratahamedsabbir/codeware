@@ -69,6 +69,15 @@
                 @enderror
             </div>
 
+            {{-- reCAPTCHA - rendered when any role asks for one; required only for a
+                     vendor, judged per account in Login::ensureRecaptchaPasses(). --}}
+            @if (\App\Support\Recaptcha::enabled())
+                <input type="hidden" wire:model="recaptchaToken" id="g-recaptcha-response" />
+                @error('recaptchaToken')
+                    <p class="text-xs text-red-600 mt-0.5">{{ $message }}</p>
+                @enderror
+            @endif
+
             {{-- Remember Me --}}
             <div class="flex items-center gap-2.5">
                 <input wire:model="remember" id="remember" type="checkbox"
@@ -137,4 +146,26 @@
             }
         }
     </script>
+
+    @if (\App\Support\Recaptcha::enabled())
+        <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
+        <script>
+            // Livewire doesn't know about the invisible reCAPTCHA flow, so the
+            // first submit is intercepted, held while a token is fetched, and then
+            // re-triggered with the token in hand — submitting straight away would
+            // post an empty field, since the token arrives a moment later.
+            document.querySelector('form[wire\\:submit="authenticate"]').addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const form = e.target;
+
+                grecaptcha.ready(function () {
+                    grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', { action: 'vendor_login' }).then(function (token) {
+                        @this.set('recaptchaToken', token);
+                        form.querySelector('[type=submit]').click();
+                    });
+                });
+            });
+        </script>
+    @endif
 </div>

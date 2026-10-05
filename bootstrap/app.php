@@ -3,6 +3,7 @@
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\CaptureReferral;
 use App\Http\Middleware\EnsureActiveTheme;
+use App\Http\Middleware\EnsureMfaEnforced;
 use App\Http\Middleware\EnsureUserIsNotBlocked;
 use App\Http\Middleware\LogAdminActivity;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
@@ -98,6 +99,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'feature' => RequireFeature::class,
             'theme' => EnsureActiveTheme::class,
             'referral' => CaptureReferral::class,
+            'mfa' => EnsureMfaEnforced::class,
         ]);
         // Settings → Env can flip the public site into maintenance mode (see
         // Livewire\Admin\Settings\Index::enableMaintenanceMode()) — the admin panel
@@ -123,6 +125,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'livewire*',
             'login',
             'logout',
+            // A 2FA-enrolled user finishing their sign-in has to get through
+            // this one to reach the panel at all. 'mfa-required' and
+            // 'user/passkeys' are deliberately NOT here: the admin host is
+            // exempt in full by App\Http\Middleware\PreventRequestsDuringMaintenance,
+            // and on the other hosts those two only matter inside a portal that
+            // is closed anyway.
             'two-factor-challenge',
         ]);
 

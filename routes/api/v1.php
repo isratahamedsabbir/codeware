@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\Admin\SubscriberController as AdminSubscriberCon
 use App\Http\Controllers\Api\V1\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\V1\Auth\EmailVerificationController;
 use App\Http\Controllers\Api\V1\Auth\LoginController;
+use App\Http\Controllers\Api\V1\Auth\MfaController;
 use App\Http\Controllers\Api\V1\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Auth\RegisterController;
 use App\Http\Controllers\Api\V1\Auth\SocialAuthController;
@@ -43,6 +44,16 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->name('auth.')->group(function () {
     Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:6,1')->name('register');
     Route::post('/login', [LoginController::class, 'store'])->name('login')->middleware('throttle:login');
+
+    // The second-factor challenge the login above may answer with instead of a
+    // token (App\Support\ApiMfa). Both endpoints are throttled on top of the
+    // login limiter because they are the ones a six-digit code is guessed at:
+    // /mfa/options has no secret in it at all, but it is where a caller renews an
+    // expired ceremony, so it is the cheaper of the two to hammer.
+    Route::prefix('/mfa')->name('mfa.')->middleware('throttle:6,1')->group(function () {
+        Route::post('/options', [MfaController::class, 'options'])->name('options');
+        Route::post('/verify', [MfaController::class, 'store'])->name('verify');
+    });
     // Password reset by emailed code, the same flow the storefront runs (see
     // App\Services\PasswordResetService). Redeeming the code and writing the new
     // password is a single call, since an API client has nowhere to carry a

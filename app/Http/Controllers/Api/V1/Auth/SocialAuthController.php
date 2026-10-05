@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\ApiMfa;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
@@ -25,6 +26,12 @@ use Throwable;
  * on this API, which finishes the exchange and 302s the browser to
  * `{FRONTEND_URL}/auth/callback` with the Sanctum token in the query string
  * for the frontend to pick up and store.
+ *
+ * Or, when the account has a second factor and the API policy is on, with a
+ * challenge instead of a token (see App\Support\ApiMfa) — the frontend shows the
+ * second-factor screen and posts the answer to /auth/mfa/verify. The provider
+ * only ever establishes who the person is; it has no way to establish the second
+ * factor, so a social sign-in cannot be treated as having done so.
  */
 class SocialAuthController extends Controller
 {
@@ -59,6 +66,26 @@ class SocialAuthController extends Controller
 
         if ($user->is_blocked || $user->hasInactiveRole()) {
             return redirect()->away("{$frontendCallback}?error=account_disabled");
+        }
+
+        // A Google/Facebook sign-in has already proved possession of the provider
+        // account, but it has proved nothing about the second factor this account
+        // may also have enrolled — and unlike the password flow, the identity
+        // provider is not going to ask about it. Same policy as
+        // Api\V1\Auth\LoginController: with the API policy on and a factor
+        // enrolled, no token is minted.
+        //
+        // Handed to the frontend the same way the token itself is: in the query
+        // string of the callback redirect, which is the only channel this
+        // stateless OAuth hand-off has. The value is an encrypted blob whose
+        // plaintext would be harmless to a third party, and it is short-lived.
+        if (ApiMfa::isRequiredFor($user)) {
+            $token = rawurlencode(ApiMfa::issue($user));
+            $methods = implode(',', ApiMfa::methodsFor($user));
+
+            return redirect()->away(
+                "{$frontendCallback}?error=mfa_required&mfa_token={$token}&methods={$methods}"
+            );
         }
 
         $token = $user->createToken('customer-api')->plainTextToken;

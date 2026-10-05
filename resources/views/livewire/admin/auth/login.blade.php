@@ -69,9 +69,9 @@
                 @enderror
             </div>
 
-            {{-- reCAPTCHA — only wired up while an admin has enabled it in
-                 Settings → Env (see App\Support\Recaptcha); otherwise this
-                 page is entirely free of reCAPTCHA script and markup. --}}
+            {{-- reCAPTCHA — only wired up while a role has reCAPTCHA switched on
+                 (Admin → Roles) and the keys are set (Admin → Env); otherwise
+                 this page is entirely free of reCAPTCHA script and markup. --}}
             @if (\App\Support\Recaptcha::enabled())
                 <input type="hidden" wire:model="recaptchaToken" id="g-recaptcha-response" />
                 @error('recaptchaToken')

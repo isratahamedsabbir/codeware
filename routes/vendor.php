@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\InvoiceController;
+use App\Livewire\Security\MfaRequired;
 use App\Livewire\Vendor\Auth\Login;
 use App\Livewire\Vendor\Chat;
 use App\Livewire\Vendor\Dashboard;
@@ -26,7 +27,17 @@ Route::post('/logout', function (Request $request) {
     return redirect()->route('vendor.login');
 })->middleware('auth')->name('logout');
 
-Route::middleware(['auth', 'can:access-vendor-portal'])->group(function () {
+// Forced MFA enrolment for this portal — see the identical route in
+// routes/admin.php. Behind 'auth' + the vendor gate but not behind 'mfa', which
+// is what makes the policy satisfiable at all.
+Route::get('/mfa-required', MfaRequired::class)
+    ->middleware(['auth', 'can:access-vendor-portal'])
+    ->name('mfa.required');
+
+// 'mfa' last for the same reason as in the admin panel: it only ever sees a
+// request that already passed 'auth' and the vendor gate, which is how it knows
+// this account belongs to the vendor audience (App\Support\Mfa::audiencesFor).
+Route::middleware(['auth', 'can:access-vendor-portal', 'mfa'])->group(function () {
     Route::get('/', Dashboard::class)->name('dashboard');
 
     Route::get('/profile', Profile::class)->name('profile');

@@ -130,6 +130,7 @@ class SettingsSeeder extends Seeder
                 'group' => 'admin',
                 'is_public' => false,
             ],
+
             [
                 'key' => 'header_content',
                 'value' => json_encode(['root' => ['props' => []], 'content' => [], 'zones' => []]),
@@ -291,10 +292,6 @@ class SettingsSeeder extends Seeder
             // still recorded per user, so turning it back on finds them all
             // still there and unread.
             ['key' => 'notifications_enabled', 'value' => '1', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
-
-            // ── reCAPTCHA (login page) ── shown/verified only when this is on
-            // AND the Site/Secret keys below are set — see Settings → Env.
-            ['key' => 'recaptcha_enabled', 'value' => '0', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
 
             // ── Shop status ── whether customers can currently place orders
             // (see OrderController::store()). Public since the frontend needs

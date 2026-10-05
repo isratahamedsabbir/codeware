@@ -84,4 +84,24 @@
             </div>
         </form>
     </div>
+
+    {{-- Two-factor authentication — TOTP and passkeys.
+
+         The panel is App\Livewire\Security\MfaPanel rather than markup of its
+         own, because the same component is what the forced-enrolment screen
+         shows a user their policy just caught (routes/admin.php's
+         mfa.required). Mounting it here is what makes this the admin panel's
+         second-factor management rather than a link out to the main host's
+         /settings/security — which is a different session entirely, since the
+         session cookie is host-only.
+
+         Password confirmation is left ON, matching the password.confirm
+         middleware that guards /settings/security on the main host: turning a
+         second factor off or adding a passkey is exactly the thing that must not
+         ride on a session someone else may already hold. The panel asks inside
+         itself rather than bouncing to a separate page, because this screen is
+         where the user already is. --}}
+    <div class="mt-5">
+        <livewire:security.mfa-panel />
+    </div>
 </div>

@@ -11,6 +11,8 @@
  |                 chat listener inline in layouts/admin.blade.php
  |    date-range-picker   the date filter on the reports screen
  |    chunk-upload        resumable uploads, for the file manager
+ |    passkeys            window.Passkeys, the WebAuthn ceremonies behind the
+ |                        MFA panel (resources/js/passkeys.js)
  |
  |  The storefront chat deliberately has no Echo — ChatWidget.php explains why:
  |  real-time is one-directional, from the customer up to the admin, so a
@@ -26,3 +28,4 @@ window.Sortable = Sortable;
 import './echo';
 import './date-range-picker';
 import './chunk-upload';
+import './passkeys';

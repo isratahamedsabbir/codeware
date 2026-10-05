@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
+use App\Actions\Fortify\RedirectIfTwoFactorAuthenticatable;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Http\Controllers\Auth\PasswordResetOtpController;
 use App\Models\User;
@@ -19,8 +20,12 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
+use Laravel\Fortify\Contracts\RedirectsIfTwoFactorAuthenticatable as RedirectsIfTwoFactorAuthenticatableContract;
 use Laravel\Fortify\Contracts\RegisterResponse as RegisterResponseContract;
 use Laravel\Fortify\Fortify;
+use Laravel\Passkeys\Contracts\PasskeyUser;
+use Laravel\Passkeys\Passkey;
+use Laravel\Passkeys\Passkeys;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -117,6 +122,54 @@ class FortifyServiceProvider extends ServiceProvider
         $this->configureViews();
         $this->configureRateLimiting();
         $this->configureAuthentication();
+        $this->configureTwoFactorChallenge();
+        $this->configurePasskeys();
+    }
+
+    /**
+     * Swaps Fortify's "is a second factor enabled?" step for the one that asks
+     * App\Support\Mfa instead of the two_factor_* columns.
+     *
+     * Bound as a singleton rather than resolved per request because it holds the
+     * guard and the login rate limiter — exactly as Fortify's own binding does —
+     * and because the pipeline names the contract, not the class.
+     */
+    private function configureTwoFactorChallenge(): void
+    {
+        $this->app->singleton(
+            RedirectsIfTwoFactorAuthenticatableContract::class,
+            RedirectIfTwoFactorAuthenticatable::class
+        );
+    }
+
+    /**
+     * Gate on what a verified passkey is allowed to log into.
+     *
+     * Without this a passkey is a standalone door that walks straight past
+     * everything the password door checks: the WebAuthn signature proves you
+     * hold the key, but nothing about the account behind it. So a passkey
+     * belonging to a blocked account, or to one whose role has been deactivated
+     * since it was registered, would still sign in — where the password path
+     * would have refused it.
+     *
+     * Reusing the same two checks and the same messages the password path uses
+     * (configureAuthentication above) rather than inventing a third set of
+     * rules: the answer to "may this account sign in" should not depend on which
+     * credential it arrived with.
+     */
+    private function configurePasskeys(): void
+    {
+        Passkeys::authorizeLoginUsing(function (Request $request, PasskeyUser $user, Passkey $passkey): bool {
+            if ($user->is_blocked) {
+                return false;
+            }
+
+            if ($user->hasInactiveRole()) {
+                return false;
+            }
+
+            return true;
+        });
     }
 
     /**
@@ -130,20 +183,25 @@ class FortifyServiceProvider extends ServiceProvider
 
     /**
      * Replaces Fortify's default credential check with the same email+password
-     * lookup, plus a reCAPTCHA verification in front of it. Only enforced while
-     * reCAPTCHA is switched on and a secret key is set (Settings → Env →
-     * reCAPTCHA) — otherwise this behaves exactly like Fortify's default.
+     * lookup, plus a reCAPTCHA verification in front of it. Only enforced when
+     * the account's role has reCAPTCHA switched on (Admin → Roles) and a secret
+     * key is set (Settings → Env → reCAPTCHA) — otherwise this behaves exactly
+     * like Fortify's default.
      */
     private function configureAuthentication(): void
     {
         Fortify::authenticateUsing(function (Request $request) {
-            if (RecaptchaSupport::verificationRequired()) {
+            $user = User::where(Fortify::username(), $request->{Fortify::username()})->first();
+
+            // Asked after the lookup and before the password check, for the same
+            // reason as the admin login: the requirement belongs to the role, and
+            // a captcha error thrown at an address with no account behind it
+            // would be a way of finding out which addresses are real.
+            if (RecaptchaSupport::requiredFor($user)) {
                 $request->validate([
                     'g-recaptcha-response' => ['required', new Recaptcha],
                 ]);
             }
-
-            $user = User::where(Fortify::username(), $request->{Fortify::username()})->first();
 
             if (! $user || ! Hash::check($request->password, $user->password)) {
                 return null;
@@ -236,6 +294,21 @@ class FortifyServiceProvider extends ServiceProvider
     {
         RateLimiter::for('two-factor', function (Request $request) {
             return Limit::perMinute(5)->by($request->session()->get('login.id'));
+        });
+
+        // Named 'passkeys' because that is what config/fortify.php's Features
+        // options point the package's own routes at, and it is the only limiter
+        // here that is not on a Fortify action — laravel/passkeys registers
+        // those routes itself.
+        //
+        // Keyed on the credential's own id, not on the session's login.id,
+        // because a registration is not a challenge: there is no half-authenticated
+        // attempt to key off, the caller is simply signed in, and the ceremony
+        // itself is the expensive part — every one of these hits a CPU-hard
+        // attestation or assertion check. An account holding several devices
+        // needs a few; a script does not.
+        RateLimiter::for('passkeys', function (Request $request) {
+            return Limit::perMinute(10)->by($request->user()?->getAuthIdentifier() ?: $request->ip());
         });
 
         RateLimiter::for('login', function (Request $request) {

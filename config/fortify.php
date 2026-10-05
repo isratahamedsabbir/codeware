@@ -117,6 +117,10 @@ return [
     'limiters' => [
         'login' => 'login',
         'two-factor' => 'two-factor',
+        // Registered in App\Providers\FortifyServiceProvider::configureRateLimiting().
+        // Read here by Fortify's own passkey routes; left unset it is null,
+        // which silently means *no* throttle on a credential-guessing endpoint.
+        'passkeys' => 'passkeys',
     ],
 
     /*
@@ -158,6 +162,20 @@ return [
             'confirm' => true,
             'confirmPassword' => true,
             // 'window' => 0
+        ]),
+
+        // Passkeys (WebAuthn) — the second kind of second factor, interchangeable
+        // with TOTP everywhere a challenge is answered: App\Support\Mfa treats
+        // either one as "this account has a factor", and the challenge page
+        // offers whichever the account actually has.
+        //
+        // The routes Fortify registers for these are domainless, so they answer
+        // on the main site, the admin panel, the vendor portal and the delivery
+        // portal alike — which is what lets one enrolment serve all four. That
+        // only holds if config/passkeys.php lists every host's origin, because
+        // WebAuthn refuses a ceremony completed on an origin it doesn't know.
+        Features::passkeys([
+            'confirmPassword' => true,
         ]),
     ],
 

@@ -3,6 +3,20 @@
 
 <head>
     @include('partials._head')
+    {{--
+        Opt-in WebAuthn client, for the two screens on this layout that run a
+        passkey ceremony: the two-factor challenge and the forced-enrolment
+        screen. Both pass :passkeys="true".
+
+        Its own entry rather than app.js because partials._head serves this
+        layout the *storefront* bundle — deliberately, so a themed login page
+        loads no application JavaScript — and app.js is the admin bundle with
+        sortablejs, echo and pusher in it. See vite.config.js's `passkeys`
+        input.
+    --}}
+    @if ($passkeys ?? false)
+        @vite('resources/js/passkeys.js')
+    @endif
     @if (($noindex ?? true) !== false)
         <meta name="robots" content="noindex, nofollow">
     @endif

@@ -14,6 +14,7 @@
  */
 
 use App\Http\Controllers\Auth\PasswordResetOtpController;
+use App\Http\Controllers\Auth\TwoFactorPasskeyController;
 use App\Http\Controllers\ChatWidgetFragmentController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\RobotsController;
@@ -106,6 +107,31 @@ Route::get('/test-public-channel', [TestController::class, 'testPublicChannel'])
 // after the admin switches the site from one to another. See
 // App\Http\Controllers\ChatWidgetFragmentController for why it exists at all.
 Route::get('/chat-widget', ChatWidgetFragmentController::class)->name('chat-widget.fragment');
+
+/*
+ * Answering the two-factor challenge with a passkey instead of a 6-digit code.
+ *
+ * Domainless for the same reason /two-factor-challenge is: each portal's login
+ * parks `login.id` on its own host-scoped session (see App\Support\Mfa), so these
+ * two have to answer on whichever host the challenge was started on — a
+ * domain-scoped pair would strand every vendor and delivery sign-in.
+ *
+ * Throttled under the same 'two-factor' bucket Fortify's own challenge POST uses,
+ * rather than the passkey registration bucket: this is a login-time guess at a
+ * secret, keyed on the challenged account exactly as Fortify keys it.
+ *
+ * Guest-accessible by necessity — the account has not been authenticated yet,
+ * that is the entire point — and safe to be, because the controller derives
+ * everything from the session's login.id and never from the request body. See
+ * App\Http\Controllers\Auth\TwoFactorPasskeyController.
+ */
+Route::middleware('throttle:two-factor')->group(function () {
+    Route::get('/two-factor-challenge/passkey', [TwoFactorPasskeyController::class, 'options'])
+        ->name('two-factor.passkey-options');
+
+    Route::post('/two-factor-challenge/passkey', [TwoFactorPasskeyController::class, 'store'])
+        ->name('two-factor.passkey-verify');
+});
 
 require __DIR__.'/settings.php';
 

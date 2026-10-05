@@ -37,6 +37,7 @@ use App\Livewire\Admin\Orders\Show;
 use App\Livewire\Admin\Posts\Form;
 use App\Livewire\Admin\Posts\Index;
 use App\Livewire\Admin\Profile;
+use App\Livewire\Security\MfaRequired;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -57,14 +58,31 @@ Route::post('/logout', function (Request $request) {
     return redirect()->route('admin.login');
 })->middleware('auth')->name('logout');
 
+// Forced MFA enrolment — the screen App\Http\Middleware\EnsureMfaEnforced sends
+// an account to when the admin policy is on and it has no second factor yet.
+//
+// Behind 'auth' and 'admin' but NOT behind 'mfa', which is the entire point:
+// the whole screen is a dead end until a factor exists, so enforcing on it would
+// make the policy unsatisfiable.
+Route::get('/mfa-required', MfaRequired::class)
+    ->middleware(['auth', 'admin'])
+    ->name('mfa.required');
+
 // Everything below is the real admin panel: authenticated, behind the
 // access-admin gate (AdminMiddleware) and the activity tracker. The middleware
 // lives here (not in bootstrap/app.php) so the /login and /logout routes above
 // stay open.
-Route::middleware(['auth', 'admin', 'activity-log'])->group(function () {
+//
+// 'mfa' is last and deliberate: it only ever sees a request that has already
+// passed 'auth' and 'admin', which is what lets it decide whether *this* account
+// has a second factor (App\Support\Mfa::audiencesFor). It sits outside the group
+// below because the enrolment screen it redirects to has to answer while
+// enforcement is on.
+Route::middleware(['auth', 'admin', 'activity-log', 'mfa'])->group(function () {
     Route::get('/', Dashboard::class)->name('dashboard');
 
-    // Profile
+    // Profile — also where the MFA panel lives, so it is deliberately allowed
+    // through by EnsureMfaEnforced even while a policy is unsatisfied.
     Route::get('/profile', Profile::class)->name('profile');
 
     // Developer Guide — the panel's own documentation: how plugins and themes

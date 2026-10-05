@@ -4,6 +4,7 @@ use App\Livewire\Admin\Permissions\Index as PermissionsIndex;
 use App\Livewire\Admin\Roles\Form as RolesForm;
 use App\Livewire\Admin\Roles\Index as RolesIndex;
 use App\Models\User;
+use App\Support\Mfa;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
@@ -134,6 +135,94 @@ it('renders permissions index', function () {
     Livewire::test(PermissionsIndex::class)
         ->assertStatus(200)
         ->assertSee('view reports');
+});
+
+// ── The login-requirement switches ─────────────────────────────────────────
+
+it('asks no role for MFA or a captcha until one is switched on', function () {
+    foreach (Role::all() as $role) {
+        expect((bool) $role->mfa_enabled)->toBeFalse()
+            ->and((bool) $role->recaptcha_enabled)->toBeFalse();
+    }
+});
+
+it('flips MFA and reCAPTCHA on a role from the table', function () {
+    Livewire::test(RolesIndex::class)
+        ->set('mfa.'.$this->role->id, true)
+        ->set('recaptcha.'.$this->role->id, true);
+
+    $role = $this->role->fresh();
+
+    expect((bool) $role->mfa_enabled)->toBeTrue()
+        ->and((bool) $role->recaptcha_enabled)->toBeTrue();
+});
+
+it('flips them back off again', function () {
+    $this->role->update(['mfa_enabled' => true, 'recaptcha_enabled' => true]);
+
+    Livewire::test(RolesIndex::class)
+        ->set('mfa.'.$this->role->id, false)
+        ->set('recaptcha.'.$this->role->id, false);
+
+    $role = $this->role->fresh();
+
+    expect((bool) $role->mfa_enabled)->toBeFalse()
+        ->and((bool) $role->recaptcha_enabled)->toBeFalse();
+});
+
+it('one role switching on does not switch on the next one', function () {
+    $other = Role::findOrCreate('editor', 'web');
+
+    Livewire::test(RolesIndex::class)->set('mfa.'.$this->role->id, true);
+
+    expect((bool) $this->role->fresh()->mfa_enabled)->toBeTrue()
+        ->and((bool) $other->fresh()->mfa_enabled)->toBeFalse();
+});
+
+it('saves both switches from the role form', function () {
+    Livewire::test(RolesForm::class)
+        ->set('name', 'Support')
+        ->set('mfaEnabled', true)
+        ->set('recaptchaEnabled', true)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $role = Role::findByName('Support', 'web');
+
+    expect((bool) $role->mfa_enabled)->toBeTrue()
+        ->and((bool) $role->recaptcha_enabled)->toBeTrue();
+});
+
+it('loads the switches when editing a role that already has them', function () {
+    $this->role->update(['mfa_enabled' => true, 'recaptcha_enabled' => true]);
+
+    Livewire::test(RolesForm::class, ['id' => $this->role->id])
+        ->assertSet('mfaEnabled', true)
+        ->assertSet('recaptchaEnabled', true);
+});
+
+it('leaves a role created from the form asking for nothing', function () {
+    Livewire::test(RolesForm::class)
+        ->set('name', 'Billing')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $role = Role::findByName('Billing', 'web');
+
+    expect((bool) $role->mfa_enabled)->toBeFalse()
+        ->and((bool) $role->recaptcha_enabled)->toBeFalse();
+});
+
+it('does not ask an unrelated role when one role is switched on', function () {
+    $this->role->update(['mfa_enabled' => true]);
+
+    $holder = User::factory()->create();
+    $holder->assignRole($this->role);
+
+    $bystander = User::factory()->create();
+
+    expect(Mfa::isRequiredFor($holder))->toBeTrue()
+        ->and(Mfa::isRequiredFor($bystander))->toBeFalse();
 });
 
 it('can create a permission', function () {

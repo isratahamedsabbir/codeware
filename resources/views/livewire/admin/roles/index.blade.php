@@ -28,11 +28,12 @@
                 <colgroup>
                     <col style="width:5%">
                     <col class="hidden lg:table-column" style="width:5%">
-                    <col style="width:20%">
-                    <col class="hidden lg:table-column" style="width:18%">
+                    <col style="width:18%">
+                    <col class="hidden lg:table-column" style="width:12%">
                     <col style="width:12%">
                     <col style="width:11%">
-                    <col class="hidden lg:table-column" style="width:14%">
+                    <col style="width:17%">
+                    <col class="hidden lg:table-column" style="width:10%">
                     <col style="width:15%">
                 </colgroup>
                 <thead>
@@ -43,6 +44,7 @@
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Users</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Permissions</th>
                         <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Status</th>
+                        <th class="px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Login security</th>
                         <th class="hidden lg:table-cell px-4 py-2.5 text-left text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Created by</th>
                         <th class="sticky right-0 z-10 bg-zinc-50 border-l border-zinc-100 px-4 py-2.5 text-center text-[10.5px] font-semibold text-zinc-600 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -118,6 +120,24 @@
                                 @endif
                             </td>
 
+                            {{-- Login security: the two requirements this role carries --}}
+                            <td class="px-4 py-2">
+                                <div class="flex items-center gap-4 sm:gap-6">
+                                    <label class="flex items-center gap-1.5 cursor-pointer select-none"
+                                        title="Require a second factor — an authenticator app or a passkey — before someone with this role can sign in.">
+                                        <flux:switch size="sm" wire:model.live="mfa.{{ $role->id }}" name="mfa"
+                                            aria-label="Require MFA for {{ $role->name }}" />
+                                        <span class="text-xs text-zinc-600">MFA</span>
+                                    </label>
+                                    <label class="flex items-center gap-1.5 cursor-pointer select-none"
+                                        title="Ask for a reCAPTCHA on this role's login form. Needs both keys set under Settings → Env.">
+                                        <flux:switch size="sm" wire:model.live="recaptcha.{{ $role->id }}"
+                                            name="recaptcha" aria-label="Require reCAPTCHA for {{ $role->name }}" />
+                                        <span class="text-xs text-zinc-600">reCAPTCHA</span>
+                                    </label>
+                                </div>
+                            </td>
+
                             {{-- Created by --}}
                             <td class="hidden lg:table-cell px-4 py-2 text-sm text-zinc-500">
                                 {{ $role->creator?->name ?? '—' }}
@@ -133,16 +153,18 @@
 
                         </tr>
                         @if ($viewingId === $role->id)
-                            <x-admin-row-details colspan="8">
+                            <x-admin-row-details colspan="9">
                                 <x-admin-row-details.item label="ID">#{{ $role->id }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Users">{{ $role->users_count }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Status">{{ $role->name === 'admin' ? 'Active' : ucfirst($role->status) }}</x-admin-row-details.item>
+                                <x-admin-row-details.item label="MFA">{{ $role->mfa_enabled ? 'Required' : 'Not required' }}</x-admin-row-details.item>
+                                <x-admin-row-details.item label="reCAPTCHA">{{ $role->recaptcha_enabled ? 'Required' : 'Not required' }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Created by">{{ $role->creator?->name ?? '—' }}</x-admin-row-details.item>
                             </x-admin-row-details>
                         @endif
                     @empty
                         <tr>
-                            <td colspan="8" class="px-6 py-16 text-center">
+                            <td colspan="9" class="px-6 py-16 text-center">
                                 <svg class="w-10 h-10 text-zinc-200 mx-auto mb-3" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />

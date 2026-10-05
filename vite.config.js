@@ -61,6 +61,16 @@ export default defineConfig({
             input: {
                 app: 'resources/css/app.css',
                 'app-js': 'resources/js/app.js',
+                // Its own entry, because it has to be loadable on a page that
+                // is *not* an admin page: the two-factor challenge and the
+                // forced-enrolment screen are both plain Blade views on the
+                // auth layout, and that layout serves the storefront bundle
+                // (see partials._head's $assetBundle) rather than app.js — a
+                // shopper's or a portal's sign-in must not drag in sortablejs,
+                // echo and pusher to answer a WebAuthn prompt. A separate input
+                // is how one file reaches both worlds; the admin bundle
+                // imports it too, and Vite serves the two off one shared chunk.
+                passkeys: 'resources/js/passkeys.js',
                 storefront: 'resources/css/storefront.css',
                 ...themeStylesheets(),
             },

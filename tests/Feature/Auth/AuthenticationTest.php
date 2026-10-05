@@ -2,6 +2,7 @@
 
 use App\Models\Setting;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Laravel\Fortify\Features;
 use Spatie\Permission\Models\Role;
 
@@ -97,7 +98,19 @@ test('users with two factor enabled are redirected to two factor challenge', fun
         'confirmPassword' => true,
     ]);
 
+    // A factor alone is not enough to be challenged — the account's role has to
+    // have MFA switched on (Admin → Roles). Without the switch this account would
+    // be challenged on every sign-in for the rest of its life, having no way to
+    // turn that off from anywhere.
+    $this->seed(RolePermissionSeeder::class);
+
+    activateRoles('customer');
+
+    Role::where('name', 'customer')->update(['mfa_enabled' => true]);
+
     $user = User::factory()->withTwoFactor()->create();
+
+    $user->assignRole('customer');
 
     $response = $this->post(route('login.store'), [
         'email' => $user->email,

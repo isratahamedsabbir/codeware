@@ -6,6 +6,8 @@
             const validTabs = ['general', 'custom-code', 'constant', 'widgets'];
             // 'other' was this tab's old name — keep old links/bookmarks working.
             if (this.tab === 'other') this.tab = 'widgets';
+            // 'security' held the MFA policy switches, which moved to the per-role
+            // toggles on Roles — a bookmark to it falls back to General.
             if (!validTabs.includes(this.tab)) this.tab = 'general';
             this.$watch('tab', (value) => {
                 try { localStorage.setItem('admin-settings-tab', value) } catch (e) {}
@@ -242,7 +244,6 @@ $imageMeta = match ($setting->key) {
                 </div>
             </div>
         </div>
-
 
         {{-- Custom Code tab --}}
         <div x-show="tab === 'custom-code'">

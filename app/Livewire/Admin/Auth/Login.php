@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Auth;
 
 use App\Models\User;
 use App\Rules\Recaptcha;
+use App\Support\Mfa;
 use App\Support\Recaptcha as RecaptchaSupport;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -12,7 +13,6 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Fortify;
-use Laravel\Fortify\TwoFactorAuthenticatable;
 use Livewire\Component;
 
 /**
@@ -61,10 +61,14 @@ class Login extends Component
             'password' => ['required', 'string'],
         ]);
 
-        $this->ensureRecaptchaPasses();
-        $this->ensureIsNotRateLimited();
-
+        // The account is looked up before the captcha is judged because "does this role
+        // want a reCAPTCHA" is a question about the account, not the form. Still
+        // ahead of the password check, and the same generic auth.failed comes
+        // out either way, so asking first costs nothing in enumeration.
         $user = User::where(Fortify::username(), $this->email)->first();
+
+        $this->ensureRecaptchaPasses($user);
+        $this->ensureIsNotRateLimited();
 
         if (! $user || ! Hash::check($this->password, $user->password)) {
             RateLimiter::hit($this->throttleKey());
@@ -97,7 +101,16 @@ class Login extends Component
 
         RateLimiter::clear($this->throttleKey());
 
-        if ($this->hasTwoFactorEnabled($user)) {
+        // A second factor is owed when this account's role says so and it has one to
+        // answer with, per the MFA switch on the role (Admin → Roles).
+        // Mfa::mustChallenge() is also what App\Http\Middleware\EnsureMfaEnforced
+        // asks on the far side, so the login and the gate behind it agree by
+        // construction.
+        //
+        // A user with *no* factor is a different case and is not handled here:
+        // there is nothing to challenge them with, so it is the enforcement
+        // middleware that sends them to enrol (admin.mfa.required).
+        if (Mfa::mustChallenge($user)) {
             // Never log them in yet — park the half-authenticated attempt in
             // the session the way Fortify does and let the (host-only)
             // two-factor challenge finish the job on this same host.
@@ -106,10 +119,11 @@ class Login extends Component
                 'login.remember' => $this->remember,
             ]);
 
-            // The challenge route is domainless, so generate its URL explicitly
-            // on this panel's host — the remember/session there only exists on
-            // the admin host, and a bounce to APP_URL would strand the login.
-            $this->redirect(config('app.admin_url').'/two-factor-challenge', navigate: false);
+            // The challenge route is domainless, so it is built on this panel's
+            // configured host — the login.id/login.remember session it has to
+            // finish only exists there, and a bounce to APP_URL would strand the
+            // sign-in. See Mfa::challengeUrl().
+            $this->redirect(Mfa::challengeUrl(Mfa::AUDIENCE_ADMIN), navigate: false);
 
             return;
         }
@@ -157,30 +171,22 @@ class Login extends Component
     }
 
     /**
+     * Whether this account's role asked for a reCAPTCHA — see
+     * App\Support\Recaptcha. Null (an address with no account behind it) is not
+     * asked to answer one: the password below is about to fail anyway, and a
+     * captcha error there would leak which addresses exist.
+     *
      * @throws ValidationException
      */
-    private function ensureRecaptchaPasses(): void
+    private function ensureRecaptchaPasses(?User $user): void
     {
-        if (! RecaptchaSupport::verificationRequired()) {
+        if (! RecaptchaSupport::requiredFor($user)) {
             return;
         }
 
         $this->validate([
             'recaptchaToken' => ['required', new Recaptcha],
         ]);
-    }
-
-    private function hasTwoFactorEnabled(User $user): bool
-    {
-        if (! in_array(TwoFactorAuthenticatable::class, class_uses_recursive($user), true)) {
-            return false;
-        }
-
-        if (Fortify::confirmsTwoFactorAuthentication()) {
-            return filled($user->two_factor_secret) && ! is_null($user->two_factor_confirmed_at);
-        }
-
-        return filled($user->two_factor_secret);
     }
 
     /**
