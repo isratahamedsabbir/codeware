@@ -105,7 +105,8 @@
                 if (typeof Sortable === 'undefined') return;
                 new Sortable(this.$refs.sortableRows, {
                     animation: 150,
-                    handle: '.drag-handle',
+                    filter: 'a, button, input, select, textarea, label, [data-actions-trigger]',
+                    preventOnFilter: false,
                     ghostClass: 'bg-blue-50',
                     onEnd: (evt) => {
                         const rows = [...this.$refs.sortableRows.querySelectorAll('[data-page-id]')];
@@ -144,7 +145,7 @@
                 <tbody x-ref="sortableRows" class="divide-y divide-gray-200">
                     @forelse ($pages as $page)
                         <tr wire:key="page-{{ $page->id }}"
-                            class="group/row hover:bg-indigo-50/30 transition-colors {{ in_array($page->id, $selectedIds, true) ? 'bg-indigo-50/50' : '' }}"
+                            class="cursor-grab active:cursor-grabbing group/row hover:bg-indigo-50/30 transition-colors {{ in_array($page->id, $selectedIds, true) ? 'bg-indigo-50/50' : '' }}"
                             data-page-id="{{ $page->id }}"
                             @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()"
                             @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $page->id }}) }">
@@ -166,14 +167,6 @@
                                         <input type="checkbox" wire:click="toggleSelect({{ $page->id }})"
                                             @checked(in_array($page->id, $selectedIds, true))
                                             class="size-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
-                                    @else
-                                        <div class="drag-handle cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-600 inline-flex">
-                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <line x1="3" y1="6" x2="21" y2="6" />
-                                                <line x1="3" y1="12" x2="21" y2="12" />
-                                                <line x1="3" y1="18" x2="21" y2="18" />
-                                            </svg>
-                                        </div>
                                     @endif
                                 </div>
                             </td>

@@ -85,7 +85,8 @@
                 if (typeof Sortable === 'undefined') return;
                 new Sortable(this.$refs.sortableRows, {
                     animation: 150,
-                    handle: '.drag-handle',
+                    filter: 'a, button, input, select, textarea, label, [data-actions-trigger]',
+                    preventOnFilter: false,
                     ghostClass: 'bg-blue-50',
                     onEnd: (evt) => {
                         const rows = [...this.$refs.sortableRows.querySelectorAll('[data-product-id]')];
@@ -136,7 +137,7 @@
                             $lowStock = (int) $product->quantity <= $minStockQuantity;
                         @endphp
                         <tr wire:key="product-{{ $product->id }}"
-                            class="group/row hover:bg-indigo-50/30 transition-colors cursor-default {{ $isSelected ? 'bg-indigo-50 ring-1 ring-inset ring-indigo-300' : ($lowStock ? 'bg-rose-50/70' : '') }}"
+                            class="group/row hover:bg-indigo-50/30 transition-colors cursor-grab active:cursor-grabbing {{ $isSelected ? 'bg-indigo-50 ring-1 ring-inset ring-indigo-300' : ($lowStock ? 'bg-rose-50/70' : '') }}"
                             data-product-id="{{ $product->id }}"
                             @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()"
                             @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $product->id }}) }">
@@ -158,14 +159,6 @@
                                         <input type="checkbox" wire:click="toggleSelect({{ $product->id }})"
                                             @checked(in_array($product->id, $selectedIds, true))
                                             class="size-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
-                                    @else
-                                        <div class="drag-handle cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-600 inline-flex">
-                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <line x1="3" y1="6" x2="21" y2="6" />
-                                                <line x1="3" y1="12" x2="21" y2="12" />
-                                                <line x1="3" y1="18" x2="21" y2="18" />
-                                            </svg>
-                                        </div>
                                     @endif
                                 </div>
                             </td>

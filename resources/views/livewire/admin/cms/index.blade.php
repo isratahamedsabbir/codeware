@@ -34,7 +34,8 @@
                 if (typeof Sortable === 'undefined') return;
                 new Sortable(this.$refs.sortableRows, {
                     animation: 150,
-                    handle: '.drag-handle',
+                    filter: 'a, button, input, select, textarea, label, [data-actions-trigger]',
+                    preventOnFilter: false,
                     ghostClass: 'bg-blue-50',
                     onEnd: (evt) => {
                         const rows = [...this.$refs.sortableRows.querySelectorAll('[data-cms-id]')];
@@ -68,7 +69,7 @@
                 </thead>
                 <tbody x-ref="sortableRows" class="divide-y divide-gray-200">
                     @forelse ($sections as $cms)
-                        <tr wire:key="cms-{{ $cms->id }}" class="group/row hover:bg-indigo-50/30 transition-colors" data-cms-id="{{ $cms->id }}" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
+                        <tr wire:key="cms-{{ $cms->id }}" class="cursor-grab active:cursor-grabbing group/row hover:bg-indigo-50/30 transition-colors" data-cms-id="{{ $cms->id }}" @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()">
 
                             {{-- Expand toggle (small screens only, where columns are hidden) --}}
                             <td class="px-2 py-2 text-center">
@@ -76,16 +77,8 @@
                                     wire:click="{{ $viewingId === $cms->id ? 'closeDetails' : 'viewDetails('.$cms->id.')' }}" />
                             </td>
 
-                            {{-- Drag handle --}}
-                            <td class="px-2 py-2 text-center">
-                                <div class="drag-handle cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-600 inline-flex">
-                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <line x1="3" y1="6" x2="21" y2="6" />
-                                        <line x1="3" y1="12" x2="21" y2="12" />
-                                        <line x1="3" y1="18" x2="21" y2="18" />
-                                    </svg>
-                                </div>
-                            </td>
+                            {{-- Drag handle column kept empty: the whole row drags --}}
+                            <td class="px-2 py-2"></td>
 
                             {{-- ID --}}
                             <td class="hidden lg:table-cell px-4 py-2">

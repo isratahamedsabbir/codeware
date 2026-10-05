@@ -68,7 +68,8 @@
                 if (typeof Sortable === 'undefined') return;
                 new Sortable(this.$refs.sortableRows, {
                     animation: 150,
-                    handle: '.drag-handle',
+                    filter: 'a, button, input, select, textarea, label, [data-actions-trigger]',
+                    preventOnFilter: false,
                     ghostClass: 'bg-blue-50',
                     onEnd: (evt) => {
                         const rows = [...this.$refs.sortableRows.querySelectorAll('[data-category-id]')];
@@ -111,7 +112,7 @@
                 <tbody x-ref="sortableRows" class="divide-y divide-gray-200">
                     @forelse ($categories as $category)
                         <tr wire:key="category-{{ $category->id }}"
-                            class="group/row hover:bg-indigo-50/30 transition-colors cursor-default {{ in_array($category->id, $selectedIds, true) ? 'bg-indigo-50 ring-1 ring-inset ring-indigo-300' : '' }}"
+                            class="group/row hover:bg-indigo-50/30 transition-colors cursor-grab active:cursor-grabbing {{ in_array($category->id, $selectedIds, true) ? 'bg-indigo-50 ring-1 ring-inset ring-indigo-300' : '' }}"
                             data-category-id="{{ $category->id }}"
                             @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()"
                             @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $category->id }}) }">
@@ -124,23 +125,13 @@
                                 </div>
                             </td>
 
-                            {{-- Drag handle / select checkbox. Dragging is meaningless once a bulk
-                                 selection is active (rows are picked, not reordered), so the drag
-                                 handle hides and a checkbox takes its place instead. --}}
+                            {{-- Select checkbox, shown once a bulk selection is active. The whole row is the drag handle. --}}
                             <td class="px-1 py-2 text-center">
                                 <div @click.stop>
                                     @if (count($selectedIds) > 0)
                                         <input type="checkbox" wire:click="toggleSelect({{ $category->id }})"
                                             @checked(in_array($category->id, $selectedIds, true))
                                             class="size-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
-                                    @else
-                                        <div class="drag-handle cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-600 inline-flex">
-                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <line x1="3" y1="6" x2="21" y2="6" />
-                                                <line x1="3" y1="12" x2="21" y2="12" />
-                                                <line x1="3" y1="18" x2="21" y2="18" />
-                                            </svg>
-                                        </div>
                                     @endif
                                 </div>
                             </td>
