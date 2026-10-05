@@ -72,6 +72,7 @@ class DatabaseSeeder extends Seeder
         $this->call(BlogCommentSeeder::class);
         $this->call(CouponSeeder::class);
         $this->call(DiscountSeeder::class);
+        $this->call(FlashDealSeeder::class);
         $this->call(VoucherSeeder::class);
         $this->call(VoucherPurchaseSeeder::class);
     }
