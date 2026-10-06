@@ -220,7 +220,7 @@ migrations/        optional - loaded while the plugin is active
             &mdash; the set of plugins changes by dropping a folder in, not by editing the menu.
         </p>
 
-        <x-admin-doc-code label="Creating, installing and packing plugins" file="app/Support/Plugins.php:331">
+        <x-admin-doc-code label="Creating, installing and packing plugins" file="app/Support/Plugins.php">
 // Admin -> Plugins -> Plugin Settings -> New Plugin: writes plugins/{slug}/
 // with plugin.json, index.blade.php and a commented routes.php
 $slug = Plugins::create([
@@ -587,7 +587,7 @@ public/                   everything the web serves, at /themes/{slug}/...
             feature added to the list after the table was last seeded still shows checked.
         </p>
 
-        <x-admin-doc-code label="Reading a feature anywhere in the app" file="app/Support/Features.php:63">
+        <x-admin-doc-code label="Reading a feature anywhere in the app" file="app/Support/Features.php">
 use App\Support\Features;
 
 if (Features::enabled('comments')) {
@@ -625,7 +625,7 @@ Route::middleware('feature:vouchers')->prefix('vouchers')->group(function () { .
             feature is turned on again.
         </p>
 
-        <x-admin-doc-code label="A feature-owned setting and the widget behind it" file="app/Support/Features.php:56">
+        <x-admin-doc-code label="A feature-owned setting and the widget behind it" file="app/Support/Features.php">
 public const SETTING_FEATURES = [
     'shop_toggle_enabled' => 'products',
     'additional_data_products_enabled' => 'products',
@@ -690,7 +690,7 @@ public const SETTING_FEATURES = [
             field.
         </p>
 
-        <x-admin-doc-code label="Reading and writing" file="app/Models/Setting.php:127">
+        <x-admin-doc-code label="Reading and writing" file="app/Models/Setting.php">
 use App\Models\Setting;
 
 $name    = Setting::get('site_name');
@@ -1034,7 +1034,8 @@ Admin -> SEO / Social / Payment Gateways   their own setting groups
                 <p class="font-semibold text-zinc-800 dark:text-zinc-100">CMS Editor (Integrations)</p>
                 <ul class="mt-2 list-disc list-inside space-y-1.5">
                     <li>The <strong>Edit</strong> buttons on Products, Pages and Posts build their Puck editor URL from this value.</li>
-                    <li>It must point at the host running the Next.js CMS editor, including a non-standard port if any (e.g. <span class="font-mono text-xs">http://194.233.65.83:3002</span>).</li>
+                    <li>It must point at the host running the Next.js CMS editor, including a non-standard port if any (e.g. <span class="font-mono text-xs">https://editor.example.com</span>).</li>
+                    <li>In production it must be <strong>https://</strong>: the editor token is sent to this host in the URL, and over plain http anyone on the network path could read it. The token is limited to the editor's own endpoints and lives at most 120 minutes.</li>
                     <li>Leave it blank to disable the visual editor buttons, or to keep them on <span class="font-mono text-xs">localhost</span> in a local install.</li>
                 </ul>
                 <p class="mt-2 text-xs text-zinc-500">
@@ -1103,7 +1104,7 @@ Admin -> SEO / Social / Payment Gateways   their own setting groups
             <span class="font-mono text-xs">PageCascade</span> to take its page with it.
         </p>
 
-        <x-admin-doc-code label="Pairing rules" file="app/Livewire/Admin/Pages/Form.php:209">
+        <x-admin-doc-code label="Pairing rules" file="app/Livewire/Admin/Pages/Form.php">
 // A linked page's slug belongs to the entity, so it is re-read from the DB
 // on save rather than trusted from the submitted form:
 if ($this->isLinked()) {

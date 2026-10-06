@@ -43,7 +43,30 @@ class PuckEditor
      */
     public static function sessionMinutes(): int
     {
-        return (int) config('cms.puck_session_minutes', 30);
+        return max(1, min(self::MAX_SESSION_MINUTES, (int) config('cms.puck_session_minutes', 30)));
+    }
+
+    /**
+     * Hard ceiling on a Puck token's life, whatever PUCK_SESSION says. The token
+     * is carried in a URL to another host and is only meant to outlast one editing
+     * sitting, so a typo or a stale .env value must not turn it into a long-lived
+     * admin credential.
+     */
+    public const MAX_SESSION_MINUTES = 120;
+
+    /**
+     * Validation rule for the editor base URL: an https URL in production. The
+     * token travels to this host in the URL, so over plain http anyone on the
+     * path could read it. http stays allowed outside production so a local
+     * editor on localhost:3000 keeps working.
+     */
+    public static function baseUrlRule(): \Closure
+    {
+        return function (string $attribute, mixed $value, \Closure $fail): void {
+            if (is_string($value) && $value !== '' && app()->isProduction() && ! str_starts_with(strtolower($value), 'https://')) {
+                $fail('The editor base URL must use https:// in production — the editor token is sent to it.');
+            }
+        };
     }
 
     public static function token(User $user, string $name): string

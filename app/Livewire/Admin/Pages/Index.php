@@ -101,8 +101,8 @@ class Index extends Component
     public function saveEditorSettings(): void
     {
         $this->validate([
-            'puckSessionMinutes' => 'required|integer|min:1|max:1440',
-            'editorBaseUrl' => 'nullable|url',
+            'puckSessionMinutes' => 'required|integer|min:1|max:'.PuckEditor::MAX_SESSION_MINUTES,
+            'editorBaseUrl' => ['nullable', 'url', PuckEditor::baseUrlRule()],
         ], [], ['editorBaseUrl' => 'editor base URL']);
 
         // The whole modal is only rendered for access-admin-system, but a
@@ -207,7 +207,7 @@ class Index extends Component
      */
     public function getLayoutEditorUrl(string $type): string
     {
-        $token = auth()->user()->createToken('builder')->plainTextToken;
+        $token = PuckEditor::token(auth()->user(), 'puck-layout');
         $baseUrl = config('cms.editor_base_url', 'http://localhost:3000');
 
         return "{$baseUrl}/editor?mode=layout&type={$type}&token={$token}";

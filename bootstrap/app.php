@@ -4,6 +4,7 @@ use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\CaptureReferral;
 use App\Http\Middleware\EnsureActiveTheme;
 use App\Http\Middleware\EnsureMfaEnforced;
+use App\Http\Middleware\EnsureTokenScope;
 use App\Http\Middleware\EnsureUserIsNotBlocked;
 use App\Http\Middleware\LogAdminActivity;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
@@ -100,6 +101,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'theme' => EnsureActiveTheme::class,
             'referral' => CaptureReferral::class,
             'mfa' => EnsureMfaEnforced::class,
+            'token-scope' => EnsureTokenScope::class,
         ]);
         // Settings → Env can flip the public site into maintenance mode (see
         // Livewire\Admin\Settings\Index::enableMaintenanceMode()) — the admin panel

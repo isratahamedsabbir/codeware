@@ -195,7 +195,7 @@ Route::middleware('feature:chat')->prefix('chat')->name('chat.')->group(function
 });
 
 // Admin endpoints — require Sanctum token AND admin role
-Route::middleware(['auth:sanctum', 'can:access-admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth:sanctum', 'token-scope', 'can:access-admin'])->prefix('admin')->name('admin.')->group(function () {
 
     Route::get('/posts', [AdminPostController::class, 'index'])->name('posts.index');
     Route::get('/posts/{id}', [AdminPostController::class, 'show'])->name('posts.show');
