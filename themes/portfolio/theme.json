@@ -26,13 +26,13 @@
         }
     ],
     "theme_portfolio_photo": "",
-    "theme_portfolio_name": "",
-    "theme_portfolio_hero_title": "",
-    "theme_portfolio_hero_tagline": "",
-    "theme_portfolio_location": "",
-    "theme_portfolio_availability": "",
+    "theme_portfolio_name": "Sabbir Hossain",
+    "theme_portfolio_hero_title": "Full Stack Developer",
+    "theme_portfolio_hero_tagline": "I build Laravel applications and the storefronts that talk to them — admin panels, REST APIs, and WordPress or WooCommerce work on top.",
+    "theme_portfolio_location": "Dhaka, Bangladesh",
+    "theme_portfolio_availability": "Available for new projects",
     "theme_portfolio_resume_url": "",
-    "theme_portfolio_resume_label": "",
+    "theme_portfolio_resume_label": "Download CV",
     "theme_portfolio_font": "",
     "theme_portfolio_stats": [
         {
@@ -52,7 +52,148 @@
             "label": "Stat 4"
         }
     ],
-    "theme_portfolio_experiences": [],
-    "theme_portfolio_skills": [],
-    "theme_portfolio_testimonials": []
+    "theme_portfolio_experiences": [
+        {
+            "role": "Full Stack Developer",
+            "company": "",
+            "period": "2023 — Present",
+            "description": "Taking Laravel applications from schema to deployment and maintaining them afterwards. Most of the week is spent on the unglamorous half of the job: reading a slow query, untangling a requirement that changed halfway through, and writing the migration that makes the next change boring."
+        },
+        {
+            "role": "Backend Developer",
+            "company": "",
+            "period": "2021 — 2023",
+            "description": "Built the REST APIs and admin panels other teams depended on. Learned to treat a database index and a clear error message as features, because both are what a user experiences when something goes wrong at 2am."
+        },
+        {
+            "role": "WordPress & WooCommerce Developer",
+            "company": "",
+            "period": "2020 — 2021",
+            "description": "Store builds, plugin work and migrations for small retailers — usually taking a site that had grown one plugin at a time and giving it a shape it could keep growing in."
+        }
+    ],
+    "theme_portfolio_skills": [
+        {
+            "name": "Laravel",
+            "group": "Backend",
+            "icon": "🔴",
+            "description": "Framework of choice"
+        },
+        {
+            "name": "PHP",
+            "group": "Backend",
+            "icon": "🐘",
+            "description": "Modern PHP 8+"
+        },
+        {
+            "name": "MySQL",
+            "group": "Backend",
+            "icon": "🗄️",
+            "description": "Schema & query tuning"
+        },
+        {
+            "name": "REST API",
+            "group": "Backend",
+            "icon": "🔌",
+            "description": "Versioned, documented"
+        },
+        {
+            "name": "Redis",
+            "group": "Backend",
+            "icon": "⚡",
+            "description": "Caching & queues"
+        },
+        {
+            "name": "React",
+            "group": "Frontend",
+            "icon": "⚛️",
+            "description": "Components & hooks"
+        },
+        {
+            "name": "Livewire",
+            "group": "Frontend",
+            "icon": "💚",
+            "description": "Server-driven UI"
+        },
+        {
+            "name": "Alpine.js",
+            "group": "Frontend",
+            "icon": "🏔️",
+            "description": "Lightweight JS"
+        },
+        {
+            "name": "Tailwind CSS",
+            "group": "Frontend",
+            "icon": "🎨",
+            "description": "Utility styling"
+        },
+        {
+            "name": "JavaScript",
+            "group": "Frontend",
+            "icon": "📜",
+            "description": "ES2023+"
+        },
+        {
+            "name": "WordPress",
+            "group": "CMS",
+            "icon": "📝",
+            "description": "Custom themes & plugins"
+        },
+        {
+            "name": "WooCommerce",
+            "group": "CMS",
+            "icon": "🛒",
+            "description": "Store builds & migrations"
+        },
+        {
+            "name": "Docker",
+            "group": "DevOps & Cloud",
+            "icon": "🐳",
+            "description": "Containerization"
+        },
+        {
+            "name": "Git",
+            "group": "DevOps & Cloud",
+            "icon": "📦",
+            "description": "Version control"
+        },
+        {
+            "name": "CI/CD",
+            "group": "DevOps & Cloud",
+            "icon": "🔄",
+            "description": "Automated deployment"
+        },
+        {
+            "name": "Linux",
+            "group": "DevOps & Cloud",
+            "icon": "🐧",
+            "description": "Server administration"
+        },
+        {
+            "name": "AWS",
+            "group": "DevOps & Cloud",
+            "icon": "☁️",
+            "description": "EC2, S3, deployment"
+        }
+    ],
+    "theme_portfolio_testimonials": [
+        {
+            "quote": "Replace this with a real quote: what the client said about the work, in their own words. One or two sentences is plenty.",
+            "name": "Client name",
+            "role": "Their role, Company",
+            "rating": "5"
+        },
+        {
+            "quote": "Replace this with a second real quote. The most convincing ones name a specific problem and what changed after you fixed it.",
+            "name": "Client name",
+            "role": "Their role, Company",
+            "rating": "5"
+        },
+        {
+            "quote": "Replace this with a third real quote, or delete this row entirely — three is a number, one honest one is better than three thin ones.",
+            "name": "Client name",
+            "role": "Their role, Company",
+            "rating": ""
+        }
+    ]
 }

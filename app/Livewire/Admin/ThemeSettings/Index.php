@@ -394,7 +394,7 @@ class Index extends Component
         // rendered from Setting::get() (e.g. the active theme) re-reads fresh.
         session()->flash('success', $skipped === []
             ? 'Theme settings saved.'
-            : 'Theme settings saved, but the '.implode(', ', $skipped).' theme has no theme.json file, so its own fields were not written. Create the file to store them.');
+            : 'Theme settings saved, but the '.implode(', ', $skipped).' theme\'s own fields were not written: its theme.json is missing, or the web server user cannot write to themes/ (check the folder and file permissions).');
 
         $this->js('window.location.reload()');
     }
