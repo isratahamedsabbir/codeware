@@ -13,8 +13,8 @@ return [
     ],
 
     // Admin-role accounts must have a second factor to use the panel. On by
-    // default in production; EnsureMfaEnforced sends them to enrolment.
-    'require_admin_mfa' => filter_var(env('REQUIRE_ADMIN_MFA', ! in_array(env('APP_ENV'), ['local', 'testing'], true)), FILTER_VALIDATE_BOOLEAN),
+    // default in every environment (set REQUIRE_ADMIN_MFA=false to opt out locally); EnsureMfaEnforced sends them to enrolment.
+    'require_admin_mfa' => filter_var(env('REQUIRE_ADMIN_MFA', true), FILTER_VALIDATE_BOOLEAN),
 
     // APP_DEBUG can't be switched on from Admin -> Env in production (it exposes
     // stack traces and secrets). Set ALLOW_DEBUG_IN_PRODUCTION=true to lift it.

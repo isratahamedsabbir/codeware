@@ -139,8 +139,9 @@ test('the policy is per audience, and a plain customer is in none of them', func
 
 // ── 2. Enforcement is a dead end, not a wall ──────────────────────────────
 
-test('enforcement is off by default so an upgrade cannot lock the panel', function () {
+test('with 2FA switched off on every role, nothing is enforced and the panel answers', function () {
     $admin = User::factory()->admin()->create();
+    Role::query()->update(['mfa_enabled' => false]);
 
     expect(Mfa::isRequiredFor($admin))->toBeFalse();
 
@@ -369,9 +370,9 @@ test('an account with no passkey sees the challenge page exactly as before', fun
 
 // ── Where the policy lives: the role, not a setting ────────────────────────
 
-test('no role asks for MFA until somebody asks for it', function () {
+test('only the admin role asks for MFA by default', function () {
     foreach (Role::all() as $role) {
-        expect((bool) $role->mfa_enabled)->toBeFalse();
+        expect((bool) $role->mfa_enabled)->toBe($role->name === 'admin');
     }
 });
 

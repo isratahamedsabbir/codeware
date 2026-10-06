@@ -78,9 +78,10 @@ class RolePermissionSeeder extends Seeder
         $admin->update(['status' => 'active']);
         Role::where('name', '!=', 'admin')->update(['status' => 'inactive']);
 
-        // MFA is opt-in per role (Admin → Roles): a fresh seed leaves it off everywhere,
-        // so nobody is sent to enrolment before an admin has chosen to require it.
+        // 2FA is on for the admin role by default (it is also forced by
+        // security.require_admin_mfa); every other role stays opt-in from Admin → Roles.
         Role::query()->update(['mfa_enabled' => false]);
+        $admin->update(['mfa_enabled' => true]);
     }
 
     /**

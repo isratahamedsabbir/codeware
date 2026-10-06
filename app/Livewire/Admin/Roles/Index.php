@@ -6,6 +6,7 @@ use App\Concerns\HasPerPage;
 use App\Concerns\WithSearch;
 use App\Models\User;
 use App\Support\AdminActivity;
+use App\Support\Recaptcha;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -77,6 +78,13 @@ class Index extends Component
         $role = Role::findOrFail($roleId);
         $on = (bool) $value;
 
+        // The admin role cannot be switched off here while the config requires it.
+        if ($column === 'mfa_enabled' && ! $on && $this->mfaLocked($role)) {
+            $this->dispatch('notify', message: '2FA is required for the admin role.');
+
+            return;
+        }
+
         if ((bool) $role->{$column} === $on) {
             return;
         }
@@ -84,11 +92,22 @@ class Index extends Component
         $role->update([$column => $on]);
 
         $label = $column === 'recaptcha_enabled'
-            ? \App\Support\Recaptcha::label()
+            ? Recaptcha::label()
             : self::REQUIREMENTS[$column];
 
         AdminActivity::log('updated', "Role: {$role->name} — {$label} ".($on ? 'required' : 'no longer required'));
         $this->dispatch('notify', message: "{$label} is now ".($on ? 'required' : 'not required')." for {$role->name}");
+    }
+
+    /** The admin role's 2FA is always on while security.require_admin_mfa is. */
+    public function mfaLocked(Role $role): bool
+    {
+        return $role->name === 'admin' && config('security.require_admin_mfa');
+    }
+
+    private function mfaOn(Role $role): bool
+    {
+        return (bool) $role->mfa_enabled || $this->mfaLocked($role);
     }
 
     public function viewDetails(int $id): void
@@ -194,7 +213,7 @@ class Index extends Component
         // Seeded from the row that was just rendered rather than from the
         // submitted array, so the switch always shows what is actually stored:
         // updatedMfa()/updatedRecaptcha() write first and this reads back after.
-        $this->mfa = $roles->mapWithKeys(fn (Role $role) => [$role->id => (bool) $role->mfa_enabled])->all();
+        $this->mfa = $roles->mapWithKeys(fn (Role $role) => [$role->id => $this->mfaOn($role)])->all();
         $this->recaptcha = $roles->mapWithKeys(fn (Role $role) => [$role->id => (bool) $role->recaptcha_enabled])->all();
 
         return view('livewire.admin.roles.index', [

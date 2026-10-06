@@ -43,6 +43,8 @@ pest()->extend(TestCase::class)
         Cache::flush();
         // A developer's own captcha keys in .env must not make public-form tests demand a token.
         config(['services.recaptcha.site_key' => null, 'services.recaptcha.secret_key' => null, 'services.turnstile.site_key' => null, 'services.turnstile.secret_key' => null]);
+        // Admin 2FA is on by default; tests that are not about it must not be redirected to enrolment.
+        config(['security.require_admin_mfa' => false]);
         $snapshot = themeSettingsSnapshot();
     })
     ->afterEach(function () use (&$snapshot) {

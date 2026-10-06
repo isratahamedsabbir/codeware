@@ -64,7 +64,8 @@ it('assembles a chunked upload into a media library record once all chunks arriv
     $uploadId = 'test-upload-1';
 
     $this->postJson(route('admin.media-library.chunk-upload'), [
-        'chunk' => UploadedFile::fake()->createWithContent('chunk', 'Hello '),
+        'chunk' => UploadedFile::fake()->createWithContent('chunk', "%PDF-1.4
+Hello "),
         'chunkIndex' => 0,
         'totalChunks' => 2,
         'uploadId' => $uploadId,
@@ -87,10 +88,12 @@ it('assembles a chunked upload into a media library record once all chunks arriv
 
     expect($media)->not->toBeNull();
     expect($media->original_filename)->toBe('bigfile.pdf');
-    expect($media->file_size)->toBe(strlen('Hello World!'));
+    expect($media->file_size)->toBe(strlen("%PDF-1.4
+Hello World!"));
 
     Storage::disk('public')->assertExists($media->path);
-    expect(Storage::disk('public')->get($media->path))->toBe('Hello World!');
+    expect(Storage::disk('public')->get($media->path))->toBe("%PDF-1.4
+Hello World!");
 });
 
 it('rejects a disallowed file extension for chunked upload', function () {
