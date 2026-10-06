@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Concerns\CachesContent;
 use App\Concerns\HasComments;
 use App\Concerns\HasReviews;
+use App\Concerns\SanitizesRichText;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,7 +19,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Post extends Model
 {
-    use CachesContent, HasComments, HasFactory, HasReviews, HasTranslations, SoftDeletes;
+    use CachesContent, HasComments, HasFactory, HasReviews, HasTranslations, SanitizesRichText, SoftDeletes;
 
     public array $translatable = ['title', 'description', 'content'];
 
@@ -44,6 +45,9 @@ class Post extends Model
     {
         return Attribute::make(get: fn () => $this->page?->slug);
     }
+
+    /** @var list<string> */
+    public array $richTextFields = ['description'];
 
     protected static function booted(): void
     {

@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use App\Notifications\AdminAlert;
+use App\Support\ContactAlerts;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Notification;
 
 class Contact extends Model
 {
@@ -16,14 +15,7 @@ class Contact extends Model
     protected static function booted(): void
     {
         static::created(function (Contact $contact) {
-            Notification::send(
-                User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))->get(),
-                new AdminAlert(
-                    'New contact message',
-                    "{$contact->full_name}: {$contact->subject}",
-                    route('admin.contacts'),
-                ),
-            );
+            ContactAlerts::record($contact);
         });
     }
 

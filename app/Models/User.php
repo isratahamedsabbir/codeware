@@ -80,6 +80,17 @@ class User extends Authenticatable implements PasskeyUser
      * side of the pair. Not a formal Eloquent relation since a conversation's other
      * participant can be in either the user_one_id or user_two_id column.
      */
+    protected static function booted(): void
+    {
+        // A changed password (reset, profile, admin edit) signs out every API
+        // token — a stolen token must not outlive the credential it came from.
+        static::updated(function (User $user) {
+            if ($user->wasChanged('password')) {
+                $user->tokens()->delete();
+            }
+        });
+    }
+
     public function conversations(): Builder
     {
         return Conversation::forUser($this);

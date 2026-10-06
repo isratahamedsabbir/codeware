@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Support\ApiMfa;
+use App\Support\ApiToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
@@ -88,7 +89,7 @@ class SocialAuthController extends Controller
             );
         }
 
-        $token = $user->createToken('customer-api')->plainTextToken;
+        $token = ApiToken::issue($user);
 
         return redirect()->away("{$frontendCallback}?token={$token}");
     }

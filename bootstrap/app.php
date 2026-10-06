@@ -11,7 +11,9 @@ use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RedirectToCanonicalHost;
 use App\Http\Middleware\RequireFeature;
 use App\Http\Middleware\ScopeSessionCookieToHost;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\VerifyCaptcha;
 use App\Support\Themes;
 use App\Support\UnauthorizedAccessNotifier;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -79,6 +81,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // the public API resolves its locale from the ?locale= query parameter instead.
         $middleware->appendToGroup('web', SetLocale::class);
 
+        // Security headers + CSP (report-only by default — see config/security.php).
+        $middleware->appendToGroup('web', SecurityHeaders::class);
+        $middleware->appendToGroup('api', SecurityHeaders::class);
+
         // Unifies http/https and www/non-www onto the one address the site claims
         // (the `seo_site_url` setting), so the canonical URLs Seo\Url builds are
         // true of the site and not only of its <link> tags. Inert while that
@@ -95,6 +101,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'admin' => AdminMiddleware::class,
+            'captcha' => VerifyCaptcha::class,
             'activity-log' => LogAdminActivity::class,
             'locale' => SetLocale::class,
             'feature' => RequireFeature::class,

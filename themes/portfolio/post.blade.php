@@ -67,7 +67,7 @@
                      produced it, not here. --}}
                 @if (filled($post->description))
                     <div class="pf-prose mt-10 text-base leading-relaxed text-(--pf-text)">
-                        {!! $post->description !!}
+                        @richtext($post->description)
                     </div>
                 @endif
 

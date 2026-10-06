@@ -11,11 +11,15 @@ use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Translation\Loader;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -55,6 +59,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configurePublicFormLimiters();
+
+        // @richtext($html): purified authored HTML, safe to print unescaped.
+        Blade::directive('richtext', fn (string $expression) => "<?php echo \App\Support\Html::clean({$expression}); ?>");
 
         // Two admin tiers: Admin ('admin' role, every permission) and Staff
         // ('staff' role, content-only — see RolePermissionSeeder). access-admin
@@ -231,5 +239,35 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
+    }
+
+    /**
+     * Named per-IP limiters for the unauthenticated POST endpoints, so a script
+     * can't flood the inbox, the admins' notifications or the mailer.
+     */
+    private function configurePublicFormLimiters(): void
+    {
+        $limits = [
+            'contacts' => [5, 30],
+            'subscribers' => [5, 30],
+            'vouchers' => [5, 20],
+            'orders' => [10, 60],
+            'chat-messages' => [30, 300],
+        ];
+
+        // Guest order lookups (order number + email, no login): 10/min per IP and
+        // order number, plus a wider per-IP cap so walking through order numbers
+        // is throttled too.
+        RateLimiter::for('order-lookup', fn (Request $request) => [
+            Limit::perMinute(10)->by('order-lookup:'.$request->ip().':'.$request->route('orderNumber')),
+            Limit::perMinute(30)->by('order-lookup:ip:'.$request->ip()),
+        ]);
+
+        foreach ($limits as $name => [$perMinute, $perHour]) {
+            RateLimiter::for($name, fn (Request $request) => [
+                Limit::perMinute($perMinute)->by($name.':m:'.$request->ip()),
+                Limit::perHour($perHour)->by($name.':h:'.$request->ip()),
+            ]);
+        }
     }
 }

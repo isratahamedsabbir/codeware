@@ -201,7 +201,11 @@ class OrderController extends Controller
         $order = Order::with(['items', 'transactions'])
             ->where('order_number', $orderNumber)
             ->where('customer_email', $validated['email'])
-            ->firstOrFail();
+            ->first();
+
+        // Same answer for "no such order" and "wrong email", so a script
+        // probing order numbers can't tell them apart.
+        abort_if($order === null, 404, 'Order not found.');
 
         return response()->json([
             'data' => $this->formatOrder($order, withTransactions: true),

@@ -76,7 +76,7 @@
                                 @if ($postDescriptionText !== '')
                                     <div class="rich-text mt-2 text-sm leading-relaxed text-zinc-500">
                                         @if (\Illuminate\Support\Str::length($postDescriptionText) <= 1000)
-                                            {!! $postDescriptionHtml !!}
+                                            @richtext($postDescriptionHtml)
                                         @else
                                             <p>{{ \Illuminate\Support\Str::limit($postDescriptionText, 1000) }}</p>
                                         @endif

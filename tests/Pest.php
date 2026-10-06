@@ -41,6 +41,8 @@ pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->beforeEach(function () use (&$snapshot) {
         Cache::flush();
+        // A developer's own captcha keys in .env must not make public-form tests demand a token.
+        config(['services.recaptcha.site_key' => null, 'services.recaptcha.secret_key' => null, 'services.turnstile.site_key' => null, 'services.turnstile.secret_key' => null]);
         $snapshot = themeSettingsSnapshot();
     })
     ->afterEach(function () use (&$snapshot) {

@@ -19,7 +19,8 @@ class ContactController extends Controller
             'phone_number' => 'required|string|max:30',
             'email' => 'required|email|max:255',
             'subject' => 'required|string|max:255',
-            'message' => 'required|string',
+            'message' => 'required|string|max:5000',
+            'website' => 'nullable|string|max:255',
         ]);
 
         return $this->createContact($validated);
@@ -32,7 +33,8 @@ class ContactController extends Controller
             'phone_number' => 'required|string|max:30',
             'email' => 'required|email|max:255',
             'company' => 'nullable|string|max:255',
-            'message' => 'required|string',
+            'message' => 'required|string|max:5000',
+            'website' => 'nullable|string|max:255',
         ]);
 
         return $this->createContact([
@@ -51,7 +53,8 @@ class ContactController extends Controller
             'company' => 'nullable|string|max:255',
             'preferred_date' => 'required|date',
             'preferred_time' => 'required|string|max:50',
-            'message' => 'required|string',
+            'message' => 'required|string|max:5000',
+            'website' => 'nullable|string|max:255',
         ]);
 
         return $this->createContact([
@@ -66,6 +69,15 @@ class ContactController extends Controller
      */
     private function createContact(array $data): JsonResponse
     {
+        // Honeypot: hidden 'website' field humans leave empty. Answer like a
+        // success so the bot learns nothing, but store and send nothing.
+        if (filled($data['website'] ?? null)) {
+            return response()->json([
+                'data' => null,
+                'message' => 'Your information has been received. Our support team will contact you very soon.',
+            ], 201);
+        }
+
         $contact = Contact::create([
             'full_name' => $data['full_name'],
             'phone_number' => $data['phone_number'],

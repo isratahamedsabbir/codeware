@@ -8,6 +8,7 @@ use App\Concerns\HasCreator;
 use App\Concerns\HasFaqs;
 use App\Concerns\HasReviews;
 use App\Concerns\HasUniqueCode;
+use App\Concerns\SanitizesRichText;
 use App\Services\EmailTemplateService;
 use App\Support\Locale;
 use Illuminate\Database\Eloquent\Builder;
@@ -24,7 +25,10 @@ use Spatie\Translatable\HasTranslations;
 
 class Product extends Model
 {
-    use CachesContent, HasComments, HasCreator, HasFactory, HasFaqs, HasReviews, HasTranslations, HasUniqueCode, SoftDeletes;
+    use CachesContent, HasComments, HasCreator, HasFactory, HasFaqs, HasReviews, HasTranslations, HasUniqueCode, SanitizesRichText, SoftDeletes;
+
+    /** @var list<string> */
+    public array $richTextFields = ['description', 'excerpt', 'specifications'];
 
     protected static function booted(): void
     {

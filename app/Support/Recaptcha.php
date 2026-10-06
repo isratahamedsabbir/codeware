@@ -68,6 +68,15 @@ class Recaptcha
         return self::provider() === 'turnstile' ? new Turnstile : new RecaptchaRule;
     }
 
+    /**
+     * Whether the active provider has both keys saved — the condition for
+     * making the captcha mandatory on public forms (no role switch involved).
+     */
+    public static function configured(): bool
+    {
+        return self::hasKeys(self::provider());
+    }
+
     private static function hasKeys(string $provider): bool
     {
         return filled(config("services.{$provider}.site_key"))

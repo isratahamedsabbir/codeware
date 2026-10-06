@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Auth;
 use App\Actions\Fortify\CreateNewUser;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\ApiToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -16,7 +17,7 @@ class RegisterController extends Controller
 
         $user->sendEmailVerificationNotification();
 
-        $token = $user->createToken('customer-api')->plainTextToken;
+        $token = ApiToken::issue($user);
 
         return response()->json([
             'data' => [

@@ -65,7 +65,7 @@
 
         @if (filled($post->description))
             <div class="rich-text mt-8 border-b border-zinc-100 pb-8 text-lg leading-relaxed text-zinc-700">
-                {!! $post->description !!}
+                @richtext($post->description)
             </div>
         @endif
 

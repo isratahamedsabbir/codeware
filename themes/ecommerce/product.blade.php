@@ -320,7 +320,7 @@
 
             @if (filled($product->excerpt))
                 <div class="mt-8 border-t border-zinc-100 pt-6 text-zinc-600">
-                    <div class="rich-text leading-relaxed">{!! $product->excerpt !!}</div>
+                    <div class="rich-text leading-relaxed">@richtext($product->excerpt)</div>
                 </div>
             @endif
 
@@ -399,14 +399,14 @@
                     @if (filled($product->description))
                         <div x-show="tab === 'description'" @if ($productDetailTab !== 'description') x-cloak @endif role="tabpanel"
                             class="rich-text text-base leading-relaxed text-zinc-600">
-                            {!! $product->description !!}
+                            @richtext($product->description)
                         </div>
                     @endif
 
                     @if (filled($product->specifications))
                         <div x-show="tab === 'specifications'" @if ($productDetailTab !== 'specifications') x-cloak @endif role="tabpanel"
                             class="rich-text text-sm leading-relaxed text-zinc-600">
-                            {!! $product->specifications !!}
+                            @richtext($product->specifications)
                         </div>
                     @endif
                 </div>

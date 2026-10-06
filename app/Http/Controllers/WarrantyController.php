@@ -32,7 +32,9 @@ class WarrantyController extends Controller
 
         $order = Order::where('order_number', $orderNumber)
             ->where('customer_email', $validated['email'])
-            ->firstOrFail();
+            ->first();
+
+        abort_if($order === null, 404, 'Order not found.');
 
         return $this->pdf->make($order)->download($this->pdf->fileName($order));
     }

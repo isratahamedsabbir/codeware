@@ -813,7 +813,7 @@
                                          tends to arrive mid-tag. Clamped, not escaped
                                          away, so links inside it still work. --}}
                                     <div class="pf-prose mt-2.5 line-clamp-3 text-sm leading-relaxed text-(--pf-text-muted)">
-                                        {!! $post->description !!}
+                                        @richtext($post->description)
                                     </div>
                                 @endif
                             </a>

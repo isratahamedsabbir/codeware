@@ -123,30 +123,30 @@ Route::get('/services/{slug}', [ServiceController::class, 'show'])->name('servic
 
 Route::get('/cms', [CmsController::class, 'index'])->name('cms.index');
 
-Route::post('/contacts', [ContactController::class, 'store'])->name('contacts.store');
-Route::post('/request-demo', [ContactController::class, 'requestDemo'])->name('request-demo.store');
-Route::post('/book-demo', [ContactController::class, 'bookDemo'])->name('book-demo.store');
+Route::post('/contacts', [ContactController::class, 'store'])->middleware('throttle:contacts', 'captcha')->name('contacts.store');
+Route::post('/request-demo', [ContactController::class, 'requestDemo'])->middleware('throttle:contacts', 'captcha')->name('request-demo.store');
+Route::post('/book-demo', [ContactController::class, 'bookDemo'])->middleware('throttle:contacts', 'captcha')->name('book-demo.store');
 
-Route::post('/subscribers', [SubscriberController::class, 'store'])->name('subscribers.store');
+Route::post('/subscribers', [SubscriberController::class, 'store'])->middleware('throttle:subscribers', 'captcha')->name('subscribers.store');
 
 // Gift vouchers — browse active voucher products and buy one. Purchasing
 // issues a unique voucher code and emails the buyer a designed PDF voucher.
 Route::middleware('feature:vouchers')->group(function () {
     Route::get('/vouchers', [VoucherController::class, 'index'])->name('vouchers.index');
     Route::get('/vouchers/{slug}', [VoucherController::class, 'show'])->name('vouchers.show');
-    Route::post('/vouchers', [VoucherController::class, 'store'])->name('vouchers.store');
+    Route::post('/vouchers', [VoucherController::class, 'store'])->middleware('throttle:vouchers', 'captcha')->name('vouchers.store');
 });
 
 Route::middleware('feature:orders')->group(function () {
     // Products only — an order is always something physical. A service is
     // requested through a Booking (App\Livewire\Frontend\BookService on the
     // storefront, read at Admin → Bookings), never bought through the cart.
-    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
-    Route::get('/orders/{orderNumber}', [OrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders', [OrderController::class, 'store'])->middleware('throttle:orders', 'captcha')->name('orders.store');
+    Route::get('/orders/{orderNumber}', [OrderController::class, 'show'])->middleware('throttle:order-lookup')->name('orders.show');
     // Same auth story as the show() route above — order number + the
     // customer's own email, no login — downloads the PDF warranty card for
     // whichever of this order's products carry a warranty.
-    Route::get('/orders/{orderNumber}/warranty', [WarrantyController::class, 'publicDownload'])->name('orders.warranty');
+    Route::get('/orders/{orderNumber}/warranty', [WarrantyController::class, 'publicDownload'])->middleware('throttle:order-lookup')->name('orders.warranty');
 
     // Session-backed shopping cart (see App\Support\Cart). Uses StartSession so
     // a guest's cart rides the session cookie like on the web storefront; the
@@ -191,7 +191,7 @@ Route::middleware('feature:chat')->prefix('chat')->name('chat.')->group(function
     Route::post('/otp/verify', [ChatController::class, 'verifyOtp'])
         ->middleware('throttle:6,1')->name('otp.verify');
     Route::get('/messages', [ChatController::class, 'messages'])->name('messages.index');
-    Route::post('/messages', [ChatController::class, 'sendMessage'])->name('messages.store');
+    Route::post('/messages', [ChatController::class, 'sendMessage'])->middleware('throttle:chat-messages')->name('messages.store');
 });
 
 // Admin endpoints — require Sanctum token AND admin role

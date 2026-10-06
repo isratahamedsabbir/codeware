@@ -154,7 +154,7 @@
                                     @if ($postDescriptionText !== '')
                                         <div class="pf-prose line-clamp-3 mt-2 text-sm leading-relaxed text-(--pf-text-muted)">
                                             @if (\Illuminate\Support\Str::length($postDescriptionText) <= 1000)
-                                                {!! $postDescriptionHtml !!}
+                                                @richtext($postDescriptionHtml)
                                             @else
                                                 <p>{{ \Illuminate\Support\Str::limit($postDescriptionText, 1000) }}</p>
                                             @endif

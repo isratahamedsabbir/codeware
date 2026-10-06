@@ -50,7 +50,10 @@ return [
     |
     */
 
-    'expiration' => null,
+    'expiration' => env('SANCTUM_EXPIRATION', 43200),
+
+    // Minutes an admin/staff token lives (App\Support\ApiToken), on top of the global limit above.
+    'admin_expiration' => env('SANCTUM_ADMIN_EXPIRATION', 480),
 
     /*
     |--------------------------------------------------------------------------

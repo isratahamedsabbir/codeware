@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Support\ApiMfa;
+use App\Support\ApiToken;
 use App\Support\ApiUser;
 use App\Support\Mfa;
 use Illuminate\Http\JsonResponse;
@@ -120,7 +121,7 @@ class MfaController extends Controller
 
         return response()->json([
             'data' => [
-                'token' => $user->createToken('customer-api')->plainTextToken,
+                'token' => ApiToken::issue($user),
                 'user' => ApiUser::payload($user),
             ],
         ]);

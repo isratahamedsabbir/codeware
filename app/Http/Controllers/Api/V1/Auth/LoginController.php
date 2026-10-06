@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Support\ApiMfa;
+use App\Support\ApiToken;
 use App\Support\ApiUser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -46,7 +47,7 @@ class LoginController extends Controller
             ]);
         }
 
-        $token = $user->createToken('customer-api')->plainTextToken;
+        $token = ApiToken::issue($user);
 
         return response()->json([
             'data' => [
