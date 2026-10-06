@@ -114,6 +114,7 @@
 
         {{-- â”€â”€ Authentication tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
         <div x-show="activeTab === 'authentication'" x-cloak class="space-y-5">
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start"><div class="space-y-5">
 
             {{-- Google Login --}}
             <x-admin-section-card id="env-section-google-login" class="scroll-mt-24" header-border="border-zinc-100" icon="globe-alt" title="Google Login">
@@ -125,7 +126,7 @@
                         <flux:icon.information-circle class="size-4" />
                     </a>
                 </x-slot:titleActions>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-3">
+                <div class="grid grid-cols-1 gap-y-3">
                     @foreach ($this->envFields()['Google Login'] as $key => $meta)
                         @include('livewire.admin.env.partials._env-field', ['key' => $key, 'meta' => $meta])
                     @endforeach
@@ -142,18 +143,19 @@
                         <flux:icon.information-circle class="size-4" />
                     </a>
                 </x-slot:titleActions>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-3">
+                <div class="grid grid-cols-1 gap-y-3">
                     @foreach ($this->envFields()['Facebook Login'] as $key => $meta)
                         @include('livewire.admin.env.partials._env-field', ['key' => $key, 'meta' => $meta])
                     @endforeach
                 </div>
             </x-admin-section-card>
 
+</div><div class="space-y-5">
             {{-- Which captcha is live. Both providers keep their own key cards below;
                  this picks the one the login forms actually use. --}}
             <x-admin-section-card id="env-section-captcha" class="scroll-mt-24" header-border="border-zinc-100" icon="shield-check" title="Active Captcha"
                 description="Choose reCAPTCHA or Cloudflare Turnstile. Only the chosen one is shown and verified on logins whose role has the captcha switched on (Roles).">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-3">
+                <div class="grid grid-cols-1 gap-y-3">
                     @foreach ($this->envFields()['Captcha'] as $key => $meta)
                         @include('livewire.admin.env.partials._env-field', ['key' => $key, 'meta' => $meta])
                     @endforeach
@@ -189,7 +191,7 @@
                         <flux:icon.information-circle class="size-4" />
                     </a>
                 </x-slot:titleActions>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-3">
+                <div class="grid grid-cols-1 gap-y-3">
                     @foreach ($this->envFields()['reCAPTCHA'] as $key => $meta)
                         @include('livewire.admin.env.partials._env-field', ['key' => $key, 'meta' => $meta])
                     @endforeach
@@ -210,16 +212,18 @@
                         <flux:icon.information-circle class="size-4" />
                     </a>
                 </x-slot:titleActions>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-3">
+                <div class="grid grid-cols-1 gap-y-3">
                     @foreach ($this->envFields()['Turnstile'] as $key => $meta)
                         @include('livewire.admin.env.partials._env-field', ['key' => $key, 'meta' => $meta])
                     @endforeach
                 </div>
             </x-admin-section-card>
+</div></div>
         </div>
 
         {{-- â”€â”€ Integrations tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
         <div x-show="activeTab === 'integrations'" x-cloak class="space-y-5">
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start"><div class="space-y-5">
 
             {{-- Google Pixel --}}
             <x-admin-section-card id="env-section-pixel" class="scroll-mt-24" header-border="border-zinc-100" icon="chart-bar" title="Google Pixel"
@@ -299,6 +303,7 @@
                 @endif
             </x-admin-section-card>
 
+</div><div class="space-y-5">
             {{-- AWS S3 --}}
             <x-admin-section-card id="env-section-aws-s3" class="scroll-mt-24" header-border="border-zinc-100" icon="cloud" title="AWS S3"
                 description="Only needed if FILESYSTEM_DISK is set to s3 â€” otherwise uploads stay on local disk and these are unused.">
@@ -310,7 +315,7 @@
                         <flux:icon.information-circle class="size-4" />
                     </a>
                 </x-slot:titleActions>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-3">
+                <div class="grid grid-cols-1 gap-y-3">
                     @foreach ($this->envFields()['AWS S3'] as $key => $meta)
                         @include('livewire.admin.env.partials._env-field', ['key' => $key, 'meta' => $meta])
                     @endforeach
@@ -367,6 +372,7 @@
                     @endforeach
                 </div>
             </x-admin-section-card>
+</div></div>
 
             {{-- Fallback: any future env group added without a hand-built card above --}}
             @php $manuallyRenderedGroups = ['App', 'Google Login', 'Facebook Login', 'Captcha', 'reCAPTCHA', 'Turnstile', 'Google Maps', 'AWS S3', 'Firebase', 'CMS Editor']; @endphp
