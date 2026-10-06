@@ -296,7 +296,8 @@
     <div class="auth-shape auth-shape-4"></div>
     <div class="auth-shape auth-shape-5"></div> 
 
-    <div class="w-full max-w-[420px] flex flex-col gap-5 auth-animate">   
+    <div class="w-full max-w-[420px] flex flex-col gap-5 auth-animate"
+        @if ($wide ?? false) style="max-width: 1040px" @endif>   
 
         {{-- Auth Card --}}
         <div class="auth-card rounded-2xl overflow-hidden">  

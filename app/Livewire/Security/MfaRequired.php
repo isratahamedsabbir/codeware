@@ -4,6 +4,7 @@ namespace App\Livewire\Security;
 
 use App\Support\Mfa;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 /**
@@ -22,12 +23,31 @@ use Livewire\Component;
  */
 class MfaRequired extends Component
 {
+    /**
+     * The panel announces every change to a factor. Re-rendering is all this
+     * needs to do: it is what makes the "Continue" button appear the moment a
+     * factor exists. It must not reload the page — a reload would throw away the
+     * recovery codes the panel has just put on screen, which are shown only once.
+     */
+    #[On('mfa-updated')]
+    public function refreshed(): void {}
+
     public function render()
     {
         $user = Auth::user();
 
+        // Where "Continue" goes: the dashboard of whichever portal this host is.
+        [$dashboard, $logout] = match (request()->getHost()) {
+            config('app.vendor_host') => ['vendor.dashboard', 'vendor.logout'],
+            config('app.delivery_host') => ['delivery.dashboard', 'delivery.logout'],
+            default => ['admin.dashboard', 'admin.logout'],
+        };
+
         return view('livewire.security.mfa-required', [
             'requiredFor' => $user ? Mfa::audiencesFor($user) : [],
+            'hasFactor' => $user && Mfa::hasFactorFor($user),
+            'continueUrl' => route($dashboard),
+            'logoutRoute' => route($logout),
             // Why the panel below is on screen at all, so the help line can say
             // "another administrator" to an admin and "your administrator" to a
             // vendor — there is nothing to point at on a portal where the person
@@ -42,6 +62,9 @@ class MfaRequired extends Component
             // does not carry it, so the client is opted into by flag rather than
             // assumed. See layouts/auth/split.blade.php.
             'passkeys' => true,
+
+            // The two method cards need more room than a login form does.
+            'wide' => true,
         ]);
     }
 }

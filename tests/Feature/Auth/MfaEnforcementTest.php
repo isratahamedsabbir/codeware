@@ -166,7 +166,8 @@ test('an admin with no factor is not held: 2FA is opt-in from the profile, and t
     $this->actingAs($admin)
         ->get('http://'.$host.'/mfa-required')
         ->assertOk()
-        ->assertSee('Set one up below to continue', false);
+        ->assertSee('Set up one method below to continue', false)
+        ->assertDontSee('Continue to dashboard');
 });
 
 test('the profile answers while enforcement is on, because that is where the panel lives', function () {
@@ -433,4 +434,22 @@ test('the security group is kept out of the generic settings groups', function (
 
     Livewire::test(SettingsIndex::class)
         ->assertViewHas('groupedSettings', fn ($groups) => ! $groups->has('security'));
+});
+
+test('the enrolment screen offers a way on once a factor exists', function () {
+    $admin = User::factory()->admin()->create();
+    $host = config('app.admin_host');
+
+    $this->actingAs($admin)->get('http://'.$host.'/mfa-required')->assertDontSee('Continue to dashboard');
+
+    $admin->forceFill([
+        'two_factor_secret' => encrypt('secret'),
+        'two_factor_confirmed_at' => now(),
+    ])->save();
+
+    $this->actingAs($admin->fresh())
+        ->get('http://'.$host.'/mfa-required')
+        ->assertOk()
+        ->assertSee('Continue to dashboard')
+        ->assertSee(route('admin.dashboard'), false);
 });

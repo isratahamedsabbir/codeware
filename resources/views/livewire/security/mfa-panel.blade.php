@@ -20,8 +20,8 @@
 <div x-data="{ error: null }" class="space-y-5">
 
     @if ($required)
-        <flux:callout variant="danger" icon="exclamation-triangle">
-            {{ __('This portal requires a second sign-in factor. Set one up below to continue — nothing else here is reachable until you do.') }}
+        <flux:callout variant="danger" icon="exclamation-triangle" class="mfa-required-callout">
+            {{ __('Set up one method below to continue. Nothing else in this portal is reachable until you do.') }}
         </flux:callout>
     @endif
 
