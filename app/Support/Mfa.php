@@ -165,8 +165,7 @@ final class Mfa
      */
     public static function isRequiredFor(User $user): bool
     {
-        return self::adminMustHaveFactor($user)
-            || $user->roles()->where('mfa_enabled', true)->exists();
+        return $user->roles()->where('mfa_enabled', true)->exists();
     }
 
     /**
@@ -205,10 +204,17 @@ final class Mfa
         return self::adminMustHaveFactor($user) && ! self::hasFactorFor($user);
     }
 
-    /** Whether the admin-role MFA requirement applies to this account. */
+    /**
+     * Whether this account is an admin whose role has 2FA switched on (Admin ->
+     * Roles; seeded on for admin). The role switch is the one source of truth:
+     * on means enrolment is mandatory, off means nothing is asked. The config
+     * flag security.require_admin_mfa is only a master switch above it.
+     */
     public static function adminMustHaveFactor(User $user): bool
     {
-        return (bool) config('security.require_admin_mfa') && $user->hasRole('admin');
+        return (bool) config('security.require_admin_mfa')
+            && $user->hasRole('admin')
+            && $user->roles()->where('name', 'admin')->where('mfa_enabled', true)->exists();
     }
 
     /**

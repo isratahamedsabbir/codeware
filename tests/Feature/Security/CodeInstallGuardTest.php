@@ -46,8 +46,16 @@ it('forces admins without a second factor into enrolment when required', functio
     expect(Mfa::needsEnrolmentFor($admin))->toBeFalse();
 
     config(['security.require_admin_mfa' => true]);
-    expect(Mfa::needsEnrolmentFor($admin))->toBeTrue()
-        ->and(Mfa::isRequiredFor($admin))->toBeTrue();
+
+    // The role switch (Admin -> Roles) decides: off means nothing is asked...
+    Role::where('name', 'admin')->update(['mfa_enabled' => false]);
+    expect(Mfa::needsEnrolmentFor($admin->fresh()))->toBeFalse()
+        ->and(Mfa::isRequiredFor($admin->fresh()))->toBeFalse();
+
+    // ...on means enrolment is mandatory for the admin role.
+    Role::where('name', 'admin')->update(['mfa_enabled' => true]);
+    expect(Mfa::needsEnrolmentFor($admin->fresh()))->toBeTrue()
+        ->and(Mfa::isRequiredFor($admin->fresh()))->toBeTrue();
 
     $customer = User::factory()->create();
     expect(Mfa::needsEnrolmentFor($customer))->toBeFalse();

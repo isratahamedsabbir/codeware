@@ -133,13 +133,13 @@ it('still accepts a normal file when the request omits allowedExt entirely', fun
     Storage::fake('public');
 
     $response = $this->postJson(route('admin.media-library.chunk-upload'), [
-        'chunk' => UploadedFile::fake()->createWithContent('chunk', "%PDF-1.4
+        'chunk' => UploadedFile::fake()->createWithContent('chunk', '%PDF-1.4
 1 0 obj
 <<>>
 endobj
 trailer
 <<>>
-%%EOF"),
+%%EOF'),
         'chunkIndex' => 0,
         'totalChunks' => 1,
         'uploadId' => 'no-allowed-ext',

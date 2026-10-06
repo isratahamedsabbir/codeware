@@ -124,8 +124,8 @@
                             <td class="px-4 py-2">
                                 <div class="flex items-center gap-4 sm:gap-6">
                                     <label class="flex items-center gap-1.5 cursor-pointer select-none"
-                                        title="{{ $this->mfaLocked($role) ? 'Always required for the admin role.' : 'Require a second factor — an authenticator app or a passkey — before someone with this role can sign in.' }}">
-                                        <flux:switch size="sm" wire:model.live="mfa.{{ $role->id }}" name="mfa" :disabled="$this->mfaLocked($role)"
+                                        title="Require a second factor — an authenticator app or a passkey — before someone with this role can sign in.">
+                                        <flux:switch size="sm" wire:model.live="mfa.{{ $role->id }}" name="mfa"
                                             aria-label="Require 2FA for {{ $role->name }}" />
                                         <span class="text-xs text-zinc-600">2FA</span>
                                     </label>
@@ -157,7 +157,7 @@
                                 <x-admin-row-details.item label="ID">#{{ $role->id }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Users">{{ $role->users_count }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Status">{{ $role->name === 'admin' ? 'Active' : ucfirst($role->status) }}</x-admin-row-details.item>
-                                <x-admin-row-details.item label="2FA">{{ $role->mfa_enabled || $this->mfaLocked($role) ? 'Required' : 'Not required' }}</x-admin-row-details.item>
+                                <x-admin-row-details.item label="2FA">{{ $role->mfa_enabled ? 'Required' : 'Not required' }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="{{ \App\Support\Recaptcha::label() }}">{{ $role->recaptcha_enabled ? 'Required' : 'Not required' }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Created by">{{ $role->creator?->name ?? '—' }}</x-admin-row-details.item>
                             </x-admin-row-details>
