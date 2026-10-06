@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Throwable;
 
@@ -44,10 +45,16 @@ class ChatWidget extends Component
 
     public string $messageBody = '';
 
+    // Locked: these are set only by the server (verified OTP / resume token). As
+    // plain public properties a visitor could $set() them from the browser to read
+    // any conversation or post as any participant, including an admin.
+    #[Locked]
     public ?int $conversationId = null;
 
+    #[Locked]
     public ?int $guestUserId = null;
 
+    #[Locked]
     public ?string $adminName = null;
 
     public function toggle(): void
@@ -171,7 +178,7 @@ class ChatWidget extends Component
         $conversation = Conversation::find($this->conversationId);
         $guest = User::find($this->guestUserId);
 
-        if (! $conversation || ! $guest || ! $conversation->isParticipant($guest)) {
+        if (! $conversation || ! $guest || $guest->hasRole('admin') || ! $conversation->isParticipant($guest)) {
             return;
         }
 
@@ -193,7 +200,10 @@ class ChatWidget extends Component
     #[Computed]
     public function messages(): Collection
     {
-        if (! $this->conversationId) {
+        $conversation = $this->conversationId ? Conversation::find($this->conversationId) : null;
+        $guest = $this->guestUserId ? User::find($this->guestUserId) : null;
+
+        if (! $conversation || ! $guest || ! $conversation->isParticipant($guest)) {
             return collect();
         }
 

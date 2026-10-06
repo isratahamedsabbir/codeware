@@ -351,3 +351,47 @@ it('rejects an invalid delivery portal url', function () {
         ->call('confirmSaveEnv')
         ->assertHasErrors(['env.DELIVERY_URL']);
 });
+
+it('refuses a value with a line break and leaves the file untouched', function () {
+    $before = file_get_contents($this->envPath);
+
+    foreach (["x\nAPP_DEBUG=true", "x\r\nAPP_DEBUG=true", "x\rAPP_DEBUG=true", "x\n", "x\0y"] as $bad) {
+        expect(fn () => EnvFile::set(['APP_NAME' => $bad]))->toThrow(RuntimeException::class);
+    }
+
+    expect(file_get_contents($this->envPath))->toBe($before)
+        ->and(EnvFile::get('APP_DEBUG'))->toBe('true');
+});
+
+it('rejects an invalid key', function () {
+    expect(fn () => EnvFile::set(['bad key' => 'x']))->toThrow(RuntimeException::class);
+});
+
+it('rejects a multi-line value on the Env screen before the confirm modal opens', function () {
+    Livewire::test(EnvIndex::class)
+        ->set('env.APP_NAME', "Shop\nAPP_DEBUG=true")
+        ->call('confirmSaveEnv')
+        ->assertHasErrors('env.APP_NAME');
+
+    Livewire::test(EnvIndex::class)
+        ->set('env.APP_NAME', "Shop\n")
+        ->call('confirmSaveEnv')
+        ->assertHasErrors('env.APP_NAME');
+});
+
+it('will not switch debug mode on in production, but will switch it off', function () {
+    $this->app['env'] = 'production';
+    config(['security.allow_debug_in_production' => false]);
+
+    Livewire::test(EnvIndex::class)
+        ->call('enableDebugMode');
+
+    EnvFile::set(['APP_DEBUG' => 'false']);
+
+    Livewire::test(EnvIndex::class)->call('enableDebugMode');
+    expect(EnvFile::get('APP_DEBUG'))->toBe('false');
+
+    EnvFile::set(['APP_DEBUG' => 'true']);
+    Livewire::test(EnvIndex::class)->call('disableDebugMode');
+    expect(EnvFile::get('APP_DEBUG'))->toBe('false');
+});

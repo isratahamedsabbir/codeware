@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\ThemeSettings;
 
 use App\Models\Setting;
 use App\Support\AdminActivity;
+use App\Support\CodeInstall;
 use App\Support\HeroSlides;
 use App\Support\SafeUpload;
 use App\Support\Themes;
@@ -23,6 +24,8 @@ class Index extends Component
 
     /** @var TemporaryUploadedFile|null */
     public $themeZip = null;
+
+    public string $installPassword = '';
 
     /**
      * The Create Theme form. Kept out of $settings on purpose: those are the
@@ -677,7 +680,7 @@ class Index extends Component
 
     public function closeInstallModal(): void
     {
-        $this->reset('themeZip', 'showInstallModal');
+        $this->reset('themeZip', 'showInstallModal', 'installPassword');
     }
 
     /**
@@ -720,6 +723,12 @@ class Index extends Component
      */
     public function createTheme(): void
     {
+        if ($refusal = CodeInstall::refusal(null, needsPassword: false)) {
+            $this->addError('newSlug', $refusal);
+
+            return;
+        }
+
         $this->validate([
             'newName' => 'required|string|max:191',
             'newSlug' => ['required', 'string', 'max:191', function ($attribute, $value, $fail) {
@@ -780,6 +789,12 @@ class Index extends Component
         $this->validate([
             'themeZip' => ['required', 'file', 'mimes:zip'],
         ]);
+
+        if ($refusal = CodeInstall::refusal($this->installPassword, $this->themeZip->getRealPath())) {
+            $this->addError('themeZip', $refusal);
+
+            return;
+        }
 
         $zip = new \ZipArchive;
 
@@ -877,6 +892,7 @@ class Index extends Component
         // shipped its own theme.json. After a create() the number is already there
         // and this is a no-op.
         $this->assignSerialNumber($slug);
+        CodeInstall::record('themes.install', "Theme \"{$slug}\" installed from zip");
 
         $sn = Themes::manifest($slug)['sn'];
 

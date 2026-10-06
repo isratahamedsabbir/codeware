@@ -27,7 +27,7 @@ class SecurityHeaders
         $headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $headers->set('Permissions-Policy', config('security.headers.permissions_policy'));
 
-        if (app()->isProduction() && $request->isSecure()) {
+        if (! app()->environment(['local', 'testing']) && $request->isSecure()) {
             $headers->set('Strict-Transport-Security', config('security.headers.hsts'));
         }
 

@@ -97,6 +97,7 @@ it('installs, activates, deactivates and removes a plugin from Plugin Settings',
 
     Livewire::test(Index::class)
         ->set('pluginZip', demoPluginZip())
+        ->set('installPassword', 'password')
         ->call('installPlugin')
         ->assertHasNoErrors();
 
@@ -120,6 +121,7 @@ it('rejects a package without an index.blade.php', function () {
 
     Livewire::test(Index::class)
         ->set('pluginZip', demoPluginZip(withIndex: false))
+        ->set('installPassword', 'password')
         ->call('installPlugin')
         ->assertHasErrors('pluginZip');
 

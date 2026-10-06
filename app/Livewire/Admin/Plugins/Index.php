@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Plugins;
 
 use App\Models\MenuItem;
 use App\Support\AdminActivity;
+use App\Support\CodeInstall;
 use App\Support\Plugins;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -22,6 +23,8 @@ class Index extends Component
 
     /** @var TemporaryUploadedFile|null */
     public $pluginZip = null;
+
+    public string $installPassword = '';
 
     public bool $showCreateModal = false;
 
@@ -48,13 +51,19 @@ class Index extends Component
 
     public function closeInstallModal(): void
     {
-        $this->reset('pluginZip', 'showInstallModal');
+        $this->reset('pluginZip', 'showInstallModal', 'installPassword');
         $this->resetErrorBag('pluginZip');
     }
 
     public function installPlugin(): void
     {
         $this->validate(['pluginZip' => ['required', 'file', 'mimes:zip']]);
+
+        if ($refusal = CodeInstall::refusal($this->installPassword, $this->pluginZip->getRealPath())) {
+            $this->addError('pluginZip', $refusal);
+
+            return;
+        }
 
         try {
             $slug = Plugins::installFromZip($this->pluginZip->getRealPath());
@@ -64,7 +73,7 @@ class Index extends Component
             return;
         }
 
-        AdminActivity::log('created', "Plugin \"{$slug}\" installed");
+        CodeInstall::record('created', "Plugin \"{$slug}\" installed");
 
         $this->closeInstallModal();
         session()->flash('success', "Plugin \"{$slug}\" installed. Activate it below to add it to the Plugins menu.");
@@ -96,6 +105,12 @@ class Index extends Component
      */
     public function createPlugin(): void
     {
+        if ($refusal = CodeInstall::refusal(null, needsPassword: false)) {
+            $this->addError('newSlug', $refusal);
+
+            return;
+        }
+
         $this->validate([
             'newName' => 'required|string|max:191',
             'newSlug' => ['required', 'string', 'max:191', function ($attribute, $value, $fail) {

@@ -164,6 +164,13 @@ class Index extends Component
             'env.FIREBASE_CREDENTIALS_PATH' => 'nullable|string',
         ];
 
+        // Every field, whether it has a rule above or not, must be a single line:
+        // a newline would start a new .env line and could set another key.
+        foreach (array_keys($this->env) as $key) {
+            $existing = $rules["env.{$key}"] ?? ['nullable', 'string'];
+            $rules["env.{$key}"] = [...(is_array($existing) ? $existing : explode('|', $existing)), 'regex:/^[^\r\n\0]*$/D'];
+        }
+
         $this->validate($rules);
 
         $this->dispatch('open-modal', name: 'env-save-confirm');
@@ -312,8 +319,24 @@ class Index extends Component
         $this->dispatch('notify', message: 'Maintenance mode disabled. The site is back online.');
     }
 
+    /**
+     * Turning APP_DEBUG on in production leaks stack traces, config and secrets to
+     * visitors, so it is refused there (turning it off always works). Set
+     * ALLOW_DEBUG_IN_PRODUCTION=true to lift the lock.
+     */
+    public function debugLocked(): bool
+    {
+        return ! app()->environment(['local', 'testing']) && ! config('security.allow_debug_in_production');
+    }
+
     public function confirmEnableDebugMode(): void
     {
+        if ($this->debugLocked()) {
+            $this->dispatch('notify', message: 'Debug mode cannot be enabled in production.');
+
+            return;
+        }
+
         $this->dispatch('open-modal', name: 'debug-mode-confirm');
     }
 
@@ -324,6 +347,13 @@ class Index extends Component
     public function toggleDebugMode(): void
     {
         $target = ! $this->debugMode;
+
+        if ($target && $this->debugLocked()) {
+            $this->debugMode = false;
+            $this->dispatch('notify', message: 'Debug mode cannot be enabled in production.');
+
+            return;
+        }
 
         try {
             EnvFile::set(['APP_DEBUG' => $target ? 'true' : 'false']);
@@ -351,6 +381,12 @@ class Index extends Component
      */
     public function enableDebugMode(): void
     {
+        if ($this->debugLocked()) {
+            $this->dispatch('notify', message: 'Debug mode cannot be enabled in production.');
+
+            return;
+        }
+
         if (! $this->writeDebugMode('true')) {
             return;
         }

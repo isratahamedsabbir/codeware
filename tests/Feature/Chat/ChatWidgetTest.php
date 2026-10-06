@@ -232,3 +232,18 @@ it('puts a button on the page that can fetch itself a panel', function () {
         ->and($partial)->toContain('data-chat-toggle')
         ->and($partial)->not->toContain('<livewire:');
 });
+
+it('does not let a visitor point the widget at another conversation from the browser', function () {
+    $victim = User::factory()->create();
+    $conversation = Conversation::between($victim, $this->admin);
+    ChatMessage::create(['conversation_id' => $conversation->id, 'sender_id' => $victim->id, 'body' => 'private']);
+
+    $widget = Livewire::test(ChatWidget::class);
+
+    expect(fn () => $widget->set('conversationId', $conversation->id))
+        ->toThrow(Exception::class, 'Cannot update locked property');
+    expect(fn () => $widget->set('guestUserId', $this->admin->id))
+        ->toThrow(Exception::class, 'Cannot update locked property');
+
+    $widget->assertDontSee('private');
+});

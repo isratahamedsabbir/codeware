@@ -133,7 +133,13 @@ it('still accepts a normal file when the request omits allowedExt entirely', fun
     Storage::fake('public');
 
     $response = $this->postJson(route('admin.media-library.chunk-upload'), [
-        'chunk' => UploadedFile::fake()->createWithContent('chunk', 'Report body'),
+        'chunk' => UploadedFile::fake()->createWithContent('chunk', "%PDF-1.4
+1 0 obj
+<<>>
+endobj
+trailer
+<<>>
+%%EOF"),
         'chunkIndex' => 0,
         'totalChunks' => 1,
         'uploadId' => 'no-allowed-ext',
@@ -487,4 +493,16 @@ it('still prints the sku as a styled small line when it is a normal value', func
         ->get(route('admin.orders.invoice', $order))
         ->assertOk()
         ->assertSee('<small style="color:#6b7280;">SKU-123</small>', false);
+});
+
+it('rejects a chunked upload whose bytes do not match its extension', function () {
+    Storage::fake('public');
+    Storage::fake('local');
+    $response = $this->postJson(route('admin.media-library.chunk-upload'), [
+        'chunk' => UploadedFile::fake()->createWithContent('c', '<?php echo 1; ?>'),
+        'chunkIndex' => 0, 'totalChunks' => 1, 'uploadId' => 'abc-123', 'filename' => 'photo.jpg',
+    ]);
+
+    $response->assertStatus(422);
+    expect(Storage::disk('public')->allFiles('media'))->toBe([]);
 });

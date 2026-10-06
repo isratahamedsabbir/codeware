@@ -75,6 +75,7 @@ function installPackagedTheme(string $path): Testable
     return Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('theme.zip', file_get_contents($path)))
+        ->set('installPassword', 'password')
         ->call('installTheme');
 }
 

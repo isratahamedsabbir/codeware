@@ -59,6 +59,19 @@ class EnvFile
      */
     public static function set(array $values): void
     {
+        // A newline in a value would start a new .env line, letting one field set
+        // another key (APP_DEBUG=true, say); a NUL byte truncates it. Refuse before
+        // anything is backed up or written.
+        foreach ($values as $key => $value) {
+            if (! preg_match('/^[A-Z_][A-Z0-9_]*$/', (string) $key)) {
+                throw new RuntimeException('Invalid .env key.');
+            }
+
+            if (preg_match('/[\r\n\0]/', (string) $value)) {
+                throw new RuntimeException("The value for {$key} contains a line break or control character, which is not allowed in .env.");
+            }
+        }
+
         $raw = static::raw();
         $eol = str_contains($raw, "\r\n") ? "\r\n" : "\n";
 

@@ -65,6 +65,7 @@ function installDoomedTheme(): void
     Livewire::test(Index::class)
         ->call('openInstallModal')
         ->set('themeZip', zipFor('doomed', doomedThemeFiles()))
+        ->set('installPassword', 'password')
         ->call('installTheme')
         ->assertHasNoErrors();
 
@@ -159,6 +160,7 @@ it('reinstalls a deleted theme cleanly, with no settings carried over', function
     Livewire::test(Index::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('doomed.zip', file_get_contents($zip)))
+        ->set('installPassword', 'password')
         ->call('installTheme')
         ->assertHasNoErrors();
 

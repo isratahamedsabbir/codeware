@@ -63,6 +63,29 @@ class ChunkedUploadController extends Controller
      * afterwards deleted one file and gave up. Chunks are ~5MB from
      * resources/js/chunk-upload.js; 10MB leaves room for a bigger client chunk.
      */
+    /**
+     * What the assembled bytes must actually be, per extension, as finfo reports
+     * it. The extension only comes from the filename the client typed, so a
+     * script or HTML saved as `photo.jpg` is caught here, after assembly and
+     * before the file is registered. Office formats list the container types
+     * finfo commonly returns for them (OLE2 for the old formats, zip for the new).
+     */
+    private const ALLOWED_MIME_TYPES = [
+        'jpg' => ['image/jpeg'],
+        'jpeg' => ['image/jpeg'],
+        'png' => ['image/png'],
+        'gif' => ['image/gif'],
+        'webp' => ['image/webp'],
+        'avif' => ['image/avif'],
+        'pdf' => ['application/pdf'],
+        'mp4' => ['video/mp4', 'video/quicktime'],
+        'mp3' => ['audio/mpeg', 'audio/mp3'],
+        'doc' => ['application/msword', 'application/x-ole-storage', 'application/CDFV2'],
+        'docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/zip', 'application/octet-stream'],
+        'xls' => ['application/vnd.ms-excel', 'application/x-ole-storage', 'application/CDFV2', 'application/msword'],
+        'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip', 'application/octet-stream'],
+    ];
+
     private const MAX_CHUNK_SIZE_BYTES = 10_485_760; // 10 MB
 
     private const MAX_TOTAL_SIZE_BYTES = 524_288_000; // 500 MB
@@ -174,7 +197,13 @@ class ChunkedUploadController extends Controller
             throw ValidationException::withMessages(['filename' => 'File is too large (max 500 MB).']);
         }
 
-        $mimeType = mime_content_type($finalAbsolutePath) ?: 'application/octet-stream';
+        $mimeType = (new \finfo(FILEINFO_MIME_TYPE))->file($finalAbsolutePath) ?: 'application/octet-stream';
+
+        if (! in_array($mimeType, self::ALLOWED_MIME_TYPES[$ext] ?? [], true)) {
+            @unlink($finalAbsolutePath);
+
+            throw ValidationException::withMessages(['filename' => 'The file contents do not match its extension.']);
+        }
 
         $media = MediaLibraryUploader::store($finalRelativePath, $originalFilename, $mimeType, $fileSize, auth()->id());
 

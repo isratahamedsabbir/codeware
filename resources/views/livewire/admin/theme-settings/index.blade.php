@@ -776,6 +776,10 @@
                     @error('themeZip')
                         <p class="text-xs font-medium text-red-600 dark:text-red-400">{{ $message }}</p>
                     @enderror
+                    <div class="mt-3">
+                        <flux:input type="password" wire:model="installPassword" label="Confirm your password" autocomplete="current-password" />
+                    </div>
+
                 </div>
 
                 <div class="flex items-center justify-end gap-2 border-t border-zinc-100 bg-zinc-50/60 px-6 py-4 dark:border-zinc-700 dark:bg-zinc-800/40">

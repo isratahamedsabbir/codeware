@@ -227,10 +227,14 @@ class AppServiceProvider extends ServiceProvider
         CarbonImmutable::macro('toDisplay', $toDisplay);
 
         DB::prohibitDestructiveCommands(
-            app()->isProduction(),
+            ! app()->environment(['local', 'testing']),
         );
 
-        Password::defaults(fn (): ?Password => app()->isProduction()
+        // Strict everywhere except the two environments that are explicitly
+        // relaxed. Keyed on that, not on isProduction(), so an unrecognised
+        // APP_ENV ("developer", "prod", "live") fails safe instead of dropping
+        // the rules.
+        Password::defaults(fn (): ?Password => ! app()->environment(['local', 'testing'])
             ? Password::min(12)
                 ->mixedCase()
                 ->letters()

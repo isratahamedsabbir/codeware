@@ -1,6 +1,25 @@
 <?php
 
 return [
+    // Anything that puts PHP on the server from the admin panel (plugin/theme
+    // zip install, plugin/theme scaffolding). Off by default in production:
+    // deploy code through the pipeline instead. Set ALLOW_PLUGIN_UPLOAD=true to
+    // opt in; installs then also need the admin's password, are logged and
+    // alert every admin, and (if PLUGIN_ALLOWED_SHA256 lists comma-separated
+    // sha256 digests) only accept packages whose zip matches one of them.
+    'code_install' => [
+        'allowed' => filter_var(env('ALLOW_PLUGIN_UPLOAD', in_array(env('APP_ENV'), ['local', 'testing'], true)), FILTER_VALIDATE_BOOLEAN),
+        'sha256' => array_values(array_filter(array_map('trim', explode(',', (string) env('PLUGIN_ALLOWED_SHA256', ''))))),
+    ],
+
+    // Admin-role accounts must have a second factor to use the panel. On by
+    // default in production; EnsureMfaEnforced sends them to enrolment.
+    'require_admin_mfa' => filter_var(env('REQUIRE_ADMIN_MFA', ! in_array(env('APP_ENV'), ['local', 'testing'], true)), FILTER_VALIDATE_BOOLEAN),
+
+    // APP_DEBUG can't be switched on from Admin -> Env in production (it exposes
+    // stack traces and secrets). Set ALLOW_DEBUG_IN_PRODUCTION=true to lift it.
+    'allow_debug_in_production' => filter_var(env('ALLOW_DEBUG_IN_PRODUCTION', false), FILTER_VALIDATE_BOOLEAN),
+
     'headers' => [
         // Sent in every environment except HSTS, which is production-only.
         'hsts' => env('SECURITY_HSTS', 'max-age=31536000; includeSubDomains'),

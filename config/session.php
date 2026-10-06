@@ -47,7 +47,7 @@ return [
     |
     */
 
-    'encrypt' => env('SESSION_ENCRYPT', false),
+    'encrypt' => env('SESSION_ENCRYPT', ! in_array(env('APP_ENV'), ['local', 'testing'], true)),
 
     /*
     |--------------------------------------------------------------------------
@@ -169,7 +169,7 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    'secure' => env('SESSION_SECURE_COOKIE', ! in_array(env('APP_ENV'), ['local', 'testing'], true)),
 
     /*
     |--------------------------------------------------------------------------

@@ -84,6 +84,7 @@ function installRetroTheme(): void
             'routes/web.php' => '<?php // retro routes',
             'public/css/theme.css' => '@import "../../../../resources/css/base.css";',
         ]))))
+        ->set('installPassword', 'password')
         ->call('installTheme');
 
     expect(is_dir(Themes::path().'/retro'))->toBeTrue();
@@ -156,6 +157,7 @@ it('falls back to slug-derived manifest fields when a theme has no theme.json', 
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents($zip)))
+        ->set('installPassword', 'password')
         ->call('installTheme')
         ->assertHasNoErrors();
 
@@ -175,6 +177,7 @@ it('treats a malformed theme.json as if it were missing', function () {
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents($zip)))
+        ->set('installPassword', 'password')
         ->call('installTheme')
         ->assertHasNoErrors();
 
@@ -356,6 +359,7 @@ it('offers no theme.json button for a theme that declares no settings form', fun
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents($zip)))
+        ->set('installPassword', 'password')
         ->call('installTheme')
         ->set('settings.site_theme', 'retro');
 
@@ -666,6 +670,7 @@ it('omits the theme settings card when the selected theme has none', function ()
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents($zip)))
+        ->set('installPassword', 'password')
         ->call('installTheme')
         ->assertHasNoErrors();
 
@@ -856,6 +861,7 @@ it('installs a theme from a zip into the themes directory', function () {
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents($zip)))
+        ->set('installPassword', 'password')
         ->call('installTheme')
         ->assertSet('showInstallModal', false)
         ->assertHasNoErrors();
@@ -874,6 +880,7 @@ it('turns a spaced theme folder name into a slugged theme folder', function () {
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('my-cool-store.zip', file_get_contents($zip)))
+        ->set('installPassword', 'password')
         ->call('installTheme')
         ->assertHasNoErrors();
 
@@ -884,6 +891,7 @@ it('rejects a file that is not a valid zip theme package', function () {
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->create('theme.zip', 256))
+        ->set('installPassword', 'password')
         ->call('installTheme')
         ->assertHasErrors(['themeZip']);
 });
@@ -905,6 +913,7 @@ it('rejects a zip that does not contain exactly one root theme folder', function
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('two-themes.zip', file_get_contents($merged)))
+        ->set('installPassword', 'password')
         ->call('installTheme')
         ->assertHasErrors(['themeZip']);
 });
@@ -915,6 +924,7 @@ it('does not overwrite an already-installed theme', function () {
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('default.zip', file_get_contents($zip)))
+        ->set('installPassword', 'password')
         ->call('installTheme')
         ->assertHasErrors(['themeZip']);
 });
@@ -931,6 +941,7 @@ it('rejects a zip containing path-traversal entries', function () {
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('bad.zip', file_get_contents($path)))
+        ->set('installPassword', 'password')
         ->call('installTheme')
         ->assertHasErrors(['themeZip']);
 
@@ -984,6 +995,7 @@ it('gives an installed theme a theme.json so it is never half-configured', funct
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents($zip)))
+        ->set('installPassword', 'password')
         ->call('installTheme')
         ->assertHasNoErrors();
 
@@ -1016,6 +1028,7 @@ it('leaves a theme that ships its own theme.json exactly as it was', function ()
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents($zip)))
+        ->set('installPassword', 'password')
         ->call('installTheme')
         ->assertHasNoErrors();
 
@@ -1037,6 +1050,7 @@ it('gives a theme that declares no settings form a manifest holding only its ide
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents($zip)))
+        ->set('installPassword', 'password')
         ->call('installTheme')
         ->assertHasNoErrors();
 
@@ -1052,6 +1066,7 @@ it('flags a theme that ships no routes file, because selecting it 404s the site'
         ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents(makeThemeZip('retro', [
             'home.blade.php' => 'retro home',
         ]))))
+        ->set('installPassword', 'password')
         ->call('installTheme');
 
     $card = null;
@@ -1205,6 +1220,7 @@ it('deletes a theme folder and everything in it', function () {
             'routes/web.php' => '<?php // retro routes',
             'public/css/theme.css' => '@import "../../../../resources/css/base.css";',
         ]))))
+        ->set('installPassword', 'password')
         ->call('installTheme');
 
     expect(is_dir(Themes::path().'/retro'))->toBeTrue();
@@ -1342,6 +1358,7 @@ it('lists a real warning of what a delete takes with it', function () {
         ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents(makeThemeZip('retro', [
             'home.blade.php' => 'retro home',
         ]))))
+        ->set('installPassword', 'password')
         ->call('installTheme');
 
     Livewire::test(ThemeSettingsScreen::class)
@@ -1362,6 +1379,7 @@ it('cancels a delete without touching the folder', function () {
         ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents(makeThemeZip('retro', [
             'home.blade.php' => 'retro home',
         ]))))
+        ->set('installPassword', 'password')
         ->call('installTheme');
 
     Livewire::test(ThemeSettingsScreen::class)

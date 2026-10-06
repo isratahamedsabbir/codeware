@@ -88,7 +88,7 @@
                         </a>
                     </x-slot:titleActions>
                     <x-slot:actions>
-                        <flux:switch wire:model.live="debugMode" aria-label="Debug mode" title="Show full error details to visitors" />
+                        <flux:switch wire:model.live="debugMode" :disabled="! $debugMode && $this->debugLocked()" aria-label="Debug mode" title="{{ ! $debugMode && $this->debugLocked() ? 'Disabled in production' : 'Show full error details to visitors' }}" />
                     </x-slot:actions>
                 </x-admin-section-card>
             </div>
