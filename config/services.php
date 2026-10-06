@@ -52,6 +52,16 @@ return [
         'secret_key' => env('RECAPTCHA_SECRET_KEY'),
     ],
 
+    // Which of the two captcha services the login forms use — see App\Support\Recaptcha.
+    'captcha' => [
+        'provider' => env('CAPTCHA_PROVIDER', 'recaptcha'),
+    ],
+
+    'turnstile' => [
+        'site_key' => env('TURNSTILE_SITE_KEY'),
+        'secret_key' => env('TURNSTILE_SECRET_KEY'),
+    ],
+
     'google_maps' => [
         'api_key' => env('GOOGLE_MAPS_API_KEY'),
     ],

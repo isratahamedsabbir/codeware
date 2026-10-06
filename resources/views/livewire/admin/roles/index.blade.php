@@ -130,10 +130,10 @@
                                         <span class="text-xs text-zinc-600">2FA</span>
                                     </label>
                                     <label class="flex items-center gap-1.5 cursor-pointer select-none"
-                                        title="Ask for a reCAPTCHA on this role's login form. Needs both keys set under Settings → Env.">
+                                        title="Ask for a {{ \App\Support\Recaptcha::label() }} on this role's login form. Needs both keys set under Settings → Env.">
                                         <flux:switch size="sm" wire:model.live="recaptcha.{{ $role->id }}"
-                                            name="recaptcha" aria-label="Require reCAPTCHA for {{ $role->name }}" />
-                                        <span class="text-xs text-zinc-600">reCAPTCHA</span>
+                                            name="recaptcha" aria-label="Require {{ \App\Support\Recaptcha::label() }} for {{ $role->name }}" />
+                                        <span class="text-xs text-zinc-600">{{ \App\Support\Recaptcha::label() }}</span>
                                     </label>
                                 </div>
                             </td>
@@ -158,7 +158,7 @@
                                 <x-admin-row-details.item label="Users">{{ $role->users_count }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Status">{{ $role->name === 'admin' ? 'Active' : ucfirst($role->status) }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="2FA">{{ $role->mfa_enabled ? 'Required' : 'Not required' }}</x-admin-row-details.item>
-                                <x-admin-row-details.item label="reCAPTCHA">{{ $role->recaptcha_enabled ? 'Required' : 'Not required' }}</x-admin-row-details.item>
+                                <x-admin-row-details.item label="{{ \App\Support\Recaptcha::label() }}">{{ $role->recaptcha_enabled ? 'Required' : 'Not required' }}</x-admin-row-details.item>
                                 <x-admin-row-details.item label="Created by">{{ $role->creator?->name ?? '—' }}</x-admin-row-details.item>
                             </x-admin-row-details>
                         @endif

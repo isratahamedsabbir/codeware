@@ -3,6 +3,9 @@
 namespace App\Support;
 
 use App\Models\User;
+use App\Rules\Recaptcha as RecaptchaRule;
+use App\Rules\Turnstile;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Spatie\Permission\Models\Role;
 
 /**
@@ -33,9 +36,42 @@ class Recaptcha
      */
     public static function enabled(): bool
     {
-        return self::anyRoleWantsIt()
-            && filled(config('services.recaptcha.site_key'))
-            && filled(config('services.recaptcha.secret_key'));
+        return self::anyRoleWantsIt() && self::hasKeys(self::provider());
+    }
+
+    /**
+     * Which service answers the challenge: whichever Settings → Env → Active
+     * Captcha names (reCAPTCHA unless it says turnstile). Both may have keys saved;
+     * only this one is rendered and verified. The role switch is shared — it asks
+     * "captcha or not", this decides "whose".
+     */
+    public static function provider(): string
+    {
+        return config('services.captcha.provider') === 'turnstile' ? 'turnstile' : 'recaptcha';
+    }
+
+    /** Name of the active provider, for the labels on the role switches. */
+    public static function label(): string
+    {
+        return self::provider() === 'turnstile' ? 'Turnstile' : 'reCAPTCHA';
+    }
+
+    /** The site key the page script renders against. */
+    public static function siteKey(): ?string
+    {
+        return config('services.'.self::provider().'.site_key');
+    }
+
+    /** The validation rule that verifies a token with the active provider. */
+    public static function rule(): ValidationRule
+    {
+        return self::provider() === 'turnstile' ? new Turnstile : new RecaptchaRule;
+    }
+
+    private static function hasKeys(string $provider): bool
+    {
+        return filled(config("services.{$provider}.site_key"))
+            && filled(config("services.{$provider}.secret_key"));
     }
 
     /**
@@ -54,7 +90,7 @@ class Recaptcha
         }
 
         return $user->roles()->where('recaptcha_enabled', true)->exists()
-            && filled(config('services.recaptcha.secret_key'));
+            && filled(config('services.'.self::provider().'.secret_key'));
     }
 
     /**

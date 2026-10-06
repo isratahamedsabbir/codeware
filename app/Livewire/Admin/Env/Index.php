@@ -101,9 +101,17 @@ class Index extends Component
                 'FACEBOOK_CLIENT_SECRET' => ['label' => 'Facebook App Secret', 'type' => 'password'],
                 'FACEBOOK_REDIRECT_URI' => ['label' => 'Facebook Redirect URI', 'type' => 'text'],
             ],
+            'Captcha' => [
+                'CAPTCHA_PROVIDER' => ['label' => 'Active Captcha', 'type' => 'select', 'options' => ['recaptcha', 'turnstile'],
+                    'hint' => 'Which service the login forms use. Keys for both can stay saved; only this one is asked for and verified.'],
+            ],
             'reCAPTCHA' => [
                 'RECAPTCHA_SITE_KEY' => ['label' => 'Site Key', 'type' => 'text'],
                 'RECAPTCHA_SECRET_KEY' => ['label' => 'Secret Key', 'type' => 'password'],
+            ],
+            'Turnstile' => [
+                'TURNSTILE_SITE_KEY' => ['label' => 'Site Key', 'type' => 'text'],
+                'TURNSTILE_SECRET_KEY' => ['label' => 'Secret Key', 'type' => 'password'],
             ],
             'Google Maps' => [
                 'GOOGLE_MAPS_API_KEY' => ['label' => 'API Key', 'type' => 'text'],
@@ -141,8 +149,11 @@ class Index extends Component
             'env.FACEBOOK_CLIENT_ID' => 'nullable|string',
             'env.FACEBOOK_CLIENT_SECRET' => 'nullable|string',
             'env.FACEBOOK_REDIRECT_URI' => 'nullable|string',
+            'env.CAPTCHA_PROVIDER' => 'nullable|in:recaptcha,turnstile',
             'env.RECAPTCHA_SITE_KEY' => 'nullable|string',
             'env.RECAPTCHA_SECRET_KEY' => 'nullable|string',
+            'env.TURNSTILE_SITE_KEY' => 'nullable|string',
+            'env.TURNSTILE_SECRET_KEY' => 'nullable|string',
             'env.GOOGLE_MAPS_API_KEY' => 'nullable|string',
             'env.AWS_ACCESS_KEY_ID' => 'nullable|string',
             'env.AWS_SECRET_ACCESS_KEY' => 'nullable|string',

@@ -60,13 +60,9 @@
 
         {{-- ── LOGIN SECURITY ── --}}
         <x-admin-section-card variant="postbox" persist-key="role-login-security" title="Login Security" :collapsed="false"
+            description="What someone with this role has to get past on the way in. Both are off by default and both can also be flipped from the roles table."
             body-class="p-3">
             <div class="space-y-4">
-                <p class="text-xs text-zinc-500">
-                    What someone with this role has to get past on the way in. Both are off by default and
-                    both can also be flipped from the roles table.
-                </p>
-
                 <div class="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
                     <div class="min-w-0">
                         <p class="text-sm font-medium text-zinc-800 dark:text-zinc-100">Two-factor authentication (2FA)</p>
@@ -79,13 +75,13 @@
 
                 <div class="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
                     <div class="min-w-0">
-                        <p class="text-sm font-medium text-zinc-800 dark:text-zinc-100">reCAPTCHA</p>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400">Show a reCAPTCHA on this role's login form.
+                        <p class="text-sm font-medium text-zinc-800 dark:text-zinc-100">{{ \App\Support\Recaptcha::label() }}</p>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400">Show a {{ \App\Support\Recaptcha::label() }} on this role's login form.
                             Needs both keys set under <a href="{{ route('admin.env') }}" wire:navigate
                                 class="text-primary hover:underline">Settings → Env</a> — without them the widget
                                 cannot be rendered and the requirement is skipped.</p>
                     </div>
-                    <flux:switch wire:model="recaptchaEnabled" aria-label="Require reCAPTCHA" title="Ask for a reCAPTCHA on this role's login" class="shrink-0" />
+                    <flux:switch wire:model="recaptchaEnabled" aria-label="Require {{ \App\Support\Recaptcha::label() }}" title="Ask for a {{ \App\Support\Recaptcha::label() }} on this role's login" class="shrink-0" />
                 </div>
 
                 <flux:error name="mfaEnabled" />

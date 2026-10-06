@@ -3,7 +3,6 @@
 namespace App\Livewire\Vendor\Auth;
 
 use App\Models\User;
-use App\Rules\Recaptcha;
 use App\Support\Mfa;
 use App\Support\Recaptcha as RecaptchaSupport;
 use Illuminate\Support\Facades\Auth;
@@ -185,7 +184,7 @@ class Login extends Component
         }
 
         $this->validate([
-            'recaptchaToken' => ['required', new Recaptcha],
+            'recaptchaToken' => ['required', RecaptchaSupport::rule()],
         ]);
     }
 

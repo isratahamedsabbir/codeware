@@ -148,7 +148,7 @@
     </script>
 
     @if (\App\Support\Recaptcha::enabled())
-        <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
+        @include('partials._captcha-script')
         <script>
             // Livewire doesn't know about the invisible reCAPTCHA flow, so the
             // first submit is intercepted, held while a token is fetched, and then
@@ -159,11 +159,9 @@
 
                 const form = e.target;
 
-                grecaptcha.ready(function () {
-                    grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', { action: 'delivery_login' }).then(function (token) {
-                        @this.set('recaptchaToken', token);
-                        form.querySelector('[type=submit]').click();
-                    });
+                captchaToken('delivery_login').then(function (token) {
+                    @this.set('recaptchaToken', token);
+                    form.querySelector('[type=submit]').click();
                 });
             });
         </script>

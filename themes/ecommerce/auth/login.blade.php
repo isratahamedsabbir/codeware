@@ -113,16 +113,14 @@
 @include('frontend.partials._chat-widget')
 
 @if (\App\Support\Recaptcha::enabled())
-    <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
+    @include('partials._captcha-script')
     <script>
         document.querySelector('[data-login-form]').addEventListener('submit', function (e) {
             e.preventDefault();
             const form = e.target;
-            grecaptcha.ready(function () {
-                grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', { action: 'login' }).then(function (token) {
-                    form.querySelector('[data-recaptcha-response]').value = token;
-                    form.submit();
-                });
+            captchaToken('login').then(function (token) {
+                form.querySelector('[data-recaptcha-response]').value = token;
+                form.submit();
             });
         });
     </script>

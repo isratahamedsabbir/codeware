@@ -24,7 +24,7 @@
             @php
                 $tabs = [
                     'general' => ['General', 'cog-6-tooth', 'App, maintenance, debug mode'],
-                    'authentication' => ['Authentication', 'lock-closed', 'Google & Facebook login, reCAPTCHA'],
+                    'authentication' => ['Authentication', 'lock-closed', 'Google & Facebook login, reCAPTCHA, Turnstile'],
                     'integrations' => ['Integrations', 'puzzle-piece', 'Pixel, Maps, S3, Firebase'],
                 ];
             @endphp
@@ -149,6 +149,32 @@
                 </div>
             </x-admin-section-card>
 
+            {{-- Which captcha is live. Both providers keep their own key cards below;
+                 this picks the one the login forms actually use. --}}
+            <x-admin-section-card id="env-section-captcha" class="scroll-mt-24" header-border="border-zinc-100" icon="shield-check" title="Active Captcha"
+                description="Choose reCAPTCHA or Cloudflare Turnstile. Only the chosen one is shown and verified on logins whose role has the captcha switched on (Roles).">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-3">
+                    @foreach ($this->envFields()['Captcha'] as $key => $meta)
+                        @include('livewire.admin.env.partials._env-field', ['key' => $key, 'meta' => $meta])
+                    @endforeach
+                </div>
+
+                {{-- What is live right now (the saved setting, not the unsaved dropdown). --}}
+                @php
+                    $captchaLabel = \App\Support\Recaptcha::label();
+                    $captchaKeysSet = filled(config('services.'.\App\Support\Recaptcha::provider().'.site_key'))
+                        && filled(config('services.'.\App\Support\Recaptcha::provider().'.secret_key'));
+                @endphp
+                <p class="mt-3 flex items-center gap-2 text-sm {{ $captchaKeysSet ? 'text-emerald-700' : 'text-amber-700' }}">
+                    <span class="inline-block size-2 rounded-full {{ $captchaKeysSet ? 'bg-emerald-500' : 'bg-amber-500' }}"></span>
+                    @if ($captchaKeysSet)
+                        Live now: <strong>{{ $captchaLabel }}</strong> — this is the captcha logins ask for.
+                    @else
+                        Selected: <strong>{{ $captchaLabel }}</strong>, but its keys are missing below — no captcha is shown on logins yet.
+                    @endif
+                </p>
+            </x-admin-section-card>
+
             {{-- reCAPTCHA --}}
             {{-- Credentials only. Which login forms show the widget is decided by the
                  per-role reCAPTCHA switches on Roles; this card holds the keys they
@@ -165,6 +191,27 @@
                 </x-slot:titleActions>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-3">
                     @foreach ($this->envFields()['reCAPTCHA'] as $key => $meta)
+                        @include('livewire.admin.env.partials._env-field', ['key' => $key, 'meta' => $meta])
+                    @endforeach
+                </div>
+            </x-admin-section-card>
+
+            {{-- Cloudflare Turnstile --}}
+            {{-- Credentials only, like reCAPTCHA above. Once both keys are set it is
+                 used instead of reCAPTCHA on every login that asks for a captcha
+                 (same per-role switch on Roles). --}}
+            <x-admin-section-card id="env-section-turnstile" class="scroll-mt-24" header-border="border-zinc-100" icon="shield-check" title="Cloudflare Turnstile"
+                description="Used when Active Captcha is set to turnstile. Both keys are needed before it can verify anything.">
+                <x-slot:titleActions>
+                    <a href="{{ route('admin.developer-guide') }}#integration-turnstile"
+                        title="Where to get these — open the Developer Guide"
+                        aria-label="Where to get these — open the Developer Guide"
+                        class="flex size-5 items-center justify-center text-zinc-400 transition-colors hover:text-primary">
+                        <flux:icon.information-circle class="size-4" />
+                    </a>
+                </x-slot:titleActions>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-3">
+                    @foreach ($this->envFields()['Turnstile'] as $key => $meta)
                         @include('livewire.admin.env.partials._env-field', ['key' => $key, 'meta' => $meta])
                     @endforeach
                 </div>
@@ -322,7 +369,7 @@
             </x-admin-section-card>
 
             {{-- Fallback: any future env group added without a hand-built card above --}}
-            @php $manuallyRenderedGroups = ['App', 'Google Login', 'Facebook Login', 'reCAPTCHA', 'Google Maps', 'AWS S3', 'Firebase', 'CMS Editor']; @endphp
+            @php $manuallyRenderedGroups = ['App', 'Google Login', 'Facebook Login', 'Captcha', 'reCAPTCHA', 'Turnstile', 'Google Maps', 'AWS S3', 'Firebase', 'CMS Editor']; @endphp
             @foreach ($this->envFields() as $groupLabel => $fields)
                 @continue(in_array($groupLabel, $manuallyRenderedGroups, true))
                 <x-admin-section-card header-border="border-zinc-100" icon="rocket-launch" title="{{ __($groupLabel) }}">

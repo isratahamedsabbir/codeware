@@ -83,7 +83,9 @@ class Index extends Component
 
         $role->update([$column => $on]);
 
-        $label = self::REQUIREMENTS[$column];
+        $label = $column === 'recaptcha_enabled'
+            ? \App\Support\Recaptcha::label()
+            : self::REQUIREMENTS[$column];
 
         AdminActivity::log('updated', "Role: {$role->name} — {$label} ".($on ? 'required' : 'no longer required'));
         $this->dispatch('notify', message: "{$label} is now ".($on ? 'required' : 'not required')." for {$role->name}");

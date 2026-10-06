@@ -943,6 +943,24 @@ Admin -> SEO / Social / Payment Gateways   their own setting groups
                 </p>
             </div>
 
+            <div id="integration-turnstile" class="scroll-mt-24">
+                <p class="font-semibold text-zinc-800 dark:text-zinc-100">Cloudflare Turnstile (Authentication)</p>
+                <ol class="mt-2 list-decimal list-inside space-y-1.5">
+                    <li><span class="font-mono text-xs">dash.cloudflare.com</span> &rarr; <strong>Turnstile</strong> (left menu) &rarr; <strong>Add widget</strong>.</li>
+                    <li>Give it a name and add this site's domain under <strong>Hostname management</strong> (add <span class="font-mono text-xs">localhost</span> for local testing).</li>
+                    <li>Widget mode: <strong>Managed</strong>. Click <strong>Create</strong>.</li>
+                    <li>Copy the <strong>Site Key</strong> and <strong>Secret Key</strong> into Developer Tools &rarr; Env &rarr; Cloudflare Turnstile and save.</li>
+                </ol>
+                <p class="mt-2 text-xs text-zinc-500">
+                    The widget stays hidden unless Cloudflare needs the visitor to interact. Both providers can keep
+                    their keys saved; set <strong>Active Captcha</strong> to <span class="font-mono">turnstile</span> in the same Env tab
+                    to use it (or <span class="font-mono">recaptcha</span> to switch back). Which logins
+                    ask for it is the per-role switch on Roles. For local testing, Cloudflare publishes dummy keys:
+                    site <span class="font-mono">1x00000000000000000000AA</span>, secret
+                    <span class="font-mono">1x0000000000000000000000000000000AA</span> (always pass).
+                </p>
+            </div>
+
             <div id="integration-pixel" class="scroll-mt-24">
                 <p class="font-semibold text-zinc-800 dark:text-zinc-100">Google Pixel (Integrations)</p>
                 <ol class="mt-2 list-decimal list-inside space-y-1.5">

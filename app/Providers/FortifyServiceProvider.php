@@ -7,7 +7,6 @@ use App\Actions\Fortify\RedirectIfTwoFactorAuthenticatable;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Http\Controllers\Auth\PasswordResetOtpController;
 use App\Models\User;
-use App\Rules\Recaptcha;
 use App\Services\OtpService;
 use App\Support\Recaptcha as RecaptchaSupport;
 use App\Support\Themes;
@@ -199,7 +198,7 @@ class FortifyServiceProvider extends ServiceProvider
             // would be a way of finding out which addresses are real.
             if (RecaptchaSupport::requiredFor($user)) {
                 $request->validate([
-                    'g-recaptcha-response' => ['required', new Recaptcha],
+                    'g-recaptcha-response' => ['required', RecaptchaSupport::rule()],
                 ]);
             }
 

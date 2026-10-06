@@ -135,18 +135,16 @@
          invisible reCAPTCHA flow, so intercept the form submit, fetch a token,
          stash it in the component, and re-trigger the submit. --}}
     @if (\App\Support\Recaptcha::enabled())
-        <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
+        @include('partials._captcha-script')
         <script>
             document.querySelector('form[wire\\:submit="authenticate"]').addEventListener('submit', function (e) {
                 e.preventDefault();
 
                 const form = e.target;
 
-                grecaptcha.ready(function () {
-                    grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', { action: 'admin_login' }).then(function (token) {
-                        @this.set('recaptchaToken', token);
-                        form.querySelector('[type=submit]').click();
-                    });
+                captchaToken('admin_login').then(function (token) {
+                    @this.set('recaptchaToken', token);
+                    form.querySelector('[type=submit]').click();
                 });
             });
         </script>
