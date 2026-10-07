@@ -40,25 +40,8 @@
             @if ($contactAddress)
                 <p class="mt-2 whitespace-pre-line text-sm leading-relaxed text-sf-footer-text/70">{{ __('Address') }}: {{ $contactAddress }}</p>
             @endif
-        </div>
-
-        <div>
-            <h3 class="mb-3 text-lg font-semibold text-sf-footer-text">{{ __('Quick Links') }}</h3>
-            @if ($quickLinks->isNotEmpty())
-                <ul class="space-y-2 text-sm">
-                    @foreach ($quickLinks as $menuItem)
-                        <li><a href="{{ url($menuItem->url) }}" class="font-medium text-sf-footer-text/80 hover:underline hover:text-sf-footer-text">{{ $menuItem->label }}</a></li>
-                    @endforeach
-                </ul>
-            @else
-                <p class="text-sm text-sf-footer-text/70">{{ __('The quick links will appear here once they are published.') }}</p>
-            @endif
-        </div>
-
-        <div>
-            <h3 class="mb-3 text-lg font-semibold text-sf-footer-text">{{ __('Connect with us') }}</h3>
             @if ($socials->isNotEmpty())
-                <div class="flex flex-wrap gap-2.5">
+                <div class="mt-4 flex flex-wrap gap-2.5">
                     @foreach ($socials as $platform => $social)
                         <a href="{{ $social['url'] }}" target="_blank" rel="noopener"
                             aria-label="{{ $social['label'] }}"
@@ -79,8 +62,25 @@
                     @endforeach
                 </div>
             @endif
+        </div>
+
+        <div>
+            <h3 class="mb-3 text-lg font-semibold text-sf-footer-text">{{ __('Quick Links') }}</h3>
+            @if ($quickLinks->isNotEmpty())
+                <ul class="space-y-2 text-sm">
+                    @foreach ($quickLinks as $menuItem)
+                        <li><a href="{{ url($menuItem->url) }}" class="font-medium text-sf-footer-text/80 hover:underline hover:text-sf-footer-text">{{ $menuItem->label }}</a></li>
+                    @endforeach
+                </ul>
+            @else
+                <p class="text-sm text-sf-footer-text/70">{{ __('The quick links will appear here once they are published.') }}</p>
+            @endif
+        </div>
+
+        <div>
+            <h3 class="mb-3 text-lg font-semibold text-sf-footer-text">{{ __('Connect with us') }}</h3>
             @if ($contactPhone || $contactEmail)
-                <div class="mt-3 flex flex-col gap-2 text-sm text-sf-footer-text/70">
+                <div class="flex flex-col gap-2 text-sm text-sf-footer-text/70">
                     @if ($contactPhone)
                         <a href="tel:{{ $contactPhone }}" class="inline-flex items-center gap-2 transition-colors hover:text-sf-footer-text">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">

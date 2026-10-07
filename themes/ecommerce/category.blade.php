@@ -30,10 +30,20 @@
         @if (filled($category->icon))
             <img src="{{ $category->icon }}" alt="" class="mt-3 h-12 w-12 rounded-xl object-contain">
         @endif
-        <p class="mt-3 max-w-2xl text-zinc-600">
-            @php($categoryDescription = is_array($category->description) ? ($category->description[app()->getLocale()] ?? reset($category->description)) : $category->description)
-            {{ $categoryDescription }}
-        </p>
+        @php
+            // `description` is a JSON column with no translatable cast, so it can arrive as a raw
+            // string like '{"en":null}' — decode it, then pick the locale, and hide it when empty.
+            $categoryDescription = $category->description;
+            if (is_string($categoryDescription) && str_starts_with(ltrim($categoryDescription), '{')) {
+                $categoryDescription = json_decode($categoryDescription, true) ?? $categoryDescription;
+            }
+            if (is_array($categoryDescription)) {
+                $categoryDescription = $categoryDescription[app()->getLocale()] ?? $categoryDescription['en'] ?? collect($categoryDescription)->filter()->first();
+            }
+        @endphp
+        @if (filled($categoryDescription))
+            <p class="mt-3 max-w-2xl text-zinc-600">{{ $categoryDescription }}</p>
+        @endif
     </header>
 
     @if ($children->isNotEmpty())

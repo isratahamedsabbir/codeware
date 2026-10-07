@@ -173,8 +173,8 @@
         <section class="mt-8 bg-white py-8 lg:py-10">
             <div class="mx-auto max-w-7xl px-4 sm:px-6">
 
-                {{-- A horizontal scroller of the same category card used before,
-                     with arrows to page it. Named "Shop by category" rather than
+                {{-- A horizontal scroller of the same category card used before
+                     (auto-moving, draggable, no arrow buttons). Named "Shop by category" rather than
                      "Featured categories" so the heading matches what the row
                      is: a department index, with the featured ones shown here.
                      It is a real <h2>, which also gives the section an
@@ -184,17 +184,58 @@
                     'subtitle' => __('Browse our most popular departments'),
                 ])
 
+                {{-- Drifts sideways on its own (bouncing between the two ends),
+                     pauses while hovered or touched, and can be dragged with the
+                     mouse; touch devices swipe natively. Snap and smooth-scroll
+                     are off on purpose — both fight per-frame scrollLeft changes. --}}
                 <div class="relative mt-2"
-                    x-data="{ scrollBy(dir) { this.$refs.track.scrollBy({ left: dir * this.$refs.track.clientWidth * 0.8, behavior: 'smooth' }); } }">
-                    <button type="button" @click="scrollBy(-1)" aria-label="{{ __('Previous') }}"
-                        class="absolute -left-3 top-1/2 z-10 flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 shadow-md transition hover:text-brand sm:-left-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
-                    </button>
-
-                    <div x-ref="track" class="no-scrollbar flex snap-x snap-mandatory scroll-smooth gap-2.5 overflow-x-auto px-1 py-1 sm:gap-3 md:gap-4">
+                    x-data="{
+                        paused: false, dragging: false, moved: false,
+                        startX: 0, startLeft: 0, dir: 1, acc: 0, resume: null,
+                        init() {
+                            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+                            const tick = () => {
+                                const t = this.$refs.track;
+                                if (t && !this.paused && !this.dragging && t.scrollWidth > t.clientWidth) {
+                                    this.acc += 0.6 * this.dir;
+                                    const whole = Math.trunc(this.acc);
+                                    if (whole !== 0) { t.scrollLeft += whole; this.acc -= whole; }
+                                    if (t.scrollLeft + t.clientWidth >= t.scrollWidth - 1) this.dir = -1;
+                                    else if (t.scrollLeft <= 0) this.dir = 1;
+                                }
+                                requestAnimationFrame(tick);
+                            };
+                            requestAnimationFrame(tick);
+                        },
+                        down(e) {
+                            if (e.pointerType !== 'mouse' || e.button !== 0) return;
+                            this.dragging = true; this.moved = false;
+                            this.startX = e.clientX; this.startLeft = this.$refs.track.scrollLeft;
+                        },
+                        move(e) {
+                            if (!this.dragging) return;
+                            const dx = e.clientX - this.startX;
+                            if (Math.abs(dx) > 5) this.moved = true;
+                            this.$refs.track.scrollLeft = this.startLeft - dx;
+                        },
+                        up() { this.dragging = false; },
+                        touch(on) {
+                            clearTimeout(this.resume);
+                            if (on) this.paused = true;
+                            else this.resume = setTimeout(() => this.paused = false, 2500);
+                        },
+                    }">
+                    <div x-ref="track"
+                        @mouseenter="paused = true" @mouseleave="paused = false"
+                        @touchstart.passive="touch(true)" @touchend.passive="touch(false)"
+                        @pointerdown="down($event)" @pointermove.window="move($event)" @pointerup.window="up()"
+                        @dragstart.prevent
+                        @click.capture="if (moved) { $event.preventDefault(); $event.stopPropagation(); moved = false; }"
+                        :class="dragging ? 'cursor-grabbing' : 'cursor-grab'"
+                        class="no-scrollbar flex select-none gap-2.5 overflow-x-auto px-1 py-1 sm:gap-3 md:gap-4">
                         @foreach ($homeCategories as $category)
                             <a href="{{ route('shop.category', $category->slug) }}"
-                                class="group flex h-26.5 w-32.5 shrink-0 snap-start flex-col items-center justify-center gap-1.5 rounded-card border border-zinc-200/80 bg-white p-2 text-center shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-md sm:h-31 sm:w-37.5 sm:p-2.5 md:h-34 md:w-40 lg:h-38 lg:w-43">
+                                class="group flex h-26.5 w-32.5 shrink-0 flex-col items-center justify-center gap-1.5 rounded-card border border-zinc-200/80 bg-white p-2 text-center shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-md sm:h-31 sm:w-37.5 sm:p-2.5 md:h-34 md:w-40 lg:h-38 lg:w-43">
                                 @if ($category->icon)
                                     <img src="{{ $category->icon }}" alt="" loading="lazy" decoding="async" width="56" height="56"
                                         class="h-10 w-10 rounded-lg bg-zinc-50 object-contain p-0.5 transition duration-200 group-hover:scale-105 sm:h-12 sm:w-12 lg:h-14 lg:w-14">
@@ -216,11 +257,6 @@
                             </a>
                         @endforeach
                     </div>
-
-                    <button type="button" @click="scrollBy(1)" aria-label="{{ __('Next') }}"
-                        class="absolute -right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 shadow-md transition hover:text-brand sm:-right-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
-                    </button>
                 </div>
             </div>
         </section>
