@@ -1,10 +1,35 @@
 @php
+    // format_money() returns "৳ 1,055.81" as plain text (it feeds admin and mail too), so the
+    // symbol is split off here and enlarged — the taka glyph renders tiny next to the digits.
+    $money = function ($amount): \Illuminate\Support\HtmlString {
+        $text = format_money($amount);
+        $cut = strrpos($text, ' ');
+
+        return new \Illuminate\Support\HtmlString(
+            $cut === false
+                ? e($text)
+                : '<span class="text-[1.25em] font-semibold leading-none">'.e(substr($text, 0, $cut)).'</span> '.e(substr($text, $cut + 1))
+        );
+    };
+
     $isUpcoming = $product->is_upcoming;
     $inStock = $product->inStock();
     $discount = $product->effectiveDiscount();
     $discountPercent = $discount && (float) $product->price > 0
         ? round((1 - $discount / (float) $product->price) * 100)
         : null;
+
+    // Every option the visible combinations offer, grouped by attribute
+    // (Size => [250g, 500g], Color => [...]) so the card can hint at the choices.
+    $variantOptions = [];
+    foreach ($product->visibleVariations() as $row) {
+        foreach (($row['attributes'] ?? []) as $name => $value) {
+            if (filled($value)) {
+                $variantOptions[$name][$value] = $value;
+            }
+        }
+    }
+    $variantOptions = collect($variantOptions)->map(fn ($values) => collect(array_values($values)))->take(2);
 @endphp
 
 <div class="group relative flex flex-col overflow-hidden rounded-card bg-white shadow-sm transition hover:shadow-md">
@@ -22,11 +47,11 @@
         @endif
 
         @if ($discountPercent)
-            <span class="absolute left-2.5 top-2.5 rounded bg-sale px-2 py-0.5 text-xs font-bold text-white">
+            <span class="absolute left-2.5 top-2.5 rounded-md bg-sale px-2.5 py-1 text-sm font-bold leading-none text-white">
                 -{{ $discountPercent }}%
             </span>
         @elseif ($isUpcoming)
-            <span class="absolute left-2.5 top-2.5 rounded bg-amber-500 px-2 py-0.5 text-xs font-bold text-white">
+            <span class="absolute left-2.5 top-2.5 rounded-md bg-amber-500 px-2.5 py-1 text-sm font-bold leading-none text-white">
                 {{ __('Upcoming') }}
             </span>
         @endif
@@ -54,12 +79,28 @@
             </a>
         </h3>
 
+        @if ($variantOptions->isNotEmpty())
+            <div class="mt-1 flex flex-col gap-1">
+                @foreach ($variantOptions as $attributeName => $values)
+                    <div class="flex flex-wrap items-center gap-1" title="{{ $attributeName }}">
+                        @foreach ($values->take(4) as $value)
+                            <a href="{{ route('products.show', $product->slug) }}"
+                                class="rounded border border-zinc-200 px-1.5 py-0.5 text-[11px] leading-none text-zinc-600 transition hover:border-brand hover:text-brand">{{ $value }}</a>
+                        @endforeach
+                        @if ($values->count() > 4)
+                            <span class="text-[11px] text-zinc-500">+{{ $values->count() - 4 }}</span>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
         <div class="mt-auto flex flex-wrap items-baseline gap-x-2 gap-y-0.5 pt-2">
             @if ($discount)
-                <span class="text-[15px] font-bold text-sf-price">{{ format_money($discount) }}</span>
-                <span class="text-sm text-gray-500 line-through">{{ format_money($product->price) }}</span>
+                <span class="text-[15px] font-bold text-sf-price">{{ $money($discount) }}</span>
+                <span class="text-sm text-sale line-through">{{ $money($product->price) }}</span>
             @else
-                <span class="text-[15px] font-bold text-sf-price">{{ format_money($product->price) }}</span>
+                <span class="text-[15px] font-bold text-sf-price">{{ $money($product->price) }}</span>
             @endif
 
             @if (($sold = $product->soldQuantity()) > 0)

@@ -144,6 +144,26 @@
     @if ($menuItems->isNotEmpty() || $headerCategories->isNotEmpty() || $headerBrands->isNotEmpty() || $hasLiveFlashDeal)
         <nav class="hidden border-b border-gray-100 bg-sf-nav shadow-sm md:block">
             <ul class="mx-auto flex max-w-7xl items-center px-4 sm:px-6">
+                {{-- First in the row: the way into the live sale. --}}
+                @if ($hasLiveFlashDeal)
+                    <li class="me-2">
+                        <a href="{{ route('flash-deals') }}"
+                            class="inline-flex items-center gap-1.5 rounded-full bg-sale px-4 py-1.5 text-sm font-bold text-white shadow-sm transition hover:opacity-90 {{ request()->routeIs('flash-deals') ? 'ring-2 ring-offset-2 ring-sale/40' : '' }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M14.615 1.595a.75.75 0 0 1 .359.852L12.982 9.75h7.268a.75.75 0 0 1 .548 1.262l-10.5 11.25a.75.75 0 0 1-1.272-.71l1.992-7.302H3.75a.75.75 0 0 1-.548-1.262l10.5-11.25a.75.75 0 0 1 .913-.143Z" clip-rule="evenodd" />
+                            </svg>
+                            <span>{{ __('Flash Deals') }}</span>
+                        </a>
+                    </li>
+                @endif
+                @foreach ($menuItems as $menuItem)
+                    <li>
+                        <a href="{{ url($menuItem->url) }}"
+                            class="inline-block px-3 py-3.5 text-[15px] font-semibold transition-colors {{ url($menuItem->url) === $currentUrl ? 'text-brand' : 'text-sf-nav-text hover:text-brand' }}">
+                            {{ $menuItem->label }}
+                        </a>
+                    </li>
+                @endforeach
                 @if ($headerCategories->isNotEmpty())
                     <li>
                         <div x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false" class="relative">
@@ -203,26 +223,6 @@
                         </div>
                     </li>
                 @endif
-                @foreach ($menuItems as $menuItem)
-                    <li>
-                        <a href="{{ url($menuItem->url) }}"
-                            class="inline-block px-3 py-3.5 text-[15px] font-semibold transition-colors {{ url($menuItem->url) === $currentUrl ? 'text-brand' : 'text-sf-nav-text hover:text-brand' }}">
-                            {{ $menuItem->label }}
-                        </a>
-                    </li>
-                @endforeach
-                {{-- After the last menu link (FAQ): the way into the live sale. --}}
-                @if ($hasLiveFlashDeal)
-                    <li class="ms-2">
-                        <a href="{{ route('flash-deals') }}"
-                            class="inline-flex items-center gap-1.5 rounded-full bg-sale px-4 py-1.5 text-sm font-bold text-white shadow-sm transition hover:opacity-90 {{ request()->routeIs('flash-deals') ? 'ring-2 ring-offset-2 ring-sale/40' : '' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                <path fill-rule="evenodd" d="M14.615 1.595a.75.75 0 0 1 .359.852L12.982 9.75h7.268a.75.75 0 0 1 .548 1.262l-10.5 11.25a.75.75 0 0 1-1.272-.71l1.992-7.302H3.75a.75.75 0 0 1-.548-1.262l10.5-11.25a.75.75 0 0 1 .913-.143Z" clip-rule="evenodd" />
-                            </svg>
-                            <span>{{ __('Flash Deals') }}</span>
-                        </a>
-                    </li>
-                @endif
             </ul>
         </nav>
     @endif
@@ -239,6 +239,12 @@
             @php
                 $mobileSection = 'flex w-full items-center justify-between rounded-md! px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand';
             @endphp
+            @if ($hasLiveFlashDeal)
+                <a href="{{ route('flash-deals') }}" class="rounded-md px-3 py-2.5 text-sm font-bold text-sale transition-colors hover:bg-gray-50">⚡ {{ __('Flash Deals') }}</a>
+            @endif
+            @foreach ($menuItems ?? [] as $menuItem)
+                <a href="{{ url($menuItem->url) }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ $menuItem->label }}</a>
+            @endforeach
             @if ($headerCategories->isNotEmpty())
                 <div x-data="{ open: false }" class="border-b border-zinc-100">
                     <button type="button" @click="open = ! open" :aria-expanded="open" class="{{ $mobileSection }}">
@@ -269,12 +275,6 @@
                         @endforeach
                     </div>
                 </div>
-            @endif
-            @foreach ($menuItems ?? [] as $menuItem)
-                <a href="{{ url($menuItem->url) }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ $menuItem->label }}</a>
-            @endforeach
-            @if ($hasLiveFlashDeal)
-                <a href="{{ route('flash-deals') }}" class="rounded-md px-3 py-2.5 text-sm font-bold text-sale transition-colors hover:bg-gray-50">⚡ {{ __('Flash Deals') }}</a>
             @endif
             <a href="{{ route('favorites') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My favorites') }}</a>
             <a href="{{ route('cart') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My cart') }}</a>
