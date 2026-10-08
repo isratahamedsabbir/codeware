@@ -21,15 +21,18 @@
 
     // Every option the visible combinations offer, grouped by attribute
     // (Size => [250g, 500g], Color => [...]) so the card can hint at the choices.
+    // A value counts as available when at least one combination carrying it has stock
+    // (blank quantity = out of stock, same rule as Product::variationInStock()).
     $variantOptions = [];
     foreach ($product->visibleVariations() as $row) {
+        $rowInStock = (int) ($row['quantity'] ?? 0) > 0;
         foreach (($row['attributes'] ?? []) as $name => $value) {
             if (filled($value)) {
-                $variantOptions[$name][$value] = $value;
+                $variantOptions[$name][$value] = ($variantOptions[$name][$value] ?? false) || $rowInStock;
             }
         }
     }
-    $variantOptions = collect($variantOptions)->map(fn ($values) => collect(array_values($values)))->take(2);
+    $variantOptions = collect($variantOptions)->take(2);
 @endphp
 
 <div class="group relative flex flex-col overflow-hidden rounded-card bg-white shadow-sm transition hover:shadow-md">
@@ -83,12 +86,16 @@
             <div class="mt-1.5 flex flex-col gap-1.5">
                 @foreach ($variantOptions as $attributeName => $values)
                     <div class="flex flex-wrap items-center gap-1.5" title="{{ $attributeName }}">
-                        @foreach ($values->take(4) as $value)
-                            <a href="{{ route('products.show', $product->slug) }}"
-                                class="rounded-md border border-zinc-300 px-2.5 py-1 text-[13px] font-medium leading-none text-zinc-700 transition hover:border-brand hover:text-brand">{{ $value }}</a>
+                        @foreach (array_slice($values, 0, 4, true) as $value => $available)
+                            @if ($available)
+                                <a href="{{ route('products.show', $product->slug) }}"
+                                    class="rounded-md border border-zinc-300 px-2.5 py-1 text-[13px] font-medium leading-none text-zinc-700 transition hover:border-brand hover:text-brand">{{ $value }}</a>
+                            @else
+                                <span class="cursor-not-allowed rounded-md border border-zinc-200 px-2.5 py-1 text-[13px] font-medium leading-none text-zinc-400 line-through opacity-70" title="{{ __('Out of stock') }}">{{ $value }}</span>
+                            @endif
                         @endforeach
-                        @if ($values->count() > 4)
-                            <span class="text-[13px] font-medium text-zinc-500">+{{ $values->count() - 4 }}</span>
+                        @if (count($values) > 4)
+                            <span class="text-[13px] font-medium text-zinc-500">+{{ count($values) - 4 }}</span>
                         @endif
                     </div>
                 @endforeach
