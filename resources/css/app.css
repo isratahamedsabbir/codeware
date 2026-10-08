@@ -371,41 +371,41 @@
     transition: width 0.2s ease;
 }
 
-.admin-sidebar[data-flux-sidebar-collapsed-desktop][data-flux-sidebar-active] {
-    width: 16rem !important;
-}
+/* No hover-expand: Flux flags a collapsed sidebar "active" while the cursor is on it and
+   this used to widen it to 16rem. The collapsed rules below now apply regardless, so it
+   only opens from the toggle button. */
 
-.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-sidebar-search {
+.admin-sidebar[data-flux-sidebar-collapsed-desktop] .admin-sidebar-search {
     display: none;
 }
 
-.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-sidebar-logo {
+.admin-sidebar[data-flux-sidebar-collapsed-desktop] .admin-sidebar-logo {
     width: 100%;
     justify-content: center;
 }
 
-.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-nav-group-label {
+.admin-sidebar[data-flux-sidebar-collapsed-desktop] .admin-nav-group-label {
     justify-content: center;
     padding-left: 0.25rem;
     padding-right: 0.25rem;
 }
 
-.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-nav-group-label>span:first-child>span:last-child,
-.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-nav-group-chevron-wrap {
+.admin-sidebar[data-flux-sidebar-collapsed-desktop] .admin-nav-group-label>span:first-child>span:last-child,
+.admin-sidebar[data-flux-sidebar-collapsed-desktop] .admin-nav-group-chevron-wrap {
     display: none;
 }
 
-.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-nav-item {
+.admin-sidebar[data-flux-sidebar-collapsed-desktop] .admin-nav-item {
     justify-content: center;
     padding-left: 0.25rem;
     padding-right: 0.25rem;
 }
 
-.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .admin-nav-item>span:not(.admin-nav-item-icon) {
+.admin-sidebar[data-flux-sidebar-collapsed-desktop] .admin-nav-item>span:not(.admin-nav-item-icon) {
     display: none;
 }
 
-.admin-sidebar[data-flux-sidebar-collapsed-desktop]:not([data-flux-sidebar-active]) .nav-group-items {
+.admin-sidebar[data-flux-sidebar-collapsed-desktop] .nav-group-items {
     max-height: none !important;
     opacity: 1 !important;
     margin-left: 0;
