@@ -763,7 +763,9 @@ it('renders the homepage hero as a slider with each slide\'s title, description 
         ->assertSee('/storage/b.jpg')
         ->assertSee('Fresh organic tea')
         ->assertSee('Hand-picked leaves.')
-        ->assertSee('Next slide')
+        // The slider has dots (no arrow buttons — it's dragged / swiped instead).
+        ->assertSee('Slide 2')
+        ->assertDontSee('Next slide')
         // The banner links to the active slide; the first one is in the markup.
         ->assertSee('href="/shop?category=tea"', false)
         // An unsafe link never reaches the page — that slide opens the shop.
@@ -771,7 +773,7 @@ it('renders the homepage hero as a slider with each slide\'s title, description 
 
     Setting::set('home_hero_slides', json_encode([['image' => '/storage/a.jpg']]));
 
-    $this->get('/')->assertOk()->assertSee('/storage/a.jpg')->assertDontSee('Next slide');
+    $this->get('/')->assertOk()->assertSee('/storage/a.jpg')->assertDontSee('Slide 2');
 });
 
 it('links each promo banner to its own URL, falling back to the shop', function () {

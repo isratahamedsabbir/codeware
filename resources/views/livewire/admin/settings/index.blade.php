@@ -54,6 +54,11 @@
         {{-- General tab --}}
         <div x-show="tab === 'general'">
             <div class="max-w-[1600px] space-y-5">
+                {{-- General (site name, tagline, contact …) leads the tab. --}}
+                @if (isset($groupedSettings['general']))
+                    @include('partials._admin-settings-group-card', ['group' => 'general', 'items' => $groupedSettings['general']])
+                @endif
+
                 {{-- Environment --}}
                 <x-admin-section-card header-border="border-zinc-100" icon="rocket-launch" title="Environment"
                     description="Which environment this install runs as.">
@@ -80,8 +85,8 @@
 
                 {{-- Currency and VAT / Tax sit side by side at the top of their own
                      columns so one never stretches the other into a gap; every field
-                     inside them runs the card's full width for easy editing. General
-                     and Images flow below Currency, with Localization, Pagination,
+                     inside them runs the card's full width for easy editing. Images
+                     flow below Currency, with Localization, Pagination,
                      Newsletter and Backend below VAT; each column flows independently
                      (space-y-5). Currency has an info button that opens the live
                      preview in a modal — see settings-currency-preview below. --}}
@@ -126,10 +131,6 @@
                                 <flux:error name="settings.decimal_places" />
                             </flux:field>
                         </x-admin-section-card>
-
-                        @if (isset($groupedSettings['general']))
-                            @include('partials._admin-settings-group-card', ['group' => 'general', 'items' => $groupedSettings['general']])
-                        @endif
 
                         {{-- Image uploads sit right under General so the space they
                              would otherwise leave empty to the left of the Localization
