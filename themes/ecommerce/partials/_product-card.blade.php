@@ -80,15 +80,15 @@
         </h3>
 
         @if ($variantOptions->isNotEmpty())
-            <div class="mt-1 flex flex-col gap-1">
+            <div class="mt-1.5 flex flex-col gap-1.5">
                 @foreach ($variantOptions as $attributeName => $values)
-                    <div class="flex flex-wrap items-center gap-1" title="{{ $attributeName }}">
+                    <div class="flex flex-wrap items-center gap-1.5" title="{{ $attributeName }}">
                         @foreach ($values->take(4) as $value)
                             <a href="{{ route('products.show', $product->slug) }}"
-                                class="rounded border border-zinc-200 px-1.5 py-0.5 text-[11px] leading-none text-zinc-600 transition hover:border-brand hover:text-brand">{{ $value }}</a>
+                                class="rounded-md border border-zinc-300 px-2.5 py-1 text-[13px] font-medium leading-none text-zinc-700 transition hover:border-brand hover:text-brand">{{ $value }}</a>
                         @endforeach
                         @if ($values->count() > 4)
-                            <span class="text-[11px] text-zinc-500">+{{ $values->count() - 4 }}</span>
+                            <span class="text-[13px] font-medium text-zinc-500">+{{ $values->count() - 4 }}</span>
                         @endif
                     </div>
                 @endforeach
