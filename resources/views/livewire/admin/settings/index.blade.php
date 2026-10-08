@@ -59,30 +59,6 @@
                     @include('partials._admin-settings-group-card', ['group' => 'general', 'items' => $groupedSettings['general']])
                 @endif
 
-                {{-- Environment --}}
-                <x-admin-section-card header-border="border-zinc-100" icon="rocket-launch" title="Environment"
-                    description="Which environment this install runs as.">
-                    <flux:field class="max-w-xs">
-                        <flux:label>Runtime environment</flux:label>
-                        <select wire:model="appEnv" class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                            <option value="local">local</option>
-                            <option value="staging">staging</option>
-                            <option value="production">production</option>
-                            <option value="testing">testing</option>
-                            <option value="developer">developer</option>
-                        </select>
-                        <flux:error name="appEnv" />
-                    </flux:field>
-
-                    <flux:text class="text-xs text-amber-600 dark:text-amber-400">
-                        A wrong value can take the site down until it is fixed. The rest of the app's .env-backed settings live on Developer Tools.
-                    </flux:text>
-
-                    <flux:button size="sm" variant="outline" wire:click="confirmSaveEnvironment" wire:loading.attr="disabled">
-                        Save Environment
-                    </flux:button>
-                </x-admin-section-card>
-
                 {{-- Currency and VAT / Tax sit side by side at the top of their own
                      columns so one never stretches the other into a gap; every field
                      inside them runs the card's full width for easy editing. Images
@@ -92,6 +68,30 @@
                      preview in a modal — see settings-currency-preview below. --}}
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
                     <div class="space-y-5">
+                        {{-- Environment --}}
+                        <x-admin-section-card header-border="border-zinc-100" icon="rocket-launch" title="Environment"
+                            description="Which environment this install runs as.">
+                            <flux:field class="max-w-xs">
+                                <flux:label>Runtime environment</flux:label>
+                                <select wire:model="appEnv" class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                                    <option value="local">local</option>
+                                    <option value="staging">staging</option>
+                                    <option value="production">production</option>
+                                    <option value="testing">testing</option>
+                                    <option value="developer">developer</option>
+                                </select>
+                                <flux:error name="appEnv" />
+                            </flux:field>
+
+                            <flux:text class="text-xs text-amber-600 dark:text-amber-400">
+                                A wrong value can take the site down until it is fixed. The rest of the app's .env-backed settings live on Developer Tools.
+                            </flux:text>
+
+                            <flux:button size="sm" variant="outline" wire:click="confirmSaveEnvironment" wire:loading.attr="disabled">
+                                Save Environment
+                            </flux:button>
+                        </x-admin-section-card>
+
                         <x-admin-section-card header-border="border-zinc-100" icon="banknotes" title="Currency"
                             description="Set the currency used across the site for product pricing and payments.">
                             <x-slot:titleActions>

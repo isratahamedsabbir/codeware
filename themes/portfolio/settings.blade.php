@@ -104,47 +104,43 @@
                 size-hint="Portrait, roughly 4:5"
                 :value="$settings['theme_portfolio_photo'] ?? ''" :pending="$uploads['theme_portfolio_photo'] ?? null" />
 
-            <div class="space-y-5">
-                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                    <flux:field>
-                        <flux:label>Display Name<x-field-hint text="Leave blank to use the site name from Settings." /></flux:label>
-                        <flux:input wire:model="settings.theme_portfolio_name" placeholder="e.g. Sabbir Hossain" />
-                    </flux:field>
-
-                    <flux:field>
-                        <flux:label>Role<x-field-hint text="The line under your name — 'Full Stack Developer', 'Laravel & React Engineer'." /></flux:label>
-                        <flux:input wire:model="settings.theme_portfolio_hero_title" placeholder="Full Stack Developer" />
-                    </flux:field>
-                </div>
+            {{-- One grid, one row-gap: the fields used to sit in stacked wrappers whose
+                 spacing added up differently row to row. --}}
+            <div class="grid grid-cols-1 content-start items-start gap-5 sm:grid-cols-2">
+                <flux:field>
+                    <flux:label>Display Name<x-field-hint text="Leave blank to use the site name from Settings." /></flux:label>
+                    <flux:input wire:model="settings.theme_portfolio_name" placeholder="e.g. Sabbir Hossain" />
+                </flux:field>
 
                 <flux:field>
+                    <flux:label>Role<x-field-hint text="The line under your name — 'Full Stack Developer', 'Laravel & React Engineer'." /></flux:label>
+                    <flux:input wire:model="settings.theme_portfolio_hero_title" placeholder="Full Stack Developer" />
+                </flux:field>
+
+                <flux:field class="sm:col-span-2">
                     <flux:label>Tagline<x-field-hint text="One or two sentences on what you build." /></flux:label>
                     <flux:textarea wire:model="settings.theme_portfolio_hero_tagline" class="h-24"
                         placeholder="Building fast, reliable, and scalable web applications with modern tools." />
                 </flux:field>
 
-                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                    <flux:field>
-                        <flux:label>Location<x-field-hint text="Shown under the tagline and in the contact card." /></flux:label>
-                        <flux:input wire:model="settings.theme_portfolio_location" placeholder="e.g. Dhaka, Bangladesh" />
-                    </flux:field>
+                <flux:field>
+                    <flux:label>Location<x-field-hint text="Shown under the tagline and in the contact card." /></flux:label>
+                    <flux:input wire:model="settings.theme_portfolio_location" placeholder="e.g. Dhaka, Bangladesh" />
+                </flux:field>
 
-                    <flux:field>
-                        <flux:label>Availability<x-field-hint text="The status pill in the hero. Blank hides it." /></flux:label>
-                        <flux:input wire:model="settings.theme_portfolio_availability" placeholder="Available for new projects" />
-                    </flux:field>
-                </div>
+                <flux:field>
+                    <flux:label>Availability<x-field-hint text="The status pill in the hero. Blank hides it." /></flux:label>
+                    <flux:input wire:model="settings.theme_portfolio_availability" placeholder="Available for new projects" />
+                </flux:field>
 
-                <div class="grid grid-cols-1 items-start gap-5 pt-5 sm:grid-cols-2">
-                    <x-admin-theme-upload upload-key="theme_portfolio_resume_url" type="pdf" label="Résumé (PDF)"
-                        hint="No file hides the download button."
-                        :value="$settings['theme_portfolio_resume_url'] ?? ''" :pending="$uploads['theme_portfolio_resume_url'] ?? null" />
+                <x-admin-theme-upload upload-key="theme_portfolio_resume_url" type="pdf" label="Résumé (PDF)"
+                    hint="No file hides the download button."
+                    :value="$settings['theme_portfolio_resume_url'] ?? ''" :pending="$uploads['theme_portfolio_resume_url'] ?? null" />
 
-                    <flux:field>
-                        <flux:label>Résumé Button Label</flux:label>
-                        <flux:input wire:model="settings.theme_portfolio_resume_label" placeholder="Download CV" />
-                    </flux:field>
-                </div>
+                <flux:field>
+                    <flux:label>Résumé Button Label</flux:label>
+                    <flux:input wire:model="settings.theme_portfolio_resume_label" placeholder="Download CV" />
+                </flux:field>
             </div>
         </div>
     </section>
