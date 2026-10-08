@@ -8,7 +8,7 @@
         return new \Illuminate\Support\HtmlString(
             $cut === false
                 ? e($text)
-                : '<span class="text-[1.5em] font-black leading-none">'.e(substr($text, 0, $cut)).'</span> '.e(substr($text, $cut + 1))
+                : '<span class="text-[1.2em] font-bold leading-none">'.e(substr($text, 0, $cut)).'</span> '.e(substr($text, $cut + 1))
         );
     };
 
