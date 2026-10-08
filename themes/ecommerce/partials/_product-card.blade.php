@@ -8,7 +8,7 @@
         return new \Illuminate\Support\HtmlString(
             $cut === false
                 ? e($text)
-                : '<span class="text-[1.2em] font-bold leading-none">'.e(substr($text, 0, $cut)).'</span> '.e(substr($text, $cut + 1))
+                : '<span class="text-[1.2em] font-black leading-none [-webkit-text-stroke:0.6px_currentColor]">'.e(substr($text, 0, $cut)).'</span> '.e(substr($text, $cut + 1))
         );
     };
 
@@ -72,10 +72,6 @@
     />
 
     <div class="flex flex-1 flex-col gap-1 p-3">
-        @if ($product->brand)
-            <span class="text-xs uppercase tracking-wide text-zinc-500">{{ $product->brand->name }}</span>
-        @endif
-
         <h3 class="text-[15px] font-medium leading-snug text-sf-text">
             <a href="{{ route('products.show', $product->slug) }}" class="line-clamp-2 min-h-[36px] transition-colors hover:text-brand">
                 {{ $product->name }}
@@ -105,7 +101,7 @@
         <div class="mt-auto flex flex-wrap items-baseline gap-x-2 gap-y-0.5 pt-2">
             @if ($discount)
                 <span class="text-[15px] font-bold text-sf-price">{{ $money($discount) }}</span>
-                <span class="text-sm text-sale line-through">{{ $money($product->price) }}</span>
+                <span class="text-sm text-red-600 line-through">{{ $money($product->price) }}</span>
             @else
                 <span class="text-[15px] font-bold text-sf-price">{{ $money($product->price) }}</span>
             @endif
