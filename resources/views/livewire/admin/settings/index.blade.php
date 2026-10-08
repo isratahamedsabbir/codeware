@@ -524,7 +524,7 @@ $imageMeta = match ($setting->key) {
         <div class="rounded-xl bg-zinc-50 px-5 py-7 text-center dark:bg-zinc-800/50"
             x-data="{
                 fmt(value) {
-                    const dec = parseInt($wire.settings.decimal_places || '2', 10);
+                    const dec = parseInt($wire.settings.decimal_places || '0', 10);
                     const num = Number(value || 0).toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
                     const sym = $wire.settings.currency_symbol || '৳';
                     return ($wire.settings.currency_position || 'left') === 'right' ? num + ' ' + sym : sym + num;

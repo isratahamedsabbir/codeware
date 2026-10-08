@@ -8,7 +8,7 @@
         return new \Illuminate\Support\HtmlString(
             $cut === false
                 ? e($text)
-                : '<span class="text-[1.25em] font-semibold leading-none">'.e(substr($text, 0, $cut)).'</span> '.e(substr($text, $cut + 1))
+                : '<span class="text-[1.5em] font-black leading-none">'.e(substr($text, 0, $cut)).'</span> '.e(substr($text, $cut + 1))
         );
     };
 
@@ -47,11 +47,11 @@
         @endif
 
         @if ($discountPercent)
-            <span class="absolute left-2.5 top-2.5 rounded-md bg-sale px-2.5 py-1 text-sm font-bold leading-none text-white">
+            <span class="absolute left-2.5 top-2.5 rounded-md bg-sale px-3 py-1.5 text-lg font-bold leading-none text-white">
                 -{{ $discountPercent }}%
             </span>
         @elseif ($isUpcoming)
-            <span class="absolute left-2.5 top-2.5 rounded-md bg-amber-500 px-2.5 py-1 text-sm font-bold leading-none text-white">
+            <span class="absolute left-2.5 top-2.5 rounded-md bg-amber-500 px-3 py-1.5 text-lg font-bold leading-none text-white">
                 {{ __('Upcoming') }}
             </span>
         @endif
@@ -105,10 +105,6 @@
 
             @if (($sold = $product->soldQuantity()) > 0)
                 <span class="ms-auto inline-flex items-center gap-1 text-xs text-zinc-500" title="{{ __('Units sold') }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-3.5 w-3.5">
-                        <path d="M2.25 2.25a.75.75 0 0 0 0 1.5h1.386c.17 0 .318.11.37.276l2.11 7.385a2.25 2.25 0 0 0 2.15 1.639h6.807c.928 0 1.755-.57 2.095-1.429l1.928-4.82a.75.75 0 0 0-1.394-.558l-1.928 4.82a.75.75 0 0 1-.701.482H8.295l-.241-.842a.75.75 0 0 1-.075-.285l-1.667-5.83a1.5 1.5 0 0 0-1.443-1.09H2.25Z" />
-                        <path d="M11 19.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Zm-5 0a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Z" />
-                    </svg>
                     {{ $sold }} {{ __('sold') }}
                 </span>
             @endif

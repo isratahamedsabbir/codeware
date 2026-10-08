@@ -235,13 +235,13 @@
                         class="no-scrollbar flex select-none gap-2.5 overflow-x-auto px-1 py-1 sm:gap-3 md:gap-4">
                         @foreach ($homeCategories as $category)
                             <a href="{{ route('shop.category', $category->slug) }}"
-                                class="group flex h-26.5 w-32.5 shrink-0 flex-col items-center justify-center gap-1.5 rounded-card border border-zinc-200/80 bg-white p-2 text-center shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-md sm:h-31 sm:w-37.5 sm:p-2.5 md:h-34 md:w-40 lg:h-38 lg:w-43">
+                                class="group flex h-30 w-32.5 shrink-0 flex-col items-center justify-center gap-1.5 rounded-card border border-zinc-200/80 bg-white p-2 text-center shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-md sm:h-36 sm:w-37.5 sm:p-2.5 md:h-40 md:w-40 lg:h-44 lg:w-43">
                                 @if ($category->icon)
-                                    <img src="{{ $category->icon }}" alt="" loading="lazy" decoding="async" width="56" height="56"
-                                        class="h-10 w-10 rounded-lg bg-zinc-50 object-contain p-0.5 transition duration-200 group-hover:scale-105 sm:h-12 sm:w-12 lg:h-14 lg:w-14">
+                                    <img src="{{ $category->icon }}" alt="" loading="lazy" decoding="async" width="80" height="80"
+                                        class="h-14 w-14 object-contain transition duration-200 group-hover:scale-105 sm:h-16 sm:w-16 lg:h-20 lg:w-20">
                                 @else
-                                    <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-50 text-zinc-500 transition duration-200 group-hover:text-brand sm:h-12 sm:w-12 lg:h-14 lg:w-14">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <span class="flex h-14 w-14 items-center justify-center rounded-lg bg-zinc-50 text-zinc-500 transition duration-200 group-hover:text-brand sm:h-16 sm:w-16 lg:h-20 lg:w-20">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 sm:h-8 sm:w-8 lg:h-10 lg:w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 7 12 3l9.75 4L12 11 2.25 7Zm0 0v10L12 21l9.75-4V7M12 11v10" />
                                         </svg>
                                     </span>

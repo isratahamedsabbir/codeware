@@ -150,7 +150,7 @@ class SettingsSeeder extends Seeder
             ['key' => 'currency_code',          'value' => 'BDT', 'type' => 'string', 'group' => 'currency', 'is_public' => true],
             ['key' => 'currency_symbol',        'value' => '৳', 'type' => 'string', 'group' => 'currency', 'is_public' => true],
             ['key' => 'currency_position',      'value' => 'left', 'type' => 'string', 'group' => 'currency', 'is_public' => true],
-            ['key' => 'decimal_places',         'value' => '2', 'type' => 'number', 'group' => 'currency', 'is_public' => true],
+            ['key' => 'decimal_places',         'value' => '0', 'type' => 'number', 'group' => 'currency', 'is_public' => true],
 
             // ── VAT / Tax ── when enabled, every order gets the configured
             // percentage added on top of its (discounted) subtotal — see

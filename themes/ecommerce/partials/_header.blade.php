@@ -146,10 +146,23 @@
             <ul class="mx-auto flex max-w-7xl items-center px-4 sm:px-6">
                 {{-- First in the row: the way into the live sale. --}}
                 @if ($hasLiveFlashDeal)
+                    {{-- Playful on purpose: a soft pulsing glow, a light streak sweeping
+                         across, and the bolt flicking. Inline (not theme.css) so it needs
+                         no asset rebuild; all of it stops for reduced-motion users. --}}
+                    <style>
+                        .flash-deal-btn { position: relative; overflow: hidden; animation: flash-deal-glow 2s ease-in-out infinite; }
+                        .flash-deal-btn:hover { transform: scale(1.06); }
+                        .flash-deal-btn::after { content: ''; position: absolute; inset: 0; width: 40%; transform: translateX(-150%) skewX(-20deg); background: linear-gradient(90deg, transparent, rgb(255 255 255 / .55), transparent); animation: flash-deal-shine 2.8s ease-in-out infinite; pointer-events: none; }
+                        .flash-deal-bolt { animation: flash-deal-bolt 1.4s ease-in-out infinite; transform-origin: center; }
+                        @keyframes flash-deal-glow { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-sale) 45%, transparent); } 50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--color-sale) 0%, transparent); } }
+                        @keyframes flash-deal-shine { 0%, 55% { transform: translateX(-150%) skewX(-20deg); } 100% { transform: translateX(400%) skewX(-20deg); } }
+                        @keyframes flash-deal-bolt { 0%, 60%, 100% { transform: scale(1) rotate(0); } 70% { transform: scale(1.25) rotate(-12deg); } 80% { transform: scale(1.1) rotate(10deg); } 90% { transform: scale(1.2) rotate(-6deg); } }
+                        @media (prefers-reduced-motion: reduce) { .flash-deal-btn, .flash-deal-btn::after, .flash-deal-bolt { animation: none; } .flash-deal-btn:hover { transform: none; } }
+                    </style>
                     <li class="me-2">
                         <a href="{{ route('flash-deals') }}"
-                            class="inline-flex items-center gap-1.5 rounded-full bg-sale px-4 py-1.5 text-sm font-bold text-white shadow-sm transition hover:opacity-90 {{ request()->routeIs('flash-deals') ? 'ring-2 ring-offset-2 ring-sale/40' : '' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            class="flash-deal-btn inline-flex items-center gap-1.5 rounded-full bg-sale px-4 py-1.5 text-sm font-bold text-white shadow-sm transition hover:opacity-90 {{ request()->routeIs('flash-deals') ? 'ring-2 ring-offset-2 ring-sale/40' : '' }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="flash-deal-bolt h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                 <path fill-rule="evenodd" d="M14.615 1.595a.75.75 0 0 1 .359.852L12.982 9.75h7.268a.75.75 0 0 1 .548 1.262l-10.5 11.25a.75.75 0 0 1-1.272-.71l1.992-7.302H3.75a.75.75 0 0 1-.548-1.262l10.5-11.25a.75.75 0 0 1 .913-.143Z" clip-rule="evenodd" />
                             </svg>
                             <span>{{ __('Flash Deals') }}</span>
