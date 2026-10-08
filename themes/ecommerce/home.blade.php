@@ -81,11 +81,22 @@
                         start() { this.stop(); this.timer = setInterval(() => this.go(this.active + 1), 5000); },
                         stop() { clearInterval(this.timer); },
                         go(i) { this.active = (i + this.count) % this.count; },
+                        startX: null, moved: false,
+                        down(e) { this.startX = e.clientX; this.moved = false; },
+                        up(e) {
+                            if (this.startX === null) return;
+                            const dx = e.clientX - this.startX;
+                            this.startX = null;
+                            if (Math.abs(dx) > 40) { this.moved = true; this.go(this.active + (dx < 0 ? 1 : -1)); }
+                        },
                     }"
                     x-init="start()"
-                    @mouseenter="stop()" @mouseleave="start()"
+                    @mouseenter="stop()" @mouseleave="start(); startX = null"
+                    @pointerdown="down($event)" @pointerup="up($event)" @pointercancel="startX = null"
+                    @dragstart.prevent
+                    @click.capture="if (moved) { $event.preventDefault(); $event.stopPropagation(); moved = false; }"
                 @endif
-                class="group/hero relative block h-[300px] overflow-hidden rounded-card sm:h-[360px] xl:col-span-2 xl:h-full">
+                class="group/hero relative block aspect-[1200/440] touch-pan-y select-none cursor-grab overflow-hidden rounded-card xl:col-span-2 xl:aspect-auto xl:h-full">
                 @if ($heroSlides !== [])
                     @foreach ($heroSlides as $i => $slide)
                         @php $hasText = filled($slide['title']) || filled($slide['description']); @endphp
@@ -105,12 +116,12 @@
                             @if ($hasText)
                                 {{-- Text only gets a shade behind it when there's text to read. --}}
                                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-transparent"></div>
-                                <div class="absolute inset-x-0 bottom-0 p-6 pb-12 md:p-10 md:pb-14">
+                                <div class="absolute inset-x-0 bottom-0 p-3 pb-7 sm:p-6 sm:pb-12 md:p-10 md:pb-14">
                                     @if (filled($slide['title']))
-                                        <h2 class="max-w-xl text-2xl font-bold leading-tight text-white drop-shadow md:text-4xl">{{ $slide['title'] }}</h2>
+                                        <h2 class="max-w-xl text-base font-bold leading-tight text-white drop-shadow sm:text-2xl md:text-4xl">{{ $slide['title'] }}</h2>
                                     @endif
                                     @if (filled($slide['description']))
-                                        <p class="mt-2 max-w-lg text-sm text-white/90 drop-shadow md:text-base">{{ $slide['description'] }}</p>
+                                        <p class="mt-1 line-clamp-2 max-w-lg text-xs text-white/90 drop-shadow sm:mt-2 sm:text-sm md:text-base">{{ $slide['description'] }}</p>
                                     @endif
                                 </div>
                             @endif
@@ -118,14 +129,6 @@
                     @endforeach
 
                     @if (count($heroSlides) > 1)
-                        <button type="button" @click.prevent="go(active - 1)" aria-label="{{ __('Previous slide') }}"
-                            class="absolute left-4 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-sf-text opacity-0 shadow-md backdrop-blur transition hover:bg-white group-hover/hero:opacity-100">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
-                        </button>
-                        <button type="button" @click.prevent="go(active + 1)" aria-label="{{ __('Next slide') }}"
-                            class="absolute right-4 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-sf-text opacity-0 shadow-md backdrop-blur transition hover:bg-white group-hover/hero:opacity-100">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
-                        </button>
                         <div class="absolute bottom-4 right-6 z-10 flex items-center gap-1.5 md:bottom-8 md:right-8">
                             @foreach ($heroSlides as $i => $slide)
                                 <button type="button" @click.prevent="go({{ $i }})" aria-label="{{ __('Slide :n', ['n' => $i + 1]) }}"

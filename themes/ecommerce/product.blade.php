@@ -181,7 +181,7 @@
             @endif
         </div>
 
-        <div class="lg:py-4">
+        <div class="lg:pb-4">
             {{-- The name leads the column; brand / type live with the categories below. --}}
             {{-- Name, then price right under it; a status badge sits beside the
                  name (upcoming, or stock). On variant products the price, SKU and
@@ -231,7 +231,7 @@
                 @endif
             >
                 <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
-                    <h1 class="text-2xl font-extrabold tracking-tight text-sf-heading sm:text-3xl">{{ $product->name }}</h1>
+                    <h1 class="text-2xl font-extrabold leading-tight tracking-tight text-sf-heading sm:text-3xl">{{ $product->name }}</h1>
 
                     @if ($product->is_upcoming)
                         <span class="inline-flex shrink-0 items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">{{ __('Upcoming') }}</span>
