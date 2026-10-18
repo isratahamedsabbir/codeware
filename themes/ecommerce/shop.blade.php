@@ -258,7 +258,7 @@
                     </details>
 
                     {{-- Categories --}}
-                    <details open class="group">
+                    <details class="group">
                         <summary class="{{ $sectionSummary }}">{{ __('Categories') }} {!! $chevron !!}</summary>
                         <ul class="-mx-2.5 max-h-72 space-y-0.5 overflow-y-auto pb-4">
                             <li>
@@ -290,7 +290,7 @@
 
                     {{-- Brands --}}
                     @if ($brands->isNotEmpty())
-                        <details open class="group">
+                        <details class="group">
                             <summary class="{{ $sectionSummary }}">{{ __('Brands') }} {!! $chevron !!}</summary>
                             <ul class="-mx-2.5 max-h-60 space-y-0.5 overflow-y-auto pb-4">
                                 @foreach ($brands as $brand)
@@ -315,7 +315,7 @@
                     @endif
 
                     {{-- Type --}}
-                    <details open class="group">
+                    <details class="group">
                         <summary class="{{ $sectionSummary }}">{{ __('Type') }} {!! $chevron !!}</summary>
                         <div class="flex flex-wrap gap-2 pb-5">
                             @foreach (['physical' => __('Physical'), 'digital' => __('Digital')] as $type => $label)
@@ -328,7 +328,7 @@
                     {{-- Variation options --}}
                     @if (! empty($attributeFacets))
                         @foreach ($attributeFacets as $name => $values)
-                            <details open class="group">
+                            <details class="group">
                                 <summary class="{{ $sectionSummary }}">{{ $name }} {!! $chevron !!}</summary>
                                 <div class="flex flex-wrap gap-2 pb-5">
                                     @foreach ($values as $value => $count)
@@ -350,7 +350,7 @@
 
                     {{-- Tags --}}
                     @if ($tags->isNotEmpty())
-                        <details open class="group">
+                        <details class="group">
                             <summary class="{{ $sectionSummary }}">{{ __('Tags') }} {!! $chevron !!}</summary>
                             <div class="flex flex-wrap gap-2 pb-5">
                                 @foreach ($tags as $tag)

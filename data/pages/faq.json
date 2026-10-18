@@ -1,7 +1,9 @@
 {
   "title": "FAQ",
   "description": "Answers to common questions",
-  "root": { "props": {} },
+  "root": {
+    "props": {}
+  },
   "content": [
     {
       "type": "HeroSection",
@@ -39,8 +41,56 @@
       "props": {
         "title": "Still have questions?",
         "subtitle": "Get in touch and we'll be happy to help.",
-        "primaryButton": { "text": "Contact Us", "href": "/contact" }
+        "primaryButton": {
+          "text": "Contact Us",
+          "href": "/contact"
+        }
       }
+    }
+  ],
+  "cms": [
+    {
+      "name": "Orders & Delivery",
+      "cards": [
+        {
+          "title": "How long does delivery take?",
+          "description": "Inside Dhaka orders usually arrive in 1-2 working days. Other districts take 3-5 working days."
+        },
+        {
+          "title": "How can I track my order?",
+          "description": "Sign in and open My Orders to see the live status of every order you have placed."
+        },
+        {
+          "title": "Can I change or cancel my order?",
+          "description": "Yes, as long as the order has not been shipped. Contact support as soon as possible."
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "cards": [
+        {
+          "title": "Which payment methods do you accept?",
+          "description": "We accept Cash on Delivery, bKash, Nagad and major credit and debit cards."
+        },
+        {
+          "title": "Is online payment secure?",
+          "description": "Yes. All online payments are processed through encrypted, trusted payment gateways."
+        }
+      ]
+    },
+    {
+      "name": "Returns & Refunds",
+      "cards": [
+        {
+          "title": "What is your return policy?",
+          "description": "You can return unused products within 7 days of delivery if they are in their original packaging."
+        },
+        {
+          "title": "When will I get my refund?",
+          "description": "Refunds are processed within 5-7 working days after we receive and inspect the returned item."
+        }
+      ]
     }
   ]
 }
