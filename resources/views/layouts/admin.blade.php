@@ -314,7 +314,7 @@
             <flux:sidebar.collapse class="max-lg:hidden" />
             <flux:button size="sm" variant="subtle" square x-data x-on:click="location.reload()" icon="arrow-path"
                 aria-label="Refresh" class="max-lg:hidden" />
-            <flux:button size="sm" variant="subtle" square :href="config('app.frontend_url')" icon="arrow-top-right-on-square"
+            <flux:button size="sm" variant="subtle" square :href="config('app.frontend_url')" icon="globe-alt"
                 target="_blank" aria-label="Open frontend" class="max-lg:hidden" />
 
             <div class="flex-1"></div>

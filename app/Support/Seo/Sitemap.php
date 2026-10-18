@@ -6,6 +6,7 @@ use App\Models\Page;
 use App\Models\Post;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\Setting;
 use App\Support\Themes;
 use DateTimeInterface;
 use Illuminate\Support\Facades\Cache;
@@ -68,6 +69,14 @@ final class Sitemap
     }
 
     /**
+     * Drop the cached XML so the next read rebuilds it from the content tables.
+     */
+    public static function refresh(): void
+    {
+        Cache::forget('seo:sitemap:'.self::fingerprint());
+    }
+
+    /**
      * The URL inventory: loc, lastmod, changefreq, priority, in that order.
      *
      * @return array<int, array{loc: string, lastmod: ?string, changefreq: string, priority: float}>
@@ -83,9 +92,9 @@ final class Sitemap
         // the theme's own home.blade.php passes to the layout, so the two
         // cannot drift apart.
         $entries = array_merge(
-            Themes::isIndexable() ? [self::entry(Url::url('/'), null, 'home')] : [],
-            self::listing(Url::url('shop'), 'shop'),
-            self::listing(Url::url('blog'), 'blog'),
+            Themes::isIndexable() && Themes::activeThemeCanRender('home') ? [self::entry(self::loc('/'), null, 'home')] : [],
+            self::listing(self::loc('shop'), 'shop'),
+            self::listing(self::loc('blog'), 'blog'),
             self::pages(),
             self::products(),
             self::productCategories(),
@@ -139,7 +148,7 @@ final class Sitemap
      */
     private static function fingerprint(): string
     {
-        $parts = [Themes::active(), Url::origin()];
+        $parts = [Themes::active(), self::base()];
 
         // The active theme's indexability, not just its slug: it decides whether
         // the home page is in the list at all, and it is a key in a file an owner
@@ -153,6 +162,23 @@ final class Sitemap
         }
 
         return md5(implode('|', $parts));
+    }
+
+    /**
+     * The origin every sitemap URL is built on: the configured SEO site URL when
+     * there is one, else APP_URL — never the host of the current request, which
+     * inside the admin panel is the admin host, not the public site.
+     */
+    private static function base(): string
+    {
+        $configured = trim((string) Setting::get('seo_site_url', ''));
+
+        return rtrim($configured !== '' ? Url::normalize($configured) : (string) config('app.url'), '/');
+    }
+
+    private static function loc(string $path): string
+    {
+        return self::base().Url::path($path);
     }
 
     /**
@@ -238,12 +264,16 @@ final class Sitemap
      */
     private static function pages(): array
     {
+        if (! Themes::activeThemeCanRender('page')) {
+            return [];
+        }
+
         return Page::published()
             ->where('type', 'page')
             ->where('slug', '!=', 'home')
             ->where('no_index', false)
             ->get(['slug', 'updated_at'])
-            ->map(fn (Page $page) => self::entry(Url::url($page->slug), $page->updated_at, 'page'))
+            ->map(fn (Page $page) => self::entry(self::loc($page->slug), $page->updated_at, 'page'))
             ->all();
     }
 
@@ -262,7 +292,7 @@ final class Sitemap
             return [];
         }
 
-        return [self::entry(Url::url($path), $updatedAt, $signal)];
+        return [self::entry(self::loc($path), $updatedAt, $signal)];
     }
 
     /**

@@ -18,6 +18,13 @@ use Livewire\Component;
  */
 class Sitemap extends Component
 {
+    public function regenerate(): void
+    {
+        SitemapBuilder::refresh();
+
+        session()->flash('success', 'Sitemap regenerated.');
+    }
+
     public function render()
     {
         $entries = SitemapBuilder::entries();
