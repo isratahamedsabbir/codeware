@@ -293,6 +293,10 @@ class SettingsSeeder extends Seeder
             // still there and unread.
             ['key' => 'notifications_enabled', 'value' => '1', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
 
+            // ── App name label (admin panel) ── the faint shimmering app name in
+            // the middle of the header (see layouts.admin.blade.php).
+            ['key' => 'app_name_label_enabled', 'value' => '1', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
+
             // ── Shop status ── whether customers can currently place orders
             // (see OrderController::store()). Public since the frontend needs
             // it to show a "shop closed" state. Own group, excluded from the

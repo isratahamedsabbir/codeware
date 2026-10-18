@@ -397,6 +397,21 @@ $imageMeta = match ($setting->key) {
                     </p>
                 </x-admin-section-card>
 
+                {{-- App name label --}}
+                <x-admin-section-card header-border="border-zinc-100" icon="tag" title="App Name"
+                    description="Shows the app name, with a soft shine, in the middle of the admin header.">
+                    <x-slot:actions>
+                        <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
+                            <input type="checkbox" wire:model="settings.app_name_label_enabled" class="rounded border-zinc-300 text-primary" />
+                            Enable
+                        </label>
+                    </x-slot:actions>
+
+                    <p class="text-xs text-zinc-400">
+                        The name comes from the app name in the environment settings.
+                    </p>
+                </x-admin-section-card>
+
                 {{-- Notification bell --}}
                 <x-admin-section-card header-border="border-zinc-100" icon="bell" title="Notifications"
                     description="Shows the notification bell in the admin header.">

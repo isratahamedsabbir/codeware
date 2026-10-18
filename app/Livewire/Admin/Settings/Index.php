@@ -71,6 +71,12 @@ class Index extends Component
         // system font, the same value the seeder writes. A saved font whose
         // folder has since been deleted is shown as the system font too, which
         // is what the panel is already rendering in.
+        // Same for the header app-name label: a database that predates it has no
+        // row, and the header treats "no row" as on, so the checkbox must too.
+        // Cast explicitly: a row first written by save() (not the seeder) has
+        // type "string", so the loop above would leave "0" as a truthy string.
+        $this->settings['app_name_label_enabled'] = (bool) ($this->settings['app_name_label_enabled'] ?? true);
+
         $this->settings['admin_font'] = AdminFont::normalize($this->settings['admin_font'] ?? AdminFont::SYSTEM);
     }
 

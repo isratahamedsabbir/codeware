@@ -26,6 +26,7 @@
         $calculatorEnabled = (bool) \App\Models\Setting::get('calculator_enabled', true);
         $stickyNoteEnabled = (bool) \App\Models\Setting::get('sticky_note_enabled', true);
         $notificationsEnabled = (bool) \App\Models\Setting::get('notifications_enabled', true);
+        $appNameLabelEnabled = (bool) \App\Models\Setting::get('app_name_label_enabled', true);
         // The header widgets that only make sense alongside a feature are gone
         // with it (Settings → Features), not just un-configurable: a Shop On/Off
         // button on a panel with no products, a language dropdown on a panel with
@@ -94,6 +95,30 @@
 
         [x-cloak] {
             display: none !important;
+        }
+
+        /* Header app name: faint text with a soft light sweep passing over it. */
+        .admin-app-name {
+            --shine-base: #d4d4d8;
+            --shine-glow: #ffffff;
+            background: linear-gradient(110deg, var(--shine-base) 35%, var(--shine-glow) 50%, var(--shine-base) 65%) 200% 0 / 200% 100% no-repeat;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: admin-app-name-shine 8s linear infinite;
+        }
+
+        .dark .admin-app-name {
+            --shine-base: #52525b;
+            --shine-glow: #a1a1aa;
+        }
+
+        @keyframes admin-app-name-shine {
+            to { background-position: -100% 0; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .admin-app-name { animation: none; background-position: 0 0; }
         }
 
         /* flux:header ships with z-10, same as the sticky right-hand "Actions"
@@ -318,6 +343,12 @@
                 target="_blank" aria-label="Open frontend" class="max-lg:hidden" />
 
             <div class="flex-1"></div>
+
+            @if ($appNameLabelEnabled)
+                <div class="pointer-events-none min-w-0 max-w-[35%] lg:absolute lg:left-1/2 lg:top-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2">
+                    <span class="admin-app-name truncate text-xl font-extrabold tracking-wide">{{ config('app.name') }}</span>
+                </div>
+            @endif
 
             <div class="flex items-center gap-1.5">
                 @include('partials._admin-command-palette')
