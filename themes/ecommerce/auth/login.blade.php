@@ -97,6 +97,8 @@
                     </button>
                 </form>
 
+                @include('theme-ecommerce::partials._social-login')
+
                 <p class="mt-6 text-center text-sm text-gray-600">
                     {{ __("Don't have an account?") }}
                     <a href="{{ route('register') }}" class="font-semibold text-brand hover:underline">

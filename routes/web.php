@@ -14,6 +14,7 @@
  */
 
 use App\Http\Controllers\Auth\PasswordResetOtpController;
+use App\Http\Controllers\Auth\SocialLoginController;
 use App\Http\Controllers\Auth\TwoFactorPasskeyController;
 use App\Http\Controllers\ChatWidgetFragmentController;
 use App\Http\Controllers\InvoiceController;
@@ -51,6 +52,15 @@ Route::middleware('guest')->group(function () {
         Route::post('/verify-code', [PasswordResetOtpController::class, 'verify'])->name('password.verify.check');
         Route::post('/reset-password', [PasswordResetOtpController::class, 'reset'])->name('password.update');
     });
+});
+
+// Google/Facebook sign-in for the storefront. Domainless like Fortify's own
+// /login, so it answers on whichever storefront host the visitor is on.
+Route::middleware('guest')->prefix('auth')->group(function () {
+    Route::get('/{provider}/redirect', [SocialLoginController::class, 'redirect'])
+        ->where('provider', 'google|facebook')->name('social.redirect');
+    Route::get('/{provider}/callback', [SocialLoginController::class, 'callback'])
+        ->where('provider', 'google|facebook')->name('social.callback');
 });
 
 // Public, signed invoice links — what the invoice QR code and "Download PDF"

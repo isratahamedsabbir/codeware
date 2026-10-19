@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Support\ApiMfa;
 use App\Support\ApiToken;
+use App\Support\SocialAccount;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Str;
-use Laravel\Socialite\Contracts\User as SocialiteUser;
 use Laravel\Socialite\Facades\Socialite;
 use Throwable;
 
@@ -63,7 +61,7 @@ class SocialAuthController extends Controller
             return redirect()->away("{$frontendCallback}?error=no_email");
         }
 
-        $user = $this->findOrCreateUser($provider, $socialUser);
+        $user = SocialAccount::findOrCreate($provider, $socialUser);
 
         if ($user->is_blocked || $user->hasInactiveRole()) {
             return redirect()->away("{$frontendCallback}?error=account_disabled");
@@ -92,35 +90,6 @@ class SocialAuthController extends Controller
         $token = ApiToken::issue($user);
 
         return redirect()->away("{$frontendCallback}?token={$token}");
-    }
-
-    private function findOrCreateUser(string $provider, SocialiteUser $socialUser): User
-    {
-        $user = User::where('provider', $provider)->where('provider_id', $socialUser->getId())->first();
-
-        if ($user) {
-            return $user;
-        }
-
-        $user = User::where('email', $socialUser->getEmail())->first();
-
-        if ($user) {
-            $user->forceFill([
-                'provider' => $user->provider ?? $provider,
-                'provider_id' => $user->provider_id ?? $socialUser->getId(),
-            ])->save();
-
-            return $user;
-        }
-
-        return User::create([
-            'name' => $socialUser->getName() ?: $socialUser->getNickname() ?: 'User',
-            'email' => $socialUser->getEmail(),
-            'password' => Str::random(40),
-            'provider' => $provider,
-            'provider_id' => $socialUser->getId(),
-            'email_verified_at' => now(),
-        ]);
     }
 
     private function ensureSupported(string $provider): void
