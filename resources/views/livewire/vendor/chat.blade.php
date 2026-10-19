@@ -13,7 +13,12 @@
         panelHeight: null,
         init() {
             this.syncHeight();
+            this.$nextTick(() => this.syncHeight());
             window.addEventListener('resize', () => this.syncHeight());
+            window.addEventListener('orientationchange', () => setTimeout(() => this.syncHeight(), 200));
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', () => this.syncHeight());
+            }
 
             try {
                 this.channel = window.Echo.private('App.Models.User.' + this.authId)
@@ -24,7 +29,9 @@
         },
         syncHeight() {
             const top = this.$el.getBoundingClientRect().top;
-            this.panelHeight = `calc(100dvh - ${top}px - 1rem)`;
+            const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+            const gap = window.innerWidth < 768 ? 12 : 16;
+            this.panelHeight = `${Math.max(320, Math.floor(vh - top - gap))}px`;
         },
         handleIncoming(event) {
             if (String(event.conversation_id) === String(this.activeId)) {
@@ -42,7 +49,7 @@
 >
     {{-- Conversation list --}}
     <div class="admin-card w-full md:w-[320px] shrink-0 min-h-0 flex-col overflow-hidden {{ $this->activeConversation ? 'hidden md:flex' : 'flex' }}">
-        <div class="p-3 border-b border-zinc-100 relative">
+        <div class="p-3 border-b border-zinc-100 relative [&_input]:text-base md:[&_input]:text-sm">
             <flux:input
                 wire:model.live.debounce.300ms="userSearch"
                 placeholder="Start a chat — search support by name or email"
@@ -123,12 +130,12 @@
                     scrollToBottom();
                     new MutationObserver(() => $nextTick(scrollToBottom)).observe($refs.messageList, { childList: true });
                 "
-                class="flex-1 min-h-0 overflow-y-auto chat-scroll px-4 py-4 flex flex-col space-y-3"
+                class="flex-1 min-h-0 overflow-y-auto overscroll-contain chat-scroll px-3 md:px-4 py-3 md:py-4 flex flex-col space-y-3"
             >
                 @forelse ($this->threadMessages as $message)
                     @php $isMine = $message->sender_id === auth()->id(); @endphp
                     <div wire:key="message-{{ $message->id }}" class="flex {{ $isMine ? 'justify-end' : 'justify-start' }}">
-                        <div class="max-w-[70%] rounded-2xl px-3.5 py-2 text-sm {{ $isMine ? 'bg-secondary text-white rounded-br-sm' : 'bg-zinc-100 text-zinc-800 rounded-bl-sm' }}">
+                        <div class="max-w-[85%] md:max-w-[70%] rounded-2xl px-3.5 py-2 text-sm {{ $isMine ? 'bg-secondary text-white rounded-br-sm' : 'bg-zinc-100 text-zinc-800 rounded-bl-sm' }}">
                             <div class="whitespace-pre-wrap wrap-break-word">{{ $message->body }}</div>
                             <div class="text-[10px] mt-1 {{ $isMine ? 'text-white/70' : 'text-zinc-400' }}">
                                 {{ $message->created_at->toDisplay('g:i A') }}
@@ -143,10 +150,10 @@
             </div>
 
             <form wire:submit="sendMessage" class="p-3 border-t border-zinc-100 flex items-end gap-2 shrink-0">
-                <div class="flex-1">
+                <div class="flex-1 min-w-0 [&_textarea]:text-base md:[&_textarea]:text-sm">
                     <flux:textarea
                         wire:model="messageBody"
-                        rows="2"
+                        rows="1"
                         placeholder="{{ __('Write a message...') }}"
                         x-on:keydown.enter.prevent="if (!$event.shiftKey) { $wire.sendMessage(); }"
                     />
