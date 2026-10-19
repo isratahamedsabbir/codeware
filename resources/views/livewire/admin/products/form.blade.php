@@ -18,6 +18,12 @@
     </style>
 
     @push('page-header-actions')
+        @if (\App\Support\Features::settingAvailable('additional_data_products_enabled'))
+            <label class="inline-flex items-center gap-2 rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-600 cursor-pointer">
+                <input type="checkbox" onclick="Livewire.dispatch('toggle-additional-data')" @checked(\App\Models\Setting::productAdditionalDataEnabled()) class="rounded border-zinc-300 text-primary" />
+                Additional Data
+            </label>
+        @endif
         <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.products') }}" wire:navigate>
             Back
         </flux:button>
@@ -146,8 +152,8 @@
         </x-admin-section-card>
 
         {{-- Additional Data: Description, Short Description, Specification —
-             rich editors above the Variations, toggled from Settings → Widgets --}}
-        @if (\App\Models\Setting::productAdditionalDataEnabled())
+             rich editors above the Variations --}}
+        @if (\App\Support\Features::settingAvailable('additional_data_products_enabled') && \App\Models\Setting::productAdditionalDataEnabled())
             <x-admin-section-card variant="postbox" persist-key="product-additional-data" title="Additional Data"
                 description="Rich-text description, short description and specification for this product."
                 :collapsed="true">

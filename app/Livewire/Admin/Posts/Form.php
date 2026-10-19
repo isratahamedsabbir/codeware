@@ -16,6 +16,7 @@ use App\Support\Slug;
 use App\Support\Taxonomy;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
@@ -280,6 +281,12 @@ class Form extends Component
             $creating ? 'created' : 'updated',
             "Post #{$post->id}: {$this->primaryValue('title')}",
         );
+    }
+
+    #[On('toggle-additional-data')]
+    public function toggleAdditionalData(): void
+    {
+        \App\Models\Setting::set('additional_data_posts_enabled', \App\Models\Setting::postAdditionalDataEnabled() ? '0' : '1');
     }
 
     // This method is called by the FilePicker component when an image is selected

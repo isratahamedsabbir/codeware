@@ -243,7 +243,7 @@ class Setting extends Model
 
     /**
      * Whether the "Additional Data" card shows on the admin product form —
-     * toggled from Settings → Widgets → Product Additional Data.
+     * toggled from the Additional Data row on the product form.
      */
     public static function productAdditionalDataEnabled(): bool
     {
@@ -252,7 +252,7 @@ class Setting extends Model
 
     /**
      * Whether the "Additional Data" card shows on the admin blog post form —
-     * toggled from Settings → Widgets → Blog Post Additional Data.
+     * toggled from the Additional Data row on the post form.
      */
     public static function postAdditionalDataEnabled(): bool
     {

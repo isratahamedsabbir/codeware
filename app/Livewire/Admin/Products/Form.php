@@ -23,6 +23,7 @@ use App\Support\Taxonomy;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
@@ -972,6 +973,12 @@ class Form extends Component
             $creating ? 'created' : 'updated',
             "Product #{$product->id}: {$this->primaryValue('name')}",
         );
+    }
+
+    #[On('toggle-additional-data')]
+    public function toggleAdditionalData(): void
+    {
+        \App\Models\Setting::set('additional_data_products_enabled', \App\Models\Setting::productAdditionalDataEnabled() ? '0' : '1');
     }
 
     public function render()

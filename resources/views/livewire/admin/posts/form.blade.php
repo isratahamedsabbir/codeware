@@ -19,6 +19,12 @@
     </style>
 
     @push('page-header-actions')
+        @if (\App\Support\Features::settingAvailable('additional_data_posts_enabled'))
+            <label class="inline-flex items-center gap-2 rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-600 cursor-pointer">
+                <input type="checkbox" onclick="Livewire.dispatch('toggle-additional-data')" @checked(\App\Models\Setting::postAdditionalDataEnabled()) class="rounded border-zinc-300 text-primary" />
+                Additional Data
+            </label>
+        @endif
         <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.posts') }}" wire:navigate>
             Back
         </flux:button>
@@ -71,8 +77,8 @@
             </x-admin-locale-tabs>
         </x-admin-section-card>
 
-        {{-- Additional Data: Description — rich editor, toggled from Settings → Widgets --}}
-        @if (\App\Models\Setting::postAdditionalDataEnabled())
+        {{-- Additional Data: Description — rich editor --}}
+        @if (\App\Support\Features::settingAvailable('additional_data_posts_enabled') && \App\Models\Setting::postAdditionalDataEnabled())
             <x-admin-section-card variant="postbox" persist-key="post-additional-data" title="Additional Data"
                 description="Rich-text description shown in blog listings and as a fallback — the full post body is built separately in the page builder."
                 :collapsed="true">
