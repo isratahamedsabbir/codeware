@@ -245,7 +245,7 @@
                                         : ['icon' => 'external-link', 'label' => 'Preview', 'color' => 'cyan-500', 'disabled' => true],
                                     ['href' => route('admin.pages.edit', $page->id), 'icon' => 'pencil', 'label' => 'Constant', 'color' => 'primary', 'disabled' => $bulkActive],
                                     ['wireClick' => 'openPuckEditor(' . $page->id . ')', 'icon' => 'squares', 'label' => 'Layout', 'color' => 'secondary', 'disabled' => $bulkActive],
-                                    ['href' => route('admin.cms', ['pageId' => $page->id]), 'icon' => 'grid-cross', 'label' => 'CMS', 'color' => 'emerald-500', 'visible' => \App\Support\Features::enabled('cms'), 'disabled' => $bulkActive],
+                                    ['href' => route('admin.cms', ['pageId' => $page->id]), 'icon' => 'grid-cross', 'label' => 'CMS', 'color' => 'emerald-500', 'visible' => app()->environment('developer') && \App\Support\Features::enabled('cms'), 'disabled' => $bulkActive],
                                     ['wireClick' => 'confirmDelete(' . $page->id . ')', 'icon' => 'trash', 'label' => 'Delete', 'color' => 'rose-500', 'disabled' => $bulkActive],
                                 ]" />
                             </td>
