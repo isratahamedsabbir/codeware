@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\ChunkedUploadController;
 use App\Http\Controllers\Admin\ContactExportController;
 use App\Http\Controllers\Admin\CountryExportController;
 use App\Http\Controllers\Admin\CouponExportController;
+use App\Http\Controllers\Admin\CrudExportController;
 use App\Http\Controllers\Admin\DistrictExportController;
 use App\Http\Controllers\Admin\DivisionExportController;
 use App\Http\Controllers\Admin\FileManagerController;
@@ -31,6 +32,7 @@ use App\Livewire\Admin\Advance\PasswordGenerator;
 use App\Livewire\Admin\Advance\Robots;
 use App\Livewire\Admin\Advance\Sitemap;
 use App\Livewire\Admin\Auth\Login;
+use App\Livewire\Admin\Cruds\Records;
 use App\Livewire\Admin\Dashboard;
 use App\Livewire\Admin\DeveloperGuide;
 use App\Livewire\Admin\Orders\Show;
@@ -188,6 +190,14 @@ Route::middleware(['auth', 'admin', 'activity-log', 'mfa'])->group(function () {
             Route::get('/plugins/settings', App\Livewire\Admin\Plugins\Index::class)->name('plugin-settings');
             Route::get('/plugins/{slug}', App\Livewire\Admin\Plugins\Show::class)->name('plugins.show');
         });
+
+        // CRUD Builder — define a table and its fields; the table, sidebar link and
+        // records screen come out of it. See App\Support\Cruds.
+        Route::get('/cruds', App\Livewire\Admin\Cruds\Index::class)->name('cruds');
+        Route::get('/cruds/create', App\Livewire\Admin\Cruds\Form::class)->name('cruds.create');
+        Route::get('/cruds/{id}/edit', App\Livewire\Admin\Cruds\Form::class)->whereNumber('id')->name('cruds.edit');
+        Route::get('/cruds/{slug}/export', [CrudExportController::class, 'export'])->name('cruds.export');
+        Route::get('/cruds/{slug}/records', Records::class)->name('cruds.records');
 
         Route::middleware('feature:email-templates')->group(function () {
             Route::get('/email-templates', App\Livewire\Admin\EmailTemplates\Index::class)->name('email-templates');

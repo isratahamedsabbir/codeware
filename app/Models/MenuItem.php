@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\CachesContent;
+use App\Support\Cruds;
 use App\Support\Features;
 use App\Support\Plugins;
 use App\Support\Themes;
@@ -65,6 +66,7 @@ class MenuItem extends Model
         'admin.advance',
         'admin.plugin-settings',
         'admin.plugins',
+        'admin.cruds',
         'admin.countries',
         'admin.divisions',
         'admin.districts',
@@ -369,7 +371,7 @@ class MenuItem extends Model
             ->values();
 
         // The Plugins dropdown is built from the /plugins folder, not menu rows.
-        return Plugins::extendMenu($menu);
+        return Cruds::extendMenu(Plugins::extendMenu($menu));
     }
 
     /**
