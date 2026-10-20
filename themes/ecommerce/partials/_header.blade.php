@@ -23,6 +23,16 @@
         ->orderBy('sort_order')
         ->get();
 
+    // With the Products feature off there is no catalogue to browse, so the
+    // category/brand menus, favorites link and product search all go with it.
+    $productsEnabled = \App\Support\Features::enabled('products');
+
+    if (! $productsEnabled) {
+        $headerCategories = collect();
+        $headerTopCategories = collect();
+        $headerBrands = collect();
+    }
+
     $languages = \App\Support\Locale::active();
     $currentLocale = \App\Support\Locale::current();
     $languageSwitcherEnabled = (bool) \App\Models\Setting::get('language_switcher_enabled', true);
@@ -52,7 +62,7 @@
             </div>
 
             <div class="relative hidden flex-1 max-w-xl lg:block">
-                <livewire:frontend.header-search :key="'header-search'" />
+                @if ($productsEnabled)<livewire:frontend.header-search :key="'header-search'" />@endif
             </div>
 
             <div class="flex shrink-0 items-center gap-1 sm:gap-2">
@@ -243,7 +253,7 @@
     <input type="checkbox" id="mobile-menu" class="peer hidden">
     <div class="hidden border-b border-gray-100 bg-white px-4 py-4 peer-checked:block md:hidden">
         <div class="relative mb-4">
-                <livewire:frontend.header-search :on-dark="false" :key="'header-search-mobile'" />
+                @if ($productsEnabled)<livewire:frontend.header-search :on-dark="false" :key="'header-search-mobile'" />@endif
             </div>
 
         <nav class="flex flex-col">
@@ -289,7 +299,9 @@
                     </div>
                 </div>
             @endif
-            <a href="{{ route('favorites') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My favorites') }}</a>
+            @if ($productsEnabled)
+                <a href="{{ route('favorites') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My favorites') }}</a>
+            @endif
             <a href="{{ route('cart') }}" class="rounded-md px-3 py-2.5 text-sm font-semibold text-sf-text transition-colors hover:bg-gray-50 hover:text-brand">{{ __('My cart') }}</a>
             @auth
                 <p class="px-3 pb-1 pt-3 text-xs font-bold uppercase tracking-wide text-zinc-500">{{ __('My account') }}</p>

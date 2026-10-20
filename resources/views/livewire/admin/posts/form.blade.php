@@ -52,14 +52,12 @@
                 @endforeach
 
                     <flux:field>
-                        <flux:label>Slug</flux:label>
+                        <flux:label>Slug<x-field-hint text="Auto-generated from the primary language's title as you type — edit it if you'd like a different one" /></flux:label>
                         <flux:input wire:model.live.debounce.400ms="slug" placeholder="auto-generated-from-title" />
                         @if ($slugAvailable === false)
                             <p class="text-xs text-red-500 mt-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span>This slug is already taken</p>
                         @elseif ($slugAvailable === true && $slug !== '')
                             <p class="text-xs text-green-600 mt-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>This slug is available</p>
-                        @else
-                            <p class="text-xs text-zinc-400 mt-1">Auto-generated from the primary language's title as you type — edit it if you'd like a different one</p>
                         @endif
                         <flux:error name="slug" />
                     </flux:field>

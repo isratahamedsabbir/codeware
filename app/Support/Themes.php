@@ -52,6 +52,20 @@ class Themes
     ];
 
     /**
+     * Storefront routes that belong to a toggleable feature (Settings → Features),
+     * so a nav link to one is dropped once its feature is off — the route itself
+     * 404s through the same feature (see each theme's routes/web.php).
+     */
+    private const ROUTE_FEATURES = [
+        'shop' => 'products',
+        'products.show' => 'products',
+        'shop.category' => 'products',
+        'shop.brand' => 'products',
+        'shop.tag' => 'products',
+        'favorites' => 'products',
+    ];
+
+    /**
      * Request-scoped memo of the cached folder scan — active()/view() are hit
      * several times a themed page. Keyed by the cache repository instance so
      * the memo dies with the bootstrap that owns the cache.
@@ -820,6 +834,12 @@ class Themes
 
         if ($routeName === null || ! array_key_exists($routeName, self::ROUTE_TEMPLATES)) {
             return true;
+        }
+
+        $feature = self::ROUTE_FEATURES[$routeName] ?? null;
+
+        if ($feature !== null && ! Features::enabled($feature)) {
+            return false;
         }
 
         return static::has(self::ROUTE_TEMPLATES[$routeName]);

@@ -107,10 +107,12 @@ Route::get('/pages/{slug}', [PageController::class, 'show'])->name('pages.show')
 Route::get('/settings/public', [SettingsController::class, 'public'])->name('settings.public');
 Route::get('/layout', [LayoutController::class, 'show'])->name('layout.show');
 
-Route::get('/product-categories', [ProductCategoryController::class, 'index'])->name('product-categories.index');
-Route::get('/product-categories/{slug}', [ProductCategoryController::class, 'show'])->name('product-categories.show');
-Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
+Route::middleware('feature:products')->group(function () {
+    Route::get('/product-categories', [ProductCategoryController::class, 'index'])->name('product-categories.index');
+    Route::get('/product-categories/{slug}', [ProductCategoryController::class, 'show'])->name('product-categories.show');
+    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+    Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
+});
 
 // Flash deals — only the ones live right now (see FlashDeal::scopeLive()).
 Route::middleware('feature:flash-deals')->group(function () {
