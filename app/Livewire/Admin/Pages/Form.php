@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Pages;
 use App\Concerns\HasSeoFields;
 use App\Concerns\HasTranslatableFields;
 use App\Models\Page;
+use App\Models\PageRevision;
 use App\Support\AdminActivity;
 use App\Support\PuckEditor;
 use App\Support\Slug;
@@ -200,9 +201,9 @@ class Form extends Component
     }
 
     /**
-     * Puts a past revision's content/layout back on the page. The current state
-     * is snapshotted by Page's updating hook first, so a restore can itself be
-     * undone from the same list.
+     * Puts a past revision's content/layout back on the page. Page's saved hook
+     * records the result as a new revision on top, so the history stays linear
+     * and a restore can itself be undone from the same list.
      */
     public function restoreRevision(int $revisionId): void
     {
@@ -325,6 +326,7 @@ class Form extends Component
             'revisions' => $this->pageId
                 ? Page::find($this->pageId)?->revisions()->with('user')->limit(20)->get() ?? collect()
                 : collect(),
+            'revisionCount' => $this->pageId ? PageRevision::where('page_id', $this->pageId)->count() : 0,
         ])
             ->layout('layouts.admin', ['title' => $this->pageId ? 'Edit Page Constant' : 'New Page']);
     }

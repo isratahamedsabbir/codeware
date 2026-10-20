@@ -6,14 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * A snapshot of a Page's body as it was *before* an edit replaced it. Both
+ * A snapshot of a Page's body as of one save — one row per publish. Both
  * columns hold the raw JSON exactly as the pages table stored it (content is
  * a per-locale translation map, puck_data the visual-editor tree), so
- * restoring is a straight write back. Null means that part was not touched
- * by the edit this revision precedes.
+ * restoring is a straight write back. Null means the page had none of that
+ * part at the time. user_id is null when the save had no signed-in user.
  */
 class PageRevision extends Model
 {
+    /** Revisions kept per page; older ones are pruned on save. */
+    public const KEEP = 50;
+
     protected $fillable = ['page_id', 'user_id', 'content', 'puck_data'];
 
     /** @return array<string, mixed>|null */

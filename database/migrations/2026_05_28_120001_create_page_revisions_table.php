@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('page_revisions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('page_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->longText('content')->nullable();
             $table->longText('puck_data')->nullable();
             $table->timestamps();

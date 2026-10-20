@@ -73,25 +73,27 @@
         </x-admin-section-card>
 
         @if ($pageId)
-            <x-admin-section-card variant="postbox" persist-key="page-revisions" title="Revisions"
-                description="Earlier versions of this page's content and layout. Restoring keeps the current version in this list." :collapsed="true">
+            <x-admin-section-card variant="postbox" persist-key="page-revisions" title="Revisions ({{ $revisionCount }})"
+                description="Every time this page's content or layout is saved or published, a version is kept here — newest first. Restoring one is itself recorded as a new version." :collapsed="true">
                 @forelse ($revisions as $revision)
                     <div wire:key="revision-{{ $revision->id }}" class="flex items-center justify-between gap-3 py-2 border-b border-zinc-100 last:border-0">
                         <div class="min-w-0">
-                            <div class="text-sm text-zinc-800">{{ $revision->created_at->toDisplay() }}</div>
+                            <div class="text-sm text-zinc-800">{{ $revision->created_at->toDisplay() }}@if ($loop->first) <span class="ml-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-600 border border-emerald-200">Latest</span>@endif</div>
                             <div class="text-xs text-zinc-500">
                                 {{ $revision->user?->name ?? 'Unknown' }}
                                 · {{ collect([$revision->content ? 'Content' : null, $revision->puck_data ? 'Layout' : null])->filter()->implode(' + ') }}
                             </div>
                         </div>
-                        <flux:button size="xs" variant="outline" icon="arrow-uturn-left"
-                            wire:click="restoreRevision({{ $revision->id }})"
-                            wire:confirm="Restore this revision? The current version will be kept as a new revision.">
-                            Restore
-                        </flux:button>
+                        @unless ($loop->first)
+                            <flux:button size="xs" variant="outline" icon="arrow-uturn-left"
+                                wire:click="restoreRevision({{ $revision->id }})"
+                                wire:confirm="Restore this version? It will be saved as a new version on top of the list.">
+                                Restore
+                            </flux:button>
+                        @endunless
                     </div>
                 @empty
-                    <p class="text-sm text-zinc-500">No revisions yet. One is saved each time the page's content or layout changes.</p>
+                    <p class="text-sm text-zinc-500">No versions yet. One is saved each time the page's content or layout is saved or published.</p>
                 @endforelse
             </x-admin-section-card>
         @endif

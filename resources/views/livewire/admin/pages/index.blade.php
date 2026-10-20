@@ -163,11 +163,17 @@
 
                             {{-- Title + slug (slug below, click to copy) --}}
                             <td class="px-4 py-2">
-                                <div class="font-medium text-zinc-900 text-sm leading-snug"
+                                <div class="flex items-center gap-2 font-medium text-zinc-900 text-sm leading-snug"
                                     @if ($page->getTranslation('title', 'bn', false))
                                         title="{{ $page->getTranslation('title', 'en', false) }} — {{ $page->getTranslation('title', 'bn', false) }}"
                                     @endif>
-                                    <x-truncate :text="$page->getTranslation('title', 'en', false)" />
+                                    <span class="min-w-0"><x-truncate :text="$page->getTranslation('title', 'en', false)" /></span>
+                                    @if ($page->revisions_count > 0)
+                                        <span title="{{ $page->revisions_count }} {{ \Illuminate\Support\Str::plural('revision', $page->revisions_count) }}"
+                                            class="inline-flex shrink-0 items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-medium text-indigo-600">
+                                            <flux:icon.clock class="size-3" />{{ $page->revisions_count }}
+                                        </span>
+                                    @endif
                                 </div>
                                 <div class="mt-0.5">
                                     <x-copy-text :text="$page->slug" class="font-mono text-[11px] text-zinc-500 block">

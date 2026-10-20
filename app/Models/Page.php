@@ -60,23 +60,48 @@ class Page extends Model
             $page->collapseEmptySeoTranslations();
         });
 
-        static::updating(function (Page $page) {
-            if (! auth()->id()) {
+        // Every save that changes the body — a Puck publish from the frontend,
+        // a content edit, a restore — writes one revision holding the body as
+        // it now stands, so the list is the page's publish history, newest
+        // first. A save that leaves content and puck_data as they were (a
+        // title or SEO tweak, a re-publish with no changes) writes nothing.
+        static::saved(function (Page $page) {
+            if (! $page->wasRecentlyCreated && ! $page->wasChanged(['content', 'puck_data'])) {
                 return;
             }
 
-            // Only the part that is actually changing is snapshotted, and only
-            // when there was something there to lose.
-            $content = $page->isDirty('content') ? $page->getRawOriginal('content') : null;
-            $puck = $page->isDirty('puck_data') ? $page->getRawOriginal('puck_data') : null;
+            $content = $page->getAttributes()['content'] ?? null;
+            $puck = $page->getAttributes()['puck_data'] ?? null;
 
-            if (filled($content) || filled($puck)) {
-                PageRevision::create([
-                    'page_id' => $page->id,
-                    'user_id' => auth()->id(),
-                    'content' => filled($content) ? $content : null,
-                    'puck_data' => filled($puck) ? $puck : null,
-                ]);
+            if (blank($content) && blank($puck)) {
+                return;
+            }
+
+            $content = filled($content) ? $content : null;
+            $puck = filled($puck) ? $puck : null;
+
+            // wasRecentlyCreated stays true on a model instance that is saved
+            // again after being created, so compare with the newest revision
+            // rather than trusting it alone.
+            $latest = PageRevision::where('page_id', $page->id)->latest('id')->first();
+
+            if ($latest && $latest->content === $content && $latest->puck_data === $puck) {
+                return;
+            }
+
+            PageRevision::create([
+                'page_id' => $page->id,
+                'user_id' => auth()->id(),
+                'content' => $content,
+                'puck_data' => $puck,
+            ]);
+
+            // Keep the history bounded: the newest PageRevision::KEEP per page.
+            $stale = PageRevision::where('page_id', $page->id)
+                ->orderByDesc('id')->skip(PageRevision::KEEP)->take(PHP_INT_MAX)->pluck('id');
+
+            if ($stale->isNotEmpty()) {
+                PageRevision::whereIn('id', $stale)->delete();
             }
         });
     }
@@ -118,7 +143,7 @@ class Page extends Model
 
     public function revisions(): HasMany
     {
-        return $this->hasMany(PageRevision::class)->latest();
+        return $this->hasMany(PageRevision::class)->latest()->latest('id');
     }
 
     public function product(): BelongsTo
