@@ -210,16 +210,9 @@ class Form extends Component
         $page = Page::findOrFail($this->pageId);
         $revision = $page->revisions()->findOrFail($revisionId);
 
-        $attributes = array_filter([
-            'content' => $revision->contentData(),
-            'puck_data' => $revision->puckDataArray(),
-        ], fn ($value) => $value !== null);
-
-        if ($attributes === []) {
+        if (! $page->restoreRevision($revision)) {
             return;
         }
-
-        $page->update($attributes);
 
         AdminActivity::log('updated', "Page #{$page->id}: restored revision #{$revision->id}");
         $this->dispatch('notify', message: 'Revision restored successfully');

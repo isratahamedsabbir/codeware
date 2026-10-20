@@ -65,3 +65,42 @@ it('prunes the history to the newest revisions', function () {
     expect($page->revisions()->count())->toBe(PageRevision::KEEP)
         ->and($page->revisions()->first()->puckDataArray()['root']['props']['title'])->toBe('v'.(PageRevision::KEEP + 5));
 });
+
+it('lists, shows and restores a page revision through the admin api', function () {
+    Sanctum::actingAs($this->admin);
+    $page = Page::factory()->create();
+    $page->revisions()->delete();
+
+    foreach (['One', 'Two'] as $title) {
+        $this->putJson("/api/v1/admin/pages/{$page->id}", ['puck_data' => puck($title)])->assertOk();
+    }
+
+    $list = $this->getJson("/api/v1/admin/pages/{$page->id}/revisions")
+        ->assertOk()
+        ->assertJsonPath('meta.total', 2)
+        ->assertJsonPath('data.0.user.id', $this->admin->id);
+
+    $oldest = $list->json('data.1.id');
+
+    $this->getJson("/api/v1/admin/pages/{$page->id}/revisions/{$oldest}")
+        ->assertOk()
+        ->assertJsonPath('data.puck_data.root.props.title', 'One');
+
+    $this->postJson("/api/v1/admin/pages/{$page->id}/revisions/{$oldest}/restore")->assertOk();
+
+    expect($page->fresh()->puck_data['root']['props']['title'])->toBe('One')
+        ->and($page->revisions()->count())->toBe(3);
+});
+
+it('keeps the revision api admin-only and scoped to its own page', function () {
+    $page = Page::factory()->create();
+    $other = Page::factory()->create();
+    $other->update(['puck_data' => puck('Other')]);
+    $revision = $other->revisions()->latest('id')->first();
+
+    $this->getJson("/api/v1/admin/pages/{$page->id}/revisions")->assertUnauthorized();
+
+    Sanctum::actingAs($this->admin);
+    $this->getJson("/api/v1/admin/pages/{$page->id}/revisions/{$revision->id}")->assertNotFound();
+    $this->postJson("/api/v1/admin/pages/{$page->id}/revisions/{$revision->id}/restore")->assertNotFound();
+});

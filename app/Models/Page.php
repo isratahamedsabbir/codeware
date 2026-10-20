@@ -141,6 +141,27 @@ class Page extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Writes a revision's content/layout back onto this page. The save goes
+     * through the normal hook, so it lands in the history as a new revision on
+     * top. Returns false when the revision holds nothing to write.
+     */
+    public function restoreRevision(PageRevision $revision): bool
+    {
+        $attributes = array_filter([
+            'content' => $revision->contentData(),
+            'puck_data' => $revision->puckDataArray(),
+        ], fn ($value) => $value !== null);
+
+        if ($attributes === []) {
+            return false;
+        }
+
+        $this->update($attributes);
+
+        return true;
+    }
+
     public function revisions(): HasMany
     {
         return $this->hasMany(PageRevision::class)->latest()->latest('id');
