@@ -321,6 +321,6 @@ class Form extends Component
                 : collect(),
             'revisionCount' => $this->pageId ? PageRevision::where('page_id', $this->pageId)->count() : 0,
         ])
-            ->layout('layouts.admin', ['title' => $this->pageId ? 'Edit Page Constant' : 'New Page']);
+            ->layout('layouts.admin', ['title' => $this->pageId ? 'Edit Page' : 'New Page']);
     }
 }
