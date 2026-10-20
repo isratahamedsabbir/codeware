@@ -303,6 +303,10 @@
                                     <x-dynamic-component :component="'flux::icon.'.$groupIcon" class="size-4.5" />
                                 </span>
                                 <span>{{ __($item->label) }}</span>
+                                @php $groupBadge = $item->children->sum(fn ($c) => $c->badgeCount()); @endphp
+                                @if ($groupBadge > 0)
+                                    <span class="inline-block size-2 rounded-full" style="background:#f43f5e" title="{{ $groupBadge }} {{ __('unread') }}"></span>
+                                @endif
                             </span>
                             <span class="admin-nav-group-chevron-wrap flex shrink-0 items-center justify-center">
                                 <flux:icon.chevron-right class="admin-nav-group-chevron size-4 transition-transform duration-200"

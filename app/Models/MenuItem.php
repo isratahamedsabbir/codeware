@@ -306,6 +306,21 @@ class MenuItem extends Model
         return null;
     }
 
+    /**
+     * A count to show as a pill beside this item in the admin sidebar — what is
+     * waiting for attention behind it. 0 means no pill. Only Contacts has one
+     * (its unread messages); a group has none of its own, so the layout sums its
+     * children. Read fresh on every render: it is a single indexed-free COUNT and
+     * the number has to drop the moment a message is marked read.
+     */
+    public function badgeCount(): int
+    {
+        return match ($this->route_name) {
+            'admin.contacts' => Contact::where('status', 'unread')->count(),
+            default => 0,
+        };
+    }
+
     public function isVisibleToCurrentUser(): bool
     {
         $gate = $this->requiredGate();
