@@ -7,6 +7,7 @@ use App\Concerns\HasPerPage;
 use App\Concerns\SendsCustomEmail;
 use App\Concerns\WithSearch;
 use App\Models\Contact;
+use App\Support\AdminActivity;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -19,6 +20,10 @@ class Index extends Component
     public ?int $viewingMessageId = null;
 
     public ?int $viewingContactId = null;
+
+    public ?int $deletingId = null;
+
+    public string $deleteConfirmation = '';
 
     public function updatedStatusFilter(): void
     {
@@ -68,6 +73,40 @@ class Index extends Component
         $this->customEmailSubject = 'Re: '.$contact->subject;
         $this->dispatch('close-modal', name: 'contact-view');
         $this->dispatch('open-modal', name: 'send-custom-email');
+    }
+
+    /**
+     * Deleting contacts is a developer-environment-only tool — checked
+     * server-side too, since Livewire actions are callable without the button.
+     */
+    public function confirmDelete(int $id): void
+    {
+        abort_unless(app()->environment('developer'), 403);
+
+        $this->deletingId = $id;
+        $this->deleteConfirmation = '';
+        $this->dispatch('open-modal', name: 'contact-delete');
+    }
+
+    public function delete(): void
+    {
+        abort_unless(app()->environment('developer'), 403);
+
+        if (strtolower(trim($this->deleteConfirmation)) !== 'delete' || ! $this->deletingId) {
+            return;
+        }
+
+        $contact = Contact::findOrFail($this->deletingId);
+        AdminActivity::log('deleted', "Contact #{$contact->id}: {$contact->full_name}");
+        $contact->delete();
+
+        $this->deletingId = null;
+        $this->deleteConfirmation = '';
+        $this->viewingMessageId = null;
+        $this->viewingContactId = null;
+        $this->selectedIds = array_values(array_diff($this->selectedIds, [$contact->id]));
+        $this->dispatch('close-modal', name: 'contact-delete');
+        $this->dispatch('notify', message: 'Contact deleted successfully');
     }
 
     public function render()

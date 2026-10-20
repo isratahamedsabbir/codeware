@@ -149,6 +149,7 @@
                                 <x-admin-row-actions :actions="[
                                     ['wireClick' => 'showContact(' . $contact->id . ')', 'icon' => 'eye', 'label' => 'View', 'color' => 'primary', 'disabled' => count($selectedIds) > 0],
                                     ['wireClick' => 'openCustomEmailFor(' . $contact->id . ')', 'icon' => 'envelope', 'label' => 'Send Email', 'color' => 'cyan-500', 'disabled' => count($selectedIds) > 0],
+                                    ['wireClick' => 'confirmDelete(' . $contact->id . ')', 'icon' => 'trash', 'label' => 'Delete', 'color' => 'rose-500', 'visible' => app()->environment('developer'), 'disabled' => count($selectedIds) > 0],
                                 ]" />
                             </td>
 
@@ -229,6 +230,34 @@
             </div>
         @endif
     </flux:modal>
+
+    @if (app()->environment('developer'))
+        <flux:modal name="contact-delete" class="md:w-96"
+            x-on:open-modal.window="if ($event.detail.name === 'contact-delete') $flux.modal('contact-delete').show()"
+            x-on:close-modal.window="if ($event.detail.name === 'contact-delete') $flux.modal('contact-delete').close()">
+            <div class="space-y-4">
+                <flux:heading>Delete contact?</flux:heading>
+                <div class="rounded-lg border border-red-200 bg-red-50 p-3 space-y-1">
+                    <p class="text-sm font-semibold text-red-700">This action cannot be undone.</p>
+                    <p class="text-sm text-red-600">The contact will be <strong>permanently deleted</strong>.</p>
+                </div>
+                <flux:field>
+                    <flux:label>Type "delete" to confirm</flux:label>
+                    <flux:input wire:model="deleteConfirmation" placeholder="delete" autocomplete="off" />
+                </flux:field>
+                <div class="flex gap-2 pt-1">
+                    <button wire:click="delete"
+                        x-bind:disabled="$wire.deleteConfirmation.trim().toLowerCase() !== 'delete'"
+                        class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-red-600 transition-colors border-none cursor-pointer">
+                        Delete
+                    </button>
+                    <flux:modal.close>
+                        <flux:button size="sm" variant="ghost">Cancel</flux:button>
+                    </flux:modal.close>
+                </div>
+            </div>
+        </flux:modal>
+    @endif
 
     {{-- Send a one-off reply email — pre-filled by openCustomEmailFor() with
          the viewed contact's email and subject. --}}
