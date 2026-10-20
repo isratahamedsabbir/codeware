@@ -23,6 +23,14 @@ class Bell extends Component
         auth()->user()->notifications()->whereKey($id)->delete();
     }
 
+    /** Deletes every notification of the signed-in admin, read or not. */
+    public function clearAll(): void
+    {
+        auth()->user()->notifications()->delete();
+
+        $this->dispatch('notify', message: 'All notifications cleared');
+    }
+
     public function render()
     {
         return view('livewire.admin.notifications.bell', [
