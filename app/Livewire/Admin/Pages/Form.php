@@ -199,6 +199,31 @@ class Form extends Component
         $this->js('window.open('.json_encode($url).', \'_blank\')');
     }
 
+    /**
+     * Puts a past revision's content/layout back on the page. The current state
+     * is snapshotted by Page's updating hook first, so a restore can itself be
+     * undone from the same list.
+     */
+    public function restoreRevision(int $revisionId): void
+    {
+        $page = Page::findOrFail($this->pageId);
+        $revision = $page->revisions()->findOrFail($revisionId);
+
+        $attributes = array_filter([
+            'content' => $revision->contentData(),
+            'puck_data' => $revision->puckDataArray(),
+        ], fn ($value) => $value !== null);
+
+        if ($attributes === []) {
+            return;
+        }
+
+        $page->update($attributes);
+
+        AdminActivity::log('updated', "Page #{$page->id}: restored revision #{$revision->id}");
+        $this->dispatch('notify', message: 'Revision restored successfully');
+    }
+
     public function save(): void
     {
         $this->persistPage();
@@ -296,7 +321,11 @@ class Form extends Component
 
     public function render()
     {
-        return view('livewire.admin.pages.form')
+        return view('livewire.admin.pages.form', [
+            'revisions' => $this->pageId
+                ? Page::find($this->pageId)?->revisions()->with('user')->limit(20)->get() ?? collect()
+                : collect(),
+        ])
             ->layout('layouts.admin', ['title' => $this->pageId ? 'Edit Page Constant' : 'New Page']);
     }
 }

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('page_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->longText('content')->nullable();
+            $table->longText('puck_data')->nullable();
             $table->timestamps();
         });
     }

@@ -61,11 +61,21 @@ class Page extends Model
         });
 
         static::updating(function (Page $page) {
-            if ($page->isDirty('content') && $page->getOriginal('content') && auth()->id()) {
+            if (! auth()->id()) {
+                return;
+            }
+
+            // Only the part that is actually changing is snapshotted, and only
+            // when there was something there to lose.
+            $content = $page->isDirty('content') ? $page->getRawOriginal('content') : null;
+            $puck = $page->isDirty('puck_data') ? $page->getRawOriginal('puck_data') : null;
+
+            if (filled($content) || filled($puck)) {
                 PageRevision::create([
                     'page_id' => $page->id,
                     'user_id' => auth()->id(),
-                    'content' => $page->getOriginal('content'),
+                    'content' => filled($content) ? $content : null,
+                    'puck_data' => filled($puck) ? $puck : null,
                 ]);
             }
         });

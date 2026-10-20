@@ -74,6 +74,30 @@
                 <x-admin-constant-fields :items="$constant" :open-constants="$openConstants" model="constant" key-placeholder="e.g. og_type" value-placeholder="e.g. website" empty-title="No content yet" />
         </x-admin-section-card>
 
+        @if ($pageId)
+            <x-admin-section-card variant="postbox" persist-key="page-revisions" title="Revisions"
+                description="Earlier versions of this page's content and layout. Restoring keeps the current version in this list." :collapsed="true">
+                @forelse ($revisions as $revision)
+                    <div wire:key="revision-{{ $revision->id }}" class="flex items-center justify-between gap-3 py-2 border-b border-zinc-100 last:border-0">
+                        <div class="min-w-0">
+                            <div class="text-sm text-zinc-800">{{ $revision->created_at->toDisplay() }}</div>
+                            <div class="text-xs text-zinc-500">
+                                {{ $revision->user?->name ?? 'Unknown' }}
+                                · {{ collect([$revision->content ? 'Content' : null, $revision->puck_data ? 'Layout' : null])->filter()->implode(' + ') }}
+                            </div>
+                        </div>
+                        <flux:button size="xs" variant="outline" icon="arrow-uturn-left"
+                            wire:click="restoreRevision({{ $revision->id }})"
+                            wire:confirm="Restore this revision? The current version will be kept as a new revision.">
+                            Restore
+                        </flux:button>
+                    </div>
+                @empty
+                    <p class="text-sm text-zinc-500">No revisions yet. One is saved each time the page's content or layout changes.</p>
+                @endforelse
+            </x-admin-section-card>
+        @endif
+
         <div class="flex items-center gap-3 flex-wrap">
             <x-admin-save-button :label="$pageId ? 'Update Page' : 'Create Page'" />
         </div>
