@@ -130,8 +130,8 @@
                                  (updateStatus() also guards this server-side). --}}
                             <td class="px-4 py-2">
                                 @if ($contact->status === 'read')
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-600 border border-zinc-200">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-200">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                         Read
                                     </span>
                                 @else
@@ -210,7 +210,19 @@
                         <x-admin-row-details.item label="Phone">{{ $viewingContact->phone_number }}</x-admin-row-details.item>
                     @endif
                     <x-admin-row-details.item label="Subject">{{ $viewingContact->subject }}</x-admin-row-details.item>
-                    <x-admin-row-details.item label="Status">{{ ucfirst($viewingContact->status) }}</x-admin-row-details.item>
+                    <x-admin-row-details.item label="Status">
+                        @if ($viewingContact->status === 'read')
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                Read
+                            </span>
+                        @else
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-600 border border-amber-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                Unread
+                            </span>
+                        @endif
+                    </x-admin-row-details.item>
                     <x-admin-row-details.item label="Date">{{ $viewingContact->created_at->toDisplay() }}</x-admin-row-details.item>
                 </div>
 
