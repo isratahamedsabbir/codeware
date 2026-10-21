@@ -27,6 +27,7 @@
 <head>
     @include('partials._head')
     <link rel="stylesheet" href="{{ asset('themes/portfolio/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('themes/portfolio/css/polish.css') }}?v=7">
     {{-- A 404 must never be indexed, and must never claim a canonical URL for a
          page that does not exist � so partials._seo-meta is deliberately absent
          here (it derives both from $page). --}}

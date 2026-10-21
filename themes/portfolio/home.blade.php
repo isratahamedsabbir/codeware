@@ -16,6 +16,7 @@
     <link rel="preload" href="{{ asset('fonts/instrument-sans/instrument-sans-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ asset('themes/portfolio/css/fonts.css') }}">
     <link rel="stylesheet" href="{{ asset('themes/portfolio/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('themes/portfolio/css/polish.css') }}?v=7">
     <style>[x-cloak]{display:none!important}</style>
     @include('partials._custom-code-head')
 </head>

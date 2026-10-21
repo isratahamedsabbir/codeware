@@ -395,9 +395,13 @@ class Index extends Component
 
         // A real browser reload, same as Settings\Index::save(), so anything
         // rendered from Setting::get() (e.g. the active theme) re-reads fresh.
-        session()->flash('success', $skipped === []
-            ? 'Theme settings saved.'
-            : 'Theme settings saved, but the '.implode(', ', $skipped).' theme\'s own fields were not written: its theme.json is missing, or the web server user cannot write to themes/ (check the folder and file permissions).');
+        if ($skipped === []) {
+            session()->flash('success', 'Theme settings saved.');
+        } else {
+            // An error, not a success: the theme's own fields (photo, text, lists)
+            // live in theme.json, so a skipped write means they were NOT saved.
+            session()->flash('error', 'Not saved: the '.implode(', ', $skipped).' theme\'s fields could not be written. Its theme.json is missing or not writable by the web server user (check permissions on themes/ and the file).');
+        }
 
         $this->js('window.location.reload()');
     }
@@ -507,7 +511,16 @@ class Index extends Component
                 $name = Str::limit($base, 60, '').'-'.Str::lower(Str::random(6)).'.'.SafeUpload::extension($file);
                 $path = $file->storeAs(self::UPLOAD_DIR.'/'.str_replace('_', '-', $key), $name, 'public');
 
-                $this->settings[$key] = $disk->url($path);
+                if ($path === false) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'uploads.'.$key => 'The file could not be stored: storage/app/public is not writable by the web server user.',
+                    ]);
+                }
+
+                // Host-relative, not APP_URL-absolute: the admin and the storefront can
+                // sit on different hosts, and an absolute URL minted from a mismatched
+                // APP_URL saves fine but 404s once the screen reloads.
+                $this->settings[$key] = '/storage/'.ltrim((string) $path, '/');
             }
 
             $new = (string) ($this->settings[$key] ?? '');
