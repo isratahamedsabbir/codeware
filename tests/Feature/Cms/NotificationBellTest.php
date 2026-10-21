@@ -4,6 +4,7 @@ use App\Livewire\Admin\Notifications\Bell;
 use App\Models\User;
 use App\Notifications\AdminAlert;
 use Database\Seeders\RolePermissionSeeder;
+use Illuminate\Support\Str;
 use Livewire\Livewire;
 
 it('clears all of the admin\'s notifications at once, and only theirs', function () {
@@ -13,7 +14,7 @@ it('clears all of the admin\'s notifications at once, and only theirs', function
 
     foreach ([$admin, $other] as $user) {
         $user->notifications()->createMany(collect(range(1, 3))->map(fn () => [
-            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'id' => (string) Str::uuid(),
             'type' => AdminAlert::class,
             'data' => ['title' => 'Hello'],
         ])->all());

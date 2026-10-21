@@ -12,6 +12,7 @@ use App\Models\ProductAttribute;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use App\Models\ProductVendor;
+use App\Models\Setting;
 use App\Models\Tag;
 use App\Models\Type;
 use App\Models\User;
@@ -978,7 +979,7 @@ class Form extends Component
     #[On('toggle-additional-data')]
     public function toggleAdditionalData(): void
     {
-        \App\Models\Setting::set('additional_data_products_enabled', \App\Models\Setting::productAdditionalDataEnabled() ? '0' : '1');
+        Setting::set('additional_data_products_enabled', Setting::productAdditionalDataEnabled() ? '0' : '1');
     }
 
     public function render()

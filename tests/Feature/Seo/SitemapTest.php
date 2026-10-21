@@ -45,6 +45,20 @@ function aSitemapPage(string $type, string $slug, array $extra = []): Page
     ], $extra));
 }
 
+/**
+ * Every group file's XML, joined — what a crawler reads after following the index.
+ */
+function allSitemapXml($test): string
+{
+    $index = $test->get('https://codeware.test/sitemap.xml')->assertOk()->getContent();
+
+    return collect(Sitemap::GROUPS)
+        ->filter(fn ($group) => str_contains($index, "sitemap-{$group}.xml"))
+        ->map(fn ($group) => $test->get("https://codeware.test/sitemap-{$group}.xml")->assertOk()->getContent())
+        ->implode('
+');
+}
+
 function sitemapEntries(): array
 {
     return Sitemap::entries();
@@ -62,10 +76,32 @@ it('advertises the site its own address, not the frontend dev server', function 
     // the sitemap pointed crawlers at a host the site has never claimed.
     config(['app.frontend_url' => 'http://localhost:3000']);
 
-    $xml = $this->get('https://codeware.test/sitemap.xml')->assertOk()->getContent();
+    $xml = allSitemapXml($this);
 
     expect($xml)->toContain('<loc>https://codeware.test/</loc>')
         ->and($xml)->not->toContain('localhost:3000');
+});
+
+it('serves the main sitemap as an index of separate product and blog files', function () {
+    $product = Product::factory()->published()->create();
+    aSitemapPage('product', 'widget', ['product_id' => $product->id]);
+    $post = Post::factory()->published()->create();
+    aSitemapPage('post', 'a-post', ['post_id' => $post->id]);
+
+    $index = $this->get('https://codeware.test/sitemap.xml')->assertOk()->getContent();
+
+    expect($index)->toContain('<sitemapindex')
+        ->and($index)->toContain('<loc>https://codeware.test/sitemap-pages.xml</loc>')
+        ->and($index)->toContain('<loc>https://codeware.test/sitemap-products.xml</loc>')
+        ->and($index)->toContain('<loc>https://codeware.test/sitemap-blog.xml</loc>');
+
+    $products = $this->get('https://codeware.test/sitemap-products.xml')->assertOk()->getContent();
+    $blog = $this->get('https://codeware.test/sitemap-blog.xml')->assertOk()->getContent();
+
+    expect($products)->toContain('/products/widget')->not->toContain('/blog/a-post')
+        ->and($blog)->toContain('/blog/a-post')->not->toContain('/products/widget');
+
+    $this->get('https://codeware.test/sitemap-nope.xml')->assertNotFound();
 });
 
 it('serves the sitemap as xml, at the address a crawler looks for it', function () {
@@ -78,7 +114,7 @@ it('serves the sitemap as xml, at the address a crawler looks for it', function 
     // Parses as XML rather than merely looking like it.
     $parsed = simplexml_load_string($response->getContent());
     expect($parsed)->not->toBeFalse()
-        ->and($parsed->getName())->toBe('urlset');
+        ->and($parsed->getName())->toBe('sitemapindex');
 });
 
 it('lists the home page exactly once, at one spelling', function () {
@@ -104,7 +140,7 @@ it('lists published products at the routes the storefront really serves', functi
 
     // /products/category/{slug} and /blog/category/{slug} are not routes this
     // application has; the old sitemap listed both anyway.
-    expect($this->get('https://codeware.test/sitemap.xml')->assertOk()->getContent())
+    expect(allSitemapXml($this))
         ->toContain('<loc>https://codeware.test/products/widget</loc>')
         ->not->toContain('products/category/')
         ->not->toContain('blog/category/');
@@ -116,7 +152,7 @@ it('leaves out a product whose page an admin marked no_index', function () {
 
     // A sitemap that invites a crawler to a noindex URL is asking for the two
     // signals to be believed equally, and Google believes the lower of the two.
-    expect($this->get('https://codeware.test/sitemap.xml')->assertOk()->getContent())
+    expect(allSitemapXml($this))
         ->not->toContain('hidden-widget');
 });
 
@@ -124,7 +160,7 @@ it('leaves out a draft and an unpublished product alike', function () {
     $draft = Product::factory()->create(['status' => 'draft']);
     aSitemapPage('product', 'draft-widget', ['product_id' => $draft->id]);
 
-    expect($this->get('https://codeware.test/sitemap.xml')->assertOk()->getContent())
+    expect(allSitemapXml($this))
         ->not->toContain('draft-widget');
 });
 
@@ -133,7 +169,7 @@ it('leaves out a product with no paired page, because it has no address', functi
     // from the product name would put a 404 in the inventory.
     Product::factory()->published()->create();
 
-    expect($this->get('https://codeware.test/sitemap.xml')->assertOk()->getContent())
+    expect(allSitemapXml($this))
         ->not->toContain('/products/');
 });
 
@@ -144,7 +180,7 @@ it('lists published posts and categories at their real paths', function () {
     $category = ProductCategory::create(['name' => ['en' => 'Tools'], 'status' => 'active']);
     aSitemapPage('product_category', 'tools', ['category_id' => $category->id]);
 
-    $xml = $this->get('https://codeware.test/sitemap.xml')->assertOk()->getContent();
+    $xml = allSitemapXml($this);
 
     expect($xml)->toContain('<loc>https://codeware.test/blog/a-post</loc>')
         ->and($xml)->toContain('<loc>https://codeware.test/category/tools</loc>');
@@ -166,7 +202,7 @@ it('advertises no products on a theme that has no product pages', function () {
     Setting::set('site_theme', 'portfolio');
     SeoResolver::flush();
 
-    $xml = $this->get('https://codeware.test/sitemap.xml')->assertOk()->getContent();
+    $xml = allSitemapXml($this);
 
     expect($xml)->toContain('<loc>https://codeware.test/</loc>')
         ->and($xml)->not->toContain('products/widget')
@@ -190,7 +226,7 @@ it('still answers on a theme with no storefront templates of its own', function 
 */
 
 it('shows a product published a moment ago without anybody pressing a button', function () {
-    $before = $this->get('https://codeware.test/sitemap.xml')->assertOk()->getContent();
+    $before = allSitemapXml($this);
     expect($before)->not->toContain('late-widget');
 
     $product = Product::factory()->published()->create();
@@ -199,7 +235,7 @@ it('shows a product published a moment ago without anybody pressing a button', f
     // The cache is keyed on the content's own fingerprint, so a write produces a
     // new key and the next request rebuilds. Nothing observes the models and
     // nothing has to be remembered.
-    expect($this->get('https://codeware.test/sitemap.xml')->assertOk()->getContent())
+    expect(allSitemapXml($this))
         ->toContain('late-widget');
 });
 
@@ -215,7 +251,7 @@ it('reports the date a page was last changed, not the date the sitemap was built
 
     // Either row can be edited without the other, so lastmod is the later of the
     // two edits — a stale product timestamp must not date a page back.
-    $xml = $this->get('https://codeware.test/sitemap.xml')->assertOk()->getContent();
+    $xml = allSitemapXml($this);
 
     expect($xml)->toMatch('/<lastmod>2026-03-04T10:00:00[+\-]\d\d:\d\d<\/lastmod>/')
         ->and($xml)->not->toContain('2026-03-01');
@@ -228,7 +264,7 @@ it('stamps a lastmod that the sitemap can still be read for', function () {
     $product = Product::factory()->published()->create();
     aSitemapPage('product', 'widget', ['product_id' => $product->id]);
 
-    $xml = $this->get('https://codeware.test/sitemap.xml')->assertOk()->getContent();
+    $xml = allSitemapXml($this);
 
     expect($xml)->toContain('<lastmod>');
 });

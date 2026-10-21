@@ -389,8 +389,8 @@ it('rebuilds the cached sitemap when a theme stops wanting to be indexed', funct
     // theme.json edited by hand would keep serving the old list until the cache
     // expired on its own.
     Setting::set('site_theme', 'default');
-    expect(Sitemap::xml())->not->toContain('<loc>'.Url::url('/').'</loc>');
+    expect(Sitemap::xml('pages'))->not->toContain('<loc>'.Url::url('/').'</loc>');
 
     Setting::set('site_theme', 'ecommerce');
-    expect(Sitemap::xml())->toContain('<loc>'.Url::url('/').'</loc>');
+    expect(Sitemap::xml('pages'))->toContain('<loc>'.Url::url('/').'</loc>');
 });

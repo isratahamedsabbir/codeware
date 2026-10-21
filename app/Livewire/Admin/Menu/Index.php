@@ -362,7 +362,7 @@ class Index extends Component
         $this->dispatch('open-modal', name: 'menu-item-delete');
     }
 
-        public function delete(): void
+    public function delete(): void
     {
         if (! $this->deletingId) {
             return;
@@ -377,6 +377,7 @@ class Index extends Component
             $this->reset('deletingId');
             $this->dispatch('close-modal', name: 'menu-item-delete');
             $this->dispatch('notify', message: __('Cannot delete a group that contains items. Move or remove its items first.'));
+
             return;
         }
 

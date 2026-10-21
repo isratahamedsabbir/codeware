@@ -7,6 +7,7 @@ use App\Concerns\HasTranslatableFields;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\PostCategory;
+use App\Models\Setting;
 use App\Models\Tag;
 use App\Models\Type;
 use App\Support\AdminActivity;
@@ -286,7 +287,7 @@ class Form extends Component
     #[On('toggle-additional-data')]
     public function toggleAdditionalData(): void
     {
-        \App\Models\Setting::set('additional_data_posts_enabled', \App\Models\Setting::postAdditionalDataEnabled() ? '0' : '1');
+        Setting::set('additional_data_posts_enabled', Setting::postAdditionalDataEnabled() ? '0' : '1');
     }
 
     // This method is called by the FilePicker component when an image is selected

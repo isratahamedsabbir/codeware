@@ -22,6 +22,7 @@ use App\Http\Controllers\RobotsController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\VoucherController;
+use App\Support\Seo\Sitemap;
 use App\Support\Themes;
 use Illuminate\Support\Facades\Route;
 
@@ -156,6 +157,7 @@ require __DIR__.'/settings.php';
 // keep answering when the active theme is a portfolio with no product or blog
 // templates at all.
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+Route::get('/sitemap-{group}.xml', SitemapController::class)->whereIn('group', Sitemap::GROUPS)->name('sitemap.group');
 Route::get('/robots.txt', RobotsController::class)->name('robots');
 
 // Every theme's storefront routes, one file per theme — but only the pages the

@@ -19,9 +19,11 @@ use Illuminate\Http\Response;
  */
 class SitemapController extends Controller
 {
-    public function __invoke(): Response
+    public function __invoke(?string $group = null): Response
     {
-        return response(Sitemap::xml(), 200, [
+        abort_if($group !== null && ! in_array($group, Sitemap::GROUPS, true), 404);
+
+        return response(Sitemap::xml($group), 200, [
             'Content-Type' => 'application/xml; charset=UTF-8',
         ]);
     }

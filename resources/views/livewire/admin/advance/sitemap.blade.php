@@ -14,6 +14,15 @@
             </div>
         </div>
 
+        <ul class="text-sm space-y-1">
+            @foreach ($files as $fileUrl => $count)
+                <li class="flex justify-between gap-4">
+                    <a href="{{ $fileUrl }}" target="_blank" class="font-mono text-xs break-all hover:underline">{{ $fileUrl }}</a>
+                    <span class="text-xs text-zinc-500 whitespace-nowrap">{{ $count }} URLs</span>
+                </li>
+            @endforeach
+        </ul>
+
         <div class="flex items-center gap-3">
             <flux:button variant="primary" size="sm" icon="arrow-path" wire:click="regenerate" wire:loading.attr="disabled">Generate sitemap</flux:button>
             @if (session('success'))

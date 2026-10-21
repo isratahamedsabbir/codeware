@@ -33,6 +33,9 @@ class Sitemap extends Component
             'urlCount' => count($entries),
             'sitemapUrl' => route('sitemap'),
             'entries' => $entries,
+            'files' => collect(SitemapBuilder::GROUPS)->mapWithKeys(fn ($group) => [
+                route('sitemap.group', $group) => count(SitemapBuilder::entries($group)),
+            ])->all(),
         ])->layout('layouts.admin', ['title' => 'Sitemap']);
     }
 }
