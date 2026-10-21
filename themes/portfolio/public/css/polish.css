@@ -509,3 +509,42 @@
 .theme-portfolio #home .pf-stat .pf-mono { font-size: .875rem; margin-top: .4rem; }
 
 .theme-portfolio #home .pf-animate { animation-duration: .5s; }
+
+/* Stats hover: a restrained accent line grows across the cell, the number picks up the brand colour */
+.theme-portfolio #home > div.relative:last-child > .pf-card > .pf-stat {
+    position: relative;
+    cursor: default;
+    transition: background-color .35s var(--pf-ease);
+}
+.theme-portfolio #home > div.relative:last-child > .pf-card > .pf-stat::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -1px;
+    height: 2px;
+    background: var(--pf-gradient);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform .45s var(--pf-ease);
+}
+.theme-portfolio #home .pf-stat .pf-heading {
+    transition: transform .35s var(--pf-ease), -webkit-text-fill-color .3s var(--pf-ease);
+}
+.theme-portfolio #home .pf-stat .pf-mono { transition: color .3s var(--pf-ease); }
+@media (hover: hover) {
+    .theme-portfolio #home > div.relative:last-child > .pf-card > .pf-stat:hover {
+        background: linear-gradient(to bottom, var(--pf-primary-soft), transparent 85%);
+    }
+    .theme-portfolio #home > div.relative:last-child > .pf-card > .pf-stat:hover::after { transform: scaleX(1); }
+    .theme-portfolio #home .pf-stat:hover .pf-heading {
+        transform: translateY(-3px);
+        -webkit-text-fill-color: var(--pf-primary-bright);
+        color: var(--pf-primary-bright);
+    }
+    .theme-portfolio #home .pf-stat:hover .pf-mono { color: var(--pf-heading); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .theme-portfolio #home .pf-stat .pf-heading,
+    .theme-portfolio #home > div.relative:last-child > .pf-card > .pf-stat::after { transition: none; }
+}
