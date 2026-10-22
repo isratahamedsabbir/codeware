@@ -728,7 +728,7 @@
                         of a single folder — e.g.
                         <code class="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">my-theme/</code>
                         containing your
-                        <code class="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">home.blade.php</code>,
+                        <code class="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">index.blade.php</code>,
                         <code class="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">page.blade.php</code>
                         etc. The folder name becomes the theme's name, and it shows up in the picker above immediately after installing.
                     </p>

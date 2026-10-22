@@ -1,5 +1,5 @@
 {{--
-    Portfolio theme header — the single-page nav, owned by home.blade.php, the
+    Portfolio theme header — the single-page nav, owned by index.blade.php, the
     one page this theme ships.
 
     Expects $siteName and $siteIcon from the including view. The nav itself is
@@ -16,7 +16,7 @@
 --}}
 @php
     $currentUrl = url()->current();
-    $portfolioMenu = \App\Support\Frontend::portfolioMenuItems()
+    $portfolioMenu = \Themes\Portfolio\Support\PortfolioProfile::menuItems()
         ->map(function ($item) use ($currentUrl) {
             $url = (string) $item->url;
             $isAnchor = str_starts_with($url, '#');

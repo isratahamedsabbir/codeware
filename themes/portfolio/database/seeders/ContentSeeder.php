@@ -11,7 +11,7 @@ use Illuminate\Database\Seeder;
  *
  * All of it is a key in the portfolio theme's own theme.json, edited from
  * Admin → Theme Settings. The one-pager used to hardcode most of these as arrays
- * in home.blade.php, which meant a fresh install told visitors "Your University"
+ * in index.blade.php, which meant a fresh install told visitors "Your University"
  * and "Training Institute"; projects, experience and skills then got their own
  * tables and admin CRUD screens, which split the portfolio across four places to
  * edit it. This seeder writes one list per section so the whole page is one
@@ -42,7 +42,7 @@ class ContentSeeder extends Seeder
 
     /**
      * The hero, the trust strip, "what I do", education and certifications — read
-     * by the theme through App\Support\PortfolioProfile and edited by the owner
+     * by the theme through Themes\Portfolio\Support\PortfolioProfile and edited by the owner
      * from Admin → Theme Settings.
      *
      * This is *demo* content, in the same spirit as the lists below: it exists so
@@ -164,7 +164,7 @@ class ContentSeeder extends Seeder
      * anyone filled it in. Treating a blank value as absent is what lets a
      * re-seed top up a half-configured install without touching the fields that
      * were genuinely filled in — and it is the same rule
-     * App\Support\PortfolioProfile already applies when it decides a field has
+     * Themes\Portfolio\Support\PortfolioProfile already applies when it decides a field has
      * nothing to show.
      */
     private function hasContent(string $key): bool
@@ -240,7 +240,7 @@ class ContentSeeder extends Seeder
     {
         // `tech` is one comma-separated field rather than a nested list: a
         // repeater row is flat (the admin hydrates every value to a scalar), and
-        // App\Support\PortfolioProfile::splitList() splits it back into chips.
+        // Themes\Portfolio\Support\PortfolioProfile::splitList() splits it back into chips.
         //
         // `image`, `link` and `repo` are deliberately blank. A screenshot has to
         // be a real screen of the real app and a link has to resolve, so seeding

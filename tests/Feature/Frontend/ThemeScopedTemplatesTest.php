@@ -21,12 +21,12 @@ use Illuminate\Support\Facades\File;
  *
  * @param  array<int, string>  $templates
  */
-function installBareTheme(string $slug, array $templates = ['home', 'page']): void
+function installBareTheme(string $slug, array $templates = ['index', 'page']): void
 {
-    File::ensureDirectoryExists(Themes::path().'/'.$slug);
+    File::ensureDirectoryExists(Themes::path().'/'.$slug.'/views');
 
     foreach ($templates as $template) {
-        File::put(Themes::path().'/'.$slug.'/'.$template.'.blade.php', '<p>{{ $title ?? "" }}</p>');
+        File::put(Themes::path().'/'.$slug.'/views/'.$template.'.blade.php', '<p>{{ $title ?? "" }}</p>');
     }
 }
 
@@ -45,7 +45,7 @@ afterEach(function () {
 });
 
 it('renders the pages the active theme ships and 404s the ones it does not', function () {
-    installBareTheme('bare', ['home', 'page']);
+    installBareTheme('bare', ['index', 'page']);
 
     Setting::set('site_theme', 'bare');
     Themes::forget();
@@ -62,7 +62,7 @@ it('renders the pages the active theme ships and 404s the ones it does not', fun
 });
 
 it('does not fall back to another theme for a home or standalone page', function () {
-    installBareTheme('broken', ['home']);
+    installBareTheme('broken', ['index']);
 
     Setting::set('site_theme', 'broken');
     Themes::forget();
@@ -127,7 +127,7 @@ it("falls back to Laravel's shared 404 for a theme that ships no error page", fu
     // A theme's own 404 is opt-in per theme, not a requirement for the storefront
     // to work: without an errors/ folder it gets the shared, self-contained
     // resources/views/errors/404.blade.php instead.
-    installBareTheme('bare', ['home', 'page']);
+    installBareTheme('bare', ['index', 'page']);
 
     Setting::set('site_theme', 'bare');
     Themes::forget();
@@ -151,9 +151,9 @@ it('lets a theme answer 404 for itself by shipping an errors/404.blade.php', fun
     // The shared page is the default, not a dead end: a theme that wants its own
     // 404 drops in one file and the storefront starts serving it, with no
     // controller or handler change.
-    installBareTheme('bare', ['home', 'page']);
-    File::ensureDirectoryExists(Themes::path().'/bare/errors');
-    File::put(Themes::path().'/bare/errors/404.blade.php', '<p>bare theme not found</p>');
+    installBareTheme('bare', ['index', 'page']);
+    File::ensureDirectoryExists(Themes::path().'/bare/views/errors');
+    File::put(Themes::path().'/bare/views/errors/404.blade.php', '<p>bare theme not found</p>');
 
     Setting::set('site_theme', 'bare');
     Themes::forget();
@@ -178,7 +178,7 @@ it('styles a theme that ships no stylesheet of its own', function () {
     // to still serve it a sheet — the catch-all, which scans every theme's
     // classes. Bare HTML would be a worse outcome than a larger download, so
     // this fallback is the deliberate direction to err in.
-    installBareTheme('bare', ['home', 'page']);
+    installBareTheme('bare', ['index', 'page']);
 
     Setting::set('site_theme', 'bare');
     Themes::forget();
@@ -241,7 +241,7 @@ it('never renders a nav link into a page the active theme does not have', functi
     // asserted on a real response rather than only through the accessor.
     installBareTheme('bare');
     File::put(
-        Themes::path().'/bare/home.blade.php',
+        Themes::path().'/bare/views/index.blade.php',
         '@foreach (\App\Support\Frontend::menuItems() as $item)[{{ $item->label }}]@endforeach',
     );
 
@@ -266,7 +266,7 @@ it('hides a page link even though the page itself is published in the database',
     // render it, so the link goes and the URL 404s.
     expect(Page::where('slug', 'contact')->exists())->toBeTrue();
 
-    installBareTheme('bare', ['home']);
+    installBareTheme('bare', ['index']);
 
     Setting::set('site_theme', 'bare');
     Themes::forget();

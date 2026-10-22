@@ -80,7 +80,7 @@ function installRetroTheme(): void
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents(makeThemeZip('retro', [
-            'home.blade.php' => 'retro home',
+            'views/index.blade.php' => 'retro home',
             'routes/web.php' => '<?php // retro routes',
             'public/css/theme.css' => '@import "../../../../resources/css/base.css";',
         ]))))
@@ -152,7 +152,7 @@ it('falls back to slug-derived manifest fields when a theme has no theme.json', 
     // 'default' ships a theme.json; but Themes::manifest() with a slug pointing
     // at a folder without one (e.g. the freshly installed test theme in the
     // other tests) must still yield a well-formed manifest.
-    $zip = makeThemeZip('retro', ['home.blade.php' => 'retro home']);
+    $zip = makeThemeZip('retro', ['views/index.blade.php' => 'retro home']);
 
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
@@ -170,7 +170,7 @@ it('falls back to slug-derived manifest fields when a theme has no theme.json', 
 
 it('treats a malformed theme.json as if it were missing', function () {
     $zip = makeThemeZip('retro', [
-        'home.blade.php' => 'retro home',
+        'views/index.blade.php' => 'retro home',
         'theme.json' => '{ not valid json ;;',
     ]);
 
@@ -354,7 +354,7 @@ it('offers no theme.json button for a theme that declares no settings form', fun
     // A theme with no settings.blade.php has no fields to write, and its settings
     // card is not rendered at all — so there is nothing to create a file for. The
     // file the installer gave it holds its identity and nothing else.
-    $zip = makeThemeZip('retro', ['home.blade.php' => 'retro home']);
+    $zip = makeThemeZip('retro', ['views/index.blade.php' => 'retro home']);
 
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
@@ -665,7 +665,7 @@ it('orders the two theme settings destinations so neither lands inside the other
 });
 
 it('omits the theme settings card when the selected theme has none', function () {
-    $zip = makeThemeZip('retro', ['home.blade.php' => 'retro home']);
+    $zip = makeThemeZip('retro', ['views/index.blade.php' => 'retro home']);
 
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
@@ -855,9 +855,9 @@ it('opens the install theme modal', function () {
 
 it('installs a theme from a zip into the themes directory', function () {
     $zip = makeThemeZip('retro', [
-        'home.blade.php' => 'retro home',
+        'views/index.blade.php' => 'retro home',
         'page.blade.php' => 'retro page',
-        'partials/_head.blade.php' => 'retro head',
+        'views/partials/_head.blade.php' => 'retro head',
     ]);
 
     Livewire::test(ThemeSettingsScreen::class)
@@ -869,14 +869,14 @@ it('installs a theme from a zip into the themes directory', function () {
         ->assertHasNoErrors();
 
     expect(is_dir(Themes::path().'/retro'))->toBeTrue()
-        ->and(file_exists(Themes::path().'/retro/home.blade.php'))->toBeTrue()
-        ->and(file_exists(Themes::path().'/retro/partials/_head.blade.php'))->toBeTrue()
+        ->and(file_exists(Themes::path().'/retro/views/index.blade.php'))->toBeTrue()
+        ->and(file_exists(Themes::path().'/retro/views/partials/_head.blade.php'))->toBeTrue()
         ->and(Themes::all())->toHaveKey('retro');
 });
 
 it('turns a spaced theme folder name into a slugged theme folder', function () {
     $zip = makeThemeZip('My Cool Store', [
-        'home.blade.php' => 'cool home',
+        'views/index.blade.php' => 'cool home',
     ]);
 
     Livewire::test(ThemeSettingsScreen::class)
@@ -899,15 +899,15 @@ it('rejects a file that is not a valid zip theme package', function () {
 });
 
 it('rejects a zip that does not contain exactly one root theme folder', function () {
-    $zip = makeThemeZip('foo', ['home.blade.php' => 'foo home']);
-    $zipBar = makeThemeZip('bar', ['home.blade.php' => 'bar home']);
+    $zip = makeThemeZip('foo', ['views/index.blade.php' => 'foo home']);
+    $zipBar = makeThemeZip('bar', ['views/index.blade.php' => 'bar home']);
 
     $merged = tempnam(sys_get_temp_dir(), 'theme-zip-').'.zip';
     copy($zip, $merged);
 
     $wrap = new ZipArchive;
     $wrap->open($merged, ZipArchive::CREATE);
-    foreach (['bar/home.blade.php' => 'bar home'] as $file => $content) {
+    foreach (['bar/views/index.blade.php' => 'bar home'] as $file => $content) {
         $wrap->addFromString($file, $content);
     }
     $wrap->close();
@@ -921,7 +921,7 @@ it('rejects a zip that does not contain exactly one root theme folder', function
 });
 
 it('does not overwrite an already-installed theme', function () {
-    $zip = makeThemeZip('default', ['home.blade.php' => 'evil home']);
+    $zip = makeThemeZip('default', ['views/index.blade.php' => 'evil home']);
 
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
@@ -936,7 +936,7 @@ it('rejects a zip containing path-traversal entries', function () {
 
     $zip = new ZipArchive;
     $zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-    $zip->addFromString('retro/home.blade.php', 'fine');
+    $zip->addFromString('retro/views/index.blade.php', 'fine');
     $zip->addFromString('retro/../../evil.txt', 'pwn');
     $zip->close();
 
@@ -981,7 +981,7 @@ it('rejects an invalid live chat widget color', function () {
 
 it('gives an installed theme a theme.json so it is never half-configured', function () {
     $zip = makeThemeZip('retro', [
-        'home.blade.php' => 'retro home',
+        'views/index.blade.php' => 'retro home',
         // No theme.json in the zip: the case this exists for. A zipped theme
         // built from templates alone installs perfectly and then looks broken —
         // the form renders, every field is blank, and Save has nowhere to put
@@ -1022,7 +1022,7 @@ it('leaves a theme that ships its own theme.json exactly as it was', function ()
     ], JSON_PRETTY_PRINT);
 
     $zip = makeThemeZip('retro', [
-        'home.blade.php' => 'retro home',
+        'views/index.blade.php' => 'retro home',
         'settings.blade.php' => '<x-admin.text key="theme_retro_tagline" label="Tagline" />',
         'theme.json' => $shipped,
     ]);
@@ -1047,7 +1047,7 @@ it('gives a theme that declares no settings form a manifest holding only its ide
     // settings — but theme.json is also where a theme's name and serial number
     // live, and a theme installed with neither is one the picker cannot tell from
     // another. So it gets a manifest and nothing else.
-    $zip = makeThemeZip('retro', ['home.blade.php' => 'retro home']);
+    $zip = makeThemeZip('retro', ['views/index.blade.php' => 'retro home']);
 
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
@@ -1066,7 +1066,7 @@ it('flags a theme that ships no routes file, because selecting it 404s the site'
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents(makeThemeZip('retro', [
-            'home.blade.php' => 'retro home',
+            'views/index.blade.php' => 'retro home',
         ]))))
         ->set('installPassword', 'password')
         ->call('installTheme');
@@ -1115,7 +1115,7 @@ it('downloads an installed theme as a zip holding its own folder', function () {
         // The same shape installTheme() accepts, so a downloaded theme goes back
         // in whole: one top-level folder named for the slug, everything under it.
         foreach ([
-            'retro/home.blade.php',
+            'retro/views/index.blade.php',
             'retro/routes/web.php',
             'retro/public/css/theme.css',
             'retro/theme.json',
@@ -1218,7 +1218,7 @@ it('deletes a theme folder and everything in it', function () {
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents(makeThemeZip('retro', [
-            'home.blade.php' => 'retro home',
+            'views/index.blade.php' => 'retro home',
             'routes/web.php' => '<?php // retro routes',
             'public/css/theme.css' => '@import "../../../../resources/css/base.css";',
         ]))))
@@ -1358,7 +1358,7 @@ it('lists a real warning of what a delete takes with it', function () {
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents(makeThemeZip('retro', [
-            'home.blade.php' => 'retro home',
+            'views/index.blade.php' => 'retro home',
         ]))))
         ->set('installPassword', 'password')
         ->call('installTheme');
@@ -1379,7 +1379,7 @@ it('cancels a delete without touching the folder', function () {
     Livewire::test(ThemeSettingsScreen::class)
         ->call('openInstallModal')
         ->set('themeZip', UploadedFile::fake()->createWithContent('retro.zip', file_get_contents(makeThemeZip('retro', [
-            'home.blade.php' => 'retro home',
+            'views/index.blade.php' => 'retro home',
         ]))))
         ->set('installPassword', 'password')
         ->call('installTheme');

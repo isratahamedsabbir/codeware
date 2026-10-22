@@ -12,7 +12,7 @@ use App\Support\Frontend;
  * Split out of the old application-wide FrontendController and shared by every
  * theme that ships a home template, so the *data* a homepage needs is stated
  * once. What a theme's homepage looks like was always the template's own job
- * (themes/{slug}/home.blade.php) and still is — this
+ * (themes/{slug}/index.blade.php) and still is — this
  * only decides what it is handed.
  */
 trait RendersHomePage
@@ -25,7 +25,7 @@ trait RendersHomePage
             ? CmsSection::cachedForPage($homePage->id)
             : collect();
 
-        return $this->view('home', [
+        return $this->view('index', [
             'page' => $homePage,
             'sections' => $sections,
             // The page name only. The site root's <title> is the Global SEO title

@@ -5,16 +5,17 @@ namespace App\Livewire\Admin\ThemeSettings;
 use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\CodeInstall;
-use App\Support\HeroSlides;
 use App\Support\SafeUpload;
 use App\Support\Themes;
 use App\Support\ThemeSettings;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
+use Themes\Ecommerce\Support\HeroSlides;
 
 class Index extends Component
 {
@@ -111,7 +112,7 @@ class Index extends Component
 
     /**
      * The homepage hero slider, in order — each slide {image, title,
-     * description, link} (see App\Support\HeroSlides). Persisted as a JSON
+     * description, link} (see Themes\Ecommerce\Support\HeroSlides). Persisted as a JSON
      * list in `home_hero_slides`; the first image is mirrored into
      * `home_hero_image` so anything reading the single hero image keeps working.
      *
@@ -232,7 +233,7 @@ class Index extends Component
      * it.
      *
      * This screen is deliberately more forgiving than the storefront, which drops
-     * a JSON object outright (see App\Support\PortfolioProfile::rows()). Here a
+     * a JSON object outright (see Themes\Portfolio\Support\PortfolioProfile::rows()). Here a
      * value that decodes to an object is shown as one editable row, so a bad
      * write is something the owner can see and delete instead of something that
      * silently reappears as [] the next time they open the screen.
@@ -512,7 +513,7 @@ class Index extends Component
                 $path = $file->storeAs(self::UPLOAD_DIR.'/'.str_replace('_', '-', $key), $name, 'public');
 
                 if ($path === false) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
+                    throw ValidationException::withMessages([
                         'uploads.'.$key => 'The file could not be stored: storage/app/public is not writable by the web server user.',
                     ]);
                 }
@@ -1232,7 +1233,7 @@ class Index extends Component
 
         $themeCards = collect($themes)
             ->mapWithKeys(function (string $label, string $slug): array {
-                $base = Themes::path().'/'.$slug;
+                $base = Themes::path().'/'.$slug.'/views';
                 $files = is_dir($base)
                     ? array_merge(glob($base.'/*.blade.php') ?: [], glob($base.'/*/*.blade.php') ?: [])
                     : [];
@@ -1280,7 +1281,7 @@ class Index extends Component
      * The site-wide settings keys this screen owns. Kept in sync with the field
      * widgets in the blade view; the homepage image keys are read by the
      * storefront home template (see
-     * themes/ecommerce/home.blade.php).
+     * themes/ecommerce/views/index.blade.php).
      *
      * Deliberately no `theme_*` key: those belong to a theme's own
      * theme.json, not to this table (see saveThemeValues()).

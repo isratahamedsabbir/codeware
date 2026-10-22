@@ -7,7 +7,7 @@
  * request the active theme has no template for, so these routes answer only
  * while the portfolio theme is the active one. There is no /shop, no /cart and
  * no /{slug} standalone-page route for it to own: the portfolio's nav is section
- * anchors ("#projects", "#skills", see Frontend::portfolioMenuItems()) into the
+ * anchors ("#projects", "#skills", see PortfolioProfile::menuItems()) into the
  * single page below, and asking a portfolio site for /about gets the portfolio's
  * own 404 — the same one a genuinely missing page gets. This file registering
  * only two routes is what makes that true; there is no Portfolio\ShopController

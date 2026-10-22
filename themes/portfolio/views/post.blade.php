@@ -16,7 +16,7 @@
         // Read by the shared header and footer partials - see the one-pager.
         $siteName = \App\Models\Setting::get('site_name', config('app.name'));
         $siteIcon = \App\Models\Setting::get('site_icon_white') ?: \App\Models\Setting::get('site_icon');
-        $socials = \App\Support\PortfolioSocials::all();
+        $socials = \Themes\Portfolio\Support\PortfolioSocials::all();
     @endphp
 
     @include('theme-portfolio::partials._header')

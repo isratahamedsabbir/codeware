@@ -195,7 +195,7 @@ it('shows the theme name read-only, with no identity form', function () {
 });
 
 it('gives an installed theme the next free serial number', function () {
-    $zip = makeIdentityThemeZip('retro', ['home.blade.php' => 'retro home']);
+    $zip = makeIdentityThemeZip('retro', ['views/index.blade.php' => 'retro home']);
 
     $expected = Themes::nextSn();
 
@@ -206,7 +206,7 @@ it('gives an installed theme the next free serial number', function () {
 
 it('gives an installed theme that shipped its own manifest file a number too', function () {
     $zip = makeIdentityThemeZip('retro', [
-        'home.blade.php' => 'retro home',
+        'views/index.blade.php' => 'retro home',
         ThemeSettings::FILE => json_encode(['name' => 'Retro Classic', 'version' => '2.1.0']),
     ]);
 
@@ -222,7 +222,7 @@ it('keeps the serial number a package shipped with', function () {
     // the rest of the site has been calling it by, and handing out a new one
     // would silently renumber it.
     $zip = makeIdentityThemeZip('retro', [
-        'home.blade.php' => 'retro home',
+        'views/index.blade.php' => 'retro home',
         ThemeSettings::FILE => json_encode(['name' => 'Retro Classic', 'sn' => 25]),
     ]);
 
@@ -233,7 +233,7 @@ it('keeps the serial number a package shipped with', function () {
 
 it('refuses a package whose theme name is already taken', function () {
     $zip = makeIdentityThemeZip('retro', [
-        'home.blade.php' => 'retro home',
+        'views/index.blade.php' => 'retro home',
         ThemeSettings::FILE => json_encode(['name' => 'Ecommerce']),
     ]);
 
@@ -247,7 +247,7 @@ it('refuses a package whose slug would derive a name that is already taken', fun
     // package collides with the first without anybody having typed a name.
     installThemeWithManifest('retro', ['name' => 'My Shop']);
 
-    $zip = makeIdentityThemeZip('my_shop', ['home.blade.php' => 'shop home']);
+    $zip = makeIdentityThemeZip('my_shop', ['views/index.blade.php' => 'shop home']);
 
     installPackagedTheme($zip)->assertHasErrors('themeZip');
 

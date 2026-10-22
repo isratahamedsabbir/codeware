@@ -20,10 +20,10 @@
     agree) and grows the add/remove/reorder UI for each. See
     App\Livewire\Admin\ThemeSettings\Index.
 
-    Read back by the one-pager through App\Support\PortfolioProfile, e.g.
-        \App\Support\PortfolioProfile::hero()['role']
-        \App\Support\PortfolioProfile::services()
-        \App\Support\PortfolioProfile::projects()
+    Read back by the one-pager through Themes\Portfolio\Support\PortfolioProfile, e.g.
+        \Themes\Portfolio\Support\PortfolioProfile::hero()['role']
+        \Themes\Portfolio\Support\PortfolioProfile::services()
+        \Themes\Portfolio\Support\PortfolioProfile::projects()
 
     A section with no rows is not rendered on the storefront at all, so leaving
     these empty is a valid state: a smaller finished portfolio beats a

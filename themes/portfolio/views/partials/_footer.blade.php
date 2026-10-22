@@ -1,5 +1,5 @@
 {{--
-    Portfolio theme footer — owned by the one-pager (home.blade.php), which is
+    Portfolio theme footer — owned by the one-pager (index.blade.php), which is
     the only page this theme ships. Kept as a partial so the markup lives in one
     place rather than inline in the one view that uses it.
 
@@ -17,7 +17,7 @@
     beats a full-width strip arguing with the grid for attention.
 --}}
 @php
-    $footerSections = \App\Support\Frontend::portfolioMenuItems()
+    $footerSections = \Themes\Portfolio\Support\PortfolioProfile::menuItems()
         ->filter(fn ($item) => str_starts_with((string) $item->url, '#'))
         ->values();
 @endphp
@@ -29,13 +29,13 @@
             <div>
                 <a href="{{ url('/') }}" class="pf-heading flex items-center gap-2.5">
                     <span class="pf-mono flex h-9 w-9 items-center justify-center rounded-lg bg-(--pf-primary-soft) text-sm font-bold text-(--pf-primary)">
-                        {{ \App\Support\PortfolioProfile::monogram($siteName) }}
+                        {{ \Themes\Portfolio\Support\PortfolioProfile::monogram($siteName) }}
                     </span>
                     <span class="text-base font-bold tracking-tight">{{ $siteName }}</span>
                 </a>
 
                 <p class="mt-4 max-w-sm text-sm leading-relaxed text-(--pf-text-muted)">
-                    {{ \App\Support\PortfolioProfile::hero()['tagline'] }}
+                    {{ \Themes\Portfolio\Support\PortfolioProfile::hero()['tagline'] }}
                 </p>
             </div>
 

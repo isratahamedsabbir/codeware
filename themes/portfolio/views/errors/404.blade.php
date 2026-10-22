@@ -42,8 +42,8 @@
     $siteIcon = \App\Models\Setting::get('site_icon_white') ?: \App\Models\Setting::get('site_icon');
 
     // Read by the shared header and footer partials - see
-    // App\Support\PortfolioSocials.
-    $socials = \App\Support\PortfolioSocials::all();
+    // Themes\Portfolio\Support\PortfolioSocials.
+    $socials = \Themes\Portfolio\Support\PortfolioSocials::all();
 @endphp
 
 @include('theme-portfolio::partials._header')

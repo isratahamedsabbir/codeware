@@ -17,7 +17,7 @@
         // read these, so they are resolved here rather than in each partial.
         $siteName = \App\Models\Setting::get('site_name', config('app.name'));
         $siteIcon = \App\Models\Setting::get('site_icon_white') ?: \App\Models\Setting::get('site_icon');
-        $socials = \App\Support\PortfolioSocials::all();
+        $socials = \Themes\Portfolio\Support\PortfolioSocials::all();
     @endphp
 
     @include('theme-portfolio::partials._header')

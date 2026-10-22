@@ -141,7 +141,7 @@ final class Sitemap
         // priority 1.0, as the first entry — is the site contradicting itself
         // in the two places a crawler looks, and the "default" theme's login
         // screen is exactly that case. Themes::isIndexable() is the same answer
-        // the theme's own home.blade.php passes to the layout, so the two
+        // the theme's own index.blade.php passes to the layout, so the two
         // cannot drift apart.
         $groups = [
             'pages' => fn () => array_merge(

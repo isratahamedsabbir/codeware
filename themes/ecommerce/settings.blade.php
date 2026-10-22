@@ -1,7 +1,7 @@
 ﻿{{--
     Ecommerce theme settings — bound to the Theme Settings screen (Admin →
     Theme Settings) via wire:model="settings.*". Values persist to this theme's
-    own theme.json beside this file and are read by ecommerce/home.blade.php
+    own theme.json beside this file and are read by ecommerce/index.blade.php
     and partials/_head.blade.php through App\Support\ThemeSettings.
 
     Banners tab: the hero slider (each slide's image, title, description and

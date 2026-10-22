@@ -552,7 +552,7 @@ public/                   everything the web serves, at /themes/{slug}/...
 0. Admin -> Theme Settings -> New Theme, or do the rest by hand
 1. mkdir themes/my-theme/
 2. theme.json  - name, version, author (tags / no_index / sn optional)
-3. one template per route name in Themes::ROUTE_TEMPLATES  - home, page,
+3. one template per route name in Themes::ROUTE_TEMPLATES  - index (home route), page,
    shop, product, category, brand, tag, favorites, blog, post, cart,
    checkout, order-confirmation, account/{dashboard,orders,order,profile}
 4. errors/404.blade.php  - otherwise Laravel's shared error page is used
@@ -1207,7 +1207,7 @@ $token = PuckEditor::token($user, "puck-builder-{$page->id}");   // scoped per p
             </p>
         </div>
 
-        <x-admin-doc-code label="Reading sections in a theme template" file="themes/default/page.blade.php">
+        <x-admin-doc-code label="Reading sections in a theme template" file="themes/default/views/page.blade.php">
 @verbatim
 @foreach ($sections as $section)
     @continue(blank($section->localizedCards()))   {{-- skip sections with no cards #}}

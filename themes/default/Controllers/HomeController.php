@@ -19,7 +19,7 @@ use App\Http\Controllers\Themes\ThemeController;
  * The method itself comes from a trait rather than being written out, because
  * the *data* a homepage needs is the same on every theme — what differs is the
  * template, and that has always been this theme's own
- * themes/default/home.blade.php. A theme that wanted a
+ * themes/default/index.blade.php. A theme that wanted a
  * different home overrides the method here.
  */
 class HomeController extends ThemeController

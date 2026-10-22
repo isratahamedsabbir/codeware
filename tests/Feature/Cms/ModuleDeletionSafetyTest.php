@@ -34,7 +34,7 @@ afterEach(function () {
 function doomedThemeFiles(): array
 {
     return [
-        'home.blade.php' => 'doomed home',
+        'views/index.blade.php' => 'doomed home',
         'routes/web.php' => '<?php // doomed routes',
         'theme.json' => json_encode(['name' => 'Doomed Theme', 'version' => '1.0.0', 'sn' => 99]),
         'public/css/theme.css' => '@import "../../../../resources/css/base.css";',

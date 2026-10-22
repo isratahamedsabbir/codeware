@@ -8,10 +8,10 @@ use App\Models\Setting;
 use App\Models\SocialLink;
 use App\Models\Subscriber;
 use App\Models\User;
-use App\Support\PortfolioSocials;
 use Database\Seeders\RolePermissionSeeder;
 use Livewire\Livewire;
 use Themes\Portfolio\Database\Seeders\MenuSeeder as PortfolioMenuSeeder;
+use Themes\Portfolio\Support\PortfolioSocials;
 
 use function Pest\Laravel\get;
 
