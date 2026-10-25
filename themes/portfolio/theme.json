@@ -43,7 +43,7 @@
     ],
     "theme_portfolio_education": [],
     "theme_portfolio_certifications": [],
-    "theme_portfolio_photo": "",
+    "theme_portfolio_photo": "/storage/theme-uploads/theme-portfolio-photo/photo-hd-0gddzv.jpg",
     "theme_portfolio_name": "israt ahamed sabbir",
     "theme_portfolio_hero_title": "Laravel Developer",
     "theme_portfolio_hero_tagline": "I design and build Laravel applications that stay maintainable as they grow: clean architecture, versioned REST APIs, Livewire admin panels, queues and payments, shipped with tests and CI.",
@@ -212,5 +212,24 @@
             "description": "Provisioning and zero-downtime deploys"
         }
     ],
-    "theme_portfolio_testimonials": []
+    "theme_portfolio_testimonials": [
+        {
+            "quote": "Our Laravel API was timing out under load. He found the N+1 queries, added the right indexes and put Redis caching in front, and response times dropped from seconds to milliseconds.",
+            "name": "Rafiq Hasan",
+            "role": "CTO, Demo Commerce Ltd",
+            "rating": "5"
+        },
+        {
+            "quote": "Clean code, proper tests and a Livewire admin panel our team could use on day one. Every pull request came with a clear explanation, so handover was painless.",
+            "name": "Nusrat Jahan",
+            "role": "Product Manager, Sample SaaS",
+            "rating": "5"
+        },
+        {
+            "quote": "He took our WooCommerce store and rebuilt it as a Laravel backend with a REST API. Deployment is automated now, and releases no longer feel risky.",
+            "name": "Tanvir Ahmed",
+            "role": "Founder, Example Store",
+            "rating": "5"
+        }
+    ]
 }

@@ -238,7 +238,7 @@
              because the nav links to #services: a nav item whose target is
              absent is a dead link. Projects, Experience and Technology take the
              same approach. --}}
-        <section id="services" class="border-t border-(--pf-border) px-6 py-16 sm:py-20">
+        <section id="services" class="{{ $services->isNotEmpty() ? 'border-t border-(--pf-border) px-6 py-16 sm:py-20' : '' }}">
             {{-- `active` is the id of the service whose request popup is open, or
                  null. One piece of state for the whole section rather than one
                  per card, so opening a second popup closes the first, and the
@@ -600,7 +600,7 @@
         {{-- The anchor is unconditional so a deep link and the footer nav item
              both still land somewhere; the block inside is what hides when there
              is nothing to show. --}}
-        <section id="testimonials" class="border-t border-(--pf-border) px-6 py-16 sm:py-20">
+        <section id="testimonials" class="{{ $testimonials->isNotEmpty() ? 'border-t border-(--pf-border) px-6 py-16 sm:py-20' : '' }}">
             @if ($testimonials->isNotEmpty())
                 <div class="mx-auto max-w-6xl">
                     <div data-pf-reveal class="max-w-2xl">
