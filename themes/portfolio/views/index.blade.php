@@ -16,7 +16,7 @@
     <link rel="preload" href="{{ asset('fonts/instrument-sans/instrument-sans-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ asset('themes/portfolio/css/fonts.css') }}">
     <link rel="stylesheet" href="{{ asset('themes/portfolio/css/style.css') }}">
-    <link rel="stylesheet" href="{{ asset('themes/portfolio/css/polish.css') }}?v=9">
+    <link rel="stylesheet" href="{{ asset('themes/portfolio/css/polish.css') }}?v=10">
     <style>[x-cloak]{display:none!important}</style>
     @include('partials._custom-code-head')
 </head>
@@ -101,13 +101,13 @@
 
     <main>
         {{-- Hero --}}
-        <section id="home" class="pf-grid-bg relative overflow-hidden px-6 pt-32 pb-20 sm:pt-40 sm:pb-28">
+        <section id="home" class="pf-grid-bg relative overflow-hidden px-6 pt-28 pb-14 sm:pt-32 sm:pb-20">
             {{-- Two coloured blooms behind the copy and the portrait. Decorative
                  only, so they are hidden from assistive tech. --}}
             <div class="pf-glow pointer-events-none absolute -top-32 -left-24 h-105 w-105 rounded-full opacity-60" aria-hidden="true"></div>
             <div class="pf-glow pointer-events-none absolute -right-32 -bottom-40 h-130 w-130 rounded-full opacity-40" aria-hidden="true"></div>
 
-            <div class="relative mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
+            <div class="relative mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-12">
                 {{-- Copy --}}
                 <div class="text-center lg:text-left">
                     @if ($profile['availability'])
@@ -183,7 +183,25 @@
                             <img src="{{ $profile['photo'] }}" alt="{{ $profile['name'] }}" width="480" height="600"
                                 class="h-full w-full object-cover" loading="eager" fetchpriority="high">
                         @else
-                            <div class="pf-monogram text-[5rem] sm:text-[7rem]">{{ $profile['monogram'] }}</div>
+                            {{-- No photo: a Laravel code window instead of bare initials. Decorative. --}}
+                            <div class="pf-code" aria-hidden="true">
+                                <div class="pf-code-bar"><i></i><i></i><i></i><span class="pf-mono">OrderController.php</span></div>
+@verbatim
+<pre class="pf-mono"><span class="c">// Thin controller, fat domain.</span>
+<span class="k">public function</span> <span class="f">store</span>(<span class="t">StoreOrderRequest</span> <span class="v">$request</span>)
+{
+    <span class="v">$order</span> = <span class="t">DB</span>::<span class="f">transaction</span>(<span class="k">fn</span> () =>
+        <span class="t">Order</span>::<span class="f">create</span>(<span class="v">$request</span>-><span class="f">validated</span>())
+    );
+
+    <span class="f">dispatch</span>(<span class="k">new</span> <span class="t">SendInvoice</span>(<span class="v">$order</span>));
+
+    <span class="k">return</span> <span class="f">response</span>()-><span class="f">json</span>(
+        <span class="k">new</span> <span class="t">OrderResource</span>(<span class="v">$order</span>), <span class="s">201</span>
+    );
+}</pre>
+@endverbatim
+                            </div>
                         @endif
                     </div>
 
@@ -202,7 +220,7 @@
             {{-- Trust strip. A number with no unit is noise, so the label is part
                  of the row and a row missing either half is dropped upstream. --}}
             @if ($stats->isNotEmpty())
-                <div class="relative mx-auto mt-20 max-w-6xl">
+                <div class="relative mx-auto mt-14 max-w-6xl">
                     <div class="pf-card grid grid-cols-2 gap-y-8 rounded-2xl px-6 py-8 sm:grid-cols-4 sm:px-8">
                         @foreach ($stats as $stat)
                             <div class="pf-stat px-2 text-center">
@@ -220,7 +238,7 @@
              because the nav links to #services: a nav item whose target is
              absent is a dead link. Projects, Experience and Technology take the
              same approach. --}}
-        <section id="services" class="border-t border-(--pf-border) px-6 py-24">
+        <section id="services" class="border-t border-(--pf-border) px-6 py-16 sm:py-20">
             {{-- `active` is the id of the service whose request popup is open, or
                  null. One piece of state for the whole section rather than one
                  per card, so opening a second popup closes the first, and the
@@ -251,7 +269,7 @@
                          the submission and every validation message are
                          Livewire's, so nothing about a booking depends on client
                          state. --}}
-                    <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach ($services as $index => $service)
                             <div data-pf-reveal class="pf-card pf-service pf-card-hover relative flex flex-col rounded-2xl p-6"
                                 style="--pf-reveal-delay: {{ $index * 70 }}ms">
@@ -341,7 +359,7 @@
         </section>
 
         {{-- Projects --}}
-        <section id="projects" class="border-t border-(--pf-border) pf-section-alt px-6 py-24">
+        <section id="projects" class="border-t border-(--pf-border) pf-section-alt px-6 py-16 sm:py-20">
             <div class="mx-auto max-w-6xl">
                 @if ($projects->isNotEmpty())
                     <div data-pf-reveal class="max-w-2xl">
@@ -350,7 +368,7 @@
                         <p class="mt-4 text-(--pf-text-muted)">Selected projects showcasing scalable architecture, clean code, and thoughtful user experience.</p>
                     </div>
 
-                    <div class="mt-14 grid gap-5 sm:grid-cols-2">
+                    <div class="mt-10 grid gap-5 sm:grid-cols-2">
                     @foreach ($projects as $index => $project)
                         <div data-pf-reveal class="pf-card pf-card-hover pf-card-rail group flex flex-col overflow-hidden rounded-2xl"
                             style="--pf-reveal-delay: {{ ($index % 2) * 90 }}ms">
@@ -432,7 +450,7 @@
 
         {{-- Experience & credentials --}}
 
-        <section id="experience" class="border-t border-(--pf-border) px-6 py-24">
+        <section id="experience" class="border-t border-(--pf-border) px-6 py-16 sm:py-20">
             {{-- The #education anchor sits outside the guard below, so the nav item
                  and any deep link still land on this section even when every list
                  in it is empty. It is zero-height, and carries the scroll-margin,
@@ -450,7 +468,7 @@
                         <p class="mt-4 text-(--pf-text-muted)">Where I have worked, what I studied, and what I am certified in.</p>
                     </div>
 
-                    <div class="mt-14 grid gap-14 lg:grid-cols-[1.2fr_0.8fr] lg:gap-16">
+                    <div class="mt-10 grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:gap-12">
                         {{-- Roles, as a timeline rather than a stack of identical
                              cards: the rail is what turns a list of dates into a
                              career. --}}
@@ -541,7 +559,7 @@
         </section>
 
         {{-- Technology --}}
-        <section id="technology" class="border-t border-(--pf-border) pf-section-alt px-6 py-24">
+        <section id="technology" class="border-t border-(--pf-border) pf-section-alt px-6 py-16 sm:py-20">
             <div class="mx-auto max-w-6xl">
                 @if ($skillGroups->isNotEmpty())
                     <div data-pf-reveal class="max-w-2xl">
@@ -550,7 +568,7 @@
                         <p class="mt-4 text-(--pf-text-muted)">A comprehensive toolset for building robust, scalable, and user-centric digital solutions.</p>
                     </div>
 
-                    <div class="mt-14 space-y-12">
+                    <div class="mt-10 space-y-9">
                     @foreach ($skillGroups as $groupName => $skills)
                         <div data-pf-reveal>
                             <div class="pf-mono mb-5 flex items-baseline gap-3">
@@ -582,7 +600,7 @@
         {{-- The anchor is unconditional so a deep link and the footer nav item
              both still land somewhere; the block inside is what hides when there
              is nothing to show. --}}
-        <section id="testimonials" class="border-t border-(--pf-border) px-6 py-24">
+        <section id="testimonials" class="border-t border-(--pf-border) px-6 py-16 sm:py-20">
             @if ($testimonials->isNotEmpty())
                 <div class="mx-auto max-w-6xl">
                     <div data-pf-reveal class="max-w-2xl">
@@ -591,7 +609,7 @@
                         <p class="mt-4 text-(--pf-text-muted)">The part of this page that is not my own description of me.</p>
                     </div>
 
-                    <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach ($testimonials as $index => $testimonial)
                             <figure data-pf-reveal
                                 class="pf-card pf-card-hover pf-testimonial flex flex-col rounded-2xl p-6"
@@ -640,7 +658,7 @@
         @foreach ($sections as $section)
             @continue(blank($section->localizedCards()))
 
-            <section id="{{ $section->name }}" class="border-t border-(--pf-border) px-6 py-24">
+            <section id="{{ $section->name }}" class="border-t border-(--pf-border) px-6 py-16 sm:py-20">
                 <div class="mx-auto max-w-6xl">
                     <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach ($section->localizedCards() as $card)
@@ -668,7 +686,7 @@
         @endforeach
 
         {{-- Contact --}}
-        <section id="contact" class="border-t border-(--pf-border) px-6 py-24">
+        <section id="contact" class="border-t border-(--pf-border) px-6 py-16 sm:py-20">
             <div class="mx-auto max-w-6xl">
                 <div data-pf-reveal class="max-w-2xl">
                     <span class="pf-eyebrow pf-mono">06 &mdash; Contact</span>
@@ -684,7 +702,7 @@
                      both point at it. --}}
                 @if ($contactBlock || $hasContactDetails)
                     <div @class([
-                        'mt-14 grid gap-6',
+                        'mt-10 grid gap-6',
                         'lg:grid-cols-2' => $contactBlock && $hasContactDetails,
                     ])>
                         @if ($contactBlock)
@@ -771,7 +789,7 @@
              services section avoids, and a portfolio owner who has not written
              anything should not be shown an empty shelf for it. --}}
         @if ($latestPosts->isNotEmpty())
-            <section id="writing" class="border-t border-(--pf-border) pf-section-alt px-6 py-24">
+            <section id="writing" class="border-t border-(--pf-border) pf-section-alt px-6 py-16 sm:py-20">
                 <div class="mx-auto max-w-6xl">
                     <div data-pf-reveal class="max-w-2xl">
                         <span class="pf-eyebrow pf-mono">07 &mdash; Writing</span>
@@ -779,7 +797,7 @@
                         <p class="mt-4 text-(--pf-text-muted)">Things worth writing down while building them.</p>
                     </div>
 
-                    <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach ($latestPosts as $index => $post)
                             {{-- A post's slug lives on its paired Page, not on the Post
                                  row � same arrangement as products, and why

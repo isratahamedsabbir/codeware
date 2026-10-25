@@ -654,3 +654,29 @@
     .theme-portfolio #home .pf-photo-frame > img,
     .theme-portfolio #home .pf-photo-frame::before { transition: none; }
 }
+
+/* Hero code window (shown when no portrait photo is set) */
+.theme-portfolio .pf-code {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    background: color-mix(in srgb, var(--pf-bg, #0b0d14) 88%, #000);
+    border: 1px solid var(--pf-border);
+    border-radius: 1.4rem; overflow: hidden;
+}
+.theme-portfolio .pf-code-bar {
+    display: flex; align-items: center; gap: .4rem; padding: .75rem 1rem;
+    border-bottom: 1px solid var(--pf-border);
+}
+.theme-portfolio .pf-code-bar i { width: .65rem; height: .65rem; border-radius: 9999px; background: #ff5f57; }
+.theme-portfolio .pf-code-bar i:nth-child(2) { background: #febc2e; }
+.theme-portfolio .pf-code-bar i:nth-child(3) { background: #28c840; }
+.theme-portfolio .pf-code-bar span { margin-left: .6rem; font-size: 11px; color: var(--pf-text-muted); }
+.theme-portfolio .pf-code pre {
+    margin: 0; padding: 1.1rem 1.1rem 1.4rem; flex: 1; overflow: hidden;
+    font-size: clamp(9.5px, 1.05vw, 12.5px); line-height: 1.75; color: #cbd5e1; white-space: pre;
+}
+.theme-portfolio .pf-code .c { color: #64748b; font-style: italic; }
+.theme-portfolio .pf-code .k { color: #c084fc; }
+.theme-portfolio .pf-code .f { color: #60a5fa; }
+.theme-portfolio .pf-code .t { color: #fbbf24; }
+.theme-portfolio .pf-code .v { color: #f87171; }
+.theme-portfolio .pf-code .s { color: #34d399; }
