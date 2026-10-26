@@ -41,8 +41,30 @@
             "image": ""
         }
     ],
-    "theme_portfolio_education": [],
-    "theme_portfolio_certifications": [],
+    "theme_portfolio_education": [
+        {
+            "title": "B.Sc. in Computer Science & Engineering",
+            "period": "2016 — 2020",
+            "description": "Example University"
+        },
+        {
+            "title": "Higher Secondary, Science",
+            "period": "2014 — 2016",
+            "description": "Example College"
+        }
+    ],
+    "theme_portfolio_certifications": [
+        {
+            "title": "AWS Certified Developer – Associate",
+            "period": "2024",
+            "description": "Amazon Web Services"
+        },
+        {
+            "title": "Meta Front-End Developer",
+            "period": "2023",
+            "description": "Meta"
+        }
+    ],
     "theme_portfolio_photo": "/storage/theme-uploads/theme-portfolio-photo/photo-hd-0gddzv.jpg",
     "theme_portfolio_name": "israt ahamed sabbir",
     "theme_portfolio_hero_title": "Laravel Developer",

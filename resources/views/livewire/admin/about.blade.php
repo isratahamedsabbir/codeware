@@ -45,6 +45,37 @@
                     @endforeach
                 </div>
             </x-admin-section-card>
+
+            @can('access-admin')
+                <x-admin-section-card icon="arrow-up-tray" title="Update" body-class="px-6 py-5">
+                    <div class="space-y-4">
+                        <p class="text-sm text-zinc-500 dark:text-zinc-400">
+                            Select an update package (.zip) to update the software. Files in the zip overwrite existing ones; .env, storage and theme settings are kept.
+                        </p>
+                        <input type="file" wire:model="updateZip" accept=".zip" class="hidden" id="update-zip-input">
+                        <div class="flex items-center gap-3">
+                            <flux:button variant="outline" size="sm" icon="arrow-up-tray"
+                                onclick="document.getElementById('update-zip-input').click()">Select zip</flux:button>
+                            <span class="min-w-0 truncate text-xs {{ $updateZip ? 'font-medium text-zinc-600 dark:text-zinc-300' : 'text-zinc-400' }}">
+                                {{ $updateZip ? $updateZip->getClientOriginalName() : 'No file selected' }}
+                            </span>
+                        </div>
+                        @if ($updateZip)
+                            <div class="max-w-sm">
+                                <flux:input type="password" wire:model="updatePassword" label="Confirm your password" autocomplete="current-password" />
+                            </div>
+                            <flux:button variant="primary" size="sm" wire:click="applyUpdate"
+                                wire:loading.attr="disabled" wire:target="applyUpdate,updateZip">
+                                <span wire:loading.remove wire:target="applyUpdate">Update now</span>
+                                <span wire:loading wire:target="applyUpdate">Updating…</span>
+                            </flux:button>
+                        @endif
+                        @error('updateZip')
+                            <p class="text-xs font-medium text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </x-admin-section-card>
+            @endcan
         </div>
 
         {{-- Contact + Social --}}
@@ -96,8 +127,20 @@
                         <span class="font-mono text-zinc-700 dark:text-zinc-300">{{ app()->version() }}</span>
                     </div>
                     <div class="flex items-center justify-between px-4 py-2.5">
+                        <span class="text-zinc-500">Livewire</span>
+                        <span class="font-mono text-zinc-700 dark:text-zinc-300">{{ \Composer\InstalledVersions::getPrettyVersion('livewire/livewire') }}</span>
+                    </div>
+                    <div class="flex items-center justify-between px-4 py-2.5">
                         <span class="text-zinc-500">PHP</span>
                         <span class="font-mono text-zinc-700 dark:text-zinc-300">{{ PHP_VERSION }}</span>
+                    </div>
+                    <div class="flex items-center justify-between px-4 py-2.5">
+                        <span class="text-zinc-500">Composer</span>
+                        <span class="font-mono text-zinc-700 dark:text-zinc-300">{{ $composerVersion ?? 'n/a' }}</span>
+                    </div>
+                    <div class="flex items-center justify-between px-4 py-2.5">
+                        <span class="text-zinc-500">Node.js</span>
+                        <span class="font-mono text-zinc-700 dark:text-zinc-300">{{ $nodeVersion ?? 'n/a' }}</span>
                     </div>
                 </div>
                 <flux:text class="text-xs text-zinc-400 text-center mt-3">
