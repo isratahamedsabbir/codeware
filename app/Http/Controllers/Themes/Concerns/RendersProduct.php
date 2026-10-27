@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Setting;
 use App\Support\Favorites;
 use App\Support\Features;
+use App\Support\LandingTriggers;
 use App\Support\Themes;
 
 /**
@@ -53,12 +54,22 @@ trait RendersProduct
                 ->get();
         }
 
-        // A visitor arriving from a Facebook ad (`?fbclid=…`) gets the campaign
-        // landing page instead of the regular detail page — only when the
-        // active theme ships one; every other theme keeps `product`.
-        $template = $this->isFacebookVisit() && Themes::has('product-landing')
-            ? 'product-landing'
-            : 'product';
+        // A visit that matches the admin's landing-page rules (see
+        // App\Support\LandingTriggers; `?fbclid=…` out of the box) gets a
+        // campaign landing page instead of the regular detail page: the one picked on the
+        // product (themes/{slug}/views/landing/), else `landing/default`. A theme
+        // with no such template keeps `product`.
+        $template = 'product';
+
+        if (LandingTriggers::matches(request())) {
+            $chosen = 'landing.'.($product->landing_page ?: 'default');
+
+            $template = match (true) {
+                Themes::has($chosen) => $chosen,
+                Themes::has('landing.default') => 'landing.default',
+                default => 'product',
+            };
+        }
 
         return $this->view($template, [
             'product' => $product,
@@ -69,11 +80,6 @@ trait RendersProduct
             'currentSlug' => $product->slug,
             'advertisement' => Features::enabled('advertisements') ? Advertisement::displayAd() : null,
         ]);
-    }
-
-    private function isFacebookVisit(): bool
-    {
-        return request()->filled('fbclid');
     }
 
     /**

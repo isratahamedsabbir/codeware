@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\EnvFile;
+use App\Support\LandingTriggers;
 use App\Support\PageCascade;
 use App\Support\PuckEditor;
 use Illuminate\Support\Facades\Artisan;
@@ -41,8 +42,12 @@ class Index extends Component
     /** Stock level at or below which a product row shows the low-stock warning — see saveStockSettings(). */
     public int $minStockQuantity = 10;
 
+    /** Rules for when a product link opens its landing page, one per line — see LandingTriggers. */
+    public string $landingTriggers = '';
+
     public function mount(): void
     {
+        $this->landingTriggers = LandingTriggers::raw();
         $this->frontendUrl = EnvFile::get('FRONTEND_URL', '') ?? '';
         $this->productPreviewPath = EnvFile::get('FRONTEND_PRODUCT_PATH', '') ?? '';
         $this->minStockQuantity = Setting::productMinStockQuantity();
@@ -113,6 +118,43 @@ class Index extends Component
 
         $this->dispatch('close-modal', name: 'product-stock-settings');
         $this->dispatch('notify', message: 'Stock settings saved.');
+    }
+
+    /**
+     * Persists which visits get a product's landing page (query-string rules,
+     * see LandingTriggers) from this page's Landing Page modal. Blank turns the
+     * landing pages off.
+     */
+    public function saveLandingTriggers(): void
+    {
+        Gate::authorize('access-admin-system');
+
+        $rules = LandingTriggers::rules($this->landingTriggers);
+
+        $this->validate([
+            'landingTriggers' => ['nullable', 'string', 'max:2000', function (string $attribute, mixed $value, \Closure $fail) use ($rules) {
+                if (count($rules) > LandingTriggers::MAX_RULES) {
+                    $fail('Use at most '.LandingTriggers::MAX_RULES.' rules.');
+                }
+
+                foreach ($rules as $rule) {
+                    if (! preg_match(LandingTriggers::RULE_PATTERN, $rule)) {
+                        $fail("\"{$rule}\" is not a valid rule. Use a parameter name (fbclid) or name=value (utm_source=facebook).");
+
+                        return;
+                    }
+                }
+            }],
+        ], [], ['landingTriggers' => 'landing page rules']);
+
+        $this->landingTriggers = implode("\n", $rules);
+
+        Setting::set(LandingTriggers::SETTING, $this->landingTriggers);
+
+        AdminActivity::log('updated', 'Landing page rules updated');
+
+        $this->dispatch('close-modal', name: 'landing-page-settings');
+        $this->dispatch('notify', message: 'Landing page rules saved.');
     }
 
     public function reorder(array $order): void

@@ -33,6 +33,8 @@ return new class extends Migration
             $table->boolean('charge_shipping')->default(true);
             $table->boolean('is_featured')->default(false);
             $table->boolean('is_upcoming')->default(false);
+            // Template under themes/{slug}/views/landing/ shown to campaign visits; null = default.
+            $table->string('landing_page', 60)->nullable();
             $table->unsignedSmallInteger('sort_order')->default(0);
             $table->softDeletes();
             $table->timestamps();

@@ -35,6 +35,10 @@
                  (see resources/css/app.css). --}}
             <div class="page-header-actions flex items-center gap-2 shrink-0">
                 @can('access-admin-system')
+                    <flux:button variant="ghost" size="sm" icon="megaphone"
+                        x-on:click="$dispatch('open-modal', { name: 'landing-page-settings' })">
+                        Landing Page
+                    </flux:button>
                     <flux:button variant="ghost" size="sm" icon="exclamation-triangle"
                         x-on:click="$dispatch('open-modal', { name: 'product-stock-settings' })">
                         Stock Settings
@@ -461,6 +465,44 @@
                 </flux:field>
                 <div class="flex gap-2 pt-1">
                     <flux:button size="sm" variant="primary" wire:click="saveFrontendUrl" wire:loading.attr="disabled">
+                        Save
+                    </flux:button>
+                    <flux:modal.close>
+                        <flux:button size="sm" variant="ghost">Cancel</flux:button>
+                    </flux:modal.close>
+                </div>
+            </div>
+        </flux:modal>
+    @endcan
+
+    {{-- Settings Modal — when a product link opens its landing page. Gated like
+         the other settings modals. --}}
+    @can('access-admin-system')
+        <flux:modal name="landing-page-settings" class="md:w-[28rem]"
+            x-on:open-modal.window="if ($event.detail.name === 'landing-page-settings') $flux.modal('landing-page-settings').show()"
+            x-on:close-modal.window="if ($event.detail.name === 'landing-page-settings') $flux.modal('landing-page-settings').close()">
+            <div class="space-y-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <flux:icon.megaphone class="w-5 h-5 text-primary" />
+                    </div>
+                    <flux:heading>Landing Page Settings</flux:heading>
+                </div>
+                <flux:text class="text-sm text-zinc-500">
+                    A visit to a product link that matches any rule below opens that product's landing page (chosen on the product) instead of the normal product page. One rule per line.
+                </flux:text>
+                <flux:field>
+                    <flux:label>Show the landing page when the link has<x-field-hint text="fbclid — the parameter is in the link (Facebook ads). utm_source=facebook — the parameter has exactly that value. Leave empty to never show landing pages." /></flux:label>
+                    <flux:textarea wire:model="landingTriggers" rows="4" placeholder="fbclid&#10;utm_source=facebook" class="font-mono text-sm" />
+                    <flux:error name="landingTriggers" />
+                </flux:field>
+                <div class="rounded-lg bg-zinc-50 p-3 text-xs text-zinc-500 space-y-1">
+                    <p><span class="font-mono text-zinc-700">fbclid</span> — Facebook ad clicks</p>
+                    <p><span class="font-mono text-zinc-700">gclid</span> — Google ad clicks</p>
+                    <p><span class="font-mono text-zinc-700">utm_campaign=eid-sale</span> — only that campaign</p>
+                </div>
+                <div class="flex gap-2 pt-1">
+                    <flux:button size="sm" variant="primary" wire:click="saveLandingTriggers" wire:loading.attr="disabled">
                         Save
                     </flux:button>
                     <flux:modal.close>

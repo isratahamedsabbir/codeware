@@ -709,6 +709,28 @@ class Themes
     }
 
     /**
+     * The campaign landing pages a theme ships: every views/landing/*.blade.php,
+     * as slug => label ('black-friday' => 'Black Friday'). Empty when the theme
+     * has no landing/ folder. This is what the product form offers.
+     *
+     * @return array<string, string>
+     */
+    public static function landingPages(?string $theme = null): array
+    {
+        $dir = static::path().'/'.($theme ?? static::active()).'/views/landing';
+        $pages = [];
+
+        foreach (glob($dir.'/*.blade.php') ?: [] as $file) {
+            $slug = basename($file, '.blade.php');
+            $pages[$slug] = Str::headline($slug);
+        }
+
+        ksort($pages);
+
+        return $pages;
+    }
+
+    /**
      * Whether the active theme ships its own copy of a storefront template.
      *
      * This is the single definition of "does this theme have this page?" —

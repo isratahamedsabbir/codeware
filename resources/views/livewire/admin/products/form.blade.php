@@ -144,6 +144,22 @@
                             <flux:error name="warranty_months" />
                         </flux:field>
                     </div>
+
+                    @if (count($this->landingOptions) > 0)
+                        <div class="mt-4">
+                            <flux:field>
+                                <flux:label>Landing page<x-field-hint text="The page a visitor sees when they open this product from a Facebook ad (a link with ?fbclid=). Templates are in themes/{theme}/views/landing/. Regular visitors still get the normal product page." /></flux:label>
+                                <flux:select wire:model="landing_page">
+                                    <flux:select.option value="">Default</flux:select.option>
+                                    @foreach ($this->landingOptions as $slug => $label)
+                                        @continue($slug === 'default')
+                                        <flux:select.option value="{{ $slug }}">{{ $label }}</flux:select.option>
+                                    @endforeach
+                                </flux:select>
+                                <flux:error name="landing_page" />
+                            </flux:field>
+                        </div>
+                    @endif
                 </div>
 
             </x-admin-locale-tabs>
