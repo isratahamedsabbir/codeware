@@ -111,7 +111,7 @@
 
     {{-- Hero: on a phone it reads headline → product → order block; from md up
          the order block tucks under the headline beside a tall product image. --}}
-    <section class="relative overflow-hidden bg-linear-to-b from-[#1448b8] to-[#0d3585] px-4 pb-24 pt-8 text-white sm:px-6 md:pb-28 md:pt-14">
+    <section class="relative overflow-clip bg-linear-to-b from-[#1448b8] to-[#0d3585] px-4 pb-24 pt-8 text-white sm:px-6 md:pb-28 md:pt-14">
         <div class="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-[#d7ff1f]/10 blur-3xl"></div>
         <div class="pointer-events-none absolute -bottom-32 -left-24 h-96 w-96 rounded-full bg-sky-400/20 blur-3xl"></div>
 
@@ -200,7 +200,7 @@
                  included), then on to the normal checkout. Every other button on
                  the page scrolls back up to it. --}}
             <div id="order" x-intersect:enter="orderVisible = true" x-intersect:leave="orderVisible = false"
-                class="mx-auto w-full max-w-md scroll-mt-4 rounded-3xl bg-white p-5 text-left text-zinc-800 shadow-2xl shadow-black/30 ring-4 ring-[#d7ff1f]/60 md:col-start-1 md:row-start-2 md:mx-0">
+                class="mx-auto w-full max-w-md scroll-mt-32 rounded-3xl bg-white p-5 text-left text-zinc-800 shadow-2xl shadow-black/30 ring-4 ring-[#d7ff1f]/60 md:col-start-1 md:row-start-2 md:mx-0">
                 @if ($lowStock)
                     <p class="mb-3 flex items-center justify-center gap-2 rounded-xl bg-red-50 px-3 py-2 text-sm font-bold text-red-600">
                         <span class="relative flex size-2.5"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400"></span><span class="relative inline-flex size-2.5 rounded-full bg-red-500"></span></span>
