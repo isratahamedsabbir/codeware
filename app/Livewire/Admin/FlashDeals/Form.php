@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\FlashDeals;
 
+use App\Concerns\StaysOnForm;
 use App\Models\FlashDeal;
 use App\Models\Product;
 use App\Support\AdminActivity;
@@ -11,6 +12,8 @@ use Livewire\Component;
 
 class Form extends Component
 {
+    use StaysOnForm;
+
     public ?int $flashDealId = null;
 
     #[Validate('required|string|max:150')]
@@ -98,7 +101,7 @@ class Form extends Component
 
         AdminActivity::log($creating ? 'created' : 'updated', "Flash deal: {$data['name']}");
 
-        $this->redirect(route('admin.flash-deals'), navigate: true);
+        $this->stayOnForm($creating, 'admin.flash-deals.edit', $deal->id);
     }
 
     public function render()

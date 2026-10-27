@@ -198,9 +198,9 @@ class Form extends Component
         $vendorIds = in_array('vendor', $this->selectedRoles, true) ? $this->vendor_ids : [];
         $user->vendors()->sync($vendorIds);
 
-        $this->dispatch('notify', message: $this->userId ? 'User updated successfully' : 'User created successfully');
+        $this->dispatch('notify', message: $creating ? 'User created successfully' : 'User updated successfully');
 
-        $this->redirect(route('admin.users'), navigate: true);
+        $this->redirect(route('admin.users.edit', $user->id), navigate: true);
     }
 
     /**

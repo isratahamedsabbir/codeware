@@ -914,11 +914,17 @@ class Form extends Component
 
         $this->validate($rules);
 
+        $creating = $this->productId === null;
+
         $this->persistProduct();
 
-        $this->dispatch('notify', message: $this->productId ? 'Product updated successfully' : 'Product created successfully');
+        $this->dispatch('notify', message: $creating ? 'Product created successfully' : 'Product updated successfully');
 
-        $this->redirect(route('admin.products'), navigate: true);
+        // Saving keeps the admin on the form: a new product lands on its own edit
+        // page, an existing one simply stays where it is.
+        if ($creating) {
+            $this->redirect(route('admin.products.edit', $this->productId), navigate: true);
+        }
     }
 
     private function persistProduct(): void

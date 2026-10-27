@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Services;
 
 use App\Concerns\HasTranslatableFields;
+use App\Concerns\StaysOnForm;
 use App\Models\Service;
 use App\Support\AdminActivity;
 use Illuminate\Support\Str;
@@ -12,6 +13,7 @@ use Livewire\Component;
 class Form extends Component
 {
     use HasTranslatableFields;
+    use StaysOnForm;
 
     public ?int $serviceId = null;
 
@@ -63,6 +65,8 @@ class Form extends Component
             'featured_image' => $this->featuredImage ?: null,
         ];
 
+        $creating = $this->serviceId === null;
+
         if ($this->serviceId) {
             Service::findOrFail($this->serviceId)->update($data);
             $this->dispatch('notify', message: 'Service updated successfully');
@@ -70,16 +74,16 @@ class Form extends Component
             // New services stay inactive until switched on from the list —
             // status is no longer editable from this form, see Index::toggleStatus().
             $data['status'] = 'inactive';
-            Service::create($data);
+            $this->serviceId = Service::create($data)->id;
             $this->dispatch('notify', message: 'Service created successfully');
         }
 
         AdminActivity::log(
-            $this->serviceId ? 'updated' : 'created',
+            $creating ? 'created' : 'updated',
             "Service: {$this->primaryValue('name')}",
         );
 
-        $this->redirect(route('admin.services'), navigate: true);
+        $this->stayOnForm($creating, 'admin.services.edit', $this->serviceId);
     }
 
     public function render()

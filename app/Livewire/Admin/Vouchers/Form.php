@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Vouchers;
 
 use App\Concerns\HasTranslatableFields;
+use App\Concerns\StaysOnForm;
 use App\Models\Voucher;
 use App\Support\AdminActivity;
 use Illuminate\Support\Str;
@@ -12,6 +13,7 @@ use Livewire\Component;
 class Form extends Component
 {
     use HasTranslatableFields;
+    use StaysOnForm;
 
     public ?int $voucherId = null;
 
@@ -74,6 +76,8 @@ class Form extends Component
             'valid_days' => $this->valid_days !== '' ? (int) $this->valid_days : null,
         ];
 
+        $creating = $this->voucherId === null;
+
         if ($this->voucherId) {
             Voucher::findOrFail($this->voucherId)->update($data);
             $this->dispatch('notify', message: 'Voucher updated successfully');
@@ -81,16 +85,16 @@ class Form extends Component
             // New vouchers stay inactive until switched on from the list —
             // status is not editable from this form, see Index::toggleStatus().
             $data['status'] = 'inactive';
-            Voucher::create($data);
+            $this->voucherId = Voucher::create($data)->id;
             $this->dispatch('notify', message: 'Voucher created successfully');
         }
 
         AdminActivity::log(
-            $this->voucherId ? 'updated' : 'created',
+            $creating ? 'created' : 'updated',
             "Voucher: {$this->primaryValue('name')}",
         );
 
-        $this->redirect(route('admin.vouchers'), navigate: true);
+        $this->stayOnForm($creating, 'admin.vouchers.edit', $this->voucherId);
     }
 
     public function render()

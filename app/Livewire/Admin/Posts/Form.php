@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Posts;
 
 use App\Concerns\HasSeoFields;
 use App\Concerns\HasTranslatableFields;
+use App\Concerns\StaysOnForm;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\PostCategory;
@@ -24,6 +25,7 @@ use Livewire\Component;
 class Form extends Component
 {
     use HasSeoFields, HasTranslatableFields;
+    use StaysOnForm;
 
     public ?int $postId = null;
 
@@ -233,11 +235,13 @@ class Form extends Component
 
         $this->validate($rules);
 
+        $creating = $this->postId === null;
+
         $this->persistPost();
 
-        $this->dispatch('notify', message: $this->postId ? 'Post updated successfully' : 'Post created successfully');
+        $this->dispatch('notify', message: $creating ? 'Post created successfully' : 'Post updated successfully');
 
-        $this->redirect(route('admin.posts'), navigate: true);
+        $this->stayOnForm($creating, 'admin.posts.edit', $this->postId);
     }
 
     private function persistPost(): void

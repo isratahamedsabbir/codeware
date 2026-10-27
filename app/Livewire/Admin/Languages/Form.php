@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Languages;
 
+use App\Concerns\StaysOnForm;
 use App\Models\Language;
 use App\Models\Translation;
 use App\Support\AdminActivity;
@@ -10,6 +11,8 @@ use Livewire\Component;
 
 class Form extends Component
 {
+    use StaysOnForm;
+
     public ?int $languageId = null;
 
     #[Validate('required|string|max:10|regex:/^[a-zA-Z]{2,3}(?:[_-][a-zA-Z0-9]{2,4})?$/')]
@@ -94,7 +97,7 @@ class Form extends Component
             ? __('Language created successfully')
             : __('Language updated successfully'));
 
-        $this->redirect(route('admin.languages'), navigate: true);
+        $this->stayOnForm($creating, 'admin.languages.edit', $language->id);
     }
 
     /**

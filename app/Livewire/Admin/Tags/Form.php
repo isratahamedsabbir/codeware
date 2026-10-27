@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Tags;
 
 use App\Concerns\HasTranslatableFields;
+use App\Concerns\StaysOnForm;
 use App\Models\Tag;
 use App\Models\Type;
 use App\Support\AdminActivity;
@@ -15,6 +16,7 @@ use Livewire\Component;
 class Form extends Component
 {
     use HasTranslatableFields;
+    use StaysOnForm;
 
     public ?int $tagId = null;
 
@@ -72,7 +74,7 @@ class Form extends Component
             // New tags stay inactive until switched on from the list — status is
             // no longer editable from this form, see Index::toggleStatus().
             $data['status'] = 'inactive';
-            Tag::create($data);
+            $this->tagId = Tag::create($data)->id;
             $this->dispatch('notify', message: 'Tag created successfully');
         }
 
@@ -81,7 +83,7 @@ class Form extends Component
             "Tag: {$this->primaryValue('name')}",
         );
 
-        $this->redirect(route('admin.tags'), navigate: true);
+        $this->stayOnForm($creating, 'admin.tags.edit', $this->tagId);
     }
 
     /**

@@ -99,7 +99,12 @@ class Form extends Component
 
         $this->crudId ? $this->update() : $this->create();
 
-        $this->redirectRoute('admin.cruds', navigate: true);
+        // A failed create keeps its errors on screen instead of leaving the form.
+        if ($this->getErrorBag()->isNotEmpty()) {
+            return;
+        }
+
+        $this->redirectRoute('admin.cruds.edit', $this->crudId, navigate: true);
     }
 
     private function create(): void
@@ -141,6 +146,8 @@ class Form extends Component
             Cruds::dropTable($crud);
             throw $e;
         }
+
+        $this->crudId = $crud->id;
 
         AdminActivity::log('created', "CRUD: {$crud->name}");
         $this->dispatch('notify', message: 'CRUD created — it is in the sidebar now');

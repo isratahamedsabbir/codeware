@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\ProductBrands;
 
 use App\Concerns\HasTranslatableFields;
+use App\Concerns\StaysOnForm;
 use App\Models\ProductBrand;
 use App\Models\Type;
 use App\Support\AdminActivity;
@@ -15,6 +16,7 @@ use Livewire\Component;
 class Form extends Component
 {
     use HasTranslatableFields;
+    use StaysOnForm;
 
     public ?int $brandId = null;
 
@@ -79,7 +81,7 @@ class Form extends Component
             $this->dispatch('notify', message: 'Brand updated successfully');
         } else {
             $data['status'] = 'active';
-            ProductBrand::create($data);
+            $this->brandId = ProductBrand::create($data)->id;
             $this->dispatch('notify', message: 'Brand created successfully');
         }
 
@@ -88,7 +90,7 @@ class Form extends Component
             "Product Brand: {$this->primaryValue('name')}",
         );
 
-        $this->redirect(route('admin.product-brands'), navigate: true);
+        $this->stayOnForm($creating, 'admin.product-brands.edit', $this->brandId);
     }
 
     /**

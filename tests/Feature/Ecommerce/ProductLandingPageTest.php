@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Language;
+use App\Livewire\Admin\Products\Form as ProductForm;
 use App\Livewire\Admin\Products\Index as ProductsIndex;
 use App\Livewire\Frontend\LandingOrder;
 use App\Models\Order;
@@ -167,4 +168,28 @@ it('saves landing page rules from the admin products page and rejects bad ones',
         ->set('landingTriggers', 'not a rule')
         ->call('saveLandingTriggers')
         ->assertHasErrors('landingTriggers');
+});
+
+it('keeps the admin on the product form after saving', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole(Role::findOrCreate('admin'));
+
+    $create = Livewire::actingAs($admin)->test(ProductForm::class)
+        ->set('name', ['en' => 'Green Tea', 'bn' => ''])
+        ->set('price', '120')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $product = Product::where('sku', null)->latest('id')->first();
+    expect($product)->not->toBeNull();
+
+    $create->assertRedirect(route('admin.products.edit', $product->id));
+
+    Livewire::actingAs($admin)->test(ProductForm::class, ['id' => $product->id])
+        ->set('price', '130')
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertNoRedirect();
+
+    expect((float) $product->fresh()->price)->toBe(130.0);
 });

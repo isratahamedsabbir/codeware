@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Types;
 
 use App\Concerns\HasTranslatableFields;
+use App\Concerns\StaysOnForm;
 use App\Models\Type;
 use App\Support\AdminActivity;
 use App\Support\Slug;
@@ -12,6 +13,7 @@ use Livewire\Component;
 class Form extends Component
 {
     use HasTranslatableFields;
+    use StaysOnForm;
 
     public ?int $typeId = null;
 
@@ -78,7 +80,7 @@ class Form extends Component
             $this->dispatch('notify', message: 'Type updated successfully');
         } else {
             $data['status'] = 'active';
-            Type::create($data);
+            $this->typeId = Type::create($data)->id;
             $this->dispatch('notify', message: 'Type created successfully');
         }
 
@@ -87,7 +89,7 @@ class Form extends Component
             "Type: {$this->primaryValue('name')}",
         );
 
-        $this->redirect(route('admin.types'), navigate: true);
+        $this->stayOnForm($creating, 'admin.types.edit', $this->typeId);
     }
 
     public function render()

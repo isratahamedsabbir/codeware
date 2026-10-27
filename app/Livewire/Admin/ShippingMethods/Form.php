@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\ShippingMethods;
 
+use App\Concerns\StaysOnForm;
 use App\Models\ShippingMethod;
 use App\Support\AdminActivity;
 use Livewire\Attributes\Validate;
@@ -9,6 +10,8 @@ use Livewire\Component;
 
 class Form extends Component
 {
+    use StaysOnForm;
+
     public ?int $shippingMethodId = null;
 
     #[Validate('required|string|max:255')]
@@ -47,7 +50,7 @@ class Form extends Component
             // New shipping methods stay inactive until switched on from the list —
             // status is no longer editable from this form, see Index::toggleStatus().
             $data['status'] = 'inactive';
-            ShippingMethod::create($data);
+            $this->shippingMethodId = ShippingMethod::create($data)->id;
             $this->dispatch('notify', message: 'Shipping method created successfully');
         }
 
@@ -56,7 +59,7 @@ class Form extends Component
             "Shipping Method: {$this->name}",
         );
 
-        $this->redirect(route('admin.shipping-methods'), navigate: true);
+        $this->stayOnForm($creating, 'admin.shipping-methods.edit', $this->shippingMethodId);
     }
 
     public function render()

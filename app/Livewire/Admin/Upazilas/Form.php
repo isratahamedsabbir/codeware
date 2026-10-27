@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Upazilas;
 
+use App\Concerns\StaysOnForm;
 use App\Models\District;
 use App\Models\Upazila;
 use App\Support\AdminActivity;
@@ -10,6 +11,8 @@ use Livewire\Component;
 
 class Form extends Component
 {
+    use StaysOnForm;
+
     public ?int $upazilaId = null;
 
     #[Validate('required|integer|exists:districts,id')]
@@ -45,7 +48,7 @@ class Form extends Component
             Upazila::findOrFail($this->upazilaId)->update($data);
             $this->dispatch('notify', message: 'Upazila updated successfully');
         } else {
-            Upazila::create($data);
+            $this->upazilaId = Upazila::create($data)->id;
             $this->dispatch('notify', message: 'Upazila created successfully');
         }
 
@@ -54,7 +57,7 @@ class Form extends Component
             "Upazila: {$this->name}",
         );
 
-        $this->redirect(route('admin.upazilas'), navigate: true);
+        $this->stayOnForm($creating, 'admin.upazilas.edit', $this->upazilaId);
     }
 
     public function render()

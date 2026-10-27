@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Pages;
 
 use App\Concerns\HasSeoFields;
 use App\Concerns\HasTranslatableFields;
+use App\Concerns\StaysOnForm;
 use App\Models\Page;
 use App\Models\PageRevision;
 use App\Support\AdminActivity;
@@ -15,6 +16,7 @@ use Livewire\Component;
 class Form extends Component
 {
     use HasSeoFields, HasTranslatableFields;
+    use StaysOnForm;
 
     public ?int $pageId = null;
 
@@ -220,9 +222,11 @@ class Form extends Component
 
     public function save(): void
     {
+        $creating = $this->pageId === null;
+
         $this->persistPage();
 
-        $this->redirect(route('admin.pages'), navigate: true);
+        $this->stayOnForm($creating, 'admin.pages.edit', $this->pageId);
     }
 
     private function persistPage(): void
