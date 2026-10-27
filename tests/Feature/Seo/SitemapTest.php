@@ -91,7 +91,7 @@ it('serves the main sitemap as an index of separate product and blog files', fun
     $index = $this->get('https://codeware.test/sitemap.xml')->assertOk()->getContent();
 
     expect($index)->toContain('<sitemapindex')
-        ->and($index)->toContain('<loc>https://codeware.test/sitemap-pages.xml</loc>')
+        ->and($index)->toContain('<loc>https://codeware.test/sitemap-0.xml</loc>')
         ->and($index)->toContain('<loc>https://codeware.test/sitemap-products.xml</loc>')
         ->and($index)->toContain('<loc>https://codeware.test/sitemap-blog.xml</loc>');
 

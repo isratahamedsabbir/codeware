@@ -54,7 +54,7 @@ final class Sitemap
      * The sitemap files, in index order. Each is served at /sitemap-{group}.xml
      * and listed in the main /sitemap.xml, which is a sitemap index.
      */
-    public const GROUPS = ['pages', 'products', 'blog'];
+    public const GROUPS = ['0', 'products', 'blog'];
 
     /**
      * The sitemap as XML, cached against the data it was built from.
@@ -144,7 +144,7 @@ final class Sitemap
         // the theme's own index.blade.php passes to the layout, so the two
         // cannot drift apart.
         $groups = [
-            'pages' => fn () => array_merge(
+            '0' => fn () => array_merge(
                 Themes::isIndexable() && Themes::activeThemeCanRender('home') ? [self::entry(self::loc('/'), null, 'home')] : [],
                 self::listing(self::loc('shop'), 'shop'),
                 self::listing(self::loc('blog'), 'blog'),
