@@ -7,6 +7,7 @@ use App\Concerns\StaysOnForm;
 use App\Models\Type;
 use App\Support\AdminActivity;
 use App\Support\Slug;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
@@ -20,6 +21,12 @@ class Form extends Component
     public array $name = [];
 
     public string $slug = '';
+
+    /**
+     * The last auto-generated slug value, so we know whether the admin has
+     * manually diverged from it — see updated().
+     */
+    public string $autoSlug = '';
 
     public int $sortOrder = 0;
 
@@ -36,6 +43,40 @@ class Form extends Component
         $this->sortOrder = $type->sort_order;
     }
 
+    /**
+     * Live slug-as-you-type — regenerates from the primary locale's name only
+     * while the slug is still empty or still what we last generated (i.e. the
+     * admin hasn't typed their own). An existing record's loaded slug never
+     * matches autoSlug, so editing its name leaves the slug alone. Livewire's
+     * updated{Field}() hooks don't fire for array keys like "name.en", hence
+     * the catch-all.
+     */
+    public function updated(string $name, mixed $value): void
+    {
+        if (! $this->isPrimaryLocaleUpdate($name, 'name')) {
+            return;
+        }
+
+        if ($this->slug === '' || $this->slug === $this->autoSlug) {
+            $this->autoSlug = $this->slugFrom((string) $value);
+            $this->slug = $this->autoSlug;
+        }
+    }
+
+    public function updatedSlug(): void
+    {
+        $this->slug = Slug::lower($this->slug);
+    }
+
+    /**
+     * The slug column holds 30 characters of lowercase kebab-case, so a long
+     * name is cut there (without leaving a dangling hyphen).
+     */
+    private function slugFrom(string $name): string
+    {
+        return rtrim(Str::limit(Slug::make($name), 30, ''), '-');
+    }
+
     public function save(): void
     {
         // The model derives a blank slug from the primary name on save, so
@@ -45,7 +86,7 @@ class Form extends Component
         // 500 instead of a validation message. Guarded on having a name so an
         // empty form still fails on `name`, not on a confusing empty slug.
         if (blank($this->slug) && filled($this->primaryValue('name'))) {
-            $this->slug = Slug::make($this->primaryValue('name'));
+            $this->slug = $this->slugFrom($this->primaryValue('name'));
         }
 
         $rules = array_merge($this->getRules(), $this->translatableRules([
