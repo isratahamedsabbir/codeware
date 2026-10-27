@@ -25,7 +25,7 @@
     ];
 @endphp
 
-<footer class="mt-16 bg-sf-footer text-sf-footer-text">
+<footer @class(['bg-sf-footer text-sf-footer-text', 'mt-16' => ! ($flushTop ?? false)])>
     <div class="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-10 sm:grid-cols-2 md:grid-cols-3 sm:px-6">
         <div>
             <a href="{{ url('/') }}" class="flex items-center gap-2">
@@ -131,4 +131,7 @@
     </div>
 </footer>
 
-<livewire:frontend.announce-popup />
+{{-- Campaign landing pages pass `withoutPopup` — an ad click shouldn't land behind a modal. --}}
+@unless ($withoutPopup ?? false)
+    <livewire:frontend.announce-popup />
+@endunless

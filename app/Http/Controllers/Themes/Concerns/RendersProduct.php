@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Setting;
 use App\Support\Favorites;
 use App\Support\Features;
+use App\Support\Themes;
 
 /**
  * A single product, and the two storefront pages that hang off one.
@@ -52,7 +53,14 @@ trait RendersProduct
                 ->get();
         }
 
-        return $this->view('product', [
+        // A visitor arriving from a Facebook ad (`?fbclid=…`) gets the campaign
+        // landing page instead of the regular detail page — only when the
+        // active theme ships one; every other theme keeps `product`.
+        $template = $this->isFacebookVisit() && Themes::has('product-landing')
+            ? 'product-landing'
+            : 'product';
+
+        return $this->view($template, [
             'product' => $product,
             'related' => $related,
             'sections' => $product->page ? CmsSection::cachedForPage($product->page->id) : collect(),
@@ -61,6 +69,11 @@ trait RendersProduct
             'currentSlug' => $product->slug,
             'advertisement' => Features::enabled('advertisements') ? Advertisement::displayAd() : null,
         ]);
+    }
+
+    private function isFacebookVisit(): bool
+    {
+        return request()->filled('fbclid');
     }
 
     /**
