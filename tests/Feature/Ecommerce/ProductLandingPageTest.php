@@ -211,3 +211,44 @@ it('floats a call button on every landing page when a contact phone is set', fun
 
     get('/products/blue-tea?fbclid=egfad')->assertOk()->assertDontSee('lp-call', false);
 });
+
+it('shows the product details beside the photo on the basic landing page, not folded away', function () {
+    Product::query()->update(['landing_page' => 'basic', 'description' => ['en' => 'Smooth and fragrant tea leaves.', 'bn' => '']]);
+
+    get('/products/blue-tea?fbclid=egfad')->assertOk()
+        ->assertSee('Smooth and fragrant tea leaves.')
+        ->assertSee('Product details')
+        ->assertDontSee('<details', false);
+});
+
+it('lays the basic landing page specifications out as a table', function () {
+    Product::query()->update([
+        'landing_page' => 'basic',
+        'specifications' => ['en' => '<ul><li>Weight: 1.4 kg</li><li>Colors: Black / Silver</li></ul>', 'bn' => ''],
+    ]);
+
+    get('/products/blue-tea?fbclid=egfad')->assertOk()
+        ->assertSee('Weight')
+        ->assertSee('1.4 kg')
+        ->assertSee('<dl>', false);
+});
+
+it('offers the basic landing page details and specifications as two tabs', function () {
+    Product::query()->update([
+        'landing_page' => 'basic',
+        'description' => ['en' => 'Smooth and fragrant tea leaves.', 'bn' => ''],
+        'specifications' => ['en' => '<ul><li>Weight: 1.4 kg</li><li>Colors: Black</li></ul>', 'bn' => ''],
+    ]);
+
+    get('/products/blue-tea?fbclid=egfad')->assertOk()
+        ->assertSee("tab = 'details'", false)
+        ->assertSee("tab = 'specs'", false)
+        ->assertSee('Smooth and fragrant tea leaves.')
+        ->assertSee('1.4 kg');
+
+    Product::query()->update(['specifications' => null]);
+
+    get('/products/blue-tea?fbclid=egfad')->assertOk()
+        ->assertSee("tab = 'details'", false)
+        ->assertDontSee("tab = 'specs'", false);
+});

@@ -27,7 +27,20 @@
         ->values();
 
     $contactPhone = \App\Models\Setting::get('contact_phone');
-    $hasDetails =filled($product->description) || filled($product->specifications);
+    $hasDetails = filled($product->description) || filled($product->specifications);
+
+    // "Label: value" bullets in the specifications become table rows; anything
+    // that doesn't parse that way stays as the plain rich text.
+    preg_match_all('/<li[^>]*>(.*?)<\/li>/is', (string) $product->specifications, $specMatches);
+    $specRows = collect($specMatches[1])
+        ->map(function ($html) {
+            $text = trim(html_entity_decode(strip_tags($html)));
+
+            return str_contains($text, ':') ? array_map('trim', explode(':', $text, 2)) : null;
+        })
+        ->filter(fn ($row) => $row && $row[0] !== '' && $row[1] !== '')
+        ->values();
+    $specAsTable = $specRows->count() >= 2;
 @endphp
 
 <main class="overflow-x-clip">
@@ -36,32 +49,82 @@
         <h1 class="text-lg font-bold text-sf-heading sm:text-xl">{{ $product->name }}</h1>
     </div>
 
-    {{-- Photo(s): auto-advances when there is more than one. --}}
-    <section class="px-4 pb-6 pt-8"
-        x-data="{ active: 0, images: @js($galleryImages->all()), timer: null,
-            start() { if (this.images.length > 1) this.timer = setInterval(() => this.active = (this.active + 1) % this.images.length, 4000) },
-            go(i) { this.active = i; clearInterval(this.timer); this.start() } }"
-        x-init="start()">
-        <div class="relative mx-auto aspect-square w-full max-w-xs sm:max-w-sm">
-            @forelse ($galleryImages as $image)
-                <img src="{{ $image }}" alt="{{ $product->name }}" @if (! $loop->first) loading="lazy" @endif
-                    x-show="active === {{ $loop->index }}" @if (! $loop->first) x-cloak @endif
-                    x-transition:enter="transition-opacity duration-300" x-transition:enter-start="opacity-0"
-                    class="absolute inset-0 h-full w-full object-contain">
-            @empty
-                <div class="flex h-full w-full items-center justify-center rounded-2xl bg-zinc-100 text-zinc-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 7 9-5 9 5 0 10-9 5-9-5V7Zm0 0 9 5m0 0 9-5m-9 5v10" /></svg>
+    {{-- Photo(s) on one side, the product details on the other (stacked on a
+         phone). The photo stays in view while the details scroll past it, and
+         auto-advances when there is more than one. --}}
+    <section class="mx-auto grid max-w-5xl items-start gap-6 px-4 pb-8 pt-6 {{ $hasDetails ? 'md:grid-cols-2 md:gap-10' : '' }}">
+        <div class="{{ $hasDetails ? 'md:sticky md:top-28' : 'mx-auto w-full max-w-md' }}"
+            x-data="{ active: 0, images: @js($galleryImages->all()), timer: null,
+                start() { if (this.images.length > 1) this.timer = setInterval(() => this.active = (this.active + 1) % this.images.length, 4000) },
+                go(i) { this.active = i; clearInterval(this.timer); this.start() } }"
+            x-init="start()">
+            <div class="relative aspect-square w-full overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-zinc-200">
+                @forelse ($galleryImages as $image)
+                    <img src="{{ $image }}" alt="{{ $product->name }}" @if (! $loop->first) loading="lazy" @endif
+                        x-show="active === {{ $loop->index }}" @if (! $loop->first) x-cloak @endif
+                        x-transition:enter="transition-opacity duration-300" x-transition:enter-start="opacity-0"
+                        class="absolute inset-0 h-full w-full object-contain p-3">
+                @empty
+                    <div class="flex h-full w-full items-center justify-center bg-zinc-50 text-zinc-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 7 9-5 9 5 0 10-9 5-9-5V7Zm0 0 9 5m0 0 9-5m-9 5v10" /></svg>
+                    </div>
+                @endforelse
+            </div>
+
+            @if ($galleryImages->count() > 1)
+                <div class="mt-4 flex justify-center gap-2">
+                    @foreach ($galleryImages as $image)
+                        <button type="button" @click="go({{ $loop->index }})" aria-label="{{ __('Image') }} {{ $loop->iteration }}"
+                            :class="active === {{ $loop->index }} ? 'w-6 bg-amber-400' : 'w-2.5 bg-zinc-300'"
+                            class="h-2.5 rounded-full transition-all"></button>
+                    @endforeach
                 </div>
-            @endforelse
+            @endif
         </div>
 
-        @if ($galleryImages->count() > 1)
-            <div class="mt-4 flex justify-center gap-2">
-                @foreach ($galleryImages as $image)
-                    <button type="button" @click="go({{ $loop->index }})" aria-label="{{ __('Image') }} {{ $loop->iteration }}"
-                        :class="active === {{ $loop->index }} ? 'w-6 bg-amber-400' : 'w-2.5 bg-zinc-300'"
-                        class="h-2.5 rounded-full transition-all"></button>
-                @endforeach
+        @if ($hasDetails)
+            {{-- Two tabs (one when the product has only one of them). --}}
+            @php
+                $hasDescription = filled($product->description);
+                $hasSpecs = filled($product->specifications);
+                $firstTab = $hasDescription ? 'details' : 'specs';
+            @endphp
+            <div x-data="{ tab: '{{ $firstTab }}' }" class="overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-zinc-200">
+                <div class="flex border-b border-zinc-200 bg-zinc-50" role="tablist">
+                    @if ($hasDescription)
+                        <button type="button" role="tab" @click="tab = 'details'" :aria-selected="tab === 'details'"
+                            :class="tab === 'details' ? 'border-brand bg-white text-brand' : 'border-transparent text-zinc-500 hover:text-sf-heading'"
+                            class="-mb-px flex-1 border-b-2 px-4 py-3.5 text-sm font-bold transition sm:text-base">{{ __('Product details') }}</button>
+                    @endif
+                    @if ($hasSpecs)
+                        <button type="button" role="tab" @click="tab = 'specs'" :aria-selected="tab === 'specs'"
+                            :class="tab === 'specs' ? 'border-brand bg-white text-brand' : 'border-transparent text-zinc-500 hover:text-sf-heading'"
+                            class="-mb-px flex-1 border-b-2 px-4 py-3.5 text-sm font-bold transition sm:text-base">{{ __('Specifications') }}</button>
+                    @endif
+                </div>
+
+                @if ($hasDescription)
+                    <div x-show="tab === 'details'" role="tabpanel" class="p-5 sm:p-6">
+                        <div class="rich-text leading-relaxed text-zinc-600 [&_h2]:mb-2 [&_h2]:mt-5 [&_h2]:text-base [&_h2]:font-bold [&_h2]:text-sf-heading [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-base [&_h3]:font-bold [&_h3]:text-sf-heading [&_li]:my-1.5 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:marker:text-brand">@richtext($product->description)</div>
+                    </div>
+                @endif
+
+                @if ($hasSpecs)
+                    <div x-show="tab === 'specs'" @if ($firstTab !== 'specs') x-cloak @endif role="tabpanel">
+                        @if ($specAsTable)
+                            <dl>
+                                @foreach ($specRows as [$label, $value])
+                                    <div class="grid grid-cols-5 gap-3 px-5 py-3 text-sm sm:px-6 {{ $loop->odd ? 'bg-zinc-50' : 'bg-white' }}">
+                                        <dt class="col-span-2 font-semibold text-sf-heading">{{ $label }}</dt>
+                                        <dd class="col-span-3 text-zinc-600">{{ $value }}</dd>
+                                    </div>
+                                @endforeach
+                            </dl>
+                        @else
+                            <div class="rich-text p-5 leading-relaxed text-zinc-600 sm:p-6 [&_li]:my-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:marker:text-brand">@richtext($product->specifications)</div>
+                        @endif
+                    </div>
+                @endif
             </div>
         @endif
     </section>
@@ -87,28 +150,7 @@
         <livewire:frontend.landing-order :product-id="$product->id" :key="'landing-order-'.$product->id" />
     </section>
 
-    {{-- Description, folded away. --}}
-    @if ($hasDetails)
-        <section class="bg-zinc-50 px-3 pb-8 sm:px-4">
-            <details class="group mx-auto max-w-5xl rounded border border-brand/25 bg-brand/5">
-                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 font-semibold text-sf-heading">
-                    {{ __('Click to see product details') }}
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 transition group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" /></svg>
-                </summary>
-                <div class="space-y-6 border-t border-brand/15 bg-white px-4 py-5">
-                    @if (filled($product->description))
-                        <div class="rich-text leading-relaxed text-zinc-700">@richtext($product->description)</div>
-                    @endif
-                    @if (filled($product->specifications))
-                        <div>
-                            <h2 class="mb-2 font-bold text-sf-heading">{{ __('Specifications') }}</h2>
-                            <div class="rich-text leading-relaxed text-zinc-700 [&_li]:my-1 [&_ul]:list-disc [&_ul]:pl-5">@richtext($product->specifications)</div>
-                        </div>
-                    @endif
-                </div>
-            </details>
-        </section>
-    @endif
+    <div class="bg-zinc-50 pb-6"></div>
 </main>
 
 <div class="bg-sf-footer">
