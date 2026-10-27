@@ -203,6 +203,7 @@
     @include('theme-ecommerce::partials._footer', ['withoutPopup' => true, 'flushTop' => true])
 </div>
 
+@include('theme-ecommerce::partials._landing-call')
 @include('frontend.partials._chat-widget')
 @include('partials._custom-code-body')
 </body>

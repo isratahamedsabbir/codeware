@@ -193,3 +193,21 @@ it('keeps the admin on the product form after saving', function () {
 
     expect((float) $product->fresh()->price)->toBe(130.0);
 });
+
+it('floats a call button on every landing page when a contact phone is set', function () {
+    Setting::set('contact_phone', '+880 1898 879990');
+
+    foreach (['basic', 'default', 'standard'] as $page) {
+        Product::query()->update(['landing_page' => $page]);
+
+        get('/products/blue-tea?fbclid=egfad')->assertOk()
+            ->assertSee('class="lp-call', false)
+            ->assertSee('tel:+8801898879990', false);
+    }
+
+    get('/products/blue-tea')->assertOk()->assertDontSee('lp-call', false);
+
+    Setting::set('contact_phone', '');
+
+    get('/products/blue-tea?fbclid=egfad')->assertOk()->assertDontSee('lp-call', false);
+});
