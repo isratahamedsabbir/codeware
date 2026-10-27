@@ -28,8 +28,6 @@ class Form extends Component
      */
     public string $autoSlug = '';
 
-    public int $sortOrder = 0;
-
     public function mount(?int $id = null): void
     {
         if (! $id) {
@@ -40,7 +38,6 @@ class Form extends Component
         $this->typeId = $id;
         $this->hydrateTranslatable($type, ['name']);
         $this->slug = $type->slug;
-        $this->sortOrder = $type->sort_order;
     }
 
     /**
@@ -93,7 +90,6 @@ class Form extends Component
             'name' => 'required|string|max:255',
         ]), [
             'slug' => ['nullable', 'string', 'max:30', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
-            'sortOrder' => 'required|integer|min:0',
         ]);
 
         $rules['name.'.$this->primaryLocale][] = Rule::unique('types', 'name->'.$this->primaryLocale)
@@ -108,7 +104,6 @@ class Form extends Component
         $data = [
             'name' => $this->translatablePayload('name'),
             'slug' => $this->slug ?: null,
-            'sort_order' => $this->sortOrder,
         ];
 
         $creating = $this->typeId === null;

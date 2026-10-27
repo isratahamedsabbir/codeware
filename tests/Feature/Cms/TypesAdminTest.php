@@ -49,7 +49,6 @@ it('creates a type, deriving the slug from the primary name', function () {
     Livewire::test(TypeForm::class)
         ->set('name.en', 'Product Category')
         ->set('name.bn', '')
-        ->set('sortOrder', 3)
         ->call('save')
         ->assertHasNoErrors();
 
@@ -57,7 +56,7 @@ it('creates a type, deriving the slug from the primary name', function () {
 
     expect($type->name)->toBe('Product Category')
         ->and($type->slug)->toBe('product-category')
-        ->and($type->sort_order)->toBe(3)
+        ->and($type->sort_order)->toBe(0)
         ->and($type->status)->toBe('active');
 });
 

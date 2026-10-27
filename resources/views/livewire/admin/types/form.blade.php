@@ -37,12 +37,6 @@
             <flux:error name="slug" />
         </flux:field>
 
-        <flux:field>
-            <flux:label>Sort order<span class="text-red-500 ml-0.5">*</span><x-field-hint text="Lower numbers appear first in the type dropdowns on the category, brand and tag forms." /></flux:label>
-            <flux:input type="number" min="0" wire:model.live.debounce.400ms="sortOrder" placeholder="0" />
-            <flux:error name="sortOrder" />
-        </flux:field>
-
         {{-- Footer --}}
         <div class="-mx-3 -mb-3 mt-4 flex items-center gap-3 flex-wrap rounded-b-[3px] border-t border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-700 dark:bg-zinc-800/40">
             <x-admin-save-button :label="$typeId ? 'Update Type' : 'Create Type'" />
