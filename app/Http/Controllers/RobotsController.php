@@ -8,20 +8,17 @@ use Illuminate\Http\Response;
 
 /**
  * robots.txt, served rather than stored.
- *
- * Two parts, and only the first is the admin's to edit. The rules come from the
- * `seo_robots_txt` setting; the Sitemap: line is appended here every time, so it
- * cannot be deleted by an admin who clears the textarea, and cannot be pointed
- * at a host that isn't this site — the one line in this file that has to be
- * right for crawlers to find the rest of the site's inventory at all.
  */
 class RobotsController extends Controller
 {
     public function __invoke(): Response
     {
-        return response($this->body(), 200, [
+        $headers = [
             'Content-Type' => 'text/plain; charset=UTF-8',
-        ]);
+            'Link' => '<' . url('/favicon.ico') . '>; rel="icon"',
+        ];
+
+        return response($this->body(), 200, $headers);
     }
 
     private function body(): string

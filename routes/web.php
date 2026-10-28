@@ -156,6 +156,85 @@ require __DIR__.'/settings.php';
 // describes the site rather than one theme's presentation of it and has to
 // keep answering when the active theme is a portfolio with no product or blog
 // templates at all.
+Route::get('/favicon.ico', function () {
+    $favicon = \App\Models\Setting::get('favicon');
+
+    if ($favicon) {
+        if (filter_var($favicon, FILTER_VALIDATE_URL)) {
+            return redirect()->away($favicon);
+        }
+
+        if (str_starts_with($favicon, '/')) {
+            $path = public_path(ltrim($favicon, '/'));
+            if (is_file($path)) {
+                $mime = match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+                    'svg' => 'image/svg+xml',
+                    'png' => 'image/png',
+                    'jpg', 'jpeg' => 'image/jpeg',
+                    'gif' => 'image/gif',
+                    'ico' => 'image/x-icon',
+                    default => 'image/x-icon',
+                };
+                return response()->file($path, ['Content-Type' => $mime]);
+            }
+        }
+
+        if (str_starts_with($favicon, 'storage/')) {
+            $relative = ltrim(str_replace('storage/', '', $favicon), '/');
+            $path = storage_path('app/public/' . $relative);
+            if (is_file($path)) {
+                $mime = match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+                    'svg' => 'image/svg+xml',
+                    'png' => 'image/png',
+                    'jpg', 'jpeg' => 'image/jpeg',
+                    'gif' => 'image/gif',
+                    'ico' => 'image/x-icon',
+                    default => 'image/x-icon',
+                };
+                return response()->file($path, ['Content-Type' => $mime]);
+            }
+        }
+
+        $path = public_path($favicon);
+        if (is_file($path)) {
+            $mime = match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+                'svg' => 'image/svg+xml',
+                'png' => 'image/png',
+                'jpg', 'jpeg' => 'image/jpeg',
+                'gif' => 'image/gif',
+                'ico' => 'image/x-icon',
+                default => 'image/x-icon',
+            };
+            return response()->file($path, ['Content-Type' => $mime]);
+        }
+
+        $storagePath = storage_path('app/public/' . ltrim($favicon, '/'));
+        if (is_file($storagePath)) {
+            $mime = match (strtolower(pathinfo($storagePath, PATHINFO_EXTENSION))) {
+                'svg' => 'image/svg+xml',
+                'png' => 'image/png',
+                'jpg', 'jpeg' => 'image/jpeg',
+                'gif' => 'image/gif',
+                'ico' => 'image/x-icon',
+                default => 'image/x-icon',
+            };
+            return response()->file($storagePath, ['Content-Type' => $mime]);
+        }
+    }
+
+    $default = public_path('default/logo.svg');
+    if (is_file($default)) {
+        return response()->file($default, ['Content-Type' => 'image/svg+xml']);
+    }
+
+    $path = public_path('favicon/favicon.ico');
+    if (is_file($path)) {
+        return response()->file($path, ['Content-Type' => 'image/x-icon']);
+    }
+
+    abort(404);
+});
+
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/sitemap-{group}.xml', SitemapController::class)->whereIn('group', Sitemap::GROUPS)->name('sitemap.group');
 Route::get('/robots.txt', RobotsController::class)->name('robots');
