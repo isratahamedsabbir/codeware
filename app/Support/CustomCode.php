@@ -49,20 +49,22 @@ class CustomCode
             ->all();
     }
 
+    /** The snippet a page picked, or null if none/deleted. */
+    public static function forPage(?Page $page): ?array
+    {
+        if (! $page?->custom_code_id) {
+            return null;
+        }
+
+        return collect(self::rules())->firstWhere('id', $page->custom_code_id);
+    }
+
     /** Global code first, then the snippet the current page picked, if any. */
     public static function render(string $position, ?Page $page = null): string
     {
         $key = $position === 'head' ? 'head' : 'body';
 
-        $parts = [(string) Setting::get("custom_{$key}_code")];
-
-        if ($page?->custom_code_id) {
-            foreach (self::rules() as $rule) {
-                if ($rule['id'] === $page->custom_code_id) {
-                    $parts[] = $rule[$key];
-                }
-            }
-        }
+        $parts = [(string) Setting::get("custom_{$key}_code"), self::forPage($page)[$key] ?? ''];
 
         return implode("\n", array_filter($parts, fn ($code) => filled($code)));
     }

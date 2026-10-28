@@ -191,3 +191,35 @@ describe('page-type coverage', function () {
         expect(Page::where('product_id', $product->id)->value('custom_code_id'))->toBeNull();
     });
 });
+
+it('exposes the picked snippet in the public page API meta_data', function () {
+    Setting::set('custom_code_rules', json_encode([
+        ['id' => 'aaa', 'name' => 'A', 'head' => '<meta name="snip-a" content="1">', 'body' => '<i></i>'],
+    ]));
+    Page::factory()->published()->create(['title' => ['en' => 'About', 'bn' => ''], 'slug' => 'about', 'custom_code_id' => 'aaa']);
+    Page::factory()->published()->create(['title' => ['en' => 'Contact', 'bn' => ''], 'slug' => 'contact']);
+
+    $this->getJson('/api/v1/pages/about')->assertOk()
+        ->assertJsonPath('data.meta_data.custom_code.id', 'aaa')
+        ->assertJsonPath('data.meta_data.custom_code.head', '<meta name="snip-a" content="1">')
+        ->assertJsonPath('data.meta_data.custom_code.body', '<i></i>');
+
+    $this->getJson('/api/v1/pages/contact')->assertOk()
+        ->assertJsonPath('data.meta_data.custom_code', null);
+});
+
+it('lets the admin API set and clear a page\'s snippet, rejecting unknown ids', function () {
+    $this->seed(RolePermissionSeeder::class);
+    Laravel\Sanctum\Sanctum::actingAs(User::factory()->admin()->create());
+    Setting::set('custom_code_rules', json_encode([
+        ['id' => 'aaa', 'name' => 'A', 'head' => 'x', 'body' => ''],
+    ]));
+    $page = Page::factory()->published()->create(['title' => ['en' => 'About', 'bn' => ''], 'slug' => 'about']);
+
+    $this->putJson("/api/v1/admin/pages/{$page->id}", ['custom_code_id' => 'nope'])->assertUnprocessable();
+    $this->putJson("/api/v1/admin/pages/{$page->id}", ['custom_code_id' => 'aaa'])->assertOk();
+    expect($page->fresh()->custom_code_id)->toBe('aaa');
+
+    $this->putJson("/api/v1/admin/pages/{$page->id}", ['custom_code_id' => null])->assertOk();
+    expect($page->fresh()->custom_code_id)->toBeNull();
+});

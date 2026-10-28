@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Concerns\CachesContent;
 use App\Concerns\HasCreator;
+use App\Support\CustomCode;
 use App\Support\Locale;
 use App\Support\Slug;
 use Illuminate\Database\Eloquent\Builder;
@@ -198,17 +199,25 @@ class Page extends Model
     }
 
     /**
-     * Constant is stored as a list of {key, value} pairs (so the admin form can
-     * repeat/reorder/remove them like cards), but consumers want a
-     * plain lookup map — this collapses it to key => value, skipping blank keys.
+     * The Settings → Custom Code snippet this page picked ({id, name, head,
+     * body}), or null when it picked none or the snippet has since been
+     * deleted. The global code is not repeated here — it is in the public
+     * settings.
      *
-     * @return array<string, string>
+     * @return array{id: string, name: string, head: string, body: string}|null
      */
     public function customCode(): ?array
     {
         return CustomCode::forPage($this);
     }
 
+    /**
+     * Constant is stored as a list of {key, value} pairs (so the admin form can
+     * repeat/reorder/remove them like cards), but consumers want a
+     * plain lookup map — this collapses it to key => value, skipping blank keys.
+     *
+     * @return array<string, string>
+     */
     public function constantMap(): array
     {
         return collect($this->constant ?? [])
