@@ -106,6 +106,8 @@
         {{-- ── SIDEBAR ── --}}
         <div class="w-[320px] shrink-0 space-y-5">
 
+            @include('partials._admin-custom-code-picker')
+
             {{-- Tags — product-typed and post-typed pools, no legacy (App\Models\Tag) --}}
             <x-admin-section-card variant="postbox" persist-key="post-tags" title="Tags" :collapsed="false"
                 description="Label this post for filtering and search.">

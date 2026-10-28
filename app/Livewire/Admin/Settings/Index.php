@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Settings;
 use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\AdminFont;
+use App\Support\CustomCode;
 use App\Support\EnvFile;
 use Illuminate\Support\Facades\Artisan;
 use Livewire\Component;
@@ -38,8 +39,24 @@ class Index extends Component
      */
     public array $openConstants = [];
 
+    /**
+     * Page-specific head/body snippets, on top of the global pair in $settings.
+     *
+     * @var array<int, array{id: string, name: string, head: string, body: string}>
+     */
+    public array $codeRules = [];
+
+    /**
+     * Ids of the $codeRules rows currently expanded — server-side for the same
+     * reason as $openConstants: a re-render from typing must not collapse them.
+     *
+     * @var array<int, string>
+     */
+    public array $openCodeRules = [];
+
     public function mount(): void
     {
+        $this->codeRules = CustomCode::rules();
         $this->loadSettings();
         $this->loadConstants();
         $this->appEnv = EnvFile::get('APP_ENV', config('app.env')) ?? config('app.env');
@@ -53,6 +70,13 @@ class Index extends Component
             // Watermark is configured from the Media Library now, not here — it
             // must not be re-written by this page's save(), so leave it out.
             if (str_starts_with($setting->key, 'watermark_')) {
+                continue;
+            }
+
+            // The page-specific custom code rules are edited as $codeRules, and
+            // saved from there — left in $settings, the stale JSON string would
+            // be written back over them by persistGeneralSettings().
+            if ($setting->key === CustomCode::SETTING) {
                 continue;
             }
 
@@ -124,6 +148,28 @@ class Index extends Component
         }
     }
 
+    public function addCodeRule(): void
+    {
+        $rule = ['id' => CustomCode::newId(), 'name' => '', 'head' => '', 'body' => ''];
+        $this->codeRules[] = $rule;
+        $this->openCodeRules[] = $rule['id'];
+    }
+
+    public function toggleCodeRule(string $id): void
+    {
+        $this->openCodeRules = in_array($id, $this->openCodeRules, true)
+            ? array_values(array_diff($this->openCodeRules, [$id]))
+            : [...$this->openCodeRules, $id];
+    }
+
+    public function removeCodeRule(int $index): void
+    {
+        $removed = $this->codeRules[$index]['id'] ?? null;
+        unset($this->codeRules[$index]);
+        $this->codeRules = array_values($this->codeRules);
+        $this->openCodeRules = array_values(array_diff($this->openCodeRules, [$removed]));
+    }
+
     public function updated(string $name, mixed $value): void
     {
         if (preg_match('/^constants\.\d+\.key$/', $name)) {
@@ -148,6 +194,9 @@ class Index extends Component
             'constants.*.key' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9_]*$/'],
             'constants.*.type' => 'nullable|in:textarea,file',
             'constants.*.value' => 'nullable|string|max:1000',
+            'codeRules.*.name' => 'nullable|string|max:100',
+            'codeRules.*.head' => 'nullable|string',
+            'codeRules.*.body' => 'nullable|string',
         ]);
 
         $this->persistGeneralSettings();
@@ -213,6 +262,20 @@ class Index extends Component
 
         $constants = collect($this->constants)->filter(fn (array $pair) => filled($pair['key'] ?? null))->values()->all();
         Setting::set('constants', json_encode($constants));
+
+        // Rows with no code in either box are dropped rather than stored empty. The id is what pages
+        // point at, so it is kept as-is across saves.
+        $rules = collect($this->codeRules)
+            ->filter(fn (array $rule) => filled($rule['head'] ?? null) || filled($rule['body'] ?? null))
+            ->map(fn (array $rule) => [
+                'id' => $rule['id'],
+                'name' => trim((string) ($rule['name'] ?? '')),
+                'head' => (string) ($rule['head'] ?? ''),
+                'body' => (string) ($rule['body'] ?? ''),
+            ])
+            ->values()
+            ->all();
+        Setting::set(CustomCode::SETTING, json_encode($rules));
     }
 
     public function render()

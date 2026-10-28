@@ -113,6 +113,8 @@
                 </flux:field>
             </x-admin-section-card>
 
+            @include('partials._admin-custom-code-picker')
+
             <livewire:admin.media-library.picker-modal key="pages-form-picker-modal" />
         </div>
     </div>

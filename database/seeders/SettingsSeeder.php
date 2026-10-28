@@ -257,6 +257,9 @@ class SettingsSeeder extends Seeder
             // frontend needs the raw markup, not just a flag.
             ['key' => 'custom_head_code',         'value' => '', 'type' => 'textarea', 'group' => 'custom-code', 'is_public' => true],
             ['key' => 'custom_body_code',         'value' => '', 'type' => 'textarea', 'group' => 'custom-code', 'is_public' => true],
+            // Page-specific head/body snippets (JSON list of {scope, head, body}) —
+            // edited as repeater rows in Settings → Custom Code, see App\Support\CustomCode.
+            ['key' => 'custom_code_rules',        'value' => '[]', 'type' => 'textarea', 'group' => 'custom-code', 'is_public' => false],
 
             // ── Tracking ── Google Pixel / Measurement ID, exposed via the public
             // settings API so the frontend can inject the gtag script itself.

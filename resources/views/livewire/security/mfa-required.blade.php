@@ -48,6 +48,7 @@
         .mfa-step__desc { margin: 2px 0 0; font-size: 12.5px; line-height: 1.5; color: #94a3b8; }
 
         .mfa-done {
+            margin-top: 20px;
             display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; border-radius: 14px;
             background: #ecfdf5; border: 1px solid #a7f3d0;
         }
@@ -126,17 +127,6 @@
             </li>
         </ol>
 
-        @if ($hasFactor)
-            <div class="mfa-done" role="status">
-                <p class="mfa-done__title">{{ __('Two-factor authentication is on') }}</p>
-                <p class="mfa-done__hint">{{ __('If you just turned on an authenticator app, save the recovery codes first. They are shown only once.') }}</p>
-                <a href="{{ $continueUrl }}" class="mfa-done__cta">
-                    {{ __('Continue to dashboard') }}
-                    <flux:icon.arrow-right class="size-4" />
-                </a>
-            </div>
-        @endif
-
         <div class="mfa-foot">
             <form method="POST" action="{{ $logoutRoute }}">
                 @csrf
@@ -154,5 +144,19 @@
 
     <main class="mfa-main">
         <livewire:security.mfa-panel :required="true" />
+
+        {{-- Under the panel, where the eye ends up after turning a method on —
+             and below the recovery codes the panel shows, so the button is
+             never the first thing reached for before they are saved. --}}
+        @if ($hasFactor)
+            <div class="mfa-done" role="status">
+                <p class="mfa-done__title">{{ __('Two-factor authentication is on') }}</p>
+                <p class="mfa-done__hint">{{ __('If you just turned on an authenticator app, save the recovery codes first. They are shown only once.') }}</p>
+                <a href="{{ $continueUrl }}" class="mfa-done__cta">
+                    {{ __('Continue to dashboard') }}
+                    <flux:icon.arrow-right class="size-4" />
+                </a>
+            </div>
+        @endif
     </main>
 </div>

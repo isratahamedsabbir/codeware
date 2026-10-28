@@ -407,6 +407,8 @@
         {{-- ── SIDEBAR ── --}}
         <div class="w-[320px] shrink-0 space-y-5">
 
+            @include('partials._admin-custom-code-picker')
+
             {{-- Featured Image --}}
             <x-admin-section-card variant="postbox" persist-key="product-thumbnail" title="Thumbnail Image"
                 description="Shown in the product catalog. Recommended 800×800px." :collapsed="false">

@@ -34,7 +34,7 @@ class Page extends Model
         'user_id', 'title', 'slug', 'content', 'description', 'puck_data', 'status',
         'template', 'type', 'product_id', 'post_id', 'category_id', 'sort_order', 'seo_title', 'seo_description',
         'og_image', 'og_title', 'og_description',
-        'twitter_title', 'twitter_description', 'twitter_image', 'no_index', 'no_follow',
+        'twitter_title', 'twitter_description', 'twitter_image', 'no_index', 'no_follow', 'custom_code_id',
         'canonical_base', 'canonical_slug', 'constant',
     ];
 
@@ -204,6 +204,11 @@ class Page extends Model
      *
      * @return array<string, string>
      */
+    public function customCode(): ?array
+    {
+        return CustomCode::forPage($this);
+    }
+
     public function constantMap(): array
     {
         return collect($this->constant ?? [])

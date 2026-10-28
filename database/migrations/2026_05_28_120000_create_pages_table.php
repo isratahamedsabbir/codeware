@@ -38,6 +38,8 @@ return new class extends Migration
             $table->string('twitter_image')->nullable();
             $table->boolean('no_index')->default(false);
             $table->boolean('no_follow')->default(false);
+            // Id of a Settings → Custom Code snippet this page loads (App\Support\CustomCode).
+            $table->string('custom_code_id', 40)->nullable();
             $table->string('canonical_base')->nullable();
             $table->string('canonical_slug')->nullable();
             $table->json('constant')->nullable();

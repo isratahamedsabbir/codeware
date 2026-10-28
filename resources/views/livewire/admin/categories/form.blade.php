@@ -69,9 +69,11 @@
         </div>
         </div>
 
-        {{-- ── SIDEBAR — product categories only ── --}}
-        @if ($this->isProductPool)
-            <div class="w-[320px] shrink-0 space-y-5">
+        {{-- ── SIDEBAR ── --}}
+        <div class="w-[320px] shrink-0 space-y-5">
+            @include('partials._admin-custom-code-picker')
+
+            @if ($this->isProductPool)
                 <x-admin-section-card variant="postbox" persist-key="category-settings" title="Category Settings" :collapsed="false"
                     body-class="p-3 space-y-4" description="Icon and parent category.">
                     <flux:field>
@@ -88,8 +90,8 @@
                     <x-media-picker model="icon" label="Icon" size-hint="64 × 64, transparent" placeholder="Select icon image from library"
                         :picker-id="$iconPickerId" mimes="png,webp,avif" :max-size-mb="1" only-images dropzone />
                 </x-admin-section-card>
-            </div>
-        @endif
+            @endif
+        </div>
     </div>
 
     <livewire:admin.media-library.picker-modal key="categories-form-picker-modal" />

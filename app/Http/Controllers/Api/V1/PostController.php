@@ -106,6 +106,7 @@ class PostController extends Controller
                 'twitter_image' => $page->twitter_image,
                 'no_index' => $page->no_index,
                 'no_follow' => $page->no_follow,
+                'custom_code' => $page->customCode(),
             ],
             'puck_data' => $page->puck_data,
             'constant' => $page->constantMap(),
