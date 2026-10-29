@@ -1,8 +1,13 @@
 <?php
 
+use App\Livewire\Admin\Contacts\Index;
 use App\Mail\TemplateDrivenMail;
+use App\Models\Contact;
 use App\Models\Setting;
+use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\Mail;
+use Livewire\Livewire;
 
 it('falls back to the default support email when contact_email is not configured', function () {
     Mail::fake();
@@ -125,4 +130,32 @@ it('validates email format', function () {
     $this->postJson('/api/v1/contacts', $payload)
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['email']);
+});
+
+it('stores a contact but sends no email when contact emails are switched off', function () {
+    Mail::fake();
+    Setting::set('contact_email_enabled', '0');
+
+    $this->postJson('/api/v1/contacts', [
+        'full_name' => 'Jane Doe',
+        'phone_number' => '0123456789',
+        'email' => 'jane@example.com',
+        'subject' => 'Hello',
+        'message' => 'Test message',
+    ])->assertCreated();
+
+    expect(Contact::count())->toBe(1);
+    Mail::assertNothingSent();
+});
+
+it('toggles contact emails from the admin contacts page', function () {
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
+
+    Livewire::actingAs($admin)
+        ->test(Index::class)
+        ->assertSet('emailEnabled', true)
+        ->set('emailEnabled', false);
+
+    expect(Setting::contactEmailEnabled())->toBeFalse();
 });

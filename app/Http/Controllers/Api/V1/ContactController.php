@@ -101,11 +101,13 @@ class ContactController extends Controller
             ->map(fn ($value, $label) => '<strong>'.e($label).':</strong> '.nl2br(e((string) $value)))
             ->implode('<br>');
 
-        Mail::to(Setting::get('contact_email') ?: 'contact@idesk360.com')->send(new TemplateDrivenMail(
-            $data['subject'].' - '.$data['full_name'],
-            $body,
-            $data['view_name'] ?? 'emails.templates.default',
-        ));
+        if (Setting::contactEmailEnabled()) {
+            Mail::to(Setting::get('contact_email') ?: 'contact@idesk360.com')->send(new TemplateDrivenMail(
+                $data['subject'].' - '.$data['full_name'],
+                $body,
+                $data['view_name'] ?? 'emails.templates.default',
+            ));
+        }
 
         return response()->json([
             'data' => [

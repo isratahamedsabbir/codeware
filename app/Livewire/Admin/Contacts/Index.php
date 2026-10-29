@@ -7,6 +7,7 @@ use App\Concerns\HasPerPage;
 use App\Concerns\SendsCustomEmail;
 use App\Concerns\WithSearch;
 use App\Models\Contact;
+use App\Models\Setting;
 use App\Support\AdminActivity;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -24,6 +25,25 @@ class Index extends Component
     public ?int $deletingId = null;
 
     public string $deleteConfirmation = '';
+
+    /** Whether new contacts are also emailed (Setting::contactEmailEnabled()). */
+    public bool $emailEnabled = true;
+
+    public function mount(): void
+    {
+        $this->emailEnabled = Setting::contactEmailEnabled();
+    }
+
+    public function updatedEmailEnabled(): void
+    {
+        Setting::set('contact_email_enabled', $this->emailEnabled ? '1' : '0');
+
+        AdminActivity::log('updated', 'Contact email notifications turned '.($this->emailEnabled ? 'on' : 'off'));
+
+        $this->dispatch('notify', message: $this->emailEnabled
+            ? 'New contacts will be emailed'
+            : 'New contacts will not be emailed');
+    }
 
     public function updatedStatusFilter(): void
     {

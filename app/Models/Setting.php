@@ -260,6 +260,16 @@ class Setting extends Model
     }
 
     /**
+     * Whether a new contact-form submission is also emailed to contact_email —
+     * the switch on Admin → Contacts. On by default; the contact is stored
+     * either way, so switching it off loses nothing, it only stops the mail.
+     */
+    public static function contactEmailEnabled(): bool
+    {
+        return self::truthy(static::get('contact_email_enabled', '1'));
+    }
+
+    /**
      * Boolean settings live in a plain string column and toggle rows are read
      * back as the raw strings "1"/"0" (not PHP booleans), so a naive (bool)
      * cast would treat the string "0" as enabled. Interpret the stored value

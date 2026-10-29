@@ -16,14 +16,30 @@
         <div>
             @include('partials._admin-breadcrumbs', ['routeName' => 'admin.contacts'])
         </div>
-        @if (count($selectedIds) > 0)
-            <div class="flex items-center gap-2 shrink-0">
+        <div class="flex items-center gap-3 shrink-0">
+            {{-- Whether a new contact is also emailed to the contact address.
+                 The contact is saved either way. --}}
+            {{-- A role="switch" button rather than <flux:switch>: that renders a
+                 checkbox, and this page's rows must have none until a bulk
+                 selection is active (ContactsBulkExportTest). --}}
+            <div class="flex items-center gap-2 text-sm text-zinc-700"
+                title="When off, new contacts are saved here but no email is sent">
+                <span>Email notifications</span>
+                <button type="button" role="switch" aria-label="Email new contacts"
+                    aria-checked="{{ $emailEnabled ? 'true' : 'false' }}"
+                    wire:click="$toggle('emailEnabled')"
+                    class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors {{ $emailEnabled ? 'bg-indigo-600' : 'bg-zinc-300' }}">
+                    <span class="inline-block size-4 rounded-full bg-white shadow transition-transform {{ $emailEnabled ? 'translate-x-4.5' : 'translate-x-0.5' }}"></span>
+                </button>
+            </div>
+
+            @if (count($selectedIds) > 0)
                 <flux:button variant="outline" size="sm" icon="arrow-down-tray"
                     href="{{ route('admin.contacts.export', ['ids' => $selectedIds]) }}">
                     Export ({{ count($selectedIds) }})
                 </flux:button>
-            </div>
-        @endif
+            @endif
+        </div>
     </div>
 
 <div class="bg-white rounded-[5px] shadow-sm overflow-hidden">
