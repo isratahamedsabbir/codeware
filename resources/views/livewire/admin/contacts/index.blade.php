@@ -17,21 +17,11 @@
             @include('partials._admin-breadcrumbs', ['routeName' => 'admin.contacts'])
         </div>
         <div class="flex items-center gap-3 shrink-0">
-            {{-- Whether a new contact is also emailed to the contact address.
-                 The contact is saved either way. --}}
-            {{-- A role="switch" button rather than <flux:switch>: that renders a
-                 checkbox, and this page's rows must have none until a bulk
-                 selection is active (ContactsBulkExportTest). --}}
-            <div class="flex items-center gap-2 text-sm text-zinc-700"
-                title="When off, new contacts are saved here but no email is sent">
-                <span>Email notifications</span>
-                <button type="button" role="switch" aria-label="Email new contacts"
-                    aria-checked="{{ $emailEnabled ? 'true' : 'false' }}"
-                    wire:click="$toggle('emailEnabled')"
-                    class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors {{ $emailEnabled ? 'bg-indigo-600' : 'bg-zinc-300' }}">
-                    <span class="inline-block size-4 rounded-full bg-white shadow transition-transform {{ $emailEnabled ? 'translate-x-4.5' : 'translate-x-0.5' }}"></span>
-                </button>
-            </div>
+            {{-- Opens the modal below, which holds the on/off switch for
+                 emailing new contacts. --}}
+            <flux:modal.trigger name="contact-email-settings">
+                <flux:button variant="outline" size="sm" icon="envelope">Email settings</flux:button>
+            </flux:modal.trigger>
 
             @if (count($selectedIds) > 0)
                 <flux:button variant="outline" size="sm" icon="arrow-down-tray"
@@ -199,6 +189,45 @@
     <div class="px-6 py-3">
         {{ $contacts->links() }}
     </div>
+
+    {{-- Email settings — whether a new contact is also emailed to the contact
+         address. The contact is saved either way. The switch is a role="switch"
+         button rather than <flux:switch>: that renders a checkbox, and this page
+         must contain none until a bulk selection is active
+         (ContactsBulkExportTest). --}}
+    <flux:modal name="contact-email-settings" class="md:w-96">
+        <div class="space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <flux:icon.envelope class="size-5 text-primary" />
+                </div>
+                <flux:heading>Email settings</flux:heading>
+            </div>
+
+            <div class="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 px-4 py-3">
+                <div class="min-w-0">
+                    <p class="text-sm font-medium text-zinc-800">Email new contacts</p>
+                    <p class="text-xs text-zinc-500">
+                        {{ $emailEnabled
+                            ? 'Each new contact is emailed to the contact address.'
+                            : 'New contacts are saved here, but no email is sent.' }}
+                    </p>
+                </div>
+                <button type="button" role="switch" aria-label="Email new contacts"
+                    aria-checked="{{ $emailEnabled ? 'true' : 'false' }}"
+                    wire:click="$toggle('emailEnabled')"
+                    class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors {{ $emailEnabled ? 'bg-indigo-600' : 'bg-zinc-300' }}">
+                    <span class="inline-block size-4 rounded-full bg-white shadow transition-transform {{ $emailEnabled ? 'translate-x-4.5' : 'translate-x-0.5' }}"></span>
+                </button>
+            </div>
+
+            <div class="flex justify-end">
+                <flux:modal.close>
+                    <flux:button size="sm" variant="ghost">Close</flux:button>
+                </flux:modal.close>
+            </div>
+        </div>
+    </flux:modal>
 
     {{-- View Modal — full, untruncated contact submission. $viewingContactId is
          looked up against the already-loaded $contacts page rather than a
