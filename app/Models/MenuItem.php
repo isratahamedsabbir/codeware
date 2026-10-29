@@ -116,6 +116,8 @@ class MenuItem extends Model
         'admin.coupons' => 'orders',
         'admin.discounts' => 'discounts',
         'admin.flash-deals' => 'flash-deals',
+        'admin.careers' => 'careers',
+        'admin.career-applications' => 'careers',
         'admin.vouchers' => 'vouchers',
         'admin.voucher-purchases' => 'vouchers',
         'admin.shipping-methods' => 'orders',

@@ -7,6 +7,12 @@
 
     $quickLinks = \App\Support\Frontend::quickLinks();
 
+    // Fixed link rather than a menu item: it follows the "careers" feature flag, and the
+    // page only exists in themes that ship career.blade.php (this one does).
+    $showCareers = \App\Support\Features::enabled('careers')
+        && \App\Support\Themes::hasTemplateFor('ecommerce', 'careers')
+        && ! $quickLinks->contains(fn ($item) => str_ends_with(rtrim((string) $item->url, '/'), '/careers'));
+
     $socials = collect([
         'facebook' => 'Facebook',
         'twitter' => 'Twitter / X',
@@ -66,11 +72,14 @@
 
         <div>
             <h3 class="mb-3 text-lg font-semibold text-sf-footer-text">{{ __('Quick Links') }}</h3>
-            @if ($quickLinks->isNotEmpty())
+            @if ($quickLinks->isNotEmpty() || $showCareers)
                 <ul class="space-y-2 text-sm">
                     @foreach ($quickLinks as $menuItem)
                         <li><a href="{{ url($menuItem->url) }}" class="font-medium text-sf-footer-text/80 hover:underline hover:text-sf-footer-text">{{ $menuItem->label }}</a></li>
                     @endforeach
+                    @if ($showCareers)
+                        <li><a href="{{ route('careers') }}" class="font-medium text-sf-footer-text/80 hover:underline hover:text-sf-footer-text">{{ __('Careers') }}</a></li>
+                    @endif
                 </ul>
             @else
                 <p class="text-sm text-sf-footer-text/70">{{ __('The quick links will appear here once they are published.') }}</p>

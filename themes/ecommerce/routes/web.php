@@ -20,6 +20,7 @@
 use Illuminate\Support\Facades\Route;
 use Themes\Ecommerce\Controllers\AccountController;
 use Themes\Ecommerce\Controllers\BlogController;
+use Themes\Ecommerce\Controllers\CareerController;
 use Themes\Ecommerce\Controllers\CartController;
 use Themes\Ecommerce\Controllers\FlashDealController;
 use Themes\Ecommerce\Controllers\HomeController;
@@ -86,6 +87,13 @@ Route::middleware('feature:flash-deals')->group(function () {
 Route::middleware('feature:blog')->group(function () {
     Route::get('/blog', [BlogController::class, 'blog'])->name('blog');
     Route::get('/blog/{slug}', [BlogController::class, 'post'])->name('blog.post');
+});
+
+// Careers — open job posts and the application form, gated by the "careers"
+// feature flag like the admin's Job Posts / Applications screens.
+Route::middleware('feature:careers')->group(function () {
+    Route::get('/careers', [CareerController::class, 'careers'])->name('careers');
+    Route::get('/careers/{slug}', [CareerController::class, 'career'])->name('careers.show');
 });
 
 // Cart + checkout — session-backed carts (see App\Support\Cart) that turn into

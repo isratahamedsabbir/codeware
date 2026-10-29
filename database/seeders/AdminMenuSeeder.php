@@ -120,6 +120,12 @@ class AdminMenuSeeder extends Seeder
             ['Subscribers', 'envelope-open', 'admin.subscribers'],
         ]);
 
+        // Job posts for the storefront Careers page and the applications they receive.
+        $this->group('Careers', 17, [
+            ['Job Posts', 'briefcase', 'admin.careers'],
+            ['Applications', 'document-text', 'admin.career-applications'],
+        ]);
+
         $this->standalone('Pages', 'document', 'admin.pages', 20);
 
         // No Portfolio group: projects, experience, skills and testimonials are

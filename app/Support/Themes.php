@@ -42,6 +42,8 @@ class Themes
         'flash-deals' => 'flash-deals',
         'blog' => 'blog',
         'blog.post' => 'post',
+        'careers' => 'careers',
+        'careers.show' => 'career',
         'cart' => 'cart',
         'checkout' => 'checkout',
         'checkout.confirmation' => 'order-confirmation',
@@ -63,6 +65,8 @@ class Themes
         'shop.brand' => 'products',
         'shop.tag' => 'products',
         'favorites' => 'products',
+        'careers' => 'careers',
+        'careers.show' => 'careers',
     ];
 
     /**

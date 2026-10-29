@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\ProductBrandExportController;
 use App\Http\Controllers\Admin\ProductExportController;
 use App\Http\Controllers\Admin\ProductVendorExportController;
 use App\Http\Controllers\Admin\ReportExportController;
+use App\Http\Controllers\Admin\ResumeDownloadController;
 use App\Http\Controllers\Admin\ServiceExportController;
 use App\Http\Controllers\Admin\ShippingMethodExportController;
 use App\Http\Controllers\Admin\SubscriberExportController;
@@ -32,6 +33,7 @@ use App\Livewire\Admin\Advance\PasswordGenerator;
 use App\Livewire\Admin\Advance\Robots;
 use App\Livewire\Admin\Advance\Sitemap;
 use App\Livewire\Admin\Auth\Login;
+use App\Livewire\Admin\Careers\Applications;
 use App\Livewire\Admin\Cruds\Records;
 use App\Livewire\Admin\Dashboard;
 use App\Livewire\Admin\DeveloperGuide;
@@ -262,6 +264,13 @@ Route::middleware(['auth', 'admin', 'activity-log', 'mfa'])->group(function () {
 
     // Advertisements — its own feature toggle; one active banner shows beside
     // the storefront product description/specifications section.
+    // Careers — job posts shown on the storefront Careers page, and the applications they receive.
+    Route::middleware('feature:careers')->group(function () {
+        Route::get('/careers', App\Livewire\Admin\Careers\Index::class)->name('careers');
+        Route::get('/career-applications', Applications::class)->name('career-applications');
+        Route::get('/career-applications/{id}/resume', ResumeDownloadController::class)->name('career-applications.resume');
+    });
+
     Route::middleware('feature:advertisements')->group(function () {
         Route::get('/advertisements', App\Livewire\Admin\Advertisements\Index::class)->name('advertisements');
         Route::get('/advertisements/create', App\Livewire\Admin\Advertisements\Form::class)->name('advertisements.create');
