@@ -1,39 +1,57 @@
-<div class="max-w-3xl mx-auto">
-    {{-- Profile photo & name --}}
+<div class="max-w-5xl mx-auto">
+    {{-- Identity header: the avatar shown here is also the live preview for the upload below. --}}
     <div class="bg-white rounded-[5px] border border-zinc-100 shadow-sm overflow-hidden mb-5">
+        <div class="h-24 bg-linear-to-r from-secondary to-primary"></div>
+        <div class="px-5 pb-5 flex flex-col sm:flex-row sm:items-end gap-4 -mt-10">
+            <div
+                class="size-24 shrink-0 rounded-full ring-4 ring-white bg-linear-to-br from-secondary to-primary flex items-center justify-center text-white text-2xl font-bold shadow-md overflow-hidden">
+                @if ($photo)
+                    <img src="{{ $photo->temporaryUrl() }}" alt="Preview" class="size-full object-cover">
+                @elseif ($user->photo_url)
+                    <img src="{{ $user->photo_url }}" alt="{{ $user->name }}" class="size-full object-cover">
+                @else
+                    {{ $user->initials() }}
+                @endif
+            </div>
+
+            <div class="flex-1 min-w-0 sm:pb-1">
+                <h1 class="text-lg font-semibold text-zinc-900 truncate">{{ $user->name }}</h1>
+                <p class="text-sm text-zinc-500 truncate">{{ $user->email }}</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 sm:pb-1">
+                @foreach ($user->getRoleNames() as $role)
+                    <span
+                        class="inline-flex items-center rounded-full bg-primary/10 text-primary px-2.5 py-0.5 text-xs font-medium capitalize">{{ $role }}</span>
+                @endforeach
+                @if ($user->created_at)
+                    <span class="text-xs text-zinc-400">Member since {{ $user->created_at->format('M Y') }}</span>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <div class="grid gap-5 lg:grid-cols-2 items-start">
+    {{-- Profile photo & name --}}
+    <div class="bg-white rounded-[5px] border border-zinc-100 shadow-sm overflow-hidden">
         <div class="px-5 py-3 border-b border-zinc-100 flex items-center justify-between">
             <h2 class="text-sm font-semibold text-zinc-900">Profile Information</h2>
             <span class="text-xs text-zinc-400">Account photo and display name</span>
         </div>
 
         <form wire:submit="updateProfile" class="p-5 space-y-5">
-            <div class="flex items-center gap-5">
-                <div class="relative shrink-0">
-                    <div
-                        class="size-20 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-white text-xl font-bold shadow-md overflow-hidden">
-                        @if ($photo)
-                            <img src="{{ $photo->temporaryUrl() }}" alt="Preview" class="size-full object-cover">
-                        @elseif ($user->photo_url)
-                            <img src="{{ $user->photo_url }}" alt="{{ $user->name }}" class="size-full object-cover">
-                        @else
-                            {{ $user->initials() }}
-                        @endif
-                    </div>
-                </div>
-
-                <div class="flex-1 space-y-2">
-                    <flux:field>
-                        <flux:label>Profile Photo (square, max 2MB, JPG/PNG/WEBP)</flux:label>
-                        <flux:input type="file" wire:model="photo" accept="image/jpeg,image/png,image/webp,image/avif" />
-                        <flux:error name="photo" />
-                    </flux:field>
-                    @if ($user->photo)
-                        <button type="button" wire:click="removePhoto"
-                            class="text-xs text-red-600 hover:text-red-700 font-medium">
-                            Remove photo
-                        </button>
-                    @endif
-                </div>
+            <div class="space-y-2">
+                <flux:field>
+                    <flux:label>Profile Photo (square, max 2MB, JPG/PNG/WEBP)</flux:label>
+                    <flux:input type="file" wire:model="photo" accept="image/jpeg,image/png,image/webp,image/avif" />
+                    <flux:error name="photo" />
+                </flux:field>
+                @if ($user->photo)
+                    <button type="button" wire:click="removePhoto"
+                        class="text-xs text-red-600 hover:text-red-700 font-medium">
+                        Remove photo
+                    </button>
+                @endif
             </div>
 
             <flux:field>
@@ -83,6 +101,7 @@
                 <flux:button size="sm" variant="primary" type="submit">Update Password</flux:button>
             </div>
         </form>
+    </div>
     </div>
 
     {{-- Two-factor authentication — TOTP and passkeys.

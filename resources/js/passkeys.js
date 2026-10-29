@@ -51,6 +51,10 @@ function descriptors(list = []) {
 }
 
 function decodeCreationOptions(options) {
+    // Dropping excludeCredentials lets one device hold several passkeys for the
+    // same account; with it, the browser refuses with InvalidStateError.
+    options = { ...options, excludeCredentials: [] };
+
     if (window.PublicKeyCredential?.parseCreationOptionsFromJSON) {
         return window.PublicKeyCredential.parseCreationOptionsFromJSON(options);
     }
@@ -59,7 +63,6 @@ function decodeCreationOptions(options) {
         ...options,
         challenge: b64url.decode(options.challenge),
         user: { ...options.user, id: b64url.decode(options.user.id) },
-        excludeCredentials: descriptors(options.excludeCredentials),
     };
 }
 
