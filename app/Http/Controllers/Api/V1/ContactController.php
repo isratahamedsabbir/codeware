@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\TemplateDrivenMail;
 use App\Models\Contact;
 use App\Models\Setting;
+use App\Support\Telegram;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -100,6 +101,10 @@ class ContactController extends Controller
             ->filter(fn ($value) => $value !== null && $value !== '')
             ->map(fn ($value, $label) => '<strong>'.e($label).':</strong> '.nl2br(e((string) $value)))
             ->implode('<br>');
+
+        // Before the mail, because Telegram::send() cannot throw and Mail::send()
+        // can — a broken mailer must not also silence this channel.
+        Telegram::notifyContact($data['subject'], $emailDetails);
 
         if (Setting::contactEmailEnabled()) {
             Mail::to(Setting::get('contact_email') ?: 'contact@idesk360.com')->send(new TemplateDrivenMail(

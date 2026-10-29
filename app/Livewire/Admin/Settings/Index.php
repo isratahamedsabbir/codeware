@@ -7,6 +7,7 @@ use App\Support\AdminActivity;
 use App\Support\AdminFont;
 use App\Support\CustomCode;
 use App\Support\EnvFile;
+use App\Support\Telegram;
 use Illuminate\Support\Facades\Artisan;
 use Livewire\Component;
 
@@ -54,8 +55,22 @@ class Index extends Component
      */
     public array $openCodeRules = [];
 
+    /**
+     * Telegram bot token and chat id — TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID in
+     * .env, like APP_ENV above, so they are saved through EnvFile::set() rather
+     * than the settings table (whose rows the public API can serve).
+     */
+    public string $telegramBotToken = '';
+
+    public string $telegramChatId = '';
+
     public function mount(): void
     {
+        $this->moveLegacyTelegramRows();
+
+        $this->telegramBotToken = (string) (EnvFile::get('TELEGRAM_BOT_TOKEN') ?? '');
+        $this->telegramChatId = (string) (EnvFile::get('TELEGRAM_CHAT_ID') ?? '');
+
         $this->codeRules = CustomCode::rules();
         $this->loadSettings();
         $this->loadConstants();
@@ -201,6 +216,14 @@ class Index extends Component
 
         $this->persistGeneralSettings();
 
+        if (! $this->persistTelegram()) {
+            // Everything else did save; say which part did not rather than
+            // reloading over the message.
+            $this->dispatch('notify', type: 'error', message: 'Settings saved, but the Telegram details could not be written to .env.');
+
+            return;
+        }
+
         // A real browser reload of the current page, rather than a dispatched
         // toast, so the whole admin shell re-renders on a fresh request —
         // header icons, colors, and anything else read from Setting::get()
@@ -210,6 +233,91 @@ class Index extends Component
         // itself, not the page — hence a plain client-side reload instead.)
         session()->flash('success', 'Settings saved.');
         $this->js('window.location.reload()');
+    }
+
+    /**
+     * The token and chat id were briefly stored as settings rows. Carry any such
+     * value over to .env (unless .env already has one) and drop the rows, so a
+     * secret is not left in the table — and so the rows do not turn up as plain
+     * text fields in the generic settings list.
+     */
+    private function moveLegacyTelegramRows(): void
+    {
+        $rows = Setting::whereIn('key', ['telegram_bot_token', 'telegram_chat_id'])->pluck('value', 'key');
+
+        if ($rows->isEmpty()) {
+            return;
+        }
+
+        $carry = [];
+
+        foreach (['telegram_bot_token' => 'TELEGRAM_BOT_TOKEN', 'telegram_chat_id' => 'TELEGRAM_CHAT_ID'] as $key => $envKey) {
+            if (filled($rows[$key] ?? null) && blank(EnvFile::get($envKey))) {
+                $carry[$envKey] = (string) $rows[$key];
+            }
+        }
+
+        try {
+            if ($carry !== []) {
+                EnvFile::set($carry);
+                Artisan::call('config:clear');
+            }
+        } catch (\RuntimeException) {
+            // .env is not writable: keep the rows rather than lose the values.
+            return;
+        }
+
+        Setting::forget('telegram_bot_token');
+        Setting::forget('telegram_chat_id');
+    }
+
+    /**
+     * Writes the Telegram card to .env. EnvFile only rewrites a key whose value
+     * changed, and the config cache is cleared only then, so saving the page
+     * with the card untouched does neither.
+     */
+    private function persistTelegram(): bool
+    {
+        $values = [
+            'TELEGRAM_BOT_TOKEN' => trim($this->telegramBotToken),
+            'TELEGRAM_CHAT_ID' => trim($this->telegramChatId),
+        ];
+
+        if ($values === [
+            'TELEGRAM_BOT_TOKEN' => (string) EnvFile::get('TELEGRAM_BOT_TOKEN'),
+            'TELEGRAM_CHAT_ID' => (string) EnvFile::get('TELEGRAM_CHAT_ID'),
+        ]) {
+            return true;
+        }
+
+        try {
+            EnvFile::set($values);
+        } catch (\RuntimeException) {
+            return false;
+        }
+
+        Artisan::call('config:clear');
+
+        AdminActivity::log('updated', 'Telegram settings updated');
+
+        return true;
+    }
+
+    /**
+     * Sends a message with what is typed in the Telegram card, saved or not, so
+     * a wrong token or chat id is found before it silently drops a real contact.
+     */
+    public function sendTelegramTest(): void
+    {
+        $sent = Telegram::send(
+            'Hello from '.config('app.name').' — Telegram is connected.',
+            $this->telegramBotToken,
+            $this->telegramChatId,
+        );
+
+        $this->dispatch('notify', type: $sent ? 'success' : 'error', message: $sent
+            ? 'Test message sent. Check your Telegram chat.'
+            : 'Could not send. Check the bot token and chat id (and that the bot is in the chat).');
     }
 
     public function confirmSaveEnvironment(): void

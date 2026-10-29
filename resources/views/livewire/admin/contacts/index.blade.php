@@ -20,7 +20,7 @@
             {{-- Opens the modal below, which holds the on/off switch for
                  emailing new contacts. --}}
             <flux:modal.trigger name="contact-email-settings">
-                <flux:button variant="outline" size="sm" icon="envelope">Email settings</flux:button>
+                <flux:button variant="outline" size="sm" icon="bell">Notifications</flux:button>
             </flux:modal.trigger>
 
             @if (count($selectedIds) > 0)
@@ -190,7 +190,7 @@
         {{ $contacts->links() }}
     </div>
 
-    {{-- Email settings — whether a new contact is also emailed to the contact
+    {{-- Notification settings — whether a new contact is also emailed to the contact
          address. The contact is saved either way. The switch is a role="switch"
          button rather than <flux:switch>: that renders a checkbox, and this page
          must contain none until a bulk selection is active
@@ -201,7 +201,7 @@
                 <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                     <flux:icon.envelope class="size-5 text-primary" />
                 </div>
-                <flux:heading>Email settings</flux:heading>
+                <flux:heading>Notification settings</flux:heading>
             </div>
 
             <div class="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 px-4 py-3">
@@ -218,6 +218,28 @@
                     wire:click="$toggle('emailEnabled')"
                     class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors {{ $emailEnabled ? 'bg-indigo-600' : 'bg-zinc-300' }}">
                     <span class="inline-block size-4 rounded-full bg-white shadow transition-transform {{ $emailEnabled ? 'translate-x-4.5' : 'translate-x-0.5' }}"></span>
+                </button>
+            </div>
+
+            <div class="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 px-4 py-3">
+                <div class="min-w-0">
+                    <p class="text-sm font-medium text-zinc-800">Send to Telegram</p>
+                    <p class="text-xs text-zinc-500">
+                        @if (! $telegramEnabled)
+                            New contacts are not sent to Telegram.
+                        @elseif (\App\Support\Telegram::configured())
+                            Each new contact is also sent to your Telegram chat.
+                        @else
+                            On, but the bot token / chat ID are not set —
+                            <a href="{{ route('admin.settings') }}" class="text-indigo-600 underline">open Settings</a>.
+                        @endif
+                    </p>
+                </div>
+                <button type="button" role="switch" aria-label="Send new contacts to Telegram"
+                    aria-checked="{{ $telegramEnabled ? 'true' : 'false' }}"
+                    wire:click="$toggle('telegramEnabled')"
+                    class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors {{ $telegramEnabled ? 'bg-indigo-600' : 'bg-zinc-300' }}">
+                    <span class="inline-block size-4 rounded-full bg-white shadow transition-transform {{ $telegramEnabled ? 'translate-x-4.5' : 'translate-x-0.5' }}"></span>
                 </button>
             </div>
 

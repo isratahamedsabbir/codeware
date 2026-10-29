@@ -270,6 +270,16 @@ class Setting extends Model
     }
 
     /**
+     * Whether a new contact-form submission is also sent to Telegram — the second
+     * switch on Admin → Contacts. Off by default: it needs a bot token and chat id
+     * (Settings → Telegram) before it can do anything.
+     */
+    public static function contactTelegramEnabled(): bool
+    {
+        return self::truthy(static::get('contact_telegram_enabled', '0'));
+    }
+
+    /**
      * Boolean settings live in a plain string column and toggle rows are read
      * back as the raw strings "1"/"0" (not PHP booleans), so a naive (bool)
      * cast would treat the string "0" as enabled. Interpret the stored value

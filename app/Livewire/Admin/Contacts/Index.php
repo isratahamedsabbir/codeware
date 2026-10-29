@@ -9,6 +9,7 @@ use App\Concerns\WithSearch;
 use App\Models\Contact;
 use App\Models\Setting;
 use App\Support\AdminActivity;
+use App\Support\Telegram;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -29,9 +30,30 @@ class Index extends Component
     /** Whether new contacts are also emailed (Setting::contactEmailEnabled()). */
     public bool $emailEnabled = true;
 
+    /** Whether new contacts are also sent to Telegram (Setting::contactTelegramEnabled()). */
+    public bool $telegramEnabled = false;
+
     public function mount(): void
     {
         $this->emailEnabled = Setting::contactEmailEnabled();
+        $this->telegramEnabled = Setting::contactTelegramEnabled();
+    }
+
+    public function updatedTelegramEnabled(): void
+    {
+        Setting::set('contact_telegram_enabled', $this->telegramEnabled ? '1' : '0');
+
+        AdminActivity::log('updated', 'Contact Telegram notifications turned '.($this->telegramEnabled ? 'on' : 'off'));
+
+        // Allowed without a token so it can be switched on first, but said out
+        // loud: a switch that is on and silently does nothing is worse than off.
+        $this->dispatch('notify',
+            type: $this->telegramEnabled && ! Telegram::configured() ? 'warning' : 'success',
+            message: match (true) {
+                ! $this->telegramEnabled => 'New contacts will not be sent to Telegram',
+                Telegram::configured() => 'New contacts will be sent to Telegram',
+                default => 'Telegram is on, but the bot token / chat ID are not set in Settings yet',
+            });
     }
 
     public function updatedEmailEnabled(): void

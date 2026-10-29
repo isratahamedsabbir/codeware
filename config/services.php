@@ -66,6 +66,12 @@ return [
         'api_key' => env('GOOGLE_MAPS_API_KEY'),
     ],
 
+    // Set at Admin → Settings → Telegram, which writes these two .env keys.
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'chat_id' => env('TELEGRAM_CHAT_ID'),
+    ],
+
     'firebase' => [
         'credentials_path' => env('FIREBASE_CREDENTIALS_PATH'),
     ],

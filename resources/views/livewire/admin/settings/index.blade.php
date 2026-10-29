@@ -234,6 +234,37 @@ $imageMeta = match ($setting->key) {
                                 </flux:field>
                             </div>
                         </x-admin-section-card>
+
+                        {{-- Telegram bot — sits under Backend in the right-hand stack like
+                             every other settings card, rather than as a full-width strip. --}}
+                        <x-admin-section-card header-border="border-zinc-100" icon="paper-airplane" title="Telegram"
+                            description="Bot that sends new contact messages to a Telegram chat.">
+                            <x-slot:actions>
+                                <flux:button size="sm" variant="outline" icon="paper-airplane"
+                                    wire:click="sendTelegramTest" wire:loading.attr="disabled" wire:target="sendTelegramTest">
+                                    Test
+                                </flux:button>
+                            </x-slot:actions>
+
+                            <div class="space-y-4">
+                                <flux:field>
+                                    <flux:label>Bot token</flux:label>
+                                    <flux:input type="password" viewable wire:model="telegramBotToken"
+                                        placeholder="123456789:AA…" autocomplete="off" class="font-mono" />
+                                    <flux:description>
+                                        From @@BotFather. Treat it like a password. Saved to .env when you click Save Settings; Test uses what is typed here.
+                                    </flux:description>
+                                </flux:field>
+
+                                <flux:field>
+                                    <flux:label>Chat ID</flux:label>
+                                    <flux:input wire:model="telegramChatId" placeholder="-1001234567890" class="font-mono" />
+                                    <flux:description>
+                                        User, group or channel id; the bot must be in that chat. Turn it on under Contacts → Notifications.
+                                    </flux:description>
+                                </flux:field>
+                            </div>
+                        </x-admin-section-card>
                     </div>
 
                     @foreach ($groupedSettings as $group => $items)
