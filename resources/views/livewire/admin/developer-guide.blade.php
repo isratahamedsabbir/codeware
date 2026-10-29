@@ -1030,6 +1030,75 @@ Admin -> SEO / Social / Payment Gateways   their own setting groups
                 </p>
             </div>
 
+            <div id="integration-telegram" class="scroll-mt-24">
+                <p class="font-semibold text-zinc-800 dark:text-zinc-100">Telegram (Settings &rarr; General)</p>
+                <p class="mt-1">
+                    Sends a message to a Telegram chat when a new contact arrives. It needs a <strong>bot</strong>
+                    (the sender) and a <strong>chat</strong> (the group or channel it posts into). Unlike the cards
+                    above, this one lives on <em>Settings &rarr; General &rarr; Telegram</em>, but it is stored the
+                    same way: <span class="font-mono text-xs">TELEGRAM_BOT_TOKEN</span> and
+                    <span class="font-mono text-xs">TELEGRAM_CHAT_ID</span> in <span class="font-mono text-xs">.env</span>.
+                </p>
+
+                <p class="mt-3 font-medium text-zinc-800 dark:text-zinc-100">1. Create the bot</p>
+                <ol class="mt-2 list-decimal list-inside space-y-1.5">
+                    <li>In Telegram, search for <span class="font-mono text-xs">@BotFather</span> (the verified one) and open it.</li>
+                    <li>Send <span class="font-mono text-xs">/newbot</span>.</li>
+                    <li>Give it a <strong>name</strong> (shown in chats, e.g. <span class="font-mono text-xs">codeware_backend</span>).</li>
+                    <li>Give it a <strong>username</strong> &mdash; must be unique and end in <span class="font-mono text-xs">bot</span> (e.g. <span class="font-mono text-xs">codeware_backend_bot</span>).</li>
+                    <li>BotFather replies with the <strong>token</strong>, shaped like <span class="font-mono text-xs">123456789:AAxxxxxxxx&hellip;</span>. Copy it.</li>
+                    <li>Open the bot's chat (<span class="font-mono text-xs">t.me/&lt;username&gt;</span>) and press <strong>Start</strong> once.</li>
+                </ol>
+
+                <p class="mt-3 font-medium text-zinc-800 dark:text-zinc-100">2. Create the group (or channel) and add the bot</p>
+                <ol class="mt-2 list-decimal list-inside space-y-1.5">
+                    <li>Create a Telegram <strong>group</strong> (e.g. <span class="font-mono text-xs">codeware_backend_group</span>) and add the bot as a member. For a <strong>channel</strong>, add the bot as an <strong>administrator</strong> with permission to post.</li>
+                    <li>Send any message in the group, so Telegram has an update to report.</li>
+                </ol>
+
+                <p class="mt-3 font-medium text-zinc-800 dark:text-zinc-100">3. Find the chat ID</p>
+                <p class="mt-1">Open this URL in a browser, with your token in place of the placeholder:</p>
+                <x-admin-doc-code label="List the bot's recent updates" file="browser">
+https://api.telegram.org/bot&lt;BOT_TOKEN&gt;/getUpdates
+                </x-admin-doc-code>
+                <p class="text-xs text-zinc-500">
+                    Look for <span class="font-mono">"chat":{"id": ...}</span> in the result. A group's id is a
+                    <strong>negative</strong> number (e.g. <span class="font-mono">-5393598660</span>; supergroups and
+                    channels look like <span class="font-mono">-100&hellip;</span>) &mdash; keep the minus sign. If
+                    <span class="font-mono">result</span> is empty, send another message in the group and reload.
+                </p>
+
+                <p class="mt-3 font-medium text-zinc-800 dark:text-zinc-100">4. Test from the command line (optional)</p>
+                <x-admin-doc-code label="Send a message by hand" file="terminal">
+curl -X POST "https://api.telegram.org/bot&lt;BOT_TOKEN&gt;/sendMessage" \
+  -d "chat_id=&lt;CHAT_ID&gt;" \
+  -d "text=Hello from backend"
+                </x-admin-doc-code>
+                <p class="text-xs text-zinc-500">
+                    <span class="font-mono">{"ok":true,...}</span> means the token, the chat id and the bot's
+                    membership are all right. <span class="font-mono">chat not found</span> is a wrong id or a bot
+                    that is not in the chat; <span class="font-mono">Unauthorized</span> is a wrong token.
+                </p>
+
+                <p class="mt-3 font-medium text-zinc-800 dark:text-zinc-100">5. Connect it here</p>
+                <ol class="mt-2 list-decimal list-inside space-y-1.5">
+                    <li><em>Settings &rarr; General &rarr; Telegram</em> &mdash; paste the <strong>Bot token</strong> and <strong>Chat ID</strong>, then <strong>Save Settings</strong>.</li>
+                    <li>Press <strong>Test</strong> in the card header. It sends a message using what is typed in the fields (saved or not), so a wrong value shows up before a real contact is lost.</li>
+                    <li><em>Contacts &rarr; Notifications</em> &mdash; turn on <strong>Send to Telegram</strong>. It is <strong>off by default</strong>; the token alone sends nothing.</li>
+                </ol>
+
+                <ul class="mt-3 list-disc list-inside space-y-1.5">
+                    <li>Both ways a contact arrives &mdash; <span class="font-mono text-xs">POST /api/v1/contacts</span> (and the demo forms) and the themes' Livewire contact form &mdash; call <span class="font-mono text-xs">App\Support\Telegram::notifyContact()</span>, so the one switch covers both.</li>
+                    <li>The values are read as <span class="font-mono text-xs">config('services.telegram.bot_token')</span> / <span class="font-mono text-xs">chat_id</span>; saving clears the config cache. They are deliberately <em>not</em> in the settings table, which the public settings API reads from.</li>
+                    <li>Sending never throws. If Telegram is down or the token is wrong, the contact is still saved and the failure is logged (class name only &mdash; the exception text would contain the token).</li>
+                </ul>
+                <p class="mt-2 text-xs text-zinc-500">
+                    The bot token is a password: anyone holding it can post as the bot. If it leaks, send
+                    <span class="font-mono">/revoke</span> to @@BotFather to get a new one, then update it here. Keep it
+                    out of chat, tickets and version control.
+                </p>
+            </div>
+
             <div id="integration-cms-editor" class="scroll-mt-24">
                 <p class="font-semibold text-zinc-800 dark:text-zinc-100">CMS Editor (Integrations)</p>
                 <ul class="mt-2 list-disc list-inside space-y-1.5">

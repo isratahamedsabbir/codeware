@@ -264,3 +264,15 @@ it('also sends a contact made through the frontend contact form to Telegram', fu
 
     Http::assertSent(fn ($request) => str_contains($request['text'], 'From the form'));
 });
+
+it('marks a contact read when the admin opens it', function () {
+    $this->seed(RolePermissionSeeder::class);
+    $admin = User::factory()->admin()->create();
+    $contact = Contact::factory()->create(['status' => 'unread']);
+
+    Livewire::actingAs($admin)->test(Index::class)
+        ->call('showContact', $contact->id)
+        ->assertSet('viewingContactId', $contact->id);
+
+    expect($contact->fresh()->status)->toBe('read');
+});

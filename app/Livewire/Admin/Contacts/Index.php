@@ -98,8 +98,15 @@ class Index extends Component
         $this->viewingMessageId = null;
     }
 
+    /**
+     * Opening a contact marks it read — viewing it is what "read" means. Goes
+     * through updateStatus() so the one-way rule (read never flips back) stays
+     * in one place.
+     */
     public function showContact(int $id): void
     {
+        $this->updateStatus($id, 'read');
+
         $this->viewingContactId = $id;
         $this->dispatch('open-modal', name: 'contact-view');
     }
