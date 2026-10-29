@@ -40,7 +40,11 @@
         </div>
 
         <form wire:submit="updateProfile" class="p-5 space-y-5">
-            <div class="space-y-2">
+            {{-- livewire-upload-error is Livewire's "The photo failed to upload." — the
+                 request died before validation ran (file over PHP's upload limit, dropped
+                 connection), so the server can't flash it and the browser has to. --}}
+            <div class="space-y-2" x-data
+                x-on:livewire-upload-error="toastr.error('The photo failed to upload. Use a JPG, PNG or WEBP under 2MB.')">
                 <flux:field>
                     <flux:label>Profile Photo (square, max 2MB, JPG/PNG/WEBP)</flux:label>
                     <flux:input type="file" wire:model="photo" accept="image/jpeg,image/png,image/webp,image/avif" />

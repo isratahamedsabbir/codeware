@@ -48,6 +48,7 @@ class User extends Authenticatable implements PasskeyUser
     {
         return [
             'email_verified_at' => 'datetime',
+            'email_otp_enabled_at' => 'datetime',
             'password' => 'hashed',
             'is_blocked' => 'boolean',
             'balance' => 'decimal:2',

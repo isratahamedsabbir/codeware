@@ -2,8 +2,11 @@
 
 namespace App\Livewire\Security;
 
+use App\Mail\MfaOtpMail;
+use App\Services\OtpService;
 use App\Support\Mfa;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Actions\ConfirmTwoFactorAuthentication;
@@ -59,6 +62,15 @@ class MfaPanel extends Component
 
     #[Locked]
     public bool $passkeysEnabled = false;
+
+    #[Locked]
+    public bool $emailOtpEnabled = false;
+
+    /** A code has been mailed and the user has yet to type it back. */
+    #[Locked]
+    public bool $emailOtpPending = false;
+
+    public string $emailCode = '';
 
     /** True when the surrounding screen is the forced-enrolment one. */
     #[Locked]
@@ -130,6 +142,101 @@ class MfaPanel extends Component
         $this->passkeysSupported = Mfa::passkeysSupported();
         $this->totpEnabled = $user ? Mfa::totpEnabledFor($user) : false;
         $this->passkeysEnabled = $user ? Mfa::hasPasskeyFor($user) : false;
+        $this->emailOtpEnabled = $user ? Mfa::emailOtpEnabledFor($user) : false;
+    }
+
+    /**
+     * Step 1 of turning on emailed codes: mail one to the address on file.
+     *
+     * Switching it on only after the user has typed a code back is the point —
+     * otherwise a mistyped or dead mailbox would become a factor nobody can
+     * answer, and the account would be locked out at the next sign-in.
+     */
+    public function startEmailOtpSetup(OtpService $otp): void
+    {
+        $this->authorizeChange();
+
+        $user = Auth::user();
+
+        if (! $user || blank($user->email)) {
+            return;
+        }
+
+        $this->reset('emailCode');
+        $this->resetErrorBag();
+
+        $outcome = $otp->issue(
+            $user->email,
+            Mfa::OTP_PURPOSE_ENROL,
+            fn (string $code) => Mail::to($user->email)->send(new MfaOtpMail($code, $user->name, enrolling: true)),
+        );
+
+        if ($outcome === OtpService::SENT || $outcome === OtpService::THROTTLED) {
+            // THROTTLED means a code was mailed under a minute ago and is still
+            // good, so the box to type it into is the right thing to show.
+            $this->emailOtpPending = true;
+
+            return;
+        }
+
+        $this->addError('emailCode', $outcome === OtpService::RATE_LIMITED
+            ? 'Too many codes requested. Try again later.'
+            : 'We could not send the email. Check the mail settings and try again.');
+    }
+
+    /** Step 2: the typed code proves the mailbox, so the factor counts as enrolled. */
+    public function confirmEmailOtp(OtpService $otp): void
+    {
+        $this->authorizeChange();
+
+        $this->validate(['emailCode' => ['required', 'digits:6']]);
+
+        $user = Auth::user();
+
+        $outcome = $otp->verify($user->email, Mfa::OTP_PURPOSE_ENROL, $this->emailCode);
+
+        if ($outcome !== OtpService::VERIFIED) {
+            throw ValidationException::withMessages([
+                'emailCode' => [match ($outcome) {
+                    OtpService::LOCKED => 'Too many wrong codes. Send a new one.',
+                    OtpService::EXPIRED => 'That code has expired. Send a new one.',
+                    default => 'That code was not accepted. Check it and try again.',
+                }],
+            ]);
+        }
+
+        $user->forceFill(['email_otp_enabled_at' => now()])->save();
+
+        $this->reset('emailCode', 'emailOtpPending');
+        $this->resetErrorBag();
+
+        $this->refreshState();
+
+        $this->dispatch('mfa-updated');
+    }
+
+    public function cancelEmailOtpSetup(OtpService $otp): void
+    {
+        if ($user = Auth::user()) {
+            $otp->forget($user->email, Mfa::OTP_PURPOSE_ENROL);
+        }
+
+        $this->reset('emailCode', 'emailOtpPending');
+        $this->resetErrorBag();
+    }
+
+    public function disableEmailOtp(): void
+    {
+        $this->authorizeChange();
+
+        Auth::user()?->forceFill(['email_otp_enabled_at' => null])->save();
+
+        $this->reset('emailCode', 'emailOtpPending');
+        $this->resetErrorBag();
+
+        $this->refreshState();
+
+        $this->dispatch('mfa-updated');
     }
 
     /**

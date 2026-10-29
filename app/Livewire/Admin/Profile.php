@@ -39,7 +39,15 @@ class Profile extends Component
 
     public function updatedPhoto(): void
     {
-        $this->validate(['photo' => 'nullable|image|mimes:jpg,jpeg,png,webp,avif|max:2048']);
+        try {
+            $this->validate(['photo' => 'nullable|image|mimes:jpg,jpeg,png,webp,avif|max:2048']);
+        } catch (ValidationException $e) {
+            $this->reset('photo');
+
+            $this->dispatch('notify', type: 'error', message: $e->validator->errors()->first('photo'));
+
+            throw $e;
+        }
     }
 
     public function updateProfile(): void

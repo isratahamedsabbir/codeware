@@ -359,10 +359,76 @@
             </section>
         @endif
 
-        @unless ($totpSupported || $passkeysSupported)
-            <flux:callout variant="secondary" icon="exclamation-triangle">
-                {{ __('Multi-factor authentication is switched off in this installation (see config/fortify.php).') }}
-            </flux:callout>
-        @endunless
+        {{-- ── Email code ─────────────────────────────────────────────── --}}
+        <section class="overflow-hidden rounded-xl border border-zinc-200 bg-white text-zinc-900 shadow-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
+            <header class="flex flex-wrap items-center gap-3 border-b border-zinc-100 bg-zinc-50/70 px-5 py-4 dark:border-zinc-800 dark:bg-zinc-800/40">
+                <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300">
+                    <flux:icon.envelope class="size-5" />
+                </span>
+                <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{{ __('Email code (OTP)') }}</h3>
+                        @if ($emailOtpEnabled)
+                            <span class="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-[11px] font-medium text-green-700">
+                                <span class="size-1.5 rounded-full bg-green-500"></span>{{ __('On') }}
+                            </span>
+                        @else
+                            <span class="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600">
+                                <span class="size-1.5 rounded-full bg-zinc-400"></span>{{ __('Off') }}
+                            </span>
+                        @endif
+                    </div>
+                    <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{{ __('A 6-digit code emailed to you at every sign-in.') }}</p>
+                </div>
+                <div class="flex shrink-0 items-center gap-2">
+                    @if ($emailOtpEnabled)
+                        <flux:button size="sm" variant="danger" wire:click="disableEmailOtp"
+                            wire:confirm="Turn off email codes? Anyone with just your password will be able in.">
+                            {{ __('Turn off') }}
+                        </flux:button>
+                    @elseif (! $emailOtpPending)
+                        <flux:button size="sm" variant="primary" wire:click="startEmailOtpSetup">
+                            {{ __('Turn on') }}
+                        </flux:button>
+                    @endif
+                </div>
+            </header>
+            <div class="space-y-4 px-5 py-5 text-sm">
+                @if ($emailOtpPending)
+                    <form wire:submit="confirmEmailOtp" wire:key="email-otp-verify"
+                        class="mx-auto max-w-xs space-y-4 text-center">
+                        <p class="text-xs text-zinc-500">
+                            {{ __('We emailed a 6-digit code to :email. Enter it to turn this on.', ['email' => auth()->user()?->email]) }}
+                        </p>
+                        <div class="flex justify-center">
+                            <flux:otp wire:model="emailCode" length="6" name="emailCode" label="{{ __('Emailed code') }}" label:sr-only />
+                        </div>
+                        <flux:error name="emailCode" />
+
+                        <div class="flex items-center justify-center gap-3">
+                            <flux:button size="sm" variant="primary" type="submit"
+                                x-bind:disabled="$wire.emailCode.length < 6">
+                                {{ __('Confirm') }}
+                            </flux:button>
+                            <flux:button size="sm" variant="ghost" type="button" wire:click="startEmailOtpSetup">
+                                {{ __('Resend') }}
+                            </flux:button>
+                            <flux:button size="sm" variant="ghost" type="button" wire:click="cancelEmailOtpSetup">
+                                {{ __('Cancel') }}
+                            </flux:button>
+                        </div>
+                    </form>
+                @elseif ($emailOtpEnabled)
+                    <p class="text-sm text-zinc-600 dark:text-zinc-300">
+                        {{ __('On. A code is emailed to :email whenever you ask for one at sign-in.', ['email' => auth()->user()?->email]) }}
+                    </p>
+                @else
+                    <flux:error name="emailCode" />
+                    <p class="text-sm text-zinc-500">
+                        {{ __('Off. Turn it on to confirm sign-ins with a code sent to your email address.') }}
+                    </p>
+                @endif
+            </div>
+        </section>
     </div>
 </div>

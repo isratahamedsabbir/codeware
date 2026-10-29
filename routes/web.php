@@ -15,6 +15,7 @@
 
 use App\Http\Controllers\Auth\PasswordResetOtpController;
 use App\Http\Controllers\Auth\SocialLoginController;
+use App\Http\Controllers\Auth\TwoFactorEmailOtpController;
 use App\Http\Controllers\Auth\TwoFactorPasskeyController;
 use App\Http\Controllers\ChatWidgetFragmentController;
 use App\Http\Controllers\InvoiceController;
@@ -22,6 +23,7 @@ use App\Http\Controllers\RobotsController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\VoucherController;
+use App\Models\Setting;
 use App\Support\Seo\Sitemap;
 use App\Support\Themes;
 use Illuminate\Support\Facades\Route;
@@ -142,6 +144,15 @@ Route::middleware('throttle:two-factor')->group(function () {
 
     Route::post('/two-factor-challenge/passkey', [TwoFactorPasskeyController::class, 'store'])
         ->name('two-factor.passkey-verify');
+
+    // The same challenge answered with a code mailed to the account — see
+    // App\Http\Controllers\Auth\TwoFactorEmailOtpController. Same bucket and same
+    // domainless reasoning as the passkey pair above.
+    Route::post('/two-factor-challenge/email-otp/send', [TwoFactorEmailOtpController::class, 'send'])
+        ->name('two-factor.email-otp-send');
+
+    Route::post('/two-factor-challenge/email-otp', [TwoFactorEmailOtpController::class, 'store'])
+        ->name('two-factor.email-otp-verify');
 });
 
 require __DIR__.'/settings.php';
@@ -157,7 +168,7 @@ require __DIR__.'/settings.php';
 // keep answering when the active theme is a portfolio with no product or blog
 // templates at all.
 Route::get('/favicon.ico', function () {
-    $favicon = \App\Models\Setting::get('favicon');
+    $favicon = Setting::get('favicon');
 
     if ($favicon) {
         if (filter_var($favicon, FILTER_VALIDATE_URL)) {
@@ -175,13 +186,14 @@ Route::get('/favicon.ico', function () {
                     'ico' => 'image/x-icon',
                     default => 'image/x-icon',
                 };
+
                 return response()->file($path, ['Content-Type' => $mime]);
             }
         }
 
         if (str_starts_with($favicon, 'storage/')) {
             $relative = ltrim(str_replace('storage/', '', $favicon), '/');
-            $path = storage_path('app/public/' . $relative);
+            $path = storage_path('app/public/'.$relative);
             if (is_file($path)) {
                 $mime = match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
                     'svg' => 'image/svg+xml',
@@ -191,6 +203,7 @@ Route::get('/favicon.ico', function () {
                     'ico' => 'image/x-icon',
                     default => 'image/x-icon',
                 };
+
                 return response()->file($path, ['Content-Type' => $mime]);
             }
         }
@@ -205,10 +218,11 @@ Route::get('/favicon.ico', function () {
                 'ico' => 'image/x-icon',
                 default => 'image/x-icon',
             };
+
             return response()->file($path, ['Content-Type' => $mime]);
         }
 
-        $storagePath = storage_path('app/public/' . ltrim($favicon, '/'));
+        $storagePath = storage_path('app/public/'.ltrim($favicon, '/'));
         if (is_file($storagePath)) {
             $mime = match (strtolower(pathinfo($storagePath, PATHINFO_EXTENSION))) {
                 'svg' => 'image/svg+xml',
@@ -218,6 +232,7 @@ Route::get('/favicon.ico', function () {
                 'ico' => 'image/x-icon',
                 default => 'image/x-icon',
             };
+
             return response()->file($storagePath, ['Content-Type' => $mime]);
         }
     }
