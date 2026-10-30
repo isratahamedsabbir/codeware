@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Districts;
 
+use App\Concerns\StaysOnForm;
 use App\Models\District;
 use App\Models\Division;
 use App\Support\AdminActivity;
@@ -10,6 +11,8 @@ use Livewire\Component;
 
 class Form extends Component
 {
+    use StaysOnForm;
+
     public ?int $districtId = null;
 
     #[Validate('required|integer|exists:divisions,id')]
@@ -45,7 +48,7 @@ class Form extends Component
             District::findOrFail($this->districtId)->update($data);
             $this->dispatch('notify', message: 'District updated successfully');
         } else {
-            District::create($data);
+            $this->districtId = District::create($data)->id;
             $this->dispatch('notify', message: 'District created successfully');
         }
 
@@ -54,7 +57,7 @@ class Form extends Component
             "District: {$this->name}",
         );
 
-        $this->redirect(route('admin.districts'), navigate: true);
+        $this->stayOnForm($creating, 'admin.districts.edit', $this->districtId);
     }
 
     public function render()

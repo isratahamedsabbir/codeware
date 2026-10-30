@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\ProductAttributes;
 
+use App\Concerns\StaysOnForm;
 use App\Models\ProductAttribute;
 use App\Support\AdminActivity;
 use Livewire\Attributes\Validate;
@@ -9,6 +10,8 @@ use Livewire\Component;
 
 class Form extends Component
 {
+    use StaysOnForm;
+
     public ?int $attributeId = null;
 
     #[Validate('required|string|max:255')]
@@ -69,7 +72,7 @@ class Form extends Component
             ProductAttribute::findOrFail($this->attributeId)->update($data);
             $this->dispatch('notify', message: 'Attribute updated successfully');
         } else {
-            ProductAttribute::create($data);
+            $this->attributeId = ProductAttribute::create($data)->id;
             $this->dispatch('notify', message: 'Attribute created successfully');
         }
 
@@ -78,7 +81,7 @@ class Form extends Component
             "Product Attribute: {$this->name}",
         );
 
-        $this->redirect(route('admin.product-attributes'), navigate: true);
+        $this->stayOnForm($creating, 'admin.product-attributes.edit', $this->attributeId);
     }
 
     public function render()

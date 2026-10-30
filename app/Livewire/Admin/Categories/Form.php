@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Categories;
 
 use App\Concerns\HasSeoFields;
 use App\Concerns\HasTranslatableFields;
+use App\Concerns\StaysOnForm;
 use App\Models\Category;
 use App\Models\Page;
 use App\Models\ProductCategory;
@@ -21,6 +22,7 @@ use Livewire\Component;
 class Form extends Component
 {
     use HasSeoFields, HasTranslatableFields;
+    use StaysOnForm;
 
     public ?int $categoryId = null;
 
@@ -313,7 +315,7 @@ class Form extends Component
             "Category: {$this->primaryValue('name')}",
         );
 
-        $this->redirect(route('admin.categories', ['type' => $this->typeId]), navigate: true);
+        $this->stayOnForm($creating, 'admin.categories.edit', $this->categoryId);
     }
 
     private function defaultTypeId(): ?int

@@ -3,7 +3,7 @@
     Theme Settings) via wire:model="settings.theme_{slug}_*". Values persist to
     this theme's own theme.json beside this file and can be read anywhere with
         \App\Support\ThemeSettings::text('default', 'theme_default_intro_heading')
-    See default/home.blade.php for live usage.
+    See default/index.blade.php for live usage.
 
     This theme owns only the intro block, so before Typography it was the one
     theme whose settings screen showed no section menu: a sidebar holding a

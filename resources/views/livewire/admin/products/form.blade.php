@@ -18,6 +18,12 @@
     </style>
 
     @push('page-header-actions')
+        @if (\App\Support\Features::settingAvailable('additional_data_products_enabled'))
+            <label class="inline-flex items-center gap-2 rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-600 cursor-pointer">
+                <input type="checkbox" onclick="Livewire.dispatch('toggle-additional-data')" @checked(\App\Models\Setting::productAdditionalDataEnabled()) class="rounded border-zinc-300 text-primary" />
+                Additional Data
+            </label>
+        @endif
         <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.products') }}" wire:navigate>
             Back
         </flux:button>
@@ -45,14 +51,12 @@
                 @endforeach
 
                     <flux:field>
-                        <flux:label>Slug</flux:label>
+                        <flux:label>Slug<x-field-hint text="Auto-generated from the primary language's name as you type — edit it if you'd like a different one" /></flux:label>
                         <flux:input wire:model.live.debounce.400ms="slug" placeholder="auto-generated-from-name" />
                         @if ($slugAvailable === false)
                             <p class="text-xs text-red-500 mt-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span>This slug is already taken</p>
                         @elseif ($slugAvailable === true && $slug !== '')
                             <p class="text-xs text-green-600 mt-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>This slug is available</p>
-                        @else
-                            <p class="text-xs text-zinc-400 mt-1">Auto-generated from the primary language's name as you type — edit it if you'd like a different one</p>
                         @endif
                         <flux:error name="slug" />
                     </flux:field>
@@ -140,14 +144,30 @@
                             <flux:error name="warranty_months" />
                         </flux:field>
                     </div>
+
+                    @if (count($this->landingOptions) > 0)
+                        <div class="mt-4">
+                            <flux:field>
+                                <flux:label>Landing page<x-field-hint text="The page a visitor sees when they open this product from a Facebook ad (a link with ?fbclid=). Templates are in themes/{theme}/views/landing/. Regular visitors still get the normal product page." /></flux:label>
+                                <flux:select wire:model="landing_page">
+                                    <flux:select.option value="">Default</flux:select.option>
+                                    @foreach ($this->landingOptions as $slug => $label)
+                                        @continue($slug === 'default')
+                                        <flux:select.option value="{{ $slug }}">{{ $label }}</flux:select.option>
+                                    @endforeach
+                                </flux:select>
+                                <flux:error name="landing_page" />
+                            </flux:field>
+                        </div>
+                    @endif
                 </div>
 
             </x-admin-locale-tabs>
         </x-admin-section-card>
 
         {{-- Additional Data: Description, Short Description, Specification —
-             rich editors above the Variations, toggled from Settings → Widgets --}}
-        @if (\App\Models\Setting::productAdditionalDataEnabled())
+             rich editors above the Variations --}}
+        @if (\App\Support\Features::settingAvailable('additional_data_products_enabled') && \App\Models\Setting::productAdditionalDataEnabled())
             <x-admin-section-card variant="postbox" persist-key="product-additional-data" title="Additional Data"
                 description="Rich-text description, short description and specification for this product."
                 :collapsed="true">
@@ -386,6 +406,8 @@
 
         {{-- ── SIDEBAR ── --}}
         <div class="w-[320px] shrink-0 space-y-5">
+
+            @include('partials._admin-custom-code-picker')
 
             {{-- Featured Image --}}
             <x-admin-section-card variant="postbox" persist-key="product-thumbnail" title="Thumbnail Image"

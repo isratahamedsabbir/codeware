@@ -11,8 +11,4 @@
 @import '../../../../resources/css/base.css';
 @import '../../../../resources/css/storefront-shared.css';
 
-@source '../..';
-
-/* The admin theme-settings screen renders settings.blade.php inline, and the
-   picker markup in it is on no storefront page. */
-@source not '../../settings.blade.php';
+@source '../../views';

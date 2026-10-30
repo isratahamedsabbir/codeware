@@ -35,29 +35,47 @@ class Backup extends Component
         $this->refreshStatus();
     }
 
-    public function download()
+    public function download(string $type = 'full')
     {
-        $stamp = now()->format('Y-m-d-His');
-        $filename = 'full-backup-'.$stamp.'.zip';
-        $zipPath = storage_path('app/'.$filename);
+        abort_unless(in_array($type, ['full', 'database', 'files'], true), 404);
 
-        $dumpPath = sys_get_temp_dir().'/codeware-database-'.$stamp.'.sql';
-        DatabaseDumper::dumpTo($dumpPath);
+        $stamp = now()->format('Y-m-d-His');
+
+        if ($type === 'database') {
+            $filename = 'database-backup-'.$stamp.'.sql';
+            $dumpPath = storage_path('app/'.$filename);
+            DatabaseDumper::dumpTo($dumpPath);
+
+            AdminActivity::log('advance.backup.download', 'Database backup downloaded');
+
+            return response()->download($dumpPath, $filename)->deleteFileAfterSend(true);
+        }
+
+        $filename = ($type === 'files' ? 'files-backup-' : 'full-backup-').$stamp.'.zip';
+        $zipPath = storage_path('app/'.$filename);
 
         $zip = new ZipArchive;
         $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
 
-        $zip->addEmptyDir('database');
-        $zip->addFile($dumpPath, 'database/database-'.$stamp.'.sql');
+        $dumpPath = null;
+
+        if ($type === 'full') {
+            $dumpPath = sys_get_temp_dir().'/codeware-database-'.$stamp.'.sql';
+            DatabaseDumper::dumpTo($dumpPath);
+
+            $zip->addEmptyDir('database');
+            $zip->addFile($dumpPath, 'database/database-'.$stamp.'.sql');
+        }
 
         $source = storage_path('app');
 
         foreach ($this->iterate($source) as $item) {
             $relative = ltrim(str_replace('\\', '/', substr($item->getPathname(), strlen($source))), '/');
 
-            // Never bundle the backup archive itself, its sql sibling, or leftovers
-            // from an older version of this tool.
+            // Never bundle backup archives/dumps, including leftovers from older versions.
             if (str_starts_with($relative, 'full-backup-')
+                || str_starts_with($relative, 'files-backup-')
+                || str_starts_with($relative, 'database-backup-')
                 || str_starts_with($relative, 'storage-backup-')
                 || str_starts_with($relative, 'database-')) {
                 continue;
@@ -68,9 +86,11 @@ class Backup extends Component
 
         $zip->close();
 
-        @unlink($dumpPath);
+        if ($dumpPath) {
+            @unlink($dumpPath);
+        }
 
-        AdminActivity::log('advance.backup.download', 'Full backup (storage + database) downloaded');
+        AdminActivity::log('advance.backup.download', ($type === 'files' ? 'Files' : 'Full').' backup downloaded');
 
         return response()->download($zipPath, $filename)->deleteFileAfterSend(true);
     }

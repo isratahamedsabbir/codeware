@@ -6,6 +6,7 @@ use App\Models\Page;
 use App\Models\Post;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\Setting;
 use App\Support\Themes;
 use DateTimeInterface;
 use Illuminate\Support\Facades\Cache;
@@ -50,7 +51,16 @@ final class Sitemap
     ];
 
     /**
+     * The sitemap files, in index order. Each is served at /sitemap-{group}.xml
+     * and listed in the main /sitemap.xml, which is a sitemap index.
+     */
+    public const GROUPS = ['0', 'products', 'blog'];
+
+    /**
      * The sitemap as XML, cached against the data it was built from.
+     *
+     * With no group this is the main sitemap index, which points at one XML per
+     * group (pages, products, blog); with a group it is that group's urlset.
      *
      * The cache key is the content's own fingerprint rather than a fixed name,
      * so publishing a product produces a different key and the next request
@@ -58,21 +68,72 @@ final class Sitemap
      * without the "sitemap is three weeks out of date" failure mode a
      * regenerate-by-hand button has. The superseded keys expire on their own.
      */
-    public static function xml(): string
+    public static function xml(?string $group = null): string
     {
         return Cache::remember(
-            'seo:sitemap:'.self::fingerprint(),
+            'seo:sitemap:'.($group ?? 'index').':'.self::fingerprint(),
             now()->addDay(),
-            static fn () => self::toXml(self::entries())
+            static fn () => $group === null ? self::toIndexXml() : self::toXml(self::entries($group))
         );
+    }
+
+    /**
+     * Drop the cached XML so the next read rebuilds it from the content tables.
+     */
+    public static function refresh(): void
+    {
+        foreach ([null, ...self::GROUPS] as $group) {
+            Cache::forget('seo:sitemap:'.($group ?? 'index').':'.self::fingerprint());
+        }
+    }
+
+    /**
+     * The main sitemap: an index of the per-group files that have anything in them.
+     *
+     * A group with no entries (no products under a portfolio theme, say) is left
+     * out rather than advertised as an empty file.
+     */
+    public static function toIndexXml(): string
+    {
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>'.'
+';
+        $xml .= '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'.'
+';
+
+        foreach (self::GROUPS as $group) {
+            $entries = self::entries($group);
+
+            if ($entries === []) {
+                continue;
+            }
+
+            $lastmod = collect($entries)->pluck('lastmod')->filter()->max();
+
+            $xml .= '  <sitemap>
+';
+            $xml .= '    <loc>'.self::escape(self::loc("sitemap-{$group}.xml")).'</loc>
+';
+
+            if ($lastmod) {
+                $xml .= '    <lastmod>'.self::escape($lastmod).'</lastmod>
+';
+            }
+
+            $xml .= '  </sitemap>
+';
+        }
+
+        return $xml.'</sitemapindex>
+';
     }
 
     /**
      * The URL inventory: loc, lastmod, changefreq, priority, in that order.
      *
+     * @param  ?string  $group  one of self::GROUPS, or null for everything
      * @return array<int, array{loc: string, lastmod: ?string, changefreq: string, priority: float}>
      */
-    public static function entries(): array
+    public static function entries(?string $group = null): array
     {
         // The home page is listed only while the active theme wants to be
         // indexed. A sitemap is a list of pages worth crawling, so offering the
@@ -80,17 +141,22 @@ final class Sitemap
         // priority 1.0, as the first entry — is the site contradicting itself
         // in the two places a crawler looks, and the "default" theme's login
         // screen is exactly that case. Themes::isIndexable() is the same answer
-        // the theme's own home.blade.php passes to the layout, so the two
+        // the theme's own index.blade.php passes to the layout, so the two
         // cannot drift apart.
-        $entries = array_merge(
-            Themes::isIndexable() ? [self::entry(Url::url('/'), null, 'home')] : [],
-            self::listing(Url::url('shop'), 'shop'),
-            self::listing(Url::url('blog'), 'blog'),
-            self::pages(),
-            self::products(),
-            self::productCategories(),
-            self::posts(),
-        );
+        $groups = [
+            '0' => fn () => array_merge(
+                Themes::isIndexable() && Themes::activeThemeCanRender('home') ? [self::entry(self::loc('/'), null, 'home')] : [],
+                self::listing(self::loc('shop'), 'shop'),
+                self::listing(self::loc('blog'), 'blog'),
+                self::pages(),
+            ),
+            'products' => fn () => array_merge(self::products(), self::productCategories()),
+            'blog' => fn () => self::posts(),
+        ];
+
+        $entries = $group === null
+            ? array_merge(...array_values(array_map(fn ($build) => $build(), $groups)))
+            : (isset($groups[$group]) ? $groups[$group]() : []);
 
         // A page can be reachable under more than one row (a Page that is also a
         // category, say), and a URL listed twice reads as two pages to a crawler.
@@ -139,7 +205,7 @@ final class Sitemap
      */
     private static function fingerprint(): string
     {
-        $parts = [Themes::active(), Url::origin()];
+        $parts = [Themes::active(), self::base()];
 
         // The active theme's indexability, not just its slug: it decides whether
         // the home page is in the list at all, and it is a key in a file an owner
@@ -153,6 +219,23 @@ final class Sitemap
         }
 
         return md5(implode('|', $parts));
+    }
+
+    /**
+     * The origin every sitemap URL is built on: the configured SEO site URL when
+     * there is one, else APP_URL — never the host of the current request, which
+     * inside the admin panel is the admin host, not the public site.
+     */
+    private static function base(): string
+    {
+        $configured = trim((string) Setting::get('seo_site_url', ''));
+
+        return rtrim($configured !== '' ? Url::normalize($configured) : (string) config('app.url'), '/');
+    }
+
+    private static function loc(string $path): string
+    {
+        return self::base().Url::path($path);
     }
 
     /**
@@ -238,12 +321,16 @@ final class Sitemap
      */
     private static function pages(): array
     {
+        if (! Themes::activeThemeCanRender('page')) {
+            return [];
+        }
+
         return Page::published()
             ->where('type', 'page')
             ->where('slug', '!=', 'home')
             ->where('no_index', false)
             ->get(['slug', 'updated_at'])
-            ->map(fn (Page $page) => self::entry(Url::url($page->slug), $page->updated_at, 'page'))
+            ->map(fn (Page $page) => self::entry(self::loc($page->slug), $page->updated_at, 'page'))
             ->all();
     }
 
@@ -262,7 +349,7 @@ final class Sitemap
             return [];
         }
 
-        return [self::entry(Url::url($path), $updatedAt, $signal)];
+        return [self::entry(self::loc($path), $updatedAt, $signal)];
     }
 
     /**

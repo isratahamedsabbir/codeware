@@ -63,7 +63,10 @@ class SettingsController extends Controller
 
             $data['seo']['seo_canonical_urls'] = json_decode($data['seo']['seo_canonical_urls'] ?? '[]', true) ?: [];
             $data['constant'] = $this->constants();
-            $data['social_links'] = SocialLink::urlsCached();
+            // A plain array: this whole payload goes through Cache::remember(),
+            // and a Collection in there comes back from the database cache driver
+            // as a broken __PHP_Incomplete_Class (see SocialLink::urlsCached()).
+            $data['social_links'] = SocialLink::urlsCached()->all();
 
             return $data;
         });

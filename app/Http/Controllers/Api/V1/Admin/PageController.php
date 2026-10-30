@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Page;
+use App\Support\CustomCode;
 use App\Support\PageCascade;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Validation\Rule;
 
 class PageController extends Controller
 {
@@ -56,6 +58,7 @@ class PageController extends Controller
                 'twitter_image' => $page->twitter_image,
                 'no_index' => $page->no_index,
                 'no_follow' => $page->no_follow,
+                'custom_code_id' => $page->custom_code_id,
                 'constant' => $page->constant,
                 'revisions' => $page->revisions->map(fn ($r) => [
                     'id' => $r->id,
@@ -112,6 +115,7 @@ class PageController extends Controller
             'twitter_image' => 'sometimes|nullable|string',
             'no_index' => 'sometimes|boolean',
             'no_follow' => 'sometimes|boolean',
+            'custom_code_id' => ['sometimes', 'nullable', 'string', Rule::in(array_keys(CustomCode::options()))],
             'puck_data' => 'sometimes|nullable|array',
             'status' => 'sometimes|in:active,inactive',
             'template' => 'sometimes|nullable|string|max:100',

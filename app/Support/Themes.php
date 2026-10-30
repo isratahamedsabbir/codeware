@@ -31,7 +31,7 @@ class Themes
      * customer login, /admin's legacy bounce, an API path) and is always kept.
      */
     private const ROUTE_TEMPLATES = [
-        'home' => 'home',
+        'home' => 'index',
         'page' => 'page',
         'shop' => 'shop',
         'products.show' => 'product',
@@ -42,6 +42,8 @@ class Themes
         'flash-deals' => 'flash-deals',
         'blog' => 'blog',
         'blog.post' => 'post',
+        'careers' => 'careers',
+        'careers.show' => 'career',
         'cart' => 'cart',
         'checkout' => 'checkout',
         'checkout.confirmation' => 'order-confirmation',
@@ -49,6 +51,22 @@ class Themes
         'account.orders' => 'account/orders',
         'account.orders.show' => 'account/order',
         'account.profile' => 'account/profile',
+    ];
+
+    /**
+     * Storefront routes that belong to a toggleable feature (Settings → Features),
+     * so a nav link to one is dropped once its feature is off — the route itself
+     * 404s through the same feature (see each theme's routes/web.php).
+     */
+    private const ROUTE_FEATURES = [
+        'shop' => 'products',
+        'products.show' => 'products',
+        'shop.category' => 'products',
+        'shop.brand' => 'products',
+        'shop.tag' => 'products',
+        'favorites' => 'products',
+        'careers' => 'careers',
+        'careers.show' => 'careers',
     ];
 
     /**
@@ -81,7 +99,11 @@ class Themes
      *         theme.json          manifest + settings values
      *         settings.blade.php  its admin settings screen
      *         routes/web.php      its storefront routes
-     *         *.blade.php         its templates (partials/, errors/, account/ ...)
+     *         views/              its templates, view namespace theme-{slug}::
+     *             *.blade.php       one page per route (index, page, shop ...)
+     *             partials/         _*.blade.php fragments a page @includes
+     *             errors/ account/  grouped pages
+     *         Support/            namespace Themes\{Slug}\Support — theme-only helpers
      *         Controllers/        namespace Themes\{Slug}\Controllers
      *         database/           migrations/ and seeders/ (Themes\{Slug}\Database\Seeders)
      *         public/             everything the web serves, at /themes/{slug}/...
@@ -105,7 +127,7 @@ class Themes
 
     /**
      * The view namespace a theme's templates are registered under, so a template
-     * is named theme-{slug}::home or theme-{slug}::partials._header whatever
+     * is named theme-{slug}::index or theme-{slug}::partials._header whatever
      * directory the folder happens to live in.
      */
     public static function viewNamespace(string $slug): string
@@ -121,7 +143,9 @@ class Themes
      */
     public static function registerViews(string $slug): void
     {
-        View::addNamespace(static::viewNamespace($slug), static::path().'/'.$slug);
+        // views/ holds the storefront templates; the theme root is the second hint
+        // only so theme-{slug}::settings finds settings.blade.php beside theme.json.
+        View::addNamespace(static::viewNamespace($slug), [static::path().'/'.$slug.'/views', static::path().'/'.$slug]);
     }
 
     /**
@@ -689,6 +713,28 @@ class Themes
     }
 
     /**
+     * The campaign landing pages a theme ships: every views/landing/*.blade.php,
+     * as slug => label ('black-friday' => 'Black Friday'). Empty when the theme
+     * has no landing/ folder. This is what the product form offers.
+     *
+     * @return array<string, string>
+     */
+    public static function landingPages(?string $theme = null): array
+    {
+        $dir = static::path().'/'.($theme ?? static::active()).'/views/landing';
+        $pages = [];
+
+        foreach (glob($dir.'/*.blade.php') ?: [] as $file) {
+            $slug = basename($file, '.blade.php');
+            $pages[$slug] = Str::headline($slug);
+        }
+
+        ksort($pages);
+
+        return $pages;
+    }
+
+    /**
      * Whether the active theme ships its own copy of a storefront template.
      *
      * This is the single definition of "does this theme have this page?" —
@@ -822,6 +868,12 @@ class Themes
             return true;
         }
 
+        $feature = self::ROUTE_FEATURES[$routeName] ?? null;
+
+        if ($feature !== null && ! Features::enabled($feature)) {
+            return false;
+        }
+
         return static::has(self::ROUTE_TEMPLATES[$routeName]);
     }
 
@@ -896,7 +948,7 @@ class Themes
      * @var array<string, string>
      */
     private const STARTER_TEMPLATES = [
-        'home' => 'Home',
+        'index' => 'Home',
         'page' => 'Page',
         'shop' => 'Shop',
         'product' => 'Product',
@@ -949,16 +1001,16 @@ class Themes
         }
 
         foreach (static::STARTER_TEMPLATES as $template => $label) {
-            static::writeThemeFile($slug, $template.'.blade.php', static::starterTemplate($slug, $template, $label));
+            static::writeThemeFile($slug, 'views/'.$template.'.blade.php', static::starterTemplate($slug, $template, $label));
         }
 
-        static::writeThemeFile($slug, 'errors/404.blade.php', static::starterError($slug));
+        static::writeThemeFile($slug, 'views/errors/404.blade.php', static::starterError($slug));
         // Underscored like every other partial in the bundled themes: a leading _
         // is what makes a file inside a theme readable at a glance as "this one is
         // included by the pages", rather than a page of its own that happens to sit
         // in a subfolder.
-        static::writeThemeFile($slug, 'partials/_header.blade.php', static::starterHeader($slug));
-        static::writeThemeFile($slug, 'partials/_footer.blade.php', static::starterFooter());
+        static::writeThemeFile($slug, 'views/partials/_header.blade.php', static::starterHeader($slug));
+        static::writeThemeFile($slug, 'views/partials/_footer.blade.php', static::starterFooter());
         static::writeThemeFile($slug, 'public/css/theme.css', static::starterStylesheet($slug));
         static::writeThemeFile($slug, 'settings.blade.php', static::starterSettings());
         static::writeThemeFile($slug, 'routes/web.php', static::starterRoutes($slug));
@@ -1169,7 +1221,7 @@ class Themes
     {
         return str_replace(
             ['{slug}', '{label}', '{page}'],
-            [$slug, $label, $template],
+            [$slug, $label, $template === 'index' ? 'home' : $template],
             <<<'BLADE'
             {{-- The {label} page of the "{slug}" theme.
 
@@ -1344,16 +1396,12 @@ class Themes
 
                Paths are relative to this file, themes/{slug}/public/css/theme.css:
                two levels up is the theme folder and four are the project root, so
-               the @source below collects the theme's whole folder from inside
-               public/ rather than only public/ itself. */
+               the @source below collects the theme's views/ folder (and nothing
+               else — settings.blade.php is admin markup, not a storefront page). */
             @import '../../../../resources/css/base.css';
             @import '../../../../resources/css/storefront-shared.css';
 
-            @source '../..';
-
-            /* The admin Theme Settings screen renders settings.blade.php inline,
-               and the picker markup in it is on no storefront page. */
-            @source not '../../settings.blade.php';
+            @source '../../views';
 
             /* Your own rules go below this line. */
             CSS
@@ -1430,7 +1478,7 @@ class Themes
              *
              *     public function home()
              *     {
-             *         return $this->view('home');
+             *         return $this->view('index');
              *     }
              */
 
@@ -1454,6 +1502,6 @@ class Themes
      */
     private static function templateFile(string $theme, string $name): string
     {
-        return static::path().'/'.$theme.'/'.str_replace('.', '/', $name).'.blade.php';
+        return static::path().'/'.$theme.'/views/'.str_replace('.', '/', $name).'.blade.php';
     }
 }

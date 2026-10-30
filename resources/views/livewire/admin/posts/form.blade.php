@@ -19,6 +19,12 @@
     </style>
 
     @push('page-header-actions')
+        @if (\App\Support\Features::settingAvailable('additional_data_posts_enabled'))
+            <label class="inline-flex items-center gap-2 rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-600 cursor-pointer">
+                <input type="checkbox" onclick="Livewire.dispatch('toggle-additional-data')" @checked(\App\Models\Setting::postAdditionalDataEnabled()) class="rounded border-zinc-300 text-primary" />
+                Additional Data
+            </label>
+        @endif
         <flux:button variant="ghost" size="sm" class="admin-back-btn" icon="arrow-left" href="{{ route('admin.posts') }}" wire:navigate>
             Back
         </flux:button>
@@ -46,14 +52,12 @@
                 @endforeach
 
                     <flux:field>
-                        <flux:label>Slug</flux:label>
+                        <flux:label>Slug<x-field-hint text="Auto-generated from the primary language's title as you type — edit it if you'd like a different one" /></flux:label>
                         <flux:input wire:model.live.debounce.400ms="slug" placeholder="auto-generated-from-title" />
                         @if ($slugAvailable === false)
                             <p class="text-xs text-red-500 mt-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span>This slug is already taken</p>
                         @elseif ($slugAvailable === true && $slug !== '')
                             <p class="text-xs text-green-600 mt-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>This slug is available</p>
-                        @else
-                            <p class="text-xs text-zinc-400 mt-1">Auto-generated from the primary language's title as you type — edit it if you'd like a different one</p>
                         @endif
                         <flux:error name="slug" />
                     </flux:field>
@@ -71,8 +75,8 @@
             </x-admin-locale-tabs>
         </x-admin-section-card>
 
-        {{-- Additional Data: Description — rich editor, toggled from Settings → Widgets --}}
-        @if (\App\Models\Setting::postAdditionalDataEnabled())
+        {{-- Additional Data: Description — rich editor --}}
+        @if (\App\Support\Features::settingAvailable('additional_data_posts_enabled') && \App\Models\Setting::postAdditionalDataEnabled())
             <x-admin-section-card variant="postbox" persist-key="post-additional-data" title="Additional Data"
                 description="Rich-text description shown in blog listings and as a fallback — the full post body is built separately in the page builder."
                 :collapsed="true">
@@ -101,6 +105,8 @@
 
         {{-- ── SIDEBAR ── --}}
         <div class="w-[320px] shrink-0 space-y-5">
+
+            @include('partials._admin-custom-code-picker')
 
             {{-- Tags — product-typed and post-typed pools, no legacy (App\Models\Tag) --}}
             <x-admin-section-card variant="postbox" persist-key="post-tags" title="Tags" :collapsed="false"

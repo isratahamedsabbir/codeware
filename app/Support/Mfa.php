@@ -127,8 +127,38 @@ final class Mfa
      */
     public static function hasFactorFor(User $user): bool
     {
+        return self::totpEnabledFor($user)
+            || self::hasPasskeyFor($user)
+            || self::emailOtpEnabledFor($user);
+    }
+
+    /**
+     * True when the account has switched on the emailed one-time code.
+     *
+     * Needs no secret or device of its own — the factor is "can read the mailbox
+     * on file" — so it is just a timestamp, set once the user has proved they can
+     * receive a code (see MfaPanel::confirmEmailOtp()).
+     */
+    public static function emailOtpEnabledFor(User $user): bool
+    {
+        return $user->email_otp_enabled_at !== null && filled($user->email);
+    }
+
+    /**
+     * Whether the account can answer with something other than a mailbox, which
+     * is all the stateless API challenge can verify (see App\Support\ApiMfa) —
+     * it has no page to send or type an emailed code on.
+     */
+    public static function hasApiFactorFor(User $user): bool
+    {
         return self::totpEnabledFor($user) || self::hasPasskeyFor($user);
     }
+
+    /** The OtpService purpose for the code mailed at sign-in. */
+    public const OTP_PURPOSE_LOGIN = 'mfa-login';
+
+    /** The OtpService purpose for the code that proves the mailbox when turning it on. */
+    public const OTP_PURPOSE_ENROL = 'mfa-enrol';
 
     /**
      * The audiences this account belongs to, in AUDIENCES order.
@@ -339,5 +369,17 @@ final class Mfa
         $user = User::find($id);
 
         return $user instanceof User && self::totpEnabledFor($user);
+    }
+
+    /**
+     * The account mid-challenge, when it has switched on the emailed code.
+     */
+    public static function challengedEmailOtpUser(): ?User
+    {
+        $id = session()->get('login.id');
+
+        $user = $id ? User::find($id) : null;
+
+        return $user instanceof User && self::emailOtpEnabledFor($user) ? $user : null;
     }
 }

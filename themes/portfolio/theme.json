@@ -1,55 +1,95 @@
 {
     "theme_portfolio_projects": [
         {
-            "title": "Order Platform",
-            "description": "Stock control for three branches.",
+            "title": "Order & Inventory Platform",
+            "description": "Stock control for a three-branch retailer, replacing a shared spreadsheet that was the single point of failure. Every sale decrements stock inside a transaction, and a low-stock threshold is what drives reordering — not a weekly report someone had to remember to run.",
             "icon": "📦",
-            "tech": "Laravel",
+            "tech": "Laravel 11, Livewire 3, MySQL, Redis",
             "stats": "In production",
-            "link": "https://example.com/app",
-            "repo": "https://github.com/sabbir/order-platform",
-            "image": "/storage/media/order-platform.png"
+            "link": "",
+            "repo": "",
+            "image": ""
+        },
+        {
+            "title": "Clinic Booking & Records",
+            "description": "Appointment scheduling, patient history and printable prescription PDFs for a two-doctor practice. The scheduling screen is built around the one question that actually matters — who is free in this half-hour — so double-booking is impossible rather than merely discouraged.",
+            "icon": "🩺",
+            "tech": "Laravel, MySQL, dompdf, Alpine.js",
+            "stats": "In production",
+            "link": "",
+            "repo": "",
+            "image": ""
+        },
+        {
+            "title": "Headless Storefront on a Laravel API",
+            "description": "A Next.js catalog and cart in front of a Laravel REST API, with token auth and the order pipeline kept server-side. Moving the storefront off the theme was what let the same catalogue data serve the site, a POS and a marketplace feed without three copies of the truth.",
+            "icon": "⚛️",
+            "tech": "Next.js 15, Laravel, Sanctum, Tailwind",
+            "stats": "In production",
+            "link": "",
+            "repo": "",
+            "image": ""
+        },
+        {
+            "title": "WooCommerce Store Rescue",
+            "description": "A slow, plugin-heavy store brought back to a usable load time by object caching, query cleanup and a rebuilt checkout — with the order history migrated across intact. The brief was a performance problem; the thing that actually unlocked the fix was tracing where the slow requests were coming from rather than guessing at plugins.",
+            "icon": "🛒",
+            "tech": "WordPress, WooCommerce, Redis, Cloudflare",
+            "stats": "In production",
+            "link": "",
+            "repo": "",
+            "image": ""
         }
     ],
     "theme_portfolio_education": [
         {
-            "title": "B.Sc. in Computer Science",
-            "period": "2018 - 2022",
+            "title": "B.Sc. in Computer Science & Engineering",
+            "period": "2016 — 2020",
             "description": "Example University"
+        },
+        {
+            "title": "Higher Secondary, Science",
+            "period": "2014 — 2016",
+            "description": "Example College"
         }
     ],
     "theme_portfolio_certifications": [
         {
-            "title": "AWS Certified Developer",
+            "title": "AWS Certified Developer – Associate",
             "period": "2024",
             "description": "Amazon Web Services"
+        },
+        {
+            "title": "Meta Front-End Developer",
+            "period": "2023",
+            "description": "Meta"
         }
     ],
-    "theme_portfolio_photo": "",
-    "theme_portfolio_name": "Sabbir Hossain",
-    "theme_portfolio_hero_title": "Full Stack Developer",
-    "theme_portfolio_hero_tagline": "I build Laravel applications and the storefronts that talk to them — admin panels, REST APIs, and WordPress or WooCommerce work on top.",
+    "theme_portfolio_photo": "/storage/theme-uploads/theme-portfolio-photo/photo-hd-0gddzv.jpg",
+    "theme_portfolio_name": "israt ahamed sabbir",
+    "theme_portfolio_hero_title": "Laravel Developer",
+    "theme_portfolio_hero_tagline": "I design and build Laravel applications that stay maintainable as they grow: clean architecture, versioned REST APIs, Livewire admin panels, queues and payments, shipped with tests and CI.",
     "theme_portfolio_location": "Dhaka, Bangladesh",
-    "theme_portfolio_availability": "Available for new projects",
+    "theme_portfolio_availability": "Open to Laravel projects and full-time roles",
     "theme_portfolio_resume_url": "",
     "theme_portfolio_resume_label": "Download CV",
     "theme_portfolio_font": "",
     "theme_portfolio_stats": [
         {
-            "value": "1",
-            "label": "Stat 1"
+            "value": "Laravel 12",
+            "label": "Primary framework"
         },
         {
-            "value": "2",
-            "label": "Stat 2"
+            "value": "PHP 8.4",
+            "label": "Modern, typed PHP"
         },
         {
-            "value": "3",
-            "label": "Stat 3"
+            "value": "REST + Livewire",
+            "label": "APIs and admin UIs"
         },
         {
-            "value": "4",
-            "label": "Stat 4"
+            "value": "Pest",
+            "label": "Tested code"
         }
     ],
     "theme_portfolio_experiences": [

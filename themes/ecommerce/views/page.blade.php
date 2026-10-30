@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ \App\Support\Locale::direction() }}">
+<head>
+    @include('partials._head')
+    @include('partials._seo-meta')
+    @include('partials._custom-code-head')
+</head>
+<body class="bg-white font-storefront text-sf-text antialiased">
+
+@include('theme-ecommerce::partials._header')
+
+@include('theme-ecommerce::partials._breadcrumbs', [
+    'crumbs' => [
+        ['label' => __('Home'), 'url' => url('/')],
+        ['label' => $page->getTranslation('title', 'en', false), 'url' => null],
+    ],
+])
+
+<main>
+    @php $block = \App\Support\PageBlocks::for($page->slug); @endphp
+
+    @if ($block === 'frontend.contact-form')
+        {{-- Contact gets its own layout: details beside the form. --}}
+        @include('theme-ecommerce::partials._contact-page')
+    @else
+        <section class="mx-auto max-w-3xl px-6 py-12 text-center">
+            <h1 class="text-4xl font-extrabold text-sf-heading">{{ $page->getTranslation('title', 'en', false) }}</h1>
+        </section>
+    @endif
+
+    @foreach ($sections as $section)
+        @continue(blank($section->localizedCards()))
+
+        <section id="{{ $section->name }}" class="border-t border-zinc-100 px-6 py-16">
+            <div class="mx-auto max-w-7xl">
+                <h2 class="mb-8 text-center text-2xl font-bold text-sf-heading">{{ $section->name }}</h2>
+
+                @if ($page->slug === 'faq')
+                    <div class="mx-auto max-w-3xl space-y-3">
+                        @foreach ($section->localizedCards() as $card)
+                            <details class="group rounded-card border border-zinc-100 bg-white shadow-sm">
+                                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-medium text-sf-heading [&::-webkit-details-marker]:hidden">
+                                    {{ $card['title'] }}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 text-zinc-400 transition group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" />
+                                    </svg>
+                                </summary>
+                                <div class="px-5 pb-5 leading-relaxed text-zinc-600">{{ $card['description'] }}</div>
+                            </details>
+                        @endforeach
+                    </div>
+                @else
+                <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                    @foreach ($section->localizedCards() as $card)
+                        <div class="group overflow-hidden rounded-card border border-zinc-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+                            @if ($card['image'])
+                                <div class="relative aspect-square overflow-hidden bg-zinc-100">
+                                    <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}"
+                                        class="h-full w-full object-cover transition duration-300 group-hover:scale-105">
+                                </div>
+                            @endif
+                            <div class="p-4">
+                                @if ($card['title'])
+                                    <h3 class="font-semibold text-sf-heading">{{ $card['title'] }}</h3>
+                                @endif
+                                @if ($card['description'])
+                                    <p class="mt-1.5 text-sm text-zinc-500">{{ $card['description'] }}</p>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                @endif
+            </div>
+        </section>
+    @endforeach
+
+    @if ($block && $block !== 'frontend.contact-form')
+        <section class="mx-auto max-w-xl px-6 py-16">
+            @livewire($block)
+        </section>
+    @endif
+</main>
+
+@include('theme-ecommerce::partials._footer')
+
+@include('frontend.partials._chat-widget')
+@include('partials._custom-code-body')
+</body>
+</html>

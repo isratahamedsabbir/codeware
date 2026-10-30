@@ -38,7 +38,7 @@ it('autoloads a theme seeder from its database folder', function () {
 });
 
 it('registers each theme templates under its own view namespace', function (string $slug) {
-    expect(View::exists(Themes::viewNamespace($slug).'::home'))->toBeTrue();
+    expect(View::exists(Themes::viewNamespace($slug).'::index'))->toBeTrue();
 })->with(['default', 'ecommerce', 'portfolio']);
 
 it('routes the storefront to controllers that live in the theme folder', function () {
@@ -61,7 +61,7 @@ it('serves nothing from a theme outside its public folder', function (string $pa
     $this->get($path)->assertNotFound();
 })->with([
     'the manifest' => '/themes/portfolio/theme.json',
-    'a template' => '/themes/portfolio/home.blade.php',
+    'a template' => '/themes/portfolio/views/index.blade.php',
     'the route file' => '/themes/portfolio/routes/web.php',
     'a traversal' => '/themes/portfolio/..%2Ftheme.json',
     'an unknown theme' => '/themes/nope/css/style.css',

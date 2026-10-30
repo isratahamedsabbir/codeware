@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\ProductVendors;
 
+use App\Concerns\StaysOnForm;
 use App\Models\ProductVendor;
 use App\Support\AdminActivity;
 use Livewire\Attributes\Validate;
@@ -9,6 +10,8 @@ use Livewire\Component;
 
 class Form extends Component
 {
+    use StaysOnForm;
+
     public ?int $vendorId = null;
 
     #[Validate('required|string|max:255')]
@@ -76,7 +79,7 @@ class Form extends Component
             "Product Vendor: {$this->name}",
         );
 
-        $this->redirect(route('admin.product-vendors'), navigate: true);
+        $this->stayOnForm($creating, 'admin.product-vendors.edit', $this->vendorId);
     }
 
     public function render()

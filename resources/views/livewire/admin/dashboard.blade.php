@@ -41,8 +41,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
 
         <a href="{{ route('admin.products') }}" wire:navigate.hover
-           class="admin-card admin-stat-card admin-showcase-stat relative border-0! border-t-4! border-primary! shadow-sm! block group no-underline">
-            <span class="admin-stat-card-bar bg-primary"></span>
+           class="admin-card admin-stat-card admin-showcase-stat relative border-0! shadow-sm! block group no-underline">
             <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
                     <p class="text-xs font-semibold text-zinc-500">Products</p>
@@ -62,8 +61,7 @@
         </a>
 
         <a href="{{ route('admin.posts') }}" wire:navigate.hover
-           class="admin-card admin-stat-card admin-showcase-stat relative border-0! border-t-4! border-secondary! shadow-sm! block group no-underline">
-            <span class="admin-stat-card-bar bg-secondary"></span>
+           class="admin-card admin-stat-card admin-showcase-stat relative border-0! shadow-sm! block group no-underline">
             <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
                     <p class="text-xs font-semibold text-zinc-500">Posts</p>
@@ -86,8 +84,7 @@
         </a>
 
         <a href="{{ route('admin.pages') }}" wire:navigate.hover
-           class="admin-card admin-stat-card admin-showcase-stat relative border-0! border-t-4! border-indigo-500! shadow-sm! block group no-underline">
-            <span class="admin-stat-card-bar bg-indigo-500"></span>
+           class="admin-card admin-stat-card admin-showcase-stat relative border-0! shadow-sm! block group no-underline">
             <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
                     <p class="text-xs font-semibold text-zinc-500">Pages</p>
@@ -107,8 +104,7 @@
         </a>
 
         <a href="{{ route('admin.media-library') }}" wire:navigate.hover
-           class="admin-card admin-stat-card admin-showcase-stat relative border-0! border-t-4! border-sky-500! shadow-sm! block group no-underline">
-            <span class="admin-stat-card-bar bg-sky-500"></span>
+           class="admin-card admin-stat-card admin-showcase-stat relative border-0! shadow-sm! block group no-underline">
             <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
                     <p class="text-xs font-semibold text-zinc-500">Media Files</p>

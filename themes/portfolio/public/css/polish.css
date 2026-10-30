@@ -1,0 +1,682 @@
+/* Portfolio design polish - loaded after style.css and only adds to it.
+   Everything keys off the existing pf-* hooks and --pf-* tokens, so light/dark
+   and the settings-driven colours keep working. */
+
+.theme-portfolio {
+    --pf-radius: 1.25rem;
+    --pf-gradient: linear-gradient(120deg, var(--pf-primary) 0%, var(--pf-accent) 100%);
+    --pf-glass: color-mix(in srgb, var(--pf-bg-elevated) 72%, transparent);
+    --pf-section-y: clamp(4.5rem, 9vw, 7.5rem);
+}
+
+/* Typography */
+.theme-portfolio .pf-heading { letter-spacing: -.035em; }
+.theme-portfolio #home h1 { font-size: clamp(2.75rem, 7vw, 5rem); line-height: 1.02; font-weight: 800; }
+.theme-portfolio main section h2.pf-heading {
+    font-size: clamp(2rem, 4.2vw, 3rem);
+    line-height: 1.08;
+    font-weight: 800;
+}
+.theme-portfolio main section h2.pf-heading + p { font-size: 1.0625rem; line-height: 1.7; max-width: 38rem; }
+
+.theme-portfolio .pf-eyebrow {
+    padding: .35rem .85rem;
+    border: 1px solid color-mix(in srgb, var(--pf-primary) 25%, transparent);
+    background: var(--pf-primary-soft);
+    border-radius: 999px;
+    letter-spacing: .14em;
+}
+.theme-portfolio .pf-eyebrow::before { display: none; }
+
+/* Hero */
+.theme-portfolio #home {
+    background:
+        radial-gradient(60% 50% at 15% 0%, color-mix(in srgb, var(--pf-primary) 10%, transparent), transparent 70%),
+        radial-gradient(50% 45% at 90% 20%, color-mix(in srgb, var(--pf-accent) 9%, transparent), transparent 70%);
+}
+.theme-portfolio .pf-grid-bg::before { background-size: 56px 56px; }
+.theme-portfolio .pf-badge {
+    background: var(--pf-glass);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--pf-shadow-card);
+}
+.theme-portfolio .pf-gradient-text { background-image: var(--pf-gradient); }
+
+.theme-portfolio .pf-photo-frame {
+    border-radius: 2rem;
+    padding: .5rem;
+    background: var(--pf-glass);
+    backdrop-filter: blur(12px);
+    transform: rotate(1.5deg);
+    transition: transform .6s var(--pf-ease);
+}
+.theme-portfolio .pf-photo-frame:hover { transform: rotate(0deg) scale(1.01); }
+.theme-portfolio .pf-photo-frame > img,
+.theme-portfolio .pf-photo-frame > .pf-monogram { border-radius: 1.5rem; }
+.theme-portfolio .pf-photo-frame::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--pf-gradient);
+    filter: blur(28px);
+    opacity: .28;
+}
+.theme-portfolio .pf-monogram { font-size: clamp(5rem, 14vw, 8rem); }
+
+/* Buttons */
+.theme-portfolio .pf-btn-solid {
+    background-image: var(--pf-gradient);
+    background-size: 140% 100%;
+    background-position: 0 0;
+    border: 0;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 10px 28px -10px color-mix(in srgb, var(--pf-primary) 80%, transparent);
+}
+.theme-portfolio .pf-btn-solid::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 35%, #ffffff40 50%, transparent 65%);
+    transform: translateX(-120%);
+    transition: transform .7s var(--pf-ease);
+    pointer-events: none;
+}
+.theme-portfolio .pf-btn-solid:hover { background-position: 100% 0; }
+.theme-portfolio .pf-btn-solid:hover::after { transform: translateX(120%); }
+.theme-portfolio .pf-btn-outline { background: var(--pf-glass); backdrop-filter: blur(8px); }
+
+/* Header */
+.theme-portfolio .pf-header.is-scrolled { backdrop-filter: blur(18px) saturate(1.4); }
+.theme-portfolio .pf-nav-desktop {
+    border: 1px solid var(--pf-border);
+    background: var(--pf-glass);
+    backdrop-filter: blur(10px);
+}
+.theme-portfolio .pf-nav-link.is-active,
+.theme-portfolio.pf-dark .pf-nav-link.is-active {
+    background: var(--pf-primary);
+    color: #fff;
+    box-shadow: 0 6px 16px -8px var(--pf-primary);
+}
+
+/* Sections */
+.theme-portfolio main > section { padding-block: var(--pf-section-y); border-top-color: transparent; }
+.theme-portfolio main > section + section::before {
+    content: "";
+    display: block;
+    height: 1px;
+    max-width: 72rem;
+    margin: calc(-1 * var(--pf-section-y)) auto var(--pf-section-y);
+    background: linear-gradient(to right, transparent, var(--pf-border-strong), transparent);
+}
+.theme-portfolio .pf-section-alt {
+    background:
+        linear-gradient(to bottom, var(--pf-bg), transparent 12%, transparent 88%, var(--pf-bg)),
+        var(--pf-bg-inset);
+}
+
+/* Cards */
+.theme-portfolio .pf-card {
+    border-radius: var(--pf-radius);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--pf-heading) 2.5%, var(--pf-bg-elevated)), var(--pf-bg-elevated));
+}
+.theme-portfolio .pf-card-hover:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--pf-shadow-lift), 0 0 0 1px color-mix(in srgb, var(--pf-primary) 25%, transparent),
+        0 30px 60px -30px color-mix(in srgb, var(--pf-primary) 45%, transparent);
+}
+.theme-portfolio .pf-card-rail::after { height: 3px; top: 0; inset-inline: 1.5rem; }
+.theme-portfolio .pf-shot { aspect-ratio: 16 / 9; position: relative; }
+.theme-portfolio .pf-shot::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, color-mix(in srgb, var(--pf-bg-elevated) 55%, transparent), transparent 45%);
+    pointer-events: none;
+}
+.theme-portfolio .pf-chip { font-weight: 500; }
+.theme-portfolio .pf-card:hover .pf-chip { border-color: color-mix(in srgb, var(--pf-primary) 22%, var(--pf-border)); }
+
+/* Stats strip */
+.theme-portfolio .pf-stat .pf-heading {
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: 800;
+    background: var(--pf-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: var(--pf-primary);
+}
+.theme-portfolio .pf-stat .pf-mono { letter-spacing: .12em; }
+
+/* Services */
+.theme-portfolio .pf-service-icon,
+.theme-portfolio .pf-service:hover .pf-service-icon {
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 1rem;
+    background: var(--pf-gradient);
+    color: #fff;
+    border: 0;
+    box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--pf-primary) 80%, transparent);
+}
+.theme-portfolio .pf-service-index { font-size: 3.25rem; font-weight: 800; opacity: .55; }
+
+/* Timeline and skills */
+.theme-portfolio .pf-timeline::before {
+    width: 2px;
+    background: linear-gradient(to bottom, var(--pf-primary), var(--pf-accent) 35%, var(--pf-border) 75%, transparent);
+}
+.theme-portfolio .pf-timeline-dot {
+    width: 1.125rem;
+    height: 1.125rem;
+    left: -.0625rem;
+    background: var(--pf-bg);
+    box-shadow: 0 0 0 2px var(--pf-primary);
+}
+.theme-portfolio .pf-timeline-item:hover .pf-timeline-dot {
+    box-shadow: 0 0 0 2px var(--pf-primary), 0 0 0 7px var(--pf-primary-soft);
+}
+.theme-portfolio .pf-skill { border-radius: 1rem; padding: .85rem; background: var(--pf-glass); }
+.theme-portfolio .pf-skill-mark { width: 2.5rem; height: 2.5rem; border-radius: .75rem; }
+
+/* Testimonials */
+.theme-portfolio .pf-testimonial::before { font-size: 7rem; top: 0; color: color-mix(in srgb, var(--pf-primary) 18%, transparent); }
+.theme-portfolio .pf-testimonial blockquote { font-size: 1.0625rem; line-height: 1.75; }
+
+/* Contact and forms */
+.theme-portfolio .pf-connect-tile,
+.theme-portfolio .pf-social-icon { background: var(--pf-glass); backdrop-filter: blur(8px); }
+.theme-portfolio .pf-contact-form input,
+.theme-portfolio .pf-contact-form textarea,
+.theme-portfolio .pf-contact-form select { border-radius: .875rem; }
+
+/* Blog and post */
+.theme-portfolio .pf-prose { font-size: 1.0625rem; line-height: 1.85; }
+.theme-portfolio .pf-prose img { box-shadow: var(--pf-shadow-card); }
+
+@media (max-width: 640px) {
+    .theme-portfolio .pf-photo-frame { transform: none; }
+    .theme-portfolio .pf-card-hover:hover { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .theme-portfolio .pf-photo-frame,
+    .theme-portfolio .pf-btn-solid::after { transition: none; }
+}
+
+/* Hero refinement - portrait, copy rhythm, stat strip */
+.theme-portfolio #home { padding-top: clamp(7rem, 12vw, 9.5rem); padding-bottom: clamp(4rem, 8vw, 6rem); }
+.theme-portfolio #home > div.relative { align-items: center; }
+
+/* Copy column */
+.theme-portfolio #home h1 > span:first-child { font-size: 1rem; opacity: .8; margin-bottom: .25rem; }
+.theme-portfolio #home h1 .pf-typewriter { font-size: clamp(2.6rem, 6.2vw, 4.5rem); letter-spacing: -.045em; }
+.theme-portfolio #home h1 + p {
+    display: inline-flex;
+    align-items: center;
+    padding: .4rem 1rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--pf-primary) 28%, transparent);
+    background: var(--pf-primary-soft);
+    color: var(--pf-primary-bright);
+    font-size: .8125rem;
+}
+.theme-portfolio #home h1 + p + p { font-size: 1.125rem; line-height: 1.75; max-width: 34rem; }
+
+/* Portrait: a contained card instead of filling the whole column */
+.theme-portfolio #home div:has(> .pf-photo-frame) {
+    max-width: 24rem;
+    justify-self: center;
+    margin-inline: auto;
+}
+.theme-portfolio #home div:has(> .pf-photo-frame)::before {
+    content: "";
+    position: absolute;
+    inset: -2.25rem;
+    border: 1px dashed color-mix(in srgb, var(--pf-primary) 35%, transparent);
+    border-radius: 50%;
+    animation: pf-orbit 60s linear infinite;
+    pointer-events: none;
+}
+.theme-portfolio #home div:has(> .pf-photo-frame)::after {
+    content: "";
+    position: absolute;
+    top: -.5rem;
+    right: 12%;
+    width: .75rem;
+    height: .75rem;
+    border-radius: 50%;
+    background: var(--pf-accent);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--pf-accent) 18%, transparent), 0 0 24px var(--pf-accent);
+    animation: pf-float 5s ease-in-out infinite;
+}
+@keyframes pf-orbit { to { transform: rotate(360deg); } }
+@keyframes pf-float { 50% { transform: translateY(-14px); } }
+
+.theme-portfolio #home .pf-photo-frame { transform: rotate(-2deg); padding: .4rem; border-radius: 1.75rem; }
+.theme-portfolio #home .pf-photo-frame:hover { transform: rotate(0) translateY(-4px); }
+.theme-portfolio #home .pf-photo-frame > img,
+.theme-portfolio #home .pf-photo-frame > .pf-monogram {
+    border-radius: 1.4rem;
+    background:
+        radial-gradient(90% 70% at 20% 0%, color-mix(in srgb, var(--pf-primary) 38%, transparent), transparent 65%),
+        radial-gradient(80% 60% at 100% 100%, color-mix(in srgb, var(--pf-accent) 26%, transparent), transparent 65%),
+        var(--pf-bg-inset);
+    font-size: clamp(4.5rem, 10vw, 6.5rem);
+    background-clip: border-box;
+}
+
+/* Floating stat card on the portrait */
+.theme-portfolio #home div:has(> .pf-photo-frame) > .pf-card {
+    left: -1.5rem;
+    bottom: 2.5rem;
+    padding: 1rem 1.35rem;
+    border-radius: 1rem;
+    background: var(--pf-glass);
+    backdrop-filter: blur(14px);
+    animation: pf-float 6s ease-in-out infinite;
+}
+
+/* Stats strip */
+.theme-portfolio #home > div.relative:last-child > .pf-card {
+    background:
+        linear-gradient(120deg, color-mix(in srgb, var(--pf-primary) 7%, transparent), transparent 50%),
+        var(--pf-bg-elevated);
+    padding-block: 2.25rem;
+}
+.theme-portfolio .pf-stat .pf-heading { line-height: 1; }
+.theme-portfolio .pf-stat .pf-mono { margin-top: .75rem; font-size: .6875rem; }
+
+@media (max-width: 1023px) {
+    .theme-portfolio #home div:has(> .pf-photo-frame) { max-width: 19rem; }
+    .theme-portfolio #home div:has(> .pf-photo-frame)::before { inset: -1.25rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .theme-portfolio #home div:has(> .pf-photo-frame)::before,
+    .theme-portfolio #home div:has(> .pf-photo-frame)::after,
+    .theme-portfolio #home div:has(> .pf-photo-frame) > .pf-card { animation: none; }
+}
+
+/* Stats strip - professional, quiet, evenly divided */
+.theme-portfolio #home > div.relative:last-child > .pf-card {
+    padding: 0;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    gap: 0;
+    background: var(--pf-bg-elevated);
+    box-shadow: var(--pf-shadow-lift);
+}
+.theme-portfolio #home > div.relative:last-child > .pf-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: var(--pf-gradient);
+}
+.theme-portfolio #home > div.relative:last-child > .pf-card > .pf-stat {
+    padding: 2.5rem 1.5rem 2.25rem;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .25rem;
+    transition: background-color .3s var(--pf-ease);
+}
+.theme-portfolio #home > div.relative:last-child > .pf-card > .pf-stat:hover { background: var(--pf-primary-soft); }
+.theme-portfolio .pf-stat + .pf-stat::before { height: 50%; top: 25%; background: var(--pf-border-strong); }
+.theme-portfolio #home .pf-stat .pf-heading {
+    font-size: clamp(2.25rem, 4.5vw, 3.25rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -.04em;
+    background: none;
+    -webkit-text-fill-color: var(--pf-heading);
+    color: var(--pf-heading);
+}
+.theme-portfolio #home .pf-stat .pf-heading::after {
+    content: "";
+    display: block;
+    width: 2rem;
+    height: 3px;
+    margin-top: .9rem;
+    border-radius: 999px;
+    background: var(--pf-gradient);
+    transition: width .4s var(--pf-ease);
+}
+.theme-portfolio #home .pf-stat:hover .pf-heading::after { width: 3.5rem; }
+.theme-portfolio #home .pf-stat .pf-mono {
+    margin-top: .5rem;
+    font-size: .75rem;
+    font-weight: 500;
+    letter-spacing: .1em;
+    color: var(--pf-text-muted);
+}
+@media (max-width: 639px) {
+    .theme-portfolio #home > div.relative:last-child > .pf-card > .pf-stat { padding: 1.75rem 1.25rem; }
+    .theme-portfolio #home > div.relative:last-child > .pf-card > .pf-stat:nth-child(odd)::before { display: none; }
+    .theme-portfolio #home > div.relative:last-child > .pf-card > .pf-stat:nth-child(n+3) { border-top: 1px solid var(--pf-border); }
+}
+
+/* Portrait stat chip: smaller, cleaner, no longer clipped over the frame edge */
+.theme-portfolio #home div:has(> .pf-photo-frame) > .pf-card {
+    left: -2rem;
+    bottom: 3rem;
+    padding: .85rem 1.25rem;
+    min-width: 6.5rem;
+    border-radius: 1rem;
+    box-shadow: var(--pf-shadow-lift);
+}
+.theme-portfolio #home div:has(> .pf-photo-frame) > .pf-card .pf-heading {
+    font-size: 1.75rem;
+    font-weight: 800;
+}
+
+/* Stats strip v3 - restrained, centred, evenly divided */
+.theme-portfolio #home > div.relative:last-child > .pf-card {
+    border-radius: 1rem;
+    background: var(--pf-bg-elevated);
+    box-shadow: var(--pf-shadow-card);
+}
+.theme-portfolio #home > div.relative:last-child > .pf-card::before { display: none; }
+.theme-portfolio #home > div.relative:last-child > .pf-card > .pf-stat {
+    padding: 2rem 1rem;
+    text-align: center;
+    align-items: center;
+    gap: 0;
+}
+.theme-portfolio #home > div.relative:last-child > .pf-card > .pf-stat:hover { background: transparent; }
+.theme-portfolio .pf-stat + .pf-stat::before { top: 18%; height: 64%; background: var(--pf-border); }
+.theme-portfolio #home .pf-stat .pf-heading {
+    font-size: clamp(2rem, 3.6vw, 2.75rem);
+    font-weight: 700;
+    letter-spacing: -.03em;
+}
+.theme-portfolio #home .pf-stat .pf-heading::after { display: none; }
+.theme-portfolio #home .pf-stat .pf-mono {
+    margin-top: .6rem;
+    font-family: inherit;
+    font-size: .8125rem;
+    font-weight: 500;
+    letter-spacing: .02em;
+    text-transform: none;
+    color: var(--pf-text-muted);
+}
+
+/* ═══ Hero v4 - calm and professional: no tilt, rings, floating chips or gradient text ═══ */
+.theme-portfolio #home { background: none; padding-top: clamp(7.5rem, 11vw, 9rem); padding-bottom: clamp(3.5rem, 7vw, 5.5rem); }
+.theme-portfolio #home .pf-glow { display: none; }
+.theme-portfolio #home.pf-grid-bg::before { opacity: .55; }
+
+/* Copy */
+.theme-portfolio #home > div.relative { gap: clamp(2.5rem, 6vw, 5rem); }
+.theme-portfolio #home .pf-badge {
+    background: transparent;
+    backdrop-filter: none;
+    box-shadow: none;
+    font-family: inherit;
+    font-size: .8125rem;
+    padding: .4rem .9rem;
+    color: var(--pf-text-muted);
+}
+.theme-portfolio #home h1 > span:first-child {
+    font-family: inherit;
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--pf-text-muted);
+    margin-bottom: .5rem;
+}
+.theme-portfolio #home h1 .pf-typewriter {
+    font-size: clamp(2.5rem, 5.4vw, 4rem);
+    font-weight: 700;
+    letter-spacing: -.035em;
+    line-height: 1.08;
+    background: none;
+    -webkit-text-fill-color: var(--pf-heading);
+    color: var(--pf-heading);
+}
+.theme-portfolio #home h1 .pf-typewriter::after,
+.theme-portfolio #home h1 .pf-typewriter::before { display: none; }
+
+.theme-portfolio #home h1 + p {
+    display: block;
+    padding: 0;
+    border: 0;
+    background: none;
+    border-radius: 0;
+    font-family: inherit;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    color: var(--pf-primary-bright);
+}
+.theme-portfolio #home h1 + p + p { font-size: 1.0625rem; line-height: 1.75; max-width: 33rem; color: var(--pf-text-muted); }
+.theme-portfolio #home h1 + p + p + p { font-family: inherit; font-size: .875rem; }
+
+/* Buttons: flat, solid, no shimmer */
+.theme-portfolio #home .pf-btn-solid {
+    background: var(--pf-primary);
+    background-image: none;
+    box-shadow: 0 1px 2px #0003;
+    border-radius: .75rem;
+}
+.theme-portfolio #home .pf-btn-solid::after { display: none; }
+.theme-portfolio #home .pf-btn-solid:hover { background: var(--pf-primary-dark); transform: translateY(-1px); box-shadow: 0 6px 16px -8px var(--pf-primary); }
+.theme-portfolio #home .pf-btn-outline { border-radius: .75rem; background: transparent; backdrop-filter: none; }
+
+/* Portrait: straight, clean, one offset outline behind it */
+.theme-portfolio #home div:has(> .pf-photo-frame) { max-width: 25rem; padding: 0 1.25rem 1.25rem 0; }
+.theme-portfolio #home div:has(> .pf-photo-frame)::before {
+    inset: 1.25rem 0 0 1.25rem;
+    border: 1px solid var(--pf-border-strong);
+    border-radius: 1.25rem;
+    animation: none;
+    transform: none;
+}
+.theme-portfolio #home div:has(> .pf-photo-frame)::after { display: none; }
+.theme-portfolio #home .pf-photo-frame,
+.theme-portfolio #home .pf-photo-frame:hover {
+    transform: none;
+    padding: 0;
+    border-radius: 1.25rem;
+    border: 1px solid var(--pf-border-strong);
+    background: var(--pf-bg-elevated);
+    backdrop-filter: none;
+    box-shadow: 0 20px 40px -24px #000a;
+}
+.theme-portfolio #home .pf-photo-frame::before,
+.theme-portfolio #home .pf-photo-frame::after { display: none; }
+.theme-portfolio #home .pf-photo-frame > img,
+.theme-portfolio #home .pf-photo-frame > .pf-monogram { border-radius: calc(1.25rem - 1px); }
+.theme-portfolio #home .pf-photo-frame > .pf-monogram { background: var(--pf-bg-inset); font-size: 5rem; color: var(--pf-text-muted); }
+.theme-portfolio #home div:has(> .pf-photo-frame) > .pf-card { display: none !important; }
+
+/* Stats: an open row between hairlines, not a boxed card */
+.theme-portfolio #home > div.relative:last-child { margin-top: clamp(3rem, 6vw, 4.5rem); }
+.theme-portfolio #home > div.relative:last-child > .pf-card {
+    background: none;
+    border: 0;
+    border-top: 1px solid var(--pf-border-strong);
+    border-bottom: 1px solid var(--pf-border);
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+}
+.theme-portfolio #home > div.relative:last-child > .pf-card > .pf-stat { padding: 2rem 1rem; }
+.theme-portfolio #home .pf-stat .pf-heading { font-size: clamp(1.75rem, 3vw, 2.375rem); font-weight: 700; }
+.theme-portfolio #home .pf-stat .pf-mono { font-size: .875rem; margin-top: .4rem; }
+
+.theme-portfolio #home .pf-animate { animation-duration: .5s; }
+
+/* Stats hover: a restrained accent line grows across the cell, the number picks up the brand colour */
+.theme-portfolio #home > div.relative:last-child > .pf-card > .pf-stat {
+    position: relative;
+    cursor: default;
+    transition: background-color .35s var(--pf-ease);
+}
+.theme-portfolio #home > div.relative:last-child > .pf-card > .pf-stat::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -1px;
+    height: 2px;
+    background: var(--pf-gradient);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform .45s var(--pf-ease);
+}
+.theme-portfolio #home .pf-stat .pf-heading {
+    transition: transform .35s var(--pf-ease), -webkit-text-fill-color .3s var(--pf-ease);
+}
+.theme-portfolio #home .pf-stat .pf-mono { transition: color .3s var(--pf-ease); }
+@media (hover: hover) {
+    .theme-portfolio #home > div.relative:last-child > .pf-card > .pf-stat:hover {
+        background: linear-gradient(to bottom, var(--pf-primary-soft), transparent 85%);
+    }
+    .theme-portfolio #home > div.relative:last-child > .pf-card > .pf-stat:hover::after { transform: scaleX(1); }
+    .theme-portfolio #home .pf-stat:hover .pf-heading {
+        transform: translateY(-3px);
+        -webkit-text-fill-color: var(--pf-primary-bright);
+        color: var(--pf-primary-bright);
+    }
+    .theme-portfolio #home .pf-stat:hover .pf-mono { color: var(--pf-heading); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .theme-portfolio #home .pf-stat .pf-heading,
+    .theme-portfolio #home > div.relative:last-child > .pf-card > .pf-stat::after { transition: none; }
+}
+
+/* ═══ Portrait v5 - gradient ring, dot grid, soft glow, hover shine ═══ */
+.theme-portfolio #home div:has(> .pf-photo-frame) { padding: 0 1.5rem 1.5rem 0; isolation: isolate; }
+
+/* Dot grid peeking out behind the bottom-right corner */
+.theme-portfolio #home div:has(> .pf-photo-frame)::before {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 auto;
+    width: 10rem;
+    height: 10rem;
+    border: 0;
+    border-radius: 0;
+    background-image: radial-gradient(var(--pf-primary) 1.5px, transparent 1.6px);
+    background-size: 14px 14px;
+    opacity: .45;
+    z-index: -1;
+    -webkit-mask-image: linear-gradient(135deg, transparent 20%, #000 80%);
+    mask-image: linear-gradient(135deg, transparent 20%, #000 80%);
+}
+/* Colour bloom behind the whole portrait */
+.theme-portfolio #home div:has(> .pf-photo-frame)::after {
+    content: "";
+    display: block;
+    position: absolute;
+    inset: 8% 6% 12% 0;
+    top: 8%;
+    right: 6%;
+    width: auto;
+    height: auto;
+    border-radius: 2rem;
+    background: var(--pf-gradient);
+    filter: blur(48px);
+    opacity: .28;
+    z-index: -2;
+    animation: none;
+    transition: opacity .6s var(--pf-ease);
+}
+.theme-portfolio #home div:has(> .pf-photo-frame):hover::after { opacity: .42; }
+
+/* Gradient ring: the frame's own background shows through a 3px padding */
+.theme-portfolio #home .pf-photo-frame,
+.theme-portfolio #home .pf-photo-frame:hover {
+    padding: 3px;
+    border: 0;
+    border-radius: 1.5rem;
+    background: linear-gradient(145deg, var(--pf-primary), color-mix(in srgb, var(--pf-primary) 10%, var(--pf-border-strong)) 38%, color-mix(in srgb, var(--pf-accent) 10%, var(--pf-border-strong)) 62%, var(--pf-accent));
+    box-shadow: 0 30px 60px -28px color-mix(in srgb, var(--pf-primary) 55%, #000), 0 0 0 1px #ffffff0d inset;
+    overflow: hidden;
+    transition: box-shadow .5s var(--pf-ease), transform .5s var(--pf-ease);
+}
+.theme-portfolio #home .pf-photo-frame:hover { transform: translateY(-4px); }
+.theme-portfolio #home .pf-photo-frame > img,
+.theme-portfolio #home .pf-photo-frame > .pf-monogram {
+    border-radius: calc(1.5rem - 3px);
+    display: block;
+    transition: transform .9s var(--pf-ease), filter .5s var(--pf-ease);
+}
+.theme-portfolio #home .pf-photo-frame:hover > img { transform: scale(1.04); }
+
+/* A diagonal shine sweeps across on hover */
+.theme-portfolio #home .pf-photo-frame::before {
+    content: "";
+    display: block;
+    position: absolute;
+    inset: 0;
+    padding: 0;
+    border-radius: inherit;
+    background: linear-gradient(115deg, transparent 38%, #ffffff2e 50%, transparent 62%);
+    transform: translateX(-120%);
+    transition: transform 1s var(--pf-ease);
+    pointer-events: none;
+    z-index: 2;
+    -webkit-mask: none;
+    mask: none;
+}
+.theme-portfolio #home .pf-photo-frame:hover::before { transform: translateX(120%); }
+
+/* Corner accents */
+.theme-portfolio #home .pf-photo-frame::after {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    width: 28px;
+    height: 28px;
+    border-top: 2px solid #ffffffb3;
+    border-left: 2px solid #ffffffb3;
+    border-top-left-radius: .75rem;
+    z-index: 3;
+    inset-inline-end: auto;
+    pointer-events: none;
+    filter: none;
+    opacity: .9;
+    background: none;
+}
+
+@media (max-width: 1023px) {
+    .theme-portfolio #home div:has(> .pf-photo-frame)::before { width: 7rem; height: 7rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .theme-portfolio #home .pf-photo-frame,
+    .theme-portfolio #home .pf-photo-frame > img,
+    .theme-portfolio #home .pf-photo-frame::before { transition: none; }
+}
+
+/* Hero code window (shown when no portrait photo is set) */
+.theme-portfolio .pf-code {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    background: color-mix(in srgb, var(--pf-bg, #0b0d14) 88%, #000);
+    border: 1px solid var(--pf-border);
+    border-radius: 1.4rem; overflow: hidden;
+}
+.theme-portfolio .pf-code-bar {
+    display: flex; align-items: center; gap: .4rem; padding: .75rem 1rem;
+    border-bottom: 1px solid var(--pf-border);
+}
+.theme-portfolio .pf-code-bar i { width: .65rem; height: .65rem; border-radius: 9999px; background: #ff5f57; }
+.theme-portfolio .pf-code-bar i:nth-child(2) { background: #febc2e; }
+.theme-portfolio .pf-code-bar i:nth-child(3) { background: #28c840; }
+.theme-portfolio .pf-code-bar span { margin-left: .6rem; font-size: 11px; color: var(--pf-text-muted); }
+.theme-portfolio .pf-code pre {
+    margin: 0; padding: 1.1rem 1.1rem 1.4rem; flex: 1; overflow: hidden;
+    font-size: clamp(9.5px, 1.05vw, 12.5px); line-height: 1.75; color: #cbd5e1; white-space: pre;
+}
+.theme-portfolio .pf-code .c { color: #64748b; font-style: italic; }
+.theme-portfolio .pf-code .k { color: #c084fc; }
+.theme-portfolio .pf-code .f { color: #60a5fa; }
+.theme-portfolio .pf-code .t { color: #fbbf24; }
+.theme-portfolio .pf-code .v { color: #f87171; }
+.theme-portfolio .pf-code .s { color: #34d399; }

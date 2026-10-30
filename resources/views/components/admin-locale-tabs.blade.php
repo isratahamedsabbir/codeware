@@ -5,7 +5,7 @@
     $first = $locales->first()->code;
 @endphp
 <div x-data="{ locale: '{{ $first }}' }">
-    <div class="-mx-6 px-6 pb-3 mb-3 border-b border-zinc-200 dark:border-zinc-700">
+    <div class="mb-4">
         <div class="flex gap-2 flex-wrap">
             @foreach ($locales as $language)
                 <button type="button"
@@ -14,6 +14,7 @@
                     @click="locale='{{ $language->code }}'">{{ $language->flag ? $language->flag.' ' : '' }}{{ strtoupper($language->code) }}</button>
             @endforeach
         </div>
+        <div class="mt-3 h-px bg-linear-to-r from-zinc-300 via-zinc-200 to-transparent dark:from-zinc-600 dark:via-zinc-700"></div>
     </div>
 
     {{ $slot }}

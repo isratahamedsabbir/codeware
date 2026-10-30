@@ -8,7 +8,7 @@ use Illuminate\Database\Seeder;
 
 /**
  * The "Portfolio" menu — a nav of its own for the portfolio theme
- * (themes/portfolio/home.blade.php), kept separate
+ * (themes/portfolio/index.blade.php), kept separate
  * from the shared "Frontend" menu so switching themes doesn't reshuffle either.
  *
  * The portfolio theme is a single page, so almost every item is a section anchor
@@ -24,7 +24,7 @@ use Illuminate\Database\Seeder;
  * nav item is dropped rather than left as a dead link on a site whose blog
  * feature is off.
  *
- * The seeded ids match the section ids in home.blade.php; the admin can add
+ * The seeded ids match the section ids in index.blade.php; the admin can add
  * more at /admin/menu (CMS-authored sections included, whose ids are their
  * section name).
  */

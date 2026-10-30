@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\CachesContent;
+use App\Support\Cruds;
 use App\Support\Features;
 use App\Support\Plugins;
 use App\Support\Themes;
@@ -65,6 +66,7 @@ class MenuItem extends Model
         'admin.advance',
         'admin.plugin-settings',
         'admin.plugins',
+        'admin.cruds',
         'admin.countries',
         'admin.divisions',
         'admin.districts',
@@ -114,6 +116,8 @@ class MenuItem extends Model
         'admin.coupons' => 'orders',
         'admin.discounts' => 'discounts',
         'admin.flash-deals' => 'flash-deals',
+        'admin.careers' => 'careers',
+        'admin.career-applications' => 'careers',
         'admin.vouchers' => 'vouchers',
         'admin.voucher-purchases' => 'vouchers',
         'admin.shipping-methods' => 'orders',
@@ -304,6 +308,21 @@ class MenuItem extends Model
         return null;
     }
 
+    /**
+     * A count to show as a pill beside this item in the admin sidebar — what is
+     * waiting for attention behind it. 0 means no pill. Only Contacts has one
+     * (its unread messages); a group has none of its own, so the layout sums its
+     * children. Read fresh on every render: it is a single indexed-free COUNT and
+     * the number has to drop the moment a message is marked read.
+     */
+    public function badgeCount(): int
+    {
+        return match ($this->route_name) {
+            'admin.contacts' => Contact::where('status', 'unread')->count(),
+            default => 0,
+        };
+    }
+
     public function isVisibleToCurrentUser(): bool
     {
         $gate = $this->requiredGate();
@@ -369,7 +388,7 @@ class MenuItem extends Model
             ->values();
 
         // The Plugins dropdown is built from the /plugins folder, not menu rows.
-        return Plugins::extendMenu($menu);
+        return Cruds::extendMenu(Plugins::extendMenu($menu));
     }
 
     /**

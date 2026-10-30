@@ -6,11 +6,17 @@
     // type into the field below, so without this it would be stuck.
     $canUsePasskey = \App\Support\Mfa::challengedUserHasPasskey();
 
+    // Whether to offer a code mailed to the account. Like the passkey, an account
+    // whose only factor this is has nothing to type into the authenticator field.
+    $emailOtpUser = \App\Support\Mfa::challengedEmailOtpUser();
+    $emailCodeActive = $emailOtpUser
+        && app(\App\Services\OtpService::class)->isActive($emailOtpUser->email, \App\Support\Mfa::OTP_PURPOSE_LOGIN);
+
     // The code form is shown to anyone with an authenticator app, and as the
     // fallback when nothing can be detected (e.g. the login session is gone) so
     // the page is never left with no way to answer. A passkey-only account sees
     // just the passkey button.
-    $canUseTotp = \App\Support\Mfa::challengedUserHasTotp() || ! $canUsePasskey;
+    $canUseTotp = \App\Support\Mfa::challengedUserHasTotp() || (! $canUsePasskey && ! $emailOtpUser);
 @endphp
 
 {{-- :passkeys loads the WebAuthn client (see layouts/auth/split.blade.php). --}}
@@ -142,10 +148,15 @@
                     :description="__('Please confirm access to your account by entering one of your emergency recovery codes.')"
                 />
             </div>
-            @else
+            @elseif ($canUsePasskey)
                 <x-auth-header
                     :title="__('Use your passkey')"
                     :description="__('Approve this sign-in with your fingerprint, face or device PIN.')"
+                />
+            @else
+                <x-auth-header
+                    :title="__('Check your email')"
+                    :description="__('We will email a 6-digit code to the address on your account.')"
                 />
             @endif
 
@@ -230,7 +241,7 @@
                     </div>
                 </div>
             </form>
-            @else
+            @elseif ($canUsePasskey)
                 <div class="mt-8 space-y-3">
                     <flux:button size="sm" variant="primary" type="button" class="w-full"
                         x-on:click="usePasskey()" x-bind:disabled="passkeyBusy">
@@ -240,6 +251,53 @@
 
                     <p x-show="passkeyError" x-cloak x-text="passkeyError"
                         class="text-center text-xs text-red-600"></p>
+                </div>
+            @endif
+
+            @if ($emailOtpUser)
+                {{-- Emailed code. Plain form posts rather than fetch: both steps
+                     end in a redirect (back here, or on into the app). The code
+                     field only appears once a code is on file, so the page never
+                     asks for something that was not sent. --}}
+                <div class="space-y-4 {{ ($canUseTotp || $canUsePasskey) ? 'mt-6' : 'mt-8' }}">
+                    @if ($canUseTotp || $canUsePasskey)
+                        <div class="flex items-center gap-3 text-xs text-zinc-400">
+                            <span class="h-px flex-1 bg-zinc-200 dark:bg-zinc-700"></span>
+                            <span>{{ __('or') }}</span>
+                            <span class="h-px flex-1 bg-zinc-200 dark:bg-zinc-700"></span>
+                        </div>
+                    @endif
+
+                    @if (session('email_otp_status'))
+                        <p class="text-center text-xs text-green-700">{{ session('email_otp_status') }}</p>
+                    @endif
+                    @if (session('email_otp_error'))
+                        <p class="text-center text-xs text-red-600">{{ session('email_otp_error') }}</p>
+                    @endif
+
+                    @if ($emailCodeActive || $errors->has('email_code'))
+                        <form method="POST" action="{{ route('two-factor.email-otp-verify') }}"
+                            class="space-y-4 text-center" x-data="{ emailCode: '' }">
+                            @csrf
+                            <div class="flex items-center justify-center">
+                                <flux:otp x-model="emailCode" length="6" name="email_code"
+                                    label="{{ __('Emailed code') }}" label:sr-only class="mx-auto" />
+                            </div>
+                            @error('email_code')
+                                <p class="text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                            <flux:button size="sm" variant="primary" type="submit" class="w-full">
+                                {{ __('Verify emailed code') }}
+                            </flux:button>
+                        </form>
+                    @endif
+
+                    <form method="POST" action="{{ route('two-factor.email-otp-send') }}">
+                        @csrf
+                        <flux:button size="sm" :variant="$emailCodeActive ? 'ghost' : 'outline'" type="submit" class="w-full">
+                            {{ $emailCodeActive ? __('Send a new code') : __('Email me a code') }}
+                        </flux:button>
+                    </form>
                 </div>
             @endif
         </div>

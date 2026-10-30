@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Cms;
 
+use App\Concerns\StaysOnForm;
 use App\Models\CmsSection;
 use App\Models\Page;
 use App\Support\AdminActivity;
@@ -10,6 +11,8 @@ use Livewire\Component;
 
 class Form extends Component
 {
+    use StaysOnForm;
+
     public ?int $cmsId = null;
 
     public int $pageId;
@@ -191,7 +194,7 @@ class Form extends Component
 
         $this->dispatch('notify', message: $creating ? 'CMS section created successfully' : 'CMS section updated successfully');
 
-        $this->redirect(route('admin.cms', ['pageId' => $this->pageId]), navigate: true);
+        $this->stayOnForm($creating, 'admin.cms.edit', ['pageId' => $this->pageId, 'id' => $this->cmsId]);
     }
 
     public function render()

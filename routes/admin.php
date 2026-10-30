@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\ChunkedUploadController;
 use App\Http\Controllers\Admin\ContactExportController;
 use App\Http\Controllers\Admin\CountryExportController;
 use App\Http\Controllers\Admin\CouponExportController;
+use App\Http\Controllers\Admin\CrudExportController;
 use App\Http\Controllers\Admin\DistrictExportController;
 use App\Http\Controllers\Admin\DivisionExportController;
 use App\Http\Controllers\Admin\FileManagerController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\Admin\ProductBrandExportController;
 use App\Http\Controllers\Admin\ProductExportController;
 use App\Http\Controllers\Admin\ProductVendorExportController;
 use App\Http\Controllers\Admin\ReportExportController;
+use App\Http\Controllers\Admin\ResumeDownloadController;
 use App\Http\Controllers\Admin\ServiceExportController;
 use App\Http\Controllers\Admin\ShippingMethodExportController;
 use App\Http\Controllers\Admin\SubscriberExportController;
@@ -31,6 +33,8 @@ use App\Livewire\Admin\Advance\PasswordGenerator;
 use App\Livewire\Admin\Advance\Robots;
 use App\Livewire\Admin\Advance\Sitemap;
 use App\Livewire\Admin\Auth\Login;
+use App\Livewire\Admin\Careers\Applications;
+use App\Livewire\Admin\Cruds\Records;
 use App\Livewire\Admin\Dashboard;
 use App\Livewire\Admin\DeveloperGuide;
 use App\Livewire\Admin\Orders\Show;
@@ -189,6 +193,14 @@ Route::middleware(['auth', 'admin', 'activity-log', 'mfa'])->group(function () {
             Route::get('/plugins/{slug}', App\Livewire\Admin\Plugins\Show::class)->name('plugins.show');
         });
 
+        // CRUD Builder — define a table and its fields; the table, sidebar link and
+        // records screen come out of it. See App\Support\Cruds.
+        Route::get('/cruds', App\Livewire\Admin\Cruds\Index::class)->name('cruds');
+        Route::get('/cruds/create', App\Livewire\Admin\Cruds\Form::class)->name('cruds.create');
+        Route::get('/cruds/{id}/edit', App\Livewire\Admin\Cruds\Form::class)->whereNumber('id')->name('cruds.edit');
+        Route::get('/cruds/{slug}/export', [CrudExportController::class, 'export'])->name('cruds.export');
+        Route::get('/cruds/{slug}/records', Records::class)->name('cruds.records');
+
         Route::middleware('feature:email-templates')->group(function () {
             Route::get('/email-templates', App\Livewire\Admin\EmailTemplates\Index::class)->name('email-templates');
         });
@@ -252,6 +264,13 @@ Route::middleware(['auth', 'admin', 'activity-log', 'mfa'])->group(function () {
 
     // Advertisements — its own feature toggle; one active banner shows beside
     // the storefront product description/specifications section.
+    // Careers — job posts shown on the storefront Careers page, and the applications they receive.
+    Route::middleware('feature:careers')->group(function () {
+        Route::get('/careers', App\Livewire\Admin\Careers\Index::class)->name('careers');
+        Route::get('/career-applications', Applications::class)->name('career-applications');
+        Route::get('/career-applications/{id}/resume', ResumeDownloadController::class)->name('career-applications.resume');
+    });
+
     Route::middleware('feature:advertisements')->group(function () {
         Route::get('/advertisements', App\Livewire\Admin\Advertisements\Index::class)->name('advertisements');
         Route::get('/advertisements/create', App\Livewire\Admin\Advertisements\Form::class)->name('advertisements.create');

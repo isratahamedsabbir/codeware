@@ -82,7 +82,9 @@ class Form extends Component
 
         // New users default to 'customer' — the same role a public
         // registration gets (see CreateNewUser) — rather than no role at all.
-        $this->selectedRoles = ['customer'];
+        // An inactive role is hidden from the picker and locks the account out
+        // on login, so it is never preselected.
+        $this->selectedRoles = Role::where('name', 'customer')->where('status', 'active')->pluck('name')->all();
     }
 
     /**
@@ -185,7 +187,9 @@ class Form extends Component
             "User: {$user->email}",
         );
 
-        $user->syncRoles($this->selectedRoles);
+        // Only active roles can be assigned — an inactive one ("Your account
+        // access has been disabled") would lock the user out immediately.
+        $user->syncRoles(Role::whereIn('name', $this->selectedRoles)->where('status', 'active')->pluck('name')->all());
 
         // Only a user with the 'vendor' role may hold vendor assignments — sync
         // an empty set instead of $this->vendor_ids when the role isn't selected,
@@ -194,9 +198,9 @@ class Form extends Component
         $vendorIds = in_array('vendor', $this->selectedRoles, true) ? $this->vendor_ids : [];
         $user->vendors()->sync($vendorIds);
 
-        $this->dispatch('notify', message: $this->userId ? 'User updated successfully' : 'User created successfully');
+        $this->dispatch('notify', message: $creating ? 'User created successfully' : 'User updated successfully');
 
-        $this->redirect(route('admin.users'), navigate: true);
+        $this->redirect(route('admin.users.edit', $user->id), navigate: true);
     }
 
     /**

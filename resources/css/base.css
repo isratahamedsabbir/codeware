@@ -123,6 +123,21 @@
 
 @layer base {
 
+    /* Tailwind v4 resets buttons to the default arrow cursor; restore the hand
+       on anything clickable, and say "can't" on what is disabled. */
+    button:not(:disabled),
+    [role='button']:not([aria-disabled='true']),
+    summary,
+    label[for],
+    select:not(:disabled) {
+        cursor: pointer;
+    }
+
+    button:disabled,
+    [aria-disabled='true'] {
+        cursor: not-allowed;
+    }
+
     *,
     ::after,
     ::before,

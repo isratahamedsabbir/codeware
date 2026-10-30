@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Coupons;
 
+use App\Concerns\StaysOnForm;
 use App\Models\Coupon;
 use App\Models\Product;
 use App\Support\AdminActivity;
@@ -11,6 +12,8 @@ use Livewire\Component;
 
 class Form extends Component
 {
+    use StaysOnForm;
+
     public ?int $couponId = null;
 
     #[Validate('required|string|max:50')]
@@ -101,7 +104,7 @@ class Form extends Component
             "Coupon: {$data['code']}",
         );
 
-        $this->redirect(route('admin.coupons'), navigate: true);
+        $this->stayOnForm($creating, 'admin.coupons.edit', $coupon->id);
     }
 
     public function render()

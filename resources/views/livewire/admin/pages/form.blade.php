@@ -27,7 +27,7 @@
                 @endforeach
 
                     <flux:field>
-                        <flux:label>Slug</flux:label>
+                        <flux:label>Slug<x-field-hint text="Auto-generated from the primary language's title as you type — edit it if you'd like a different one" /></flux:label>
                         <flux:input wire:model.live.debounce.400ms="slug" placeholder="auto-generated-from-title" :disabled="$this->isLinked()" />
                         @if ($this->isLinked())
                             <p class="text-xs text-zinc-400 mt-1">Managed on the linked product/post/category — edit it from there</p>
@@ -35,8 +35,6 @@
                             <p class="text-xs text-red-500 mt-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span>This slug is already taken</p>
                         @elseif ($slugAvailable === true && $slug !== '')
                             <p class="text-xs text-green-600 mt-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>This slug is available</p>
-                        @else
-                            <p class="text-xs text-zinc-400 mt-1">Auto-generated from the primary language's title as you type — edit it if you'd like a different one</p>
                         @endif
                         <flux:error name="slug" />
                     </flux:field>
@@ -74,6 +72,32 @@
                 <x-admin-constant-fields :items="$constant" :open-constants="$openConstants" model="constant" key-placeholder="e.g. og_type" value-placeholder="e.g. website" empty-title="No content yet" />
         </x-admin-section-card>
 
+        @if ($pageId)
+            <x-admin-section-card variant="postbox" persist-key="page-revisions" title="Revisions ({{ $revisionCount }})"
+                description="Every time this page's content or layout is saved or published, a version is kept here — newest first. Restoring one is itself recorded as a new version." :collapsed="true">
+                @forelse ($revisions as $revision)
+                    <div wire:key="revision-{{ $revision->id }}" class="flex items-center justify-between gap-3 py-2 border-b border-zinc-100 last:border-0">
+                        <div class="min-w-0">
+                            <div class="text-sm text-zinc-800">{{ $revision->created_at->toDisplay() }}@if ($loop->first) <span class="ml-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-600 border border-emerald-200">Latest</span>@endif</div>
+                            <div class="text-xs text-zinc-500">
+                                {{ $revision->user?->name ?? 'Unknown' }}
+                                · {{ collect([$revision->content ? 'Content' : null, $revision->puck_data ? 'Layout' : null])->filter()->implode(' + ') }}
+                            </div>
+                        </div>
+                        @unless ($loop->first)
+                            <flux:button size="xs" variant="outline" icon="arrow-uturn-left"
+                                wire:click="restoreRevision({{ $revision->id }})"
+                                wire:confirm="Restore this version? It will be saved as a new version on top of the list.">
+                                Restore
+                            </flux:button>
+                        @endunless
+                    </div>
+                @empty
+                    <p class="text-sm text-zinc-500">No versions yet. One is saved each time the page's content or layout is saved or published.</p>
+                @endforelse
+            </x-admin-section-card>
+        @endif
+
         <div class="flex items-center gap-3 flex-wrap">
             <x-admin-save-button :label="$pageId ? 'Update Page' : 'Create Page'" />
         </div>
@@ -88,6 +112,8 @@
                     <flux:input wire:model="template" placeholder="puck" />
                 </flux:field>
             </x-admin-section-card>
+
+            @include('partials._admin-custom-code-picker')
 
             <livewire:admin.media-library.picker-modal key="pages-form-picker-modal" />
         </div>

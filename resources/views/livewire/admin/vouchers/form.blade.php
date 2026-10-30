@@ -16,7 +16,7 @@
                             Name
                             @if ($language->code === $this->primaryLocale)<span class="text-red-500 ml-0.5">*</span>@endif
                         </flux:label>
-                        <flux:input wire:model="name.{{ $language->code }}"
+                        <flux:input wire:model.live.debounce.400ms="name.{{ $language->code }}"
                             placeholder="{{ $language->code === $this->primaryLocale ? 'e.g. Gift Voucher ৳500' : 'Name ('.($language->native_name ?: $language->name).')' }}" />
                         @if ($language->code === $this->primaryLocale)<flux:error name="name.{{ $language->code }}" />@endif
                     </flux:field>
@@ -32,7 +32,7 @@
 
             <flux:field>
                 <flux:label>Slug<x-field-hint text="Leave blank to auto-generate from the primary language's name" /></flux:label>
-                <flux:input wire:model="slug" placeholder="auto-generated-from-name" />
+                <flux:input wire:model.live.debounce.400ms="slug" placeholder="auto-generated-from-name" />
                 <flux:error name="slug" />
             </flux:field>
         </x-admin-locale-tabs>

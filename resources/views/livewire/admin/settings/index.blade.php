@@ -54,39 +54,44 @@
         {{-- General tab --}}
         <div x-show="tab === 'general'">
             <div class="max-w-[1600px] space-y-5">
-                {{-- Environment --}}
-                <x-admin-section-card header-border="border-zinc-100" icon="rocket-launch" title="Environment"
-                    description="Which environment this install runs as.">
-                    <flux:field class="max-w-xs">
-                        <flux:label>Runtime environment</flux:label>
-                        <select wire:model="appEnv" class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
-                            <option value="local">local</option>
-                            <option value="staging">staging</option>
-                            <option value="production">production</option>
-                            <option value="testing">testing</option>
-                            <option value="developer">developer</option>
-                        </select>
-                        <flux:error name="appEnv" />
-                    </flux:field>
-
-                    <flux:text class="text-xs text-amber-600 dark:text-amber-400">
-                        A wrong value can take the site down until it is fixed. The rest of the app's .env-backed settings live on Developer Tools.
-                    </flux:text>
-
-                    <flux:button size="sm" variant="outline" wire:click="confirmSaveEnvironment" wire:loading.attr="disabled">
-                        Save Environment
-                    </flux:button>
-                </x-admin-section-card>
+                {{-- General (site name, tagline, contact …) leads the tab. --}}
+                @if (isset($groupedSettings['general']))
+                    @include('partials._admin-settings-group-card', ['group' => 'general', 'items' => $groupedSettings['general']])
+                @endif
 
                 {{-- Currency and VAT / Tax sit side by side at the top of their own
                      columns so one never stretches the other into a gap; every field
-                     inside them runs the card's full width for easy editing. General
-                     and Images flow below Currency, with Localization, Pagination,
+                     inside them runs the card's full width for easy editing. Images
+                     flow below Currency, with Localization, Pagination,
                      Newsletter and Backend below VAT; each column flows independently
                      (space-y-5). Currency has an info button that opens the live
                      preview in a modal — see settings-currency-preview below. --}}
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
                     <div class="space-y-5">
+                        {{-- Environment --}}
+                        <x-admin-section-card header-border="border-zinc-100" icon="rocket-launch" title="Environment"
+                            description="Which environment this install runs as.">
+                            <flux:field class="max-w-xs">
+                                <flux:label>Runtime environment</flux:label>
+                                <select wire:model="appEnv" class="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700">
+                                    <option value="local">local</option>
+                                    <option value="staging">staging</option>
+                                    <option value="production">production</option>
+                                    <option value="testing">testing</option>
+                                    <option value="developer">developer</option>
+                                </select>
+                                <flux:error name="appEnv" />
+                            </flux:field>
+
+                            <flux:text class="text-xs text-amber-600 dark:text-amber-400">
+                                A wrong value can take the site down until it is fixed. The rest of the app's .env-backed settings live on Developer Tools.
+                            </flux:text>
+
+                            <flux:button size="sm" variant="outline" wire:click="confirmSaveEnvironment" wire:loading.attr="disabled">
+                                Save Environment
+                            </flux:button>
+                        </x-admin-section-card>
+
                         <x-admin-section-card header-border="border-zinc-100" icon="banknotes" title="Currency"
                             description="Set the currency used across the site for product pricing and payments.">
                             <x-slot:titleActions>
@@ -126,10 +131,6 @@
                                 <flux:error name="settings.decimal_places" />
                             </flux:field>
                         </x-admin-section-card>
-
-                        @if (isset($groupedSettings['general']))
-                            @include('partials._admin-settings-group-card', ['group' => 'general', 'items' => $groupedSettings['general']])
-                        @endif
 
                         {{-- Image uploads sit right under General so the space they
                              would otherwise leave empty to the left of the Localization
@@ -233,6 +234,37 @@ $imageMeta = match ($setting->key) {
                                 </flux:field>
                             </div>
                         </x-admin-section-card>
+
+                        {{-- Telegram bot — sits under Backend in the right-hand stack like
+                             every other settings card, rather than as a full-width strip. --}}
+                        <x-admin-section-card header-border="border-zinc-100" icon="paper-airplane" title="Telegram"
+                            description="Bot that sends new contact messages to a Telegram chat.">
+                            <x-slot:actions>
+                                <flux:button size="sm" variant="outline" icon="paper-airplane"
+                                    wire:click="sendTelegramTest" wire:loading.attr="disabled" wire:target="sendTelegramTest">
+                                    Test
+                                </flux:button>
+                            </x-slot:actions>
+
+                            <div class="space-y-4">
+                                <flux:field>
+                                    <flux:label>Bot token</flux:label>
+                                    <flux:input type="password" viewable wire:model="telegramBotToken"
+                                        placeholder="123456789:AA…" autocomplete="off" class="font-mono" />
+                                    <flux:description>
+                                        From @@BotFather. Treat it like a password. Saved to .env when you click Save Settings; Test uses what is typed here.
+                                    </flux:description>
+                                </flux:field>
+
+                                <flux:field>
+                                    <flux:label>Chat ID</flux:label>
+                                    <flux:input wire:model="telegramChatId" placeholder="-1001234567890" class="font-mono" />
+                                    <flux:description>
+                                        User, group or channel id; the bot must be in that chat. Turn it on under Contacts → Notifications.
+                                    </flux:description>
+                                </flux:field>
+                            </div>
+                        </x-admin-section-card>
                     </div>
 
                     @foreach ($groupedSettings as $group => $items)
@@ -248,18 +280,85 @@ $imageMeta = match ($setting->key) {
         {{-- Custom Code tab --}}
         <div x-show="tab === 'custom-code'">
             <div class="max-w-[1600px] space-y-5">
-                <x-admin-section-card header-border="border-zinc-100" icon="code-bracket" title="Head Code"
-                    description="Injected into <head>, before it closes — meta tags, verification tags, analytics.">
+                <x-admin-section-card header-border="border-zinc-100" icon="code-bracket" title="Head Code (Global)"
+                    description="Injected into <head>, before it closes, on every page — meta tags, verification tags, analytics.">
                     <flux:field>
                         <flux:textarea wire:model="settings.custom_head_code" class="h-40 w-full font-mono text-xs" placeholder="<script>...</script>" />
                     </flux:field>
                 </x-admin-section-card>
 
-                <x-admin-section-card header-border="border-zinc-100" icon="code-bracket" title="Body Code"
-                    description="Injected just before </body> closes — chat widgets, tracking pixels, deferred scripts.">
+                <x-admin-section-card header-border="border-zinc-100" icon="code-bracket" title="Body Code (Global)"
+                    description="Injected just before </body> closes, on every page — chat widgets, tracking pixels, deferred scripts.">
                     <flux:field>
                         <flux:textarea wire:model="settings.custom_body_code" class="h-40 w-full font-mono text-xs" placeholder="<script>...</script>" />
                     </flux:field>
+                </x-admin-section-card>
+
+                {{-- Page-specific code: each row picks the kind of page it applies to
+                     and is output after the global code on those pages only. --}}
+                <x-admin-section-card header-border="border-zinc-100" icon="document-duplicate" title="Custom Code Snippets"
+                    description="Named head/body snippets. Pick one from the “Custom code” dropdown in a page, product, post or category's SEO section to load it on that page only.">
+                    <x-slot:actions>
+                        <flux:button size="sm" variant="outline" icon="plus" wire:click="addCodeRule">Add code</flux:button>
+                    </x-slot:actions>
+
+                    {{-- Same collapsible-row look as the Constant fields. Open state is
+                         kept server-side ($openCodeRules, by snippet id) so typing in a
+                         box re-renders without collapsing the row. --}}
+                    <div class="space-y-3">
+                        @forelse ($codeRules as $i => $rule)
+                            @php $codeOpen = in_array($rule['id'], $openCodeRules, true); @endphp
+                            <div wire:key="code-rule-{{ $rule['id'] }}"
+                                class="group overflow-hidden rounded-lg border bg-white transition-all dark:bg-zinc-800/40 {{ $codeOpen ? 'border-zinc-300 shadow-sm dark:border-zinc-600' : 'border-zinc-200 hover:border-zinc-300 dark:border-zinc-700' }}">
+                                <div wire:click="toggleCodeRule('{{ $rule['id'] }}')" role="button" tabindex="0"
+                                    class="flex cursor-pointer select-none items-center justify-between gap-4 px-4 py-3">
+                                    <div class="flex min-w-0 items-center gap-3">
+                                        <div class="flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors {{ $codeOpen ? 'bg-primary/10 text-primary' : 'bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500' }}">
+                                            <flux:icon.code-bracket class="size-4" />
+                                        </div>
+                                        <p class="truncate font-mono text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+                                            {{ filled($rule['name'] ?? '') ? $rule['name'] : 'Snippet '.($i + 1) }}
+                                        </p>
+                                    </div>
+
+                                    <div class="flex shrink-0 items-center gap-1.5">
+                                        <button type="button" wire:click.stop="removeCodeRule({{ $i }})"
+                                            class="flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-rose-50 hover:text-rose-500 cursor-pointer" aria-label="Remove snippet">
+                                            <flux:icon.x-mark class="size-4" />
+                                        </button>
+                                        <button type="button" wire:click.stop="toggleCodeRule('{{ $rule['id'] }}')"
+                                            class="flex size-7 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 cursor-pointer"
+                                            aria-expanded="{{ $codeOpen ? 'true' : 'false' }}" aria-label="Toggle snippet">
+                                            <flux:icon.chevron-down class="size-4 transition-transform {{ $codeOpen ? 'rotate-180' : '' }}" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-4 border-t border-zinc-100 p-4 {{ $codeOpen ? '' : 'hidden' }} dark:border-zinc-700">
+                                    <div>
+                                        <flux:label>Name</flux:label>
+                                        <flux:input wire:model.live="codeRules.{{ $i }}.name" placeholder="e.g. Global, Product, Category" />
+                                    </div>
+                                    <div>
+                                        <flux:label>Head code</flux:label>
+                                        <flux:textarea wire:model="codeRules.{{ $i }}.head" class="h-[6.5rem] resize-none font-mono text-xs" placeholder="<script>...</script>" />
+                                    </div>
+                                    <div>
+                                        <flux:label>Body code</flux:label>
+                                        <flux:textarea wire:model="codeRules.{{ $i }}.body" class="h-[6.5rem] resize-none font-mono text-xs" placeholder="<script>...</script>" />
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="rounded-lg border border-dashed border-zinc-200 py-12 text-center dark:border-zinc-700">
+                                <div class="mx-auto mb-3 flex size-10 items-center justify-center rounded-full bg-zinc-50 text-zinc-300 dark:bg-zinc-800 dark:text-zinc-600">
+                                    <flux:icon.code-bracket class="size-5" />
+                                </div>
+                                <p class="text-sm font-medium text-zinc-500 dark:text-zinc-300">No snippets yet</p>
+                                <p class="mt-1 text-xs text-zinc-400 dark:text-zinc-500">Click “Add code” to create one.</p>
+                            </div>
+                        @endforelse
+                    </div>
                 </x-admin-section-card>
             </div>
         </div>
@@ -313,8 +412,6 @@ $imageMeta = match ($setting->key) {
         @php
             $shopToggleAvailable = \App\Support\Features::settingAvailable('shop_toggle_enabled');
             $languageSwitcherAvailable = \App\Support\Features::settingAvailable('language_switcher_enabled');
-            $productAdditionalDataAvailable = \App\Support\Features::settingAvailable('additional_data_products_enabled');
-            $postAdditionalDataAvailable = \App\Support\Features::settingAvailable('additional_data_posts_enabled');
         @endphp
         <div x-show="tab === 'widgets'">
             <div class="max-w-[1600px]">
@@ -396,6 +493,21 @@ $imageMeta = match ($setting->key) {
                     </p>
                 </x-admin-section-card>
 
+                {{-- App name label --}}
+                <x-admin-section-card header-border="border-zinc-100" icon="tag" title="App Name"
+                    description="Shows the app name, with a soft shine, in the middle of the admin header.">
+                    <x-slot:actions>
+                        <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
+                            <input type="checkbox" wire:model="settings.app_name_label_enabled" class="rounded border-zinc-300 text-primary" />
+                            Enable
+                        </label>
+                    </x-slot:actions>
+
+                    <p class="text-xs text-zinc-400">
+                        The name comes from the app name in the environment settings.
+                    </p>
+                </x-admin-section-card>
+
                 {{-- Notification bell --}}
                 <x-admin-section-card header-border="border-zinc-100" icon="bell" title="Notifications"
                     description="Shows the notification bell in the admin header.">
@@ -441,40 +553,6 @@ $imageMeta = match ($setting->key) {
 
                     <p class="text-xs text-zinc-400">
                         Turning this off does not change the admin panel's language, only hides the switcher itself.
-                    </p>
-                </x-admin-section-card>
-                @endif
-
-                {{-- Additional Data sections — show/hide the rich-editor cards on the
-                     admin Product and Blog Post forms (see Product and Posts forms). --}}
-                @if ($productAdditionalDataAvailable)
-                <x-admin-section-card header-border="border-zinc-100" icon="document-text" title="Product Additional Data"
-                    description="Shows the Additional Data card on the product form.">
-                    <x-slot:actions>
-                        <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
-                            <input type="checkbox" wire:model="settings.additional_data_products_enabled" class="rounded border-zinc-300 text-primary" />
-                            Enable
-                        </label>
-                    </x-slot:actions>
-
-                    <p class="text-xs text-zinc-400">
-                        Rich editors for the product's description, short description and specification. Off hides the card without touching saved content.
-                    </p>
-                </x-admin-section-card>
-                @endif
-
-                @if ($postAdditionalDataAvailable)
-                <x-admin-section-card header-border="border-zinc-100" icon="newspaper" title="Blog Post Additional Data"
-                    description="Shows the Additional Data card on the blog post form.">
-                    <x-slot:actions>
-                        <label class="flex items-center gap-2 text-sm text-zinc-600 cursor-pointer">
-                            <input type="checkbox" wire:model="settings.additional_data_posts_enabled" class="rounded border-zinc-300 text-primary" />
-                            Enable
-                        </label>
-                    </x-slot:actions>
-
-                    <p class="text-xs text-zinc-400">
-                        A rich editor for the post's description. Off hides the card without touching saved content.
                     </p>
                 </x-admin-section-card>
                 @endif
@@ -524,7 +602,7 @@ $imageMeta = match ($setting->key) {
         <div class="rounded-xl bg-zinc-50 px-5 py-7 text-center dark:bg-zinc-800/50"
             x-data="{
                 fmt(value) {
-                    const dec = parseInt($wire.settings.decimal_places || '2', 10);
+                    const dec = parseInt($wire.settings.decimal_places || '0', 10);
                     const num = Number(value || 0).toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
                     const sym = $wire.settings.currency_symbol || '৳';
                     return ($wire.settings.currency_position || 'left') === 'right' ? num + ' ' + sym : sym + num;

@@ -150,7 +150,7 @@ class SettingsSeeder extends Seeder
             ['key' => 'currency_code',          'value' => 'BDT', 'type' => 'string', 'group' => 'currency', 'is_public' => true],
             ['key' => 'currency_symbol',        'value' => '৳', 'type' => 'string', 'group' => 'currency', 'is_public' => true],
             ['key' => 'currency_position',      'value' => 'left', 'type' => 'string', 'group' => 'currency', 'is_public' => true],
-            ['key' => 'decimal_places',         'value' => '2', 'type' => 'number', 'group' => 'currency', 'is_public' => true],
+            ['key' => 'decimal_places',         'value' => '0', 'type' => 'number', 'group' => 'currency', 'is_public' => true],
 
             // ── VAT / Tax ── when enabled, every order gets the configured
             // percentage added on top of its (discounted) subtotal — see
@@ -257,6 +257,9 @@ class SettingsSeeder extends Seeder
             // frontend needs the raw markup, not just a flag.
             ['key' => 'custom_head_code',         'value' => '', 'type' => 'textarea', 'group' => 'custom-code', 'is_public' => true],
             ['key' => 'custom_body_code',         'value' => '', 'type' => 'textarea', 'group' => 'custom-code', 'is_public' => true],
+            // Page-specific head/body snippets (JSON list of {scope, head, body}) —
+            // edited as repeater rows in Settings → Custom Code, see App\Support\CustomCode.
+            ['key' => 'custom_code_rules',        'value' => '[]', 'type' => 'textarea', 'group' => 'custom-code', 'is_public' => false],
 
             // ── Tracking ── Google Pixel / Measurement ID, exposed via the public
             // settings API so the frontend can inject the gtag script itself.
@@ -292,6 +295,10 @@ class SettingsSeeder extends Seeder
             // still recorded per user, so turning it back on finds them all
             // still there and unread.
             ['key' => 'notifications_enabled', 'value' => '1', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
+
+            // ── App name label (admin panel) ── the faint shimmering app name in
+            // the middle of the header (see layouts.admin.blade.php).
+            ['key' => 'app_name_label_enabled', 'value' => '1', 'type' => 'boolean', 'group' => 'other', 'is_public' => false],
 
             // ── Shop status ── whether customers can currently place orders
             // (see OrderController::store()). Public since the frontend needs

@@ -70,7 +70,7 @@ class Product extends Model
         'name', 'description', 'excerpt', 'specifications',
         'brand_id', 'vendor_id', 'created_by', 'code', 'sku', 'variations',
         'featured_image', 'status', 'product_type', 'price', 'discount_price', 'quantity', 'charge_shipping', 'is_featured',
-        'is_upcoming', 'sort_order', 'warranty_months',
+        'is_upcoming', 'sort_order', 'warranty_months', 'landing_page',
     ];
 
     protected $casts = [

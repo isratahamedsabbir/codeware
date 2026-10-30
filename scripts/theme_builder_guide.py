@@ -378,7 +378,7 @@ COLOR_TOKENS = [
 ]
 
 ROUTE_TEMPLATES = [
-    ("home", "home.blade.php", "/"),
+    ("home", "index.blade.php", "/"),
     ("page", "page.blade.php", "/{slug}"),
     ("shop", "shop.blade.php", "/shop"),
     ("products.show", "product.blade.php", "/product/{slug}"),
@@ -492,18 +492,20 @@ def chapter_2() -> list:
           "before you start saves the most confusing half hour you will spend on this."),
         h2("In the theme folder"),
         p("`themes/<slug>/` — the templates, and the file that holds the theme's "
-          "name and content. Optional extras nest in subfolders: `partials/`, `account/`, `errors/`."),
+          "name and content. Templates live in `views/`; its subfolders `partials/`, `account/` and `errors/` are optional."),
     ] + code([
         "themes/photography/",
         "|-- theme.json            # manifest + settings (see chapter 3)",
-        "|-- home.blade.php        # the one template every theme needs",
-        "|-- page.blade.php        # standalone CMS pages",
         "|-- settings.blade.php    # your Theme Settings panel (optional)",
-        "|-- errors/",
-        "|   `-- 404.blade.php     # your own not-found page (optional)",
-        "`-- partials/",
-        "    |-- header.blade.php",
-        "    `-- footer.blade.php",
+        "|-- routes/web.php        # your storefront URLs",
+        "|-- Controllers/          # one class per page (optional)",
+        "|-- Support/              # theme-only helpers (optional)",
+        "|-- public/               # css, js, img served at /themes/<slug>/...",
+        "`-- views/                # every template, namespace theme-<slug>::",
+        "    |-- index.blade.php   # the home page - the one template every theme needs",
+        "    |-- page.blade.php    # standalone CMS pages",
+        "    |-- errors/404.blade.php",
+        "    `-- partials/         # _header.blade.php, _footer.blade.php",
     ]) + [
         p("`themes/<slug>/settings.blade.php` is the important one to recognise: "
           "drop that single file in and a configuration panel for your theme appears in the admin, "
@@ -776,7 +778,7 @@ def chapter_6() -> list:
         "@endphp",
     ]) + [
         p("Because the helper resolves the active theme, a template in your theme needs no mention of "
-          "your own slug. That is what makes a template portable: copy `home.blade.php` into a new "
+          "your own slug. That is what makes a template portable: copy `index.blade.php` into a new "
           "theme, declare the same field names, and it works without editing a line of the template."),
         h2("Present sections only"),
         p("The pattern to reach for with a list is to leave the section out entirely when it is empty. A "
@@ -846,7 +848,7 @@ def chapter_7() -> list:
         "Route::get('/', [FrontendController::class, 'home'])->name('home');",
     ]) + [
         p("That is a complete theme. `home` is the route name the controller looks up, and "
-          "`home.blade.php` is the template it renders. Add a route, add the template, repeat."),
+          "`index.blade.php` is the template it renders. Add a route, add the template, repeat."),
         h2("Route names are the contract"),
         p("The controller does not know which theme is active. It asks for a template by route name, "
           "and your theme is the one that has to have it. The full set of names the application knows:"),
@@ -939,10 +941,11 @@ def chapter_9() -> list:
         "photography.zip",
         "`-- photography/              <- this folder name is the slug",
         "    |-- theme.json",
-        "    |-- home.blade.php",
-        "    |-- page.blade.php",
         "    |-- settings.blade.php",
-        "    `-- partials/",
+        "    `-- views/",
+        "        |-- index.blade.php",
+        "        |-- page.blade.php",
+        "        `-- partials/",
     ]) + [
         p("The installer checks the archive before anything touches the themes directory: entries that "
           "climb out of the folder are rejected, the file count is capped at 2000 and the unpacked "

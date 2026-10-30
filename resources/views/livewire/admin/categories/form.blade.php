@@ -36,14 +36,12 @@
                 @endforeach
 
                     <flux:field>
-                        <flux:label>Slug</flux:label>
+                        <flux:label>Slug<x-field-hint text="Auto-generated from the primary language's name as you type — edit it if you'd like a different one" /></flux:label>
                         <flux:input wire:model.live.debounce.400ms="slug" placeholder="auto-generated-from-name" />
                         @if ($slugAvailable === false)
                             <p class="text-xs text-red-500 mt-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span>This slug is already taken</p>
                         @elseif ($slugAvailable === true && $slug !== '')
                             <p class="text-xs text-green-600 mt-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>This slug is available</p>
-                        @else
-                            <p class="text-xs text-zinc-400 mt-1">Auto-generated from the primary language's name as you type — edit it if you'd like a different one</p>
                         @endif
                         <flux:error name="slug" />
                     </flux:field>
@@ -71,9 +69,11 @@
         </div>
         </div>
 
-        {{-- ── SIDEBAR — product categories only ── --}}
-        @if ($this->isProductPool)
-            <div class="w-[320px] shrink-0 space-y-5">
+        {{-- ── SIDEBAR ── --}}
+        <div class="w-[320px] shrink-0 space-y-5">
+            @include('partials._admin-custom-code-picker')
+
+            @if ($this->isProductPool)
                 <x-admin-section-card variant="postbox" persist-key="category-settings" title="Category Settings" :collapsed="false"
                     body-class="p-3 space-y-4" description="Icon and parent category.">
                     <flux:field>
@@ -90,8 +90,8 @@
                     <x-media-picker model="icon" label="Icon" size-hint="64 × 64, transparent" placeholder="Select icon image from library"
                         :picker-id="$iconPickerId" mimes="png,webp,avif" :max-size-mb="1" only-images dropzone />
                 </x-admin-section-card>
-            </div>
-        @endif
+            @endif
+        </div>
     </div>
 
     <livewire:admin.media-library.picker-modal key="categories-form-picker-modal" />

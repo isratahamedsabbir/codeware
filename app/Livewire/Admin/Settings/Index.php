@@ -5,7 +5,9 @@ namespace App\Livewire\Admin\Settings;
 use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\AdminFont;
+use App\Support\CustomCode;
 use App\Support\EnvFile;
+use App\Support\Telegram;
 use Illuminate\Support\Facades\Artisan;
 use Livewire\Component;
 
@@ -38,8 +40,38 @@ class Index extends Component
      */
     public array $openConstants = [];
 
+    /**
+     * Page-specific head/body snippets, on top of the global pair in $settings.
+     *
+     * @var array<int, array{id: string, name: string, head: string, body: string}>
+     */
+    public array $codeRules = [];
+
+    /**
+     * Ids of the $codeRules rows currently expanded — server-side for the same
+     * reason as $openConstants: a re-render from typing must not collapse them.
+     *
+     * @var array<int, string>
+     */
+    public array $openCodeRules = [];
+
+    /**
+     * Telegram bot token and chat id — TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID in
+     * .env, like APP_ENV above, so they are saved through EnvFile::set() rather
+     * than the settings table (whose rows the public API can serve).
+     */
+    public string $telegramBotToken = '';
+
+    public string $telegramChatId = '';
+
     public function mount(): void
     {
+        $this->moveLegacyTelegramRows();
+
+        $this->telegramBotToken = (string) (EnvFile::get('TELEGRAM_BOT_TOKEN') ?? '');
+        $this->telegramChatId = (string) (EnvFile::get('TELEGRAM_CHAT_ID') ?? '');
+
+        $this->codeRules = CustomCode::rules();
         $this->loadSettings();
         $this->loadConstants();
         $this->appEnv = EnvFile::get('APP_ENV', config('app.env')) ?? config('app.env');
@@ -53,6 +85,13 @@ class Index extends Component
             // Watermark is configured from the Media Library now, not here — it
             // must not be re-written by this page's save(), so leave it out.
             if (str_starts_with($setting->key, 'watermark_')) {
+                continue;
+            }
+
+            // The page-specific custom code rules are edited as $codeRules, and
+            // saved from there — left in $settings, the stale JSON string would
+            // be written back over them by persistGeneralSettings().
+            if ($setting->key === CustomCode::SETTING) {
                 continue;
             }
 
@@ -71,6 +110,12 @@ class Index extends Component
         // system font, the same value the seeder writes. A saved font whose
         // folder has since been deleted is shown as the system font too, which
         // is what the panel is already rendering in.
+        // Same for the header app-name label: a database that predates it has no
+        // row, and the header treats "no row" as on, so the checkbox must too.
+        // Cast explicitly: a row first written by save() (not the seeder) has
+        // type "string", so the loop above would leave "0" as a truthy string.
+        $this->settings['app_name_label_enabled'] = (bool) ($this->settings['app_name_label_enabled'] ?? true);
+
         $this->settings['admin_font'] = AdminFont::normalize($this->settings['admin_font'] ?? AdminFont::SYSTEM);
     }
 
@@ -118,6 +163,28 @@ class Index extends Component
         }
     }
 
+    public function addCodeRule(): void
+    {
+        $rule = ['id' => CustomCode::newId(), 'name' => '', 'head' => '', 'body' => ''];
+        $this->codeRules[] = $rule;
+        $this->openCodeRules[] = $rule['id'];
+    }
+
+    public function toggleCodeRule(string $id): void
+    {
+        $this->openCodeRules = in_array($id, $this->openCodeRules, true)
+            ? array_values(array_diff($this->openCodeRules, [$id]))
+            : [...$this->openCodeRules, $id];
+    }
+
+    public function removeCodeRule(int $index): void
+    {
+        $removed = $this->codeRules[$index]['id'] ?? null;
+        unset($this->codeRules[$index]);
+        $this->codeRules = array_values($this->codeRules);
+        $this->openCodeRules = array_values(array_diff($this->openCodeRules, [$removed]));
+    }
+
     public function updated(string $name, mixed $value): void
     {
         if (preg_match('/^constants\.\d+\.key$/', $name)) {
@@ -142,9 +209,20 @@ class Index extends Component
             'constants.*.key' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9_]*$/'],
             'constants.*.type' => 'nullable|in:textarea,file',
             'constants.*.value' => 'nullable|string|max:1000',
+            'codeRules.*.name' => 'nullable|string|max:100',
+            'codeRules.*.head' => 'nullable|string',
+            'codeRules.*.body' => 'nullable|string',
         ]);
 
         $this->persistGeneralSettings();
+
+        if (! $this->persistTelegram()) {
+            // Everything else did save; say which part did not rather than
+            // reloading over the message.
+            $this->dispatch('notify', type: 'error', message: 'Settings saved, but the Telegram details could not be written to .env.');
+
+            return;
+        }
 
         // A real browser reload of the current page, rather than a dispatched
         // toast, so the whole admin shell re-renders on a fresh request —
@@ -155,6 +233,91 @@ class Index extends Component
         // itself, not the page — hence a plain client-side reload instead.)
         session()->flash('success', 'Settings saved.');
         $this->js('window.location.reload()');
+    }
+
+    /**
+     * The token and chat id were briefly stored as settings rows. Carry any such
+     * value over to .env (unless .env already has one) and drop the rows, so a
+     * secret is not left in the table — and so the rows do not turn up as plain
+     * text fields in the generic settings list.
+     */
+    private function moveLegacyTelegramRows(): void
+    {
+        $rows = Setting::whereIn('key', ['telegram_bot_token', 'telegram_chat_id'])->pluck('value', 'key');
+
+        if ($rows->isEmpty()) {
+            return;
+        }
+
+        $carry = [];
+
+        foreach (['telegram_bot_token' => 'TELEGRAM_BOT_TOKEN', 'telegram_chat_id' => 'TELEGRAM_CHAT_ID'] as $key => $envKey) {
+            if (filled($rows[$key] ?? null) && blank(EnvFile::get($envKey))) {
+                $carry[$envKey] = (string) $rows[$key];
+            }
+        }
+
+        try {
+            if ($carry !== []) {
+                EnvFile::set($carry);
+                Artisan::call('config:clear');
+            }
+        } catch (\RuntimeException) {
+            // .env is not writable: keep the rows rather than lose the values.
+            return;
+        }
+
+        Setting::forget('telegram_bot_token');
+        Setting::forget('telegram_chat_id');
+    }
+
+    /**
+     * Writes the Telegram card to .env. EnvFile only rewrites a key whose value
+     * changed, and the config cache is cleared only then, so saving the page
+     * with the card untouched does neither.
+     */
+    private function persistTelegram(): bool
+    {
+        $values = [
+            'TELEGRAM_BOT_TOKEN' => trim($this->telegramBotToken),
+            'TELEGRAM_CHAT_ID' => trim($this->telegramChatId),
+        ];
+
+        if ($values === [
+            'TELEGRAM_BOT_TOKEN' => (string) EnvFile::get('TELEGRAM_BOT_TOKEN'),
+            'TELEGRAM_CHAT_ID' => (string) EnvFile::get('TELEGRAM_CHAT_ID'),
+        ]) {
+            return true;
+        }
+
+        try {
+            EnvFile::set($values);
+        } catch (\RuntimeException) {
+            return false;
+        }
+
+        Artisan::call('config:clear');
+
+        AdminActivity::log('updated', 'Telegram settings updated');
+
+        return true;
+    }
+
+    /**
+     * Sends a message with what is typed in the Telegram card, saved or not, so
+     * a wrong token or chat id is found before it silently drops a real contact.
+     */
+    public function sendTelegramTest(): void
+    {
+        $sent = Telegram::send(
+            'Hello from '.config('app.name').' — Telegram is connected.',
+            $this->telegramBotToken,
+            $this->telegramChatId,
+        );
+
+        $this->dispatch('notify', type: $sent ? 'success' : 'error', message: $sent
+            ? 'Test message sent. Check your Telegram chat.'
+            : 'Could not send. Check the bot token and chat id (and that the bot is in the chat).');
     }
 
     public function confirmSaveEnvironment(): void
@@ -207,6 +370,20 @@ class Index extends Component
 
         $constants = collect($this->constants)->filter(fn (array $pair) => filled($pair['key'] ?? null))->values()->all();
         Setting::set('constants', json_encode($constants));
+
+        // Rows with no code in either box are dropped rather than stored empty. The id is what pages
+        // point at, so it is kept as-is across saves.
+        $rules = collect($this->codeRules)
+            ->filter(fn (array $rule) => filled($rule['head'] ?? null) || filled($rule['body'] ?? null))
+            ->map(fn (array $rule) => [
+                'id' => $rule['id'],
+                'name' => trim((string) ($rule['name'] ?? '')),
+                'head' => (string) ($rule['head'] ?? ''),
+                'body' => (string) ($rule['body'] ?? ''),
+            ])
+            ->values()
+            ->all();
+        Setting::set(CustomCode::SETTING, json_encode($rules));
     }
 
     public function render()

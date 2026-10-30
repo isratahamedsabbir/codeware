@@ -16,14 +16,20 @@
         <div>
             @include('partials._admin-breadcrumbs', ['routeName' => 'admin.contacts'])
         </div>
-        @if (count($selectedIds) > 0)
-            <div class="flex items-center gap-2 shrink-0">
+        <div class="flex items-center gap-3 shrink-0">
+            {{-- Opens the modal below, which holds the on/off switch for
+                 emailing new contacts. --}}
+            <flux:modal.trigger name="contact-email-settings">
+                <flux:button variant="outline" size="sm" icon="bell">Notifications</flux:button>
+            </flux:modal.trigger>
+
+            @if (count($selectedIds) > 0)
                 <flux:button variant="outline" size="sm" icon="arrow-down-tray"
                     href="{{ route('admin.contacts.export', ['ids' => $selectedIds]) }}">
                     Export ({{ count($selectedIds) }})
                 </flux:button>
-            </div>
-        @endif
+            @endif
+        </div>
     </div>
 
 <div class="bg-white rounded-[5px] shadow-sm overflow-hidden">
@@ -130,8 +136,8 @@
                                  (updateStatus() also guards this server-side). --}}
                             <td class="px-4 py-2">
                                 @if ($contact->status === 'read')
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-600 border border-zinc-200">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-200">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                         Read
                                     </span>
                                 @else
@@ -149,6 +155,7 @@
                                 <x-admin-row-actions :actions="[
                                     ['wireClick' => 'showContact(' . $contact->id . ')', 'icon' => 'eye', 'label' => 'View', 'color' => 'primary', 'disabled' => count($selectedIds) > 0],
                                     ['wireClick' => 'openCustomEmailFor(' . $contact->id . ')', 'icon' => 'envelope', 'label' => 'Send Email', 'color' => 'cyan-500', 'disabled' => count($selectedIds) > 0],
+                                    ['wireClick' => 'confirmDelete(' . $contact->id . ')', 'icon' => 'trash', 'label' => 'Delete', 'color' => 'rose-500', 'visible' => app()->environment('developer'), 'disabled' => count($selectedIds) > 0],
                                 ]" />
                             </td>
 
@@ -183,6 +190,67 @@
         {{ $contacts->links() }}
     </div>
 
+    {{-- Notification settings — whether a new contact is also emailed to the contact
+         address. The contact is saved either way. The switch is a role="switch"
+         button rather than <flux:switch>: that renders a checkbox, and this page
+         must contain none until a bulk selection is active
+         (ContactsBulkExportTest). --}}
+    <flux:modal name="contact-email-settings" class="md:w-96">
+        <div class="space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <flux:icon.envelope class="size-5 text-primary" />
+                </div>
+                <flux:heading>Notification settings</flux:heading>
+            </div>
+
+            <div class="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 px-4 py-3">
+                <div class="min-w-0">
+                    <p class="text-sm font-medium text-zinc-800">Email new contacts</p>
+                    <p class="text-xs text-zinc-500">
+                        {{ $emailEnabled
+                            ? 'Each new contact is emailed to the contact address.'
+                            : 'New contacts are saved here, but no email is sent.' }}
+                    </p>
+                </div>
+                <button type="button" role="switch" aria-label="Email new contacts"
+                    aria-checked="{{ $emailEnabled ? 'true' : 'false' }}"
+                    wire:click="$toggle('emailEnabled')"
+                    class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors {{ $emailEnabled ? 'bg-indigo-600' : 'bg-zinc-300' }}">
+                    <span class="inline-block size-4 rounded-full bg-white shadow transition-transform {{ $emailEnabled ? 'translate-x-4.5' : 'translate-x-0.5' }}"></span>
+                </button>
+            </div>
+
+            <div class="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 px-4 py-3">
+                <div class="min-w-0">
+                    <p class="text-sm font-medium text-zinc-800">Send to Telegram</p>
+                    <p class="text-xs text-zinc-500">
+                        @if (! $telegramEnabled)
+                            New contacts are not sent to Telegram.
+                        @elseif (\App\Support\Telegram::configured())
+                            Each new contact is also sent to your Telegram chat.
+                        @else
+                            On, but the bot token / chat ID are not set —
+                            <a href="{{ route('admin.settings') }}" class="text-indigo-600 underline">open Settings</a>.
+                        @endif
+                    </p>
+                </div>
+                <button type="button" role="switch" aria-label="Send new contacts to Telegram"
+                    aria-checked="{{ $telegramEnabled ? 'true' : 'false' }}"
+                    wire:click="$toggle('telegramEnabled')"
+                    class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors {{ $telegramEnabled ? 'bg-indigo-600' : 'bg-zinc-300' }}">
+                    <span class="inline-block size-4 rounded-full bg-white shadow transition-transform {{ $telegramEnabled ? 'translate-x-4.5' : 'translate-x-0.5' }}"></span>
+                </button>
+            </div>
+
+            <div class="flex justify-end">
+                <flux:modal.close>
+                    <flux:button size="sm" variant="ghost">Close</flux:button>
+                </flux:modal.close>
+            </div>
+        </div>
+    </flux:modal>
+
     {{-- View Modal — full, untruncated contact submission. $viewingContactId is
          looked up against the already-loaded $contacts page rather than a
          fresh query, since it can only ever point at a row rendered above. --}}
@@ -209,7 +277,19 @@
                         <x-admin-row-details.item label="Phone">{{ $viewingContact->phone_number }}</x-admin-row-details.item>
                     @endif
                     <x-admin-row-details.item label="Subject">{{ $viewingContact->subject }}</x-admin-row-details.item>
-                    <x-admin-row-details.item label="Status">{{ ucfirst($viewingContact->status) }}</x-admin-row-details.item>
+                    <x-admin-row-details.item label="Status">
+                        @if ($viewingContact->status === 'read')
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                Read
+                            </span>
+                        @else
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-600 border border-amber-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                Unread
+                            </span>
+                        @endif
+                    </x-admin-row-details.item>
                     <x-admin-row-details.item label="Date">{{ $viewingContact->created_at->toDisplay() }}</x-admin-row-details.item>
                 </div>
 
@@ -229,6 +309,34 @@
             </div>
         @endif
     </flux:modal>
+
+    @if (app()->environment('developer'))
+        <flux:modal name="contact-delete" class="md:w-96"
+            x-on:open-modal.window="if ($event.detail.name === 'contact-delete') $flux.modal('contact-delete').show()"
+            x-on:close-modal.window="if ($event.detail.name === 'contact-delete') $flux.modal('contact-delete').close()">
+            <div class="space-y-4">
+                <flux:heading>Delete contact?</flux:heading>
+                <div class="rounded-lg border border-red-200 bg-red-50 p-3 space-y-1">
+                    <p class="text-sm font-semibold text-red-700">This action cannot be undone.</p>
+                    <p class="text-sm text-red-600">The contact will be <strong>permanently deleted</strong>.</p>
+                </div>
+                <flux:field>
+                    <flux:label>Type "delete" to confirm</flux:label>
+                    <flux:input wire:model="deleteConfirmation" placeholder="delete" autocomplete="off" />
+                </flux:field>
+                <div class="flex gap-2 pt-1">
+                    <button wire:click="delete"
+                        x-bind:disabled="$wire.deleteConfirmation.trim().toLowerCase() !== 'delete'"
+                        class="inline-flex items-center gap-2 px-4 h-8 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-red-600 transition-colors border-none cursor-pointer">
+                        Delete
+                    </button>
+                    <flux:modal.close>
+                        <flux:button size="sm" variant="ghost">Cancel</flux:button>
+                    </flux:modal.close>
+                </div>
+            </div>
+        </flux:modal>
+    @endif
 
     {{-- Send a one-off reply email — pre-filled by openCustomEmailFor() with
          the viewed contact's email and subject. --}}

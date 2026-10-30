@@ -71,13 +71,13 @@ it('writes a complete theme folder from the basics given on the form', function 
     // that site, so a starter theme with holes in it would be a site with holes
     // in it.
     foreach (array_values(Themes::routeTemplates()) as $template) {
-        expect(is_file($folder.'/'.str_replace('.', '/', $template).'.blade.php'))
+        expect(is_file($folder.'/views/'.str_replace('.', '/', $template).'.blade.php'))
             ->toBeTrue("the \"{$template}\" template is missing");
     }
 
-    expect(is_file($folder.'/errors/404.blade.php'))->toBeTrue()
-        ->and(is_file($folder.'/partials/_header.blade.php'))->toBeTrue()
-        ->and(is_file($folder.'/partials/_footer.blade.php'))->toBeTrue()
+    expect(is_file($folder.'/views/errors/404.blade.php'))->toBeTrue()
+        ->and(is_file($folder.'/views/partials/_header.blade.php'))->toBeTrue()
+        ->and(is_file($folder.'/views/partials/_footer.blade.php'))->toBeTrue()
         ->and(is_file($folder.'/settings.blade.php'))->toBeTrue()
         ->and(is_file($folder.'/public/css/theme.css'))->toBeTrue()
         ->and(is_file($folder.'/routes/web.php'))->toBeTrue()
@@ -198,7 +198,7 @@ it('renders the starter home page without a controller behind it', function () {
 
     // Every template is a working placeholder that reads no variables, because
     // what a given controller passes is the one thing a scaffold cannot know.
-    $html = View::make('theme-aurora::home')->render();
+    $html = View::make('theme-aurora::index')->render();
 
     expect($html)->toContain('<!DOCTYPE html>')
         ->and($html)->toContain('This is the "aurora" theme\'s home page');
@@ -271,8 +271,8 @@ it('leaves nothing behind in the themes directory for a theme that ships no styl
     // The catch-all: a theme with no theme.css of its own is still styled, by
     // the bundle that scans every theme. Creating one here proves the new folder
     // is not the only way a theme can be styled.
-    File::ensureDirectoryExists(Themes::path().'/bare-theme');
-    File::put(Themes::path().'/bare-theme/home.blade.php', 'bare');
+    File::ensureDirectoryExists(Themes::path().'/bare-theme/views');
+    File::put(Themes::path().'/bare-theme/views/index.blade.php', 'bare');
     Themes::forget();
 
     expect(Themes::hasStylesheet('bare-theme'))->toBeFalse()

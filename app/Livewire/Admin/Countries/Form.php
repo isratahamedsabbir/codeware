@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Countries;
 
+use App\Concerns\StaysOnForm;
 use App\Models\Country;
 use App\Support\AdminActivity;
 use Livewire\Attributes\Validate;
@@ -9,6 +10,8 @@ use Livewire\Component;
 
 class Form extends Component
 {
+    use StaysOnForm;
+
     public ?int $countryId = null;
 
     #[Validate('required|string|max:255')]
@@ -40,7 +43,7 @@ class Form extends Component
             Country::findOrFail($this->countryId)->update($data);
             $this->dispatch('notify', message: 'Country updated successfully');
         } else {
-            Country::create($data);
+            $this->countryId = Country::create($data)->id;
             $this->dispatch('notify', message: 'Country created successfully');
         }
 
@@ -49,7 +52,7 @@ class Form extends Component
             "Country: {$this->name}",
         );
 
-        $this->redirect(route('admin.countries'), navigate: true);
+        $this->stayOnForm($creating, 'admin.countries.edit', $this->countryId);
     }
 
     public function render()

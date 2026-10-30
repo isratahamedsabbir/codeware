@@ -77,7 +77,7 @@ final class ApiMfa
      */
     public static function isRequiredFor(User $user): bool
     {
-        return Mfa::isRequiredFor($user) && Mfa::hasFactorFor($user);
+        return Mfa::isRequiredFor($user) && Mfa::hasApiFactorFor($user);
     }
 
     /**
@@ -167,7 +167,7 @@ final class ApiMfa
         // The account may also have lost its factor since the challenge was
         // minted (a revoked passkey, TOTP disabled from another device). There is
         // then nothing that could legitimately answer this token.
-        return Mfa::hasFactorFor($user) ? $user : null;
+        return Mfa::hasApiFactorFor($user) ? $user : null;
     }
 
     /**

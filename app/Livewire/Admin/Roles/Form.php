@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Roles;
 
+use App\Concerns\StaysOnForm;
 use App\Support\AdminActivity;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Validate;
@@ -11,6 +12,8 @@ use Spatie\Permission\Models\Role;
 
 class Form extends Component
 {
+    use StaysOnForm;
+
     public ?int $roleId = null;
 
     #[Validate('required|string|max:255')]
@@ -88,7 +91,7 @@ class Form extends Component
             "Role: {$name}",
         );
 
-        $this->redirect(route('admin.roles'), navigate: true);
+        $this->stayOnForm($creating, 'admin.roles.edit', $role->id);
     }
 
     public function permissionGroups(): array

@@ -15,12 +15,20 @@
         <flux:menu class="w-80 max-h-[520px] overflow-y-auto">
             <div class="flex items-center justify-between px-3 pt-3 pb-2">
                 <p class="text-xs font-semibold text-zinc-800">Notifications</p>
-                @if ($unreadCount > 0)
-                    <button type="button" wire:click="markAllRead"
-                        class="text-[11px] font-medium text-secondary hover:text-secondary-hover transition-colors">
-                        Mark all read
-                    </button>
-                @endif
+                <div class="flex items-center gap-3">
+                    @if ($unreadCount > 0)
+                        <button type="button" wire:click="markAllRead"
+                            class="text-[11px] font-medium text-secondary hover:text-secondary-hover transition-colors">
+                            Mark all read
+                        </button>
+                    @endif
+                    @if ($notifications->isNotEmpty())
+                        <button type="button" wire:click="clearAll"
+                            class="text-[11px] font-medium text-rose-500 hover:text-rose-600 transition-colors">
+                            Clear all
+                        </button>
+                    @endif
+                </div>
             </div>
 
             <flux:menu.separator />

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Advertisements;
 
+use App\Concerns\StaysOnForm;
 use App\Models\Advertisement;
 use App\Support\AdminActivity;
 use Illuminate\Support\Carbon;
@@ -10,6 +11,8 @@ use Livewire\Component;
 
 class Form extends Component
 {
+    use StaysOnForm;
+
     public ?int $advertisementId = null;
 
     public ?string $code = null;
@@ -69,7 +72,7 @@ class Form extends Component
             Advertisement::findOrFail($this->advertisementId)->update($data);
             $this->dispatch('notify', message: 'Advertisement updated successfully');
         } else {
-            Advertisement::create($data);
+            $this->advertisementId = Advertisement::create($data)->id;
             $this->dispatch('notify', message: 'Advertisement created successfully');
         }
 
@@ -78,7 +81,7 @@ class Form extends Component
             "Advertisement: {$this->name}",
         );
 
-        $this->redirect(route('admin.advertisements'), navigate: true);
+        $this->stayOnForm($creating, 'admin.advertisements.edit', $this->advertisementId);
     }
 
     public function render()

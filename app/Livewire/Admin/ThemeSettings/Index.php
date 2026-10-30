@@ -5,16 +5,17 @@ namespace App\Livewire\Admin\ThemeSettings;
 use App\Models\Setting;
 use App\Support\AdminActivity;
 use App\Support\CodeInstall;
-use App\Support\HeroSlides;
 use App\Support\SafeUpload;
 use App\Support\Themes;
 use App\Support\ThemeSettings;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
+use Themes\Ecommerce\Support\HeroSlides;
 
 class Index extends Component
 {
@@ -111,7 +112,7 @@ class Index extends Component
 
     /**
      * The homepage hero slider, in order — each slide {image, title,
-     * description, link} (see App\Support\HeroSlides). Persisted as a JSON
+     * description, link} (see Themes\Ecommerce\Support\HeroSlides). Persisted as a JSON
      * list in `home_hero_slides`; the first image is mirrored into
      * `home_hero_image` so anything reading the single hero image keeps working.
      *
@@ -232,7 +233,7 @@ class Index extends Component
      * it.
      *
      * This screen is deliberately more forgiving than the storefront, which drops
-     * a JSON object outright (see App\Support\PortfolioProfile::rows()). Here a
+     * a JSON object outright (see Themes\Portfolio\Support\PortfolioProfile::rows()). Here a
      * value that decodes to an object is shown as one editable row, so a bad
      * write is something the owner can see and delete instead of something that
      * silently reappears as [] the next time they open the screen.
@@ -395,9 +396,13 @@ class Index extends Component
 
         // A real browser reload, same as Settings\Index::save(), so anything
         // rendered from Setting::get() (e.g. the active theme) re-reads fresh.
-        session()->flash('success', $skipped === []
-            ? 'Theme settings saved.'
-            : 'Theme settings saved, but the '.implode(', ', $skipped).' theme\'s own fields were not written: its theme.json is missing, or the web server user cannot write to themes/ (check the folder and file permissions).');
+        if ($skipped === []) {
+            session()->flash('success', 'Theme settings saved.');
+        } else {
+            // An error, not a success: the theme's own fields (photo, text, lists)
+            // live in theme.json, so a skipped write means they were NOT saved.
+            session()->flash('error', 'Not saved: the '.implode(', ', $skipped).' theme\'s fields could not be written. Its theme.json is missing or not writable by the web server user (check permissions on themes/ and the file).');
+        }
 
         $this->js('window.location.reload()');
     }
@@ -507,7 +512,16 @@ class Index extends Component
                 $name = Str::limit($base, 60, '').'-'.Str::lower(Str::random(6)).'.'.SafeUpload::extension($file);
                 $path = $file->storeAs(self::UPLOAD_DIR.'/'.str_replace('_', '-', $key), $name, 'public');
 
-                $this->settings[$key] = $disk->url($path);
+                if ($path === false) {
+                    throw ValidationException::withMessages([
+                        'uploads.'.$key => 'The file could not be stored: storage/app/public is not writable by the web server user.',
+                    ]);
+                }
+
+                // Host-relative, not APP_URL-absolute: the admin and the storefront can
+                // sit on different hosts, and an absolute URL minted from a mismatched
+                // APP_URL saves fine but 404s once the screen reloads.
+                $this->settings[$key] = '/storage/'.ltrim((string) $path, '/');
             }
 
             $new = (string) ($this->settings[$key] ?? '');
@@ -1219,7 +1233,7 @@ class Index extends Component
 
         $themeCards = collect($themes)
             ->mapWithKeys(function (string $label, string $slug): array {
-                $base = Themes::path().'/'.$slug;
+                $base = Themes::path().'/'.$slug.'/views';
                 $files = is_dir($base)
                     ? array_merge(glob($base.'/*.blade.php') ?: [], glob($base.'/*/*.blade.php') ?: [])
                     : [];
@@ -1267,7 +1281,7 @@ class Index extends Component
      * The site-wide settings keys this screen owns. Kept in sync with the field
      * widgets in the blade view; the homepage image keys are read by the
      * storefront home template (see
-     * themes/ecommerce/home.blade.php).
+     * themes/ecommerce/views/index.blade.php).
      *
      * Deliberately no `theme_*` key: those belong to a theme's own
      * theme.json, not to this table (see saveThemeValues()).

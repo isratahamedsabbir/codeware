@@ -243,7 +243,7 @@ class Setting extends Model
 
     /**
      * Whether the "Additional Data" card shows on the admin product form —
-     * toggled from Settings → Widgets → Product Additional Data.
+     * toggled from the Additional Data row on the product form.
      */
     public static function productAdditionalDataEnabled(): bool
     {
@@ -252,11 +252,31 @@ class Setting extends Model
 
     /**
      * Whether the "Additional Data" card shows on the admin blog post form —
-     * toggled from Settings → Widgets → Blog Post Additional Data.
+     * toggled from the Additional Data row on the post form.
      */
     public static function postAdditionalDataEnabled(): bool
     {
         return self::truthy(static::get('additional_data_posts_enabled', '1'));
+    }
+
+    /**
+     * Whether a new contact-form submission is also emailed to contact_email —
+     * the switch on Admin → Contacts. On by default; the contact is stored
+     * either way, so switching it off loses nothing, it only stops the mail.
+     */
+    public static function contactEmailEnabled(): bool
+    {
+        return self::truthy(static::get('contact_email_enabled', '1'));
+    }
+
+    /**
+     * Whether a new contact-form submission is also sent to Telegram — the second
+     * switch on Admin → Contacts. Off by default: it needs a bot token and chat id
+     * (Settings → Telegram) before it can do anything.
+     */
+    public static function contactTelegramEnabled(): bool
+    {
+        return self::truthy(static::get('contact_telegram_enabled', '0'));
     }
 
     /**

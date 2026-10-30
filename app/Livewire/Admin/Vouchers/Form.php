@@ -3,8 +3,10 @@
 namespace App\Livewire\Admin\Vouchers;
 
 use App\Concerns\HasTranslatableFields;
+use App\Concerns\StaysOnForm;
 use App\Models\Voucher;
 use App\Support\AdminActivity;
+use App\Support\Slug;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -12,6 +14,7 @@ use Livewire\Component;
 class Form extends Component
 {
     use HasTranslatableFields;
+    use StaysOnForm;
 
     public ?int $voucherId = null;
 
@@ -21,6 +24,12 @@ class Form extends Component
 
     #[Validate('nullable|string|max:255')]
     public string $slug = '';
+
+    /**
+     * The last auto-generated slug value, so we know whether the admin has
+     * manually diverged from it — see updated().
+     */
+    public string $autoSlug = '';
 
     #[Validate('required|numeric|min:0|max:99999999.99')]
     public string $price = '';
@@ -45,6 +54,26 @@ class Form extends Component
             $this->value = (string) $voucher->value;
             $this->currency = $voucher->currency;
             $this->valid_days = $voucher->valid_days !== null ? (string) $voucher->valid_days : '';
+        }
+    }
+
+    /**
+     * Live slug-as-you-type — regenerates from the primary locale's name only
+     * while the slug is still empty or still what we last generated (i.e. the
+     * admin hasn't typed their own). An existing record's loaded slug never
+     * matches autoSlug, so editing its name leaves the slug alone. Livewire's
+     * updated{Field}() hooks don't fire for array keys like "name.en", hence
+     * the catch-all.
+     */
+    public function updated(string $name, mixed $value): void
+    {
+        if (! $this->isPrimaryLocaleUpdate($name, 'name')) {
+            return;
+        }
+
+        if ($this->slug === '' || $this->slug === $this->autoSlug) {
+            $this->autoSlug = Slug::make((string) $value);
+            $this->slug = $this->autoSlug;
         }
     }
 
@@ -74,6 +103,8 @@ class Form extends Component
             'valid_days' => $this->valid_days !== '' ? (int) $this->valid_days : null,
         ];
 
+        $creating = $this->voucherId === null;
+
         if ($this->voucherId) {
             Voucher::findOrFail($this->voucherId)->update($data);
             $this->dispatch('notify', message: 'Voucher updated successfully');
@@ -81,16 +112,16 @@ class Form extends Component
             // New vouchers stay inactive until switched on from the list —
             // status is not editable from this form, see Index::toggleStatus().
             $data['status'] = 'inactive';
-            Voucher::create($data);
+            $this->voucherId = Voucher::create($data)->id;
             $this->dispatch('notify', message: 'Voucher created successfully');
         }
 
         AdminActivity::log(
-            $this->voucherId ? 'updated' : 'created',
+            $creating ? 'created' : 'updated',
             "Voucher: {$this->primaryValue('name')}",
         );
 
-        $this->redirect(route('admin.vouchers'), navigate: true);
+        $this->stayOnForm($creating, 'admin.vouchers.edit', $this->voucherId);
     }
 
     public function render()

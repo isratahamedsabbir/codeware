@@ -91,11 +91,15 @@ Themes are modules too, in `themes/{slug}/` (registry: `App\Support\Themes`, set
 ```
 themes/{slug}/
     theme.json                manifest + settings values in one file
-    settings.blade.php        its admin settings screen
+    settings.blade.php        its admin settings screen (admin markup, not a storefront view)
     routes/web.php            its storefront routes (optional)
-    *.blade.php               page templates, view namespace theme-{slug}:: (errors/, account/ ...)
-    partials/_*.blade.php      fragments a page @includes — the underscore is the convention
     Controllers/              namespace Themes\{Slug}\Controllers — autoloaded, no composer dump
+    Support/                  namespace Themes\{Slug}\Support — theme-only helpers/read models
+    views/                    every storefront template, view namespace theme-{slug}::
+        index.blade.php         the home page (route `home`) — every theme needs one
+        page.blade.php, shop.blade.php, ...   one page template per route name
+        account/, auth/, errors/   grouped pages (errors/404.blade.php = the theme's own 404)
+        partials/_*.blade.php      fragments a page @includes — the underscore is the convention
     database/migrations/      auto-loaded via loadMigrationsFrom()
     database/seeders/         namespace Themes\{Slug}\Database\Seeders — NOT auto-discovered
     public/                   everything the web serves, at /themes/{slug}/...
@@ -112,14 +116,14 @@ The folder name **is** the slug (`^[A-Za-z0-9_-]+$`), and `Themes::all()` is a `
 **Hard rules (each one is a test in `tests/Feature/Frontend/ThemeScopedRoutesTest.php`):**
 
 - **No template fallback between themes.** `Themes::view()` never falls back — a page the active theme has no template for does not exist on that site. `MenuItem::isRenderableByCurrentTheme()` applies the same rule, so nav links to such pages are dropped. Always render through `Themes::viewOrFail()` / `ThemeController::view()`; never hand-build a view name.
-- **`Themes::ROUTE_TEMPLATES` is a hand-maintained mirror** of the route names across the theme route files: 17 entries (`home`, `page`, `shop`, `products.show`, `shop.category`, `shop.brand`, `shop.tag`, `favorites`, `blog`, `blog.post`, `cart`, `checkout`, `checkout.confirmation`, `account.*`). A new route name absent from it is invisible to the guard and always kept in the nav. Every theme must register `home`.
+- **`Themes::ROUTE_TEMPLATES` is a hand-maintained mirror** of the route names across the theme route files: 17 entries (`home` → `views/index.blade.php`, `page`, `shop`, `products.show`, `shop.category`, `shop.brand`, `shop.tag`, `favorites`, `blog`, `blog.post`, `cart`, `checkout`, `checkout.confirmation`, `account.*`). A new route name absent from it is invisible to the guard and always kept in the nav. Every theme must register `home`.
 - **All themes' route files are registered on purpose** — a theme's file is the whole description of that theme's site, but switching theme must not require rebuilding the route table, and `route('shop')` in shared code has to resolve. Don't "tidy" that loop into an active-theme-only load.
 - **Route names shared between themes must mean the same method + URI everywhere.**
 - **Storefront 404s render the active theme's own `errors/404.blade.php`** via `Themes::errorView(404)`; only storefront requests qualify (`Themes::isStorefrontRequest()` excludes admin/vendor/delivery hosts and `api/*`).
 
 **Shared base classes stay in `app/Http/Controllers/Themes/`** — `ThemeController` (plus the `Renders*` concerns: `RendersHomePage`, `RendersStandalonePage`, `RendersCatalog`, `RendersProduct`, `RendersCart`, `RendersAccount`, `RendersBlog`). A theme's controllers extend `ThemeController` and `use` the concern they need. Not theme-prefixed — the traits belong to no one theme.
 
-**CSS:** `vite.config.js` scans `themes/*/public/css/theme.css` and registers each as a Vite input named `theme-{slug}` (the slug is in the name because every file is called `theme.css` and same-basename inputs collapse into one entry). `Themes::storefrontEntry()` returns the active theme's own entry when it has one, else the catch-all `storefront.css`. `resources/css/base.css` imports Tailwind with `source(none)`, so **every `theme.css` must declare its own `@source`** — otherwise its templates render unstyled. The entry lives inside `public/`, so its `@source` is relative to `themes/{slug}/public/css/`: `'../..'` is the theme folder and `'../../../../resources/css/…'` the project root. Getting that one level wrong silently scans *every* theme, and Vite then collapses the three identical bundles into one shared chunk. Nothing needs a `npm run build` config edit when a theme is added — but a theme moved or added does need a rebuild, or `@vite` 404s on the stale manifest key.
+**CSS:** `vite.config.js` scans `themes/*/public/css/theme.css` and registers each as a Vite input named `theme-{slug}` (the slug is in the name because every file is called `theme.css` and same-basename inputs collapse into one entry). `Themes::storefrontEntry()` returns the active theme's own entry when it has one, else the catch-all `storefront.css`. `resources/css/base.css` imports Tailwind with `source(none)`, so **every `theme.css` must declare its own `@source`** — otherwise its templates render unstyled. The entry lives inside `public/`, so its `@source` is relative to `themes/{slug}/public/css/`: `'../../views'` is the templates folder (`'../..'` the theme folder) and `'../../../../resources/css/…'` the project root. Getting that one level wrong silently scans *every* theme, and Vite then collapses the three identical bundles into one shared chunk. Nothing needs a `npm run build` config edit when a theme is added — but a theme moved or added does need a rebuild, or `@vite` 404s on the stale manifest key.
 
 **Assets:** `ThemeAssetController` serves `themes/{slug}/public/{path}` at `/themes/{slug}/{path}` — unknown theme → 404, `realpath()` must still sit under that theme's `public/` (traversal blocked), and the MIME type comes from a fixed allow-list. Don't symlink a theme's `public/` into the app's; the route is the only supported path. `css/theme.css` is the one file it refuses: it's a Tailwind *source* full of `@import`/`@source`, so served raw it does nothing — the compiled sheet is what reaches the page.
 

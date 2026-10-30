@@ -4,7 +4,7 @@ use App\Models\Menu;
 use App\Models\MenuItem;
 use App\Models\Page;
 use App\Models\Setting;
-use App\Support\Frontend;
+use Themes\Portfolio\Support\PortfolioProfile;
 use Themes\Portfolio\Database\Seeders\MenuSeeder as PortfolioMenuSeeder;
 
 beforeEach(function () {
@@ -17,7 +17,7 @@ it('seeds a portfolio menu of its own, separate from the frontend menu', functio
     $this->seed(PortfolioMenuSeeder::class);
 
     expect(Menu::where('slug', 'portfolio')->where('name', 'Portfolio')->exists())->toBeTrue()
-        ->and(Frontend::portfolioMenuItems()->pluck('label')->all())
+        ->and(PortfolioProfile::menuItems()->pluck('label')->all())
         ->toBe(['Home', 'Services', 'Projects', 'Experience', 'Technology', 'Testimonials', 'Contact', 'Blog']);
 
     // Nothing seeded for the portfolio may leak into the ecommerce theme's nav.
@@ -39,7 +39,7 @@ it('keeps admin edits to a seeded item across a re-seed', function () {
 
     $this->seed(PortfolioMenuSeeder::class);
 
-    expect(Frontend::portfolioMenuItems()->pluck('label')->all())->toBe(['Home', 'Services', 'Work', 'Experience', 'Technology', 'Testimonials', 'Contact', 'Blog']);
+    expect(PortfolioProfile::menuItems()->pluck('label')->all())->toBe(['Home', 'Services', 'Work', 'Experience', 'Technology', 'Testimonials', 'Contact', 'Blog']);
 });
 
 it('points every seeded anchor at a section the one-pager actually renders', function () {
@@ -47,7 +47,7 @@ it('points every seeded anchor at a section the one-pager actually renders', fun
 
     $html = $this->get('/')->assertOk()->getContent();
 
-    foreach (Frontend::portfolioMenuItems() as $item) {
+    foreach (PortfolioProfile::menuItems() as $item) {
         // Anchors only. The Blog item is a real path, not a section on this
         // page, and is asserted separately below — the id="<path>" shape does
         // not describe it.
@@ -62,7 +62,7 @@ it('points every seeded anchor at a section the one-pager actually renders', fun
 it('links the blog from the nav as a real page rather than a section anchor', function () {
     $this->seed(PortfolioMenuSeeder::class);
 
-    $blog = Frontend::portfolioMenuItems()->firstWhere('url', '/blog');
+    $blog = PortfolioProfile::menuItems()->firstWhere('url', '/blog');
 
     // A fragment would be anchored to the one-pager, so from /blog it would land
     // the visitor back on the homepage rather than anywhere near a post.

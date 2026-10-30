@@ -37,6 +37,7 @@ class Features
         'contacts' => 'Contacts',
         'comments' => 'Comments (Posts, Products & Services)',
         'reviews' => 'Reviews (Posts, Products & Services)',
+        'careers' => 'Careers (job posts, applications & storefront page)',
         'newsletter' => 'Newsletter (Subscribers)',
         'menu' => 'Menu Manager',
         'email-templates' => 'Email Templates',

@@ -14,6 +14,8 @@
  */
 
 use App\Http\Controllers\Auth\PasswordResetOtpController;
+use App\Http\Controllers\Auth\SocialLoginController;
+use App\Http\Controllers\Auth\TwoFactorEmailOtpController;
 use App\Http\Controllers\Auth\TwoFactorPasskeyController;
 use App\Http\Controllers\ChatWidgetFragmentController;
 use App\Http\Controllers\InvoiceController;
@@ -21,6 +23,8 @@ use App\Http\Controllers\RobotsController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\VoucherController;
+use App\Models\Setting;
+use App\Support\Seo\Sitemap;
 use App\Support\Themes;
 use Illuminate\Support\Facades\Route;
 
@@ -51,6 +55,15 @@ Route::middleware('guest')->group(function () {
         Route::post('/verify-code', [PasswordResetOtpController::class, 'verify'])->name('password.verify.check');
         Route::post('/reset-password', [PasswordResetOtpController::class, 'reset'])->name('password.update');
     });
+});
+
+// Google/Facebook sign-in for the storefront. Domainless like Fortify's own
+// /login, so it answers on whichever storefront host the visitor is on.
+Route::middleware('guest')->prefix('auth')->group(function () {
+    Route::get('/{provider}/redirect', [SocialLoginController::class, 'redirect'])
+        ->where('provider', 'google|facebook')->name('social.redirect');
+    Route::get('/{provider}/callback', [SocialLoginController::class, 'callback'])
+        ->where('provider', 'google|facebook')->name('social.callback');
 });
 
 // Public, signed invoice links — what the invoice QR code and "Download PDF"
@@ -131,6 +144,15 @@ Route::middleware('throttle:two-factor')->group(function () {
 
     Route::post('/two-factor-challenge/passkey', [TwoFactorPasskeyController::class, 'store'])
         ->name('two-factor.passkey-verify');
+
+    // The same challenge answered with a code mailed to the account — see
+    // App\Http\Controllers\Auth\TwoFactorEmailOtpController. Same bucket and same
+    // domainless reasoning as the passkey pair above.
+    Route::post('/two-factor-challenge/email-otp/send', [TwoFactorEmailOtpController::class, 'send'])
+        ->name('two-factor.email-otp-send');
+
+    Route::post('/two-factor-challenge/email-otp', [TwoFactorEmailOtpController::class, 'store'])
+        ->name('two-factor.email-otp-verify');
 });
 
 require __DIR__.'/settings.php';
@@ -145,7 +167,91 @@ require __DIR__.'/settings.php';
 // describes the site rather than one theme's presentation of it and has to
 // keep answering when the active theme is a portfolio with no product or blog
 // templates at all.
+Route::get('/favicon.ico', function () {
+    $favicon = Setting::get('favicon');
+
+    if ($favicon) {
+        if (filter_var($favicon, FILTER_VALIDATE_URL)) {
+            return redirect()->away($favicon);
+        }
+
+        if (str_starts_with($favicon, '/')) {
+            $path = public_path(ltrim($favicon, '/'));
+            if (is_file($path)) {
+                $mime = match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+                    'svg' => 'image/svg+xml',
+                    'png' => 'image/png',
+                    'jpg', 'jpeg' => 'image/jpeg',
+                    'gif' => 'image/gif',
+                    'ico' => 'image/x-icon',
+                    default => 'image/x-icon',
+                };
+
+                return response()->file($path, ['Content-Type' => $mime]);
+            }
+        }
+
+        if (str_starts_with($favicon, 'storage/')) {
+            $relative = ltrim(str_replace('storage/', '', $favicon), '/');
+            $path = storage_path('app/public/'.$relative);
+            if (is_file($path)) {
+                $mime = match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+                    'svg' => 'image/svg+xml',
+                    'png' => 'image/png',
+                    'jpg', 'jpeg' => 'image/jpeg',
+                    'gif' => 'image/gif',
+                    'ico' => 'image/x-icon',
+                    default => 'image/x-icon',
+                };
+
+                return response()->file($path, ['Content-Type' => $mime]);
+            }
+        }
+
+        $path = public_path($favicon);
+        if (is_file($path)) {
+            $mime = match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+                'svg' => 'image/svg+xml',
+                'png' => 'image/png',
+                'jpg', 'jpeg' => 'image/jpeg',
+                'gif' => 'image/gif',
+                'ico' => 'image/x-icon',
+                default => 'image/x-icon',
+            };
+
+            return response()->file($path, ['Content-Type' => $mime]);
+        }
+
+        $storagePath = storage_path('app/public/'.ltrim($favicon, '/'));
+        if (is_file($storagePath)) {
+            $mime = match (strtolower(pathinfo($storagePath, PATHINFO_EXTENSION))) {
+                'svg' => 'image/svg+xml',
+                'png' => 'image/png',
+                'jpg', 'jpeg' => 'image/jpeg',
+                'gif' => 'image/gif',
+                'ico' => 'image/x-icon',
+                default => 'image/x-icon',
+            };
+
+            return response()->file($storagePath, ['Content-Type' => $mime]);
+        }
+    }
+
+    $default = public_path('default/logo.svg');
+    if (is_file($default)) {
+        return response()->file($default, ['Content-Type' => 'image/svg+xml']);
+    }
+
+    $path = public_path('favicon/favicon.ico');
+    if (is_file($path)) {
+        return response()->file($path, ['Content-Type' => 'image/x-icon']);
+    }
+
+    abort(404);
+});
+
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+Route::get('/sitemap-{group}.xml', SitemapController::class)->whereIn('group', Sitemap::GROUPS)->name('sitemap.group');
 Route::get('/robots.txt', RobotsController::class)->name('robots');
 
 // Every theme's storefront routes, one file per theme — but only the pages the

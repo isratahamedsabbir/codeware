@@ -1,7 +1,9 @@
 {
   "title": "About Us",
   "description": "Learn about our mission and vision",
-  "root": { "props": {} },
+  "root": {
+    "props": {}
+  },
   "content": [
     {
       "type": "HeroSection",
@@ -17,7 +19,11 @@
         "leftContent": {
           "title": "Corporate Profile",
           "description": "We were established in 2010 with a visionary mission to transform Bangladesh's agricultural landscape. We recognized the challenges faced by local farmers and committed ourselves to developing innovative solutions that would enhance productivity while promoting sustainable farming practices.",
-          "points": ["Serving 50,000+ farmers", "64 districts coverage", "5 product categories"]
+          "points": [
+            "Serving 50,000+ farmers",
+            "64 districts coverage",
+            "5 product categories"
+          ]
         },
         "rightImage": "/corporate_profile.jpeg?w=800"
       }
@@ -31,9 +37,21 @@
         "dark": true,
         "textAlign": "center",
         "cards": [
-          { "icon": "Target", "title": "Our Vision", "description": "To be the leading catalyst in transforming Bangladesh's agriculture into a sustainable, productive, and prosperous sector." },
-          { "icon": "Trophy", "title": "Our Mission", "description": "To provide innovative agricultural solutions, empower farmers with knowledge and technology, and promote sustainable practices." },
-          { "icon": "Sprout", "title": "Our Values", "description": "Innovation, Sustainability, Integrity, and Excellence in every solution we provide." }
+          {
+            "icon": "Target",
+            "title": "Our Vision",
+            "description": "To be the leading catalyst in transforming Bangladesh's agriculture into a sustainable, productive, and prosperous sector."
+          },
+          {
+            "icon": "Trophy",
+            "title": "Our Mission",
+            "description": "To provide innovative agricultural solutions, empower farmers with knowledge and technology, and promote sustainable practices."
+          },
+          {
+            "icon": "Sprout",
+            "title": "Our Values",
+            "description": "Innovation, Sustainability, Integrity, and Excellence in every solution we provide."
+          }
         ]
       }
     },
@@ -58,13 +76,77 @@
         "title": "Company Milestones",
         "subtitle": "Our Journey",
         "items": [
-          { "year": "2010", "title": "Company Founded", "description": "The company was established with a vision to transform Bangladesh agriculture." },
-          { "year": "2014", "title": "First Product Line Launch", "description": "Introduced our initial range of organic fertilizers to the market." },
-          { "year": "2018", "title": "National Expansion", "description": "Expanded distribution network across all 64 districts of Bangladesh." },
-          { "year": "2022", "title": "Sustainability Initiative", "description": "Launched comprehensive CSR programs including buy-back and afforestation." },
-          { "year": "2026", "title": "Digital Transformation", "description": "Introduced digital platforms to better serve farmers and dealers." }
+          {
+            "year": "2010",
+            "title": "Company Founded",
+            "description": "The company was established with a vision to transform Bangladesh agriculture."
+          },
+          {
+            "year": "2014",
+            "title": "First Product Line Launch",
+            "description": "Introduced our initial range of organic fertilizers to the market."
+          },
+          {
+            "year": "2018",
+            "title": "National Expansion",
+            "description": "Expanded distribution network across all 64 districts of Bangladesh."
+          },
+          {
+            "year": "2022",
+            "title": "Sustainability Initiative",
+            "description": "Launched comprehensive CSR programs including buy-back and afforestation."
+          },
+          {
+            "year": "2026",
+            "title": "Digital Transformation",
+            "description": "Introduced digital platforms to better serve farmers and dealers."
+          }
         ]
       }
+    }
+  ],
+  "cms": [
+    {
+      "name": "Our Story",
+      "cards": [
+        {
+          "title": "Who We Are",
+          "description": "Codeware is a trusted online store bringing quality everyday products to customers across Bangladesh at fair prices."
+        },
+        {
+          "title": "What We Do",
+          "description": "We source directly from trusted suppliers, check every product, and deliver it to your door quickly and safely."
+        },
+        {
+          "title": "Why Choose Us",
+          "description": "Genuine products, secure payments, easy returns and a support team that answers when you need it."
+        },
+        {
+          "title": "Our Promise",
+          "description": "If something isn't right, we'll make it right. Your satisfaction is the measure of our work."
+        }
+      ]
+    },
+    {
+      "name": "By the Numbers",
+      "cards": [
+        {
+          "title": "50,000+",
+          "description": "Happy customers served"
+        },
+        {
+          "title": "64",
+          "description": "Districts delivered to"
+        },
+        {
+          "title": "1,000+",
+          "description": "Products in our catalogue"
+        },
+        {
+          "title": "24/7",
+          "description": "Customer support"
+        }
+      ]
     }
   ]
 }

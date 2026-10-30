@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Discounts;
 
+use App\Concerns\StaysOnForm;
 use App\Models\Discount;
 use App\Models\Product;
 use App\Support\AdminActivity;
@@ -11,6 +12,8 @@ use Livewire\Component;
 
 class Form extends Component
 {
+    use StaysOnForm;
+
     public ?int $discountId = null;
 
     #[Validate('required|string|max:150')]
@@ -99,7 +102,7 @@ class Form extends Component
             "Discount: {$data['name']}",
         );
 
-        $this->redirect(route('admin.discounts'), navigate: true);
+        $this->stayOnForm($creating, 'admin.discounts.edit', $discount->id);
     }
 
     public function render()

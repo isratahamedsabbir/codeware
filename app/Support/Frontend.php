@@ -46,8 +46,8 @@ class Frontend
     /**
      * The "Frontend" menu (see FrontendMenuSeeder, and /admin/menu), managed
      * by hand rather than auto-generated from the page list — used as the site
-     * nav by the ecommerce theme. The portfolio theme has a nav of its own,
-     * see portfolioMenuItems().
+     * nav by the ecommerce theme. Other themes read their own menu
+     * through groupItems().
      *
      * @return Collection<int, MenuItem>
      */
@@ -57,16 +57,15 @@ class Frontend
     }
 
     /**
-     * The "Portfolio" menu (see ThemesPortfolioDatabaseSeedersMenuSeeder) — the portfolio theme's own
-     * nav. Kept apart from menuItems() on purpose: the portfolio is a single
-     * page, so its items are section anchors ("#projects", "#skills", ...) that
-     * only mean anything there, while the ecommerce theme keeps menuItems().
+     * A theme's own menu group, filtered to what the active theme can render.
+     * Lets a theme read a menu it owns (e.g. the portfolio one-pager's section
+     * anchors) without this shared class knowing the theme exists.
      *
      * @return Collection<int, MenuItem>
      */
-    public static function portfolioMenuItems(): Collection
+    public static function groupItems(string $cacheKey, string $group): Collection
     {
-        return static::renderableByTheme(static::menuCached('portfolio-menu', 'portfolio'));
+        return static::renderableByTheme(static::menuCached($cacheKey, $group));
     }
 
     /**

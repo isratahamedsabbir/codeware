@@ -7,6 +7,9 @@ use App\Concerns\HasPerPage;
 use App\Concerns\SendsCustomEmail;
 use App\Concerns\WithSearch;
 use App\Models\Contact;
+use App\Models\Setting;
+use App\Support\AdminActivity;
+use App\Support\Telegram;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -19,6 +22,50 @@ class Index extends Component
     public ?int $viewingMessageId = null;
 
     public ?int $viewingContactId = null;
+
+    public ?int $deletingId = null;
+
+    public string $deleteConfirmation = '';
+
+    /** Whether new contacts are also emailed (Setting::contactEmailEnabled()). */
+    public bool $emailEnabled = true;
+
+    /** Whether new contacts are also sent to Telegram (Setting::contactTelegramEnabled()). */
+    public bool $telegramEnabled = false;
+
+    public function mount(): void
+    {
+        $this->emailEnabled = Setting::contactEmailEnabled();
+        $this->telegramEnabled = Setting::contactTelegramEnabled();
+    }
+
+    public function updatedTelegramEnabled(): void
+    {
+        Setting::set('contact_telegram_enabled', $this->telegramEnabled ? '1' : '0');
+
+        AdminActivity::log('updated', 'Contact Telegram notifications turned '.($this->telegramEnabled ? 'on' : 'off'));
+
+        // Allowed without a token so it can be switched on first, but said out
+        // loud: a switch that is on and silently does nothing is worse than off.
+        $this->dispatch('notify',
+            type: $this->telegramEnabled && ! Telegram::configured() ? 'warning' : 'success',
+            message: match (true) {
+                ! $this->telegramEnabled => 'New contacts will not be sent to Telegram',
+                Telegram::configured() => 'New contacts will be sent to Telegram',
+                default => 'Telegram is on, but the bot token / chat ID are not set in Settings yet',
+            });
+    }
+
+    public function updatedEmailEnabled(): void
+    {
+        Setting::set('contact_email_enabled', $this->emailEnabled ? '1' : '0');
+
+        AdminActivity::log('updated', 'Contact email notifications turned '.($this->emailEnabled ? 'on' : 'off'));
+
+        $this->dispatch('notify', message: $this->emailEnabled
+            ? 'New contacts will be emailed'
+            : 'New contacts will not be emailed');
+    }
 
     public function updatedStatusFilter(): void
     {
@@ -51,8 +98,15 @@ class Index extends Component
         $this->viewingMessageId = null;
     }
 
+    /**
+     * Opening a contact marks it read — viewing it is what "read" means. Goes
+     * through updateStatus() so the one-way rule (read never flips back) stays
+     * in one place.
+     */
     public function showContact(int $id): void
     {
+        $this->updateStatus($id, 'read');
+
         $this->viewingContactId = $id;
         $this->dispatch('open-modal', name: 'contact-view');
     }
@@ -68,6 +122,40 @@ class Index extends Component
         $this->customEmailSubject = 'Re: '.$contact->subject;
         $this->dispatch('close-modal', name: 'contact-view');
         $this->dispatch('open-modal', name: 'send-custom-email');
+    }
+
+    /**
+     * Deleting contacts is a developer-environment-only tool — checked
+     * server-side too, since Livewire actions are callable without the button.
+     */
+    public function confirmDelete(int $id): void
+    {
+        abort_unless(app()->environment('developer'), 403);
+
+        $this->deletingId = $id;
+        $this->deleteConfirmation = '';
+        $this->dispatch('open-modal', name: 'contact-delete');
+    }
+
+    public function delete(): void
+    {
+        abort_unless(app()->environment('developer'), 403);
+
+        if (strtolower(trim($this->deleteConfirmation)) !== 'delete' || ! $this->deletingId) {
+            return;
+        }
+
+        $contact = Contact::findOrFail($this->deletingId);
+        AdminActivity::log('deleted', "Contact #{$contact->id}: {$contact->full_name}");
+        $contact->delete();
+
+        $this->deletingId = null;
+        $this->deleteConfirmation = '';
+        $this->viewingMessageId = null;
+        $this->viewingContactId = null;
+        $this->selectedIds = array_values(array_diff($this->selectedIds, [$contact->id]));
+        $this->dispatch('close-modal', name: 'contact-delete');
+        $this->dispatch('notify', message: 'Contact deleted successfully');
     }
 
     public function render()

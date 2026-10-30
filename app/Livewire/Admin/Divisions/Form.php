@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Divisions;
 
+use App\Concerns\StaysOnForm;
 use App\Models\Country;
 use App\Models\Division;
 use App\Support\AdminActivity;
@@ -10,6 +11,8 @@ use Livewire\Component;
 
 class Form extends Component
 {
+    use StaysOnForm;
+
     public ?int $divisionId = null;
 
     #[Validate('required|integer|exists:countries,id')]
@@ -45,7 +48,7 @@ class Form extends Component
             Division::findOrFail($this->divisionId)->update($data);
             $this->dispatch('notify', message: 'Division updated successfully');
         } else {
-            Division::create($data);
+            $this->divisionId = Division::create($data)->id;
             $this->dispatch('notify', message: 'Division created successfully');
         }
 
@@ -54,7 +57,7 @@ class Form extends Component
             "Division: {$this->name}",
         );
 
-        $this->redirect(route('admin.divisions'), navigate: true);
+        $this->stayOnForm($creating, 'admin.divisions.edit', $this->divisionId);
     }
 
     public function render()

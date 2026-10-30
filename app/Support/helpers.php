@@ -44,7 +44,7 @@ if (! function_exists('format_money')) {
     function format_money(mixed $amount, ?int $decimals = null): string
     {
         $symbol = Setting::get('currency_symbol', '৳');
-        $decimals ??= (int) Setting::get('decimal_places', 2);
+        $decimals ??= (int) Setting::get('decimal_places', 0);
         $formatted = number_format((float) $amount, $decimals);
 
         if ($decimals > 0) {

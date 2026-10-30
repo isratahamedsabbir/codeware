@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Concerns\CachesContent;
 use App\Concerns\HasCreator;
+use App\Support\CustomCode;
 use App\Support\Locale;
 use App\Support\Slug;
 use Illuminate\Database\Eloquent\Builder;
@@ -34,7 +35,7 @@ class Page extends Model
         'user_id', 'title', 'slug', 'content', 'description', 'puck_data', 'status',
         'template', 'type', 'product_id', 'post_id', 'category_id', 'sort_order', 'seo_title', 'seo_description',
         'og_image', 'og_title', 'og_description',
-        'twitter_title', 'twitter_description', 'twitter_image', 'no_index', 'no_follow',
+        'twitter_title', 'twitter_description', 'twitter_image', 'no_index', 'no_follow', 'custom_code_id',
         'canonical_base', 'canonical_slug', 'constant',
     ];
 
@@ -60,13 +61,48 @@ class Page extends Model
             $page->collapseEmptySeoTranslations();
         });
 
-        static::updating(function (Page $page) {
-            if ($page->isDirty('content') && $page->getOriginal('content') && auth()->id()) {
-                PageRevision::create([
-                    'page_id' => $page->id,
-                    'user_id' => auth()->id(),
-                    'content' => $page->getOriginal('content'),
-                ]);
+        // Every save that changes the body — a Puck publish from the frontend,
+        // a content edit, a restore — writes one revision holding the body as
+        // it now stands, so the list is the page's publish history, newest
+        // first. A save that leaves content and puck_data as they were (a
+        // title or SEO tweak, a re-publish with no changes) writes nothing.
+        static::saved(function (Page $page) {
+            if (! $page->wasRecentlyCreated && ! $page->wasChanged(['content', 'puck_data'])) {
+                return;
+            }
+
+            $content = $page->getAttributes()['content'] ?? null;
+            $puck = $page->getAttributes()['puck_data'] ?? null;
+
+            if (blank($content) && blank($puck)) {
+                return;
+            }
+
+            $content = filled($content) ? $content : null;
+            $puck = filled($puck) ? $puck : null;
+
+            // wasRecentlyCreated stays true on a model instance that is saved
+            // again after being created, so compare with the newest revision
+            // rather than trusting it alone.
+            $latest = PageRevision::where('page_id', $page->id)->latest('id')->first();
+
+            if ($latest && $latest->content === $content && $latest->puck_data === $puck) {
+                return;
+            }
+
+            PageRevision::create([
+                'page_id' => $page->id,
+                'user_id' => auth()->id(),
+                'content' => $content,
+                'puck_data' => $puck,
+            ]);
+
+            // Keep the history bounded: the newest PageRevision::KEEP per page.
+            $stale = PageRevision::where('page_id', $page->id)
+                ->orderByDesc('id')->skip(PageRevision::KEEP)->take(PHP_INT_MAX)->pluck('id');
+
+            if ($stale->isNotEmpty()) {
+                PageRevision::whereIn('id', $stale)->delete();
             }
         });
     }
@@ -106,9 +142,30 @@ class Page extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Writes a revision's content/layout back onto this page. The save goes
+     * through the normal hook, so it lands in the history as a new revision on
+     * top. Returns false when the revision holds nothing to write.
+     */
+    public function restoreRevision(PageRevision $revision): bool
+    {
+        $attributes = array_filter([
+            'content' => $revision->contentData(),
+            'puck_data' => $revision->puckDataArray(),
+        ], fn ($value) => $value !== null);
+
+        if ($attributes === []) {
+            return false;
+        }
+
+        $this->update($attributes);
+
+        return true;
+    }
+
     public function revisions(): HasMany
     {
-        return $this->hasMany(PageRevision::class)->latest();
+        return $this->hasMany(PageRevision::class)->latest()->latest('id');
     }
 
     public function product(): BelongsTo
@@ -139,6 +196,19 @@ class Page extends Model
     public function scopeOfType(Builder $query, string $type): Builder
     {
         return $query->where('type', $type);
+    }
+
+    /**
+     * The Settings → Custom Code snippet this page picked ({id, name, head,
+     * body}), or null when it picked none or the snippet has since been
+     * deleted. The global code is not repeated here — it is in the public
+     * settings.
+     *
+     * @return array{id: string, name: string, head: string, body: string}|null
+     */
+    public function customCode(): ?array
+    {
+        return CustomCode::forPage($this);
     }
 
     /**

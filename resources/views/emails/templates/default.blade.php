@@ -50,12 +50,12 @@
       <p style="margin:0 0 14px;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:1.2px;">Get in touch</p>
 
       <!-- Contact cards -->
-      <div class="contact-row" style="display:flex;gap:12px;">
+      <div class="contact-row" style="display:flex;margin:0 -6px -12px;">
 
         <!-- Email -->
         @if (\App\Models\Setting::get('contact_email'))
         <a href="mailto:{{ \App\Models\Setting::get('contact_email') }}"
-           style="flex:1;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;color:inherit;">
+           style="flex:1;margin:0 6px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;color:inherit;">
           <div>
             <p style="margin:0;font-size:11px;color:#94a3b8;font-weight:400;">Email</p>
             <p style="margin:3px 0 0;font-size:12px;color:#5d9c1f;font-weight:600;">{{ \App\Models\Setting::get('contact_email') }}</p>
@@ -66,7 +66,7 @@
         <!-- Website -->
         @if (config('app.frontend_url'))
         <a href="{{ config('app.frontend_url') }}"
-           style="flex:1;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;color:inherit;">
+           style="flex:1;margin:0 6px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;color:inherit;">
           <div>
             <p style="margin:0;font-size:11px;color:#94a3b8;font-weight:400;">Website</p>
             <p style="margin:3px 0 0;font-size:12px;color:#5d9c1f;font-weight:600;">{{ config('app.name') }}</p>

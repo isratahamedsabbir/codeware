@@ -4,7 +4,9 @@ namespace App\Livewire\Admin\Pages;
 
 use App\Concerns\HasSeoFields;
 use App\Concerns\HasTranslatableFields;
+use App\Concerns\StaysOnForm;
 use App\Models\Page;
+use App\Models\PageRevision;
 use App\Support\AdminActivity;
 use App\Support\PuckEditor;
 use App\Support\Slug;
@@ -14,6 +16,7 @@ use Livewire\Component;
 class Form extends Component
 {
     use HasSeoFields, HasTranslatableFields;
+    use StaysOnForm;
 
     public ?int $pageId = null;
 
@@ -199,11 +202,31 @@ class Form extends Component
         $this->js('window.open('.json_encode($url).', \'_blank\')');
     }
 
+    /**
+     * Puts a past revision's content/layout back on the page. Page's saved hook
+     * records the result as a new revision on top, so the history stays linear
+     * and a restore can itself be undone from the same list.
+     */
+    public function restoreRevision(int $revisionId): void
+    {
+        $page = Page::findOrFail($this->pageId);
+        $revision = $page->revisions()->findOrFail($revisionId);
+
+        if (! $page->restoreRevision($revision)) {
+            return;
+        }
+
+        AdminActivity::log('updated', "Page #{$page->id}: restored revision #{$revision->id}");
+        $this->dispatch('notify', message: 'Revision restored successfully');
+    }
+
     public function save(): void
     {
+        $creating = $this->pageId === null;
+
         $this->persistPage();
 
-        $this->redirect(route('admin.pages'), navigate: true);
+        $this->stayOnForm($creating, 'admin.pages.edit', $this->pageId);
     }
 
     private function persistPage(): void
@@ -296,7 +319,12 @@ class Form extends Component
 
     public function render()
     {
-        return view('livewire.admin.pages.form')
-            ->layout('layouts.admin', ['title' => $this->pageId ? 'Edit Page Constant' : 'New Page']);
+        return view('livewire.admin.pages.form', [
+            'revisions' => $this->pageId
+                ? Page::find($this->pageId)?->revisions()->with('user')->limit(20)->get() ?? collect()
+                : collect(),
+            'revisionCount' => $this->pageId ? PageRevision::where('page_id', $this->pageId)->count() : 0,
+        ])
+            ->layout('layouts.admin', ['title' => $this->pageId ? 'Edit Page' : 'New Page']);
     }
 }

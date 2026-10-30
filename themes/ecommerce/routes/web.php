@@ -20,6 +20,7 @@
 use Illuminate\Support\Facades\Route;
 use Themes\Ecommerce\Controllers\AccountController;
 use Themes\Ecommerce\Controllers\BlogController;
+use Themes\Ecommerce\Controllers\CareerController;
 use Themes\Ecommerce\Controllers\CartController;
 use Themes\Ecommerce\Controllers\FlashDealController;
 use Themes\Ecommerce\Controllers\HomeController;
@@ -51,11 +52,13 @@ Route::get('/{slug}', [PageController::class, 'page'])
 
 // Category slugs live on each category's paired Page; brand/tag slugs are
 // derived from the primary-locale name.
-Route::get('/shop', [ShopController::class, 'shop'])->name('shop');
-Route::get('/products/{slug}', [ProductController::class, 'product'])->name('products.show');
-Route::get('/category/{slug}', [ShopController::class, 'category'])->name('shop.category');
-Route::get('/brand/{slug}', [ShopController::class, 'brand'])->name('shop.brand');
-Route::get('/tag/{slug}', [ShopController::class, 'tag'])->name('shop.tag');
+Route::middleware('feature:products')->group(function () {
+    Route::get('/shop', [ShopController::class, 'shop'])->name('shop');
+    Route::get('/products/{slug}', [ProductController::class, 'product'])->name('products.show');
+    Route::get('/category/{slug}', [ShopController::class, 'category'])->name('shop.category');
+    Route::get('/brand/{slug}', [ShopController::class, 'brand'])->name('shop.brand');
+    Route::get('/tag/{slug}', [ShopController::class, 'tag'])->name('shop.tag');
+});
 
 // Advertisement click tracking — counts the click, then sends the visitor to
 // the banner's destination URL. Gated by the same feature flag that renders the
@@ -66,7 +69,9 @@ Route::middleware('feature:advertisements')->group(function () {
 
 // Saved favorites — guests keep a session bag that merges into their account
 // the moment they sign in (see App\Support\Favorites). No auth required.
-Route::get('/favorites', [ProductController::class, 'favorites'])->name('favorites');
+Route::middleware('feature:products')->group(function () {
+    Route::get('/favorites', [ProductController::class, 'favorites'])->name('favorites');
+});
 
 // Flash deals — the sales running right now, with a countdown. The header only
 // links here while one is live, but the page itself answers regardless (an empty
@@ -82,6 +87,13 @@ Route::middleware('feature:flash-deals')->group(function () {
 Route::middleware('feature:blog')->group(function () {
     Route::get('/blog', [BlogController::class, 'blog'])->name('blog');
     Route::get('/blog/{slug}', [BlogController::class, 'post'])->name('blog.post');
+});
+
+// Careers — open job posts and the application form, gated by the "careers"
+// feature flag like the admin's Job Posts / Applications screens.
+Route::middleware('feature:careers')->group(function () {
+    Route::get('/careers', [CareerController::class, 'careers'])->name('careers');
+    Route::get('/careers/{slug}', [CareerController::class, 'career'])->name('careers.show');
 });
 
 // Cart + checkout — session-backed carts (see App\Support\Cart) that turn into

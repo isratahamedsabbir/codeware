@@ -3,6 +3,7 @@
 namespace App\Livewire\Frontend;
 
 use App\Models\Contact;
+use App\Support\Telegram;
 use Livewire\Component;
 
 /**
@@ -47,6 +48,12 @@ class ContactForm extends Component
         Contact::create([
             ...$validated,
             'phone_number' => '',
+        ]);
+
+        Telegram::notifyContact($validated['subject'], [
+            'Full name' => $validated['full_name'],
+            'Email' => $validated['email'],
+            'Message' => $validated['message'],
         ]);
 
         $this->reset(['full_name', 'email', 'subject', 'message']);

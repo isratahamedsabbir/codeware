@@ -25,6 +25,8 @@
         'comments'           => ['Client Queries', 'admin.contacts'],
         'reviews'            => ['Client Queries', 'admin.contacts'],
         'subscribers'        => ['Client Queries', 'admin.contacts'],
+        'careers'            => ['Careers', 'admin.careers'],
+        'career-applications' => ['Careers', 'admin.careers'],
         'reports'            => ['Sales', 'admin.reports'],
         'media-library'      => ['Library & System', 'admin.media-library'],
         'settings'           => ['Library & System', 'admin.settings'],

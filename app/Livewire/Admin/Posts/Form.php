@@ -4,9 +4,11 @@ namespace App\Livewire\Admin\Posts;
 
 use App\Concerns\HasSeoFields;
 use App\Concerns\HasTranslatableFields;
+use App\Concerns\StaysOnForm;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\PostCategory;
+use App\Models\Setting;
 use App\Models\Tag;
 use App\Models\Type;
 use App\Support\AdminActivity;
@@ -16,12 +18,14 @@ use App\Support\Slug;
 use App\Support\Taxonomy;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 class Form extends Component
 {
     use HasSeoFields, HasTranslatableFields;
+    use StaysOnForm;
 
     public ?int $postId = null;
 
@@ -231,11 +235,13 @@ class Form extends Component
 
         $this->validate($rules);
 
+        $creating = $this->postId === null;
+
         $this->persistPost();
 
-        $this->dispatch('notify', message: $this->postId ? 'Post updated successfully' : 'Post created successfully');
+        $this->dispatch('notify', message: $creating ? 'Post created successfully' : 'Post updated successfully');
 
-        $this->redirect(route('admin.posts'), navigate: true);
+        $this->stayOnForm($creating, 'admin.posts.edit', $this->postId);
     }
 
     private function persistPost(): void
@@ -280,6 +286,12 @@ class Form extends Component
             $creating ? 'created' : 'updated',
             "Post #{$post->id}: {$this->primaryValue('title')}",
         );
+    }
+
+    #[On('toggle-additional-data')]
+    public function toggleAdditionalData(): void
+    {
+        Setting::set('additional_data_posts_enabled', Setting::postAdditionalDataEnabled() ? '0' : '1');
     }
 
     // This method is called by the FilePicker component when an image is selected

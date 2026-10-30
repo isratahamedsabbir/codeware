@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\Admin\ContactController as AdminContactControlle
 use App\Http\Controllers\Api\V1\Admin\LayoutController as AdminLayoutController;
 use App\Http\Controllers\Api\V1\Admin\MediaController;
 use App\Http\Controllers\Api\V1\Admin\PageController as AdminPageController;
+use App\Http\Controllers\Api\V1\Admin\PageRevisionController as AdminPageRevisionController;
 use App\Http\Controllers\Api\V1\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Api\V1\Admin\ProductCategoryController as AdminProductCategoryController;
 use App\Http\Controllers\Api\V1\Admin\ProductController as AdminProductController;
@@ -107,10 +108,12 @@ Route::get('/pages/{slug}', [PageController::class, 'show'])->name('pages.show')
 Route::get('/settings/public', [SettingsController::class, 'public'])->name('settings.public');
 Route::get('/layout', [LayoutController::class, 'show'])->name('layout.show');
 
-Route::get('/product-categories', [ProductCategoryController::class, 'index'])->name('product-categories.index');
-Route::get('/product-categories/{slug}', [ProductCategoryController::class, 'show'])->name('product-categories.show');
-Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
+Route::middleware('feature:products')->group(function () {
+    Route::get('/product-categories', [ProductCategoryController::class, 'index'])->name('product-categories.index');
+    Route::get('/product-categories/{slug}', [ProductCategoryController::class, 'show'])->name('product-categories.show');
+    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+    Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
+});
 
 // Flash deals — only the ones live right now (see FlashDeal::scopeLive()).
 Route::middleware('feature:flash-deals')->group(function () {
@@ -208,6 +211,9 @@ Route::middleware(['auth:sanctum', 'token-scope', 'can:access-admin'])->prefix('
     Route::post('/pages', [AdminPageController::class, 'store'])->name('pages.store');
     Route::put('/pages/{id}', [AdminPageController::class, 'update'])->name('pages.update');
     Route::delete('/pages/{id}', [AdminPageController::class, 'destroy'])->name('pages.destroy');
+    Route::get('/pages/{id}/revisions', [AdminPageRevisionController::class, 'index'])->name('pages.revisions.index');
+    Route::get('/pages/{id}/revisions/{revisionId}', [AdminPageRevisionController::class, 'show'])->name('pages.revisions.show');
+    Route::post('/pages/{id}/revisions/{revisionId}/restore', [AdminPageRevisionController::class, 'restore'])->name('pages.revisions.restore');
 
     Route::get('/media', [MediaController::class, 'index'])->name('media.index');
     Route::post('/media', [MediaController::class, 'store'])->name('media.store');

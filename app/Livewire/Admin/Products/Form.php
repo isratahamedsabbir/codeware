@@ -12,6 +12,7 @@ use App\Models\ProductAttribute;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use App\Models\ProductVendor;
+use App\Models\Setting;
 use App\Models\Tag;
 use App\Models\Type;
 use App\Models\User;
@@ -20,9 +21,11 @@ use App\Support\Locale;
 use App\Support\PuckEditor;
 use App\Support\Slug;
 use App\Support\Taxonomy;
+use App\Support\Themes;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
@@ -109,6 +112,9 @@ class Form extends Component
     /** Whole months of warranty coverage from purchase; blank = no warranty. */
     #[Validate('nullable|integer|min:0|max:600')]
     public string $warranty_months = '';
+
+    /** Landing-page template slug (themes/{slug}/views/landing/); blank = the default one. */
+    public string $landing_page = '';
 
     public bool $is_featured = false;
 
@@ -213,6 +219,7 @@ class Form extends Component
             }
             $this->quantity = $product->quantity !== null ? (string) $product->quantity : '';
             $this->warranty_months = $product->warranty_months !== null ? (string) $product->warranty_months : '';
+            $this->landing_page = (string) $product->landing_page;
             $this->is_featured = (bool) $product->is_featured;
 
             $this->featured_image = $product->featured_image ?? '';
@@ -745,6 +752,13 @@ class Form extends Component
      * product's current discount is kept even if it went inactive, so an
      * existing attachment never silently disappears from the select.
      */
+    /** Landing pages the active theme ships, for the picker. */
+    #[Computed]
+    public function landingOptions(): array
+    {
+        return Themes::landingPages();
+    }
+
     #[Computed]
     public function discountOptions()
     {
@@ -848,6 +862,7 @@ class Form extends Component
         $rules['category_ids.*'] = Taxonomy::eachRule(ProductCategory::class);
         $rules['tag_ids.*'] = Taxonomy::eachRule(Tag::class, Type::PRODUCT);
         $rules['related_product_ids.*'] = ['integer', Rule::exists('products', 'id')];
+        $rules['landing_page'] = ['nullable', Rule::in(array_keys(Themes::landingPages()))];
 
         $this->validate($rules);
 
@@ -895,14 +910,21 @@ class Form extends Component
         $rules['category_ids.*'] = Taxonomy::eachRule(ProductCategory::class);
         $rules['tag_ids.*'] = Taxonomy::eachRule(Tag::class, Type::PRODUCT);
         $rules['related_product_ids.*'] = ['integer', Rule::exists('products', 'id')];
+        $rules['landing_page'] = ['nullable', Rule::in(array_keys(Themes::landingPages()))];
 
         $this->validate($rules);
 
+        $creating = $this->productId === null;
+
         $this->persistProduct();
 
-        $this->dispatch('notify', message: $this->productId ? 'Product updated successfully' : 'Product created successfully');
+        $this->dispatch('notify', message: $creating ? 'Product created successfully' : 'Product updated successfully');
 
-        $this->redirect(route('admin.products'), navigate: true);
+        // Saving keeps the admin on the form: a new product lands on its own edit
+        // page, an existing one simply stays where it is.
+        if ($creating) {
+            $this->redirect(route('admin.products.edit', $this->productId), navigate: true);
+        }
     }
 
     private function persistProduct(): void
@@ -919,6 +941,7 @@ class Form extends Component
             'discount_price' => $this->discount_price !== '' && $this->discount_id !== '' ? $this->discount_price : null,
             'quantity' => $this->quantity !== '' ? $this->quantity : 0,
             'warranty_months' => $this->warranty_months !== '' ? $this->warranty_months : null,
+            'landing_page' => $this->landing_page !== '' ? $this->landing_page : null,
             'is_featured' => $this->is_featured,
             'description' => $this->translatablePayload('description') ?: null,
             'excerpt' => $this->translatablePayload('excerpt') ?: null,
@@ -972,6 +995,12 @@ class Form extends Component
             $creating ? 'created' : 'updated',
             "Product #{$product->id}: {$this->primaryValue('name')}",
         );
+    }
+
+    #[On('toggle-additional-data')]
+    public function toggleAdditionalData(): void
+    {
+        Setting::set('additional_data_products_enabled', Setting::productAdditionalDataEnabled() ? '0' : '1');
     }
 
     public function render()
