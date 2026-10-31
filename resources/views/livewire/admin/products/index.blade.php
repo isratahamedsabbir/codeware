@@ -67,9 +67,15 @@
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
         </select>
-        <flux:button size="sm" variant="ghost" icon="arrow-down-tray" href="{{ route('admin.products.export', ['search' => $search, 'status' => $statusFilter]) }}" class="ml-auto">
-            Export CSV
-        </flux:button>
+        <div class="ml-auto flex items-center gap-2">
+            <flux:button size="sm" variant="ghost" icon="arrow-down-tray"
+                href="{{ route('admin.products.export', ['search' => $search, 'status' => $statusFilter]) }}">
+                Export CSV
+            </flux:button>
+            <flux:button size="sm" variant="ghost" icon="arrow-up-tray" wire:click="openImport">
+                Import CSV
+            </flux:button>
+        </div>
         {{-- Search --}}
         <div class="relative max-w-xs">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" viewBox="0 0 24 24"
@@ -136,6 +142,7 @@
                     @forelse ($products as $product)
                         @php
                             $isSelected = in_array($product->id, $selectedIds, true);
+                            $bulkActive = count($selectedIds) > 0;
                             $lowStock = (int) $product->quantity <= $minStockQuantity;
                         @endphp
                         <tr wire:key="product-{{ $product->id }}"
@@ -144,9 +151,13 @@
                             @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()"
                             @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $product->id }}) }">
 
-                            {{-- Expand toggle, small screens only, where columns are hidden. --}}
+                            {{-- Selection checkbox (bulk mode) and small-screen expand toggle. --}}
                             <td class="px-1 py-2 text-center">
                                 <div class="flex items-center justify-center gap-1" @click.stop>
+                                    @if ($bulkActive)
+                                        <input type="checkbox" wire:click="toggleSelect({{ $product->id }})" @checked($isSelected)
+                                            aria-label="Select product" class="w-4 h-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
+                                    @endif
                                     <x-admin-row-expand-toggle class="lg:hidden" :expanded="$viewingId === $product->id"
                                         wire:click="{{ $viewingId === $product->id ? 'closeDetails' : 'viewDetails('.$product->id.')' }}" />
                                 </div>
@@ -329,7 +340,6 @@
                             {{-- Actions — disabled while a bulk selection is active, so the
                                  per-row actions can't conflict with the bulk toolbar above. --}}
                             <td class="sticky right-0 z-10 {{ $lowStock ? 'bg-rose-50 group-hover/row:bg-rose-100' : 'bg-white group-hover/row:bg-indigo-100' }} border-l border-zinc-100 px-4 py-2">
-                                @php $bulkActive = count($selectedIds) > 0; @endphp
                                 <x-admin-row-actions :actions="[
                                     ['href' => route('admin.products.show', $product->id), 'icon' => 'eye', 'label' => 'View', 'color' => 'secondary', 'disabled' => $bulkActive],
                                     $product->slug && ! $bulkActive
@@ -592,6 +602,86 @@
                     </div>
                 </div>
             @endif
+        @endif
+    </flux:modal>
+
+    {{-- Import Modal --}}
+    <flux:modal name="product-import" class="md:w-[34rem]"
+        x-on:open-modal.window="if ($event.detail.name === 'product-import') $flux.modal('product-import').show()"
+        x-on:close-modal.window="if ($event.detail.name === 'product-import') $flux.modal('product-import').close()">
+        @if ($importModalOpen)
+        <div class="space-y-4">
+            <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <flux:icon.arrow-up-tray class="w-5 h-5 text-primary" />
+                    </div>
+                    <flux:heading>Import products</flux:heading>
+                </div>
+                <a href="{{ route('admin.products.export', ['template' => 1]) }}"
+                    class="text-xs font-medium text-indigo-600 hover:underline shrink-0">
+                    Download template
+                </a>
+            </div>
+
+            <flux:text class="text-sm text-zinc-500">
+                Upload a CSV with the same columns as the export. Only <span class="font-medium text-zinc-700">Name (EN)</span>
+                is required — match an existing product by its ID, slug or SKU. Categories are comma-separated; brands and
+                vendors are matched by name. Blank optional cells leave existing values untouched.
+            </flux:text>
+
+            <flux:field>
+                <flux:label>CSV file</flux:label>
+                <flux:input type="file" wire:model="importFile" accept=".csv,.txt" />
+                <flux:error name="importFile" />
+            </flux:field>
+
+            <flux:checkbox wire:model="importUpdateExisting"
+                label="Overwrite existing products (matched by ID, slug or SKU)" />
+
+            @if ($importResult)
+                <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-3 space-y-2 text-sm">
+                    <p class="font-medium text-zinc-700">
+                        {{ $importResult['created'] }} created &middot;
+                        {{ $importResult['updated'] }} updated &middot;
+                        {{ $importResult['skipped'] }} skipped
+                    </p>
+
+                    @if (count($importResult['warnings']))
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-amber-600">Warnings</p>
+                            <ul class="mt-1 list-disc pl-4 space-y-1 text-xs text-amber-700">
+                                @foreach ($importResult['warnings'] as $warning)
+                                    <li>{{ $warning }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    @if (count($importResult['errors']))
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-rose-600">Skipped rows</p>
+                            <ul class="mt-1 list-disc pl-4 space-y-1 text-xs text-rose-700">
+                                @foreach ($importResult['errors'] as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                </div>
+            @endif
+
+            <div class="flex items-center gap-2 pt-1">
+                <flux:button size="sm" variant="primary" wire:click="importCsv"
+                    wire:loading.attr="disabled" wire:target="importFile,importCsv">
+                    Import
+                </flux:button>
+                <flux:modal.close>
+                    <flux:button size="sm" variant="ghost" wire:click="closeImport">Close</flux:button>
+                </flux:modal.close>
+                <span wire:loading wire:target="importFile" class="text-xs text-zinc-500">Uploading&hellip;</span>
+            </div>
+        </div>
         @endif
     </flux:modal>
 

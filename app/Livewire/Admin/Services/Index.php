@@ -4,8 +4,11 @@ namespace App\Livewire\Admin\Services;
 
 use App\Concerns\HasBulkSelection;
 use App\Concerns\HasPerPage;
+use App\Concerns\ImportsCsv;
 use App\Concerns\WithSearch;
 use App\Models\Service;
+use App\Services\Import\CsvImporter;
+use App\Services\Import\ServiceCsvImporter;
 use App\Support\AdminActivity;
 use Illuminate\Support\Str;
 use Livewire\Component;
@@ -13,11 +16,26 @@ use Livewire\WithPagination;
 
 class Index extends Component
 {
-    use HasBulkSelection, HasPerPage, WithPagination, WithSearch;
+    use HasBulkSelection, HasPerPage, ImportsCsv, WithPagination, WithSearch;
 
     public string $statusFilter = '';
 
     public ?int $deletingId = null;
+
+    protected function csvImporter(): CsvImporter
+    {
+        return new ServiceCsvImporter;
+    }
+
+    protected function importModalName(): string
+    {
+        return 'service-import';
+    }
+
+    protected function importEntityLabel(): string
+    {
+        return 'service';
+    }
 
     public function updatedStatusFilter(): void
     {

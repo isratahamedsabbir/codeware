@@ -21,7 +21,7 @@ class Service extends Model
     public array $translatable = ['name', 'description'];
 
     protected $fillable = [
-        'name', 'description', 'slug', 'price', 'featured_image', 'status', 'sort_order',
+        'name', 'description', 'slug', 'price', 'featured_image', 'status', 'sort_order', 'created_by',
     ];
 
     protected function casts(): array

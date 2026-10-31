@@ -3,67 +3,22 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
+use App\Services\Export\ProductCsvExporter;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProductExportController extends Controller
 {
     /**
-     * Streams the product list as CSV. With an `ids[]` query param (the
-     * Products screen's bulk-selection "Export" button — see
-     * Livewire\Admin\Products\Index::$selectedIds), exports exactly that
-     * explicit selection. Otherwise honors whatever search/status filter is
-     * currently active on the screen (the standalone "Export CSV" button),
-     * carried over as query params rather than always exporting everything.
+     * Hands the screen's filters to the exporter and streams the result.
      */
-    public function export(Request $request): StreamedResponse
+    public function export(Request $request, ProductCsvExporter $exporter): StreamedResponse
     {
-        $ids = array_map('intval', (array) $request->query('ids', []));
-        $search = (string) $request->query('search', '');
-        $status = (string) $request->query('status', '');
-
-        $products = Product::query()
-            ->with(['categories', 'page'])
-            ->when($ids !== [], fn ($q) => $q->whereIn('id', $ids), function ($q) use ($search, $status) {
-                $q->when($search, fn ($q) => $q
-                    ->where('name->en', 'like', "%{$search}%")
-                    ->orWhere('name->bn', 'like', "%{$search}%")
-                    ->orWhereHas('page', fn ($p) => $p->where('slug', 'like', "%{$search}%")))
-                    ->when($status, fn ($q) => $q->where('status', $status));
-            })
-            ->orderBy('sort_order')
-            ->orderBy('id')
-            ->get();
-
-        $filename = 'products-'.now()->format('Y-m-d-His').'.csv';
-
-        return response()->streamDownload(function () use ($products) {
-            $handle = fopen('php://output', 'w');
-
-            // A UTF-8 BOM so Excel doesn't mangle non-Latin (e.g. Bengali) text.
-            fwrite($handle, "\xEF\xBB\xBF");
-
-            fputcsv($handle, ['ID', 'Name (EN)', 'Name (BN)', 'Slug', 'Category', 'Price', 'Status', 'Featured', 'Sort Order', 'Created At']);
-
-            foreach ($products as $product) {
-                fputcsv($handle, [
-                    $product->id,
-                    $product->getTranslation('name', 'en', false),
-                    $product->getTranslation('name', 'bn', false),
-                    $product->slug,
-                    $product->categories->map(fn ($c) => $c->getTranslation('name', 'en', false))->implode(', '),
-                    $product->price,
-                    $product->status,
-                    $product->is_featured ? 'Yes' : 'No',
-                    $product->sort_order,
-                    $product->created_at?->toDateTimeString(),
-                ]);
-            }
-
-            fclose($handle);
-        }, $filename, [
-            'Content-Type' => 'text/csv',
-        ]);
+        return $exporter->export(
+            ids: array_values(array_map('intval', (array) $request->query('ids', []))),
+            search: trim((string) $request->query('search', '')),
+            status: (string) $request->query('status', ''),
+            template: $request->boolean('template'),
+        );
     }
 }

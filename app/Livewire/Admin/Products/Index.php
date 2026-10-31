@@ -4,10 +4,13 @@ namespace App\Livewire\Admin\Products;
 
 use App\Concerns\HasBulkSelection;
 use App\Concerns\HasPerPage;
+use App\Concerns\ImportsCsv;
 use App\Concerns\WithSearch;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\Setting;
+use App\Services\Import\CsvImporter;
+use App\Services\Import\ProductCsvImporter;
 use App\Support\AdminActivity;
 use App\Support\EnvFile;
 use App\Support\LandingTriggers;
@@ -22,7 +25,7 @@ use RuntimeException;
 
 class Index extends Component
 {
-    use HasBulkSelection, HasPerPage, WithPagination, WithSearch;
+    use HasBulkSelection, HasPerPage, ImportsCsv, WithPagination, WithSearch;
 
     public string $statusFilter = '';
 
@@ -56,6 +59,21 @@ class Index extends Component
     public function updatedStatusFilter(): void
     {
         $this->resetPage();
+    }
+
+    protected function csvImporter(): CsvImporter
+    {
+        return new ProductCsvImporter;
+    }
+
+    protected function importModalName(): string
+    {
+        return 'product-import';
+    }
+
+    protected function importEntityLabel(): string
+    {
+        return 'product';
     }
 
     /**

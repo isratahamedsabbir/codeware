@@ -53,7 +53,16 @@
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
         </select>
-        <div class="relative max-w-xs ml-auto">
+        <div class="ml-auto flex items-center gap-2">
+            <flux:button size="sm" variant="ghost" icon="arrow-down-tray"
+                href="{{ route('admin.services.export', ['search' => $search, 'status' => $statusFilter]) }}">
+                Export CSV
+            </flux:button>
+            <flux:button size="sm" variant="ghost" icon="arrow-up-tray" wire:click="openImport">
+                Import CSV
+            </flux:button>
+        </div>
+        <div class="relative max-w-xs">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" viewBox="0 0 24 24"
                 fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="11" cy="11" r="8" />
@@ -90,14 +99,23 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($services as $service)
+                        @php
+                            $isSelected = in_array($service->id, $selectedIds, true);
+                            $bulkActive = count($selectedIds) > 0;
+                        @endphp
                         <tr wire:key="service-{{ $service->id }}"
-                            class="group/row hover:bg-indigo-50/30 transition-colors cursor-default {{ in_array($service->id, $selectedIds, true) ? 'bg-indigo-50 ring-1 ring-inset ring-indigo-300' : '' }}"
+                            class="group/row hover:bg-indigo-50/30 transition-colors cursor-default {{ $isSelected ? 'bg-indigo-50 ring-1 ring-inset ring-indigo-300' : '' }}"
                             @contextmenu.prevent="$el.querySelector('[data-actions-trigger]')?.click()"
                             @click="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.toggleSelect({{ $service->id }}) }">
 
-                            {{-- ID --}}
+                            {{-- ID, or the selection checkbox while bulk mode is active. --}}
                             <td class="px-2 py-2 text-center text-xs text-zinc-500">
-                                <x-copy-text :text="$service->id" class="text-xs text-zinc-500">{{ $service->id }}</x-copy-text>
+                                @if ($bulkActive)
+                                    <input type="checkbox" wire:click="toggleSelect({{ $service->id }})" @checked($isSelected)
+                                        aria-label="Select service" class="w-4 h-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
+                                @else
+                                    <x-copy-text :text="$service->id" class="text-xs text-zinc-500">{{ $service->id }}</x-copy-text>
+                                @endif
                             </td>
 
                             {{-- Image --}}
@@ -158,7 +176,6 @@
                             {{-- Actions — disabled while a bulk selection is active, so the
                                  per-row actions can't conflict with the bulk toolbar above. --}}
                             <td class="sticky right-0 z-10 bg-white group-hover/row:bg-indigo-100 border-l border-zinc-100 px-4 py-2">
-                                @php $bulkActive = count($selectedIds) > 0; @endphp
                                 <x-admin-row-actions :actions="[
                                     ['href' => route('admin.services.edit', $service->id), 'icon' => 'pencil', 'label' => 'Edit', 'color' => 'primary', 'disabled' => $bulkActive],
                                     ['wireClick' => 'confirmDelete(' . $service->id . ')', 'icon' => 'trash', 'label' => 'Delete', 'color' => 'rose-500', 'disabled' => $bulkActive],
@@ -240,6 +257,85 @@
                 </flux:modal.close>
             </div>
         </div>
+    </flux:modal>
+
+    {{-- Import Modal --}}
+    <flux:modal name="service-import" class="md:w-[34rem]"
+        x-on:open-modal.window="if ($event.detail.name === 'service-import') $flux.modal('service-import').show()"
+        x-on:close-modal.window="if ($event.detail.name === 'service-import') $flux.modal('service-import').close()">
+        @if ($importModalOpen)
+        <div class="space-y-4">
+            <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <flux:icon.arrow-up-tray class="w-5 h-5 text-primary" />
+                    </div>
+                    <flux:heading>Import services</flux:heading>
+                </div>
+                <a href="{{ route('admin.services.export', ['template' => 1]) }}"
+                    class="text-xs font-medium text-indigo-600 hover:underline shrink-0">
+                    Download template
+                </a>
+            </div>
+
+            <flux:text class="text-sm text-zinc-500">
+                Upload a CSV with the same columns as the export. Only <span class="font-medium text-zinc-700">Name (EN)</span>
+                is required — match an existing service by its ID or slug. Bengali text is preserved, so keep the file UTF-8 encoded.
+            </flux:text>
+
+            <flux:field>
+                <flux:label>CSV file</flux:label>
+                <flux:input type="file" wire:model="importFile" accept=".csv,.txt" />
+                <flux:error name="importFile" />
+            </flux:field>
+
+            <flux:checkbox wire:model="importUpdateExisting"
+                label="Overwrite existing services (matched by ID or slug)" />
+
+            @if ($importResult)
+                <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-3 space-y-2 text-sm">
+                    <p class="font-medium text-zinc-700">
+                        {{ $importResult['created'] }} created &middot;
+                        {{ $importResult['updated'] }} updated &middot;
+                        {{ $importResult['skipped'] }} skipped
+                    </p>
+
+                    @if (count($importResult['warnings']))
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-amber-600">Warnings</p>
+                            <ul class="mt-1 list-disc pl-4 space-y-1 text-xs text-amber-700">
+                                @foreach ($importResult['warnings'] as $warning)
+                                    <li>{{ $warning }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    @if (count($importResult['errors']))
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-rose-600">Skipped rows</p>
+                            <ul class="mt-1 list-disc pl-4 space-y-1 text-xs text-rose-700">
+                                @foreach ($importResult['errors'] as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                </div>
+            @endif
+
+            <div class="flex items-center gap-2 pt-1">
+                <flux:button size="sm" variant="primary" wire:click="importCsv"
+                    wire:loading.attr="disabled" wire:target="importFile,importCsv">
+                    Import
+                </flux:button>
+                <flux:modal.close>
+                    <flux:button size="sm" variant="ghost" wire:click="closeImport">Close</flux:button>
+                </flux:modal.close>
+                <span wire:loading wire:target="importFile" class="text-xs text-zinc-500">Uploading&hellip;</span>
+            </div>
+        </div>
+        @endif
     </flux:modal>
 
 </div>

@@ -4,9 +4,12 @@ namespace App\Livewire\Admin\Posts;
 
 use App\Concerns\HasBulkSelection;
 use App\Concerns\HasPerPage;
+use App\Concerns\ImportsCsv;
 use App\Concerns\WithSearch;
 use App\Models\Page;
 use App\Models\Post;
+use App\Services\Import\CsvImporter;
+use App\Services\Import\PostCsvImporter;
 use App\Support\AdminActivity;
 use App\Support\EnvFile;
 use App\Support\PageCascade;
@@ -20,7 +23,7 @@ use RuntimeException;
 
 class Index extends Component
 {
-    use HasBulkSelection, HasPerPage, WithPagination, WithSearch;
+    use HasBulkSelection, HasPerPage, ImportsCsv, WithPagination, WithSearch;
 
     public string $statusFilter = '';
 
@@ -82,6 +85,21 @@ class Index extends Component
     public function updatedStatusFilter(): void
     {
         $this->resetPage();
+    }
+
+    protected function csvImporter(): CsvImporter
+    {
+        return new PostCsvImporter;
+    }
+
+    protected function importModalName(): string
+    {
+        return 'post-import';
+    }
+
+    protected function importEntityLabel(): string
+    {
+        return 'post';
     }
 
     public function openPuckEditor(int $postId): void
